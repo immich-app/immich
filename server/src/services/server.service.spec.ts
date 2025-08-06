@@ -28,7 +28,7 @@ describe(ServerService.name, () => {
         diskUseRaw: 300,
       });
 
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
     it('should return the disk space as KiB', async () => {
@@ -44,7 +44,7 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000,
       });
 
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
     it('should return the disk space as MiB', async () => {
@@ -60,7 +60,7 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000,
       });
 
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
     it('should return the disk space as GiB', async () => {
@@ -80,7 +80,7 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000_000,
       });
 
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
     it('should return the disk space as TiB', async () => {
@@ -100,7 +100,7 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000_000_000,
       });
 
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
 
     it('should return the disk space as PiB', async () => {
@@ -120,7 +120,7 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000_000_000_000,
       });
 
-      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('upload/library'));
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith(expect.stringContaining('/data/library'));
     });
   });
 

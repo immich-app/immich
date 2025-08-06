@@ -12,11 +12,13 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:path/path.dart' as p;
 
 final uploadServiceProvider = Provider((ref) {
@@ -25,6 +27,7 @@ final uploadServiceProvider = Provider((ref) {
     ref.watch(backupRepositoryProvider),
     ref.watch(storageRepositoryProvider),
     ref.watch(localAssetRepository),
+    ref.watch(appSettingsServiceProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -37,6 +40,7 @@ class UploadService {
     this._backupRepository,
     this._storageRepository,
     this._localAssetRepository,
+    this._appSettingsService,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -46,6 +50,7 @@ class UploadService {
   final DriftBackupRepository _backupRepository;
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
+  final AppSettingsService _appSettingsService;
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
   final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
@@ -94,6 +99,7 @@ class UploadService {
   }
 
   Future<void> manualBackup(List<LocalAsset> localAssets) async {
+    await _storageRepository.clearCache();
     List<UploadTask> tasks = [];
     for (final asset in localAssets) {
       final task = await _getUploadTask(
@@ -114,10 +120,9 @@ class UploadService {
   /// Find backup candidates
   /// Build the upload tasks
   /// Enqueue the tasks
-  Future<void> startBackup(
-    String userId,
-    void Function(EnqueueStatus status) onEnqueueTasks,
-  ) async {
+  Future<void> startBackup(String userId, void Function(EnqueueStatus status) onEnqueueTasks) async {
+    await _storageRepository.clearCache();
+
     shouldAbortQueuingTasks = false;
 
     final candidates = await _backupRepository.getCandidates(userId);
@@ -146,12 +151,7 @@ class UploadService {
         count += tasks.length;
         enqueueTasks(tasks);
 
-        onEnqueueTasks(
-          EnqueueStatus(
-            enqueueCount: count,
-            totalCount: candidates.length,
-          ),
-        );
+        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
       }
     }
   }
@@ -162,6 +162,7 @@ class UploadService {
   Future<int> cancelBackup() async {
     shouldAbortQueuingTasks = true;
 
+    await _storageRepository.clearCache();
     await _uploadRepository.reset(kBackupGroup);
     await _uploadRepository.deleteDatabaseRecords(kBackupGroup);
 
@@ -205,10 +206,7 @@ class UploadService {
         return;
       }
 
-      final uploadTask = await _getLivePhotoUploadTask(
-        localAsset,
-        response['id'] as String,
-      );
+      final uploadTask = await _getLivePhotoUploadTask(localAsset, response['id'] as String);
 
       if (uploadTask == null) {
         return;
@@ -220,11 +218,7 @@ class UploadService {
     }
   }
 
-  Future<UploadTask?> _getUploadTask(
-    LocalAsset asset, {
-    String group = kBackupGroup,
-    int? priority,
-  }) async {
+  Future<UploadTask?> _getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -252,18 +246,21 @@ class UploadService {
       return null;
     }
 
-    final originalFileName = entity.isLivePhoto
-        ? p.setExtension(
-            asset.name,
-            p.extension(file.path),
-          )
-        : asset.name;
+    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
       isLivePhotos: entity.isLivePhoto,
       livePhotoVideoId: '',
     ).toJson();
+
+    bool requiresWiFi = true;
+
+    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
+      requiresWiFi = false;
+    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
+      requiresWiFi = false;
+    }
 
     return buildUploadTask(
       file,
@@ -272,13 +269,12 @@ class UploadService {
       metadata: metadata,
       group: group,
       priority: priority,
+      isFavorite: asset.isFavorite,
+      requiresWiFi: requiresWiFi,
     );
   }
 
-  Future<UploadTask?> _getLivePhotoUploadTask(
-    LocalAsset asset,
-    String livePhotoVideoId,
-  ) async {
+  Future<UploadTask?> _getLivePhotoUploadTask(LocalAsset asset, String livePhotoVideoId) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -289,9 +285,7 @@ class UploadService {
       return null;
     }
 
-    final fields = {
-      'livePhotoVideoId': livePhotoVideoId,
-    };
+    final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     return buildUploadTask(
       file,
@@ -300,6 +294,7 @@ class UploadService {
       fields: fields,
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately
+      isFavorite: asset.isFavorite,
     );
   }
 
@@ -311,12 +306,13 @@ class UploadService {
     String? deviceAssetId,
     String? metadata,
     int? priority,
+    bool? isFavorite,
+    bool requiresWiFi = true,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
-
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final stats = await file.stat();
     final fileCreatedAt = stats.changed;
@@ -327,7 +323,7 @@ class UploadService {
       'deviceId': deviceId,
       'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
       'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
-      'isFavorite': 'false',
+      'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
     };
@@ -345,6 +341,7 @@ class UploadService {
       fileField: 'assetData',
       metaData: metadata ?? '',
       group: group,
+      requiresWiFi: requiresWiFi,
       priority: priority ?? 5,
       updates: Updates.statusAndProgress,
       retries: 3,
@@ -357,17 +354,9 @@ class UploadTaskMetadata {
   final bool isLivePhotos;
   final String livePhotoVideoId;
 
-  const UploadTaskMetadata({
-    required this.localAssetId,
-    required this.isLivePhotos,
-    required this.livePhotoVideoId,
-  });
+  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
 
-  UploadTaskMetadata copyWith({
-    String? localAssetId,
-    bool? isLivePhotos,
-    String? livePhotoVideoId,
-  }) {
+  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
     return UploadTaskMetadata(
       localAssetId: localAssetId ?? this.localAssetId,
       isLivePhotos: isLivePhotos ?? this.isLivePhotos,

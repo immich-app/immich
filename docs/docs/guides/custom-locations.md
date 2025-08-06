@@ -27,11 +27,11 @@ After defining the locations of these files, we will edit the `docker-compose.ym
 services:
   immich-server:
       volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
-+     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
-+     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
-+     - ${PROFILE_LOCATION}:/usr/src/app/upload/profile
-+     - ${BACKUP_LOCATION}:/usr/src/app/upload/backups
+      - ${UPLOAD_LOCATION}:/data
++     - ${THUMB_LOCATION}:/data/thumbs
++     - ${ENCODED_VIDEO_LOCATION}:/data/encoded-video
++     - ${PROFILE_LOCATION}:/data/profile
++     - ${BACKUP_LOCATION}:/data/backups
       - /etc/localtime:/etc/localtime:ro
 ```
 
@@ -44,7 +44,7 @@ docker compose up -d
 
 :::note
 Because of the underlying properties of docker bind mounts, it is not recommended to mount the `upload/` and `library/` folders as separate bind mounts if they are on the same device.
-For this reason, we mount the HDD or the network storage (NAS) to `/usr/src/app/upload` and then mount the folders we want to access under that folder.
+For this reason, we mount the HDD or the network storage (NAS) to `/data` and then mount the folders we want to access under that folder.
 
 The `thumbs/` folder contains both the small thumbnails displayed in the timeline and the larger previews shown when clicking into an image. These cannot be separated.
 

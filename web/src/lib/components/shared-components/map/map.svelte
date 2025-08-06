@@ -56,6 +56,7 @@
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
     showSimpleControls?: boolean;
+    autoFitBounds?: boolean;
   }
 
   let {
@@ -73,9 +74,21 @@
     popup,
     rounded = false,
     showSimpleControls = true,
+    autoFitBounds = true,
   }: Props = $props();
 
-  const initialCenter = center;
+  // Calculate initial bounds from markers once during initialization
+  const initialBounds = (() => {
+    if (!autoFitBounds || center || zoom !== undefined || !mapMarkers || mapMarkers.length === 0) {
+      return undefined;
+    }
+
+    const bounds = new maplibregl.LngLatBounds();
+    for (const marker of mapMarkers) {
+      bounds.extend([marker.lon, marker.lat]);
+    }
+    return bounds;
+  })();
 
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
@@ -277,7 +290,9 @@
   style=""
   class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
   {zoom}
-  center={initialCenter}
+  {center}
+  bounds={initialBounds}
+  fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
   attributionControl={false}
   diffStyleUpdates={true}
   onload={(event) => {

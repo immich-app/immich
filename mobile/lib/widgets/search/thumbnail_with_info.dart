@@ -39,12 +39,7 @@ class ThumbnailWithInfo extends StatelessWidget {
                 errorWidget: (context, url, error) => const Icon(Icons.image_not_supported_outlined),
               ),
             )
-          : Center(
-              child: Icon(
-                noImageIcon ?? Icons.not_listed_location,
-                color: textAndIconColor,
-              ),
-            ),
+          : Center(child: Icon(noImageIcon ?? Icons.not_listed_location, color: textAndIconColor)),
     );
   }
 }

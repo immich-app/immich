@@ -28,7 +28,7 @@ final _kWarnLog = LogMessage(
 
 void main() {
   late LogService sut;
-  late IsarLogRepository mockLogRepo;
+  late LogRepository mockLogRepo;
   late IsarStoreRepository mockStoreRepo;
 
   setUp(() async {
@@ -43,10 +43,7 @@ void main() {
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
 
-    sut = await LogService.create(
-      logRepository: mockLogRepo,
-      storeRepository: mockStoreRepo,
-    );
+    sut = await LogService.create(logRepository: mockLogRepo, storeRepository: mockStoreRepo);
   });
 
   tearDown(() async {
@@ -72,9 +69,7 @@ void main() {
     });
 
     test('Updates the log level in store', () {
-      final index = verify(
-        () => mockStoreRepo.insert<int>(StoreKey.logLevel, captureAny()),
-      ).captured.firstOrNull;
+      final index = verify(() => mockStoreRepo.insert<int>(StoreKey.logLevel, captureAny())).captured.firstOrNull;
       expect(index, LogLevel.shout.index);
     });
 
@@ -86,11 +81,7 @@ void main() {
   group("Log Service Buffer:", () {
     test('Buffers logs until timer elapses', () {
       TestUtils.fakeAsync((time) async {
-        sut = await LogService.create(
-          logRepository: mockLogRepo,
-          storeRepository: mockStoreRepo,
-          shouldBuffer: true,
-        );
+        sut = await LogService.create(logRepository: mockLogRepo, storeRepository: mockStoreRepo, shouldBuffer: true);
 
         final logger = Logger(_kInfoLog.logger!);
         logger.info(_kInfoLog.message);
@@ -104,11 +95,7 @@ void main() {
 
     test('Batch inserts all logs on timer', () {
       TestUtils.fakeAsync((time) async {
-        sut = await LogService.create(
-          logRepository: mockLogRepo,
-          storeRepository: mockStoreRepo,
-          shouldBuffer: true,
-        );
+        sut = await LogService.create(logRepository: mockLogRepo, storeRepository: mockStoreRepo, shouldBuffer: true);
 
         final logger = Logger(_kInfoLog.logger!);
         logger.info(_kInfoLog.message);
@@ -125,11 +112,7 @@ void main() {
 
     test('Does not buffer when off', () {
       TestUtils.fakeAsync((time) async {
-        sut = await LogService.create(
-          logRepository: mockLogRepo,
-          storeRepository: mockStoreRepo,
-          shouldBuffer: false,
-        );
+        sut = await LogService.create(logRepository: mockLogRepo, storeRepository: mockStoreRepo, shouldBuffer: false);
 
         final logger = Logger(_kInfoLog.logger!);
         logger.info(_kInfoLog.message);
@@ -159,11 +142,7 @@ void main() {
 
     test('Combines result from both DB + Buffer', () {
       TestUtils.fakeAsync((time) async {
-        sut = await LogService.create(
-          logRepository: mockLogRepo,
-          storeRepository: mockStoreRepo,
-          shouldBuffer: true,
-        );
+        sut = await LogService.create(logRepository: mockLogRepo, storeRepository: mockStoreRepo, shouldBuffer: true);
 
         final logger = Logger(_kWarnLog.logger!);
         logger.warning(_kWarnLog.message);

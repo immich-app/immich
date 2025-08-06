@@ -36,11 +36,7 @@ class GalleryStackedChildren extends HookConsumerWidget {
             shrinkWrap: true,
             scrollDirection: Axis.horizontal,
             itemCount: stackElements.length,
-            padding: const EdgeInsets.only(
-              left: 5,
-              right: 5,
-              bottom: 30,
-            ),
+            padding: const EdgeInsets.only(left: 5, right: 5, bottom: 30),
             itemBuilder: (context, index) {
               final currentAsset = stackElements.elementAt(index);
               final assetId = currentAsset.remoteId;
@@ -63,9 +59,7 @@ class GalleryStackedChildren extends HookConsumerWidget {
                         ? const BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.all(Radius.circular(6)),
-                            border: Border.fromBorderSide(
-                              BorderSide(color: Colors.white, width: 2),
-                            ),
+                            border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
                           )
                         : const BoxDecoration(
                             color: Colors.white,

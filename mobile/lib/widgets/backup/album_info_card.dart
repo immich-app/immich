@@ -16,10 +16,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 class AlbumInfoCard extends HookConsumerWidget {
   final AvailableAlbum album;
 
-  const AlbumInfoCard({
-    super.key,
-    required this.album,
-  });
+  const AlbumInfoCard({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,10 +26,7 @@ class AlbumInfoCard extends HookConsumerWidget {
 
     final isDarkTheme = context.isDarkTheme;
 
-    ColorFilter selectedFilter = ColorFilter.mode(
-      context.primaryColor.withAlpha(100),
-      BlendMode.darken,
-    );
+    ColorFilter selectedFilter = ColorFilter.mode(context.primaryColor.withAlpha(100), BlendMode.darken);
     ColorFilter excludedFilter = ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
     ColorFilter unselectedFilter = const ColorFilter.mode(Colors.black, BlendMode.color);
 
@@ -40,9 +34,7 @@ class AlbumInfoCard extends HookConsumerWidget {
       if (isSelected) {
         return Chip(
           visualDensity: VisualDensity.compact,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
           label: Text(
             "album_info_card_backup_album_included",
             style: TextStyle(
@@ -56,9 +48,7 @@ class AlbumInfoCard extends HookConsumerWidget {
       } else if (isExcluded) {
         return Chip(
           visualDensity: VisualDensity.compact,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
           label: Text(
             "album_info_card_backup_album_excluded",
             style: TextStyle(
@@ -145,24 +135,16 @@ class AlbumInfoCard extends HookConsumerWidget {
                     child: const Image(
                       width: double.infinity,
                       height: double.infinity,
-                      image: AssetImage(
-                        'assets/immich-logo.png',
-                      ),
+                      image: AssetImage('assets/immich-logo.png'),
                       fit: BoxFit.cover,
                     ),
                   ),
-                  Positioned(
-                    bottom: 10,
-                    right: 25,
-                    child: buildSelectedTextBox(),
-                  ),
+                  Positioned(bottom: 10, right: 25, child: buildSelectedTextBox()),
                 ],
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(
-                left: 25,
-              ),
+              padding: const EdgeInsets.only(left: 25),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -173,20 +155,13 @@ class AlbumInfoCard extends HookConsumerWidget {
                       children: [
                         Text(
                           album.name,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: context.primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: 14, color: context.primaryColor, fontWeight: FontWeight.bold),
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 2.0),
                           child: Text(
                             album.assetCount.toString() + (album.isAll ? " (${'all'.tr()})" : ""),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                           ),
                         ),
                       ],
@@ -194,15 +169,9 @@ class AlbumInfoCard extends HookConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      context.pushRoute(
-                        AlbumPreviewRoute(album: album.album),
-                      );
+                      context.pushRoute(AlbumPreviewRoute(album: album.album));
                     },
-                    icon: Icon(
-                      Icons.image_outlined,
-                      color: context.primaryColor,
-                      size: 24,
-                    ),
+                    icon: Icon(Icons.image_outlined, color: context.primaryColor, size: 24),
                     splashRadius: 25,
                   ),
                 ],

@@ -25,17 +25,11 @@ class Throttler {
 
 /// Creates a [Throttler] that will be disposed automatically. If no [interval] is provided, a
 /// default interval of 300ms is used to throttle the function calls
-Throttler useThrottler({
-  Duration interval = const Duration(milliseconds: 300),
-  List<Object?>? keys,
-}) =>
+Throttler useThrottler({Duration interval = const Duration(milliseconds: 300), List<Object?>? keys}) =>
     use(_ThrottleHook(interval: interval, keys: keys));
 
 class _ThrottleHook extends Hook<Throttler> {
-  const _ThrottleHook({
-    required this.interval,
-    super.keys,
-  });
+  const _ThrottleHook({required this.interval, super.keys});
 
   final Duration interval;
 

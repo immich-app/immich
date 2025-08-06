@@ -25,10 +25,7 @@ class OAuthLoginButton extends ConsumerWidget {
       ),
       onPressed: onPressed,
       icon: const Icon(Icons.pin_rounded),
-      label: Text(
-        buttonLabel,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-      ),
+      label: Text(buttonLabel, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
     );
   }
 }

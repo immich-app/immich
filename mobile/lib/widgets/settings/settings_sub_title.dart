@@ -4,10 +4,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 class SettingsSubTitle extends StatelessWidget {
   final String title;
 
-  const SettingsSubTitle({
-    super.key,
-    required this.title,
-  });
+  const SettingsSubTitle({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +12,7 @@ class SettingsSubTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 20),
       child: Text(
         title,
-        style: context.textTheme.bodyLarge?.copyWith(
-          color: context.primaryColor,
-          fontWeight: FontWeight.w700,
-        ),
+        style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor, fontWeight: FontWeight.w700),
       ),
     );
   }

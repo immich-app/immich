@@ -18,32 +18,30 @@ class AlbumMediaRepository {
     DateTimeCond? updateTimeCond,
     bool? containsPathModified,
     List<OrderOption>? orderBy,
-  }) =>
-      useCustomFilter
-          ? FilterOptionGroup(
-              imageOption: const FilterOption(
-                needTitle: true,
-                sizeConstraint: SizeConstraint(ignoreSize: true),
-              ),
-              videoOption: const FilterOption(
-                needTitle: true,
-                sizeConstraint: SizeConstraint(ignoreSize: true),
-                durationConstraint: DurationConstraint(allowNullable: true),
-              ),
-              containsPathModified: containsPathModified ?? false,
-              createTimeCond: DateTimeCond.def().copyWith(ignore: true),
-              updateTimeCond: updateTimeCond ?? DateTimeCond.def().copyWith(ignore: true),
-              orders: orderBy ?? [],
-            )
-          : null;
+  }) => useCustomFilter
+      ? FilterOptionGroup(
+          imageOption: const FilterOption(needTitle: true, sizeConstraint: SizeConstraint(ignoreSize: true)),
+          videoOption: const FilterOption(
+            needTitle: true,
+            sizeConstraint: SizeConstraint(ignoreSize: true),
+            durationConstraint: DurationConstraint(allowNullable: true),
+          ),
+          containsPathModified: containsPathModified ?? false,
+          createTimeCond: DateTimeCond.def().copyWith(ignore: true),
+          updateTimeCond: updateTimeCond ?? DateTimeCond.def().copyWith(ignore: true),
+          orders: orderBy ?? [],
+        )
+      : null;
 
   Future<List<Album>> getAll() async {
     final filter = useCustomFilter
         ? CustomFilter.sql(where: '${CustomColumns.base.width} > 0')
         : FilterOptionGroup(containsPathModified: true);
 
-    final List<AssetPathEntity> assetPathEntities =
-        await PhotoManager.getAssetPathList(hasAll: true, filterOption: filter);
+    final List<AssetPathEntity> assetPathEntities = await PhotoManager.getAssetPathList(
+      hasAll: true,
+      filterOption: filter,
+    );
     return assetPathEntities.map(_toAlbum).toList();
   }
 
@@ -71,10 +69,7 @@ class AlbumMediaRepository {
       filterOption: _getAlbumFilter(
         updateTimeCond: modifiedFrom == null && modifiedUntil == null
             ? null
-            : DateTimeCond(
-                min: modifiedFrom ?? DateTime.utc(-271820),
-                max: modifiedUntil ?? DateTime.utc(275760),
-              ),
+            : DateTimeCond(min: modifiedFrom ?? DateTime.utc(-271820), max: modifiedUntil ?? DateTime.utc(275760)),
         orderBy: orderByModificationDate ? [const OrderOption(type: OrderOptionType.updateDate)] : [],
       ),
     );
@@ -84,10 +79,7 @@ class AlbumMediaRepository {
   }
 
   Future<Album> get(String id) async {
-    final assetPathEntity = await AssetPathEntity.fromId(
-      id,
-      filterOption: _getAlbumFilter(containsPathModified: true),
-    );
+    final assetPathEntity = await AssetPathEntity.fromId(id, filterOption: _getAlbumFilter(containsPathModified: true));
     return _toAlbum(assetPathEntity);
   }
 

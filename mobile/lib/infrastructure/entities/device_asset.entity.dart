@@ -16,21 +16,10 @@ class DeviceAssetEntity {
   final List<byte> hash;
   final DateTime modifiedTime;
 
-  const DeviceAssetEntity({
-    required this.assetId,
-    required this.hash,
-    required this.modifiedTime,
-  });
+  const DeviceAssetEntity({required this.assetId, required this.hash, required this.modifiedTime});
 
-  DeviceAsset toModel() => DeviceAsset(
-        assetId: assetId,
-        hash: Uint8List.fromList(hash),
-        modifiedTime: modifiedTime,
-      );
+  DeviceAsset toModel() => DeviceAsset(assetId: assetId, hash: Uint8List.fromList(hash), modifiedTime: modifiedTime);
 
-  static DeviceAssetEntity fromDto(DeviceAsset dto) => DeviceAssetEntity(
-        assetId: dto.assetId,
-        hash: dto.hash,
-        modifiedTime: dto.modifiedTime,
-      );
+  static DeviceAssetEntity fromDto(DeviceAsset dto) =>
+      DeviceAssetEntity(assetId: dto.assetId, hash: dto.hash, modifiedTime: dto.modifiedTime);
 }

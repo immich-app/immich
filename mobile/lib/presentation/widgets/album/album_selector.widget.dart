@@ -14,6 +14,7 @@ import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -26,11 +27,9 @@ typedef AlbumSelectorCallback = void Function(RemoteAlbum album);
 
 class AlbumSelector extends ConsumerStatefulWidget {
   final AlbumSelectorCallback onAlbumSelected;
+  final Function? onKeyboardExpanded;
 
-  const AlbumSelector({
-    super.key,
-    required this.onAlbumSelected,
-  });
+  const AlbumSelector({super.key, required this.onAlbumSelected, this.onKeyboardExpanded});
 
   @override
   ConsumerState<AlbumSelector> createState() => _AlbumSelectorState();
@@ -53,6 +52,12 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
     searchController.addListener(() {
       onSearch(searchController.text, filterMode);
+    });
+
+    searchFocusNode.addListener(() {
+      if (searchFocusNode.hasFocus) {
+        widget.onKeyboardExpanded?.call();
+      }
     });
   }
 
@@ -113,21 +118,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
           onSearch: onSearch,
           searchController: searchController,
         ),
-        _QuickSortAndViewMode(
-          isGrid: isGrid,
-          onToggleViewMode: toggleViewMode,
-        ),
+        _QuickSortAndViewMode(isGrid: isGrid, onToggleViewMode: toggleViewMode),
         isGrid
-            ? _AlbumGrid(
-                albums: albums,
-                userId: userId,
-                onAlbumSelected: widget.onAlbumSelected,
-              )
-            : _AlbumList(
-                albums: albums,
-                userId: userId,
-                onAlbumSelected: widget.onAlbumSelected,
-              ),
+            ? _AlbumGrid(albums: albums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
+            : _AlbumList(albums: albums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
       ],
     );
   }
@@ -151,18 +145,12 @@ class _SortButtonState extends ConsumerState<_SortButton> {
       setState(() {
         albumSortIsReverse = !albumSortIsReverse;
       });
-      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
-            sortMode,
-            isReverse: albumSortIsReverse,
-          );
+      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     } else {
       setState(() {
         albumSortOption = sortMode;
       });
-      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(
-            sortMode,
-            isReverse: albumSortIsReverse,
-          );
+      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     }
   }
 
@@ -172,15 +160,9 @@ class _SortButtonState extends ConsumerState<_SortButton> {
       style: MenuStyle(
         elevation: const WidgetStatePropertyAll(1),
         shape: WidgetStateProperty.all(
-          const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(24),
-            ),
-          ),
+          const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
         ),
-        padding: const WidgetStatePropertyAll(
-          EdgeInsets.all(4),
-        ),
+        padding: const WidgetStatePropertyAll(EdgeInsets.all(4)),
       ),
       consumeOutsideTap: true,
       menuChildren: RemoteAlbumSortMode.values
@@ -188,33 +170,27 @@ class _SortButtonState extends ConsumerState<_SortButton> {
             (sortMode) => MenuItemButton(
               leadingIcon: albumSortOption == sortMode
                   ? albumSortIsReverse
-                      ? Icon(
-                          Icons.keyboard_arrow_down,
-                          color: albumSortOption == sortMode
-                              ? context.colorScheme.onPrimary
-                              : context.colorScheme.onSurface,
-                        )
-                      : Icon(
-                          Icons.keyboard_arrow_up_rounded,
-                          color: albumSortOption == sortMode
-                              ? context.colorScheme.onPrimary
-                              : context.colorScheme.onSurface,
-                        )
+                        ? Icon(
+                            Icons.keyboard_arrow_down,
+                            color: albumSortOption == sortMode
+                                ? context.colorScheme.onPrimary
+                                : context.colorScheme.onSurface,
+                          )
+                        : Icon(
+                            Icons.keyboard_arrow_up_rounded,
+                            color: albumSortOption == sortMode
+                                ? context.colorScheme.onPrimary
+                                : context.colorScheme.onSurface,
+                          )
                   : const Icon(Icons.abc, color: Colors.transparent),
               onPressed: () => onMenuTapped(sortMode),
               style: ButtonStyle(
-                padding: WidgetStateProperty.all(
-                  const EdgeInsets.fromLTRB(16, 16, 32, 16),
-                ),
+                padding: WidgetStateProperty.all(const EdgeInsets.fromLTRB(16, 16, 32, 16)),
                 backgroundColor: WidgetStateProperty.all(
                   albumSortOption == sortMode ? context.colorScheme.primary : Colors.transparent,
                 ),
                 shape: WidgetStateProperty.all(
-                  const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(24),
-                    ),
-                  ),
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(24))),
                 ),
               ),
               child: Text(
@@ -243,12 +219,8 @@ class _SortButtonState extends ConsumerState<_SortButton> {
               Padding(
                 padding: const EdgeInsets.only(right: 5),
                 child: albumSortIsReverse
-                    ? const Icon(
-                        Icons.keyboard_arrow_down,
-                      )
-                    : const Icon(
-                        Icons.keyboard_arrow_up_rounded,
-                      ),
+                    ? const Icon(Icons.keyboard_arrow_down)
+                    : const Icon(Icons.keyboard_arrow_up_rounded),
               ),
               Text(
                 albumSortOption.key.t(context: context),
@@ -287,13 +259,8 @@ class _SearchBar extends StatelessWidget {
       sliver: SliverToBoxAdapter(
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(
-              color: context.colorScheme.onSurface.withAlpha(0),
-              width: 0,
-            ),
-            borderRadius: const BorderRadius.all(
-              Radius.circular(24),
-            ),
+            border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
+            borderRadius: const BorderRadius.all(Radius.circular(24)),
             gradient: LinearGradient(
               colors: [
                 context.colorScheme.primary.withValues(alpha: 0.075),
@@ -311,10 +278,7 @@ class _SearchBar extends StatelessWidget {
             hintText: 'search_albums'.tr(),
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: searchController.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear_rounded),
-                    onPressed: onClearSearch,
-                  )
+                ? IconButton(icon: const Icon(Icons.clear_rounded), onPressed: onClearSearch)
                 : null,
             controller: searchController,
             onChanged: (_) => onSearch(searchController.text, filterMode),
@@ -362,10 +326,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
               isSelected: filterMode == QuickFilterMode.sharedWithMe,
               onTap: () {
                 onChangeFilter(QuickFilterMode.sharedWithMe);
-                onSearch(
-                  searchController.text,
-                  QuickFilterMode.sharedWithMe,
-                );
+                onSearch(searchController.text, QuickFilterMode.sharedWithMe);
               },
             ),
             _QuickFilterButton(
@@ -373,10 +334,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
               isSelected: filterMode == QuickFilterMode.myAlbums,
               onTap: () {
                 onChangeFilter(QuickFilterMode.myAlbums);
-                onSearch(
-                  searchController.text,
-                  QuickFilterMode.myAlbums,
-                );
+                onSearch(searchController.text, QuickFilterMode.myAlbums);
               },
             ),
           ],
@@ -387,11 +345,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
 }
 
 class _QuickFilterButton extends StatelessWidget {
-  const _QuickFilterButton({
-    required this.isSelected,
-    required this.onTap,
-    required this.label,
-  });
+  const _QuickFilterButton({required this.isSelected, required this.onTap, required this.label});
 
   final bool isSelected;
   final VoidCallback onTap;
@@ -402,18 +356,11 @@ class _QuickFilterButton extends StatelessWidget {
     return TextButton(
       onPressed: onTap,
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(
-          isSelected ? context.colorScheme.primary : Colors.transparent,
-        ),
+        backgroundColor: WidgetStateProperty.all(isSelected ? context.colorScheme.primary : Colors.transparent),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
-            borderRadius: const BorderRadius.all(
-              Radius.circular(20),
-            ),
-            side: BorderSide(
-              color: context.colorScheme.onSurface.withAlpha(25),
-              width: 1,
-            ),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
+            side: BorderSide(color: context.colorScheme.onSurface.withAlpha(25), width: 1),
           ),
         ),
       ),
@@ -429,10 +376,7 @@ class _QuickFilterButton extends StatelessWidget {
 }
 
 class _QuickSortAndViewMode extends StatelessWidget {
-  const _QuickSortAndViewMode({
-    required this.isGrid,
-    required this.onToggleViewMode,
-  });
+  const _QuickSortAndViewMode({required this.isGrid, required this.onToggleViewMode});
 
   final bool isGrid;
   final VoidCallback onToggleViewMode;
@@ -447,10 +391,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
           children: [
             const _SortButton(),
             IconButton(
-              icon: Icon(
-                isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined,
-                size: 24,
-              ),
+              icon: Icon(isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined, size: 24),
               onPressed: onToggleViewMode,
             ),
           ],
@@ -461,11 +402,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
 }
 
 class _AlbumList extends ConsumerWidget {
-  const _AlbumList({
-    required this.albums,
-    required this.userId,
-    required this.onAlbumSelected,
-  });
+  const _AlbumList({required this.albums, required this.userId, required this.onAlbumSelected});
 
   final List<RemoteAlbum> albums;
   final String? userId;
@@ -476,10 +413,7 @@ class _AlbumList extends ConsumerWidget {
     if (albums.isEmpty) {
       return const SliverToBoxAdapter(
         child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Text('No albums found'),
-          ),
+          child: Padding(padding: EdgeInsets.all(20.0), child: Text('No albums found')),
         ),
       );
     }
@@ -491,51 +425,25 @@ class _AlbumList extends ConsumerWidget {
           final album = albums[index];
 
           return Padding(
-            padding: const EdgeInsets.only(
-              bottom: 8.0,
-            ),
+            padding: const EdgeInsets.only(bottom: 8.0),
             child: LargeLeadingTile(
               title: Text(
                 album.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                '${'items_count'.t(
-                  context: context,
-                  args: {
-                    'count': album.assetCount,
-                  },
-                )} • ${album.ownerId != userId ? 'shared_by_user'.t(
-                    context: context,
-                    args: {
-                      'user': album.ownerName,
-                    },
-                  ) : 'owned'.t(context: context)}',
+                '${'items_count'.t(context: context, args: {'count': album.assetCount})} • ${album.ownerId != userId ? 'shared_by_user'.t(context: context, args: {'user': album.ownerName}) : 'owned'.t(context: context)}',
                 overflow: TextOverflow.ellipsis,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.colorScheme.onSurfaceSecondary,
-                ),
+                style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
               onTap: () => onAlbumSelected(album),
-              leadingPadding: const EdgeInsets.only(
-                right: 16,
-              ),
+              leadingPadding: const EdgeInsets.only(right: 16),
               leading: album.thumbnailAssetId != null
                   ? ClipRRect(
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(15),
-                      ),
-                      child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: Thumbnail(
-                          remoteId: album.thumbnailAssetId,
-                        ),
-                      ),
+                      borderRadius: const BorderRadius.all(Radius.circular(15)),
+                      child: SizedBox(width: 80, height: 80, child: Thumbnail(remoteId: album.thumbnailAssetId)),
                     )
                   : SizedBox(
                       width: 80,
@@ -544,16 +452,9 @@ class _AlbumList extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: context.colorScheme.surfaceContainer,
                           borderRadius: const BorderRadius.all(Radius.circular(16)),
-                          border: Border.all(
-                            color: context.colorScheme.outline.withAlpha(50),
-                            width: 1,
-                          ),
+                          border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
                         ),
-                        child: const Icon(
-                          Icons.photo_album_rounded,
-                          size: 24,
-                          color: Colors.grey,
-                        ),
+                        child: const Icon(Icons.photo_album_rounded, size: 24, color: Colors.grey),
                       ),
                     ),
             ),
@@ -566,11 +467,7 @@ class _AlbumList extends ConsumerWidget {
 }
 
 class _AlbumGrid extends StatelessWidget {
-  const _AlbumGrid({
-    required this.albums,
-    required this.userId,
-    required this.onAlbumSelected,
-  });
+  const _AlbumGrid({required this.albums, required this.userId, required this.onAlbumSelected});
 
   final List<RemoteAlbum> albums;
   final String? userId;
@@ -581,10 +478,7 @@ class _AlbumGrid extends StatelessWidget {
     if (albums.isEmpty) {
       return const SliverToBoxAdapter(
         child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Text('No albums found'),
-          ),
+          child: Padding(padding: EdgeInsets.all(20.0), child: Text('No albums found')),
         ),
       );
     }
@@ -598,28 +492,17 @@ class _AlbumGrid extends StatelessWidget {
           crossAxisSpacing: 4,
           childAspectRatio: .7,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final album = albums[index];
-            return _GridAlbumCard(
-              album: album,
-              userId: userId,
-              onAlbumSelected: onAlbumSelected,
-            );
-          },
-          childCount: albums.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final album = albums[index];
+          return _GridAlbumCard(album: album, userId: userId, onAlbumSelected: onAlbumSelected);
+        }, childCount: albums.length),
       ),
     );
   }
 }
 
 class _GridAlbumCard extends ConsumerWidget {
-  const _GridAlbumCard({
-    required this.album,
-    required this.userId,
-    required this.onAlbumSelected,
-  });
+  const _GridAlbumCard({required this.album, required this.userId, required this.onAlbumSelected});
 
   final RemoteAlbum album;
   final String? userId;
@@ -633,13 +516,8 @@ class _GridAlbumCard extends ConsumerWidget {
         elevation: 0,
         color: context.colorScheme.surfaceBright,
         shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(16),
-          ),
-          side: BorderSide(
-            color: context.colorScheme.onSurface.withAlpha(25),
-            width: 1,
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          side: BorderSide(color: context.colorScheme.onSurface.withAlpha(25), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -647,22 +525,14 @@ class _GridAlbumCard extends ConsumerWidget {
             Expanded(
               flex: 2,
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(15),
-                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 child: SizedBox(
                   width: double.infinity,
                   child: album.thumbnailAssetId != null
-                      ? Thumbnail(
-                          remoteId: album.thumbnailAssetId,
-                        )
+                      ? Thumbnail(remoteId: album.thumbnailAssetId)
                       : Container(
                           color: context.colorScheme.surfaceContainerHighest,
-                          child: const Icon(
-                            Icons.photo_album_rounded,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
+                          child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
                         ),
                 ),
               ),
@@ -679,27 +549,13 @@ class _GridAlbumCard extends ConsumerWidget {
                       album.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      '${'items_count'.t(
-                        context: context,
-                        args: {
-                          'count': album.assetCount,
-                        },
-                      )} • ${album.ownerId != userId ? 'shared_by_user'.t(
-                          context: context,
-                          args: {
-                            'user': album.ownerName,
-                          },
-                        ) : 'owned'.t(context: context)}',
+                      '${'items_count'.t(context: context, args: {'count': album.assetCount})} • ${album.ownerId != userId ? 'shared_by_user'.t(context: context, args: {'user': album.ownerName}) : 'owned'.t(context: context)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: context.textTheme.labelMedium?.copyWith(
-                        color: context.colorScheme.onSurfaceSecondary,
-                      ),
+                      style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                     ),
                   ],
                 ),
@@ -718,56 +574,41 @@ class AddToAlbumHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
-      final newAlbum = await ref.read(remoteAlbumProvider.notifier).createAlbum(
+      final newAlbum = await ref
+          .read(remoteAlbumProvider.notifier)
+          .createAlbum(
             title: "Untitled Album",
             assetIds: ref.read(multiSelectProvider).selectedAssets.map((e) => (e as RemoteAsset).id).toList(),
           );
 
       if (newAlbum == null) {
-        ImmichToast.show(
-          context: context,
-          toastType: ToastType.error,
-          msg: 'errors.failed_to_create_album'.tr(),
-        );
+        ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());
         return;
       }
 
+      ref.read(currentRemoteAlbumProvider.notifier).setAlbum(newAlbum);
+      ref.read(multiSelectProvider.notifier).reset();
       context.pushRoute(RemoteAlbumRoute(album: newAlbum));
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverToBoxAdapter(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "add_to_album",
-              style: context.textTheme.titleSmall,
-            ).tr(),
+            Text("add_to_album", style: context.textTheme.titleSmall).tr(),
             TextButton.icon(
               style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ), // remove internal padding
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // remove internal padding
                 minimumSize: const Size(0, 0), // allow shrinking
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap, // remove extra height
               ),
               onPressed: onCreateAlbum,
-              icon: Icon(
-                Icons.add,
-                color: context.primaryColor,
-              ),
+              icon: Icon(Icons.add, color: context.primaryColor),
               label: Text(
                 "common_create_new_album",
-                style: TextStyle(
-                  color: context.primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 14),
               ).tr(),
             ),
           ],

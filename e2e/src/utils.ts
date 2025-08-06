@@ -186,18 +186,6 @@ export const utils = {
     }
   },
 
-  resetFilesystem: async () => {
-    const mediaInternal = '/usr/src/app/upload';
-    const dirs = [
-      `"${mediaInternal}/thumbs"`,
-      `"${mediaInternal}/upload"`,
-      `"${mediaInternal}/library"`,
-      `"${mediaInternal}/encoded-video"`,
-    ].join(' ');
-
-    await execPromise(`docker exec -i "immich-e2e-server" /bin/bash -c "rm -rf ${dirs} && mkdir ${dirs}"`);
-  },
-
   unzip: async (input: string, output: string) => {
     await execPromise(`unzip -o -d "${output}" "${input}"`);
   },

@@ -23,9 +23,7 @@ class FolderStructureNotifier extends StateNotifier<AsyncValue<RootFolder>> {
 }
 
 final folderStructureProvider = StateNotifierProvider<FolderStructureNotifier, AsyncValue<RootFolder>>((ref) {
-  return FolderStructureNotifier(
-    ref.watch(folderServiceProvider),
-  );
+  return FolderStructureNotifier(ref.watch(folderServiceProvider));
 });
 
 class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
@@ -49,8 +47,5 @@ class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
 
 final folderRenderListProvider =
     StateNotifierProvider.family<FolderRenderListNotifier, AsyncValue<RenderList>, RootFolder>((ref, folder) {
-  return FolderRenderListNotifier(
-    ref.watch(folderServiceProvider),
-    folder,
-  );
-});
+      return FolderRenderListNotifier(ref.watch(folderServiceProvider), folder);
+    });

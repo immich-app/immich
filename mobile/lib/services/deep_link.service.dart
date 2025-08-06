@@ -66,7 +66,6 @@ class DeepLinkService {
     return DeepLink([
       // we need something to segue back to if the app was cold started
       // TODO: use MainTimelineRoute this when beta is default
-
       if (isColdStart) (Store.isBetaTimelineEnabled) ? const MainTimelineRoute() : const PhotosRoute(),
       route,
     ]);
@@ -96,10 +95,7 @@ class DeepLinkService {
     return _handleColdStart(deepLinkRoute, isColdStart);
   }
 
-  Future<DeepLink> handleMyImmichApp(
-    PlatformDeepLink link,
-    bool isColdStart,
-  ) async {
+  Future<DeepLink> handleMyImmichApp(PlatformDeepLink link, bool isColdStart) async {
     final path = link.uri.path;
 
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
@@ -152,10 +148,7 @@ class DeepLinkService {
         return null;
       }
 
-      return AssetViewerRoute(
-        initialIndex: 0,
-        timelineService: _betaTimelineFactory.fromAssets([asset]),
-      );
+      return AssetViewerRoute(initialIndex: 0, timelineService: _betaTimelineFactory.fromAssets([asset]));
     } else {
       // TODO: Remove this when beta is default
       final asset = await _assetService.getAssetByRemoteId(assetId);
@@ -166,12 +159,7 @@ class DeepLinkService {
       _currentAsset.set(asset);
       final renderList = await RenderList.fromAssets([asset], GroupAssetsBy.auto);
 
-      return GalleryViewerRoute(
-        renderList: renderList,
-        initialIndex: 0,
-        heroOffset: 0,
-        showStack: true,
-      );
+      return GalleryViewerRoute(renderList: renderList, initialIndex: 0, heroOffset: 0, showStack: true);
     }
   }
 

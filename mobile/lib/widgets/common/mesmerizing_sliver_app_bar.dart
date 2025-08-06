@@ -14,11 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class MesmerizingSliverAppBar extends ConsumerStatefulWidget {
-  const MesmerizingSliverAppBar({
-    super.key,
-    required this.title,
-    this.icon = Icons.camera,
-  });
+  const MesmerizingSliverAppBar({super.key, required this.title, this.icon = Icons.camera});
 
   final String title;
   final IconData icon;
@@ -62,23 +58,11 @@ class _MesmerizingSliverAppBarState extends ConsumerState<MesmerizingSliverAppBa
             leading: IconButton(
               icon: Icon(
                 Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-                color: Color.lerp(
-                  Colors.white,
-                  context.primaryColor,
-                  _scrollProgress,
-                ),
+                color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
                 shadows: [
                   _scrollProgress < 0.95
-                      ? Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 5,
-                          color: Colors.black.withValues(alpha: 0.5),
-                        )
-                      : const Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 0,
-                          color: Colors.transparent,
-                        ),
+                      ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+                      : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
                 ],
               ),
               onPressed: () {
@@ -106,11 +90,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<MesmerizingSliverAppBa
                     child: scrollProgress > 0.95
                         ? Text(
                             widget.title,
-                            style: TextStyle(
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                            ),
+                            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
                           )
                         : null,
                   ),
@@ -131,11 +111,7 @@ class _ExpandedBackground extends ConsumerStatefulWidget {
   final String title;
   final IconData icon;
 
-  const _ExpandedBackground({
-    required this.scrollProgress,
-    required this.title,
-    required this.icon,
-  });
+  const _ExpandedBackground({required this.scrollProgress, required this.title, required this.icon});
 
   @override
   ConsumerState<_ExpandedBackground> createState() => _ExpandedBackgroundState();
@@ -149,20 +125,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
   void initState() {
     super.initState();
 
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
+    _slideController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1.5),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _slideController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
@@ -188,10 +156,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
           offset: Offset(0, widget.scrollProgress * 50),
           child: Transform.scale(
             scale: 1.4 - (widget.scrollProgress * 0.2),
-            child: _RandomAssetBackground(
-              timelineService: timelineService,
-              icon: widget.icon,
-            ),
+            child: _RandomAssetBackground(timelineService: timelineService, icon: widget.icon),
           ),
         ),
         Container(
@@ -202,9 +167,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
               colors: [
                 Colors.transparent,
                 Colors.transparent,
-                Colors.black.withValues(
-                  alpha: 0.6 + (widget.scrollProgress * 0.2),
-                ),
+                Colors.black.withValues(alpha: 0.6 + (widget.scrollProgress * 0.2)),
               ],
               stops: const [0.0, 0.65, 1.0],
             ),
@@ -232,21 +195,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 2),
-                            blurRadius: 12,
-                            color: Colors.black45,
-                          ),
-                        ],
+                        shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black45)],
                       ),
                     ),
                   ),
                 ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  child: const _ItemCountText(),
-                ),
+                AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
               ],
             ),
           ),
@@ -280,26 +234,15 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 
   @override
   Widget build(BuildContext context) {
-    final assetCount = ref.watch(
-      timelineServiceProvider.select((s) => s.totalAssets),
-    );
+    final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
 
     return Text(
-      'items_count'.t(
-        context: context,
-        args: {"count": assetCount},
-      ),
+      'items_count'.t(context: context, args: {"count": assetCount}),
       style: context.textTheme.labelLarge?.copyWith(
         // letterSpacing: 0.2,
         fontWeight: FontWeight.bold,
         color: Colors.white,
-        shadows: [
-          const Shadow(
-            offset: Offset(0, 1),
-            blurRadius: 6,
-            color: Colors.black45,
-          ),
-        ],
+        shadows: [const Shadow(offset: Offset(0, 1), blurRadius: 6, color: Colors.black45)],
       ),
     );
   }
@@ -309,10 +252,7 @@ class _RandomAssetBackground extends StatefulWidget {
   final TimelineService timelineService;
   final IconData icon;
 
-  const _RandomAssetBackground({
-    required this.timelineService,
-    required this.icon,
-  });
+  const _RandomAssetBackground({required this.timelineService, required this.icon});
 
   @override
   State<_RandomAssetBackground> createState() => _RandomAssetBackgroundState();
@@ -332,50 +272,26 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(
-      duration: const Duration(seconds: 12),
-      vsync: this,
-    );
+    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
 
-    _crossFadeController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
+    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _panAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0.5, -0.5),
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _crossFadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _crossFadeController,
-        curve: Curves.easeInOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _crossFadeController, curve: Curves.easeInOutCubic));
 
-    Future.delayed(
-      Durations.medium1,
-      () => _loadFirstAsset(),
-    );
+    Future.delayed(Durations.medium1, () => _loadFirstAsset());
   }
 
   @override
@@ -465,9 +381,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
     }
 
     return AnimatedBuilder(
-      animation: Listenable.merge(
-        [_zoomAnimation, _panAnimation, _crossFadeAnimation],
-      ),
+      animation: Listenable.merge([_zoomAnimation, _panAnimation, _crossFadeAnimation]),
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
@@ -499,11 +413,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),
@@ -530,11 +440,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),

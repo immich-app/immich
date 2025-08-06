@@ -16,10 +16,7 @@ import 'package:immich_mobile/utils/map_utils.dart';
 class MapLocationPickerPage extends HookConsumerWidget {
   final LatLng initialLatLng;
 
-  const MapLocationPickerPage({
-    super.key,
-    this.initialLatLng = const LatLng(0, 0),
-  });
+  const MapLocationPickerPage({super.key, this.initialLatLng = const LatLng(0, 0)});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -66,10 +63,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
             onData: (style) => Container(
               clipBehavior: Clip.antiAliasWithSaveLayer,
               decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(40),
-                  bottomRight: Radius.circular(40),
-                ),
+                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(40), bottomRight: Radius.circular(40)),
               ),
               child: MapLibreMap(
                 initialCameraPosition: CameraPosition(target: initialLatLng, zoom: 12),
@@ -108,9 +102,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
         alignment: Alignment.centerLeft,
         child: ElevatedButton(
           onPressed: onClose,
-          style: ElevatedButton.styleFrom(
-            shape: const CircleBorder(),
-          ),
+          style: ElevatedButton.styleFrom(shape: const CircleBorder()),
           child: const Icon(Icons.arrow_back_ios_new_rounded),
         ),
       ),
@@ -126,11 +118,7 @@ class _BottomBar extends StatelessWidget {
   final Function() onUseLocation;
   final Function() onGetCurrentLocation;
 
-  const _BottomBar({
-    required this.selectedLatLng,
-    required this.onUseLocation,
-    required this.onGetCurrentLocation,
-  });
+  const _BottomBar({required this.selectedLatLng, required this.onUseLocation, required this.onGetCurrentLocation});
 
   @override
   Widget build(BuildContext context) {
@@ -149,9 +137,8 @@ class _BottomBar extends StatelessWidget {
                 const SizedBox(width: 15),
                 ValueListenableBuilder(
                   valueListenable: selectedLatLng,
-                  builder: (_, value, __) => Text(
-                    "${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}",
-                  ),
+                  builder: (_, value, __) =>
+                      Text("${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}"),
                 ),
               ],
             ),
@@ -162,10 +149,7 @@ class _BottomBar extends StatelessWidget {
                   onPressed: onUseLocation,
                   child: const Text("map_location_picker_page_use_location").tr(),
                 ),
-                ElevatedButton(
-                  onPressed: onGetCurrentLocation,
-                  child: const Icon(Icons.my_location),
-                ),
+                ElevatedButton(onPressed: onGetCurrentLocation, child: const Icon(Icons.my_location)),
               ],
             ),
           ],

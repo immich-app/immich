@@ -16,14 +16,11 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
         _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
         useColumns: false,
       ),
-    ])
-      ..where(_db.localAssetEntity.id.equals(id));
+    ])..where(_db.localAssetEntity.id.equals(id));
 
     return query.map((row) {
       final asset = row.readTable(_db.localAssetEntity).toDto();
-      return asset.copyWith(
-        remoteId: row.read(_db.remoteAssetEntity.id),
-      );
+      return asset.copyWith(remoteId: row.read(_db.remoteAssetEntity.id));
     }).watchSingleOrNull();
   }
 

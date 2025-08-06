@@ -48,10 +48,7 @@ class TimelineRepository extends DatabaseRepository {
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  Stream<RenderList> watchAlbumTimeline(
-    Album album,
-    GroupAssetsBy groupAssetByOption,
-  ) {
+  Stream<RenderList> watchAlbumTimeline(Album album, GroupAssetsBy groupAssetByOption) {
     final query = album.assets.filter().isTrashedEqualTo(false).not().visibilityEqualTo(AssetVisibilityEnum.locked);
 
     final withSortedOption = switch (album.sortOrder) {
@@ -81,10 +78,7 @@ class TimelineRepository extends DatabaseRepository {
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  Stream<RenderList> watchHomeTimeline(
-    String userId,
-    GroupAssetsBy groupAssetByOption,
-  ) {
+  Stream<RenderList> watchHomeTimeline(String userId, GroupAssetsBy groupAssetByOption) {
     final query = db.assets
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))
@@ -97,10 +91,7 @@ class TimelineRepository extends DatabaseRepository {
     return _watchRenderList(query, groupAssetByOption);
   }
 
-  Stream<RenderList> watchMultiUsersTimeline(
-    List<String> userIds,
-    GroupAssetsBy groupAssetByOption,
-  ) {
+  Stream<RenderList> watchMultiUsersTimeline(List<String> userIds, GroupAssetsBy groupAssetByOption) {
     final isarUserIds = userIds.map(fastHash).toList();
     final query = db.assets
         .where()
@@ -113,10 +104,7 @@ class TimelineRepository extends DatabaseRepository {
     return _watchRenderList(query, groupAssetByOption);
   }
 
-  Future<RenderList> getTimelineFromAssets(
-    List<Asset> assets,
-    GroupAssetsBy getGroupByOption,
-  ) {
+  Future<RenderList> getTimelineFromAssets(List<Asset> assets, GroupAssetsBy getGroupByOption) {
     return RenderList.fromAssets(assets, getGroupByOption);
   }
 
@@ -134,10 +122,7 @@ class TimelineRepository extends DatabaseRepository {
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
-  Stream<RenderList> watchLockedTimeline(
-    String userId,
-    GroupAssetsBy getGroupByOption,
-  ) {
+  Stream<RenderList> watchLockedTimeline(String userId, GroupAssetsBy getGroupByOption) {
     final query = db.assets
         .where()
         .ownerIdEqualToAnyChecksum(fastHash(userId))

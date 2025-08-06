@@ -36,10 +36,7 @@ class AlbumDescription extends ConsumerWidget {
 
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 8),
-      child: Text(
-        albumDescription ?? 'add_a_description'.tr(),
-        style: context.textTheme.bodyLarge,
-      ),
+      child: Text(albumDescription ?? 'add_a_description'.tr(), style: context.textTheme.bodyLarge),
     );
   }
 }

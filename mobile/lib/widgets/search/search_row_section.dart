@@ -25,10 +25,7 @@ class SearchRowSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SearchRowTitle(
-            onViewAllPressed: onViewAllPressed,
-            title: title,
-          ),
+          child: SearchRowTitle(onViewAllPressed: onViewAllPressed, title: title),
         ),
         child,
       ],

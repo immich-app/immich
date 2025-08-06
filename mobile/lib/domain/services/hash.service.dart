@@ -6,7 +6,6 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
-import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
@@ -25,19 +24,16 @@ class HashService {
     required NativeSyncApi nativeSyncApi,
     this.batchSizeLimit = kBatchHashSizeLimit,
     this.batchFileLimit = kBatchHashFileLimit,
-  })  : _localAlbumRepository = localAlbumRepository,
-        _localAssetRepository = localAssetRepository,
-        _storageRepository = storageRepository,
-        _nativeSyncApi = nativeSyncApi;
+  }) : _localAlbumRepository = localAlbumRepository,
+       _localAssetRepository = localAssetRepository,
+       _storageRepository = storageRepository,
+       _nativeSyncApi = nativeSyncApi;
 
   Future<void> hashAssets() async {
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
     final localAlbums = await _localAlbumRepository.getAll(
-      sortBy: {
-        SortLocalAlbumsBy.backupSelection,
-        SortLocalAlbumsBy.isIosSharedAlbum,
-      },
+      sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
     );
 
     for (final album in localAlbums) {
@@ -49,7 +45,6 @@ class HashService {
 
     stopwatch.stop();
     _log.info("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
-    DLog.log("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
   }
 
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB
@@ -99,14 +94,14 @@ class HashService {
       if (hash?.length == 20) {
         hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
       } else {
-        _log.warning("Failed to hash file for ${asset.id}");
+        _log.warning("Failed to hash file for ${asset.id}: ${asset.name} created at ${asset.createdAt}");
       }
     }
 
     _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
-    DLog.log("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
+    await _storageRepository.clearCache();
   }
 }
 

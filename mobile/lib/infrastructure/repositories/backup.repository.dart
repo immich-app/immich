@@ -24,9 +24,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
           useColumns: false,
         ),
       ])
-      ..where(
-        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.excluded),
-      );
+      ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.excluded));
   }
 
   Future<int> getTotalCount() async {
@@ -79,9 +77,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
   Future<int> getBackupCount(String userId) async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
-      ..addColumns(
-        [_db.localAlbumAssetEntity.assetId],
-      )
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
@@ -112,13 +108,12 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   Future<List<LocalAsset>> getCandidates(String userId) async {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
-      ..where(
-        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
-      );
+      ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
 
     final query = _db.localAssetEntity.select()
       ..where(
         (lae) =>
+            lae.checksum.isNotNull() &
             existsQuery(
               _db.localAlbumAssetEntity.selectOnly()
                 ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -131,18 +126,12 @@ class DriftBackupRepository extends DriftDatabaseRepository {
               _db.remoteAssetEntity.selectOnly()
                 ..addColumns([_db.remoteAssetEntity.checksum])
                 ..where(
-                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) &
-                      _db.remoteAssetEntity.ownerId.equals(userId) &
-                      lae.checksum.isNotNull(),
+                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
                 ),
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),
       )
-      ..orderBy(
-        [
-          (localAsset) => OrderingTerm.desc(localAsset.createdAt),
-        ],
-      );
+      ..orderBy([(localAsset) => OrderingTerm.desc(localAsset.createdAt)]);
 
     return query.map((localAsset) => localAsset.toDto()).get();
   }

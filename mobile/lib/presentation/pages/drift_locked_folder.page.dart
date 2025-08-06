@@ -45,27 +45,23 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final user = ref.watch(currentUserProvider);
-            if (user == null) {
-              throw Exception('User must be logged in to access locked folder');
-            }
+        timelineServiceProvider.overrideWith((ref) {
+          final user = ref.watch(currentUserProvider);
+          if (user == null) {
+            throw Exception('User must be logged in to access locked folder');
+          }
 
-            final timelineService = ref.watch(timelineFactoryProvider).lockedFolder(user.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+          final timelineService = ref.watch(timelineFactoryProvider).lockedFolder(user.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
       child: _showOverlay
           ? const SizedBox()
           : PopScope(
               onPopInvokedWithResult: (didPop, _) => didPop ? ref.read(authProvider.notifier).lockPinCode() : null,
               child: Timeline(
-                appBar: MesmerizingSliverAppBar(
-                  title: 'locked_folder'.t(context: context),
-                ),
+                appBar: MesmerizingSliverAppBar(title: 'locked_folder'.t(context: context)),
                 bottomSheet: const LockedFolderBottomSheet(),
               ),
             ),

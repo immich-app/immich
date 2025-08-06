@@ -13,8 +13,9 @@ String _$mapMarkersHash() => r'a0c129fcddbf1b9bce4aafcd2e47a858ab6ef1c9';
 final mapMarkersProvider = AutoDisposeFutureProvider<List<MapMarker>>.internal(
   mapMarkers,
   name: r'mapMarkersProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$mapMarkersHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$mapMarkersHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

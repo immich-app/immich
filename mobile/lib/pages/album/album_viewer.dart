@@ -65,10 +65,7 @@ class AlbumViewer extends HookConsumerWidget {
     /// If they exist, add to selected asset state to show they are already selected.
     void onAddPhotosPressed() async {
       AssetSelectionPageResult? returnPayload = await context.pushRoute<AssetSelectionPageResult?>(
-        AlbumAssetSelectionRoute(
-          existingAssets: album.assets,
-          canDeselect: false,
-        ),
+        AlbumAssetSelectionRoute(existingAssets: album.assets, canDeselect: false),
       );
 
       if (returnPayload != null && returnPayload.selectedAssets.isNotEmpty) {
@@ -98,9 +95,7 @@ class AlbumViewer extends HookConsumerWidget {
     onActivitiesPressed() {
       if (album.remoteId != null) {
         ref.read(currentAssetProvider.notifier).set(null);
-        context.pushRoute(
-          const ActivitiesRoute(),
-        );
+        context.pushRoute(const ActivitiesRoute());
       }
     }
 
@@ -129,14 +124,8 @@ class AlbumViewer extends HookConsumerWidget {
               children: [
                 const SizedBox(height: 32),
                 const AlbumDateRange(),
-                AlbumTitle(
-                  key: const ValueKey("albumTitle"),
-                  titleFocusNode: titleFocusNode,
-                ),
-                AlbumDescription(
-                  key: const ValueKey("albumDescription"),
-                  descriptionFocusNode: descriptionFocusNode,
-                ),
+                AlbumTitle(key: const ValueKey("albumTitle"), titleFocusNode: titleFocusNode),
+                AlbumDescription(key: const ValueKey("albumDescription"), descriptionFocusNode: descriptionFocusNode),
                 const AlbumSharedUserIcons(),
                 if (album.isRemote)
                   Padding(

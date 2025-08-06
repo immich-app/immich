@@ -18,14 +18,8 @@ abstract final class DynamicTheme {
         // Some palettes do not generate surface container colors accurately,
         // so we regenerate all colors using the primary color
         _theme = ImmichTheme(
-          light: ColorScheme.fromSeed(
-            seedColor: primaryColor,
-            brightness: Brightness.light,
-          ),
-          dark: ColorScheme.fromSeed(
-            seedColor: primaryColor,
-            brightness: Brightness.dark,
-          ),
+          light: ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.light),
+          dark: ColorScheme.fromSeed(seedColor: primaryColor, brightness: Brightness.dark),
         );
       }
     } catch (error) {

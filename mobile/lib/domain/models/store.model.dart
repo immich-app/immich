@@ -71,7 +71,9 @@ enum StoreKey<T> {
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),
   betaTimeline<bool>._(1002),
-  enableBackup<bool>._(1003);
+  enableBackup<bool>._(1003),
+  useWifiForUploadVideos<bool>._(1004),
+  useWifiForUploadPhotos<bool>._(1005);
 
   const StoreKey._(this.id);
   final int id;

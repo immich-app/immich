@@ -30,10 +30,7 @@ class TrashActionButton extends ConsumerWidget {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'trash_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'trash_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

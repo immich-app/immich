@@ -18,9 +18,7 @@ class LocalAlbumsPage extends HookConsumerWidget {
     final albums = ref.watch(localAlbumsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('on_this_device'.tr()),
-      ),
+      appBar: AppBar(title: Text('on_this_device'.tr())),
       body: ListView.builder(
         padding: const EdgeInsets.all(18.0),
         itemCount: albums.length,
@@ -28,31 +26,18 @@ class LocalAlbumsPage extends HookConsumerWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: LargeLeadingTile(
-              leadingPadding: const EdgeInsets.only(
-                right: 16,
-              ),
+              leadingPadding: const EdgeInsets.only(right: 16),
               leading: ClipRRect(
                 borderRadius: const BorderRadius.all(Radius.circular(15)),
-                child: ImmichThumbnail(
-                  asset: albums[index].thumbnail.value,
-                  width: 80,
-                  height: 80,
-                ),
+                child: ImmichThumbnail(asset: albums[index].thumbnail.value, width: 80, height: 80),
               ),
               title: Text(
                 albums[index].name,
-                style: context.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                'items_count'.t(
-                  context: context,
-                  args: {'count': albums[index].assetCount},
-                ),
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.colorScheme.onSurfaceSecondary,
-                ),
+                'items_count'.t(context: context, args: {'count': albums[index].assetCount}),
+                style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
               onTap: () => context.pushRoute(AlbumViewerRoute(albumId: albums[index].id)),
             ),

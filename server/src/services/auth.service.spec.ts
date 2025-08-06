@@ -241,7 +241,6 @@ describe(AuthService.name, () => {
       const sessionWithToken = {
         id: session.id,
         updatedAt: session.updatedAt,
-        isPendingSyncReset: false,
         user: factory.authUser(),
         pinExpiresAt: null,
       };
@@ -259,7 +258,6 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
-          isPendingSyncReset: session.isPendingSyncReset,
         },
       });
     });
@@ -322,15 +320,18 @@ describe(AuthService.name, () => {
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
       mocks.user.get.mockResolvedValue(user);
 
+      const buffer = sharedLink.key;
+      const key = buffer.toString('base64url');
+
       await expect(
         sut.authenticate({
-          headers: { 'x-immich-share-key': sharedLink.key.toString('base64url') },
+          headers: { 'x-immich-share-key': key },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLink.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer);
     });
 
     it('should accept a hex key', async () => {
@@ -340,15 +341,50 @@ describe(AuthService.name, () => {
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
       mocks.user.get.mockResolvedValue(user);
 
+      const buffer = sharedLink.key;
+      const key = buffer.toString('hex');
+
       await expect(
         sut.authenticate({
-          headers: { 'x-immich-share-key': sharedLink.key.toString('hex') },
+          headers: { 'x-immich-share-key': key },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLink.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer);
+    });
+  });
+
+  describe('validate - shared link slug', () => {
+    it('should not accept a non-existent slug', async () => {
+      mocks.sharedLink.getBySlug.mockResolvedValue(void 0);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-slug': 'slug' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should accept a valid slug', async () => {
+      const user = factory.userAdmin();
+      const sharedLink = { ...sharedLinkStub.valid, slug: 'slug-123', user } as any;
+
+      mocks.sharedLink.getBySlug.mockResolvedValue(sharedLink);
+      mocks.user.get.mockResolvedValue(user);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-slug': 'slug-123' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).resolves.toEqual({ user, sharedLink });
+
+      expect(mocks.sharedLink.getBySlug).toHaveBeenCalledWith('slug-123');
     });
   });
 
@@ -371,7 +407,6 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
-        isPendingSyncReset: false,
         pinExpiresAt: null,
       };
 
@@ -388,7 +423,6 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
-          isPendingSyncReset: session.isPendingSyncReset,
         },
       });
     });
@@ -805,7 +839,7 @@ describe(AuthService.name, () => {
       ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
-        profileImagePath: expect.stringContaining(`upload/profile/${user.id}/${fileId}.jpg`),
+        profileImagePath: expect.stringContaining(`/data/profile/${user.id}/${fileId}.jpg`),
         profileChangedAt: expect.any(Date),
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(pictureUrl);

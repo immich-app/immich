@@ -8,18 +8,11 @@ class AppNavigationObserver extends AutoRouterObserver {
   /// Riverpod Instance
   final WidgetRef ref;
 
-  AppNavigationObserver({
-    required this.ref,
-  });
+  AppNavigationObserver({required this.ref});
 
   @override
-  Future<void> didChangeTabRoute(
-    TabPageRoute route,
-    TabPageRoute previousRoute,
-  ) async {
-    Future(
-      () => ref.read(inLockedViewProvider.notifier).state = false,
-    );
+  Future<void> didChangeTabRoute(TabPageRoute route, TabPageRoute previousRoute) async {
+    Future(() => ref.read(inLockedViewProvider.notifier).state = false);
   }
 
   @override
@@ -29,6 +22,7 @@ class AppNavigationObserver extends AutoRouterObserver {
     Future(() {
       ref.read(currentRouteNameProvider.notifier).state = route.settings.name;
       ref.read(previousRouteNameProvider.notifier).state = previousRoute?.settings.name;
+      ref.read(previousRouteDataProvider.notifier).state = previousRoute?.settings;
     });
   }
 
@@ -41,13 +35,9 @@ class AppNavigationObserver extends AutoRouterObserver {
         route.settings.name == null && previousRoute?.settings.name == GalleryViewerRoute.name && isInLockedView;
 
     if (route.settings.name == LockedRoute.name || isFromLockedViewToDetailView || isFromDetailViewToInfoPanelView) {
-      Future(
-        () => ref.read(inLockedViewProvider.notifier).state = true,
-      );
+      Future(() => ref.read(inLockedViewProvider.notifier).state = true);
     } else {
-      Future(
-        () => ref.read(inLockedViewProvider.notifier).state = false,
-      );
+      Future(() => ref.read(inLockedViewProvider.notifier).state = false);
     }
   }
 
@@ -62,13 +52,9 @@ class AppNavigationObserver extends AutoRouterObserver {
     if (route.settings.name == DriftLockedFolderRoute.name ||
         isFromLockedViewToDetailView ||
         isFromDetailViewToInfoPanelView) {
-      Future(
-        () => ref.read(inLockedViewProvider.notifier).state = true,
-      );
+      Future(() => ref.read(inLockedViewProvider.notifier).state = true);
     } else {
-      Future(
-        () => ref.read(inLockedViewProvider.notifier).state = false,
-      );
+      Future(() => ref.read(inLockedViewProvider.notifier).state = false);
     }
   }
 }

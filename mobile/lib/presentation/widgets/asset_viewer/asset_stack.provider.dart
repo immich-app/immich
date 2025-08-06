@@ -13,7 +13,5 @@ class StackChildrenNotifier extends AutoDisposeFamilyAsyncNotifier<List<RemoteAs
   }
 }
 
-final stackChildrenNotifier =
-    AsyncNotifierProvider.autoDispose.family<StackChildrenNotifier, List<RemoteAsset>, BaseAsset?>(
-  StackChildrenNotifier.new,
-);
+final stackChildrenNotifier = AsyncNotifierProvider.autoDispose
+    .family<StackChildrenNotifier, List<RemoteAsset>, BaseAsset?>(StackChildrenNotifier.new);

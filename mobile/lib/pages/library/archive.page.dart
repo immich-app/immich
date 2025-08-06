@@ -16,15 +16,10 @@ class ArchivePage extends HookConsumerWidget {
       final archiveRenderList = ref.watch(archiveTimelineProvider);
       final count = archiveRenderList.value?.totalAssets.toString() ?? "?";
       return AppBar(
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: const Text(
-          'archive_page_title',
-        ).tr(namedArgs: {'count': count}),
+        title: const Text('archive_page_title').tr(namedArgs: {'count': count}),
       );
     }
 

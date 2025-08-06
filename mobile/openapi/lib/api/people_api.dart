@@ -16,7 +16,10 @@ class PeopleApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /people' operation and returns the [Response].
+  /// This endpoint requires the `person.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PersonCreateDto] personCreateDto (required):
@@ -45,6 +48,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [PersonCreateDto] personCreateDto (required):
@@ -63,7 +68,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /people' operation and returns the [Response].
+  /// This endpoint requires the `person.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -92,6 +100,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -102,7 +112,10 @@ class PeopleApi {
     }
   }
 
-  /// Performs an HTTP 'DELETE /people/{id}' operation and returns the [Response].
+  /// This endpoint requires the `person.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -132,6 +145,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -142,7 +157,10 @@ class PeopleApi {
     }
   }
 
-  /// Performs an HTTP 'GET /people' operation and returns the [Response].
+  /// This endpoint requires the `person.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] closestAssetId:
@@ -197,6 +215,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] closestAssetId:
@@ -225,7 +245,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people/{id}' operation and returns the [Response].
+  /// This endpoint requires the `person.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -255,6 +278,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -273,7 +298,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people/{id}/statistics' operation and returns the [Response].
+  /// This endpoint requires the `person.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -303,6 +331,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -321,7 +351,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /people/{id}/thumbnail' operation and returns the [Response].
+  /// This endpoint requires the `person.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -351,6 +384,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -369,7 +404,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /people/{id}/merge' operation and returns the [Response].
+  /// This endpoint requires the `person.merge` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -401,6 +439,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.merge` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -424,7 +464,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /people/{id}/reassign' operation and returns the [Response].
+  /// This endpoint requires the `person.reassign` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -456,6 +499,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.reassign` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -479,7 +524,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /people' operation and returns the [Response].
+  /// This endpoint requires the `person.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
@@ -508,6 +556,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
@@ -529,7 +579,10 @@ class PeopleApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /people/{id}' operation and returns the [Response].
+  /// This endpoint requires the `person.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -561,6 +614,8 @@ class PeopleApi {
     );
   }
 
+  /// This endpoint requires the `person.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

@@ -22,12 +22,7 @@ class FadeInPlaceholderImage extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           placeholder,
-          FadeInImage(
-            fadeInDuration: duration,
-            image: image,
-            fit: fit,
-            placeholder: MemoryImage(kTransparentImage),
-          ),
+          FadeInImage(fadeInDuration: duration, image: image, fit: fit, placeholder: MemoryImage(kTransparentImage)),
         ],
       ),
     );

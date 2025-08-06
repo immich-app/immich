@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
-import { APP_MEDIA_LOCATION, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
@@ -24,7 +24,7 @@ describe(LibraryService.name, () => {
   let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, mocks } = newTestService(LibraryService, {}));
+    ({ sut, mocks } = newTestService(LibraryService));
 
     mocks.database.tryLock.mockResolvedValue(true);
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
@@ -1171,10 +1171,10 @@ describe(LibraryService.name, () => {
 
       mocks.storage.checkFileExists.mockResolvedValue(true);
 
-      await expect(sut.validate('library-id', { importPaths: ['/data/user1/'] })).resolves.toEqual({
+      await expect(sut.validate('library-id', { importPaths: ['/external/user1/'] })).resolves.toEqual({
         importPaths: [
           {
-            importPath: '/data/user1/',
+            importPath: '/external/user1/',
             isValid: true,
             message: undefined,
           },
@@ -1188,10 +1188,10 @@ describe(LibraryService.name, () => {
         throw error;
       });
 
-      await expect(sut.validate('library-id', { importPaths: ['/data/user1/'] })).resolves.toEqual({
+      await expect(sut.validate('library-id', { importPaths: ['/external/user1/'] })).resolves.toEqual({
         importPaths: [
           {
-            importPath: '/data/user1/',
+            importPath: '/external/user1/',
             isValid: false,
             message: 'Path does not exist (ENOENT)',
           },
@@ -1204,10 +1204,10 @@ describe(LibraryService.name, () => {
         isDirectory: () => false,
       } as Stats);
 
-      await expect(sut.validate('library-id', { importPaths: ['/data/user1/file'] })).resolves.toEqual({
+      await expect(sut.validate('library-id', { importPaths: ['/external/user1/file'] })).resolves.toEqual({
         importPaths: [
           {
-            importPath: '/data/user1/file',
+            importPath: '/external/user1/file',
             isValid: false,
             message: 'Not a directory',
           },
@@ -1220,10 +1220,10 @@ describe(LibraryService.name, () => {
         throw new Error('Unknown error');
       });
 
-      await expect(sut.validate('library-id', { importPaths: ['/data/user1/'] })).resolves.toEqual({
+      await expect(sut.validate('library-id', { importPaths: ['/external/user1/'] })).resolves.toEqual({
         importPaths: [
           {
-            importPath: '/data/user1/',
+            importPath: '/external/user1/',
             isValid: false,
             message: 'Error: Unknown error',
           },
@@ -1238,10 +1238,10 @@ describe(LibraryService.name, () => {
 
       mocks.storage.checkFileExists.mockResolvedValue(false);
 
-      await expect(sut.validate('library-id', { importPaths: ['/data/user1/'] })).resolves.toEqual({
+      await expect(sut.validate('library-id', { importPaths: ['/external/user1/'] })).resolves.toEqual({
         importPaths: [
           {
-            importPath: '/data/user1/',
+            importPath: '/external/user1/',
             isValid: false,
             message: 'Lacking read permission for folder',
           },
@@ -1264,7 +1264,7 @@ describe(LibraryService.name, () => {
     });
 
     it('should detect when import path is in immich media folder', async () => {
-      const importPaths = [APP_MEDIA_LOCATION + '/thumbs', `${process.cwd()}/xyz`, APP_MEDIA_LOCATION + '/library'];
+      const importPaths = ['/data/thumbs', `${process.cwd()}/xyz`, '/data/library'];
       const library = factory.library({ importPaths });
 
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);

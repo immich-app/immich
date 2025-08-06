@@ -11,10 +11,7 @@ class ActivityService with ErrorLoggerMixin {
 
   ActivityService(this._activityApiRepository);
 
-  Future<List<Activity>> getAllActivities(
-    String albumId, {
-    String? assetId,
-  }) async {
+  Future<List<Activity>> getAllActivities(String albumId, {String? assetId}) async {
     return logError(
       () => _activityApiRepository.getAll(albumId, assetId: assetId),
       defaultValue: [],
@@ -41,19 +38,9 @@ class ActivityService with ErrorLoggerMixin {
     );
   }
 
-  AsyncFuture<Activity> addActivity(
-    String albumId,
-    ActivityType type, {
-    String? assetId,
-    String? comment,
-  }) async {
+  AsyncFuture<Activity> addActivity(String albumId, ActivityType type, {String? assetId, String? comment}) async {
     return guardError(
-      () => _activityApiRepository.create(
-        albumId,
-        type,
-        assetId: assetId,
-        comment: comment,
-      ),
+      () => _activityApiRepository.create(albumId, type, assetId: assetId, comment: comment),
       errorMessage: "Failed to create $type for album $albumId",
     );
   }

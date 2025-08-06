@@ -8,11 +8,7 @@ import 'package:immich_mobile/providers/album/album_viewer.provider.dart';
 class AlbumViewerEditableTitle extends HookConsumerWidget {
   final String albumName;
   final FocusNode titleFocusNode;
-  const AlbumViewerEditableTitle({
-    super.key,
-    required this.albumName,
-    required this.titleFocusNode,
-  });
+  const AlbumViewerEditableTitle({super.key, required this.albumName, required this.titleFocusNode});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,15 +27,12 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
       }
     }
 
-    useEffect(
-      () {
-        titleFocusNode.addListener(onFocusModeChange);
-        return () {
-          titleFocusNode.removeListener(onFocusModeChange);
-        };
-      },
-      [],
-    );
+    useEffect(() {
+      titleFocusNode.addListener(onFocusModeChange);
+      return () {
+        titleFocusNode.removeListener(onFocusModeChange);
+      };
+    }, []);
 
     return Material(
       color: Colors.transparent,
@@ -51,9 +44,7 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           }
         },
         focusNode: titleFocusNode,
-        style: context.textTheme.headlineLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-        ),
+        style: context.textTheme.headlineLarge?.copyWith(fontWeight: FontWeight.w700),
         controller: titleTextEditController,
         onTap: () {
           context.focusScope.requestFocus(titleFocusNode);
@@ -66,35 +57,23 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
           }
         },
         decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 0,
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
           suffixIcon: titleFocusNode.hasFocus
               ? IconButton(
                   onPressed: () {
                     titleTextEditController.clear();
                   },
-                  icon: Icon(
-                    Icons.cancel_rounded,
-                    color: context.primaryColor,
-                  ),
+                  icon: Icon(Icons.cancel_rounded, color: context.primaryColor),
                   splashRadius: 10,
                 )
               : null,
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.transparent),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.transparent),
-          ),
+          enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
+          focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.transparent)),
           focusColor: Colors.grey[300],
           fillColor: context.scaffoldBackgroundColor,
           filled: titleFocusNode.hasFocus,
           hintText: 'add_a_title'.tr(),
-          hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
-            fontSize: 28,
-          ),
+          hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(fontSize: 28),
         ),
       ),
     );

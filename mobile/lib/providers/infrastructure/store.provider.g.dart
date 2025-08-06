@@ -30,8 +30,9 @@ String _$storeServiceHash() => r'250e10497c42df360e9e1f9a618d0b19c1b5b0a0';
 final storeServiceProvider = Provider<StoreService>.internal(
   storeService,
   name: r'storeServiceProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$storeServiceHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$storeServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

@@ -1,16 +1,13 @@
 <script lang="ts">
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, Field, Input, Modal, ModalBody, ModalFooter, PasswordInput, Switch, Text } from '@immich/ui';
   import { mdiLink } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { NotificationType, notificationController } from '../components/shared-components/notification/notification';
-  import SettingInputField from '../components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '../components/shared-components/settings/setting-switch.svelte';
 
   interface Props {
     onClose: (sharedLink?: SharedLinkResponseDto) => void;
@@ -28,8 +25,8 @@
   let showMetadata = $state(true);
   let expirationOption: number = $state(0);
   let password = $state('');
+  let slug = $state('');
   let shouldChangeExpirationTime = $state(false);
-  let enablePassword = $state(false);
 
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
     [30, 'minutes'],
@@ -63,17 +60,15 @@
     if (editingLink.description) {
       description = editingLink.description;
     }
-    if (editingLink.password) {
-      password = editingLink.password;
-    }
+
+    password = editingLink.password ?? '';
+    slug = editingLink.slug ?? '';
     allowUpload = editingLink.allowUpload;
     allowDownload = editingLink.allowDownload;
     showMetadata = editingLink.showMetadata;
 
     albumId = editingLink.album?.id;
     assetIds = editingLink.assets.map(({ id }) => id);
-
-    enablePassword = !!editingLink.password;
   }
 
   const handleCreateSharedLink = async () => {
@@ -91,6 +86,7 @@
           password,
           allowDownload,
           showMetadata,
+          slug,
         },
       });
       onClose(data);
@@ -111,11 +107,12 @@
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
-          password: enablePassword ? password : '',
+          password: password ?? null,
           expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
           allowUpload,
           allowDownload,
           showMetadata,
+          slug: slug.trim() ?? null,
         },
       });
 
@@ -165,63 +162,51 @@
       {/if}
     {/if}
 
-    <div class="mb-2 mt-4">
-      <p class="text-xs">{$t('link_options').toUpperCase()}</p>
-    </div>
-    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
-      <div class="flex flex-col">
-        <div class="mb-2">
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            label={$t('description')}
-            bind:value={description}
-          />
-        </div>
-
-        <div class="mb-2">
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            label={$t('password')}
-            bind:value={password}
-            disabled={!enablePassword}
-          />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={$t('require_password')} />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={$t('show_metadata')} />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch
-            bind:checked={allowDownload}
-            title={$t('allow_public_user_to_download')}
-            disabled={!showMetadata}
-          />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')} />
-        </div>
-
-        {#if editingLink}
-          <div class="my-3">
-            <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')} />
-          </div>
+    <div class="flex flex-col gap-4 mt-4">
+      <div>
+        <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
+          <Input bind:value={slug} placeholder="immich-10000" />
+        </Field>
+        {#if slug}
+          <Text size="tiny" color="muted" class="pt-2">/s/{encodeURIComponent(slug)}</Text>
         {/if}
-        <div class="mt-3">
-          <SettingSelect
-            bind:value={expirationOption}
-            options={expiredDateOptions}
-            label={$t('expire_after')}
-            disabled={editingLink && !shouldChangeExpirationTime}
-            number={true}
-          />
-        </div>
       </div>
+
+      <Field label={$t('password')} description={$t('shared_link_password_description')}>
+        <PasswordInput bind:value={password} />
+      </Field>
+
+      <Field label={$t('description')}>
+        <Input bind:value={description} />
+      </Field>
+
+      <div class="mt-2">
+        <SettingSelect
+          bind:value={expirationOption}
+          options={expiredDateOptions}
+          label={$t('expire_after')}
+          disabled={editingLink && !shouldChangeExpirationTime}
+          number={true}
+        />
+      </div>
+
+      <Field label={$t('show_metadata')}>
+        <Switch bind:checked={showMetadata} />
+      </Field>
+
+      <Field label={$t('allow_public_user_to_download')} disabled={!showMetadata}>
+        <Switch bind:checked={allowDownload} />
+      </Field>
+
+      <Field label={$t('allow_public_user_to_upload')}>
+        <Switch bind:checked={allowUpload} />
+      </Field>
+
+      {#if editingLink}
+        <Field label={$t('change_expiration_time')}>
+          <Switch bind:checked={shouldChangeExpirationTime} />
+        </Field>
+      {/if}
     </div>
   </ModalBody>
 

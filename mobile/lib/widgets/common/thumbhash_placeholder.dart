@@ -6,21 +6,14 @@ import 'package:octo_image/octo_image.dart';
 
 /// Simple set to show [OctoPlaceholder.circularProgressIndicator] as
 /// placeholder and [OctoError.icon] as error.
-OctoSet blurHashOrPlaceholder(
-  Uint8List? blurhash, {
-  BoxFit? fit,
-  Text? errorMessage,
-}) {
+OctoSet blurHashOrPlaceholder(Uint8List? blurhash, {BoxFit? fit, Text? errorMessage}) {
   return OctoSet(
     placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
     errorBuilder: blurHashErrorBuilder(blurhash, fit: fit, message: errorMessage),
   );
 }
 
-OctoPlaceholderBuilder blurHashPlaceholderBuilder(
-  Uint8List? blurhash, {
-  BoxFit? fit,
-}) {
+OctoPlaceholderBuilder blurHashPlaceholderBuilder(Uint8List? blurhash, {BoxFit? fit}) {
   return (context) => blurhash == null
       ? const ThumbnailPlaceholder()
       : FadeInPlaceholderImage(

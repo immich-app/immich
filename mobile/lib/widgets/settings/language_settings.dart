@@ -48,9 +48,7 @@ class LanguageSettings extends HookConsumerWidget {
           filteredLocaleEntries.value = localeEntries;
         } else {
           filteredLocaleEntries.value = localeEntries
-              .where(
-                (entry) => entry.key.toLowerCase().contains(searchTerm.toLowerCase()),
-              )
+              .where((entry) => entry.key.toLowerCase().contains(searchTerm.toLowerCase()))
               .toList();
         }
       });
@@ -61,17 +59,14 @@ class LanguageSettings extends HookConsumerWidget {
       onSearch('');
     }
 
-    useEffect(
-      () {
-        void searchListener() => onSearch(searchController.text);
-        searchController.addListener(searchListener);
-        return () {
-          searchController.removeListener(searchListener);
-          debounceTimer.value?.cancel();
-        };
-      },
-      [searchController],
-    );
+    useEffect(() {
+      void searchListener() => onSearch(searchController.text);
+      searchController.addListener(searchListener);
+      return () {
+        searchController.removeListener(searchListener);
+        debounceTimer.value?.cancel();
+      };
+    }, [searchController]);
 
     return SafeArea(
       child: Column(
@@ -111,11 +106,7 @@ class LanguageSettings extends HookConsumerWidget {
             _LanguageApplyButton(
               isDisabled: isButtonDisabled,
               isLoading: isLoading.value,
-              onPressed: () => _applyLanguageChange(
-                context,
-                selectedLocale,
-                isLoading,
-              ),
+              onPressed: () => _applyLanguageChange(context, selectedLocale, isLoading),
             ),
         ],
       ),
@@ -140,9 +131,7 @@ class _LanguageSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 16, bottom: 8, left: 50, right: 50),
-      decoration: BoxDecoration(
-        color: context.colorScheme.surface,
-      ),
+      decoration: BoxDecoration(color: context.colorScheme.surface),
       child: DecoratedBox(
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -162,10 +151,7 @@ class _LanguageSearchBar extends StatelessWidget {
           hintText: 'language_search_hint'.t(context: context),
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: controller.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear_rounded),
-                  onPressed: onClear,
-                )
+              ? IconButton(icon: const Icon(Icons.clear_rounded), onPressed: onClear)
               : null,
           controller: controller,
           onChanged: onChanged,
@@ -186,24 +172,16 @@ class _LanguageNotFound extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off_rounded,
-            size: 64,
-            color: context.colorScheme.onSurface.withValues(alpha: 0.4),
-          ),
+          Icon(Icons.search_off_rounded, size: 64, color: context.colorScheme.onSurface.withValues(alpha: 0.4)),
           const SizedBox(height: 8),
           Text(
             'language_no_results_title'.t(context: context),
-            style: context.textTheme.titleMedium?.copyWith(
-              color: context.colorScheme.onSurface,
-            ),
+            style: context.textTheme.titleMedium?.copyWith(color: context.colorScheme.onSurface),
           ),
           const SizedBox(height: 4),
           Text(
             'language_no_results_subtitle'.t(context: context),
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.colorScheme.onSurface.withValues(alpha: 0.8),
-            ),
+            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurface.withValues(alpha: 0.8)),
           ),
         ],
       ),
@@ -212,11 +190,7 @@ class _LanguageNotFound extends StatelessWidget {
 }
 
 class _LanguageApplyButton extends StatelessWidget {
-  const _LanguageApplyButton({
-    required this.isDisabled,
-    required this.isLoading,
-    required this.onPressed,
-  });
+  const _LanguageApplyButton({required this.isDisabled, required this.isLoading, required this.onPressed});
 
   final bool isDisabled;
   final bool isLoading;
@@ -225,9 +199,7 @@ class _LanguageApplyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(
-        color: context.colorScheme.surface,
-      ),
+      decoration: BoxDecoration(color: context.colorScheme.surface),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SizedBox(
@@ -236,18 +208,10 @@ class _LanguageApplyButton extends StatelessWidget {
           child: ElevatedButton(
             onPressed: isDisabled ? null : onPressed,
             child: isLoading
-                ? const SizedBox.square(
-                    dimension: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  )
+                ? const SizedBox.square(dimension: 24, child: CircularProgressIndicator(strokeWidth: 2))
                 : Text(
                     'setting_languages_apply'.t(context: context),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16.0,
-                    ),
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16.0),
                   ),
           ),
         ),
@@ -273,20 +237,12 @@ class _LanguageItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 4.0,
-        horizontal: 8.0,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: context.colorScheme.surfaceContainerLowest.withValues(alpha: .6),
-          borderRadius: const BorderRadius.all(
-            Radius.circular(16.0),
-          ),
-          border: Border.all(
-            color: context.colorScheme.outlineVariant.withValues(alpha: .4),
-            width: 1.0,
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+          border: Border.all(color: context.colorScheme.outlineVariant.withValues(alpha: .4), width: 1.0),
         ),
         child: ListTile(
           title: Text(
@@ -296,22 +252,12 @@ class _LanguageItem extends StatelessWidget {
               color: isSelected ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
             ),
           ),
-          trailing: isSelected
-              ? Icon(
-                  Icons.check,
-                  color: context.colorScheme.primary,
-                  size: 20,
-                )
-              : null,
+          trailing: isSelected ? Icon(Icons.check, color: context.colorScheme.primary, size: 20) : null,
           onTap: onTap,
           selected: isSelected,
           selectedTileColor: context.colorScheme.primary.withValues(alpha: .15),
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16.0)),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16.0))),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
         ),
       ),
     );

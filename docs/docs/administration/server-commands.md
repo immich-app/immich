@@ -94,19 +94,16 @@ Change media location
 
 ```
 immich-admin change-media-location
-? Enter the previous value of IMMICH_MEDIA_LOCATION: /usr/src/app/upload
-? Enter the new value of IMMICH_MEDIA_LOCATION: /data
+? Enter the previous value of IMMICH_MEDIA_LOCATION: /data
+? Enter the new value of IMMICH_MEDIA_LOCATION: /my-data
+...
+  Previous value: /data
+  Current value:  /my-data
 
-  Previous value: /usr/src/app/upload
-  Current value:  /data
-
-  Changing database paths from "/usr/src/app/upload/*" to "/data/*"
+  Changing database paths from "/data/*" to "/my-data/*"
 
 ? Do you want to proceed? [Y/n] y
 
 Database file paths updated successfully! 🎉
-
-You may now set IMMICH_MEDIA_LOCATION=/data and restart!
-
-(please remember to update applicable volume mounts e.g. ${UPLOAD_LOCATION}:/data)
+...
 ```

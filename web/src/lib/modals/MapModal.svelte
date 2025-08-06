@@ -8,10 +8,9 @@
   type Props = {
     onClose: (assetIds?: string[]) => void;
     mapMarkers: MapMarkerResponseDto[];
-    zoom?: number;
   };
 
-  let { onClose, mapMarkers, zoom }: Props = $props();
+  let { onClose, mapMarkers }: Props = $props();
 </script>
 
 <Modal title={$t('map')} size="giant" {onClose}>
@@ -26,15 +25,7 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map
-            center={undefined}
-            {zoom}
-            clickable={false}
-            {mapMarkers}
-            onSelect={onClose}
-            showSettings={false}
-            rounded
-          />
+          <Map clickable={false} {mapMarkers} onSelect={onClose} showSettings={false} rounded autoFitBounds />
         {/await}
       </div>
     </div>

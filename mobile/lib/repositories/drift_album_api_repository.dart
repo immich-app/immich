@@ -14,34 +14,16 @@ class DriftAlbumApiRepository extends ApiRepository {
 
   DriftAlbumApiRepository(this._api);
 
-  Future<RemoteAlbum> createDriftAlbum(
-    String name, {
-    required Iterable<String> assetIds,
-    String? description,
-  }) async {
+  Future<RemoteAlbum> createDriftAlbum(String name, {required Iterable<String> assetIds, String? description}) async {
     final responseDto = await checkNull(
-      _api.createAlbum(
-        CreateAlbumDto(
-          albumName: name,
-          description: description,
-          assetIds: assetIds.toList(),
-        ),
-      ),
+      _api.createAlbum(CreateAlbumDto(albumName: name, description: description, assetIds: assetIds.toList())),
     );
 
     return responseDto.toRemoteAlbum();
   }
 
-  Future<({List<String> removed, List<String> failed})> removeAssets(
-    String albumId,
-    Iterable<String> assetIds,
-  ) async {
-    final response = await checkNull(
-      _api.removeAssetFromAlbum(
-        albumId,
-        BulkIdsDto(ids: assetIds.toList()),
-      ),
-    );
+  Future<({List<String> removed, List<String> failed})> removeAssets(String albumId, Iterable<String> assetIds) async {
+    final response = await checkNull(_api.removeAssetFromAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
     final List<String> removed = [], failed = [];
     for (final dto in response) {
       if (dto.success) {
@@ -53,16 +35,8 @@ class DriftAlbumApiRepository extends ApiRepository {
     return (removed: removed, failed: failed);
   }
 
-  Future<({List<String> added, List<String> failed})> addAssets(
-    String albumId,
-    Iterable<String> assetIds,
-  ) async {
-    final response = await checkNull(
-      _api.addAssetsToAlbum(
-        albumId,
-        BulkIdsDto(ids: assetIds.toList()),
-      ),
-    );
+  Future<({List<String> added, List<String> failed})> addAssets(String albumId, Iterable<String> assetIds) async {
+    final response = await checkNull(_api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
     final List<String> added = [], failed = [];
     for (final dto in response) {
       if (dto.success) {
@@ -108,18 +82,19 @@ class DriftAlbumApiRepository extends ApiRepository {
     return _api.deleteAlbum(albumId);
   }
 
-  Future<RemoteAlbum> addUsers(
-    String albumId,
-    Iterable<String> userIds,
-  ) async {
+  Future<RemoteAlbum> addUsers(String albumId, Iterable<String> userIds) async {
     final albumUsers = userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
-    final response = await checkNull(
-      _api.addUsersToAlbum(
-        albumId,
-        AddUsersDto(albumUsers: albumUsers),
-      ),
-    );
+    final response = await checkNull(_api.addUsersToAlbum(albumId, AddUsersDto(albumUsers: albumUsers)));
     return response.toRemoteAlbum();
+  }
+
+  Future<void> removeUser(String albumId, {required String userId}) async {
+    await _api.removeUserFromAlbum(albumId, userId);
+  }
+
+  Future<bool> setActivityStatus(String albumId, bool isEnabled) async {
+    final response = await checkNull(_api.updateAlbumInfo(albumId, UpdateAlbumDto(isActivityEnabled: isEnabled)));
+    return response.isActivityEnabled;
   }
 }
 

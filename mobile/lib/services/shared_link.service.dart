@@ -5,9 +5,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-final sharedLinkServiceProvider = Provider(
-  (ref) => SharedLinkService(ref.watch(apiServiceProvider)),
-);
+final sharedLinkServiceProvider = Provider((ref) => SharedLinkService(ref.watch(apiServiceProvider)));
 
 class SharedLinkService {
   final ApiService _apiService;

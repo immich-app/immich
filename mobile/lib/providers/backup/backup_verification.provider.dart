@@ -64,7 +64,8 @@ class BackupVerification extends _$BackupVerification {
               onOk: () => _performDeletion(context, toDelete),
               title: "Corrupt backups!",
               ok: "Delete",
-              content: "Found ${toDelete.length} (max $limit at once) corrupt asset backups. "
+              content:
+                  "Found ${toDelete.length} (max $limit at once) corrupt asset backups. "
                   "Run the check again to find more.\n"
                   "Do you want to delete the corrupt asset backups now?",
             ),
@@ -77,23 +78,18 @@ class BackupVerification extends _$BackupVerification {
     }
   }
 
-  Future<void> _performDeletion(
-    BuildContext context,
-    List<Asset> assets,
-  ) async {
+  Future<void> _performDeletion(BuildContext context, List<Asset> assets) async {
     try {
       state = true;
       if (context.mounted) {
-        ImmichToast.show(
-          context: context,
-          msg: "Deleting ${assets.length} assets on the server...",
-        );
+        ImmichToast.show(context: context, msg: "Deleting ${assets.length} assets on the server...");
       }
       await ref.read(assetProvider.notifier).deleteAssets(assets, force: true);
       if (context.mounted) {
         ImmichToast.show(
           context: context,
-          msg: "Deleted ${assets.length} assets on the server. "
+          msg:
+              "Deleted ${assets.length} assets on the server. "
               "You can now start a manual backup",
           toastType: ToastType.success,
         );

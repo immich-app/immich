@@ -126,7 +126,7 @@
     }
 
     const filesArray: File[] = Array.from<File>(files);
-    if (authManager.key) {
+    if (authManager.isSharedLink) {
       dragAndDropFilesStore.set({ isDragging: true, files: filesArray });
     } else {
       await fileUploadHandler({ files: filesArray, albumId, isLockedAssets: isInLockedFolder });

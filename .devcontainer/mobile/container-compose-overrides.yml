@@ -4,7 +4,6 @@ services:
       target: dev-container-mobile
     environment:
       - IMMICH_SERVER_URL=http://127.0.0.1:2283/
-      - IMMICH_MEDIA_LOCATION=/data
     volumes: !override # bind mount host to /workspaces/immich
       - ..:/workspaces/immich
       - cli_node_modules:/workspaces/immich/cli/node_modules

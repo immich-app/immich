@@ -14,30 +14,14 @@ class SearchCuratedContent {
   /// The id to lookup the asset from the server
   final String id;
 
-  const SearchCuratedContent({
-    required this.label,
-    required this.id,
-    this.subtitle,
-  });
+  const SearchCuratedContent({required this.label, required this.id, this.subtitle});
 
-  SearchCuratedContent copyWith({
-    String? label,
-    String? subtitle,
-    String? id,
-  }) {
-    return SearchCuratedContent(
-      label: label ?? this.label,
-      subtitle: subtitle ?? this.subtitle,
-      id: id ?? this.id,
-    );
+  SearchCuratedContent copyWith({String? label, String? subtitle, String? id}) {
+    return SearchCuratedContent(label: label ?? this.label, subtitle: subtitle ?? this.subtitle, id: id ?? this.id);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'label': label,
-      'subtitle': subtitle,
-      'id': id,
-    };
+    return <String, dynamic>{'label': label, 'subtitle': subtitle, 'id': id};
   }
 
   factory SearchCuratedContent.fromMap(Map<String, dynamic> map) {

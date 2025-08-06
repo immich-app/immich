@@ -18,13 +18,7 @@ class CustomDraggingHandle extends StatelessWidget {
 }
 
 class ControlBoxButton extends StatelessWidget {
-  const ControlBoxButton({
-    super.key,
-    required this.label,
-    required this.iconData,
-    this.onPressed,
-    this.onLongPressed,
-  });
+  const ControlBoxButton({super.key, required this.label, required this.iconData, this.onPressed, this.onLongPressed});
 
   final String label;
   final IconData iconData;
@@ -37,9 +31,7 @@ class ControlBoxButton extends StatelessWidget {
 
     return MaterialButton(
       padding: const EdgeInsets.all(10),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
       onPressed: onPressed,
       onLongPress: onLongPressed,
       minWidth: minWidth,

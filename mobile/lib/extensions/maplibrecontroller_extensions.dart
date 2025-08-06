@@ -13,9 +13,7 @@ extension MapMarkers on MapLibreMapController {
   Future<void> addGeoJSONSourceForMarkers(List<MapMarker> markers) async {
     return addSource(
       MapUtils.defaultSourceId,
-      GeojsonSourceProperties(
-        data: MapUtils.generateGeoJsonForMarkers(markers.toList()),
-      ),
+      GeojsonSourceProperties(data: MapUtils.generateGeoJsonForMarkers(markers.toList())),
     );
   }
 
@@ -73,23 +71,13 @@ extension MapMarkers on MapLibreMapController {
     try {
       final ByteData bytes = await rootBundle.load("assets/location-pin.png");
       await addImage("mapMarker", bytes.buffer.asUint8List());
-      return addSymbol(
-        SymbolOptions(
-          geometry: centre,
-          iconImage: "mapMarker",
-          iconSize: 0.15,
-          iconAnchor: "bottom",
-        ),
-      );
+      return addSymbol(SymbolOptions(geometry: centre, iconImage: "mapMarker", iconSize: 0.15, iconAnchor: "bottom"));
     } finally {
       // no-op
     }
   }
 
-  Future<LatLngBounds> getBoundsFromPoint(
-    Point<double> point,
-    double distance,
-  ) async {
+  Future<LatLngBounds> getBoundsFromPoint(Point<double> point, double distance) async {
     final southWestPx = Point(point.x - distance, point.y + distance);
     final northEastPx = Point(point.x + distance, point.y - distance);
 

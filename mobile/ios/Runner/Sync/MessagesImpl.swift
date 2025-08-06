@@ -28,7 +28,8 @@ extension PHAsset {
       width: Int64(pixelWidth),
       height: Int64(pixelHeight),
       durationInSeconds: Int64(duration),
-      orientation: 0
+      orientation: 0,
+      isFavorite: isFavorite
     )
   }
 }
@@ -171,7 +172,8 @@ class NativeSyncApiImpl: NativeSyncApi {
             name: "",
             type: 0,
             durationInSeconds: 0,
-            orientation: 0
+            orientation: 0,
+            isFavorite: false
           )
           if (updatedAssets.contains(AssetWrapper(with: predicate))) {
             continue

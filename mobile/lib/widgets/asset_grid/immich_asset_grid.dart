@@ -60,9 +60,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var settings = ref.watch(appSettingsServiceProvider);
 
-    final perRow = useState(
-      assetsPerRow ?? settings.getSetting(AppSettingsEnum.tilesPerRow)!,
-    );
+    final perRow = useState(assetsPerRow ?? settings.getSetting(AppSettingsEnum.tilesPerRow)!);
     final scaleFactor = useState(7.0 - perRow.value);
     final baseScaleFactor = useState(7.0 - perRow.value);
 
@@ -82,22 +80,21 @@ class ImmichAssetGrid extends HookConsumerWidget {
       return RawGestureDetector(
         gestures: {
           CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
-              () => CustomScaleGestureRecognizer(), (CustomScaleGestureRecognizer scale) {
-            scale.onStart = (details) {
-              baseScaleFactor.value = scaleFactor.value;
-            };
+            () => CustomScaleGestureRecognizer(),
+            (CustomScaleGestureRecognizer scale) {
+              scale.onStart = (details) {
+                baseScaleFactor.value = scaleFactor.value;
+              };
 
-            scale.onUpdate = (details) {
-              scaleFactor.value = max(
-                min(5.0, baseScaleFactor.value * details.scale),
-                1.0,
-              );
-              if (7 - scaleFactor.value.toInt() != perRow.value) {
-                perRow.value = 7 - scaleFactor.value.toInt();
-                settings.setSetting(AppSettingsEnum.tilesPerRow, perRow.value);
-              }
-            };
-          }),
+              scale.onUpdate = (details) {
+                scaleFactor.value = max(min(5.0, baseScaleFactor.value * details.scale), 1.0);
+                if (7 - scaleFactor.value.toInt() != perRow.value) {
+                  perRow.value = 7 - scaleFactor.value.toInt();
+                  settings.setSetting(AppSettingsEnum.tilesPerRow, perRow.value);
+                }
+              };
+            },
+          ),
         },
         child: ImmichAssetGridView(
           onRefresh: onRefresh,
@@ -125,9 +122,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     if (renderList != null) return buildAssetGridView(renderList!);
 
     final renderListFuture = ref.watch(assetsTimelineProvider(assets!));
-    return renderListFuture.widgetWhen(
-      onData: (renderList) => buildAssetGridView(renderList),
-    );
+    return renderListFuture.widgetWhen(onData: (renderList) => buildAssetGridView(renderList));
   }
 }
 

@@ -12,11 +12,7 @@ class FavoriteActionButton extends ConsumerWidget {
   final ActionSource source;
   final bool menuItem;
 
-  const FavoriteActionButton({
-    super.key,
-    required this.source,
-    this.menuItem = false,
-  });
+  const FavoriteActionButton({super.key, required this.source, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -31,10 +27,7 @@ class FavoriteActionButton extends ConsumerWidget {
 
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'favorite_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'favorite_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

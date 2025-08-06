@@ -5,9 +5,7 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:isar/isar.dart';
 
-final partnerRepositoryProvider = Provider(
-  (ref) => PartnerRepository(ref.watch(dbProvider)),
-);
+final partnerRepositoryProvider = Provider((ref) => PartnerRepository(ref.watch(dbProvider)));
 
 class PartnerRepository extends DatabaseRepository {
   const PartnerRepository(super.db);
@@ -23,12 +21,14 @@ class PartnerRepository extends DatabaseRepository {
   }
 
   Stream<List<UserDto>> watchSharedBy() {
-    return (db.users.filter().isPartnerSharedByEqualTo(true).sortById().watch())
-        .map((users) => users.map((u) => u.toDto()).toList());
+    return (db.users.filter().isPartnerSharedByEqualTo(true).sortById().watch()).map(
+      (users) => users.map((u) => u.toDto()).toList(),
+    );
   }
 
   Stream<List<UserDto>> watchSharedWith() {
-    return (db.users.filter().isPartnerSharedWithEqualTo(true).sortById().watch())
-        .map((users) => users.map((u) => u.toDto()).toList());
+    return (db.users.filter().isPartnerSharedWithEqualTo(true).sortById().watch()).map(
+      (users) => users.map((u) => u.toDto()).toList(),
+    );
   }
 }

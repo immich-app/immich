@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, NotNull, Selectable, UpdateResult, Updateable, sql } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
@@ -338,19 +337,7 @@ export class AssetRepository {
 
   @GenerateSql()
   getFileSamples() {
-    return this.db
-      .selectFrom('asset')
-      .select((eb) => [
-        'asset.id',
-        'asset.originalPath',
-        'asset.sidecarPath',
-        'asset.encodedVideoPath',
-        jsonArrayFrom(eb.selectFrom('asset_file').select('path').whereRef('asset.id', '=', 'asset_file.assetId')).as(
-          'files',
-        ),
-      ])
-      .limit(sql.lit(3))
-      .execute();
+    return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

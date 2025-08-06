@@ -587,7 +587,7 @@ describe(MetadataService.name, () => {
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
-        originalPath: expect.stringContaining('upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
+        originalPath: expect.stringContaining('/data/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
         ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
         type: AssetType.Video,
       });
@@ -645,7 +645,7 @@ describe(MetadataService.name, () => {
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
-        originalPath: expect.stringContaining('upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
+        originalPath: expect.stringContaining('/data/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
         ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
         type: AssetType.Video,
       });
@@ -703,7 +703,7 @@ describe(MetadataService.name, () => {
         libraryId: assetStub.livePhotoWithOriginalFileName.libraryId,
         localDateTime: assetStub.livePhotoWithOriginalFileName.fileCreatedAt,
         originalFileName: 'asset_1.mp4',
-        originalPath: expect.stringContaining('upload/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
+        originalPath: expect.stringContaining('/data/encoded-video/user-id/li/ve/live-photo-motion-asset-MP.mp4'),
         ownerId: assetStub.livePhotoWithOriginalFileName.ownerId,
         type: AssetType.Video,
       });

@@ -45,13 +45,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           final companion = UserEntityCompanion(
             name: Value(user.name),
             email: Value(user.email),
+            hasProfileImage: Value(user.hasProfileImage),
+            profileChangedAt: Value(user.profileChangedAt),
           );
 
-          batch.insert(
-            _db.userEntity,
-            companion.copyWith(id: Value(user.id)),
-            onConflict: DoUpdate((_) => companion),
-          );
+          batch.insert(_db.userEntity, companion.copyWith(id: Value(user.id)), onConflict: DoUpdate((_) => companion));
         }
       });
     } catch (error, stack) {
@@ -66,10 +64,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         for (final partner in data) {
           batch.delete(
             _db.partnerEntity,
-            PartnerEntityCompanion(
-              sharedById: Value(partner.sharedById),
-              sharedWithId: Value(partner.sharedWithId),
-            ),
+            PartnerEntityCompanion(sharedById: Value(partner.sharedById), sharedWithId: Value(partner.sharedWithId)),
           );
         }
       });
@@ -87,10 +82,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
           batch.insert(
             _db.partnerEntity,
-            companion.copyWith(
-              sharedById: Value(partner.sharedById),
-              sharedWithId: Value(partner.sharedWithId),
-            ),
+            companion.copyWith(sharedById: Value(partner.sharedById), sharedWithId: Value(partner.sharedWithId)),
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -101,24 +93,16 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> deleteAssetsV1(
-    Iterable<SyncAssetDeleteV1> data, {
-    String debugLabel = 'user',
-  }) async {
+  Future<void> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data, {String debugLabel = 'user'}) async {
     try {
-      await _db.remoteAssetEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.assetId)),
-      );
+      await _db.remoteAssetEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.assetId)));
     } catch (error, stack) {
       _logger.severe('Error: deleteAssetsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
 
-  Future<void> updateAssetsV1(
-    Iterable<SyncAssetV1> data, {
-    String debugLabel = 'user',
-  }) async {
+  Future<void> updateAssetsV1(Iterable<SyncAssetV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
@@ -137,6 +121,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             visibility: Value(asset.visibility.toAssetVisibility()),
             livePhotoVideoId: Value(asset.livePhotoVideoId),
             stackId: Value(asset.stackId),
+            libraryId: Value(asset.libraryId),
           );
 
           batch.insert(
@@ -152,10 +137,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateAssetsExifV1(
-    Iterable<SyncAssetExifV1> data, {
-    String debugLabel = 'user',
-  }) async {
+  Future<void> updateAssetsExifV1(Iterable<SyncAssetExifV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
         for (final exif in data) {
@@ -191,20 +173,14 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         }
       });
     } catch (error, stack) {
-      _logger.severe(
-        'Error: updateAssetsExifV1 - $debugLabel',
-        error,
-        stack,
-      );
+      _logger.severe('Error: updateAssetsExifV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
 
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
     try {
-      await _db.remoteAlbumEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.albumId)),
-      );
+      await _db.remoteAlbumEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.albumId)));
     } catch (error, stack) {
       _logger.severe('Error: deleteAlbumsV1', error, stack);
       rethrow;
@@ -245,10 +221,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         for (final album in data) {
           batch.delete(
             _db.remoteAlbumUserEntity,
-            RemoteAlbumUserEntityCompanion(
-              albumId: Value(album.albumId),
-              userId: Value(album.userId),
-            ),
+            RemoteAlbumUserEntityCompanion(albumId: Value(album.albumId), userId: Value(album.userId)),
           );
         }
       });
@@ -258,49 +231,32 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateAlbumUsersV1(
-    Iterable<SyncAlbumUserV1> data, {
-    String debugLabel = 'user',
-  }) async {
+  Future<void> updateAlbumUsersV1(Iterable<SyncAlbumUserV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
         for (final album in data) {
-          final companion = RemoteAlbumUserEntityCompanion(
-            role: Value(album.role.toAlbumUserRole()),
-          );
+          final companion = RemoteAlbumUserEntityCompanion(role: Value(album.role.toAlbumUserRole()));
 
           batch.insert(
             _db.remoteAlbumUserEntity,
-            companion.copyWith(
-              albumId: Value(album.albumId),
-              userId: Value(album.userId),
-            ),
+            companion.copyWith(albumId: Value(album.albumId), userId: Value(album.userId)),
             onConflict: DoUpdate((_) => companion),
           );
         }
       });
     } catch (error, stack) {
-      _logger.severe(
-        'Error: updateAlbumUsersV1 - $debugLabel',
-        error,
-        stack,
-      );
+      _logger.severe('Error: updateAlbumUsersV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
 
-  Future<void> deleteAlbumToAssetsV1(
-    Iterable<SyncAlbumToAssetDeleteV1> data,
-  ) async {
+  Future<void> deleteAlbumToAssetsV1(Iterable<SyncAlbumToAssetDeleteV1> data) async {
     try {
       await _db.batch((batch) {
         for (final album in data) {
           batch.delete(
             _db.remoteAlbumAssetEntity,
-            RemoteAlbumAssetEntityCompanion(
-              albumId: Value(album.albumId),
-              assetId: Value(album.assetId),
-            ),
+            RemoteAlbumAssetEntityCompanion(albumId: Value(album.albumId), assetId: Value(album.assetId)),
           );
         }
       });
@@ -310,10 +266,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateAlbumToAssetsV1(
-    Iterable<SyncAlbumToAssetV1> data, {
-    String debugLabel = 'user',
-  }) async {
+  Future<void> updateAlbumToAssetsV1(Iterable<SyncAlbumToAssetV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
         for (final album in data) {
@@ -322,19 +275,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             assetId: Value(album.assetId),
           );
 
-          batch.insert(
-            _db.remoteAlbumAssetEntity,
-            companion,
-            onConflict: DoNothing(),
-          );
+          batch.insert(_db.remoteAlbumAssetEntity, companion, onConflict: DoNothing());
         }
       });
     } catch (error, stack) {
-      _logger.severe(
-        'Error: updateAlbumToAssetsV1 - $debugLabel',
-        error,
-        stack,
-      );
+      _logger.severe('Error: updateAlbumToAssetsV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
@@ -371,9 +316,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) async {
     try {
-      await _db.memoryEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.memoryId)),
-      );
+      await _db.memoryEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.memoryId)));
     } catch (error, stack) {
       _logger.severe('Error: deleteMemoriesV1', error, stack);
       rethrow;
@@ -384,16 +327,9 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
-          final companion = MemoryAssetEntityCompanion(
-            memoryId: Value(asset.memoryId),
-            assetId: Value(asset.assetId),
-          );
+          final companion = MemoryAssetEntityCompanion(memoryId: Value(asset.memoryId), assetId: Value(asset.assetId));
 
-          batch.insert(
-            _db.memoryAssetEntity,
-            companion,
-            onConflict: DoNothing(),
-          );
+          batch.insert(_db.memoryAssetEntity, companion, onConflict: DoNothing());
         }
       });
     } catch (error, stack) {
@@ -402,18 +338,13 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> deleteMemoryAssetsV1(
-    Iterable<SyncMemoryAssetDeleteV1> data,
-  ) async {
+  Future<void> deleteMemoryAssetsV1(Iterable<SyncMemoryAssetDeleteV1> data) async {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
           batch.delete(
             _db.memoryAssetEntity,
-            MemoryAssetEntityCompanion(
-              memoryId: Value(asset.memoryId),
-              assetId: Value(asset.assetId),
-            ),
+            MemoryAssetEntityCompanion(memoryId: Value(asset.memoryId), assetId: Value(asset.assetId)),
           );
         }
       });
@@ -423,10 +354,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> updateStacksV1(
-    Iterable<SyncStackV1> data, {
-    String debugLabel = 'user',
-  }) async {
+  Future<void> updateStacksV1(Iterable<SyncStackV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
         for (final stack in data) {
@@ -450,36 +378,24 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> deleteStacksV1(
-    Iterable<SyncStackDeleteV1> data, {
-    String debugLabel = 'user',
-  }) async {
+  Future<void> deleteStacksV1(Iterable<SyncStackDeleteV1> data, {String debugLabel = 'user'}) async {
     try {
-      await _db.stackEntity.deleteWhere(
-        (row) => row.id.isIn(data.map((e) => e.stackId)),
-      );
+      await _db.stackEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.stackId)));
     } catch (error, stack) {
       _logger.severe('Error: deleteStacksV1 - $debugLabel', error, stack);
       rethrow;
     }
   }
 
-  Future<void> updateUserMetadatasV1(
-    Iterable<SyncUserMetadataV1> data,
-  ) async {
+  Future<void> updateUserMetadatasV1(Iterable<SyncUserMetadataV1> data) async {
     try {
       await _db.batch((batch) {
         for (final userMetadata in data) {
-          final companion = UserMetadataEntityCompanion(
-            value: Value(userMetadata.value as Map<String, Object?>),
-          );
+          final companion = UserMetadataEntityCompanion(value: Value(userMetadata.value as Map<String, Object?>));
 
           batch.insert(
             _db.userMetadataEntity,
-            companion.copyWith(
-              userId: Value(userMetadata.userId),
-              key: Value(userMetadata.key.toUserMetadataKey()),
-            ),
+            companion.copyWith(userId: Value(userMetadata.userId), key: Value(userMetadata.key.toUserMetadataKey())),
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -490,9 +406,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> deleteUserMetadatasV1(
-    Iterable<SyncUserMetadataDeleteV1> data,
-  ) async {
+  Future<void> deleteUserMetadatasV1(Iterable<SyncUserMetadataDeleteV1> data) async {
     try {
       await _db.batch((batch) {
         for (final userMetadata in data) {
@@ -540,16 +454,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
-  Future<void> deletePeopleV1(
-    Iterable<SyncPersonDeleteV1> data,
-  ) async {
+  Future<void> deletePeopleV1(Iterable<SyncPersonDeleteV1> data) async {
     try {
       await _db.batch((batch) {
         for (final person in data) {
-          batch.deleteWhere(
-            _db.personEntity,
-            (row) => row.id.equals(person.personId),
-          );
+          batch.deleteWhere(_db.personEntity, (row) => row.id.equals(person.personId));
         }
       });
     } catch (error, stack) {
@@ -591,10 +500,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final assetFace in data) {
-          batch.deleteWhere(
-            _db.assetFaceEntity,
-            (row) => row.id.equals(assetFace.assetFaceId),
-          );
+          batch.deleteWhere(_db.assetFaceEntity, (row) => row.id.equals(assetFace.assetFaceId));
         }
       });
     } catch (error, stack) {
@@ -606,54 +512,54 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
 extension on AssetTypeEnum {
   AssetType toAssetType() => switch (this) {
-        AssetTypeEnum.IMAGE => AssetType.image,
-        AssetTypeEnum.VIDEO => AssetType.video,
-        AssetTypeEnum.AUDIO => AssetType.audio,
-        AssetTypeEnum.OTHER => AssetType.other,
-        _ => throw Exception('Unknown AssetType value: $this'),
-      };
+    AssetTypeEnum.IMAGE => AssetType.image,
+    AssetTypeEnum.VIDEO => AssetType.video,
+    AssetTypeEnum.AUDIO => AssetType.audio,
+    AssetTypeEnum.OTHER => AssetType.other,
+    _ => throw Exception('Unknown AssetType value: $this'),
+  };
 }
 
 extension on AssetOrder {
   AlbumAssetOrder toAlbumAssetOrder() => switch (this) {
-        AssetOrder.asc => AlbumAssetOrder.asc,
-        AssetOrder.desc => AlbumAssetOrder.desc,
-        _ => throw Exception('Unknown AssetOrder value: $this'),
-      };
+    AssetOrder.asc => AlbumAssetOrder.asc,
+    AssetOrder.desc => AlbumAssetOrder.desc,
+    _ => throw Exception('Unknown AssetOrder value: $this'),
+  };
 }
 
 extension on MemoryType {
   MemoryTypeEnum toMemoryType() => switch (this) {
-        MemoryType.onThisDay => MemoryTypeEnum.onThisDay,
-        _ => throw Exception('Unknown MemoryType value: $this'),
-      };
+    MemoryType.onThisDay => MemoryTypeEnum.onThisDay,
+    _ => throw Exception('Unknown MemoryType value: $this'),
+  };
 }
 
 extension on api.AlbumUserRole {
   AlbumUserRole toAlbumUserRole() => switch (this) {
-        api.AlbumUserRole.editor => AlbumUserRole.editor,
-        api.AlbumUserRole.viewer => AlbumUserRole.viewer,
-        _ => throw Exception('Unknown AlbumUserRole value: $this'),
-      };
+    api.AlbumUserRole.editor => AlbumUserRole.editor,
+    api.AlbumUserRole.viewer => AlbumUserRole.viewer,
+    _ => throw Exception('Unknown AlbumUserRole value: $this'),
+  };
 }
 
 extension on api.AssetVisibility {
   AssetVisibility toAssetVisibility() => switch (this) {
-        api.AssetVisibility.timeline => AssetVisibility.timeline,
-        api.AssetVisibility.hidden => AssetVisibility.hidden,
-        api.AssetVisibility.archive => AssetVisibility.archive,
-        api.AssetVisibility.locked => AssetVisibility.locked,
-        _ => throw Exception('Unknown AssetVisibility value: $this'),
-      };
+    api.AssetVisibility.timeline => AssetVisibility.timeline,
+    api.AssetVisibility.hidden => AssetVisibility.hidden,
+    api.AssetVisibility.archive => AssetVisibility.archive,
+    api.AssetVisibility.locked => AssetVisibility.locked,
+    _ => throw Exception('Unknown AssetVisibility value: $this'),
+  };
 }
 
 extension on api.UserMetadataKey {
   UserMetadataKey toUserMetadataKey() => switch (this) {
-        api.UserMetadataKey.onboarding => UserMetadataKey.onboarding,
-        api.UserMetadataKey.preferences => UserMetadataKey.preferences,
-        api.UserMetadataKey.license => UserMetadataKey.license,
-        _ => throw Exception('Unknown UserMetadataKey value: $this'),
-      };
+    api.UserMetadataKey.onboarding => UserMetadataKey.onboarding,
+    api.UserMetadataKey.preferences => UserMetadataKey.preferences,
+    api.UserMetadataKey.license => UserMetadataKey.license,
+    _ => throw Exception('Unknown UserMetadataKey value: $this'),
+  };
 }
 
 extension on String {

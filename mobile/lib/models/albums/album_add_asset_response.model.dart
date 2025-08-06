@@ -7,15 +7,9 @@ class AlbumAddAssetsResponse {
   List<String> alreadyInAlbum;
   int successfullyAdded;
 
-  AlbumAddAssetsResponse({
-    required this.alreadyInAlbum,
-    required this.successfullyAdded,
-  });
+  AlbumAddAssetsResponse({required this.alreadyInAlbum, required this.successfullyAdded});
 
-  AlbumAddAssetsResponse copyWith({
-    List<String>? alreadyInAlbum,
-    int? successfullyAdded,
-  }) {
+  AlbumAddAssetsResponse copyWith({List<String>? alreadyInAlbum, int? successfullyAdded}) {
     return AlbumAddAssetsResponse(
       alreadyInAlbum: alreadyInAlbum ?? this.alreadyInAlbum,
       successfullyAdded: successfullyAdded ?? this.successfullyAdded,
@@ -23,10 +17,7 @@ class AlbumAddAssetsResponse {
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'alreadyInAlbum': alreadyInAlbum,
-      'successfullyAdded': successfullyAdded,
-    };
+    return <String, dynamic>{'alreadyInAlbum': alreadyInAlbum, 'successfullyAdded': successfullyAdded};
   }
 
   String toJson() => json.encode(toMap());

@@ -16,13 +16,7 @@ class AlbumThumbnailCard extends ConsumerWidget {
   final bool showOwner;
   final bool showTitle;
 
-  const AlbumThumbnailCard({
-    super.key,
-    required this.album,
-    this.onTap,
-    this.showOwner = false,
-    this.showTitle = true,
-  });
+  const AlbumThumbnailCard({super.key, required this.album, this.onTap, this.showOwner = false, this.showTitle = true});
 
   final Album album;
 
@@ -36,24 +30,14 @@ class AlbumThumbnailCard extends ConsumerWidget {
           return Container(
             height: cardSize,
             width: cardSize,
-            decoration: BoxDecoration(
-              color: context.colorScheme.surfaceContainerHigh,
-            ),
+            decoration: BoxDecoration(color: context.colorScheme.surfaceContainerHigh),
             child: Center(
-              child: Icon(
-                Icons.no_photography,
-                size: cardSize * .15,
-                color: context.colorScheme.primary,
-              ),
+              child: Icon(Icons.no_photography, size: cardSize * .15, color: context.colorScheme.primary),
             ),
           );
         }
 
-        buildAlbumThumbnail() => ImmichThumbnail(
-              asset: album.thumbnail.value,
-              width: cardSize,
-              height: cardSize,
-            );
+        buildAlbumThumbnail() => ImmichThumbnail(asset: album.thumbnail.value, width: cardSize, height: cardSize);
 
         buildAlbumTextRow() {
           // Add the owner name to the subtitle
@@ -62,12 +46,7 @@ class AlbumThumbnailCard extends ConsumerWidget {
             if (album.ownerId == ref.read(currentUserProvider)?.id) {
               owner = 'owned'.tr();
             } else if (album.ownerName != null) {
-              owner = 'shared_by_user'.t(
-                context: context,
-                args: {
-                  'user': album.ownerName!,
-                },
-              );
+              owner = 'shared_by_user'.t(context: context, args: {'user': album.ownerName!});
             }
           }
 
@@ -75,19 +54,12 @@ class AlbumThumbnailCard extends ConsumerWidget {
             TextSpan(
               children: [
                 TextSpan(
-                  text: 'items_count'.t(
-                    context: context,
-                    args: {
-                      'count': album.assetCount,
-                    },
-                  ),
+                  text: 'items_count'.t(context: context, args: {'count': album.assetCount}),
                 ),
                 if (owner != null) const TextSpan(text: ' • '),
                 if (owner != null) TextSpan(text: owner),
               ],
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onSurfaceSecondary,
-              ),
+              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             ),
             overflow: TextOverflow.fade,
           );
@@ -106,9 +78,7 @@ class AlbumThumbnailCard extends ConsumerWidget {
                       width: cardSize,
                       height: cardSize,
                       child: ClipRRect(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(20),
-                        ),
+                        borderRadius: const BorderRadius.all(Radius.circular(20)),
                         child: album.thumbnail.value == null ? buildEmptyThumbnail() : buildAlbumThumbnail(),
                       ),
                     ),

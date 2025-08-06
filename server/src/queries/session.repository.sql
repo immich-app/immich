@@ -10,10 +10,17 @@ from
 where
   "id" = $1
 
+-- SessionRepository.isPendingSyncReset
+select
+  "isPendingSyncReset"
+from
+  "session"
+where
+  "id" = $1
+
 -- SessionRepository.getByToken
 select
   "session"."id",
-  "session"."isPendingSyncReset",
   "session"."updatedAt",
   "session"."pinExpiresAt",
   (

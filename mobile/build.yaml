@@ -19,6 +19,7 @@ targets:
            - lib/infrastructure/entities/*.dart
            - lib/infrastructure/entities/*.drift
            - lib/infrastructure/repositories/db.repository.dart
+           - lib/infrastructure/repositories/logger_db.repository.dart
        drift_dev:modular:
          enabled: true
          options: *drift_options

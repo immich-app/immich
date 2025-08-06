@@ -4,11 +4,7 @@ class SettingsSubPageScaffold extends StatelessWidget {
   final List<Widget> settings;
   final bool showDivider;
 
-  const SettingsSubPageScaffold({
-    super.key,
-    required this.settings,
-    this.showDivider = false,
-  });
+  const SettingsSubPageScaffold({super.key, required this.settings, this.showDivider = false});
 
   @override
   Widget build(BuildContext context) {
@@ -18,11 +14,7 @@ class SettingsSubPageScaffold extends StatelessWidget {
       itemBuilder: (ctx, index) => settings[index],
       separatorBuilder: (context, index) => showDivider
           ? const Column(
-              children: [
-                SizedBox(height: 5),
-                Divider(height: 10, indent: 15, endIndent: 15),
-                SizedBox(height: 15),
-              ],
+              children: [SizedBox(height: 5), Divider(height: 10, indent: 15, endIndent: 15), SizedBox(height: 15)],
             )
           : const SizedBox(height: 10),
     );

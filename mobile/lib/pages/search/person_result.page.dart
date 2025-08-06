@@ -15,11 +15,7 @@ class PersonResultPage extends HookConsumerWidget {
   final String personId;
   final String personName;
 
-  const PersonResultPage({
-    super.key,
-    required this.personId,
-    required this.personName,
-  });
+  const PersonResultPage({super.key, required this.personId, required this.personName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,10 +26,7 @@ class PersonResultPage extends HookConsumerWidget {
         context: context,
         useRootNavigator: false,
         builder: (BuildContext context) {
-          return PersonNameEditForm(
-            personId: personId,
-            personName: name.value,
-          );
+          return PersonNameEditForm(personId: personId, personName: name.value);
         },
       ).then((result) {
         if (result != null && result.success) {
@@ -55,10 +48,7 @@ class PersonResultPage extends HookConsumerWidget {
               children: [
                 ListTile(
                   leading: const Icon(Icons.edit_outlined),
-                  title: const Text(
-                    'edit_name',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ).tr(),
+                  title: const Text('edit_name', style: TextStyle(fontWeight: FontWeight.bold)).tr(),
                   onTap: showEditNameDialog,
                 ),
               ],
@@ -75,27 +65,13 @@ class PersonResultPage extends HookConsumerWidget {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'add_a_name',
-                    style: context.textTheme.titleMedium?.copyWith(
-                      color: context.primaryColor,
-                    ),
-                  ).tr(),
-                  Text(
-                    'find_them_fast',
-                    style: context.textTheme.labelLarge,
-                  ).tr(),
+                  Text('add_a_name', style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor)).tr(),
+                  Text('find_them_fast', style: context.textTheme.labelLarge).tr(),
                 ],
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name.value,
-                    style: context.textTheme.titleLarge,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                children: [Text(name.value, style: context.textTheme.titleLarge, overflow: TextOverflow.ellipsis)],
               ),
       );
     }
@@ -103,16 +79,8 @@ class PersonResultPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(name.value),
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
-        actions: [
-          IconButton(
-            onPressed: buildBottomSheet,
-            icon: const Icon(Icons.more_vert_rounded),
-          ),
-        ],
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
+        actions: [IconButton(onPressed: buildBottomSheet, icon: const Icon(Icons.more_vert_rounded))],
       ),
       body: MultiselectGrid(
         renderListProvider: personAssetsProvider(personId),
@@ -122,16 +90,10 @@ class PersonResultPage extends HookConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 36,
-                backgroundImage: NetworkImage(
-                  getFaceThumbnailUrl(personId),
-                  headers: ApiService.getRequestHeaders(),
-                ),
+                backgroundImage: NetworkImage(getFaceThumbnailUrl(personId), headers: ApiService.getRequestHeaders()),
               ),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-                  child: buildTitleBlock(),
-                ),
+                child: Padding(padding: const EdgeInsets.only(left: 16.0, right: 16.0), child: buildTitleBlock()),
               ),
             ],
           ),

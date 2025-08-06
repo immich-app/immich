@@ -7,10 +7,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
-  return MemoryService(
-    ref.watch(apiServiceProvider),
-    ref.watch(assetRepositoryProvider),
-  );
+  return MemoryService(ref.watch(apiServiceProvider), ref.watch(assetRepositoryProvider));
 });
 
 class MemoryService {
@@ -38,17 +35,8 @@ class MemoryService {
         final dbAssets = await _assetRepository.getAllByRemoteId(memory.assets.map((e) => e.id));
         final yearsAgo = now.year - memory.data.year;
         if (dbAssets.isNotEmpty) {
-          final String title = 'years_ago'.t(
-            args: {
-              'years': yearsAgo.toString(),
-            },
-          );
-          memories.add(
-            Memory(
-              title: title,
-              assets: dbAssets,
-            ),
-          );
+          final String title = 'years_ago'.t(args: {'years': yearsAgo.toString()});
+          memories.add(Memory(title: title, assets: dbAssets));
         }
       }
 
@@ -72,16 +60,9 @@ class MemoryService {
         return null;
       }
       final yearsAgo = DateTime.now().year - memoryResponse.data.year;
-      final String title = 'years_ago'.t(
-        args: {
-          'years': yearsAgo.toString(),
-        },
-      );
+      final String title = 'years_ago'.t(args: {'years': yearsAgo.toString()});
 
-      return Memory(
-        title: title,
-        assets: dbAssets,
-      );
+      return Memory(title: title, assets: dbAssets);
     } catch (error, stack) {
       log.severe("Cannot get memory with ID: $id", error, stack);
       return null;

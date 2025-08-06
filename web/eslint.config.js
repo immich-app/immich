@@ -109,6 +109,7 @@ export default typescriptEslint.config(
       ],
 
       curly: 2,
+      'unicorn/no-array-reverse': 'off', // toReversed() is not supported in Chrome 109 or Safari 15.4
       'unicorn/no-useless-undefined': 'off',
       'unicorn/prefer-spread': 'off',
       'unicorn/no-null': 'off',

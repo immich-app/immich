@@ -49,16 +49,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     this._secureStorageService,
     this._widgetService,
   ) : super(
-          const AuthState(
-            deviceId: "",
-            userId: "",
-            userEmail: "",
-            name: '',
-            profileImagePath: '',
-            isAdmin: false,
-            isAuthenticated: false,
-          ),
-        );
+        const AuthState(
+          deviceId: "",
+          userId: "",
+          userEmail: "",
+          name: '',
+          profileImagePath: '',
+          isAdmin: false,
+          isAuthenticated: false,
+        ),
+      );
 
   Future<String> validateServerUrl(String url) {
     return _authService.validateServerUrl(url);
@@ -118,15 +118,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> saveAuthInfo({
-    required String accessToken,
-  }) async {
+  Future<bool> saveAuthInfo({required String accessToken}) async {
     await _apiService.setAccessToken(accessToken);
 
-    await _widgetService.writeCredentials(
-      Store.get(StoreKey.serverEndpoint),
-      accessToken,
-    );
+    final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+    final customHeaders = Store.tryGet(StoreKey.customHeaders);
+    await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
     String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
@@ -150,21 +147,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         _log.severe("Unauthorized access, token likely expired. Logging out.");
         return false;
       }
-      _log.severe(
-        "Error getting user information from the server [API EXCEPTION]",
-        stackTrace,
-      );
+      _log.severe("Error getting user information from the server [API EXCEPTION]", stackTrace);
     } catch (error, stackTrace) {
-      _log.severe(
-        "Error getting user information from the server [CATCH ALL]",
-        error,
-        stackTrace,
-      );
+      _log.severe("Error getting user information from the server [CATCH ALL]", error, stackTrace);
 
       if (kDebugMode) {
-        debugPrint(
-          "Error getting user information from the server [CATCH ALL] $error $stackTrace",
-        );
+        debugPrint("Error getting user information from the server [CATCH ALL] $error $stackTrace");
       }
     }
 
@@ -181,7 +169,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isAuthenticated: true,
       name: user.name,
       isAdmin: user.isAdmin,
-      profileImagePath: user.profileImagePath,
     );
 
     return true;

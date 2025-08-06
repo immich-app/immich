@@ -8,9 +8,7 @@ import 'package:thumbhash/thumbhash.dart';
 class ThumbHashProvider extends ImageProvider<ThumbHashProvider> {
   final String thumbHash;
 
-  const ThumbHashProvider({
-    required this.thumbHash,
-  });
+  const ThumbHashProvider({required this.thumbHash});
 
   @override
   Future<ThumbHashProvider> obtainKey(ImageConfiguration configuration) {
@@ -18,20 +16,11 @@ class ThumbHashProvider extends ImageProvider<ThumbHashProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    ThumbHashProvider key,
-    ImageDecoderCallback decode,
-  ) {
-    return MultiFrameImageStreamCompleter(
-      codec: _loadCodec(key, decode),
-      scale: 1.0,
-    );
+  ImageStreamCompleter loadImage(ThumbHashProvider key, ImageDecoderCallback decode) {
+    return MultiFrameImageStreamCompleter(codec: _loadCodec(key, decode), scale: 1.0);
   }
 
-  Future<Codec> _loadCodec(
-    ThumbHashProvider key,
-    ImageDecoderCallback decode,
-  ) async {
+  Future<Codec> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) async {
     final image = thumbHashToRGBA(base64Decode(key.thumbHash));
     return decode(await ImmutableBuffer.fromUint8List(rgbaToBmp(image)));
   }

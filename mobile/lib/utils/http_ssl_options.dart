@@ -31,15 +31,12 @@ class HttpSSLOptions {
     HttpOverrides.global = HttpSSLCertOverride(allowSelfSignedSSLCert, serverHost, clientCert);
 
     if (applyNative && Platform.isAndroid) {
-      _channel.invokeMethod("apply", [
-        allowSelfSignedSSLCert,
-        serverHost,
-        clientCert?.data,
-        clientCert?.password,
-      ]).onError<PlatformException>((e, _) {
-        final log = Logger("HttpSSLOptions");
-        log.severe('Failed to set SSL options', e.message);
-      });
+      _channel
+          .invokeMethod("apply", [allowSelfSignedSSLCert, serverHost, clientCert?.data, clientCert?.password])
+          .onError<PlatformException>((e, _) {
+            final log = Logger("HttpSSLOptions");
+            log.severe('Failed to set SSL options', e.message);
+          });
     }
   }
 }

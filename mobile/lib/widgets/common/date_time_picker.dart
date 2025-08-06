@@ -16,11 +16,8 @@ Future<String?> showDateTimePicker({
 }) {
   return showDialog<String?>(
     context: context,
-    builder: (context) => _DateTimePicker(
-      initialDateTime: initialDateTime,
-      initialTZ: initialTZ,
-      initialTZOffset: initialTZOffset,
-    ),
+    builder: (context) =>
+        _DateTimePicker(initialDateTime: initialDateTime, initialTZ: initialTZ, initialTZOffset: initialTZOffset),
   );
 }
 
@@ -33,18 +30,12 @@ class _DateTimePicker extends HookWidget {
   final String? initialTZ;
   final Duration? initialTZOffset;
 
-  const _DateTimePicker({
-    this.initialDateTime,
-    this.initialTZ,
-    this.initialTZOffset,
-  });
+  const _DateTimePicker({this.initialDateTime, this.initialTZ, this.initialTZOffset});
 
   _TimeZoneOffset _getInitiationLocation() {
     if (initialTZ != null) {
       try {
-        return _TimeZoneOffset.fromLocation(
-          tz.timeZoneDatabase.get(initialTZ!),
-        );
+        return _TimeZoneOffset.fromLocation(tz.timeZoneDatabase.get(initialTZ!));
       } on LocationNotFoundException {
         // no-op
       }
@@ -59,10 +50,8 @@ class _DateTimePicker extends HookWidget {
         (location) => location.currentTimeZone.offset == offsetInMilli,
       );
       // Prefer locations with abbreviation first
-      final location = locations.firstWhereOrNull(
-            (e) => !e.currentTimeZone.abbreviation.contains("0"),
-          ) ??
-          locations.firstOrNull;
+      final location =
+          locations.firstWhereOrNull((e) => !e.currentTimeZone.abbreviation.contains("0")) ?? locations.firstOrNull;
       if (location != null) {
         return _TimeZoneOffset.fromLocation(location);
       }
@@ -86,11 +75,7 @@ class _DateTimePicker extends HookWidget {
           (timezone) => DropdownMenuEntry<_TimeZoneOffset>(
             value: timezone,
             label: timezone.display,
-            style: ButtonStyle(
-              textStyle: WidgetStatePropertyAll(
-                context.textTheme.bodyMedium,
-              ),
-            ),
+            style: ButtonStyle(textStyle: WidgetStatePropertyAll(context.textTheme.bodyMedium)),
           ),
         )
         .toList();
@@ -109,10 +94,7 @@ class _DateTimePicker extends HookWidget {
         return;
       }
 
-      final newTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.fromDateTime(date.value),
-      );
+      final newTime = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(date.value));
 
       if (newTime == null) {
         return;
@@ -145,10 +127,7 @@ class _DateTimePicker extends HookWidget {
           onPressed: popWithDateTime,
           child: Text(
             "action_common_update",
-            style: context.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
           ).tr(),
         ),
       ],
@@ -156,46 +135,22 @@ class _DateTimePicker extends HookWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "date_and_time",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ).tr(),
+          const Text("date_and_time", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)).tr(),
           const SizedBox(height: 32),
           ListTile(
             tileColor: context.colorScheme.surfaceContainerHighest,
             shape: ShapeBorder.lerp(
-              const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(10),
-                ),
-              ),
-              const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(10),
-                ),
-              ),
+              const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+              const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
               1,
             ),
-            trailing: Icon(
-              Icons.edit_outlined,
-              size: 18,
-              color: context.primaryColor,
-            ),
-            title: Text(
-              DateFormat("dd-MM-yyyy hh:mm a").format(date.value),
-              style: context.textTheme.bodyMedium,
-            ).tr(),
+            trailing: Icon(Icons.edit_outlined, size: 18, color: context.primaryColor),
+            title: Text(DateFormat("dd-MM-yyyy hh:mm a").format(date.value), style: context.textTheme.bodyMedium),
             onTap: pickDate,
           ),
           const SizedBox(height: 24),
           DropdownSearchMenu(
-            trailingIcon: Icon(
-              Icons.arrow_drop_down,
-              color: context.primaryColor,
-            ),
+            trailingIcon: Icon(Icons.arrow_drop_down, color: context.primaryColor),
             hintText: "timezone".tr(),
             label: const Text('timezone').tr(),
             textStyle: context.textTheme.bodyMedium,
@@ -213,26 +168,17 @@ class _TimeZoneOffset implements Comparable<_TimeZoneOffset> {
   final String display;
   final Location location;
 
-  const _TimeZoneOffset({
-    required this.display,
-    required this.location,
-  });
+  const _TimeZoneOffset({required this.display, required this.location});
 
-  _TimeZoneOffset copyWith({
-    String? display,
-    Location? location,
-  }) {
-    return _TimeZoneOffset(
-      display: display ?? this.display,
-      location: location ?? this.location,
-    );
+  _TimeZoneOffset copyWith({String? display, Location? location}) {
+    return _TimeZoneOffset(display: display ?? this.display, location: location ?? this.location);
   }
 
   int get offsetInMilliseconds => location.currentTimeZone.offset;
 
   _TimeZoneOffset.fromLocation(tz.Location l)
-      : display = _getFormattedOffset(l.currentTimeZone.offset, l),
-        location = l;
+    : display = _getFormattedOffset(l.currentTimeZone.offset, l),
+      location = l;
 
   @override
   int compareTo(_TimeZoneOffset other) {

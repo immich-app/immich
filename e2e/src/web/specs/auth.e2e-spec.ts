@@ -37,6 +37,7 @@ test.describe('Registration', () => {
     await page.getByRole('button', { name: 'Server Privacy' }).click();
     await page.getByRole('button', { name: 'User Privacy' }).click();
     await page.getByRole('button', { name: 'Storage Template' }).click();
+    await page.getByRole('button', { name: 'Backups' }).click();
     await page.getByRole('button', { name: 'Done' }).click();
 
     // success

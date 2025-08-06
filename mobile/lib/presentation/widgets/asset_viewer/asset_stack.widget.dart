@@ -11,9 +11,7 @@ class AssetStackRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    int opacity = ref.watch(
-      assetViewerProvider.select((state) => state.backgroundOpacity),
-    );
+    int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (!showControls) {
@@ -27,11 +25,10 @@ class AssetStackRow extends ConsumerWidget {
       child: AnimatedOpacity(
         opacity: opacity / 255,
         duration: Durations.short2,
-        child: ref.watch(stackChildrenNotifier(asset)).when(
-              data: (state) => SizedBox.square(
-                dimension: 80,
-                child: _StackList(stack: state),
-              ),
+        child: ref
+            .watch(stackChildrenNotifier(asset))
+            .when(
+              data: (state) => SizedBox.square(dimension: 80, child: _StackList(stack: state)),
               error: (_, __) => const SizedBox.shrink(),
               loading: () => const SizedBox.shrink(),
             ),
@@ -49,11 +46,7 @@ class _StackList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.only(
-        left: 5,
-        right: 5,
-        bottom: 30,
-      ),
+      padding: const EdgeInsets.only(left: 5, right: 5, bottom: 30),
       itemCount: stack.length,
       itemBuilder: (ctx, index) {
         final asset = stack[index];
@@ -71,9 +64,7 @@ class _StackList extends ConsumerWidget {
                   ? const BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.all(Radius.circular(6)),
-                      border: Border.fromBorderSide(
-                        BorderSide(color: Colors.white, width: 2),
-                      ),
+                      border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
                     )
                   : const BoxDecoration(
                       color: Colors.white,
@@ -87,10 +78,7 @@ class _StackList extends ConsumerWidget {
                   children: [
                     Image(
                       fit: BoxFit.cover,
-                      image: getThumbnailImageProvider(
-                        remoteId: asset.id,
-                        size: const Size.square(60),
-                      ),
+                      image: getThumbnailImageProvider(remoteId: asset.id, size: const Size.square(60)),
                     ),
                     if (asset.isVideo)
                       const Icon(
@@ -98,11 +86,7 @@ class _StackList extends ConsumerWidget {
                         color: Colors.white,
                         size: 16,
                         shadows: [
-                          Shadow(
-                            blurRadius: 5.0,
-                            color: Color.fromRGBO(0, 0, 0, 0.6),
-                            offset: Offset(0.0, 0.0),
-                          ),
+                          Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0)),
                         ],
                       ),
                   ],

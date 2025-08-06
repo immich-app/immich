@@ -27,11 +27,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Text(
                     header,
-                    style: TextStyle(
-                      fontSize: 12.0,
-                      color: context.primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 12.0, color: context.primaryColor, fontWeight: FontWeight.bold),
                   ),
                 ),
                 IconButton(
@@ -41,38 +37,26 @@ class AppLogDetailPage extends HookConsumerWidget {
                         SnackBar(
                           content: Text(
                             "Copied to clipboard",
-                            style: context.textTheme.bodyLarge?.copyWith(
-                              color: context.primaryColor,
-                            ),
+                            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
                           ),
                         ),
                       );
                     });
                   },
-                  icon: Icon(
-                    Icons.copy,
-                    size: 16.0,
-                    color: context.primaryColor,
-                  ),
+                  icon: Icon(Icons.copy, size: 16.0, color: context.primaryColor),
                 ),
               ],
             ),
             Container(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(15.0),
-                ),
+                borderRadius: const BorderRadius.all(Radius.circular(15.0)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SelectableText(
                   text,
-                  style: const TextStyle(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "Inconsolata",
-                  ),
+                  style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "Inconsolata"),
                 ),
               ),
             ),
@@ -81,7 +65,7 @@ class AppLogDetailPage extends HookConsumerWidget {
       );
     }
 
-    buildLogContext1(String context1) {
+    buildLogContext(String logger) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -91,29 +75,19 @@ class AppLogDetailPage extends HookConsumerWidget {
               padding: const EdgeInsets.only(bottom: 8.0),
               child: Text(
                 "FROM",
-                style: TextStyle(
-                  fontSize: 12.0,
-                  color: context.primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 12.0, color: context.primaryColor, fontWeight: FontWeight.bold),
               ),
             ),
             Container(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(15.0),
-                ),
+                borderRadius: const BorderRadius.all(Radius.circular(15.0)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SelectableText(
-                  context1.toString(),
-                  style: const TextStyle(
-                    fontSize: 12.0,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: "Inconsolata",
-                  ),
+                  logger.toString(),
+                  style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "Inconsolata"),
                 ),
               ),
             ),
@@ -123,20 +97,14 @@ class AppLogDetailPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Log Detail"),
-      ),
+      appBar: AppBar(title: const Text("Log Detail")),
       body: SafeArea(
         child: ListView(
           children: [
             buildTextWithCopyButton("MESSAGE", logMessage.message),
             if (logMessage.error != null) buildTextWithCopyButton("DETAILS", logMessage.error.toString()),
-            if (logMessage.logger != null) buildLogContext1(logMessage.logger.toString()),
-            if (logMessage.stack != null)
-              buildTextWithCopyButton(
-                "STACK TRACE",
-                logMessage.stack.toString(),
-              ),
+            if (logMessage.logger != null) buildLogContext(logMessage.logger.toString()),
+            if (logMessage.stack != null) buildTextWithCopyButton("STACK TRACE", logMessage.stack.toString()),
           ],
         ),
       ),

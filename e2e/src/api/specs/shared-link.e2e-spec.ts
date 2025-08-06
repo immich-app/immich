@@ -9,7 +9,7 @@ import {
 } from '@immich/sdk';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, shareUrl, utils } from 'src/utils';
+import { app, asBearerAuth, baseUrl, shareUrl, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -78,6 +78,7 @@ describe('/shared-links', () => {
           type: SharedLinkType.Album,
           albumId: metadataAlbum.id,
           showMetadata: true,
+          slug: 'metadata-album',
         }),
         utils.createSharedLink(user1.accessToken, {
           type: SharedLinkType.Album,
@@ -135,6 +136,17 @@ describe('/shared-links', () => {
       expect(resp.text).not.toContain(`og:title`);
       expect(resp.text).not.toContain(`og:description`);
       expect(resp.text).not.toContain(`og:image`);
+    });
+  });
+
+  describe('GET /s/:slug', () => {
+    it('should work for slug auth', async () => {
+      const resp = await request(baseUrl).get(`/s/${linkWithMetadata.slug}`);
+      expect(resp.status).toBe(200);
+      expect(resp.header['content-type']).toContain('text/html');
+      expect(resp.text).toContain(
+        `<meta name="description" content="${metadataAlbum.assets.length} shared photos &amp; videos" />`,
+      );
     });
   });
 

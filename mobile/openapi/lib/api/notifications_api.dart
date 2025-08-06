@@ -16,7 +16,10 @@ class NotificationsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'DELETE /notifications/{id}' operation and returns the [Response].
+  /// This endpoint requires the `notification.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -46,6 +49,8 @@ class NotificationsApi {
     );
   }
 
+  /// This endpoint requires the `notification.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -56,7 +61,10 @@ class NotificationsApi {
     }
   }
 
-  /// Performs an HTTP 'DELETE /notifications' operation and returns the [Response].
+  /// This endpoint requires the `notification.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [NotificationDeleteAllDto] notificationDeleteAllDto (required):
@@ -85,6 +93,8 @@ class NotificationsApi {
     );
   }
 
+  /// This endpoint requires the `notification.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [NotificationDeleteAllDto] notificationDeleteAllDto (required):
@@ -95,7 +105,10 @@ class NotificationsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /notifications/{id}' operation and returns the [Response].
+  /// This endpoint requires the `notification.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -125,6 +138,8 @@ class NotificationsApi {
     );
   }
 
+  /// This endpoint requires the `notification.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -143,7 +158,10 @@ class NotificationsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /notifications' operation and returns the [Response].
+  /// This endpoint requires the `notification.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id:
@@ -191,6 +209,8 @@ class NotificationsApi {
     );
   }
 
+  /// This endpoint requires the `notification.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id:
@@ -218,7 +238,10 @@ class NotificationsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /notifications/{id}' operation and returns the [Response].
+  /// This endpoint requires the `notification.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -250,6 +273,8 @@ class NotificationsApi {
     );
   }
 
+  /// This endpoint requires the `notification.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -270,7 +295,10 @@ class NotificationsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /notifications' operation and returns the [Response].
+  /// This endpoint requires the `notification.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [NotificationUpdateAllDto] notificationUpdateAllDto (required):
@@ -299,6 +327,8 @@ class NotificationsApi {
     );
   }
 
+  /// This endpoint requires the `notification.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [NotificationUpdateAllDto] notificationUpdateAllDto (required):

@@ -16,7 +16,10 @@ class LibrariesApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /libraries' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `library.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [CreateLibraryDto] createLibraryDto (required):
@@ -45,6 +48,8 @@ class LibrariesApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `library.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [CreateLibraryDto] createLibraryDto (required):
@@ -63,7 +68,10 @@ class LibrariesApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /libraries/{id}' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `library.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +101,8 @@ class LibrariesApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `library.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -103,7 +113,9 @@ class LibrariesApi {
     }
   }
 
-  /// Performs an HTTP 'GET /libraries' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `library.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAllLibrariesWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/libraries';
@@ -129,6 +141,7 @@ class LibrariesApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `library.read` permission.
   Future<List<LibraryResponseDto>?> getAllLibraries() async {
     final response = await getAllLibrariesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -147,7 +160,10 @@ class LibrariesApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /libraries/{id}' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `library.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -177,6 +193,8 @@ class LibrariesApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `library.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -195,7 +213,10 @@ class LibrariesApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /libraries/{id}/statistics' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `library.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -225,6 +246,8 @@ class LibrariesApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `library.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -243,7 +266,10 @@ class LibrariesApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /libraries/{id}/scan' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -273,6 +299,8 @@ class LibrariesApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -283,7 +311,10 @@ class LibrariesApi {
     }
   }
 
-  /// Performs an HTTP 'PUT /libraries/{id}' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -315,6 +346,8 @@ class LibrariesApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `library.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

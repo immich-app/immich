@@ -9,11 +9,7 @@ enum AssetType {
   audio,
 }
 
-enum AssetState {
-  local,
-  remote,
-  merged,
-}
+enum AssetState { local, remote, merged }
 
 sealed class BaseAsset {
   final String name;

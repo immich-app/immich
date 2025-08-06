@@ -14,15 +14,10 @@ class FavoritesPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     AppBar buildAppBar() {
       return AppBar(
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
         centerTitle: true,
         automaticallyImplyLeading: false,
-        title: const Text(
-          'favorites',
-        ).tr(),
+        title: const Text('favorites').tr(),
       );
     }
 

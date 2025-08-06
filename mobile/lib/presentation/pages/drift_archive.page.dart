@@ -16,18 +16,16 @@ class DriftArchivePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final user = ref.watch(currentUserProvider);
-            if (user == null) {
-              throw Exception('User must be logged in to access archive');
-            }
+        timelineServiceProvider.overrideWith((ref) {
+          final user = ref.watch(currentUserProvider);
+          if (user == null) {
+            throw Exception('User must be logged in to access archive');
+          }
 
-            final timelineService = ref.watch(timelineFactoryProvider).archive(user.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+          final timelineService = ref.watch(timelineFactoryProvider).archive(user.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
       child: Timeline(
         appBar: MesmerizingSliverAppBar(

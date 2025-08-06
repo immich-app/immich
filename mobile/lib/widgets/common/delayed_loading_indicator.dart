@@ -11,12 +11,7 @@ class DelayedLoadingIndicator extends StatelessWidget {
   /// An optional fade in duration to animate the loading
   final Duration? fadeInDuration;
 
-  const DelayedLoadingIndicator({
-    super.key,
-    this.delay = const Duration(seconds: 3),
-    this.child,
-    this.fadeInDuration,
-  });
+  const DelayedLoadingIndicator({super.key, this.delay = const Duration(seconds: 3), this.child, this.fadeInDuration});
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +20,12 @@ class DelayedLoadingIndicator extends StatelessWidget {
       builder: (context, snapshot) {
         late Widget c;
         if (snapshot.connectionState == ConnectionState.done) {
-          c = child ??
-              const ImmichLoadingIndicator(
-                key: ValueKey('loading'),
-              );
+          c = child ?? const ImmichLoadingIndicator(key: ValueKey('loading'));
         } else {
           c = Container(key: const ValueKey('hiding'));
         }
 
-        return AnimatedSwitcher(
-          duration: fadeInDuration ?? Duration.zero,
-          child: c,
-        );
+        return AnimatedSwitcher(duration: fadeInDuration ?? Duration.zero, child: c);
       },
     );
   }

@@ -12,11 +12,7 @@ class UnFavoriteActionButton extends ConsumerWidget {
   final ActionSource source;
   final bool menuItem;
 
-  const UnFavoriteActionButton({
-    super.key,
-    required this.source,
-    this.menuItem = false,
-  });
+  const UnFavoriteActionButton({super.key, required this.source, this.menuItem = false});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -31,10 +27,7 @@ class UnFavoriteActionButton extends ConsumerWidget {
 
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'unfavorite_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'unfavorite_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

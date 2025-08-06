@@ -36,25 +36,18 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final showViewInTimelineButton = previousRouteName != TabShellRoute.name && previousRouteName != null;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
-    int opacity = ref.watch(
-      assetViewerProvider.select((state) => state.backgroundOpacity),
-    );
+    int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
     if (!showControls) {
       opacity = 0;
     }
 
-    final isCasting = ref.watch(
-      castProvider.select((c) => c.isCasting),
-    );
+    final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
     final websocketConnected = ref.watch(websocketProvider.select((c) => c.isConnected));
 
     final actions = <Widget>[
-      if (isCasting || (asset.hasRemote && websocketConnected))
-        const CastActionButton(
-          menuItem: true,
-        ),
+      if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
       if (showViewInTimelineButton)
         IconButton(
           onPressed: () async {
@@ -68,19 +61,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       if (asset.hasRemote && isOwner && !asset.isFavorite)
         const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
       if (asset.hasRemote && isOwner && asset.isFavorite)
-        const UnFavoriteActionButton(
-          source: ActionSource.viewer,
-          menuItem: true,
-        ),
+        const UnFavoriteActionButton(source: ActionSource.viewer, menuItem: true),
       if (asset.isMotionPhoto) const MotionPhotoActionButton(menuItem: true),
       const _KebabMenu(),
     ];
 
     final lockedViewActions = <Widget>[
-      if (isCasting || (asset.hasRemote && websocketConnected))
-        const CastActionButton(
-          menuItem: true,
-        ),
+      if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
       const _KebabMenu(),
     ];
 
@@ -98,8 +85,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           actions: isShowingSheet
               ? null
               : isInLockedView
-                  ? lockedViewActions
-                  : actions,
+              ? lockedViewActions
+              : actions,
         ),
       ),
     );

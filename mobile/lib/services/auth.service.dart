@@ -111,10 +111,7 @@ class AuthService {
         _log.severe("Error clearing local data", error, stackTrace);
       });
 
-      await _appSettingsService.setSetting(
-        AppSettingsEnum.enableBackup,
-        false,
-      );
+      await _appSettingsService.setSetting(AppSettingsEnum.enableBackup, false);
     }
   }
 

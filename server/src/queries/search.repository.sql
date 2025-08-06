@@ -77,6 +77,27 @@ union all
 limit
   $15
 
+-- SearchRepository.searchLargeAssets
+select
+  "asset".*,
+  to_json("asset_exif") as "exifInfo"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."visibility" = $1
+  and "asset"."fileCreatedAt" >= $2
+  and "asset_exif"."lensModel" = $3
+  and "asset"."ownerId" = any ($4::uuid[])
+  and "asset"."isFavorite" = $5
+  and "asset"."deletedAt" is null
+  and "asset_exif"."fileSizeInByte" > $6
+order by
+  "asset_exif"."fileSizeInByte" desc
+limit
+  $7
+
 -- SearchRepository.searchSmart
 begin
 set

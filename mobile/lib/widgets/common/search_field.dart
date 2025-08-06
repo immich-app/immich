@@ -43,40 +43,22 @@ class SearchField extends StatelessWidget {
         contentPadding: contentPadding,
         filled: filled,
         fillColor: context.primaryColor.withValues(alpha: 0.1),
-        hintStyle: context.textTheme.bodyLarge?.copyWith(
-          color: context.themeData.colorScheme.onSurfaceSecondary,
-        ),
+        hintStyle: context.textTheme.bodyLarge?.copyWith(color: context.themeData.colorScheme.onSurfaceSecondary),
         border: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(25),
-          ),
-          borderSide: BorderSide(
-            color: context.colorScheme.surfaceDim,
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(25)),
+          borderSide: BorderSide(color: context.colorScheme.surfaceDim),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(25),
-          ),
-          borderSide: BorderSide(
-            color: context.colorScheme.surfaceContainer,
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(25)),
+          borderSide: BorderSide(color: context.colorScheme.surfaceContainer),
         ),
         disabledBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(25),
-          ),
-          borderSide: BorderSide(
-            color: context.colorScheme.surfaceDim,
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(25)),
+          borderSide: BorderSide(color: context.colorScheme.surfaceDim),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(
-            Radius.circular(25),
-          ),
-          borderSide: BorderSide(
-            color: context.colorScheme.primary.withAlpha(100),
-          ),
+          borderRadius: const BorderRadius.all(Radius.circular(25)),
+          borderSide: BorderSide(color: context.colorScheme.primary.withAlpha(100)),
         ),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,

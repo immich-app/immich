@@ -43,17 +43,10 @@ class DeleteTrashActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextButton.icon(
-      icon: Icon(
-        Icons.delete_forever,
-        color: Colors.red[400],
-      ),
+      icon: Icon(Icons.delete_forever, color: Colors.red[400]),
       label: Text(
         "delete".t(context: context),
-        style: TextStyle(
-          fontSize: 14,
-          color: Colors.red[400],
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontSize: 14, color: Colors.red[400], fontWeight: FontWeight.bold),
       ),
       onPressed: () => _onTap(context, ref),
     );

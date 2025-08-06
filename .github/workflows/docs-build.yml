@@ -18,7 +18,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      should_run: ${{ steps.found_paths.outputs.docs == 'true' ||  steps.should_force.outputs.should_force == 'true' }}
+      should_run: ${{ steps.found_paths.outputs.docs == 'true' || steps.found_paths.outputs.open-api == 'true' ||  steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -32,6 +32,8 @@ jobs:
               - 'docs/**'
             workflow:
               - '.github/workflows/docs-build.yml'
+            open-api:
+              - 'open-api/immich-openapi-specs.json'
       - name: Check if we should force jobs to run
         id: should_force
         run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'release' || github.ref_name == 'main' }}" >> "$GITHUB_OUTPUT"

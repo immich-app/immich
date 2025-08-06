@@ -14,14 +14,7 @@ final getPreviewPlacesProvider = FutureProvider.autoDispose<List<SearchCuratedCo
 
   final locations = exploreData.firstWhere((data) => data.fieldName == "exifInfo.city").items;
 
-  final curatedContent = locations
-      .map(
-        (l) => SearchCuratedContent(
-          label: l.value,
-          id: l.data.id,
-        ),
-      )
-      .toList();
+  final curatedContent = locations.map((l) => SearchCuratedContent(label: l.value, id: l.data.id)).toList();
 
   return curatedContent;
 });
@@ -36,12 +29,7 @@ final getAllPlacesProvider = FutureProvider.autoDispose<List<SearchCuratedConten
   }
 
   final curatedContent = assetPlaces
-      .map(
-        (data) => SearchCuratedContent(
-          label: data.exifInfo!.city!,
-          id: data.id,
-        ),
-      )
+      .map((data) => SearchCuratedContent(label: data.exifInfo!.city!, id: data.id))
       .toList();
 
   return curatedContent;

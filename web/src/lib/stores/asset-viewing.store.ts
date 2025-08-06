@@ -19,7 +19,7 @@ function createAssetViewingStore() {
   };
 
   const setAssetId = async (id: string): Promise<AssetResponseDto> => {
-    const asset = await getAssetInfo({ id, key: authManager.key });
+    const asset = await getAssetInfo({ ...authManager.params, id });
     setAsset(asset);
     return asset;
   };

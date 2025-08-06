@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -9,9 +11,10 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -49,6 +52,28 @@ void main() {
     );
   }
 
+  final owner = UserDto(
+    id: "1",
+    updatedAt: DateTime.now(),
+    email: "a@b.c",
+    name: "first last",
+    isAdmin: false,
+    profileChangedAt: DateTime.now(),
+  );
+
+  setUpAll(() async {
+    final loggerDb = DriftLogger(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    final LogRepository logRepository = LogRepository(loggerDb);
+
+    WidgetsFlutterBinding.ensureInitialized();
+    final db = await TestUtils.initIsar();
+
+    db.writeTxnSync(() => db.clearSync());
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
+    await Store.put(StoreKey.currentUser, owner);
+    await LogService.init(logRepository: logRepository, storeRepository: IsarStoreRepository(db));
+  });
+
   group('Test SyncService grouped', () {
     final MockHashService hs = MockHashService();
     final MockEntityService entityService = MockEntityService();
@@ -72,20 +97,11 @@ void main() {
       email: "a@b.c",
       name: "first last",
       isAdmin: false,
+      profileChangedAt: DateTime(2021),
     );
-    late SyncService s;
-    setUpAll(() async {
-      WidgetsFlutterBinding.ensureInitialized();
-      final db = await TestUtils.initIsar();
 
-      db.writeTxnSync(() => db.clearSync());
-      await StoreService.init(storeRepository: IsarStoreRepository(db));
-      await Store.put(StoreKey.currentUser, owner);
-      await LogService.init(
-        logRepository: IsarLogRepository(db),
-        storeRepository: IsarStoreRepository(db),
-      );
-    });
+    late SyncService s;
+
     final List<Asset> initialAssets = [
       makeAsset(checksum: "a", remoteId: "0-1"),
       makeAsset(checksum: "b", remoteId: "2-1"),
@@ -119,22 +135,20 @@ void main() {
       when(() => userRepository.getAll(sortBy: SortUserBy.id)).thenAnswer((_) async => [owner]);
       when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
       when(
-        () => assetRepository.getAll(
-          ownerId: owner.id,
-          sortBy: AssetSort.checksum,
-        ),
+        () => assetRepository.getAll(ownerId: owner.id, sortBy: AssetSort.checksum),
       ).thenAnswer((_) async => initialAssets);
-      when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
-          .thenAnswer((_) async => [initialAssets[3], null, null]);
+      when(
+        () => assetRepository.getAllByOwnerIdChecksum(any(), any()),
+      ).thenAnswer((_) async => [initialAssets[3], null, null]);
       when(() => assetRepository.updateAll(any())).thenAnswer((_) async => []);
       when(() => assetRepository.deleteByIds(any())).thenAnswer((_) async {});
       when(() => exifInfoRepository.updateAll(any())).thenAnswer((_) async => []);
-      when(() => assetRepository.transaction<void>(any())).thenAnswer(
-        (call) => (call.positionalArguments.first as Function).call(),
-      );
-      when(() => assetRepository.transaction<Null>(any())).thenAnswer(
-        (call) => (call.positionalArguments.first as Function).call(),
-      );
+      when(
+        () => assetRepository.transaction<void>(any()),
+      ).thenAnswer((call) => (call.positionalArguments.first as Function).call());
+      when(
+        () => assetRepository.transaction<Null>(any()),
+      ).thenAnswer((call) => (call.positionalArguments.first as Function).call());
       when(() => userApiRepository.getAll()).thenAnswer((_) async => [owner]);
       registerFallbackValue(Direction.sharedByMe);
       when(() => partnerApiRepository.getAll(any())).thenAnswer((_) async => []);
@@ -170,9 +184,7 @@ void main() {
       );
       expect(c1, isTrue);
       final updatedAsset = initialAssets[3].updatedCopy(remoteAssets[3]);
-      verify(
-        () => assetRepository.updateAll([remoteAssets[4], remoteAssets[5], updatedAsset]),
-      );
+      verify(() => assetRepository.updateAll([remoteAssets[4], remoteAssets[5], updatedAsset]));
     });
 
     test('test syncing duplicate assets', () async {
@@ -191,10 +203,7 @@ void main() {
       );
       expect(c1, isTrue);
       when(
-        () => assetRepository.getAll(
-          ownerId: owner.id,
-          sortBy: AssetSort.checksum,
-        ),
+        () => assetRepository.getAll(ownerId: owner.id, sortBy: AssetSort.checksum),
       ).thenAnswer((_) async => remoteAssets);
       final bool c2 = await s.syncRemoteAssetsToDb(
         users: [owner],
@@ -204,10 +213,7 @@ void main() {
       expect(c2, isFalse);
       final currentState = [...remoteAssets];
       when(
-        () => assetRepository.getAll(
-          ownerId: owner.id,
-          sortBy: AssetSort.checksum,
-        ),
+        () => assetRepository.getAll(ownerId: owner.id, sortBy: AssetSort.checksum),
       ).thenAnswer((_) async => currentState);
       remoteAssets.removeAt(4);
       final bool c3 = await s.syncRemoteAssetsToDb(
@@ -228,18 +234,19 @@ void main() {
 
     test('test efficient sync', () async {
       when(
-        () => assetRepository.deleteAllByRemoteId(
-          [initialAssets[1].remoteId!, initialAssets[2].remoteId!],
-          state: AssetState.remote,
-        ),
+        () => assetRepository.deleteAllByRemoteId([
+          initialAssets[1].remoteId!,
+          initialAssets[2].remoteId!,
+        ], state: AssetState.remote),
       ).thenAnswer((_) async {
         return;
       });
       when(
         () => assetRepository.getAllByRemoteId(["2-1", "1-1"], state: AssetState.merged),
       ).thenAnswer((_) async => [initialAssets[2]]);
-      when(() => assetRepository.getAllByOwnerIdChecksum(any(), any()))
-          .thenAnswer((_) async => [initialAssets[0], null, null]); //afg
+      when(
+        () => assetRepository.getAllByOwnerIdChecksum(any(), any()),
+      ).thenAnswer((_) async => [initialAssets[0], null, null]); //afg
       final List<Asset> toUpsert = [
         makeAsset(checksum: "a", remoteId: "0-1"), // changed
         makeAsset(checksum: "f", remoteId: "0-2"), // new
@@ -262,18 +269,11 @@ void main() {
       test('test upsert with EXIF data', () async {
         final assets = [AssetStub.image1, AssetStub.image2];
 
-        expect(
-          assets.map((a) => a.exifInfo?.assetId),
-          List.filled(assets.length, null),
-        );
+        expect(assets.map((a) => a.exifInfo?.assetId), List.filled(assets.length, null));
         await s.upsertAssetsWithExif(assets);
         verify(
           () => exifInfoRepository.updateAll(
-            any(
-              that: containsAll(
-                assets.map((a) => a.exifInfo!.copyWith(assetId: a.id)),
-              ),
-            ),
+            any(that: containsAll(assets.map((a) => a.exifInfo!.copyWith(assetId: a.id)))),
           ),
         );
         expect(assets.map((a) => a.exifInfo?.assetId), assets.map((a) => a.id));
@@ -282,8 +282,4 @@ void main() {
   });
 }
 
-Future<(List<Asset>?, List<String>?)> _failDiff(
-  List<UserDto> user,
-  DateTime time,
-) =>
-    Future.value((null, null));
+Future<(List<Asset>?, List<String>?)> _failDiff(List<UserDto> user, DateTime time) => Future.value((null, null));

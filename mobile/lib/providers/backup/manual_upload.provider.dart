@@ -56,44 +56,43 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     this._backupAlbumService,
     this.ref,
   ) : super(
-          ManualUploadState(
-            progressInPercentage: 0,
-            progressInFileSize: "0 B / 0 B",
-            progressInFileSpeed: 0,
-            progressInFileSpeeds: const [],
-            progressInFileSpeedUpdateTime: DateTime.now(),
-            progressInFileSpeedUpdateSentBytes: 0,
-            cancelToken: CancellationToken(),
-            currentUploadAsset: CurrentUploadAsset(
-              id: '...',
-              fileCreatedAt: DateTime.parse('2020-10-04'),
-              fileName: '...',
-              fileType: '...',
-            ),
-            totalAssetsToUpload: 0,
-            successfulUploads: 0,
-            currentAssetIndex: 0,
-            showDetailedNotification: false,
+        ManualUploadState(
+          progressInPercentage: 0,
+          progressInFileSize: "0 B / 0 B",
+          progressInFileSpeed: 0,
+          progressInFileSpeeds: const [],
+          progressInFileSpeedUpdateTime: DateTime.now(),
+          progressInFileSpeedUpdateSentBytes: 0,
+          cancelToken: CancellationToken(),
+          currentUploadAsset: CurrentUploadAsset(
+            id: '...',
+            fileCreatedAt: DateTime.parse('2020-10-04'),
+            fileName: '...',
+            fileType: '...',
           ),
-        );
+          totalAssetsToUpload: 0,
+          successfulUploads: 0,
+          currentAssetIndex: 0,
+          showDetailedNotification: false,
+        ),
+      );
 
   String _lastPrintedDetailContent = '';
   String? _lastPrintedDetailTitle;
 
   static const notifyInterval = Duration(milliseconds: 500);
   late final ThrottleProgressUpdate _throttledNotifiy = ThrottleProgressUpdate(_updateProgress, notifyInterval);
-  late final ThrottleProgressUpdate _throttledDetailNotify =
-      ThrottleProgressUpdate(_updateDetailProgress, notifyInterval);
+  late final ThrottleProgressUpdate _throttledDetailNotify = ThrottleProgressUpdate(
+    _updateDetailProgress,
+    notifyInterval,
+  );
 
   void _updateProgress(String? title, int progress, int total) {
     // Guard against throttling calling this method after the upload is done
     if (_backupProvider.backupProgress == BackUpProgressEnum.manualInProgress) {
       _localNotificationService.showOrUpdateManualUploadStatus(
         "backup_background_service_in_progress_notification".tr(),
-        formatAssetBackupProgress(
-          state.currentAssetIndex,
-          state.totalAssetsToUpload,
-        ),
+        formatAssetBackupProgress(state.currentAssetIndex, state.totalAssetsToUpload),
         maxProgress: state.totalAssetsToUpload,
         progress: state.currentAssetIndex,
         showActions: true,
@@ -146,9 +145,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     }
 
     if (duration.inSeconds > 0) {
-      lastUploadSpeeds.add(
-        ((sent - lastSentBytes) / duration.inSeconds).abs().roundToDouble(),
-      );
+      lastUploadSpeeds.add(((sent - lastSentBytes) / duration.inSeconds).abs().roundToDouble());
 
       lastUploadSpeed = lastUploadSpeeds.average.abs().roundToDouble();
       lastUpdateTime = now;
@@ -165,23 +162,22 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     );
 
     if (state.showDetailedNotification) {
-      final title = "backup_background_service_current_upload_notification"
-          .tr(namedArgs: {'filename': state.currentUploadAsset.fileName});
+      final title = "backup_background_service_current_upload_notification".tr(
+        namedArgs: {'filename': state.currentUploadAsset.fileName},
+      );
       _throttledDetailNotify(title: title, progress: sent, total: total);
     }
   }
 
   void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset) {
-    state = state.copyWith(
-      currentUploadAsset: currentUploadAsset,
-      currentAssetIndex: state.currentAssetIndex + 1,
-    );
+    state = state.copyWith(currentUploadAsset: currentUploadAsset, currentAssetIndex: state.currentAssetIndex + 1);
     if (state.totalAssetsToUpload > 1) {
       _throttledNotifiy();
     }
     if (state.showDetailedNotification) {
-      _throttledDetailNotify.title = "backup_background_service_current_upload_notification"
-          .tr(namedArgs: {'filename': currentUploadAsset.fileName});
+      _throttledDetailNotify.title = "backup_background_service_current_upload_notification".tr(
+        namedArgs: {'filename': currentUploadAsset.fileName},
+      );
       _throttledDetailNotify.progress = 0;
       _throttledDetailNotify.total = 0;
     }
@@ -216,10 +212,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         // Extrack candidate from allAssetsFromDevice
         final uploadAssets = candidates.where(
           (candidate) =>
-              allAssetsFromDevice.firstWhereOrNull(
-                (asset) => asset.localId == candidate.asset.localId,
-              ) !=
-              null,
+              allAssetsFromDevice.firstWhereOrNull((asset) => asset.localId == candidate.asset.localId) != null,
         );
 
         if (uploadAssets.isEmpty) {
@@ -251,14 +244,15 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         }
 
         // Show detailed asset if enabled in settings or if a single asset is uploaded
-        bool showDetailedNotification = ref.read(appSettingsServiceProvider).getSetting<bool>(
-                  AppSettingsEnum.backgroundBackupSingleProgress,
-                ) ||
+        bool showDetailedNotification =
+            ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.backgroundBackupSingleProgress) ||
             state.totalAssetsToUpload == 1;
         state = state.copyWith(showDetailedNotification: showDetailedNotification);
         final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
-        final bool ok = await ref.read(backupServiceProvider).backupAsset(
+        final bool ok = await ref
+            .read(backupServiceProvider)
+            .backupAsset(
               uploadAssets,
               state.cancelToken,
               pmProgressHandler: pmProgressHandler,
@@ -269,9 +263,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             );
 
         // Close detailed notification
-        await _localNotificationService.closeNotification(
-          LocalNotificationService.manualUploadDetailedNotificationID,
-        );
+        await _localNotificationService.closeNotification(LocalNotificationService.manualUploadDetailedNotificationID);
 
         _log.info(
           '[_startUpload] Manual Upload Completed - success: ${state.successfulUploads},'
@@ -310,9 +302,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     } finally {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
       _handleAppInActivity();
-      await _localNotificationService.closeNotification(
-        LocalNotificationService.manualUploadDetailedNotificationID,
-      );
+      await _localNotificationService.closeNotification(LocalNotificationService.manualUploadDetailedNotificationID);
       await _backupProvider.notifyBackgroundServiceCanRun();
     }
     return !hasErrors;
@@ -345,10 +335,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     );
   }
 
-  Future<bool> uploadAssets(
-    BuildContext context,
-    Iterable<Asset> allManualUploads,
-  ) async {
+  Future<bool> uploadAssets(BuildContext context, Iterable<Asset> allManualUploads) async {
     // assumes the background service is currently running and
     // waits until it has stopped to start the backup.
     final bool hasLock = await ref.read(backgroundServiceProvider).acquireLock();

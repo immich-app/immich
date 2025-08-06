@@ -9,13 +9,7 @@ class PhotoViewDefaultError extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: decoration,
-      child: Center(
-        child: Icon(
-          Icons.broken_image,
-          color: Colors.grey[400],
-          size: 40.0,
-        ),
-      ),
+      child: Center(child: Icon(Icons.broken_image, color: Colors.grey[400], size: 40.0)),
     );
   }
 }
@@ -32,11 +26,7 @@ class PhotoViewDefaultLoading extends StatelessWidget {
     final value = loadedBytes != null && expectedBytes != null ? loadedBytes / expectedBytes : null;
 
     return Center(
-      child: SizedBox(
-        width: 20.0,
-        height: 20.0,
-        child: CircularProgressIndicator(value: value),
-      ),
+      child: SizedBox(width: 20.0, height: 20.0, child: CircularProgressIndicator(value: value)),
     );
   }
 }

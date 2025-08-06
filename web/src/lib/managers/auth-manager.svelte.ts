@@ -6,7 +6,8 @@ import { isSharedLinkRoute } from '$lib/utils/navigation';
 import { logout } from '@immich/sdk';
 
 class AuthManager {
-  key = $derived(isSharedLinkRoute(page.route?.id) ? page.params.key : undefined);
+  isSharedLink = $derived(isSharedLinkRoute(page.route?.id));
+  params = $derived(this.isSharedLink ? { key: page.params.key, slug: page.params.slug } : {});
 
   async logout() {
     let redirectUri;

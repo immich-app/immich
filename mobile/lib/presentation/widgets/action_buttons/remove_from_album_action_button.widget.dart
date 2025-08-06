@@ -12,11 +12,7 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
   final String albumId;
   final ActionSource source;
 
-  const RemoveFromAlbumActionButton({
-    super.key,
-    required this.albumId,
-    required this.source,
-  });
+  const RemoveFromAlbumActionButton({super.key, required this.albumId, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -47,6 +43,7 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
       iconData: Icons.remove_circle_outline,
       label: "remove_from_album".t(context: context),
       onPressed: () => _onTap(context, ref),
+      maxWidth: 100,
     );
   }
 }

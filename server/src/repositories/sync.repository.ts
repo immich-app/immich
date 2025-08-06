@@ -1,37 +1,48 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely, SelectQueryBuilder, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { SyncAck } from 'src/types';
 
-type AuditTables =
-  | 'user_audit'
-  | 'partner_audit'
-  | 'asset_audit'
-  | 'album_audit'
-  | 'album_user_audit'
-  | 'album_asset_audit'
-  | 'memory_audit'
-  | 'memory_asset_audit'
-  | 'stack_audit'
-  | 'person_audit'
-  | 'user_metadata_audit'
-  | 'asset_face_audit';
-type UpsertTables =
-  | 'user'
-  | 'partner'
-  | 'asset'
-  | 'asset_exif'
-  | 'album'
-  | 'album_user'
-  | 'memory'
-  | 'memory_asset'
-  | 'stack'
-  | 'person'
-  | 'user_metadata'
-  | 'asset_face';
+export type SyncBackfillOptions = {
+  nowId: string;
+  afterUpdateId?: string;
+  beforeUpdateId: string;
+};
+
+const dummyBackfillOptions = {
+  nowId: DummyValue.UUID,
+  beforeUpdateId: DummyValue.UUID,
+  afterUpdateId: DummyValue.UUID,
+};
+
+export type SyncCreatedAfterOptions = {
+  nowId: string;
+  userId: string;
+  afterCreateId?: string;
+};
+
+const dummyCreateAfterOptions = {
+  nowId: DummyValue.UUID,
+  userId: DummyValue.UUID,
+  afterCreateId: DummyValue.UUID,
+};
+
+export type SyncQueryOptions = {
+  nowId: string;
+  userId: string;
+  ack?: SyncAck;
+};
+
+const dummyQueryOptions = {
+  nowId: DummyValue.UUID,
+  userId: DummyValue.UUID,
+  ack: {
+    updateId: DummyValue.UUID,
+  },
+};
 
 @Injectable()
 export class SyncRepository {
@@ -81,58 +92,67 @@ export class SyncRepository {
 class BaseSync {
   constructor(protected db: Kysely<DB>) {}
 
-  protected auditTableFilters(ack?: SyncAck) {
-    return <T extends keyof Pick<DB, AuditTables>, D>(qb: SelectQueryBuilder<DB, T, D>) => {
-      const builder = qb as SelectQueryBuilder<DB, AuditTables, D>;
-      return builder
-        .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-        .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-        .orderBy('id', 'asc') as SelectQueryBuilder<DB, T, D>;
-    };
+  protected backfillQuery<T extends keyof DB>(t: T, { nowId, beforeUpdateId, afterUpdateId }: SyncBackfillOptions) {
+    const { table, ref } = this.db.dynamic;
+    const updateIdRef = ref(`${t}.updateId`);
+
+    return this.db
+      .selectFrom(table(t).as(t))
+      .where(updateIdRef, '<', nowId)
+      .where(updateIdRef, '<=', beforeUpdateId)
+      .$if(!!afterUpdateId, (qb) => qb.where(updateIdRef, '>=', afterUpdateId!))
+      .orderBy(updateIdRef, 'asc');
   }
 
-  protected upsertTableFilters(ack?: SyncAck) {
-    return <T extends keyof Pick<DB, UpsertTables>, D>(qb: SelectQueryBuilder<DB, T, D>) => {
-      const builder = qb as SelectQueryBuilder<DB, UpsertTables, D>;
-      return builder
-        .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-        .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-        .orderBy('updateId', 'asc') as SelectQueryBuilder<DB, T, D>;
-    };
+  protected auditQuery<T extends keyof DB>(t: T, { nowId, ack }: SyncQueryOptions) {
+    const { table, ref } = this.db.dynamic;
+    const idRef = ref(`${t}.id`);
+
+    return this.db
+      .selectFrom(table(t).as(t))
+      .where(idRef, '<', nowId)
+      .$if(!!ack, (qb) => qb.where(idRef, '>', ack!.updateId))
+      .orderBy(idRef, 'asc');
+  }
+
+  protected upsertQuery<T extends keyof DB>(t: T, { nowId, ack }: SyncQueryOptions) {
+    const { table, ref } = this.db.dynamic;
+    const updateIdRef = ref(`${t}.updateId`);
+
+    return this.db
+      .selectFrom(table(t).as(t))
+      .where(updateIdRef, '<', nowId)
+      .$if(!!ack, (qb) => qb.where(updateIdRef, '>', ack!.updateId))
+      .orderBy(updateIdRef, 'asc');
   }
 }
 
 class AlbumSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  getCreatedAfter(userId: string, afterCreateId?: string) {
+  @GenerateSql({ params: [dummyCreateAfterOptions] })
+  getCreatedAfter({ nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
     return this.db
       .selectFrom('album_user')
       .select(['albumsId as id', 'createId'])
       .where('usersId', '=', userId)
       .$if(!!afterCreateId, (qb) => qb.where('createId', '>=', afterCreateId!))
-      .where('createdAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('createId', '<', nowId)
       .orderBy('createId', 'asc')
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('album_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('album_audit', options)
       .select(['id', 'albumId'])
-      .where('userId', '=', userId)
-      .$call(this.auditTableFilters(ack))
+      .where('userId', '=', options.userId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('album')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.upsertQuery('album', options)
       .distinctOn(['album.id', 'album.updateId'])
-      .where('album.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('album.updateId', '>', ack!.updateId))
-      .orderBy('album.updateId', 'asc')
       .leftJoin('album_user as album_users', 'album.id', 'album_users.albumsId')
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_users.usersId', '=', userId)]))
       .select([
@@ -152,31 +172,37 @@ class AlbumSync extends BaseSync {
 }
 
 class AlbumAssetSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
-  getBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
-    return this.db
-      .selectFrom('asset')
-      .innerJoin('album_asset', 'album_asset.assetsId', 'asset.id')
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, albumId: string) {
+    return this.backfillQuery('album_asset', options)
+      .innerJoin('asset', 'asset.id', 'album_asset.assetsId')
       .select(columns.syncAsset)
-      .select('asset.updateId')
+      .select('album_asset.updateId')
       .where('album_asset.albumsId', '=', albumId)
-      .where('asset.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('asset.updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('asset.updateId', '>=', afterUpdateId!))
-      .orderBy('asset.updateId', 'asc')
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset')
+  @GenerateSql({ params: [dummyQueryOptions, { updateId: DummyValue.UUID }], stream: true })
+  getUpdates(options: SyncQueryOptions, albumToAssetAck: SyncAck) {
+    const userId = options.userId;
+    return this.upsertQuery('asset', options)
       .innerJoin('album_asset', 'album_asset.assetsId', 'asset.id')
       .select(columns.syncAsset)
       .select('asset.updateId')
-      .where('asset.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('asset.updateId', '>', ack!.updateId))
-      .orderBy('asset.updateId', 'asc')
+      .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send updates for assets that the client already knows about
+      .innerJoin('album', 'album.id', 'album_asset.albumsId')
+      .leftJoin('album_user', 'album_user.albumsId', 'album_asset.albumsId')
+      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.usersId', '=', userId)]))
+      .stream();
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getCreates(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.upsertQuery('album_asset', options)
+      .select('album_asset.updateId')
+      .innerJoin('asset', 'asset.id', 'album_asset.assetsId')
+      .select(columns.syncAsset)
       .innerJoin('album', 'album.id', 'album_asset.albumsId')
       .leftJoin('album_user', 'album_user.albumsId', 'album_asset.albumsId')
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.usersId', '=', userId)]))
@@ -185,31 +211,37 @@ class AlbumAssetSync extends BaseSync {
 }
 
 class AlbumAssetExifSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
-  getBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
-    return this.db
-      .selectFrom('asset_exif')
-      .innerJoin('album_asset', 'album_asset.assetsId', 'asset_exif.assetId')
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, albumId: string) {
+    return this.backfillQuery('album_asset', options)
+      .innerJoin('asset_exif', 'asset_exif.assetId', 'album_asset.assetsId')
       .select(columns.syncAssetExif)
-      .select('asset_exif.updateId')
+      .select('album_asset.updateId')
       .where('album_asset.albumsId', '=', albumId)
-      .where('asset_exif.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('asset_exif.updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('asset_exif.updateId', '>=', afterUpdateId!))
-      .orderBy('asset_exif.updateId', 'asc')
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset_exif')
+  @GenerateSql({ params: [dummyQueryOptions, { updateId: DummyValue.UUID }], stream: true })
+  getUpdates(options: SyncQueryOptions, albumToAssetAck: SyncAck) {
+    const userId = options.userId;
+    return this.upsertQuery('asset_exif', options)
       .innerJoin('album_asset', 'album_asset.assetsId', 'asset_exif.assetId')
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
-      .where('asset_exif.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('asset_exif.updateId', '>', ack!.updateId))
-      .orderBy('asset_exif.updateId', 'asc')
+      .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send exif updates for assets that the client already knows about
+      .innerJoin('album', 'album.id', 'album_asset.albumsId')
+      .leftJoin('album_user', 'album_user.albumsId', 'album_asset.albumsId')
+      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.usersId', '=', userId)]))
+      .stream();
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getCreates(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.upsertQuery('album_asset', options)
+      .select('album_asset.updateId')
+      .innerJoin('asset_exif', 'asset_exif.assetId', 'album_asset.assetsId')
+      .select(columns.syncAssetExif)
       .innerJoin('album', 'album.id', 'album_asset.albumsId')
       .leftJoin('album_user', 'album_user.albumsId', 'album_asset.albumsId')
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.usersId', '=', userId)]))
@@ -218,23 +250,18 @@ class AlbumAssetExifSync extends BaseSync {
 }
 
 class AlbumToAssetSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
-  getBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
-    return this.db
-      .selectFrom('album_asset as album_assets')
-      .select(['album_assets.assetsId as assetId', 'album_assets.albumsId as albumId', 'album_assets.updateId'])
-      .where('album_assets.albumsId', '=', albumId)
-      .where('album_assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('album_assets.updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('album_assets.updateId', '>=', afterUpdateId!))
-      .orderBy('album_assets.updateId', 'asc')
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, albumId: string) {
+    return this.backfillQuery('album_asset', options)
+      .select(['album_asset.assetsId as assetId', 'album_asset.albumsId as albumId', 'album_asset.updateId'])
+      .where('album_asset.albumsId', '=', albumId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('album_asset_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.auditQuery('album_asset_audit', options)
       .select(['id', 'assetId', 'albumId'])
       .where((eb) =>
         eb(
@@ -254,18 +281,14 @@ class AlbumToAssetSync extends BaseSync {
             ),
         ),
       )
-      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('album_asset')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.upsertQuery('album_asset', options)
       .select(['album_asset.assetsId as assetId', 'album_asset.albumsId as albumId', 'album_asset.updateId'])
-      .where('album_asset.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('album_asset.updateId', '>', ack!.updateId))
-      .orderBy('album_asset.updateId', 'asc')
       .innerJoin('album', 'album.id', 'album_asset.albumsId')
       .leftJoin('album_user', 'album_user.albumsId', 'album_asset.albumsId')
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('album_user.usersId', '=', userId)]))
@@ -274,24 +297,19 @@ class AlbumToAssetSync extends BaseSync {
 }
 
 class AlbumUserSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
-  getBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
-    return this.db
-      .selectFrom('album_user')
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, albumId: string) {
+    return this.backfillQuery('album_user', options)
       .select(columns.syncAlbumUser)
       .select('album_user.updateId')
       .where('albumsId', '=', albumId)
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
-      .orderBy('updateId', 'asc')
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('album_user_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.auditQuery('album_user_audit', options)
       .select(['id', 'userId', 'albumId'])
       .where((eb) =>
         eb(
@@ -311,19 +329,15 @@ class AlbumUserSync extends BaseSync {
             ),
         ),
       )
-      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('album_user')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.upsertQuery('album_user', options)
       .select(columns.syncAlbumUser)
       .select('album_user.updateId')
-      .where('album_user.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('album_user.updateId', '>', ack!.updateId))
-      .orderBy('album_user.updateId', 'asc')
       .where((eb) =>
         eb(
           'album_user.albumsId',
@@ -347,64 +361,46 @@ class AlbumUserSync extends BaseSync {
 }
 
 class AssetSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('asset_audit', options)
       .select(['id', 'assetId'])
-      .where('ownerId', '=', userId)
-      .$call(this.auditTableFilters(ack))
+      .where('ownerId', '=', options.userId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset', options)
       .select(columns.syncAsset)
       .select('asset.updateId')
-      .where('ownerId', '=', userId)
-      .$call(this.upsertTableFilters(ack))
+      .where('ownerId', '=', options.userId)
       .stream();
   }
 }
 
 class AuthUserSync extends BaseSync {
-  @GenerateSql({ params: [], stream: true })
-  getUpserts(ack?: SyncAck) {
-    return this.db
-      .selectFrom('user')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('user', options)
       .select(columns.syncUser)
-      .select([
-        'isAdmin',
-        'pinCode',
-        'oauthId',
-        'storageLabel',
-        'quotaSizeInBytes',
-        'quotaUsageInBytes',
-        'profileImagePath',
-        'profileChangedAt',
-      ])
-      .$call(this.upsertTableFilters(ack))
+      .select(['isAdmin', 'pinCode', 'oauthId', 'storageLabel', 'quotaSizeInBytes', 'quotaUsageInBytes'])
       .stream();
   }
 }
 
 class PersonSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('person_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('person_audit', options)
       .select(['id', 'personId'])
-      .where('ownerId', '=', userId)
-      .$call(this.auditTableFilters(ack))
+      .where('ownerId', '=', options.userId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('person')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('person', options)
       .select([
         'id',
         'createdAt',
@@ -418,30 +414,24 @@ class PersonSync extends BaseSync {
         'updateId',
         'faceAssetId',
       ])
-      .where('ownerId', '=', userId)
-      .$call(this.upsertTableFilters(ack))
+      .where('ownerId', '=', options.userId)
       .stream();
   }
 }
 
 class AssetFaceSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset_face_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('asset_face_audit', options)
       .select(['asset_face_audit.id', 'assetFaceId'])
-      .orderBy('asset_face_audit.id', 'asc')
       .leftJoin('asset', 'asset.id', 'asset_face_audit.assetId')
-      .where('asset.ownerId', '=', userId)
-      .where('asset_face_audit.deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('asset_face_audit.id', '>', ack!.updateId))
+      .where('asset.ownerId', '=', options.userId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset_face')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_face', options)
       .select([
         'asset_face.id',
         'assetId',
@@ -455,43 +445,35 @@ class AssetFaceSync extends BaseSync {
         'sourceType',
         'asset_face.updateId',
       ])
-      .where('asset_face.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('asset_face.updateId', '>', ack!.updateId))
-      .orderBy('asset_face.updateId', 'asc')
       .leftJoin('asset', 'asset.id', 'asset_face.assetId')
-      .where('asset.ownerId', '=', userId)
+      .where('asset.ownerId', '=', options.userId)
       .stream();
   }
 }
 
 class AssetExifSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset_exif')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_exif', options)
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
-      .where('assetId', 'in', (eb) => eb.selectFrom('asset').select('id').where('ownerId', '=', userId))
-      .$call(this.upsertTableFilters(ack))
+      .where('assetId', 'in', (eb) => eb.selectFrom('asset').select('id').where('ownerId', '=', options.userId))
       .stream();
   }
 }
 
 class MemorySync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('memory_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('memory_audit', options)
       .select(['id', 'memoryId'])
-      .where('userId', '=', userId)
-      .$call(this.auditTableFilters(ack))
+      .where('userId', '=', options.userId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('memory')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('memory', options)
       .select([
         'id',
         'createdAt',
@@ -507,130 +489,108 @@ class MemorySync extends BaseSync {
         'hideAt',
       ])
       .select('updateId')
-      .where('ownerId', '=', userId)
-      .$call(this.upsertTableFilters(ack))
+      .where('ownerId', '=', options.userId)
       .stream();
   }
 }
 
 class MemoryToAssetSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('memory_asset_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('memory_asset_audit', options)
       .select(['id', 'memoryId', 'assetId'])
-      .where('memoryId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', userId))
-      .$call(this.auditTableFilters(ack))
+      .where('memoryId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('memory_asset')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('memory_asset', options)
       .select(['memoriesId as memoryId', 'assetsId as assetId'])
       .select('updateId')
-      .where('memoriesId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', userId))
-      .$call(this.upsertTableFilters(ack))
+      .where('memoriesId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
       .stream();
   }
 }
 
 class PartnerSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  getCreatedAfter(userId: string, afterCreateId?: string) {
+  @GenerateSql({ params: [dummyCreateAfterOptions] })
+  getCreatedAfter({ nowId, userId, afterCreateId }: SyncCreatedAfterOptions) {
     return this.db
       .selectFrom('partner')
       .select(['sharedById', 'createId'])
       .where('sharedWithId', '=', userId)
       .$if(!!afterCreateId, (qb) => qb.where('createId', '>=', afterCreateId!))
-      .where('createdAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('createId', '<', nowId)
       .orderBy('partner.createId', 'asc')
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('partner_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.auditQuery('partner_audit', options)
       .select(['id', 'sharedById', 'sharedWithId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
-      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('partner')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.upsertQuery('partner', options)
       .select(['sharedById', 'sharedWithId', 'inTimeline', 'updateId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
-      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
 
 class PartnerAssetsSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
-  getBackfill(partnerId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
-    return this.db
-      .selectFrom('asset')
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, partnerId: string) {
+    return this.backfillQuery('asset', options)
       .select(columns.syncAsset)
       .select('asset.updateId')
       .where('ownerId', '=', partnerId)
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
-      .orderBy('updateId', 'asc')
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('asset_audit', options)
       .select(['id', 'assetId'])
       .where('ownerId', 'in', (eb) =>
-        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', userId),
+        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
       )
-      .$call(this.auditTableFilters(ack))
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset', options)
       .select(columns.syncAsset)
       .select('asset.updateId')
       .where('ownerId', 'in', (eb) =>
-        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', userId),
+        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
       )
-      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
 
 class PartnerAssetExifsSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
-  getBackfill(partnerId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
-    return this.db
-      .selectFrom('asset_exif')
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, partnerId: string) {
+    return this.backfillQuery('asset_exif', options)
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('asset.ownerId', '=', partnerId)
-      .where('asset_exif.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('asset_exif.updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('asset_exif.updateId', '>=', afterUpdateId!))
-      .orderBy('asset_exif.updateId', 'asc')
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('asset_exif')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('asset_exif', options)
       .select(columns.syncAssetExif)
       .select('asset_exif.updateId')
       .where('assetId', 'in', (eb) =>
@@ -638,106 +598,90 @@ class PartnerAssetExifsSync extends BaseSync {
           .selectFrom('asset')
           .select('id')
           .where('ownerId', 'in', (eb) =>
-            eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', userId),
+            eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
           ),
       )
-      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
 
 class StackSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('stack_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('stack_audit', options)
       .select(['id', 'stackId'])
-      .where('userId', '=', userId)
-      .$call(this.auditTableFilters(ack))
+      .where('userId', '=', options.userId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('stack')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('stack', options)
       .select(columns.syncStack)
       .select('updateId')
-      .where('ownerId', '=', userId)
-      .$call(this.upsertTableFilters(ack))
+      .where('ownerId', '=', options.userId)
       .stream();
   }
 }
 
 class PartnerStackSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('stack_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('stack_audit', options)
       .select(['id', 'stackId'])
-      .where('userId', 'in', (eb) => eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', userId))
-      .$call(this.auditTableFilters(ack))
+      .where('userId', 'in', (eb) =>
+        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
+      )
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
-  getBackfill(partnerId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
-    return this.db
-      .selectFrom('stack')
+  @GenerateSql({ params: [dummyBackfillOptions, DummyValue.UUID], stream: true })
+  getBackfill(options: SyncBackfillOptions, partnerId: string) {
+    return this.backfillQuery('stack', options)
       .select(columns.syncStack)
       .select('updateId')
       .where('ownerId', '=', partnerId)
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .where('updateId', '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (eb) => eb.where('updateId', '>=', afterUpdateId!))
-      .orderBy('updateId', 'asc')
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('stack')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('stack', options)
       .select(columns.syncStack)
       .select('updateId')
       .where('ownerId', 'in', (eb) =>
-        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', userId),
+        eb.selectFrom('partner').select(['sharedById']).where('sharedWithId', '=', options.userId),
       )
-      .$call(this.upsertTableFilters(ack))
       .stream();
   }
 }
 
 class UserSync extends BaseSync {
-  @GenerateSql({ params: [], stream: true })
-  getDeletes(ack?: SyncAck) {
-    return this.db.selectFrom('user_audit').select(['id', 'userId']).$call(this.auditTableFilters(ack)).stream();
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('user_audit', options).select(['id', 'userId']).stream();
   }
 
-  @GenerateSql({ params: [], stream: true })
-  getUpserts(ack?: SyncAck) {
-    return this.db.selectFrom('user').select(columns.syncUser).$call(this.upsertTableFilters(ack)).stream();
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('user', options).select(columns.syncUser).stream();
   }
 }
 
 class UserMetadataSync extends BaseSync {
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getDeletes(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('user_metadata_audit')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('user_metadata_audit', options)
       .select(['id', 'userId', 'key'])
-      .where('userId', '=', userId)
-      .$call(this.auditTableFilters(ack))
+      .where('userId', '=', options.userId)
       .stream();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getUpserts(userId: string, ack?: SyncAck) {
-    return this.db
-      .selectFrom('user_metadata')
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('user_metadata', options)
       .select(['userId', 'key', 'value', 'updateId'])
-      .where('userId', '=', userId)
-      .$call(this.upsertTableFilters(ack))
+      .where('userId', '=', options.userId)
       .stream();
   }
 }

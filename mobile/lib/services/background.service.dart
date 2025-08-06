@@ -14,6 +14,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
@@ -55,8 +56,10 @@ class BackgroundService {
   String _lastPrintedDetailContent = "";
   String? _lastPrintedDetailTitle;
   late final ThrottleProgressUpdate _throttledNotifiy = ThrottleProgressUpdate(_updateProgress, notifyInterval);
-  late final ThrottleProgressUpdate _throttledDetailNotify =
-      ThrottleProgressUpdate(_updateDetailProgress, notifyInterval);
+  late final ThrottleProgressUpdate _throttledDetailNotify = ThrottleProgressUpdate(
+    _updateDetailProgress,
+    notifyInterval,
+  );
 
   bool get isBackgroundInitialized {
     return _isBackgroundInitialized;
@@ -87,15 +90,12 @@ class BackgroundService {
     int triggerMaxDelay = 50000,
   }) async {
     try {
-      final bool ok = await _foregroundChannel.invokeMethod(
-        'configure',
-        [
-          requireUnmetered,
-          requireCharging,
-          triggerUpdateDelay,
-          triggerMaxDelay,
-        ],
-      );
+      final bool ok = await _foregroundChannel.invokeMethod('configure', [
+        requireUnmetered,
+        requireCharging,
+        triggerUpdateDelay,
+        triggerMaxDelay,
+      ]);
       return ok;
     } catch (error) {
       return false;
@@ -140,10 +140,7 @@ class BackgroundService {
   }
 
   Future<List<Uint8List?>?> digestFiles(List<String> paths) {
-    return _foregroundChannel.invokeListMethod<Uint8List?>(
-      "digestFiles",
-      paths,
-    );
+    return _foregroundChannel.invokeListMethod<Uint8List?>("digestFiles", paths);
   }
 
   /// Updates the notification shown by the background service
@@ -158,10 +155,15 @@ class BackgroundService {
   }) async {
     try {
       if (_isBackgroundInitialized) {
-        return _backgroundChannel.invokeMethod<bool>(
-          'updateNotification',
-          [title, content, progress, max, indeterminate, isDetail, onlyIfFG],
-        );
+        return _backgroundChannel.invokeMethod<bool>('updateNotification', [
+          title,
+          content,
+          progress,
+          max,
+          indeterminate,
+          isDetail,
+          onlyIfFG,
+        ]);
       }
     } catch (error) {
       debugPrint("[_updateNotification] failed to communicate with plugin");
@@ -170,11 +172,7 @@ class BackgroundService {
   }
 
   /// Shows a new priority notification
-  Future<bool> _showErrorNotification({
-    required String title,
-    String? content,
-    String? individualTag,
-  }) async {
+  Future<bool> _showErrorNotification({required String title, String? content, String? individualTag}) async {
     try {
       if (_isBackgroundInitialized && _errorGracePeriodExceeded) {
         return await _backgroundChannel.invokeMethod('showError', [title, content, individualTag]);
@@ -191,9 +189,7 @@ class BackgroundService {
         return await _backgroundChannel.invokeMethod('clearErrorNotifications');
       }
     } catch (error) {
-      debugPrint(
-        "[_clearErrorNotifications] failed to communicate with plugin",
-      );
+      debugPrint("[_clearErrorNotifications] failed to communicate with plugin");
     }
     return false;
   }
@@ -302,10 +298,7 @@ class BackgroundService {
           // indefinitely and can run later
           // Android is fine to wait here until the lock releases
           final waitForLock = Platform.isIOS
-              ? acquireLock().timeout(
-                  const Duration(seconds: 5),
-                  onTimeout: () => false,
-                )
+              ? acquireLock().timeout(const Duration(seconds: 5), onTimeout: () => false)
               : acquireLock();
 
           final bool hasAccess = await waitForLock;
@@ -339,22 +332,16 @@ class BackgroundService {
 
   Future<bool> _onAssetsChanged() async {
     final db = await Bootstrap.initIsar();
-    await Bootstrap.initDomain(db);
+    final logDb = DriftLogger();
+    await Bootstrap.initDomain(db, logDb);
 
-    final ref = ProviderContainer(
-      overrides: [
-        dbProvider.overrideWithValue(db),
-        isarProvider.overrideWithValue(db),
-      ],
-    );
+    final ref = ProviderContainer(overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)]);
 
     HttpSSLOptions.apply();
     ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));
     await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     if (kDebugMode) {
-      debugPrint(
-        "[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}",
-      );
+      debugPrint("[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}");
     }
 
     final selectedAlbums = await ref.read(backupAlbumRepositoryProvider).getAllBySelection(BackupSelection.select);
@@ -418,10 +405,7 @@ class BackgroundService {
       return false;
     }
 
-    Set<BackupCandidate> toUpload = await backupService.buildUploadCandidates(
-      selectedAlbums,
-      excludedAlbums,
-    );
+    Set<BackupCandidate> toUpload = await backupService.buildUploadCandidates(selectedAlbums, excludedAlbums);
 
     try {
       toUpload = await backupService.removeAlreadyUploadedAssets(toUpload);
@@ -444,12 +428,7 @@ class BackgroundService {
     _uploadedAssetsCount = 0;
     _updateNotification(
       title: "backup_background_service_in_progress_notification".tr(),
-      content: notifyTotalProgress
-          ? formatAssetBackupProgress(
-              _uploadedAssetsCount,
-              _assetsToUploadCount,
-            )
-          : null,
+      content: notifyTotalProgress ? formatAssetBackupProgress(_uploadedAssetsCount, _assetsToUploadCount) : null,
       progress: 0,
       max: notifyTotalProgress ? _assetsToUploadCount : 0,
       indeterminate: !notifyTotalProgress,
@@ -463,9 +442,7 @@ class BackgroundService {
       toUpload,
       _cancellationToken!,
       pmProgressHandler: pmProgressHandler,
-      onSuccess: (result) => _onAssetUploaded(
-        shouldNotify: notifyTotalProgress,
-      ),
+      onSuccess: (result) => _onAssetUploaded(shouldNotify: notifyTotalProgress),
       onProgress: (bytes, totalBytes) => _onProgress(bytes, totalBytes, shouldNotify: notifySingleProgress),
       onCurrentAsset: (asset) => _onSetCurrentBackupAsset(asset, shouldNotify: notifySingleProgress),
       onError: _onBackupError,
@@ -482,9 +459,7 @@ class BackgroundService {
     return ok;
   }
 
-  void _onAssetUploaded({
-    bool shouldNotify = false,
-  }) async {
+  void _onAssetUploaded({bool shouldNotify = false}) async {
     if (!shouldNotify) {
       return;
     }
@@ -522,31 +497,27 @@ class BackgroundService {
       progress: _uploadedAssetsCount,
       max: _assetsToUploadCount,
       title: title,
-      content: formatAssetBackupProgress(
-        _uploadedAssetsCount,
-        _assetsToUploadCount,
-      ),
+      content: formatAssetBackupProgress(_uploadedAssetsCount, _assetsToUploadCount),
     );
   }
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
     _showErrorNotification(
-      title:
-          "backup_background_service_upload_failure_notification".tr(namedArgs: {'filename': errorAssetInfo.fileName}),
+      title: "backup_background_service_upload_failure_notification".tr(
+        namedArgs: {'filename': errorAssetInfo.fileName},
+      ),
       individualTag: errorAssetInfo.id,
     );
   }
 
-  void _onSetCurrentBackupAsset(
-    CurrentUploadAsset currentUploadAsset, {
-    bool shouldNotify = false,
-  }) {
+  void _onSetCurrentBackupAsset(CurrentUploadAsset currentUploadAsset, {bool shouldNotify = false}) {
     if (!shouldNotify) {
       return;
     }
 
-    _throttledDetailNotify.title = "backup_background_service_current_upload_notification"
-        .tr(namedArgs: {'filename': currentUploadAsset.fileName});
+    _throttledDetailNotify.title = "backup_background_service_current_upload_notification".tr(
+      namedArgs: {'filename': currentUploadAsset.fileName},
+    );
     _throttledDetailNotify.progress = 0;
     _throttledDetailNotify.total = 0;
   }

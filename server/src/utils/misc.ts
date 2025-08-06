@@ -6,7 +6,11 @@ import {
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import { ReferenceObject, SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import {
+  OperationObject,
+  ReferenceObject,
+  SchemaObject,
+} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -15,7 +19,7 @@ import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
 import { extraSyncModels } from 'src/dtos/sync.dto';
-import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
+import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export class ImmichStartupError extends Error {}
@@ -198,7 +202,12 @@ const patchOpenAPI = (document: OpenAPIObject) => {
       trace: path.trace,
     };
 
-    for (const operation of Object.values(operations)) {
+    for (const operation of Object.values(operations) as Array<
+      OperationObject & {
+        [ApiCustomExtension.AdminOnly]?: boolean;
+        [ApiCustomExtension.Permission]?: string;
+      }
+    >) {
       if (!operation) {
         continue;
       }
@@ -211,12 +220,21 @@ const patchOpenAPI = (document: OpenAPIObject) => {
         // console.log(`${routeToErrorMessage(operation.operationId).padEnd(40)} (${operation.operationId})`);
       }
 
-      if (operation.description === '') {
-        delete operation.description;
-      }
+      const adminOnly = operation[ApiCustomExtension.AdminOnly] ?? false;
+      const permission = operation[ApiCustomExtension.Permission];
+      if (permission) {
+        let description = (operation.description || '').trim();
+        if (description && !description.endsWith('.')) {
+          description += '. ';
+        }
 
-      if (operation.parameters) {
-        operation.parameters = _.orderBy(operation.parameters, 'name');
+        operation.description =
+          description +
+          `This endpoint ${adminOnly ? 'is an admin-only route, and ' : ''}requires the \`${permission}\` permission.`;
+
+        if (operation.parameters) {
+          operation.parameters = _.orderBy(operation.parameters, 'name');
+        }
       }
     }
   }

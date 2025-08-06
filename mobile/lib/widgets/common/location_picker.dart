@@ -9,16 +9,11 @@ import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-Future<LatLng?> showLocationPicker({
-  required BuildContext context,
-  LatLng? initialLatLng,
-}) {
+Future<LatLng?> showLocationPicker({required BuildContext context, LatLng? initialLatLng}) {
   return showDialog<LatLng?>(
     context: context,
     useRootNavigator: false,
-    builder: (ctx) => _LocationPicker(
-      initialLatLng: initialLatLng,
-    ),
+    builder: (ctx) => _LocationPicker(initialLatLng: initialLatLng),
   );
 }
 
@@ -27,9 +22,7 @@ enum _LocationPickerMode { map, manual }
 class _LocationPicker extends HookWidget {
   final LatLng? initialLatLng;
 
-  const _LocationPicker({
-    this.initialLatLng,
-  });
+  const _LocationPicker({this.initialLatLng});
 
   @override
   Widget build(BuildContext context) {
@@ -39,9 +32,7 @@ class _LocationPicker extends HookWidget {
     final pickerMode = useState(_LocationPickerMode.map);
 
     Future<void> onMapTap() async {
-      final newLatLng = await context.pushRoute<LatLng?>(
-        MapLocationPickerRoute(initialLatLng: latlng),
-      );
+      final newLatLng = await context.pushRoute<LatLng?>(MapLocationPickerRoute(initialLatLng: latlng));
       if (newLatLng != null) {
         latitude.value = newLatLng.latitude;
         longitude.value = newLatLng.longitude;
@@ -81,10 +72,7 @@ class _LocationPicker extends HookWidget {
           onPressed: () => context.maybePop(latlng),
           child: Text(
             "action_common_update",
-            style: context.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: context.primaryColor,
-            ),
+            style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
           ).tr(),
         ),
       ],
@@ -129,10 +117,7 @@ class _ManualPickerInput extends HookWidget {
       autofocus: false,
       decoration: InputDecoration(
         labelText: decorationText.tr(),
-        labelStyle: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: context.primaryColor,
-        ),
+        labelStyle: TextStyle(fontWeight: FontWeight.bold, color: context.primaryColor),
         floatingLabelBehavior: FloatingLabelBehavior.auto,
         border: const OutlineInputBorder(),
         hintText: hintText.tr(),
@@ -188,10 +173,7 @@ class _ManualPicker extends HookWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          "edit_location_dialog_title",
-          textAlign: TextAlign.center,
-        ).tr(),
+        const Text("edit_location_dialog_title", textAlign: TextAlign.center).tr(),
         const SizedBox(height: 12),
         TextButton.icon(
           icon: const Text("location_picker_choose_on_map").tr(),
@@ -228,27 +210,17 @@ class _MapPicker extends StatelessWidget {
   final Function() onModeSwitch;
   final Function() onMapTap;
 
-  const _MapPicker({
-    required this.latlng,
-    required this.onModeSwitch,
-    required this.onMapTap,
-    super.key,
-  });
+  const _MapPicker({required this.latlng, required this.onModeSwitch, required this.onMapTap, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Text(
-          "edit_location_dialog_title",
-          textAlign: TextAlign.center,
-        ).tr(),
+        const Text("edit_location_dialog_title", textAlign: TextAlign.center).tr(),
         const SizedBox(height: 12),
         TextButton.icon(
-          icon: Text(
-            "${latlng.latitude.toStringAsFixed(4)}, ${latlng.longitude.toStringAsFixed(4)}",
-          ),
+          icon: Text("${latlng.latitude.toStringAsFixed(4)}, ${latlng.longitude.toStringAsFixed(4)}"),
           label: const Icon(Icons.edit_outlined, size: 16),
           onPressed: onModeSwitch,
         ),

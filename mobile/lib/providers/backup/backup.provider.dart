@@ -60,43 +60,38 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._backupAlbumService,
     this.ref,
   ) : super(
-          BackUpState(
-            backupProgress: BackUpProgressEnum.idle,
-            allAssetsInDatabase: const [],
-            progressInPercentage: 0,
-            progressInFileSize: "0 B / 0 B",
-            progressInFileSpeed: 0,
-            progressInFileSpeeds: const [],
-            progressInFileSpeedUpdateTime: DateTime.now(),
-            progressInFileSpeedUpdateSentBytes: 0,
-            cancelToken: CancellationToken(),
-            autoBackup: Store.get(StoreKey.autoBackup, false),
-            backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
-            backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
-            backupRequireCharging: Store.get(StoreKey.backupRequireCharging, false),
-            backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
-            serverInfo: const ServerDiskInfo(
-              diskAvailable: "0",
-              diskSize: "0",
-              diskUse: "0",
-              diskUsagePercentage: 0,
-            ),
-            availableAlbums: const [],
-            selectedBackupAlbums: const {},
-            excludedBackupAlbums: const {},
-            allUniqueAssets: const {},
-            selectedAlbumsBackupAssetsIds: const {},
-            currentUploadAsset: CurrentUploadAsset(
-              id: '...',
-              fileCreatedAt: DateTime.parse('2020-10-04'),
-              fileName: '...',
-              fileType: '...',
-              fileSize: 0,
-              iCloudAsset: false,
-            ),
-            iCloudDownloadProgress: 0.0,
+        BackUpState(
+          backupProgress: BackUpProgressEnum.idle,
+          allAssetsInDatabase: const [],
+          progressInPercentage: 0,
+          progressInFileSize: "0 B / 0 B",
+          progressInFileSpeed: 0,
+          progressInFileSpeeds: const [],
+          progressInFileSpeedUpdateTime: DateTime.now(),
+          progressInFileSpeedUpdateSentBytes: 0,
+          cancelToken: CancellationToken(),
+          autoBackup: Store.get(StoreKey.autoBackup, false),
+          backgroundBackup: Store.get(StoreKey.backgroundBackup, false),
+          backupRequireWifi: Store.get(StoreKey.backupRequireWifi, true),
+          backupRequireCharging: Store.get(StoreKey.backupRequireCharging, false),
+          backupTriggerDelay: Store.get(StoreKey.backupTriggerDelay, 5000),
+          serverInfo: const ServerDiskInfo(diskAvailable: "0", diskSize: "0", diskUse: "0", diskUsagePercentage: 0),
+          availableAlbums: const [],
+          selectedBackupAlbums: const {},
+          excludedBackupAlbums: const {},
+          allUniqueAssets: const {},
+          selectedAlbumsBackupAssetsIds: const {},
+          currentUploadAsset: CurrentUploadAsset(
+            id: '...',
+            fileCreatedAt: DateTime.parse('2020-10-04'),
+            fileName: '...',
+            fileType: '...',
+            fileSize: 0,
+            iCloudAsset: false,
           ),
-        );
+          iCloudDownloadProgress: 0.0,
+        ),
+      );
 
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
@@ -153,11 +148,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       // disable any backup
       cancelBackup();
       setAutoBackup(false);
-      configureBackgroundBackup(
-        enabled: false,
-        onError: (msg) {},
-        onBatteryInfo: () {},
-      );
+      configureBackgroundBackup(enabled: false, onError: (msg) {}, onBatteryInfo: () {});
     }
     return _updateBackupAssetCount();
   }
@@ -175,9 +166,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     required void Function(String msg) onError,
     required void Function() onBatteryInfo,
   }) async {
-    assert(
-      enabled != null || requireWifi != null || requireCharging != null || triggerDelay != null,
-    );
+    assert(enabled != null || requireWifi != null || requireCharging != null || triggerDelay != null);
     final bool wasEnabled = state.backgroundBackup;
     final bool wasWifi = state.backupRequireWifi;
     final bool wasCharging = state.backupRequireCharging;
@@ -197,7 +186,8 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         }
         success &= await _backgroundService.enableService(immediate: true);
       }
-      success &= success &&
+      success &=
+          success &&
           await _backgroundService.configureService(
             requireUnmetered: state.backupRequireWifi,
             requireCharging: state.backupRequireCharging,
@@ -206,10 +196,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
           );
       if (success) {
         await Store.put(StoreKey.backupRequireWifi, state.backupRequireWifi);
-        await Store.put(
-          StoreKey.backupRequireCharging,
-          state.backupRequireCharging,
-        );
+        await Store.put(StoreKey.backupRequireCharging, state.backupRequireCharging);
         await Store.put(StoreKey.backupTriggerDelay, state.backupTriggerDelay);
         await Store.put(StoreKey.backgroundBackup, state.backgroundBackup);
       } else {
@@ -296,14 +283,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       }
     }
 
-    state = state.copyWith(
-      selectedBackupAlbums: selectedAlbums,
-      excludedBackupAlbums: excludedAlbums,
-    );
+    state = state.copyWith(selectedBackupAlbums: selectedAlbums, excludedBackupAlbums: excludedAlbums);
 
-    log.info(
-      "_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums",
-    );
+    log.info("_getBackupAlbumsInfo: Found ${availableAlbums.length} available albums");
     debugPrint("_getBackupAlbumsInfo takes ${stopwatch.elapsedMilliseconds}ms");
   }
 
@@ -333,21 +315,14 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       for (final asset in assets) {
         List<String> albumNames = [album.name];
 
-        final existingAsset = assetsFromSelectedAlbums.firstWhereOrNull(
-          (a) => a.asset.localId == asset.localId,
-        );
+        final existingAsset = assetsFromSelectedAlbums.firstWhereOrNull((a) => a.asset.localId == asset.localId);
 
         if (existingAsset != null) {
           albumNames.addAll(existingAsset.albumNames);
           assetsFromSelectedAlbums.remove(existingAsset);
         }
 
-        assetsFromSelectedAlbums.add(
-          BackupCandidate(
-            asset: asset,
-            albumNames: albumNames,
-          ),
-        );
+        assetsFromSelectedAlbums.add(BackupCandidate(asset: asset, albumNames: albumNames));
       }
     }
 
@@ -361,9 +336,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
       final assets = await ref.read(albumMediaRepositoryProvider).getAssets(album.album.localId!);
 
       for (final asset in assets) {
-        assetsFromExcludedAlbums.add(
-          BackupCandidate(asset: asset, albumNames: [album.name]),
-        );
+        assetsFromExcludedAlbums.add(BackupCandidate(asset: asset, albumNames: [album.name]));
       }
     }
 
@@ -381,9 +354,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     selectedAlbumsBackupAssets.removeWhere((assetId) => !allAssetsInDatabase.contains(assetId));
 
     // Remove duplicated asset from all unique assets
-    allUniqueAssets.removeWhere(
-      (candidate) => duplicatedAssetIds.contains(candidate.asset.localId),
-    );
+    allUniqueAssets.removeWhere((candidate) => duplicatedAssetIds.contains(candidate.asset.localId));
 
     if (allUniqueAssets.isEmpty) {
       log.info("No assets are selected for back up");
@@ -509,9 +480,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   }
 
   void setAvailableAlbums(availableAlbums) {
-    state = state.copyWith(
-      availableAlbums: availableAlbums,
-    );
+    state = state.copyWith(availableAlbums: availableAlbums);
   }
 
   void _onBackupError(ErrorUploadAsset errorAssetInfo) {
@@ -541,28 +510,20 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     if (result.isDuplicate) {
       state = state.copyWith(
         allUniqueAssets: state.allUniqueAssets
-            .where(
-              (candidate) => candidate.asset.localId != result.candidate.asset.localId,
-            )
+            .where((candidate) => candidate.asset.localId != result.candidate.asset.localId)
             .toSet(),
       );
     } else {
       state = state.copyWith(
-        selectedAlbumsBackupAssetsIds: {
-          ...state.selectedAlbumsBackupAssetsIds,
-          result.candidate.asset.localId!,
-        },
-        allAssetsInDatabase: [
-          ...state.allAssetsInDatabase,
-          result.candidate.asset.localId!,
-        ],
+        selectedAlbumsBackupAssetsIds: {...state.selectedAlbumsBackupAssetsIds, result.candidate.asset.localId!},
+        allAssetsInDatabase: [...state.allAssetsInDatabase, result.candidate.asset.localId!],
       );
     }
 
     if (state.allUniqueAssets.length - state.selectedAlbumsBackupAssetsIds.length == 0) {
-      final latestAssetBackup = state.allUniqueAssets.map((candidate) => candidate.asset.fileModifiedAt).reduce(
-            (v, e) => e.isAfter(v) ? e : v,
-          );
+      final latestAssetBackup = state.allUniqueAssets
+          .map((candidate) => candidate.asset.fileModifiedAt)
+          .reduce((v, e) => e.isAfter(v) ? e : v);
       state = state.copyWith(
         selectedBackupAlbums: state.selectedBackupAlbums.map((e) => e.copyWith(lastBackup: latestAssetBackup)).toSet(),
         excludedBackupAlbums: state.excludedBackupAlbums.map((e) => e.copyWith(lastBackup: latestAssetBackup)).toSet(),
@@ -594,9 +555,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     }
 
     if (duration.inSeconds > 0) {
-      lastUploadSpeeds.add(
-        ((sent - lastSentBytes) / duration.inSeconds).abs().roundToDouble(),
-      );
+      lastUploadSpeeds.add(((sent - lastSentBytes) / duration.inSeconds).abs().roundToDouble());
 
       lastUploadSpeed = lastUploadSpeeds.average.abs().roundToDouble();
       lastUpdateTime = now;
@@ -618,9 +577,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
 
     // Update server info
     if (diskInfo != null) {
-      state = state.copyWith(
-        serverInfo: diskInfo,
-      );
+      state = state.copyWith(serverInfo: diskInfo);
     }
   }
 
@@ -665,17 +622,11 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     Set<AvailableAlbum> selectedAlbums = state.selectedBackupAlbums;
     Set<AvailableAlbum> excludedAlbums = state.excludedBackupAlbums;
     if (selectedAlbums.isNotEmpty) {
-      selectedAlbums = _updateAlbumsBackupTime(
-        selectedAlbums,
-        selectedBackupAlbums,
-      );
+      selectedAlbums = _updateAlbumsBackupTime(selectedAlbums, selectedBackupAlbums);
     }
 
     if (excludedAlbums.isNotEmpty) {
-      excludedAlbums = _updateAlbumsBackupTime(
-        excludedAlbums,
-        excludedBackupAlbums,
-      );
+      excludedAlbums = _updateAlbumsBackupTime(excludedAlbums, excludedBackupAlbums);
     }
     final BackUpProgressEnum previous = state.backupProgress;
     state = state.copyWith(
@@ -692,32 +643,21 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     return _resumeBackup();
   }
 
-  Set<AvailableAlbum> _updateAlbumsBackupTime(
-    Set<AvailableAlbum> albums,
-    List<BackupAlbum> backupAlbums,
-  ) {
+  Set<AvailableAlbum> _updateAlbumsBackupTime(Set<AvailableAlbum> albums, List<BackupAlbum> backupAlbums) {
     Set<AvailableAlbum> result = {};
     for (BackupAlbum ba in backupAlbums) {
       try {
         AvailableAlbum a = albums.firstWhere((e) => e.id == ba.id);
         result.add(a.copyWith(lastBackup: ba.lastBackup));
       } on StateError {
-        log.severe(
-          "[_updateAlbumBackupTime] failed to find album in state",
-          "State Error",
-          StackTrace.current,
-        );
+        log.severe("[_updateAlbumBackupTime] failed to find album in state", "State Error", StackTrace.current);
       }
     }
     return result;
   }
 
   Future<void> notifyBackgroundServiceCanRun() async {
-    const allowedStates = [
-      AppLifeCycleEnum.inactive,
-      AppLifeCycleEnum.paused,
-      AppLifeCycleEnum.detached,
-    ];
+    const allowedStates = [AppLifeCycleEnum.inactive, AppLifeCycleEnum.paused, AppLifeCycleEnum.detached];
     if (allowedStates.contains(ref.read(appStateProvider.notifier).state)) {
       _backgroundService.releaseLock();
     }

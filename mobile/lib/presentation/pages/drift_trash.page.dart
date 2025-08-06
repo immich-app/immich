@@ -16,21 +16,18 @@ class DriftTrashPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final user = ref.watch(currentUserProvider);
-            if (user == null) {
-              throw Exception('User must be logged in to access trash');
-            }
+        timelineServiceProvider.overrideWith((ref) {
+          final user = ref.watch(currentUserProvider);
+          if (user == null) {
+            throw Exception('User must be logged in to access trash');
+          }
 
-            final timelineService = ref.watch(timelineFactoryProvider).trash(user.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+          final timelineService = ref.watch(timelineFactoryProvider).trash(user.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
       child: Timeline(
-        showStorageIndicator: true,
         appBar: SliverAppBar(
           title: Text('trash'.t(context: context)),
           floating: true,
@@ -42,18 +39,14 @@ class DriftTrashPage extends StatelessWidget {
         topSliverWidgetHeight: 24,
         topSliverWidget: Consumer(
           builder: (context, ref, child) {
-            final trashDays = ref.watch(
-              serverInfoProvider.select((v) => v.serverConfig.trashDays),
-            );
+            final trashDays = ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
 
             return SliverPadding(
               padding: const EdgeInsets.all(16.0),
               sliver: SliverToBoxAdapter(
                 child: SizedBox(
                   height: 24.0,
-                  child: const Text(
-                    "trash_page_info",
-                  ).t(context: context, args: {"days": "$trashDays"}),
+                  child: const Text("trash_page_info").t(context: context, args: {"days": "$trashDays"}),
                 ),
               ),
             );

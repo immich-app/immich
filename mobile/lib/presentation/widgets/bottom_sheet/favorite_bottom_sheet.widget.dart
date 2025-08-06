@@ -24,9 +24,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final multiselect = ref.watch(multiSelectProvider);
-    final isTrashEnable = ref.watch(
-      serverInfoProvider.select((state) => state.serverFeatures.trash),
-    );
+    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
 
     return BaseBottomSheet(
       initialChildSize: 0.25,
@@ -41,14 +39,10 @@ class FavoriteBottomSheet extends ConsumerWidget {
           const DownloadActionButton(source: ActionSource.timeline),
           isTrashEnable
               ? const TrashActionButton(source: ActionSource.timeline)
-              : const DeletePermanentActionButton(
-                  source: ActionSource.timeline,
-                ),
-          const EditDateTimeActionButton(),
+              : const DeletePermanentActionButton(source: ActionSource.timeline),
+          const EditDateTimeActionButton(source: ActionSource.timeline),
           const EditLocationActionButton(source: ActionSource.timeline),
-          const MoveToLockFolderActionButton(
-            source: ActionSource.timeline,
-          ),
+          const MoveToLockFolderActionButton(source: ActionSource.timeline),
           const StackActionButton(source: ActionSource.timeline),
         ],
         if (multiselect.hasLocal) ...[

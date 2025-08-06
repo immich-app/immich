@@ -9,10 +9,7 @@ import 'package:immich_mobile/widgets/forms/pin_input.dart';
 class PinRegistrationForm extends HookConsumerWidget {
   final Function() onDone;
 
-  const PinRegistrationForm({
-    super.key,
-    required this.onDone,
-  });
+  const PinRegistrationForm({super.key, required this.onDone});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,35 +37,25 @@ class PinRegistrationForm extends HookConsumerWidget {
       }
 
       try {
-        await ref.read(authProvider.notifier).setupPinCode(
-              newPinCodeController.text,
-            );
+        await ref.read(authProvider.notifier).setupPinCode(newPinCodeController.text);
 
         onDone();
       } catch (error) {
         hasError.value = true;
-        context.showSnackBar(
-          SnackBar(content: Text(error.toString())),
-        );
+        context.showSnackBar(SnackBar(content: Text(error.toString())));
       }
     }
 
     return Form(
       child: Column(
         children: [
-          Icon(
-            Icons.pin_outlined,
-            size: 64,
-            color: context.primaryColor,
-          ),
+          Icon(Icons.pin_outlined, size: 64, color: context.primaryColor),
           const SizedBox(height: 32),
           SizedBox(
             width: context.width * 0.7,
             child: Text(
               'setup_pin_code'.tr(),
-              style: context.textTheme.labelLarge!.copyWith(
-                fontSize: 24,
-              ),
+              style: context.textTheme.labelLarge!.copyWith(fontSize: 24),
               textAlign: TextAlign.center,
             ),
           ),
@@ -76,9 +63,7 @@ class PinRegistrationForm extends HookConsumerWidget {
             width: context.width * 0.8,
             child: Text(
               'new_pin_code_subtitle'.tr(),
-              style: context.textTheme.bodyLarge!.copyWith(
-                fontSize: 16,
-              ),
+              style: context.textTheme.bodyLarge!.copyWith(fontSize: 16),
               textAlign: TextAlign.center,
             ),
           ),
@@ -113,10 +98,7 @@ class PinRegistrationForm extends HookConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: createNewPinCode,
-                    child: Text('create'.tr()),
-                  ),
+                  child: ElevatedButton(onPressed: createNewPinCode, child: Text('create'.tr())),
                 ),
               ],
             ),

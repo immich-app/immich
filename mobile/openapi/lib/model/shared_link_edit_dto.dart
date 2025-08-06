@@ -20,6 +20,7 @@ class SharedLinkEditDto {
     this.expiresAt,
     this.password,
     this.showMetadata,
+    this.slug,
   });
 
   ///
@@ -47,22 +48,10 @@ class SharedLinkEditDto {
   ///
   bool? changeExpiryTime;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? description;
 
   DateTime? expiresAt;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? password;
 
   ///
@@ -73,6 +62,8 @@ class SharedLinkEditDto {
   ///
   bool? showMetadata;
 
+  String? slug;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
     other.allowDownload == allowDownload &&
@@ -81,7 +72,8 @@ class SharedLinkEditDto {
     other.description == description &&
     other.expiresAt == expiresAt &&
     other.password == password &&
-    other.showMetadata == showMetadata;
+    other.showMetadata == showMetadata &&
+    other.slug == slug;
 
   @override
   int get hashCode =>
@@ -92,10 +84,11 @@ class SharedLinkEditDto {
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
-    (showMetadata == null ? 0 : showMetadata!.hashCode);
+    (showMetadata == null ? 0 : showMetadata!.hashCode) +
+    (slug == null ? 0 : slug!.hashCode);
 
   @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata]';
+  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -134,6 +127,11 @@ class SharedLinkEditDto {
     } else {
     //  json[r'showMetadata'] = null;
     }
+    if (this.slug != null) {
+      json[r'slug'] = this.slug;
+    } else {
+    //  json[r'slug'] = null;
+    }
     return json;
   }
 
@@ -153,6 +151,7 @@ class SharedLinkEditDto {
         expiresAt: mapDateTime(json, r'expiresAt', r''),
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
+        slug: mapValueOfType<String>(json, r'slug'),
       );
     }
     return null;

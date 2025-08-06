@@ -17,11 +17,7 @@ class LockedGuard extends AutoRouteGuard {
   final LocalAuthService _localAuth;
   final _log = Logger("AuthGuard");
 
-  LockedGuard(
-    this._apiService,
-    this._secureStorageService,
-    this._localAuth,
-  );
+  LockedGuard(this._apiService, this._secureStorageService, this._localAuth);
 
   @override
   void onNavigation(NavigationResolver resolver, StackRouter router) async {
@@ -58,9 +54,7 @@ class LockedGuard extends AutoRouteGuard {
         return;
       }
 
-      await _apiService.authenticationApi.unlockAuthSession(
-        SessionUnlockDto(pinCode: securePinCode),
-      );
+      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: securePinCode));
 
       resolver.next(true);
     } on PlatformException catch (error) {

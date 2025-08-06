@@ -30,13 +30,12 @@ class _SystemHash {
   }
 }
 
-abstract class _$AssetPeopleNotifier extends BuildlessAutoDisposeAsyncNotifier<
-    List<PersonWithFacesResponseDto>> {
+abstract class _$AssetPeopleNotifier
+    extends
+        BuildlessAutoDisposeAsyncNotifier<List<PersonWithFacesResponseDto>> {
   late final Asset asset;
 
-  FutureOr<List<PersonWithFacesResponseDto>> build(
-    Asset asset,
-  );
+  FutureOr<List<PersonWithFacesResponseDto>> build(Asset asset);
 }
 
 /// Maintains the list of people for an asset.
@@ -58,21 +57,15 @@ class AssetPeopleNotifierFamily
   /// Maintains the list of people for an asset.
   ///
   /// Copied from [AssetPeopleNotifier].
-  AssetPeopleNotifierProvider call(
-    Asset asset,
-  ) {
-    return AssetPeopleNotifierProvider(
-      asset,
-    );
+  AssetPeopleNotifierProvider call(Asset asset) {
+    return AssetPeopleNotifierProvider(asset);
   }
 
   @override
   AssetPeopleNotifierProvider getProviderOverride(
     covariant AssetPeopleNotifierProvider provider,
   ) {
-    return call(
-      provider.asset,
-    );
+    return call(provider.asset);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -93,26 +86,28 @@ class AssetPeopleNotifierFamily
 /// Maintains the list of people for an asset.
 ///
 /// Copied from [AssetPeopleNotifier].
-class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    AssetPeopleNotifier, List<PersonWithFacesResponseDto>> {
+class AssetPeopleNotifierProvider
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<
+          AssetPeopleNotifier,
+          List<PersonWithFacesResponseDto>
+        > {
   /// Maintains the list of people for an asset.
   ///
   /// Copied from [AssetPeopleNotifier].
-  AssetPeopleNotifierProvider(
-    Asset asset,
-  ) : this._internal(
-          () => AssetPeopleNotifier()..asset = asset,
-          from: assetPeopleNotifierProvider,
-          name: r'assetPeopleNotifierProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$assetPeopleNotifierHash,
-          dependencies: AssetPeopleNotifierFamily._dependencies,
-          allTransitiveDependencies:
-              AssetPeopleNotifierFamily._allTransitiveDependencies,
-          asset: asset,
-        );
+  AssetPeopleNotifierProvider(Asset asset)
+    : this._internal(
+        () => AssetPeopleNotifier()..asset = asset,
+        from: assetPeopleNotifierProvider,
+        name: r'assetPeopleNotifierProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$assetPeopleNotifierHash,
+        dependencies: AssetPeopleNotifierFamily._dependencies,
+        allTransitiveDependencies:
+            AssetPeopleNotifierFamily._allTransitiveDependencies,
+        asset: asset,
+      );
 
   AssetPeopleNotifierProvider._internal(
     super._createNotifier, {
@@ -130,9 +125,7 @@ class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
   FutureOr<List<PersonWithFacesResponseDto>> runNotifierBuild(
     covariant AssetPeopleNotifier notifier,
   ) {
-    return notifier.build(
-      asset,
-    );
+    return notifier.build(asset);
   }
 
   @override
@@ -152,8 +145,11 @@ class AssetPeopleNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<AssetPeopleNotifier,
-      List<PersonWithFacesResponseDto>> createElement() {
+  AutoDisposeAsyncNotifierProviderElement<
+    AssetPeopleNotifier,
+    List<PersonWithFacesResponseDto>
+  >
+  createElement() {
     return _AssetPeopleNotifierProviderElement(this);
   }
 
@@ -180,12 +176,17 @@ mixin AssetPeopleNotifierRef
 }
 
 class _AssetPeopleNotifierProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<AssetPeopleNotifier,
-        List<PersonWithFacesResponseDto>> with AssetPeopleNotifierRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<
+          AssetPeopleNotifier,
+          List<PersonWithFacesResponseDto>
+        >
+    with AssetPeopleNotifierRef {
   _AssetPeopleNotifierProviderElement(super.provider);
 
   @override
   Asset get asset => (origin as AssetPeopleNotifierProvider).asset;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

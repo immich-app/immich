@@ -28,12 +28,7 @@ class SettingsSliderListTile extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
       dense: true,
-      title: Text(
-        text,
-        style: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      title: Text(text, style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),
       subtitle: Slider(
         value: valueNotifier.value.toDouble(),
         onChanged: (double v) => valueNotifier.value = v.toInt(),

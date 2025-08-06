@@ -21,9 +21,7 @@ class AlbumViewerPage extends HookConsumerWidget {
     ref.listen(assetSelectionTimelineProvider, (_, __) {});
 
     ref.listen(albumWatcher(albumId), (_, albumFuture) {
-      albumFuture.whenData(
-        (value) => ref.read(currentAlbumProvider.notifier).set(value),
-      );
+      albumFuture.whenData((value) => ref.read(currentAlbumProvider.notifier).set(value));
     });
 
     return const Scaffold(body: AlbumViewer());
