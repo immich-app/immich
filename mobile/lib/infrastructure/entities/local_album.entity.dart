@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class LocalAlbumEntity extends Table with DriftDefaultsMixin {
@@ -16,4 +17,16 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+extension LocalAlbumEntityDataHelper on LocalAlbumEntityData {
+  LocalAlbum toDto({int assetCount = 0}) {
+    return LocalAlbum(
+      id: id,
+      name: name,
+      updatedAt: updatedAt,
+      assetCount: assetCount,
+      backupSelection: backupSelection,
+    );
+  }
 }

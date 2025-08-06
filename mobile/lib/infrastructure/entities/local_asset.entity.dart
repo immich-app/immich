@@ -20,7 +20,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   Set<Column> get primaryKey => {id};
 }
 
-extension LocalAssetEntityDataDomainEx on LocalAssetEntityData {
+extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
   LocalAsset toDto() => LocalAsset(
     id: id,
     name: name,

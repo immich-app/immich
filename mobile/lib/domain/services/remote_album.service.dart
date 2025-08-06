@@ -26,6 +26,10 @@ class RemoteAlbumService {
     return _repository.get(albumId);
   }
 
+  Future<RemoteAlbum?> getByName(String albumName, String ownerId) {
+    return _repository.getByName(albumName, ownerId);
+  }
+
   List<RemoteAlbum> sortAlbums(List<RemoteAlbum> albums, RemoteAlbumSortMode sortMode, {bool isReverse = false}) {
     return sortMode.sortFn(albums, isReverse);
   }
