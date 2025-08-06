@@ -200,6 +200,14 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             context.pop();
             await showEditTitleAndDescription(context);
           },
+          onCreateSharedLink: () async {
+            context.pop();
+            context.pushRoute(SharedLinkEditRoute(albumId: _album.id));
+          },
+          onShowOptions: () {
+            context.pop();
+            context.pushRoute(const DriftAlbumOptionsRoute());
+          },
         );
       },
     );

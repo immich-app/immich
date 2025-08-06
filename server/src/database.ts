@@ -202,7 +202,6 @@ export type Album = Selectable<AlbumTable> & {
 
 export type AuthSession = {
   id: string;
-  isPendingSyncReset: boolean;
   hasElevatedPermission: boolean;
 };
 
@@ -309,7 +308,7 @@ export const columns = {
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
-  authSession: ['session.id', 'session.isPendingSyncReset', 'session.updatedAt', 'session.pinExpiresAt'],
+  authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt'],
   authSharedLink: [
     'shared_link.id',
     'shared_link.userId',

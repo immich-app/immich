@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.137.2",
+  "version": "1.137.3",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "scripts": {
@@ -69,7 +69,7 @@
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.8",
     "@sveltejs/enhanced-img": "^0.7.0",
-    "@sveltejs/kit": "^2.25.0",
+    "@sveltejs/kit": "^2.25.2",
     "@sveltejs/vite-plugin-svelte": "6.1.0",
     "@tailwindcss/vite": "^4.1.7",
     "@testing-library/jest-dom": "^6.4.2",
@@ -89,7 +89,7 @@
     "eslint-p": "^0.25.0",
     "eslint-plugin-compat": "^6.0.2",
     "eslint-plugin-svelte": "^3.9.0",
-    "eslint-plugin-unicorn": "^59.0.0",
+    "eslint-plugin-unicorn": "^60.0.0",
     "factory.ts": "^1.4.1",
     "globals": "^16.0.0",
     "happy-dom": "^18.0.1",
@@ -109,6 +109,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.17.1"
+    "node": "22.18.0"
   }
 }

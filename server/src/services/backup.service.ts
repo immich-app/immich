@@ -62,7 +62,7 @@ export class BackupService extends BaseService {
         return oldBackupStyle || newBackupStyle;
       })
       .sort()
-      .reverse();
+      .toReversed();
 
     const toDelete = backups.slice(config.keepLastAmount);
     toDelete.push(...failedBackups);

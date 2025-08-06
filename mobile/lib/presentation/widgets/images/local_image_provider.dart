@@ -2,15 +2,17 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
+import 'package:immich_mobile/extensions/codec_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
 import 'package:immich_mobile/providers/image/exceptions/image_loading_exception.dart';
@@ -22,14 +24,12 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
 
   final String id;
   final DateTime updatedAt;
-  final String name;
   final Size size;
 
   const LocalThumbProvider({
     required this.id,
     required this.updatedAt,
-    required this.name,
-    this.size = const Size.square(kTimelineFixedTileExtent),
+    this.size = kThumbnailResolution,
     this.cacheManager,
   });
 
@@ -45,10 +45,8 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
       codec: _codec(key, cache, decode),
       scale: 1.0,
       informationCollector: () => <DiagnosticsNode>[
-        DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<DateTime>('Updated at', key.updatedAt),
-        DiagnosticsProperty<String>('Name', key.name),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
     );
@@ -68,7 +66,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
     final thumbnailBytes = await _assetMediaRepository.getThumbnail(key.id, size: key.size);
     if (thumbnailBytes == null) {
       PaintingBinding.instance.imageCache.evict(key);
-      throw StateError("Loading thumb for local photo ${key.name} failed");
+      throw StateError("Loading thumb for local photo ${key.id} failed");
     }
 
     final buffer = await ImmutableBuffer.fromUint8List(thumbnailBytes);
@@ -94,11 +92,11 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   final StorageRepository _storageRepository = const StorageRepository();
 
   final String id;
-  final String name;
   final Size size;
   final AssetType type;
+  final DateTime updatedAt; // temporary, only exists to fetch cached thumbnail until local disk cache is removed
 
-  const LocalFullImageProvider({required this.id, required this.name, required this.size, required this.type});
+  const LocalFullImageProvider({required this.id, required this.size, required this.type, required this.updatedAt});
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -107,52 +105,45 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
 
   @override
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
-    return MultiImageStreamCompleter(
-      codec: _codec(key, decode),
-      scale: 1.0,
-      informationCollector: () sync* {
-        yield ErrorDescription(name);
-      },
+    return OneFramePlaceholderImageStreamCompleter(
+      _codec(key, decode),
+      initialImage: getCachedImage(LocalThumbProvider(id: key.id, updatedAt: key.updatedAt)),
+      informationCollector: () => <DiagnosticsNode>[
+        DiagnosticsProperty<String>('Id', key.id),
+        DiagnosticsProperty<DateTime>('Updated at', key.updatedAt),
+        DiagnosticsProperty<Size>('Size', key.size),
+      ],
     );
   }
 
   // Streams in each stage of the image as we ask for it
-  Stream<Codec> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
+  Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) {
     try {
-      switch (key.type) {
-        case AssetType.image:
-          yield* _decodeProgressive(key, decode);
-          break;
-        case AssetType.video:
-          final codec = await _getThumbnailCodec(key, decode);
-          if (codec == null) {
-            throw StateError("Failed to load preview for ${key.name}");
-          }
-          yield codec;
-          break;
-        case AssetType.other:
-        case AssetType.audio:
-          throw StateError('Unsupported asset type ${key.type}');
-      }
+      return switch (key.type) {
+        AssetType.image => _decodeProgressive(key, decode),
+        AssetType.video => _getThumbnailCodec(key, decode),
+        _ => throw StateError('Unsupported asset type ${key.type}'),
+      };
     } catch (error, stack) {
-      Logger('ImmichLocalImageProvider').severe('Error loading local image ${key.name}', error, stack);
+      Logger('ImmichLocalImageProvider').severe('Error loading local image ${key.id}', error, stack);
       throw const ImageLoadingException('Could not load image from local storage');
     }
   }
 
-  Future<Codec?> _getThumbnailCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async {
+  Stream<ImageInfo> _getThumbnailCodec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     final thumbBytes = await _assetMediaRepository.getThumbnail(key.id, size: key.size);
     if (thumbBytes == null) {
-      return null;
+      throw StateError("Failed to load preview for ${key.id}");
     }
     final buffer = await ImmutableBuffer.fromUint8List(thumbBytes);
-    return decode(buffer);
+    final codec = await decode(buffer);
+    yield await codec.getImageInfo();
   }
 
-  Stream<Codec> _decodeProgressive(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
+  Stream<ImageInfo> _decodeProgressive(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     final file = await _storageRepository.getFileForAsset(key.id);
     if (file == null) {
-      throw StateError("Opening file for asset ${key.name} failed");
+      throw StateError("Opening file for asset ${key.id} failed");
     }
 
     final fileSize = await file.length();
@@ -171,7 +162,8 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
         final mediumThumb = await _assetMediaRepository.getThumbnail(key.id, size: size);
         if (mediumThumb != null) {
           final mediumBuffer = await ImmutableBuffer.fromUint8List(mediumThumb);
-          yield await decode(mediumBuffer);
+          final codec = await decode(mediumBuffer);
+          yield await codec.getImageInfo();
         }
       } catch (_) {}
     }
@@ -187,24 +179,26 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
       final highThumb = await _assetMediaRepository.getThumbnail(key.id, size: size);
       if (highThumb != null) {
         final highBuffer = await ImmutableBuffer.fromUint8List(highThumb);
-        yield await decode(highBuffer);
+        final codec = await decode(highBuffer);
+        yield await codec.getImageInfo();
       }
       return;
     }
 
     final buffer = await ImmutableBuffer.fromFilePath(file.path);
-    yield await decode(buffer);
+    final codec = await decode(buffer);
+    yield await codec.getImageInfo();
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalFullImageProvider) {
-      return id == other.id && size == other.size && type == other.type && name == other.name;
+      return id == other.id && size == other.size && type == other.type;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode ^ type.hashCode ^ name.hashCode;
+  int get hashCode => id.hashCode ^ size.hashCode ^ type.hashCode;
 }

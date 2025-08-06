@@ -27,8 +27,9 @@ typedef AlbumSelectorCallback = void Function(RemoteAlbum album);
 
 class AlbumSelector extends ConsumerStatefulWidget {
   final AlbumSelectorCallback onAlbumSelected;
+  final Function? onKeyboardExpanded;
 
-  const AlbumSelector({super.key, required this.onAlbumSelected});
+  const AlbumSelector({super.key, required this.onAlbumSelected, this.onKeyboardExpanded});
 
   @override
   ConsumerState<AlbumSelector> createState() => _AlbumSelectorState();
@@ -51,6 +52,12 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
     searchController.addListener(() {
       onSearch(searchController.text, filterMode);
+    });
+
+    searchFocusNode.addListener(() {
+      if (searchFocusNode.hasFocus) {
+        widget.onKeyboardExpanded?.call();
+      }
     });
   }
 
@@ -580,6 +587,7 @@ class AddToAlbumHeader extends ConsumerWidget {
       }
 
       ref.read(currentRemoteAlbumProvider.notifier).setAlbum(newAlbum);
+      ref.read(multiSelectProvider.notifier).reset();
       context.pushRoute(RemoteAlbumRoute(album: newAlbum));
     }
 
