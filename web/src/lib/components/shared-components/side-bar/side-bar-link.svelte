@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { resolveRoute } from '$app/paths';
+  import { resolve } from '$app/paths';
   import { page } from '$app/state';
+  import type { RouteId } from '$app/types';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
+  type UserRouteId<T> = T extends `/(user)/${infer TPart}` ? (TPart extends `${string}[${string}` ? never : T) : never;
+
   interface Props {
     title: string;
-    routeId: string;
+    routeId: UserRouteId<RouteId>;
     icon: string;
     flippedLogo?: boolean;
     isSelected?: boolean;
@@ -28,7 +31,7 @@
     dropdownOpen = $bindable(false),
   }: Props = $props();
 
-  let routePath = $derived(resolveRoute(routeId, {}));
+  let routePath = $derived(resolve(routeId));
 
   $effect(() => {
     isSelected = (page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
