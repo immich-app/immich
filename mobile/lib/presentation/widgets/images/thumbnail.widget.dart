@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:logging/logging.dart';
@@ -226,6 +227,10 @@ class _ThumbnailState extends State<Thumbnail> {
   void dispose() {
     _stopListeningToStream();
     _providerImage?.dispose();
+    final imageProvider = widget.imageProvider;
+    if (imageProvider is CancellableImageProvider) {
+      (imageProvider as CancellableImageProvider).cancel();
+    }
     super.dispose();
   }
 }

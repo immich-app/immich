@@ -31,8 +31,8 @@ const int kTimelineNoneSegmentSize = 120;
 const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 const Size kTimelineThumbnailTileSize = Size.square(256.0);
-const Size kTimelineThumbnailSize = Size.square(384.0);
-const int kTimelineImageCacheMemory = 250 * 1024 * 1024;
+const Size kTimelineThumbnailSize = Size.square(256.0);
+const int kTimelineImageCacheMemory = 200 * 1024 * 1024;
 
 // Widget keys
 const String appShareGroupId = "group.app.immich.share";

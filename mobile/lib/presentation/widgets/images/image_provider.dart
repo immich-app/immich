@@ -1,11 +1,29 @@
 import 'package:flutter/widgets.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
+
+abstract class CancellableImageProvider {
+  void cancel();
+}
+
+mixin class CancellableImageProviderMixin implements CancellableImageProvider {
+  ImageRequest? request;
+
+  @override
+  void cancel() {
+    final request = this.request;
+    if (request == null) {
+      return;
+    }
+    this.request = null;
+    return request.cancel();
+  }
+}
 
 ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080, 1920)}) {
   // Create new provider and cache it

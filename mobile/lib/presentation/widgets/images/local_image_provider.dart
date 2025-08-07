@@ -8,13 +8,11 @@ import 'package:immich_mobile/infrastructure/repositories/asset_media.repository
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 
-class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
-  static const _assetMediaRepository = AssetMediaRepository();
-
+class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with CancellableImageProviderMixin {
   final String id;
   final Size size;
 
-  const LocalThumbProvider({required this.id, this.size = kTimelineThumbnailSize});
+  LocalThumbProvider({required this.id, this.size = kTimelineThumbnailSize});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -23,8 +21,8 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
 
   @override
   ImageStreamCompleter loadImage(LocalThumbProvider key, ImageDecoderCallback decode) {
-    return OneFrameImageStreamCompleter(
-      _codec(key),
+    return OneFramePlaceholderImageStreamCompleter(
+      _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
@@ -32,9 +30,16 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
     );
   }
 
-  Future<ImageInfo> _codec(LocalThumbProvider key) async {
-    final codec = await _assetMediaRepository.getLocalThumbnail(key.id, key.size);
-    return ImageInfo(image: (await codec.getNextFrame()).image, scale: 1.0);
+  Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) async* {
+    final request = this.request = LocalImageRequest(localId: key.id, size: size);
+    try {
+      final image = await request.load(decode);
+      if (image != null) {
+        yield image;
+      }
+    } finally {
+      this.request = null;
+    }
   }
 
   @override
@@ -50,13 +55,11 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> {
   int get hashCode => id.hashCode ^ size.hashCode;
 }
 
-class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
-  static const _assetMediaRepository = AssetMediaRepository();
-
+class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with CancellableImageProviderMixin {
   final String id;
   final Size size;
 
-  const LocalFullImageProvider({required this.id, required this.size});
+  LocalFullImageProvider({required this.id, required this.size});
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -78,12 +81,19 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
 
   Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    final codec = await _assetMediaRepository.getLocalThumbnail(
-      key.id,
-      Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+    final request = this.request = LocalImageRequest(
+      localId: key.id,
+      size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
     );
-    final frame = await codec.getNextFrame();
-    yield ImageInfo(image: frame.image, scale: 1.0);
+
+    try {
+      final image = await request.load(decode);
+      if (image != null) {
+        yield image;
+      }
+    } finally {
+      this.request = null;
+    }
   }
 
   @override
