@@ -24,6 +24,7 @@
   } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
+  import { websocketEvents } from '$lib/stores/websocket';
   import { makeSharedLinkUrl } from '$lib/utils';
   import {
     confirmAlbumDelete,
@@ -36,11 +37,18 @@
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
-  import { addUsersToAlbum, deleteAlbum, isHttpError, type AlbumResponseDto, type AlbumUserAddDto } from '@immich/sdk';
+  import {
+    addUsersToAlbum,
+    deleteAlbum,
+    getAlbumInfo,
+    isHttpError,
+    type AlbumResponseDto,
+    type AlbumUserAddDto,
+  } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiFolderDownloadOutline, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
   import { groupBy } from 'lodash-es';
-  import { onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
 
@@ -207,6 +215,51 @@
   onMount(async () => {
     if (allowEdit) {
       await removeAlbumsIfEmpty();
+    }
+  });
+
+  // Handle album deletion via websocket events
+  let unsubscribeWebsocket: (() => void) | undefined;
+
+  onMount(() => {
+    unsubscribeWebsocket = websocketEvents.on('on_album_delete', (albumId) => {
+      // Remove the deleted album from both arrays
+      ownedAlbums = ownedAlbums.filter((album) => album.id !== albumId);
+      sharedAlbums = sharedAlbums.filter((album) => album.id !== albumId);
+    });
+
+    // Add listener for album creation
+    const unsubscribeCreate = websocketEvents.on('on_album_create', async (albumId) => {
+      try {
+        // Fetch the newly created album details
+        const newAlbum = await getAlbumInfo({ id: albumId });
+
+        // Add to owned albums if the current user is the owner
+        if (newAlbum.ownerId === $user?.id) {
+          ownedAlbums = [newAlbum, ...ownedAlbums];
+        } else {
+          // Check if current user is a shared user of this album
+          const isSharedWithCurrentUser = newAlbum.albumUsers.some((albumUser) => albumUser.user.id === $user?.id);
+          if (isSharedWithCurrentUser) {
+            sharedAlbums = [newAlbum, ...sharedAlbums];
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch new album details:', error);
+      }
+    });
+
+    // Return a combined unsubscribe function
+    const originalUnsubscribe = unsubscribeWebsocket;
+    unsubscribeWebsocket = () => {
+      originalUnsubscribe?.();
+      unsubscribeCreate?.();
+    };
+  });
+
+  onDestroy(() => {
+    if (unsubscribeWebsocket) {
+      unsubscribeWebsocket();
     }
   });
 

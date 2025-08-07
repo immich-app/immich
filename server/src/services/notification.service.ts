@@ -211,6 +211,18 @@ export class NotificationService extends BaseService {
     await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId } });
   }
 
+  @OnEvent({ name: 'AlbumDelete' })
+  onAlbumDelete({ id, userId }: ArgOf<'AlbumDelete'>) {
+    console.log(`Album ${id} deleted by user ${userId}`);
+    this.eventRepository.clientSend('on_album_delete', userId, id);
+  }
+
+  @OnEvent({ name: 'AlbumCreate' })
+  onAlbumCreate({ id, userId }: ArgOf<'AlbumCreate'>) {
+    console.log(`Album ${id} created by user ${userId}`);
+    this.eventRepository.clientSend('on_album_create', userId, id);
+  }
+
   @OnEvent({ name: 'SessionDelete' })
   onSessionDelete({ sessionId }: ArgOf<'SessionDelete'>) {
     // after the response is sent

@@ -121,6 +121,8 @@ export class AlbumService extends BaseService {
       albumUsers,
     );
 
+    await this.eventRepository.emit('AlbumCreate', { id: album.id, userId: auth.user.id });
+
     for (const { userId } of albumUsers) {
       await this.eventRepository.emit('AlbumInvite', { id: album.id, userId });
     }
@@ -154,6 +156,7 @@ export class AlbumService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumDelete, ids: [id] });
     await this.albumRepository.delete(id);
+    await this.eventRepository.emit('AlbumDelete', { id, userId: auth.user.id });
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {

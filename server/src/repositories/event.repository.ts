@@ -51,6 +51,8 @@ type EventMap = {
   // album events
   AlbumUpdate: [{ id: string; recipientId: string }];
   AlbumInvite: [{ id: string; userId: string }];
+  AlbumDelete: [{ id: string; userId: string }];
+  AlbumCreate: [{ id: string; userId: string }];
 
   // asset events
   AssetTag: [{ assetId: string }];
@@ -110,6 +112,8 @@ export interface ClientEventMap {
   on_new_release: [ReleaseNotification];
   on_notification: [NotificationDto];
   on_session_delete: [string];
+  on_album_delete: [string];
+  on_album_create: [string];
 
   AssetUploadReadyV1: [{ asset: SyncAssetV1; exif: SyncAssetExifV1 }];
 }
