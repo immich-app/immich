@@ -8,6 +8,7 @@ import {
   IsNotEmpty,
   IsPositive,
   IsString,
+  IsTimeZone,
   Max,
   Min,
   ValidateIf,
@@ -15,7 +16,7 @@ import {
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
-import { Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
+import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -65,6 +66,16 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
 
   @Optional()
   duplicateId?: string | null;
+
+  @IsNotSiblingOf(['dateTimeOriginal'])
+  @Optional()
+  @IsInt()
+  dateTimeRelative?: number;
+
+  @IsNotSiblingOf(['dateTimeOriginal'])
+  @IsTimeZone()
+  @Optional()
+  timeZone?: string;
 }
 
 export class UpdateAssetDto extends UpdateAssetBase {

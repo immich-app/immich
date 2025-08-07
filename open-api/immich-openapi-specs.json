@@ -9979,6 +9979,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "dateTimeRelative": {
+            "type": "number"
+          },
           "description": {
             "type": "string"
           },
@@ -10006,6 +10009,9 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "timeZone": {
+            "type": "string"
           },
           "visibility": {
             "allOf": [

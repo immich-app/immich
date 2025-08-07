@@ -3,7 +3,7 @@ const double downloadCompleted = -1;
 const double downloadFailed = -2;
 
 // Number of log entries to retain on app start
-const int kLogTruncateLimit = 250;
+const int kLogTruncateLimit = 2000;
 
 // Sync
 const int kSyncEventBatchSize = 5000;

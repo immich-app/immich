@@ -456,6 +456,7 @@ export type AssetMediaResponseDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    dateTimeRelative?: number;
     description?: string;
     duplicateId?: string | null;
     ids: string[];
@@ -463,6 +464,7 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     longitude?: number;
     rating?: number;
+    timeZone?: string;
     visibility?: AssetVisibility;
 };
 export type AssetBulkUploadCheckItem = {

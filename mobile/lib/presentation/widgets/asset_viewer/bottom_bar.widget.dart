@@ -11,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 
@@ -29,6 +30,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
+    final isInLockedView = ref.watch(inLockedViewProvider);
 
     if (!showControls) {
       opacity = 0;
@@ -68,7 +70,7 @@ class ViewerBottomBar extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                        if (!isInLockedView) Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
                     ),
                   ),

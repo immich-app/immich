@@ -5,7 +5,9 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
-@TableIndex(name: 'idx_remote_asset_owner_checksum', columns: {#ownerId, #checksum})
+@TableIndex.sql(
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+)
 @TableIndex.sql('''
 CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum
 ON remote_asset_entity (owner_id, checksum)
@@ -16,7 +18,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_library_checksum
 ON remote_asset_entity (owner_id, library_id, checksum)
 WHERE (library_id IS NOT NULL);
 ''')
-@TableIndex(name: 'idx_remote_asset_checksum', columns: {#checksum})
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)')
 class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
   const RemoteAssetEntity();
 

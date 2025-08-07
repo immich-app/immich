@@ -230,15 +230,6 @@
     ]}
     data-outline
   ></div>
-  {#if (!loaded || thumbError) && asset.thumbhash}
-    <canvas
-      use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-1"
-      style:width="{width}px"
-      style:height="{height}px"
-      out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-    ></canvas>
-  {/if}
 
   <div
     class={['group absolute -top-[0px] -bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
@@ -352,7 +343,21 @@
           />
         </div>
       {/if}
+
+      {#if (!loaded || thumbError) && asset.thumbhash}
+        <canvas
+          use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+          data-testid="thumbhash"
+          class="absolute top-0 object-cover"
+          style:width="{width}px"
+          style:height="{height}px"
+          class:rounded-xl={selected}
+          draggable="false"
+          out:fade={{ duration: THUMBHASH_FADE_DURATION }}
+        ></canvas>
+      {/if}
     </div>
+
     {#if selectionCandidate}
       <div
         class="absolute top-0 h-full w-full bg-immich-primary opacity-40"

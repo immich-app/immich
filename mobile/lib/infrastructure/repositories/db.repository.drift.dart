@@ -98,6 +98,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     memoryAssetEntity,
     personEntity,
     assetFaceEntity,
+    i9.idxLatLng,
   ];
   @override
   i0.StreamQueryUpdateRules

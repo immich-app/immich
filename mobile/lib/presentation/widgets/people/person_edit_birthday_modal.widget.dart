@@ -63,7 +63,6 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
         height: 300,
         child: ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-
           child: ScrollDatePicker(
             options: DatePickerOptions(
               backgroundColor: context.colorScheme.surfaceContainerHigh,
@@ -72,14 +71,17 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
             ),
             scrollViewOptions: DatePickerScrollViewOptions(
               day: ScrollViewDetailOptions(
+                isLoop: false,
                 margin: const EdgeInsets.all(12),
                 selectedTextStyle: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
               ),
               month: ScrollViewDetailOptions(
+                isLoop: false,
                 margin: const EdgeInsets.all(12),
                 selectedTextStyle: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
               ),
               year: ScrollViewDetailOptions(
+                isLoop: false,
                 margin: const EdgeInsets.all(12),
                 selectedTextStyle: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 16),
               ),

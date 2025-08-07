@@ -145,12 +145,13 @@
 
   let lastIntersectedHeight = 0;
   $effect(() => {
-    // notify we got to (near) the end of scroll
-    const scrollPercentage =
-      ((slidingWindow.bottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0))) *
-      100;
+    const scrollRatio = slidingWindow.bottom / assetLayouts.containerHeight;
 
-    if (scrollPercentage > 90) {
+    // TODO: We may want to limit to an absolute value as the ratio scaling will
+    // get weird with lots of assets. The page may be nowhere near the bottom in
+    // absolute terms, and yet the intersection will still be triggered.
+    if (scrollRatio > 0.9) {
+      // Notify we got to (near) the end of scroll.
       const intersectedHeight = geometry?.containerHeight || 0;
       if (lastIntersectedHeight !== intersectedHeight) {
         debouncedOnIntersected();

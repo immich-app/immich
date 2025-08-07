@@ -113,22 +113,48 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    if (
-      description !== undefined ||
-      dateTimeOriginal !== undefined ||
-      latitude !== undefined ||
-      longitude !== undefined
-    ) {
+    const staticValuesChanged =
+      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
+
+    if (staticValuesChanged) {
       await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
-      await this.jobRepository.queueAll(
-        ids.map((id) => ({
-          name: JobName.SidecarWrite,
-          data: { id, description, dateTimeOriginal, latitude, longitude },
-        })),
-      );
+    }
+
+    const assets =
+      (dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined
+        ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone)
+        : null;
+
+    const dateTimesWithTimezone =
+      assets?.map((asset) => {
+        const isoString = asset.dateTimeOriginal?.toISOString();
+        let dateTime = isoString ? DateTime.fromISO(isoString) : null;
+
+        if (dateTime && asset.timeZone) {
+          dateTime = dateTime.setZone(asset.timeZone);
+        }
+
+        return {
+          assetId: asset.assetId,
+          dateTimeOriginal: dateTime?.toISO() ?? null,
+        };
+      }) ?? null;
+
+    if (staticValuesChanged || dateTimesWithTimezone) {
+      const entries: JobItem[] = (dateTimesWithTimezone ?? ids).map((entry: any) => ({
+        name: JobName.SidecarWrite,
+        data: {
+          id: entry.assetId ?? entry,
+          description,
+          dateTimeOriginal: entry.dateTimeOriginal ?? dateTimeOriginal,
+          latitude,
+          longitude,
+        },
+      }));
+      await this.jobRepository.queueAll(entries);
     }
 
     if (
