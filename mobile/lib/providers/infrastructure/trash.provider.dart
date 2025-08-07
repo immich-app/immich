@@ -15,4 +15,3 @@ final trashServiceProvider = Provider(
     storageRepository: ref.watch(storageRepositoryProvider),
   ),
 );
-
