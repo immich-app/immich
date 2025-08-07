@@ -65,9 +65,9 @@ class TrashService {
       );
       if (remoteAssetsToRestore.isNotEmpty) {
         _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
-        for (final remoteAsset in remoteAssetsToRestore) {
-          await _localFilesManager.restoreFromTrash(remoteAsset.name, remoteAsset.type.index);
-        }
+        await Future.wait(
+          remoteAssetsToRestore.map((asset) => _localFilesManager.restoreFromTrash(asset.name, asset.type.index)),
+        );
       }
     }
   }
