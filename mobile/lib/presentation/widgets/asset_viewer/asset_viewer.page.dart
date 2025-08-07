@@ -113,10 +113,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     super.dispose();
   }
 
-  bool get showingBottomSheet => ref.read(assetViewerProvider.select((s) => s.showingBottomSheet));
+  bool get showingBottomSheet => ref.read(assetViewerProvider).showingBottomSheet;
 
   Color get backgroundColor {
-    final opacity = ref.read(assetViewerProvider.select((s) => s.backgroundOpacity));
+    final opacity = ref.read(assetViewerProvider).backgroundOpacity;
     return Colors.black.withAlpha(opacity);
   }
 
@@ -223,18 +223,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
-    initialPhotoViewState = controller?.value ?? initialPhotoViewState;
 
     // If the bottom sheet is showing, we need to adjust scale the asset to
     // emulate the zoom effect
     if (showingBottomSheet) {
       initialScale = controller?.scale;
-      // controller?.scale = _getScaleForBottomSheet;
+      controller?.scale = _getScaleForBottomSheet;
     }
   }
 
   void _onDragStart(
-    _,
+    BuildContext ctx,
     DragStartDetails details,
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
@@ -250,7 +249,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onDragEnd(BuildContext ctx, _, __) {
+  void _onDragEnd(BuildContext ctx, DragEndDetails details, PhotoViewControllerValue value) {
     dragInProgress = false;
 
     if (shouldPopOnDrag) {
@@ -281,7 +280,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.read(assetViewerProvider.notifier).setOpacity(255);
   }
 
-  void _onDragUpdate(BuildContext ctx, DragUpdateDetails details, _) {
+  void _onDragUpdate(BuildContext ctx, DragUpdateDetails details, PhotoViewControllerValue value) {
     if (blockGestures) {
       return;
     }
@@ -335,7 +334,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     ref.read(assetViewerProvider.notifier).setOpacity(backgroundOpacity);
   }
 
-  void _onTapDown(_, __, ___) {
+  void _onTapDown(BuildContext ctx, TapDownDetails details, PhotoViewControllerValue value) {
     if (!showingBottomSheet) {
       ref.read(assetViewerProvider.notifier).toggleControls();
     }
@@ -431,7 +430,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
     initialScale = viewController?.scale;
-    // viewController?.updateMultiple(scale: _getScaleForBottomSheet);
+    viewController?.updateMultiple(scale: _getScaleForBottomSheet);
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
@@ -450,8 +449,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _handleSheetClose() {
-    // viewController?.animateMultiple(position: Offset.zero);
-    // viewController?.updateMultiple(scale: initialScale);
+    viewController?.animateMultiple(position: Offset.zero);
+    viewController?.updateMultiple(scale: initialScale);
     ref.read(assetViewerProvider.notifier).setBottomSheet(false);
     sheetCloseController = null;
     shouldPopOnDrag = false;
@@ -472,7 +471,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      asset = stackChildren.elementAt(ref.read(assetViewerProvider).stackIndex);
     }
     return Container(
       width: double.infinity,
@@ -488,7 +487,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onLongPress(_, __, ___) {
+  void _onLongPress(BuildContext ctx, LongPressStartDetails details, PhotoViewControllerValue value) {
     ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
   }
 
@@ -497,7 +496,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      asset = stackChildren.elementAt(ref.read(assetViewerProvider).stackIndex);
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
@@ -512,7 +511,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final size = ctx.sizeData;
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
-      imageProvider: getFullImageProvider(asset, size: size),
+      // When the bottom sheet is shown and the asset is changed, 
+      // the cached image can have different position and scale than the normal one,
+      // causing incorrect animation calculations once the image provider yields a new image.
+      // This is a workaround to ensure the animation is handled correctly in this case.
+      // TODO: handle this without needing to disable caching
+      imageProvider: getFullImageProvider(asset, size: size, showCached: !showingBottomSheet),
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
@@ -577,9 +581,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   Widget build(BuildContext context) {
     // Rebuild the widget when the asset viewer state changes
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
-    ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
-    ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
-    ref.watch(assetViewerProvider.select((s) => s.stackIndex));
+    ref.watch(
+      assetViewerProvider.select(
+        (s) => s.showingBottomSheet.hashCode ^ s.backgroundOpacity.hashCode ^ s.stackIndex.hashCode,
+      ),
+    );
     ref.watch(isPlayingMotionVideoProvider);
 
     // Listen for casting changes and send initial asset to the cast provider
