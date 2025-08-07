@@ -54,7 +54,12 @@ export class MemoryService extends BaseService {
   private async createOnThisDayMemories(ownerId: string, userIds: string[], target: DateTime) {
     const showAt = target.startOf('day').toISO();
     const hideAt = target.endOf('day').toISO();
-    const memories = await this.assetRepository.getByDayOfYear([ownerId, ...userIds], target);
+    const sharedAlbums = await this.albumRepository.getShared(ownerId);
+    const memories = await this.assetRepository.getByDayOfYear(
+      [ownerId, ...userIds],
+      sharedAlbums.map((album) => album.id),
+      target,
+    );
     await Promise.all(
       memories.map(({ year, assets }) =>
         this.memoryRepository.create(
