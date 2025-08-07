@@ -60,7 +60,6 @@ const authFactory = ({
   if (session) {
     auth.session = {
       id: session.id,
-      isPendingSyncReset: false,
       hasElevatedPermission: false,
     };
   }
@@ -88,7 +87,7 @@ const authSharedLinkFactory = (sharedLink: Partial<AuthSharedLink> = {}) => {
 
 const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({
   id: newUuid(),
-  permissions: [Permission.ALL],
+  permissions: [Permission.All],
   ...apiKey,
 });
 
@@ -154,7 +153,7 @@ const userFactory = (user: Partial<User> = {}) => ({
   profileChangedAt: newDate(),
   metadata: [
     {
-      key: UserMetadataKey.ONBOARDING,
+      key: UserMetadataKey.Onboarding,
       value: 'true',
     },
   ] as UserMetadataItem[],
@@ -178,7 +177,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     oauthId = '',
     quotaSizeInBytes = null,
     quotaUsageInBytes = 0,
-    status = UserStatus.ACTIVE,
+    status = UserStatus.Active,
     metadata = [],
   } = user;
   return {
@@ -208,7 +207,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   updatedAt: newDate(),
   deletedAt: null,
   updateId: newUuidV7(),
-  status: AssetStatus.ACTIVE,
+  status: AssetStatus.Active,
   checksum: newSha1(),
   deviceAssetId: '',
   deviceId: '',
@@ -224,13 +223,13 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
   livePhotoVideoId: null,
   localDateTime: newDate(),
   originalFileName: 'IMG_123.jpg',
-  originalPath: `upload/12/34/IMG_123.jpg`,
+  originalPath: `/data/12/34/IMG_123.jpg`,
   ownerId: newUuid(),
   sidecarPath: null,
   stackId: null,
   thumbhash: null,
-  type: AssetType.IMAGE,
-  visibility: AssetVisibility.TIMELINE,
+  type: AssetType.Image,
+  visibility: AssetVisibility.Timeline,
   ...asset,
 });
 
@@ -258,7 +257,7 @@ const apiKeyFactory = (apiKey: Partial<ApiKey> = {}) => ({
   updatedAt: newDate(),
   updateId: newUuidV7(),
   name: 'Api Key',
-  permissions: [Permission.ALL],
+  permissions: [Permission.All],
   ...apiKey,
 });
 
@@ -284,7 +283,7 @@ const memoryFactory = (memory: Partial<Memory> = {}) => ({
   updateId: newUuidV7(),
   deletedAt: null,
   ownerId: newUuid(),
-  type: MemoryType.ON_THIS_DAY,
+  type: MemoryType.OnThisDay,
   data: { year: 2024 } as OnThisDayData,
   isSaved: false,
   memoryAt: newDate(),

@@ -22,12 +22,8 @@ class FolderStructureNotifier extends StateNotifier<AsyncValue<RootFolder>> {
   }
 }
 
-final folderStructureProvider =
-    StateNotifierProvider<FolderStructureNotifier, AsyncValue<RootFolder>>(
-        (ref) {
-  return FolderStructureNotifier(
-    ref.watch(folderServiceProvider),
-  );
+final folderStructureProvider = StateNotifierProvider<FolderStructureNotifier, AsyncValue<RootFolder>>((ref) {
+  return FolderStructureNotifier(ref.watch(folderServiceProvider));
 });
 
 class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
@@ -35,14 +31,12 @@ class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
   final RootFolder _folder;
   final Logger _log = Logger("FolderAssetsNotifier");
 
-  FolderRenderListNotifier(this._folderService, this._folder)
-      : super(const AsyncLoading());
+  FolderRenderListNotifier(this._folderService, this._folder) : super(const AsyncLoading());
 
   Future<void> fetchAssets(SortOrder order) async {
     try {
       final assets = await _folderService.getFolderAssets(_folder, order);
-      final renderList =
-          await RenderList.fromAssets(assets, GroupAssetsBy.none);
+      final renderList = await RenderList.fromAssets(assets, GroupAssetsBy.none);
       state = AsyncData(renderList);
     } catch (e, stack) {
       _log.severe("Failed to fetch folder assets", e, stack);
@@ -51,12 +45,7 @@ class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
   }
 }
 
-final folderRenderListProvider = StateNotifierProvider.family<
-    FolderRenderListNotifier,
-    AsyncValue<RenderList>,
-    RootFolder>((ref, folder) {
-  return FolderRenderListNotifier(
-    ref.watch(folderServiceProvider),
-    folder,
-  );
-});
+final folderRenderListProvider =
+    StateNotifierProvider.family<FolderRenderListNotifier, AsyncValue<RenderList>, RootFolder>((ref, folder) {
+      return FolderRenderListNotifier(ref.watch(folderServiceProvider), folder);
+    });

@@ -22,7 +22,7 @@ describe(SyncEntityType.UserMetadataV1, () => {
     const { auth, user, ctx } = await setup();
 
     const userRepo = ctx.get(UserRepository);
-    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.ONBOARDING, value: { isOnboarded: true } });
+    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.Onboarding, value: { isOnboarded: true } });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UserMetadataV1]);
     expect(response).toHaveLength(1);
@@ -30,7 +30,7 @@ describe(SyncEntityType.UserMetadataV1, () => {
       {
         ack: expect.any(String),
         data: {
-          key: UserMetadataKey.ONBOARDING,
+          key: UserMetadataKey.Onboarding,
           userId: user.id,
           value: { isOnboarded: true },
         },
@@ -46,7 +46,7 @@ describe(SyncEntityType.UserMetadataV1, () => {
     const { auth, user, ctx } = await setup();
 
     const userRepo = ctx.get(UserRepository);
-    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.ONBOARDING, value: { isOnboarded: true } });
+    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.Onboarding, value: { isOnboarded: true } });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UserMetadataV1]);
     expect(response).toHaveLength(1);
@@ -54,7 +54,7 @@ describe(SyncEntityType.UserMetadataV1, () => {
       {
         ack: expect.any(String),
         data: {
-          key: UserMetadataKey.ONBOARDING,
+          key: UserMetadataKey.Onboarding,
           userId: user.id,
           value: { isOnboarded: true },
         },
@@ -64,14 +64,14 @@ describe(SyncEntityType.UserMetadataV1, () => {
 
     await ctx.syncAckAll(auth, response);
 
-    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.ONBOARDING, value: { isOnboarded: false } });
+    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.Onboarding, value: { isOnboarded: false } });
 
     const updatedResponse = await ctx.syncStream(auth, [SyncRequestType.UserMetadataV1]);
     expect(updatedResponse).toEqual([
       {
         ack: expect.any(String),
         data: {
-          key: UserMetadataKey.ONBOARDING,
+          key: UserMetadataKey.Onboarding,
           userId: user.id,
           value: { isOnboarded: false },
         },
@@ -89,7 +89,7 @@ describe(SyncEntityType.UserMetadataDeleteV1, () => {
     const { auth, user, ctx } = await setup();
 
     const userRepo = ctx.get(UserRepository);
-    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.ONBOARDING, value: { isOnboarded: true } });
+    await userRepo.upsertMetadata(user.id, { key: UserMetadataKey.Onboarding, value: { isOnboarded: true } });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UserMetadataV1]);
     expect(response).toHaveLength(1);
@@ -97,7 +97,7 @@ describe(SyncEntityType.UserMetadataDeleteV1, () => {
       {
         ack: expect.any(String),
         data: {
-          key: UserMetadataKey.ONBOARDING,
+          key: UserMetadataKey.Onboarding,
           userId: user.id,
           value: { isOnboarded: true },
         },
@@ -107,14 +107,14 @@ describe(SyncEntityType.UserMetadataDeleteV1, () => {
 
     await ctx.syncAckAll(auth, response);
 
-    await userRepo.deleteMetadata(auth.user.id, UserMetadataKey.ONBOARDING);
+    await userRepo.deleteMetadata(auth.user.id, UserMetadataKey.Onboarding);
 
     await expect(ctx.syncStream(auth, [SyncRequestType.UserMetadataV1])).resolves.toEqual([
       {
         ack: expect.any(String),
         data: {
           userId: user.id,
-          key: UserMetadataKey.ONBOARDING,
+          key: UserMetadataKey.Onboarding,
         },
         type: 'UserMetadataDeleteV1',
       },

@@ -58,7 +58,7 @@ Internally, Immich uses the [glob](https://www.npmjs.com/package/glob) package t
 
 This feature is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
 
-If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a periodic library refresh to pull in your changes.
+If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a [periodic library refresh](#set-custom-scan-interval) to pull in your changes.
 
 #### Troubleshooting
 
@@ -72,7 +72,9 @@ In rare cases, the library watcher can hang, preventing Immich from starting up.
 
 ### Nightly job
 
-There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
+There is an automatic scan job that is scheduled to run once a day. Its schedule is configurable, see [Set Custom Scan Interval](#set-custom-scan-interval).
+
+This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
 
 ## Usage
 
@@ -91,7 +93,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 ```diff title="docker-compose.yml"
   immich-server:
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}:/data
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro

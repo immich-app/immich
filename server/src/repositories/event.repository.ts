@@ -35,59 +35,59 @@ type Item<T extends EmitEvent> = {
 
 type EventMap = {
   // app events
-  'app.bootstrap': [];
-  'app.shutdown': [];
+  AppBootstrap: [];
+  AppShutdown: [];
 
-  'config.init': [{ newConfig: SystemConfig }];
+  ConfigInit: [{ newConfig: SystemConfig }];
   // config events
-  'config.update': [
+  ConfigUpdate: [
     {
       newConfig: SystemConfig;
       oldConfig: SystemConfig;
     },
   ];
-  'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+  ConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  'album.update': [{ id: string; recipientId: string }];
-  'album.invite': [{ id: string; userId: string }];
+  AlbumUpdate: [{ id: string; recipientId: string }];
+  AlbumInvite: [{ id: string; userId: string }];
 
   // asset events
-  'asset.tag': [{ assetId: string }];
-  'asset.untag': [{ assetId: string }];
-  'asset.hide': [{ assetId: string; userId: string }];
-  'asset.show': [{ assetId: string; userId: string }];
-  'asset.trash': [{ assetId: string; userId: string }];
-  'asset.delete': [{ assetId: string; userId: string }];
-  'asset.metadataExtracted': [{ assetId: string; userId: string; source?: JobSource }];
+  AssetTag: [{ assetId: string }];
+  AssetUntag: [{ assetId: string }];
+  AssetHide: [{ assetId: string; userId: string }];
+  AssetShow: [{ assetId: string; userId: string }];
+  AssetTrash: [{ assetId: string; userId: string }];
+  AssetDelete: [{ assetId: string; userId: string }];
+  AssetMetadataExtracted: [{ assetId: string; userId: string; source?: JobSource }];
 
   // asset bulk events
-  'assets.trash': [{ assetIds: string[]; userId: string }];
-  'assets.delete': [{ assetIds: string[]; userId: string }];
-  'assets.restore': [{ assetIds: string[]; userId: string }];
+  AssetTrashAll: [{ assetIds: string[]; userId: string }];
+  AssetDeleteAll: [{ assetIds: string[]; userId: string }];
+  AssetRestoreAll: [{ assetIds: string[]; userId: string }];
 
-  'job.start': [QueueName, JobItem];
-  'job.failed': [{ job: JobItem; error: Error | any }];
+  JobStart: [QueueName, JobItem];
+  JobFailed: [{ job: JobItem; error: Error | any }];
 
   // session events
-  'session.delete': [{ sessionId: string }];
+  SessionDelete: [{ sessionId: string }];
 
   // stack events
-  'stack.create': [{ stackId: string; userId: string }];
-  'stack.update': [{ stackId: string; userId: string }];
-  'stack.delete': [{ stackId: string; userId: string }];
+  StackCreate: [{ stackId: string; userId: string }];
+  StackUpdate: [{ stackId: string; userId: string }];
+  StackDelete: [{ stackId: string; userId: string }];
 
   // stack bulk events
-  'stacks.delete': [{ stackIds: string[]; userId: string }];
+  StackDeleteAll: [{ stackIds: string[]; userId: string }];
 
   // user events
-  'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];
+  UserSignup: [{ notify: boolean; id: string; tempPassword?: string }];
 
   // websocket events
-  'websocket.connect': [{ userId: string }];
+  WebsocketConnect: [{ userId: string }];
 };
 
-export const serverEvents = ['config.update'] as const;
+export const serverEvents = ['ConfigUpdate'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export type EmitEvent = keyof EventMap;
@@ -166,7 +166,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
           continue;
         }
 
-        const event = reflector.get<EventConfig>(MetadataKey.EVENT_CONFIG, handler);
+        const event = reflector.get<EventConfig>(MetadataKey.EventConfig, handler);
         if (!event) {
           continue;
         }
@@ -213,7 +213,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
       if (auth.session) {
         await client.join(auth.session.id);
       }
-      await this.onEvent({ name: 'websocket.connect', args: [{ userId: auth.user.id }], server: false });
+      await this.onEvent({ name: 'WebsocketConnect', args: [{ userId: auth.user.id }], server: false });
     } catch (error: Error | any) {
       this.logger.error(`Websocket connection error: ${error}`, error?.stack);
       client.emit('error', 'unauthorized');

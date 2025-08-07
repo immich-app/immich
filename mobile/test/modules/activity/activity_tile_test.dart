@@ -43,31 +43,16 @@ void main() {
 
   testWidgets('Returns a ListTile', (tester) async {
     await tester.pumpConsumerWidget(
-      ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-        ),
-      ),
+      ActivityTile(Activity(id: '1', createdAt: DateTime(100), type: ActivityType.like, user: UserStub.admin)),
       overrides: overrides,
     );
 
     expect(find.byType(ListTile), findsOneWidget);
   });
 
-  testWidgets('No trailing widget when activity assetId == null',
-      (tester) async {
+  testWidgets('No trailing widget when activity assetId == null', (tester) async {
     await tester.pumpConsumerWidget(
-      ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-        ),
-      ),
+      ActivityTile(Activity(id: '1', createdAt: DateTime(100), type: ActivityType.like, user: UserStub.admin)),
       overrides: overrides,
     );
 
@@ -75,18 +60,10 @@ void main() {
     expect(listTile.trailing, isNull);
   });
 
-  testWidgets(
-      'Asset Thumbanil as trailing widget when activity assetId != null',
-      (tester) async {
+  testWidgets('Asset Thumbanil as trailing widget when activity assetId != null', (tester) async {
     await tester.pumpConsumerWidget(
       ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-          assetId: '1',
-        ),
+        Activity(id: '1', createdAt: DateTime(100), type: ActivityType.like, user: UserStub.admin, assetId: '1'),
       ),
       overrides: overrides,
     );
@@ -99,13 +76,7 @@ void main() {
   testWidgets('No trailing widget when current asset != null', (tester) async {
     await tester.pumpConsumerWidget(
       ActivityTile(
-        Activity(
-          id: '1',
-          createdAt: DateTime(100),
-          type: ActivityType.like,
-          user: UserStub.admin,
-          assetId: '1',
-        ),
+        Activity(id: '1', createdAt: DateTime(100), type: ActivityType.like, user: UserStub.admin, assetId: '1'),
       ),
       overrides: overrides,
     );
@@ -118,37 +89,23 @@ void main() {
   });
 
   group('Like Activity', () {
-    final activity = Activity(
-      id: '1',
-      createdAt: DateTime(100),
-      type: ActivityType.like,
-      user: UserStub.admin,
-    );
+    final activity = Activity(id: '1', createdAt: DateTime(100), type: ActivityType.like, user: UserStub.admin);
 
     testWidgets('Like contains filled heart as leading', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+      await tester.pumpConsumerWidget(ActivityTile(activity), overrides: overrides);
 
       // Leading widget should not be null
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
       expect(listTile.leading, isNotNull);
 
       // And should have a favorite icon
-      final favoIconFinder = find.widgetWithIcon(
-        listTile.leading!.runtimeType,
-        Icons.favorite_rounded,
-      );
+      final favoIconFinder = find.widgetWithIcon(listTile.leading!.runtimeType, Icons.favorite_rounded);
 
       expect(favoIconFinder, findsOneWidget);
     });
 
     testWidgets('Like title is center aligned', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+      await tester.pumpConsumerWidget(ActivityTile(activity), overrides: overrides);
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
@@ -156,10 +113,7 @@ void main() {
     });
 
     testWidgets('No subtitle for likes', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+      await tester.pumpConsumerWidget(ActivityTile(activity), overrides: overrides);
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
@@ -176,12 +130,8 @@ void main() {
       user: UserStub.admin,
     );
 
-    testWidgets('Comment contains User Circle Avatar as leading',
-        (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+    testWidgets('Comment contains User Circle Avatar as leading', (tester) async {
+      await tester.pumpConsumerWidget(ActivityTile(activity), overrides: overrides);
 
       final userAvatarFinder = find.byType(UserCircleAvatar);
       expect(userAvatarFinder, findsOneWidget);
@@ -196,10 +146,7 @@ void main() {
     });
 
     testWidgets('Comment title is top aligned', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+      await tester.pumpConsumerWidget(ActivityTile(activity), overrides: overrides);
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
@@ -207,21 +154,12 @@ void main() {
     });
 
     testWidgets('Contains comment text as subtitle', (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTile(activity),
-        overrides: overrides,
-      );
+      await tester.pumpConsumerWidget(ActivityTile(activity), overrides: overrides);
 
       final listTile = tester.widget<ListTile>(find.byType(ListTile));
 
       expect(listTile.subtitle, isNotNull);
-      expect(
-        find.descendant(
-          of: find.byType(ListTile),
-          matching: find.text(activity.comment!),
-        ),
-        findsOneWidget,
-      );
+      expect(find.descendant(of: find.byType(ListTile), matching: find.text(activity.comment!)), findsOneWidget);
     });
   });
 }

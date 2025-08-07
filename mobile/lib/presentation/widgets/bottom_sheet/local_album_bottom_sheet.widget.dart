@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
@@ -15,9 +16,9 @@ class LocalAlbumBottomSheet extends ConsumerWidget {
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        ShareActionButton(),
-        DeleteLocalActionButton(),
-        UploadActionButton(),
+        ShareActionButton(source: ActionSource.timeline),
+        DeleteLocalActionButton(source: ActionSource.timeline),
+        UploadActionButton(source: ActionSource.timeline),
       ],
     );
   }

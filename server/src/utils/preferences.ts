@@ -8,7 +8,7 @@ import { getKeysDeep } from 'src/utils/misc';
 const getDefaultPreferences = (): UserPreferences => {
   return {
     albums: {
-      defaultAssetOrder: AssetOrder.DESC,
+      defaultAssetOrder: AssetOrder.Desc,
     },
     folders: {
       enabled: false,
@@ -53,7 +53,7 @@ const getDefaultPreferences = (): UserPreferences => {
 
 export const getPreferences = (metadata: UserMetadataItem[]): UserPreferences => {
   const preferences = getDefaultPreferences();
-  const item = metadata.find(({ key }) => key === UserMetadataKey.PREFERENCES);
+  const item = metadata.find(({ key }) => key === UserMetadataKey.Preferences);
   const partial = item?.value || {};
   for (const property of getKeysDeep(partial)) {
     _.set(preferences, property, _.get(partial, property));

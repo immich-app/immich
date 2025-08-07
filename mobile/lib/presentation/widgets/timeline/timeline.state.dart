@@ -14,14 +14,18 @@ class TimelineArgs {
   final double maxHeight;
   final double spacing;
   final int columnCount;
-  final bool showStorageIndicator;
+  final bool? showStorageIndicator;
+  final bool withStack;
+  final GroupAssetsBy? groupBy;
 
   const TimelineArgs({
     required this.maxWidth,
     required this.maxHeight,
     this.spacing = kTimelineSpacing,
     this.columnCount = kTimelineColumnCount,
-    this.showStorageIndicator = false,
+    this.showStorageIndicator,
+    this.withStack = false,
+    this.groupBy,
   });
 
   @override
@@ -30,7 +34,9 @@ class TimelineArgs {
         maxWidth == other.maxWidth &&
         maxHeight == other.maxHeight &&
         columnCount == other.columnCount &&
-        showStorageIndicator == other.showStorageIndicator;
+        showStorageIndicator == other.showStorageIndicator &&
+        withStack == other.withStack &&
+        groupBy == other.groupBy;
   }
 
   @override
@@ -39,17 +45,16 @@ class TimelineArgs {
       maxHeight.hashCode ^
       spacing.hashCode ^
       columnCount.hashCode ^
-      showStorageIndicator.hashCode;
+      showStorageIndicator.hashCode ^
+      withStack.hashCode ^
+      groupBy.hashCode;
 }
 
 class TimelineState {
   final bool isScrubbing;
   final bool isScrolling;
 
-  const TimelineState({
-    this.isScrubbing = false,
-    this.isScrolling = false,
-  });
+  const TimelineState({this.isScrubbing = false, this.isScrolling = false});
 
   bool get isInteracting => isScrubbing || isScrolling;
 
@@ -62,10 +67,7 @@ class TimelineState {
   int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode;
 
   TimelineState copyWith({bool? isScrubbing, bool? isScrolling}) {
-    return TimelineState(
-      isScrubbing: isScrubbing ?? this.isScrubbing,
-      isScrolling: isScrolling ?? this.isScrolling,
-    );
+    return TimelineState(isScrubbing: isScrubbing ?? this.isScrubbing, isScrolling: isScrolling ?? this.isScrolling);
   }
 }
 
@@ -81,40 +83,30 @@ class TimelineStateNotifier extends Notifier<TimelineState> {
   }
 
   @override
-  TimelineState build() => const TimelineState(
-        isScrubbing: false,
-        isScrolling: false,
-      );
+  TimelineState build() => const TimelineState(isScrubbing: false, isScrolling: false);
 }
 
 // This provider watches the buckets from the timeline service & args and serves the segments.
 // It should be used only after the timeline service and timeline args provider is overridden
-final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>(
-  (ref) async* {
-    final args = ref.watch(timelineArgsProvider);
-    final columnCount = args.columnCount;
-    final spacing = args.spacing;
-    final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
-    final tileExtent = math.max(0, availableTileWidth) / columnCount;
+final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) async* {
+  final args = ref.watch(timelineArgsProvider);
+  final columnCount = args.columnCount;
+  final spacing = args.spacing;
+  final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
+  final tileExtent = math.max(0, availableTileWidth) / columnCount;
 
-    final groupBy = GroupAssetsBy
-        .values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
+  final groupBy = args.groupBy ?? GroupAssetsBy.values[ref.watch(settingsProvider).get(Setting.groupAssetsBy)];
 
-    final timelineService = ref.watch(timelineServiceProvider);
-    yield* timelineService.watchBuckets().map((buckets) {
-      return FixedSegmentBuilder(
-        buckets: buckets,
-        tileHeight: tileExtent,
-        columnCount: columnCount,
-        spacing: spacing,
-        groupBy: groupBy,
-      ).generate();
-    });
-  },
-  dependencies: [timelineServiceProvider, timelineArgsProvider],
-);
+  final timelineService = ref.watch(timelineServiceProvider);
+  yield* timelineService.watchBuckets().map((buckets) {
+    return FixedSegmentBuilder(
+      buckets: buckets,
+      tileHeight: tileExtent,
+      columnCount: columnCount,
+      spacing: spacing,
+      groupBy: groupBy,
+    ).generate();
+  });
+}, dependencies: [timelineServiceProvider, timelineArgsProvider]);
 
-final timelineStateProvider =
-    NotifierProvider<TimelineStateNotifier, TimelineState>(
-  TimelineStateNotifier.new,
-);
+final timelineStateProvider = NotifierProvider<TimelineStateNotifier, TimelineState>(TimelineStateNotifier.new);

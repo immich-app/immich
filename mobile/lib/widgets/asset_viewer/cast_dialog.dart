@@ -21,10 +21,7 @@ class CastDialog extends ConsumerWidget {
     }
 
     return AlertDialog(
-      title: const Text(
-        "cast",
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ).tr(),
+      title: const Text("cast", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
       content: SizedBox(
         width: 250,
         height: 250,
@@ -32,27 +29,18 @@ class CastDialog extends ConsumerWidget {
           future: ref.read(castProvider.notifier).getDevices(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Text(
-                'Error: ${snapshot.error.toString()}',
-              );
+              return Text('Error: ${snapshot.error.toString()}');
             } else if (!snapshot.hasData) {
-              return const SizedBox(
-                height: 48,
-                child: Center(child: CircularProgressIndicator()),
-              );
+              return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
             }
 
             if (snapshot.data!.isEmpty) {
-              return const Text(
-                'no_cast_devices_found',
-              ).tr();
+              return const Text('no_cast_devices_found').tr();
             }
 
             final devices = snapshot.data!;
-            final connected =
-                devices.where((d) => isCurrentDevice(d.$1)).toList();
-            final others =
-                devices.where((d) => !isCurrentDevice(d.$1)).toList();
+            final connected = devices.where((d) => isCurrentDevice(d.$1)).toList();
+            final others = devices.where((d) => !isCurrentDevice(d.$1)).toList();
 
             final List<dynamic> sectionedList = [];
 
@@ -76,40 +64,25 @@ class CastDialog extends ConsumerWidget {
                   // It's a section header
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      item,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ).tr(),
+                    child: Text(item, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
                   );
                 } else {
-                  final (deviceName, type, deviceObj) =
-                      item as (String, CastDestinationType, dynamic);
+                  final (deviceName, type, deviceObj) = item as (String, CastDestinationType, dynamic);
 
                   return ListTile(
                     title: Text(
                       deviceName,
-                      style: TextStyle(
-                        color: isCurrentDevice(deviceName)
-                            ? context.colorScheme.primary
-                            : null,
-                      ),
+                      style: TextStyle(color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null),
                     ),
                     leading: Icon(
-                      type == CastDestinationType.googleCast
-                          ? Icons.cast
-                          : Icons.cast_connected,
-                      color: isCurrentDevice(deviceName)
-                          ? context.colorScheme.primary
-                          : null,
+                      type == CastDestinationType.googleCast ? Icons.cast : Icons.cast_connected,
+                      color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null,
                     ),
                     trailing: isCurrentDevice(deviceName)
                         ? Icon(Icons.check, color: context.colorScheme.primary)
                         : isDeviceConnecting(deviceName)
-                            ? const CircularProgressIndicator()
-                            : null,
+                        ? const CircularProgressIndicator()
+                        : null,
                     onTap: () async {
                       if (isDeviceConnecting(deviceName)) {
                         return;
@@ -120,9 +93,7 @@ class CastDialog extends ConsumerWidget {
                       }
 
                       if (!isCurrentDevice(deviceName)) {
-                        ref
-                            .read(castProvider.notifier)
-                            .connect(type, deviceObj);
+                        ref.read(castProvider.notifier).connect(type, deviceObj);
                       }
                     },
                   );
@@ -138,20 +109,14 @@ class CastDialog extends ConsumerWidget {
             onPressed: () => ref.read(castProvider.notifier).disconnect(),
             child: Text(
               "stop_casting",
-              style: TextStyle(
-                color: context.colorScheme.secondary,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: context.colorScheme.secondary, fontWeight: FontWeight.bold),
             ).tr(),
           ),
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
             "close",
-            style: TextStyle(
-              color: context.colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: context.colorScheme.primary, fontWeight: FontWeight.bold),
           ).tr(),
         ),
       ],

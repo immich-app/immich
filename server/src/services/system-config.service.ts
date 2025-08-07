@@ -12,10 +12,10 @@ import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.SystemConfig })
+  @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.SystemConfig })
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
-    await this.eventRepository.emit('config.init', { newConfig: config });
+    await this.eventRepository.emit('ConfigInit', { newConfig: config });
   }
 
   async getSystemConfig(): Promise<SystemConfigDto> {
@@ -27,8 +27,8 @@ export class SystemConfigService extends BaseService {
     return mapConfig(defaults);
   }
 
-  @OnEvent({ name: 'config.init', priority: -100 })
-  onConfigInit({ newConfig: { logging } }: ArgOf<'config.init'>) {
+  @OnEvent({ name: 'ConfigInit', priority: -100 })
+  onConfigInit({ newConfig: { logging } }: ArgOf<'ConfigInit'>) {
     const { logLevel: envLevel } = this.configRepository.getEnv();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
@@ -36,14 +36,14 @@ export class SystemConfigService extends BaseService {
     this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
     this.onConfigInit({ newConfig });
     clearConfigCache();
   }
 
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig, oldConfig }: ArgOf<'config.validate'>) {
+  @OnEvent({ name: 'ConfigValidate' })
+  onConfigValidate({ newConfig, oldConfig }: ArgOf<'ConfigValidate'>) {
     const { logLevel } = this.configRepository.getEnv();
     if (!_.isEqual(instanceToPlain(newConfig.logging), oldConfig.logging) && logLevel) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
@@ -59,7 +59,7 @@ export class SystemConfigService extends BaseService {
     const oldConfig = await this.getConfig({ withCache: false });
 
     try {
-      await this.eventRepository.emit('config.validate', { newConfig: toPlainObject(dto), oldConfig });
+      await this.eventRepository.emit('ConfigValidate', { newConfig: toPlainObject(dto), oldConfig });
     } catch (error) {
       this.logger.warn(`Unable to save system config due to a validation error: ${error}`);
       throw new BadRequestException(error instanceof Error ? error.message : error);
@@ -67,7 +67,7 @@ export class SystemConfigService extends BaseService {
 
     const newConfig = await this.updateConfig(dto);
 
-    await this.eventRepository.emit('config.update', { newConfig, oldConfig });
+    await this.eventRepository.emit('ConfigUpdate', { newConfig, oldConfig });
 
     return mapConfig(newConfig);
   }

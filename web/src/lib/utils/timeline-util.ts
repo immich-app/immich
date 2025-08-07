@@ -3,19 +3,20 @@ import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
+import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 
 // Move type definitions to the top
-export type TimelinePlainYearMonth = {
+export type TimelineYearMonth = {
   year: number;
   month: number;
 };
 
-export type TimelinePlainDate = TimelinePlainYearMonth & {
+export type TimelineDate = TimelineYearMonth & {
   day: number;
 };
 
-export type TimelinePlainDateTime = TimelinePlainDate & {
+export type TimelineDateTime = TimelineDate & {
   hour: number;
   minute: number;
   second: number;
@@ -32,29 +33,26 @@ export type ScrubberListener = (
 export const fromISODateTime = (isoDateTime: string, timeZone: string): DateTime<true> =>
   DateTime.fromISO(isoDateTime, { zone: timeZone, locale: get(locale) }) as DateTime<true>;
 
-export const fromISODateTimeToObject = (isoDateTime: string, timeZone: string): TimelinePlainDateTime =>
+export const fromISODateTimeToObject = (isoDateTime: string, timeZone: string): TimelineDateTime =>
   (fromISODateTime(isoDateTime, timeZone) as DateTime<true>).toObject();
 
 // used for AssetResponseDto.localDateTime, amongst others
 export const fromISODateTimeUTC = (isoDateTimeUtc: string) => fromISODateTime(isoDateTimeUtc, 'UTC');
 
-export const fromISODateTimeUTCToObject = (isoDateTimeUtc: string): TimelinePlainDateTime =>
+export const fromISODateTimeUTCToObject = (isoDateTimeUtc: string): TimelineDateTime =>
   (fromISODateTimeUTC(isoDateTimeUtc) as DateTime<true>).toObject();
 
 // used to create equivalent of AssetResponseDto.localDateTime in UTC, but without timezone information
 export const fromISODateTimeTruncateTZToObject = (
   isoDateTimeUtc: string,
   timeZone: string | undefined,
-): TimelinePlainDateTime =>
+): TimelineDateTime =>
   (
     fromISODateTime(isoDateTimeUtc, timeZone ?? 'UTC').setZone('UTC', { keepLocalTime: true }) as DateTime<true>
   ).toObject();
 
 // Used to derive a local date time from an ISO string and a UTC offset in hours
-export const fromISODateTimeWithOffsetToObject = (
-  isoDateTimeUtc: string,
-  utcOffsetHours: number,
-): TimelinePlainDateTime => {
+export const fromISODateTimeWithOffsetToObject = (isoDateTimeUtc: string, utcOffsetHours: number): TimelineDateTime => {
   const utcDateTime = fromISODateTimeUTC(isoDateTimeUtc);
 
   // Apply the offset to get the local time
@@ -81,23 +79,23 @@ export const getTimes = (isoDateTimeUtc: string, localUtcOffsetHours: number) =>
   };
 };
 
-export const fromTimelinePlainDateTime = (timelineDateTime: TimelinePlainDateTime): DateTime<true> =>
+export const fromTimelinePlainDateTime = (timelineDateTime: TimelineDateTime): DateTime<true> =>
   DateTime.fromObject(timelineDateTime, { zone: 'local', locale: get(locale) }) as DateTime<true>;
 
-export const fromTimelinePlainDate = (timelineYearMonth: TimelinePlainDate): DateTime<true> =>
+export const fromTimelinePlainDate = (timelineYearMonth: TimelineDate): DateTime<true> =>
   DateTime.fromObject(
     { year: timelineYearMonth.year, month: timelineYearMonth.month, day: timelineYearMonth.day },
     { zone: 'local', locale: get(locale) },
   ) as DateTime<true>;
 
-export const fromTimelinePlainYearMonth = (timelineYearMonth: TimelinePlainYearMonth): DateTime<true> =>
+export const fromTimelinePlainYearMonth = (timelineYearMonth: TimelineYearMonth): DateTime<true> =>
   DateTime.fromObject(
     { year: timelineYearMonth.year, month: timelineYearMonth.month },
     { zone: 'local', locale: get(locale) },
   ) as DateTime<true>;
 
-export const toISOYearMonthUTC = (timelineYearMonth: TimelinePlainYearMonth): string =>
-  (fromTimelinePlainYearMonth(timelineYearMonth).setZone('UTC', { keepLocalTime: true }) as DateTime<true>).toISO();
+export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string =>
+  `${year}-${month.toString().padStart(2, '0')}-01T00:00:00.000Z`;
 
 export function formatMonthGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
@@ -198,7 +196,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
 export const isTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): unknownAsset is TimelineAsset =>
   (unknownAsset as TimelineAsset).ratio !== undefined;
 
-export const plainDateTimeCompare = (ascending: boolean, a: TimelinePlainDateTime, b: TimelinePlainDateTime) => {
+export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b: TimelineDateTime) => {
   const [aDateTime, bDateTime] = ascending ? [a, b] : [b, a];
 
   if (aDateTime.year !== bDateTime.year) {
@@ -222,8 +220,8 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelinePlainDateTim
   return aDateTime.millisecond - bDateTime.millisecond;
 };
 
-export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
-  const result = new Set<T>();
+export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
+  const result = new SvelteSet<T>();
   for (const value of setA) {
     if (!setB.has(value)) {
       result.add(value);

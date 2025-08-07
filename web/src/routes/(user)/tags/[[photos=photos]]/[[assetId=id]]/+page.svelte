@@ -8,14 +8,13 @@
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
   import TagEditModal from '$lib/modals/TagEditModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, Text } from '@immich/ui';
+  import { Button, HStack, modalManager, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';

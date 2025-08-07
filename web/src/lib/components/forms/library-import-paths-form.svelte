@@ -1,10 +1,9 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
-  import { Button, IconButton } from '@immich/ui';
+  import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

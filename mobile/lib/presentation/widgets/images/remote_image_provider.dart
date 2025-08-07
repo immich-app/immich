@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
+import 'package:immich_mobile/extensions/codec_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/providers/image/cache/image_loader.dart';
 import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
@@ -15,10 +17,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
   final String assetId;
   final CacheManager? cacheManager;
 
-  const RemoteThumbProvider({
-    required this.assetId,
-    this.cacheManager,
-  });
+  const RemoteThumbProvider({required this.assetId, this.cacheManager});
 
   @override
   Future<RemoteThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -26,10 +25,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    RemoteThumbProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(RemoteThumbProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? RemoteImageCacheManager();
     final chunkController = StreamController<ImageChunkEvent>();
     return MultiFrameImageStreamCompleter(
@@ -49,9 +45,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
     ImageDecoderCallback decode,
     StreamController<ImageChunkEvent> chunkController,
   ) async {
-    final preview = getThumbnailUrlForRemoteId(
-      key.assetId,
-    );
+    final preview = getThumbnailUrlForRemoteId(key.assetId);
 
     return ImageLoader.loadImageFromCache(
       preview,
@@ -79,10 +73,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   final String assetId;
   final CacheManager? cacheManager;
 
-  const RemoteFullImageProvider({
-    required this.assetId,
-    this.cacheManager,
-  });
+  const RemoteFullImageProvider({required this.assetId, this.cacheManager});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -90,41 +81,30 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    RemoteFullImageProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? RemoteImageCacheManager();
-    final chunkEvents = StreamController<ImageChunkEvent>();
-    return MultiImageStreamCompleter(
-      codec: _codec(key, cache, decode, chunkEvents),
-      scale: 1.0,
-      chunkEvents: chunkEvents.stream,
+    return OneFramePlaceholderImageStreamCompleter(
+      _codec(key, cache, decode),
+      initialImage: getCachedImage(RemoteThumbProvider(assetId: key.assetId)),
     );
   }
 
-  Stream<Codec> _codec(
-    RemoteFullImageProvider key,
-    CacheManager cache,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkController,
-  ) async* {
-    yield await ImageLoader.loadImageFromCache(
+  Stream<ImageInfo> _codec(RemoteFullImageProvider key, CacheManager cache, ImageDecoderCallback decode) async* {
+    final codec = await ImageLoader.loadImageFromCache(
       getPreviewUrlForRemoteId(key.assetId),
       cache: cache,
       decode: decode,
-      chunkEvents: chunkController,
     );
+    yield await codec.getImageInfo();
 
     if (AppSetting.get(Setting.loadOriginal)) {
-      yield await ImageLoader.loadImageFromCache(
+      final codec = await ImageLoader.loadImageFromCache(
         getOriginalUrlForRemoteId(key.assetId),
         cache: cache,
         decode: decode,
-        chunkEvents: chunkController,
       );
+      yield await codec.getImageInfo();
     }
-    await chunkController.close();
   }
 
   @override

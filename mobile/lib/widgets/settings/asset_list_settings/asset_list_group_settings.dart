@@ -11,9 +11,7 @@ import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_title.dart';
 
 class GroupSettings extends HookConsumerWidget {
-  const GroupSettings({
-    super.key,
-  });
+  const GroupSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,10 +19,7 @@ class GroupSettings extends HookConsumerWidget {
     final groupBy = GroupAssetsBy.values[groupByIndex.value];
 
     Future<void> updateAppSettings(GroupAssetsBy groupBy) async {
-      await ref.watch(appSettingsServiceProvider).setSetting(
-            AppSettingsEnum.groupAssetsBy,
-            groupBy.index,
-          );
+      await ref.watch(appSettingsServiceProvider).setSetting(AppSettingsEnum.groupAssetsBy, groupBy.index);
       ref.invalidate(appSettingsServiceProvider);
     }
 
@@ -41,18 +36,9 @@ class GroupSettings extends HookConsumerWidget {
         SettingsSubTitle(title: "asset_list_group_by_sub_title".tr()),
         SettingsRadioListTile(
           groups: [
-            SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_by_month_day'.tr(),
-              value: GroupAssetsBy.day,
-            ),
-            SettingsRadioGroup(
-              title: 'month'.tr(),
-              value: GroupAssetsBy.month,
-            ),
-            SettingsRadioGroup(
-              title: 'asset_list_layout_settings_group_automatically'.tr(),
-              value: GroupAssetsBy.auto,
-            ),
+            SettingsRadioGroup(title: 'asset_list_layout_settings_group_by_month_day'.tr(), value: GroupAssetsBy.day),
+            SettingsRadioGroup(title: 'month'.tr(), value: GroupAssetsBy.month),
+            SettingsRadioGroup(title: 'asset_list_layout_settings_group_automatically'.tr(), value: GroupAssetsBy.auto),
           ],
           groupBy: groupBy,
           onRadioChanged: changeGroupValue,

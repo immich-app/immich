@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsDateString,
-  IsEnum,
   IsInt,
   IsLatitude,
   IsLongitude,
@@ -17,7 +16,7 @@ import {
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
-import { IsNotSiblingOf, Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
   @IsNotEmpty()
@@ -33,7 +32,7 @@ export class UpdateAssetBase {
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @ValidateAssetVisibility({ optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
   @Optional()
@@ -110,13 +109,12 @@ export enum AssetJobName {
 }
 
 export class AssetJobsDto extends AssetIdsDto {
-  @ApiProperty({ enumName: 'AssetJobName', enum: AssetJobName })
-  @IsEnum(AssetJobName)
+  @ValidateEnum({ enum: AssetJobName, name: 'AssetJobName' })
   name!: AssetJobName;
 }
 
 export class AssetStatsDto {
-  @ValidateAssetVisibility({ optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
   @ValidateBoolean({ optional: true })
@@ -139,8 +137,8 @@ export class AssetStatsResponseDto {
 
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
-    images: stats[AssetType.IMAGE],
-    videos: stats[AssetType.VIDEO],
+    images: stats[AssetType.Image],
+    videos: stats[AssetType.Video],
     total: Object.values(stats).reduce((total, value) => total + value, 0),
   };
 };

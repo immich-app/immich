@@ -6,7 +6,6 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     AlbumUserRole,
@@ -16,7 +15,7 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Modal, ModalBody } from '@immich/ui';
+  import { Modal, ModalBody, modalManager } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';

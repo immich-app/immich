@@ -1,12 +1,11 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { makeSharedLinkUrl } from '$lib/utils';
+  import { IconButton, modalManager } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { IconButton } from '@immich/ui';
 
   const { getAssets } = getAssetControlContext();
 
@@ -16,7 +15,7 @@
     });
 
     if (sharedLink) {
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
+      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
     }
   };
 </script>

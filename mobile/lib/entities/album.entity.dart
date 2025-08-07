@@ -95,13 +95,11 @@ class Album {
   // accessible in an object freshly created (not loaded from DB)
 
   @ignore
-  Iterable<User> get remoteUsers => sharedUsers.isEmpty
-      ? (sharedUsers as IsarLinksCommon<User>).addedObjects
-      : sharedUsers;
+  Iterable<User> get remoteUsers =>
+      sharedUsers.isEmpty ? (sharedUsers as IsarLinksCommon<User>).addedObjects : sharedUsers;
 
   @ignore
-  Iterable<Asset> get remoteAssets =>
-      assets.isEmpty ? (assets as IsarLinksCommon<Asset>).addedObjects : assets;
+  Iterable<Asset> get remoteAssets => assets.isEmpty ? (assets as IsarLinksCommon<Asset>).addedObjects : assets;
 
   @override
   bool operator ==(other) {
@@ -115,10 +113,7 @@ class Album {
         modifiedAt.isAtSameMomentAs(other.modifiedAt) &&
         isAtSameMomentAs(startDate, other.startDate) &&
         isAtSameMomentAs(endDate, other.endDate) &&
-        isAtSameMomentAs(
-          lastModifiedAssetTimestamp,
-          other.lastModifiedAssetTimestamp,
-        ) &&
+        isAtSameMomentAs(lastModifiedAssetTimestamp, other.lastModifiedAssetTimestamp) &&
         shared == other.shared &&
         activityEnabled == other.activityEnabled &&
         owner.value == other.owner.value &&
@@ -164,33 +159,25 @@ class Album {
     a.remoteAssetCount = dto.assetCount;
     a.owner.value = await db.users.getById(dto.ownerId);
     if (dto.order != null) {
-      a.sortOrder =
-          dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc;
+      a.sortOrder = dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc;
     }
 
     if (dto.albumThumbnailAssetId != null) {
-      a.thumbnail.value = await db.assets
-          .where()
-          .remoteIdEqualTo(dto.albumThumbnailAssetId)
-          .findFirst();
+      a.thumbnail.value = await db.assets.where().remoteIdEqualTo(dto.albumThumbnailAssetId).findFirst();
     }
     if (dto.albumUsers.isNotEmpty) {
-      final users = await db.users.getAllById(
-        dto.albumUsers.map((e) => e.user.id).toList(growable: false),
-      );
+      final users = await db.users.getAllById(dto.albumUsers.map((e) => e.user.id).toList(growable: false));
       a.sharedUsers.addAll(users.cast());
     }
     if (dto.assets.isNotEmpty) {
-      final assets =
-          await db.assets.getAllByRemoteId(dto.assets.map((e) => e.id));
+      final assets = await db.assets.getAllByRemoteId(dto.assets.map((e) => e.id));
       a.assets.addAll(assets);
     }
     return a;
   }
 
   @override
-  String toString() =>
-      'remoteId: $remoteId name: $name description: $description';
+  String toString() => 'remoteId: $remoteId name: $name description: $description';
 }
 
 extension AssetsHelper on IsarCollection<Album> {

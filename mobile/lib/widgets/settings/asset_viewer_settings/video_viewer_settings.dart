@@ -8,15 +8,12 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class VideoViewerSettings extends HookConsumerWidget {
-  const VideoViewerSettings({
-    super.key,
-  });
+  const VideoViewerSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final useLoopVideo = useAppSettingsState(AppSettingsEnum.loopVideo);
-    final useOriginalVideo =
-        useAppSettingsState(AppSettingsEnum.loadOriginalVideo);
+    final useOriginalVideo = useAppSettingsState(AppSettingsEnum.loadOriginalVideo);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

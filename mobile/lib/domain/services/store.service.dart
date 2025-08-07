@@ -12,8 +12,7 @@ class StoreService {
   final Map<int, Object?> _cache = {};
   late final StreamSubscription<StoreDto> _storeUpdateSubscription;
 
-  StoreService._({required IsarStoreRepository storeRepository})
-      : _storeRepository = storeRepository;
+  StoreService._({required IsarStoreRepository storeRepository}) : _storeRepository = storeRepository;
 
   // TODO: Temporary typedef to make minimal changes. Remove this and make the presentation layer access store through a provider
   static StoreService? _instance;
@@ -25,16 +24,12 @@ class StoreService {
   }
 
   // TODO: Replace the implementation with the one from create after removing the typedef
-  static Future<StoreService> init({
-    required IsarStoreRepository storeRepository,
-  }) async {
+  static Future<StoreService> init({required IsarStoreRepository storeRepository}) async {
     _instance ??= await create(storeRepository: storeRepository);
     return _instance!;
   }
 
-  static Future<StoreService> create({
-    required IsarStoreRepository storeRepository,
-  }) async {
+  static Future<StoreService> create({required IsarStoreRepository storeRepository}) async {
     final instance = StoreService._(storeRepository: storeRepository);
     await instance._populateCache();
     instance._storeUpdateSubscription = instance._listenForChange();
@@ -48,10 +43,9 @@ class StoreService {
     }
   }
 
-  StreamSubscription<StoreDto> _listenForChange() =>
-      _storeRepository.watchAll().listen((event) {
-        _cache[event.key.id] = event.value;
-      });
+  StreamSubscription<StoreDto> _listenForChange() => _storeRepository.watchAll().listen((event) {
+    _cache[event.key.id] = event.value;
+  });
 
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
   void dispose() async {
@@ -93,6 +87,8 @@ class StoreService {
     await _storeRepository.deleteAll();
     _cache.clear();
   }
+
+  bool get isBetaTimelineEnabled => tryGet(StoreKey.betaTimeline) ?? false;
 }
 
 class StoreKeyNotFoundException implements Exception {

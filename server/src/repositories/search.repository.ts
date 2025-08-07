@@ -8,7 +8,7 @@ import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { anyUuid, searchAssetBuilder } from 'src/utils/database';
+import { anyUuid, searchAssetBuilder, withExif } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
@@ -129,6 +129,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchPeopleOptions &
   SearchTagOptions;
 
+export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
+
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
   numResults: number;
@@ -239,6 +241,29 @@ export class SearchRepository {
 
   @GenerateSql({
     params: [
+      100,
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchLargeAssets(size: number, options: LargeAssetSearchOptions) {
+    const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
+    return searchAssetBuilder(this.db, options)
+      .selectAll('asset')
+      .$call(withExif)
+      .where('asset_exif.fileSizeInByte', '>', options.minFileSize || 0)
+      .orderBy('asset_exif.fileSizeInByte', orderDirection)
+      .limit(size)
+      .execute();
+  }
+
+  @GenerateSql({
+    params: [
       { page: 1, size: 200 },
       {
         takenAfter: DummyValue.DATE,
@@ -256,7 +281,7 @@ export class SearchRepository {
     }
 
     return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.CLIP])}`.execute(trx);
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       const items = await searchAssetBuilder(trx, options)
         .selectAll('asset')
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
@@ -284,7 +309,7 @@ export class SearchRepository {
     }
 
     return this.db.transaction().execute(async (trx) => {
-      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.FACE])}`.execute(trx);
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Face])}`.execute(trx);
       return await trx
         .with('cte', (qb) =>
           qb
@@ -351,8 +376,8 @@ export class SearchRepository {
           .select(['city', 'assetId'])
           .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
           .where('asset.ownerId', '=', anyUuid(userIds))
-          .where('asset.visibility', '=', AssetVisibility.TIMELINE)
-          .where('asset.type', '=', AssetType.IMAGE)
+          .where('asset.visibility', '=', AssetVisibility.Timeline)
+          .where('asset.type', '=', AssetType.Image)
           .where('asset.deletedAt', 'is', null)
           .orderBy('city')
           .limit(1);
@@ -367,8 +392,8 @@ export class SearchRepository {
                 .select(['city', 'assetId'])
                 .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
                 .where('asset.ownerId', '=', anyUuid(userIds))
-                .where('asset.visibility', '=', AssetVisibility.TIMELINE)
-                .where('asset.type', '=', AssetType.IMAGE)
+                .where('asset.visibility', '=', AssetVisibility.Timeline)
+                .where('asset.type', '=', AssetType.Image)
                 .where('asset.deletedAt', 'is', null)
                 .whereRef('asset_exif.city', '>', 'cte.city')
                 .orderBy('city')
@@ -450,7 +475,7 @@ export class SearchRepository {
       .distinctOn(field)
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
-      .where('visibility', '=', AssetVisibility.TIMELINE)
+      .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null);
   }

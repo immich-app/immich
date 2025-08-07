@@ -103,7 +103,7 @@ export class SharedLinkRepository {
       .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
       .where('shared_link.id', '=', id)
       .where('shared_link.userId', '=', userId)
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .orderBy('shared_link.createdAt', 'desc')
       .executeTakeFirst();
   }
@@ -165,7 +165,7 @@ export class SharedLinkRepository {
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('album').$castTo<Album | null>().as('album'))
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]))
       .$if(!!albumId, (eb) => eb.where('shared_link.albumId', '=', albumId!))
       .orderBy('shared_link.createdAt', 'desc')
       .distinctOn(['shared_link.createdAt'])
@@ -173,10 +173,18 @@ export class SharedLinkRepository {
   }
 
   @GenerateSql({ params: [DummyValue.BUFFER] })
-  async getByKey(key: Buffer) {
+  getByKey(key: Buffer) {
+    return this.authBuilder().where('shared_link.key', '=', key).executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.BUFFER] })
+  getBySlug(slug: string) {
+    return this.authBuilder().where('shared_link.slug', '=', slug).executeTakeFirst();
+  }
+
+  private authBuilder() {
     return this.db
       .selectFrom('shared_link')
-      .where('shared_link.key', '=', key)
       .leftJoin('album', 'album.id', 'shared_link.albumId')
       .where('album.deletedAt', 'is', null)
       .select((eb) => [
@@ -185,8 +193,7 @@ export class SharedLinkRepository {
           eb.selectFrom('user').select(columns.authUser).whereRef('user.id', '=', 'shared_link.userId'),
         ).as('user'),
       ])
-      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
-      .executeTakeFirst();
+      .where((eb) => eb.or([eb('shared_link.type', '=', SharedLinkType.Individual), eb('album.id', 'is not', null)]));
   }
 
   async create(entity: Insertable<SharedLinkTable> & { assetIds?: string[] }) {

@@ -6,7 +6,7 @@ import { IncomingHttpHeaders } from 'node:http';
 import { join } from 'node:path';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { UserAdmin } from 'src/database';
+import { AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import {
   AuthDto,
   AuthStatusResponseDto,
@@ -80,7 +80,7 @@ export class AuthService extends BaseService {
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
     if (auth.session) {
       await this.sessionRepository.delete(auth.session.id);
-      await this.eventRepository.emit('session.delete', { sessionId: auth.session.id });
+      await this.eventRepository.emit('SessionDelete', { sessionId: auth.session.id });
     }
 
     return {
@@ -174,7 +174,8 @@ export class AuthService extends BaseService {
 
   async authenticate({ headers, queryParams, metadata }: ValidateRequest): Promise<AuthDto> {
     const authDto = await this.validate({ headers, queryParams });
-    const { adminRoute, sharedLinkRoute, permission, uri } = metadata;
+    const { adminRoute, sharedLinkRoute, uri } = metadata;
+    const requestedPermission = metadata.permission ?? Permission.All;
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
@@ -186,24 +187,29 @@ export class AuthService extends BaseService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (authDto.apiKey && permission && !isGranted({ requested: [permission], current: authDto.apiKey.permissions })) {
-      throw new ForbiddenException(`Missing required permission: ${permission}`);
+    if (authDto.apiKey && !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })) {
+      throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
     return authDto;
   }
 
   private async validate({ headers, queryParams }: Omit<ValidateRequest, 'metadata'>): Promise<AuthDto> {
-    const shareKey = (headers[ImmichHeader.SHARED_LINK_KEY] || queryParams[ImmichQuery.SHARED_LINK_KEY]) as string;
-    const session = (headers[ImmichHeader.USER_TOKEN] ||
-      headers[ImmichHeader.SESSION_TOKEN] ||
-      queryParams[ImmichQuery.SESSION_KEY] ||
+    const shareKey = (headers[ImmichHeader.SharedLinkKey] || queryParams[ImmichQuery.SharedLinkKey]) as string;
+    const shareSlug = (headers[ImmichHeader.SharedLinkSlug] || queryParams[ImmichQuery.SharedLinkSlug]) as string;
+    const session = (headers[ImmichHeader.UserToken] ||
+      headers[ImmichHeader.SessionToken] ||
+      queryParams[ImmichQuery.SessionKey] ||
       this.getBearerToken(headers) ||
       this.getCookieToken(headers)) as string;
-    const apiKey = (headers[ImmichHeader.API_KEY] || queryParams[ImmichQuery.API_KEY]) as string;
+    const apiKey = (headers[ImmichHeader.ApiKey] || queryParams[ImmichQuery.ApiKey]) as string;
 
     if (shareKey) {
-      return this.validateSharedLink(shareKey);
+      return this.validateSharedLinkKey(shareKey);
+    }
+
+    if (shareSlug) {
+      return this.validateSharedLinkSlug(shareSlug);
     }
 
     if (session) {
@@ -321,7 +327,7 @@ export class AuthService extends BaseService {
       const { contentType, data } = await this.oauthRepository.getProfilePicture(url);
       const extensionWithDot = mimeTypes.toExtension(contentType || 'image/jpeg') ?? 'jpg';
       const profileImagePath = join(
-        StorageCore.getFolderLocation(StorageFolder.PROFILE, user.id),
+        StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
         `${this.cryptoRepository.randomUUID()}${extensionWithDot}`,
       );
 
@@ -330,7 +336,7 @@ export class AuthService extends BaseService {
       await this.userRepository.update(user.id, { profileImagePath, profileChangedAt: new Date() });
 
       if (oldPath) {
-        await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [oldPath] } });
+        await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldPath] } });
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);
@@ -366,7 +372,7 @@ export class AuthService extends BaseService {
   }
 
   private async getLogoutEndpoint(authType: AuthType): Promise<string> {
-    if (authType !== AuthType.OAUTH) {
+    if (authType !== AuthType.OAuth) {
       return LOGIN_URL;
     }
 
@@ -389,31 +395,46 @@ export class AuthService extends BaseService {
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.ACCESS_TOKEN] || null;
+    return cookies[ImmichCookie.AccessToken] || null;
   }
 
   private getCookieOauthState(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.OAUTH_STATE] || null;
+    return cookies[ImmichCookie.OAuthState] || null;
   }
 
   private getCookieCodeVerifier(headers: IncomingHttpHeaders): string | null {
     const cookies = parse(headers.cookie || '');
-    return cookies[ImmichCookie.OAUTH_CODE_VERIFIER] || null;
+    return cookies[ImmichCookie.OAuthCodeVerifier] || null;
   }
 
-  async validateSharedLink(key: string | string[]): Promise<AuthDto> {
+  async validateSharedLinkKey(key: string | string[]): Promise<AuthDto> {
     key = Array.isArray(key) ? key[0] : key;
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
-    if (sharedLink?.user && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
-      return {
-        user: sharedLink.user,
-        sharedLink,
-      };
+    if (!this.isValidSharedLink(sharedLink)) {
+      throw new UnauthorizedException('Invalid share key');
     }
-    throw new UnauthorizedException('Invalid share key');
+
+    return { user: sharedLink.user, sharedLink };
+  }
+
+  async validateSharedLinkSlug(slug: string | string[]): Promise<AuthDto> {
+    slug = Array.isArray(slug) ? slug[0] : slug;
+
+    const sharedLink = await this.sharedLinkRepository.getBySlug(slug);
+    if (!this.isValidSharedLink(sharedLink)) {
+      throw new UnauthorizedException('Invalid share slug');
+    }
+
+    return { user: sharedLink.user, sharedLink };
+  }
+
+  private isValidSharedLink(
+    sharedLink?: AuthSharedLink & { user: AuthUser | null },
+  ): sharedLink is AuthSharedLink & { user: AuthUser } {
+    return !!sharedLink?.user && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date());
   }
 
   private async validateApiKey(key: string): Promise<AuthDto> {
@@ -466,7 +487,6 @@ export class AuthService extends BaseService {
         user: session.user,
         session: {
           id: session.id,
-          isPendingSyncReset: session.isPendingSyncReset,
           hasElevatedPermission,
         },
       };

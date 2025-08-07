@@ -4,10 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
-final currentAssetNotifier =
-    AutoDisposeNotifierProvider<CurrentAssetNotifier, BaseAsset?>(
-  CurrentAssetNotifier.new,
-);
+final currentAssetNotifier = AutoDisposeNotifierProvider<CurrentAssetNotifier, BaseAsset?>(CurrentAssetNotifier.new);
 
 class CurrentAssetNotifier extends AutoDisposeNotifier<BaseAsset?> {
   KeepAliveLink? _keepAliveLink;
@@ -20,10 +17,7 @@ class CurrentAssetNotifier extends AutoDisposeNotifier<BaseAsset?> {
     _keepAliveLink?.close();
     _assetSubscription?.cancel();
     state = asset;
-    _assetSubscription = ref
-        .watch(assetServiceProvider)
-        .watchAsset(asset)
-        .listen((updatedAsset) {
+    _assetSubscription = ref.watch(assetServiceProvider).watchAsset(asset).listen((updatedAsset) {
       if (updatedAsset != null) {
         state = updatedAsset;
       }
@@ -37,12 +31,10 @@ class CurrentAssetNotifier extends AutoDisposeNotifier<BaseAsset?> {
   }
 }
 
-final currentAssetExifProvider = FutureProvider.autoDispose(
-  (ref) {
-    final currentAsset = ref.watch(currentAssetNotifier);
-    if (currentAsset == null) {
-      return null;
-    }
-    return ref.watch(assetServiceProvider).getExif(currentAsset);
-  },
-);
+final currentAssetExifProvider = FutureProvider.autoDispose((ref) {
+  final currentAsset = ref.watch(currentAssetNotifier);
+  if (currentAsset == null) {
+    return null;
+  }
+  return ref.watch(assetServiceProvider).getExif(currentAsset);
+});

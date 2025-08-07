@@ -5,10 +5,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
 class LocalAlbumThumbnail extends ConsumerWidget {
-  const LocalAlbumThumbnail({
-    super.key,
-    required this.albumId,
-  });
+  const LocalAlbumThumbnail({super.key, required this.albumId});
 
   final String albumId;
   @override
@@ -21,34 +18,21 @@ class LocalAlbumThumbnail extends ConsumerWidget {
             decoration: BoxDecoration(
               color: context.colorScheme.surfaceContainer,
               borderRadius: const BorderRadius.all(Radius.circular(16)),
-              border: Border.all(
-                color: context.colorScheme.outline.withAlpha(50),
-                width: 1,
-              ),
+              border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
             ),
-            child: Icon(
-              Icons.collections,
-              size: 24,
-              color: context.primaryColor,
-            ),
+            child: Icon(Icons.collections, size: 24, color: context.primaryColor),
           );
         }
 
         return ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(16)),
-          child: Thumbnail(
-            asset: data,
-          ),
+          child: Thumbnail(asset: data),
         );
       },
       error: (error, stack) {
         return const Icon(Icons.error, size: 24);
       },
-      loading: () => const SizedBox(
-        width: 24,
-        height: 24,
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => const SizedBox(width: 24, height: 24, child: Center(child: CircularProgressIndicator())),
     );
   }
 }

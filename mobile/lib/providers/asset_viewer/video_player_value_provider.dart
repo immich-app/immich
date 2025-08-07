@@ -1,13 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:native_video_player/native_video_player.dart';
 
-enum VideoPlaybackState {
-  initializing,
-  paused,
-  playing,
-  buffering,
-  completed,
-}
+enum VideoPlaybackState { initializing, paused, playing, buffering, completed }
 
 class VideoPlaybackValue {
   /// The current position of the video
@@ -22,16 +16,9 @@ class VideoPlaybackValue {
   /// The volume of the video
   final double volume;
 
-  const VideoPlaybackValue({
-    required this.position,
-    required this.duration,
-    required this.state,
-    required this.volume,
-  });
+  const VideoPlaybackValue({required this.position, required this.duration, required this.state, required this.volume});
 
-  factory VideoPlaybackValue.fromNativeController(
-    NativeVideoPlayerController controller,
-  ) {
+  factory VideoPlaybackValue.fromNativeController(NativeVideoPlayerController controller) {
     final playbackInfo = controller.playbackInfo;
     final videoInfo = controller.videoInfo;
 
@@ -53,12 +40,7 @@ class VideoPlaybackValue {
     );
   }
 
-  VideoPlaybackValue copyWith({
-    Duration? position,
-    Duration? duration,
-    VideoPlaybackState? state,
-    double? volume,
-  }) {
+  VideoPlaybackValue copyWith({Duration? position, Duration? duration, VideoPlaybackState? state, double? volume}) {
     return VideoPlaybackValue(
       position: position ?? this.position,
       duration: duration ?? this.duration,
@@ -75,8 +57,7 @@ const VideoPlaybackValue videoPlaybackValueDefault = VideoPlaybackValue(
   volume: 0.0,
 );
 
-final videoPlaybackValueProvider =
-    StateNotifierProvider<VideoPlaybackValueState, VideoPlaybackValue>((ref) {
+final videoPlaybackValueProvider = StateNotifierProvider<VideoPlaybackValueState, VideoPlaybackValue>((ref) {
   return VideoPlaybackValueState(ref);
 });
 
@@ -93,22 +74,12 @@ class VideoPlaybackValueState extends StateNotifier<VideoPlaybackValue> {
 
   set position(Duration value) {
     if (state.position == value) return;
-    state = VideoPlaybackValue(
-      position: value,
-      duration: state.duration,
-      state: state.state,
-      volume: state.volume,
-    );
+    state = VideoPlaybackValue(position: value, duration: state.duration, state: state.state, volume: state.volume);
   }
 
   set status(VideoPlaybackState value) {
     if (state.state == value) return;
-    state = VideoPlaybackValue(
-      position: state.position,
-      duration: state.duration,
-      state: value,
-      volume: state.volume,
-    );
+    state = VideoPlaybackValue(position: state.position, duration: state.duration, state: value, volume: state.volume);
   }
 
   void reset() {

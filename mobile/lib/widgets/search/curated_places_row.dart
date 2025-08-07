@@ -31,9 +31,7 @@ class CuratedPlacesRow extends StatelessWidget {
       height: imageSize,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         separatorBuilder: (context, index) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           // Injecting Map thumbnail as the first element
@@ -45,8 +43,7 @@ class CuratedPlacesRow extends StatelessWidget {
           }
           final actualIndex = index - actualContentIndex;
           final object = content[actualIndex];
-          final thumbnailRequestUrl =
-              '${Store.get(StoreKey.serverEndpoint)}/assets/${object.id}/thumbnail';
+          final thumbnailRequestUrl = '${Store.get(StoreKey.serverEndpoint)}/assets/${object.id}/thumbnail';
           return SizedBox.square(
             dimension: imageSize,
             child: ThumbnailWithInfo(

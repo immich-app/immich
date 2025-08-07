@@ -13,48 +13,70 @@ part of openapi.api;
 class SyncUserV1 {
   /// Returns a new [SyncUserV1] instance.
   SyncUserV1({
+    required this.avatarColor,
     required this.deletedAt,
     required this.email,
+    required this.hasProfileImage,
     required this.id,
     required this.name,
+    required this.profileChangedAt,
   });
+
+  UserAvatarColor? avatarColor;
 
   DateTime? deletedAt;
 
   String email;
 
+  bool hasProfileImage;
+
   String id;
 
   String name;
 
+  DateTime profileChangedAt;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SyncUserV1 &&
+    other.avatarColor == avatarColor &&
     other.deletedAt == deletedAt &&
     other.email == email &&
+    other.hasProfileImage == hasProfileImage &&
     other.id == id &&
-    other.name == name;
+    other.name == name &&
+    other.profileChangedAt == profileChangedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (avatarColor == null ? 0 : avatarColor!.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
     (email.hashCode) +
+    (hasProfileImage.hashCode) +
     (id.hashCode) +
-    (name.hashCode);
+    (name.hashCode) +
+    (profileChangedAt.hashCode);
 
   @override
-  String toString() => 'SyncUserV1[deletedAt=$deletedAt, email=$email, id=$id, name=$name]';
+  String toString() => 'SyncUserV1[avatarColor=$avatarColor, deletedAt=$deletedAt, email=$email, hasProfileImage=$hasProfileImage, id=$id, name=$name, profileChangedAt=$profileChangedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.avatarColor != null) {
+      json[r'avatarColor'] = this.avatarColor;
+    } else {
+    //  json[r'avatarColor'] = null;
+    }
     if (this.deletedAt != null) {
       json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
     } else {
     //  json[r'deletedAt'] = null;
     }
       json[r'email'] = this.email;
+      json[r'hasProfileImage'] = this.hasProfileImage;
       json[r'id'] = this.id;
       json[r'name'] = this.name;
+      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -67,10 +89,13 @@ class SyncUserV1 {
       final json = value.cast<String, dynamic>();
 
       return SyncUserV1(
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor']),
         deletedAt: mapDateTime(json, r'deletedAt', r''),
         email: mapValueOfType<String>(json, r'email')!,
+        hasProfileImage: mapValueOfType<bool>(json, r'hasProfileImage')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
       );
     }
     return null;
@@ -118,10 +143,13 @@ class SyncUserV1 {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'avatarColor',
     'deletedAt',
     'email',
+    'hasProfileImage',
     'id',
     'name',
+    'profileChangedAt',
   };
 }
 

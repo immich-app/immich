@@ -8,16 +8,8 @@ import 'package:logging/logging.dart';
 import 'package:octo_image/octo_image.dart';
 
 class Thumbnail extends StatelessWidget {
-  const Thumbnail({
-    this.asset,
-    this.remoteId,
-    this.size = const Size.square(256),
-    this.fit = BoxFit.cover,
-    super.key,
-  }) : assert(
-          asset != null || remoteId != null,
-          'Either asset or remoteId must be provided',
-        );
+  const Thumbnail({this.asset, this.remoteId, this.size = const Size.square(256), this.fit = BoxFit.cover, super.key})
+    : assert(asset != null || remoteId != null, 'Either asset or remoteId must be provided');
 
   final BaseAsset? asset;
   final String? remoteId;
@@ -26,21 +18,14 @@ class Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumbHash =
-        asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
-    final provider =
-        getThumbnailImageProvider(asset: asset, remoteId: remoteId, size: size);
+    final thumbHash = asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
+    final provider = getThumbnailImageProvider(asset: asset, remoteId: remoteId);
 
     return OctoImage.fromSet(
       image: provider,
       octoSet: OctoSet(
         placeholderBuilder: _blurHashPlaceholderBuilder(thumbHash, fit: fit),
-        errorBuilder: _blurHashErrorBuilder(
-          thumbHash,
-          provider: provider,
-          fit: fit,
-          asset: asset,
-        ),
+        errorBuilder: _blurHashErrorBuilder(thumbHash, provider: provider, fit: fit, asset: asset),
       ),
       fadeOutDuration: const Duration(milliseconds: 100),
       fadeInDuration: Duration.zero,
@@ -52,10 +37,7 @@ class Thumbnail extends StatelessWidget {
   }
 }
 
-OctoPlaceholderBuilder _blurHashPlaceholderBuilder(
-  String? thumbHash, {
-  BoxFit? fit,
-}) {
+OctoPlaceholderBuilder _blurHashPlaceholderBuilder(String? thumbHash, {BoxFit? fit}) {
   return (context) => thumbHash == null
       ? const ThumbnailPlaceholder()
       : FadeInPlaceholderImage(
@@ -65,24 +47,15 @@ OctoPlaceholderBuilder _blurHashPlaceholderBuilder(
         );
 }
 
-OctoErrorBuilder _blurHashErrorBuilder(
-  String? blurhash, {
-  BaseAsset? asset,
-  ImageProvider? provider,
-  BoxFit? fit,
-}) =>
+OctoErrorBuilder _blurHashErrorBuilder(String? blurhash, {BaseAsset? asset, ImageProvider? provider, BoxFit? fit}) =>
     (context, e, s) {
-      Logger("ImThumbnail")
-          .warning("Error loading thumbnail for ${asset?.name}", e, s);
+      Logger("ImThumbnail").warning("Error loading thumbnail for ${asset?.name}", e, s);
       provider?.evict();
       return Stack(
         alignment: Alignment.center,
         children: [
           _blurHashPlaceholderBuilder(blurhash, fit: fit)(context),
-          const Opacity(
-            opacity: 0.75,
-            child: Icon(Icons.error_outline_rounded),
-          ),
+          const Opacity(opacity: 0.75, child: Icon(Icons.error_outline_rounded)),
         ],
       );
     };

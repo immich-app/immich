@@ -5,7 +5,15 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
-import { AlbumUserRole, AssetType, AssetVisibility, MemoryType, SourceType, SyncRequestType } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  SourceType,
+  SyncEntityType,
+  SyncRequestType,
+} from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -154,6 +162,12 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { asset, result };
   }
 
+  async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
+    const assetFace = mediumFactory.assetFaceInsert(dto);
+    const result = await this.get(PersonRepository).createAssetFace(assetFace);
+    return { assetFace, result };
+  }
+
   async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
     const memory = mediumFactory.memoryInsert(dto);
     const result = await this.get(MemoryRepository).create(memory, new Set<string>());
@@ -182,7 +196,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newAlbumUser(dto: { albumId: string; userId: string; role?: AlbumUserRole }) {
-    const { albumId, userId, role = AlbumUserRole.EDITOR } = dto;
+    const { albumId, userId, role = AlbumUserRole.Editor } = dto;
     const result = await this.get(AlbumUserRepository).create({ albumsId: albumId, usersId: userId, role });
     return { albumUser: { albumId, userId, role }, result };
   }
@@ -245,11 +259,16 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
 
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {
     const acks: Record<string, string> = {};
+    const syncAcks: string[] = [];
     for (const { type, ack } of response) {
+      if (type === SyncEntityType.SyncAckV1) {
+        syncAcks.push(ack);
+        continue;
+      }
       acks[type] = ack;
     }
 
-    await this.sut.setAcks(auth, { acks: Object.values(acks) });
+    await this.sut.setAcks(auth, { acks: [...Object.values(acks), ...syncAcks] });
   }
 }
 
@@ -370,14 +389,14 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
-    type: AssetType.IMAGE,
+    type: AssetType.Image,
     originalPath: '/path/to/something.jpg',
     ownerId: '@immich.cloud',
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,
-    visibility: AssetVisibility.TIMELINE,
+    visibility: AssetVisibility.Timeline,
   };
 
   return {
@@ -423,7 +442,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     imageHeight: assetFace.imageHeight ?? 10,
     imageWidth: assetFace.imageWidth ?? 10,
     personId: assetFace.personId ?? null,
-    sourceType: assetFace.sourceType ?? SourceType.MACHINE_LEARNING,
+    sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
   };
 
   return {
@@ -462,8 +481,6 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
     name: person.name || 'Test Name',
     ownerId: person.ownerId || newUuid(),
     thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
-    updatedAt: person.updatedAt || newDate(),
-    updateId: person.updateId || newUuid(),
   };
   return {
     ...defaults,
@@ -501,7 +518,14 @@ const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
     deletedAt: null,
     isAdmin: false,
     profileImagePath: '',
+    profileChangedAt: newDate(),
     shouldChangePassword: true,
+    storageLabel: null,
+    pinCode: null,
+    oauthId: '',
+    avatarColor: null,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   };
 
   return { ...defaults, ...user, id };
@@ -516,7 +540,7 @@ const memoryInsert = (memory: Partial<Insertable<MemoryTable>> = {}) => {
     createdAt: date,
     updatedAt: date,
     deletedAt: null,
-    type: MemoryType.ON_THIS_DAY,
+    type: MemoryType.OnThisDay,
     data: { year: 2025 },
     showAt: null,
     hideAt: null,

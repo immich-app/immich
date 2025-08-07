@@ -13,18 +13,18 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { RouteKey } from 'src/enum';
+import { Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('Assets')
-@Controller(RouteKey.ASSET)
+@Controller(RouteKey.Asset)
 export class AssetController {
   constructor(private service: AssetService) {}
 
   @Get('random')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetRead })
   @EndpointLifecycle({ deprecatedAt: 'v1.116.0' })
   getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
     return this.service.getRandom(auth, dto.count ?? 1);
@@ -44,7 +44,7 @@ export class AssetController {
   }
 
   @Get('statistics')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetStatistics })
   getAssetStatistics(@Auth() auth: AuthDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
@@ -58,26 +58,26 @@ export class AssetController {
 
   @Put()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpdate })
   updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
 
   @Delete()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetDelete })
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   @Put(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpdate })
   updateAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
