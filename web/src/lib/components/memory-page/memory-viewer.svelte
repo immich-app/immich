@@ -32,7 +32,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
-  import { preferences } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
@@ -518,17 +518,18 @@
                   <!-- shortcut={{ key: 'l', shift: shared }} -->
                 </ButtonContextMenu>
               </div>
-
-              <div>
-                <IconButton
-                  href="{AppRoute.PHOTOS}?at={current.asset.id}"
-                  icon={mdiImageSearch}
-                  aria-label={$t('view_in_timeline')}
-                  color="secondary"
-                  variant="ghost"
-                  shape="round"
-                />
-              </div>
+              {#if current.asset.ownerId === $user.id}
+                <div>
+                  <IconButton
+                    href="{AppRoute.PHOTOS}?at={current.asset.id}"
+                    icon={mdiImageSearch}
+                    aria-label={$t('view_in_timeline')}
+                    color="secondary"
+                    variant="ghost"
+                    shape="round"
+                  />
+                </div>
+              {/if}
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
