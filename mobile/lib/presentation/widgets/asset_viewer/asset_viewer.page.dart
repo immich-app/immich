@@ -223,13 +223,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
+    initialPhotoViewState = controller?.value ?? initialPhotoViewState;
 
     // If the bottom sheet is showing, we need to adjust scale the asset to
     // emulate the zoom effect
-    // if (showingBottomSheet) {
-    //   initialScale = controller?.scale;
-    //   controller?.scale = _getScaleForBottomSheet;
-    // }
+    if (showingBottomSheet) {
+      initialScale = controller?.scale;
+      // controller?.scale = _getScaleForBottomSheet;
+    }
   }
 
   void _onDragStart(
@@ -429,7 +430,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
-    // initialScale = viewController?.scale;
+    initialScale = viewController?.scale;
     // viewController?.updateMultiple(scale: _getScaleForBottomSheet);
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
