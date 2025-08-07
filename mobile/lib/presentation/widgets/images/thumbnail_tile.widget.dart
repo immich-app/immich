@@ -56,8 +56,6 @@ class ThumbnailTile extends ConsumerWidget {
           )
         : const BoxDecoration();
 
-    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
-
     final bool storageIndicator =
         showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
@@ -86,7 +84,7 @@ class ThumbnailTile extends ConsumerWidget {
                     ),
                   ),
                 ),
-                if (hasStack)
+                if (asset is RemoteAsset && asset.stackId != null)
                   asset.isVideo
                       ? const Align(
                           alignment: Alignment.topRight,
