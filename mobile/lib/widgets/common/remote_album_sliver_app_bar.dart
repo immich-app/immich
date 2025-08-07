@@ -94,6 +94,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
                 shadows: actionIconShadows,
               ),
               onPressed: () {
+                ref.read(currentRemoteAlbumProvider.notifier).unsetAlbum();
                 ref.read(remoteAlbumProvider.notifier).refresh();
                 context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()]));
               },
