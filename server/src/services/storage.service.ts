@@ -99,7 +99,7 @@ export class StorageService extends BaseService {
       const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
       if (samples.length > 0) {
         const path = samples[0].path;
-        
+
         let previous = savedValue?.location || '';
 
         if (!previous && this.configRepository.getEnv().storage.mediaLocation) {
