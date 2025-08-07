@@ -989,7 +989,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1280,7 +1280,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1333,7 +1333,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2568,7 +2568,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2603,7 +2603,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -2638,7 +2638,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2665,7 +2665,7 @@
         "operationId": "lockAuthSession",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2700,7 +2700,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2922,7 +2922,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2994,7 +2994,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3123,7 +3123,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3245,7 +3245,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -4252,7 +4252,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4356,7 +4356,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4393,7 +4393,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4586,7 +4586,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4720,7 +4720,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -5198,7 +5198,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6250,7 +6250,7 @@
         "operationId": "deleteServerLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -6963,7 +6963,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -8984,7 +8984,7 @@
         "operationId": "deleteUserLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -9085,7 +9085,7 @@
         "operationId": "deleteUserOnboarding",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
