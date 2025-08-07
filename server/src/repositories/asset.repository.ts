@@ -203,8 +203,8 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(assets).returningAll().execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
-  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay) {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { day: 1, month: 1 }] })
+  getByDayOfYear(ownerIds: string[], albumIds: string[], { day, month }: MonthDay) {
     return this.db
       .with('res', (qb) =>
         qb
@@ -225,11 +225,24 @@ export class AssetRepository {
             (qb) =>
               qb
                 .selectFrom('asset')
+                .distinctOn(['asset.id'])
                 .selectAll('asset')
                 .innerJoin('asset_job_status', 'asset.id', 'asset_job_status.assetId')
                 .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
-                .where('asset.ownerId', '=', anyUuid(ownerIds))
+                .where((eb) =>
+                  eb('asset.ownerId', '=', anyUuid(ownerIds)).or(
+                    eb.and([
+                      eb.exists(
+                        eb
+                          .selectFrom('album_asset')
+                          .whereRef('album_asset.assetsId', '=', 'asset.id')
+                          .where('album_asset.albumsId', '=', anyUuid(albumIds)),
+                      ),
+                      eb.not(eb('asset.ownerId', '=', anyUuid(ownerIds))),
+                    ]),
+                  ),
+                )
                 .where('asset.visibility', '=', AssetVisibility.Timeline)
                 .where((eb) =>
                   eb.exists((qb) =>
@@ -240,6 +253,7 @@ export class AssetRepository {
                   ),
                 )
                 .where('asset.deletedAt', 'is', null)
+                .orderBy('asset.id')
                 .orderBy(sql`(asset."localDateTime" at time zone 'UTC')::date`, 'desc')
                 .limit(20)
                 .as('a'),
