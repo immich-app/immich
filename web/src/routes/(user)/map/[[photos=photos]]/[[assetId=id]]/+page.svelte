@@ -2,6 +2,7 @@
   import { run } from 'svelte/legacy';
 
   import { goto } from '$app/navigation';
+  import AssetViewer from '$lib/components/asset-viewer/asset-viewer.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -24,7 +25,6 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
@@ -74,6 +74,13 @@
   let loadingController: AbortController | null = null;
   let isLoading = $state(false);
 
+  let fullscreenContainer: HTMLElement | undefined = $state();
+  const fullscreenContainerSelector = '#map-page-fullscreen';
+
+  // Viewport panel is not supported. Performance is not good.
+  type PanelMode = 'viewport' | 'cluster' | null;
+  let panelMode: PanelMode = $state(null);
+
   // Debug: Log component initialization
   console.log('Map page component initialized', { data, featureFlags: $featureFlags });
   console.log('🔥 Hot-reload test - this should update immediately!');
@@ -112,6 +119,12 @@
 
     // Start batch asset loading
     await loadAssetsWithBatching(assetIds);
+  }
+
+  function onMapSelect(assetIds: string[]) {
+    // Selection from map (cluster or single marker)
+    panelMode = 'cluster';
+    void onViewAssets(assetIds);
   }
 
   async function loadAssetsWithBatching(assetIds: string[]) {
@@ -171,6 +184,9 @@
                   const asset = await getAssetInfo({ id });
                   return toTimelineAsset(asset);
                 } catch (error) {
+                  if (signal.aborted) {
+                    return null;
+                  }
                   console.error(`Failed to load individual asset ${id}:`, error);
                   return null;
                 }
@@ -200,9 +216,7 @@
       }
     } finally {
       isLoading = false;
-      if (loadingController === loadingController) {
-        loadingController = null;
-      }
+      loadingController = null;
     }
   }
 
@@ -316,8 +330,63 @@
 
 {#if $featureFlags.loaded && $featureFlags.map}
   <UserPageLayout title={data.meta.title}>
-    <div class="isolate h-full w-full">
-      <Map hash onSelect={onViewAssets} />
+    <div id="map-page-fullscreen" class="isolate relative h-full w-full" bind:this={fullscreenContainer}>
+      <Map hash onSelect={onMapSelect} fullscreenContainer={fullscreenContainerSelector} />
+
+      {#if showBottomPanel}
+        <div
+          class="absolute inset-x-0 bottom-0 z-50 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg"
+          bind:this={panelElement}
+        >
+          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-4">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Photos ({viewingAssets.length})
+                {#if isLoading}
+                  <span class="text-sm text-gray-500">
+                    (Loading {panelAssets.length}/{viewingAssets.length}...)
+                    <span
+                      class="inline-block w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin ml-1"
+                    ></span>
+                  </span>
+                {/if}
+              </h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                onclick={closeBottomPanel}
+                class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                aria-label="Close photo panel"
+              >
+                <IconButton shape="round" color="secondary" variant="ghost" aria-label={$t('close')} icon={mdiClose} />
+              </button>
+            </div>
+          </div>
+
+          <div class="p-2 max-h-80 overflow-y-auto" style="height: 245px;" bind:this={scrollableContainer}>
+            {#if panelAssets.length === 0 && !isLoading}
+              <div class="flex items-center justify-center h-32">
+                <div class="text-gray-500 dark:text-gray-400">No photos found in this location</div>
+              </div>
+            {:else if panelAssets.length === 0 && isLoading}
+              <div class="flex items-center justify-center h-32">
+                <div class="text-gray-500 dark:text-gray-400">Loading photos...</div>
+              </div>
+            {:else}
+              <GalleryViewer
+                assets={panelAssets}
+                viewport={galleryViewport}
+                {assetInteraction}
+                disableAssetSelect={false}
+                showArchiveIcon={false}
+                onNext={handleGalleryNext}
+                onPrevious={handleGalleryPrevious}
+                scrollContainer={scrollableContainer}
+              />
+            {/if}
+          </div>
+        </div>
+      {/if}
     </div>
   </UserPageLayout>
 
@@ -360,90 +429,30 @@
     </div>
   {/if}
 
-  <!-- Bottom Panel with GalleryViewer -->
-  {#if showBottomPanel}
-    <div
-      class="fixed bottom-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg"
-      class:left-0={!sidebarStore.isOpen}
-      class:left-64={sidebarStore.isOpen}
-      bind:this={panelElement}
-    >
-      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex items-center gap-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Photos ({viewingAssets.length})
-            {#if isLoading}
-              <span class="text-sm text-gray-500">
-                (Loading {panelAssets.length}/{viewingAssets.length}...)
-                <span
-                  class="inline-block w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin ml-1"
-                ></span>
-              </span>
-            {/if}
-          </h3>
-        </div>
-        <div class="flex items-center gap-2">
-          <button
-            onclick={closeBottomPanel}
-            class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            aria-label="Close photo panel"
-          >
-            <IconButton shape="round" color="secondary" variant="ghost" aria-label={$t('close')} icon={mdiClose} />
-          </button>
-        </div>
-      </div>
-
-      <div class="p-2 max-h-80 overflow-y-auto" style="height: 245px;" bind:this={scrollableContainer}>
-        {#if panelAssets.length === 0 && !isLoading}
-          <div class="flex items-center justify-center h-32">
-            <div class="text-gray-500 dark:text-gray-400">No photos found in this location</div>
-          </div>
-        {:else if panelAssets.length === 0 && isLoading}
-          <div class="flex items-center justify-center h-32">
-            <div class="text-gray-500 dark:text-gray-400">Loading photos...</div>
-          </div>
-        {:else}
-          <GalleryViewer
-            assets={panelAssets}
-            viewport={galleryViewport}
-            {assetInteraction}
-            disableAssetSelect={false}
-            showArchiveIcon={false}
-            onNext={handleGalleryNext}
-            onPrevious={handleGalleryPrevious}
-            scrollContainer={scrollableContainer}
-          />
-        {/if}
-      </div>
-    </div>
-  {/if}
-
   <Portal target="body">
     {#if $showAssetViewer}
-      {#await import('../../../../../lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
-        <AssetViewer
-          asset={$viewingAsset}
-          showNavigation={viewingAssets.length > 1}
-          onNext={navigateNext}
-          onPrevious={navigatePrevious}
-          onRandom={navigateRandom}
-          onClose={() => {
-            console.log('Asset viewer closed');
-            const currentAssetId = $viewingAsset?.id;
-            assetViewingStore.showAssetViewer(false);
-            handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+      <AssetViewer
+        asset={$viewingAsset}
+        showNavigation={viewingAssets.length > 1}
+        onNext={navigateNext}
+        onPrevious={navigatePrevious}
+        onRandom={navigateRandom}
+        onClose={() => {
+          console.log('Asset viewer closed');
+          const currentAssetId = $viewingAsset?.id;
+          assetViewingStore.showAssetViewer(false);
+          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
 
-            // Restore focus to the thumbnail that was viewing
-            if (currentAssetId) {
-              setTimeout(() => {
-                const thumbnail = document.querySelector(`[data-asset-id="${currentAssetId}"]`) as HTMLElement;
-                thumbnail?.focus();
-              }, 0);
-            }
-          }}
-          isShared={false}
-        />
-      {/await}
+          // Restore focus to the thumbnail that was viewing
+          if (currentAssetId) {
+            setTimeout(() => {
+              const thumbnail = document.querySelector(`[data-asset-id="${currentAssetId}"]`) as HTMLElement;
+              thumbnail?.focus();
+            }, 0);
+          }
+        }}
+        isShared={false}
+      />
     {/if}
   </Portal>
 {/if}
