@@ -6,7 +6,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 
-class TrashService {
+class TrashSyncService {
   final AppSettingsService _appSettingsService;
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftLocalAssetRepository _localAssetRepository;
@@ -15,7 +15,7 @@ class TrashService {
   final Platform _platform;
   final Logger _logger = Logger('TrashService');
 
-  TrashService({
+  TrashSyncService({
     required AppSettingsService appSettingsService,
     required RemoteAssetRepository remoteAssetRepository,
     required DriftLocalAssetRepository localAssetRepository,

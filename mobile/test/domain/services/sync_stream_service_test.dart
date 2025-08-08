@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
-import 'package:immich_mobile/domain/services/trash.service.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -32,7 +32,7 @@ void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
   late SyncApiRepository mockSyncApiRepo;
-  late TrashService mockTrashService;
+  late TrashSyncService mockTrashService;
   late Function(List<SyncEvent>, Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
 
@@ -42,7 +42,7 @@ void main() {
     mockSyncStreamRepo = MockSyncStreamRepository();
     mockSyncApiRepo = MockSyncApiRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
-    mockTrashService = MockTrashService();
+    mockTrashService = MockTrashSyncService();
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
     when(() => mockSyncApiRepo.streamChanges(any())).thenAnswer((invocation) async {
@@ -87,7 +87,7 @@ void main() {
     sut = SyncStreamService(
       syncApiRepository: mockSyncApiRepo,
       syncStreamRepository: mockSyncStreamRepo,
-      trashService: mockTrashService,
+      trashSyncService: mockTrashService,
     );
   });
 
@@ -153,7 +153,7 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
-        trashService: mockTrashService,
+        trashSyncService: mockTrashService,
         cancelChecker: cancellationChecker.call,
       );
       await sut.sync();
@@ -189,7 +189,7 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
-        trashService: mockTrashService,
+        trashSyncService: mockTrashService,
         cancelChecker: cancellationChecker.call,
       );
 

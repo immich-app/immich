@@ -3,10 +3,6 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/trash.service.dart';
 import 'package:logging/logging.dart';
 
-final trashProvider = StateNotifierProvider<TrashNotifier, bool>((ref) {
-  return TrashNotifier(ref.watch(trashServiceProvider));
-});
-
 class TrashNotifier extends StateNotifier<bool> {
   final TrashService _trashService;
   final _log = Logger('TrashNotifier');
@@ -43,3 +39,7 @@ class TrashNotifier extends StateNotifier<bool> {
     }
   }
 }
+
+final trashProvider = StateNotifierProvider<TrashNotifier, bool>((ref) {
+  return TrashNotifier(ref.watch(trashServiceProvider));
+});
