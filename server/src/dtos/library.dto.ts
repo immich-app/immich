@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
+import { ArrayMaxSize, ArrayUnique, IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { Library } from 'src/database';
 import { Optional, ValidateUUID } from 'src/validation';
 
@@ -25,6 +25,11 @@ export class CreateLibraryDto {
   @ArrayUnique()
   @ArrayMaxSize(128)
   exclusionPatterns?: string[];
+
+  @Optional()
+  @IsBoolean()
+  @IsNotEmpty()
+  excludeFromTranscodeJob?: boolean;
 }
 
 export class UpdateLibraryDto {
@@ -46,6 +51,11 @@ export class UpdateLibraryDto {
   @ArrayUnique()
   @ArrayMaxSize(128)
   exclusionPatterns?: string[];
+
+  @Optional()
+  @IsBoolean()
+  @IsNotEmpty()
+  excludeFromTranscodeJob?: boolean;
 }
 
 export interface CrawlOptionsDto {
@@ -104,6 +114,8 @@ export class LibraryResponseDto {
   createdAt!: Date;
   updatedAt!: Date;
   refreshedAt!: Date | null;
+
+  excludeFromTranscodeJob: boolean = false;
 }
 
 export class LibraryStatsResponseDto {
@@ -135,5 +147,6 @@ export function mapLibrary(entity: Library): LibraryResponseDto {
     assetCount,
     importPaths: entity.importPaths,
     exclusionPatterns: entity.exclusionPatterns,
+    excludeFromTranscodeJob: entity.excludeFromTranscodeJob || false,
   };
 }

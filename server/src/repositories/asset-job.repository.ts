@@ -240,6 +240,7 @@ export class AssetJobRepository {
   streamForVideoConversion(force?: boolean) {
     return this.db
       .selectFrom('asset')
+      .leftJoin('library', 'library.id', 'asset.libraryId')
       .select(['asset.id'])
       .where('asset.type', '=', AssetType.Video)
       .$if(!force, (qb) =>
@@ -248,6 +249,14 @@ export class AssetJobRepository {
           .where('asset.visibility', '!=', AssetVisibility.Hidden),
       )
       .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.or([
+          // Include assets without a library
+          eb('asset.libraryId', 'is', null),
+          // Or assets from libraries that don't exclude transcoding
+          eb('library.excludeFromTranscodeJob', 'is', false),
+        ]),
+      )
       .stream();
   }
 
@@ -255,11 +264,21 @@ export class AssetJobRepository {
   getForVideoConversion(id: string) {
     return this.db
       .selectFrom('asset')
+      .leftJoin('library', 'library.id', 'asset.libraryId')
       .select(['asset.id', 'asset.ownerId', 'asset.originalPath', 'asset.encodedVideoPath'])
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
+      .where((eb) =>
+        eb.or([
+          // Include assets without a library
+          eb('asset.libraryId', 'is', null),
+          // Or assets from libraries that don't exclude transcoding
+          eb('library.excludeFromTranscodeJob', 'is', false),
+        ]),
+      )
       .executeTakeFirst();
   }
+
 
   @GenerateSql({ params: [], stream: true })
   streamForMetadataExtraction(force?: boolean) {

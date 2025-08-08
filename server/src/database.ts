@@ -48,6 +48,7 @@ export type Library = {
   deletedAt: Date | null;
   refreshedAt: Date | null;
   assets?: MapAsset[];
+  excludeFromTranscodeJob: boolean;
 };
 
 export type AuthApiKey = {
