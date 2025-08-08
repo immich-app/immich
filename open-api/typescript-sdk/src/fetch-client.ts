@@ -2978,7 +2978,7 @@ export function linkOAuthAccount({ oAuthCallbackDto }: {
     oAuthCallbackDto: OAuthCallbackDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: UserAdminResponseDto;
     }>("/oauth/link", oazapfts.json({
         ...opts,
@@ -3169,7 +3169,7 @@ export function mergePerson({ id, mergePersonDto }: {
     mergePersonDto: MergePersonDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: BulkIdResponseDto[];
     }>(`/people/${encodeURIComponent(id)}/merge`, oazapfts.json({
         ...opts,
