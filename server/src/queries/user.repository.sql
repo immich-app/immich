@@ -19,6 +19,7 @@ select
   "storageLabel",
   "quotaSizeInBytes",
   "quotaUsageInBytes",
+  "appVersion",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -58,6 +59,7 @@ select
   "storageLabel",
   "quotaSizeInBytes",
   "quotaUsageInBytes",
+  "appVersion",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -137,6 +139,7 @@ select
   "storageLabel",
   "quotaSizeInBytes",
   "quotaUsageInBytes",
+  "appVersion",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -175,7 +178,8 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  "appVersion"
 from
   "user"
 where
@@ -201,6 +205,7 @@ select
   "storageLabel",
   "quotaSizeInBytes",
   "quotaUsageInBytes",
+  "appVersion",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -248,6 +253,7 @@ select
   "storageLabel",
   "quotaSizeInBytes",
   "quotaUsageInBytes",
+  "appVersion",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -286,6 +292,7 @@ select
   "storageLabel",
   "quotaSizeInBytes",
   "quotaUsageInBytes",
+  "appVersion",
   (
     select
       coalesce(json_agg(agg), '[]')

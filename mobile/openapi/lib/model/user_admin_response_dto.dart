@@ -13,6 +13,7 @@ part of openapi.api;
 class UserAdminResponseDto {
   /// Returns a new [UserAdminResponseDto] instance.
   UserAdminResponseDto({
+    this.appVersion,
     required this.avatarColor,
     required this.createdAt,
     required this.deletedAt,
@@ -31,6 +32,8 @@ class UserAdminResponseDto {
     required this.storageLabel,
     required this.updatedAt,
   });
+
+  String? appVersion;
 
   UserAvatarColor avatarColor;
 
@@ -68,6 +71,7 @@ class UserAdminResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminResponseDto &&
+    other.appVersion == appVersion &&
     other.avatarColor == avatarColor &&
     other.createdAt == createdAt &&
     other.deletedAt == deletedAt &&
@@ -89,6 +93,7 @@ class UserAdminResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (appVersion == null ? 0 : appVersion!.hashCode) +
     (avatarColor.hashCode) +
     (createdAt.hashCode) +
     (deletedAt == null ? 0 : deletedAt!.hashCode) +
@@ -108,10 +113,15 @@ class UserAdminResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserAdminResponseDto[appVersion=$appVersion, avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.appVersion != null) {
+      json[r'appVersion'] = this.appVersion;
+    } else {
+    //  json[r'appVersion'] = null;
+    }
       json[r'avatarColor'] = this.avatarColor;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
     if (this.deletedAt != null) {
@@ -161,6 +171,7 @@ class UserAdminResponseDto {
       final json = value.cast<String, dynamic>();
 
       return UserAdminResponseDto(
+        appVersion: mapValueOfType<String>(json, r'appVersion'),
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         deletedAt: mapDateTime(json, r'deletedAt', r''),
