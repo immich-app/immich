@@ -214,6 +214,34 @@
         "description": "This endpoint requires the `activity.delete` permission."
       }
     },
+    "/admin/auth/unlink-all": {
+      "post": {
+        "operationId": "unlinkAllOAuthAccountsAdmin",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Auth (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminAuth.unlinkAll",
+        "description": "This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission."
+      }
+    },
     "/admin/notifications": {
       "post": {
         "operationId": "createNotification",
@@ -12687,7 +12715,8 @@
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
-          "adminUser.delete"
+          "adminUser.delete",
+          "adminAuth.unlinkAll"
         ],
         "type": "string"
       },

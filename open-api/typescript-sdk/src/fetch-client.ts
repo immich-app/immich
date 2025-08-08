@@ -1646,6 +1646,15 @@ export function deleteActivity({ id }: {
         method: "DELETE"
     }));
 }
+/**
+ * This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission.
+ */
+export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/auth/unlink-all", {
+        ...opts,
+        method: "POST"
+    }));
+}
 export function createNotification({ notificationCreateDto }: {
     notificationCreateDto: NotificationCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4669,7 +4678,8 @@ export enum Permission {
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
-    AdminUserDelete = "adminUser.delete"
+    AdminUserDelete = "adminUser.delete",
+    AdminAuthUnlinkAll = "adminAuth.unlinkAll"
 }
 export enum AssetMediaStatus {
     Created = "created",
