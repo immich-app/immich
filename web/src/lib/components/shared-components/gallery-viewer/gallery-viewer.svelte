@@ -42,6 +42,7 @@
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
+    scrollContainer?: HTMLElement | null;
   }
 
   let {
@@ -60,6 +61,9 @@
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
+    scrollContainer = typeof document !== 'undefined'
+      ? ((document.scrollingElement as HTMLElement) ?? document.documentElement)
+      : null,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
@@ -133,7 +137,8 @@
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
-    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
+    const top = (scrollContainer?.scrollTop || 0) - slidingWindowOffset;
+
     const bottom = top + v.height;
     const w = {
       top,
@@ -457,15 +462,29 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  $effect(() => {
+    if (scrollContainer) {
+      const handleScroll = () => updateSlidingWindow();
+
+      // If the scroll container is the document root, listen on window
+      const isDocumentScroller =
+        typeof document !== 'undefined' &&
+        (scrollContainer === document.documentElement ||
+          scrollContainer === (document.scrollingElement as HTMLElement | null) ||
+          scrollContainer === document.body);
+
+      const eventTarget: any = isDocumentScroller ? window : (scrollContainer as any);
+      eventTarget.addEventListener('scroll', handleScroll, { passive: true });
+      updateSlidingWindow();
+      return () => {
+        eventTarget.removeEventListener('scroll', handleScroll as EventListener);
+      };
+    }
+  });
 </script>
 
-<svelte:document
-  onkeydown={onKeyDown}
-  onkeyup={onKeyUp}
-  onselectstart={onSelectStart}
-  use:shortcuts={shortcutList}
-  onscroll={() => updateSlidingWindow()}
-/>
+<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
