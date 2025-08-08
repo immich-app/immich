@@ -21,6 +21,7 @@ class SharedLinkCreateDto {
     this.expiresAt,
     this.password,
     this.showMetadata = true,
+    this.slug,
     required this.type,
   });
 
@@ -44,25 +45,15 @@ class SharedLinkCreateDto {
 
   List<String> assetIds;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? description;
 
   DateTime? expiresAt;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   String? password;
 
   bool showMetadata;
+
+  String? slug;
 
   SharedLinkType type;
 
@@ -76,6 +67,7 @@ class SharedLinkCreateDto {
     other.expiresAt == expiresAt &&
     other.password == password &&
     other.showMetadata == showMetadata &&
+    other.slug == slug &&
     other.type == type;
 
   @override
@@ -89,10 +81,11 @@ class SharedLinkCreateDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (showMetadata.hashCode) +
+    (slug == null ? 0 : slug!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, type=$type]';
+  String toString() => 'SharedLinkCreateDto[albumId=$albumId, allowDownload=$allowDownload, allowUpload=$allowUpload, assetIds=$assetIds, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -124,6 +117,11 @@ class SharedLinkCreateDto {
     //  json[r'password'] = null;
     }
       json[r'showMetadata'] = this.showMetadata;
+    if (this.slug != null) {
+      json[r'slug'] = this.slug;
+    } else {
+    //  json[r'slug'] = null;
+    }
       json[r'type'] = this.type;
     return json;
   }
@@ -147,6 +145,7 @@ class SharedLinkCreateDto {
         expiresAt: mapDateTime(json, r'expiresAt', r''),
         password: mapValueOfType<String>(json, r'password'),
         showMetadata: mapValueOfType<bool>(json, r'showMetadata') ?? true,
+        slug: mapValueOfType<String>(json, r'slug'),
         type: SharedLinkType.fromJson(json[r'type'])!,
       );
     }

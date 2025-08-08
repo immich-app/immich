@@ -31,12 +31,7 @@ class SettingsButtonListTile extends StatelessWidget {
       horizontalTitleGap: 20,
       isThreeLine: true,
       leading: Icon(icon, color: iconColor),
-      title: Text(
-        title,
-        style: context.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      title: Text(title, style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500)),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -44,14 +39,11 @@ class SettingsButtonListTile extends StatelessWidget {
           if (subtileText != null)
             Text(
               subtileText!,
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colorScheme.onSurfaceSecondary,
-              ),
+              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             ),
           if (subtitle != null) subtitle!,
           const SizedBox(height: 6),
-          child ??
-              ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
+          child ?? ElevatedButton(onPressed: onButtonTap, child: Text(buttonText)),
         ],
       ),
     );

@@ -14,8 +14,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 // TODO: Refactor this provider when we have user provider/service/repository pattern in place
-final driftUsersProvider =
-    FutureProvider.autoDispose<List<UserDto>>((ref) async {
+final driftUsersProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async {
   final drift = ref.watch(driftProvider);
   final currentUser = ref.watch(currentUserProvider);
 
@@ -28,15 +27,14 @@ final driftUsersProvider =
           name: entity.name,
           email: entity.email,
           isAdmin: entity.isAdmin,
-          profileImagePath: entity.profileImagePath,
           updatedAt: entity.updatedAt,
-          quotaSizeInBytes: entity.quotaSizeInBytes ?? 0,
-          quotaUsageInBytes: entity.quotaUsageInBytes,
           isPartnerSharedBy: false,
           isPartnerSharedWith: false,
           avatarColor: AvatarColor.primary,
           memoryEnabled: true,
           inTimeline: true,
+          profileChangedAt: entity.profileChangedAt,
+          hasProfileImage: entity.hasProfileImage,
         ),
       )
       .toList();
@@ -50,15 +48,11 @@ final driftUsersProvider =
 class DriftUserSelectionPage extends HookConsumerWidget {
   final RemoteAlbum album;
 
-  const DriftUserSelectionPage({
-    super.key,
-    required this.album,
-  });
+  const DriftUserSelectionPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<UserDto>> suggestedShareUsers =
-        ref.watch(driftUsersProvider);
+    final AsyncValue<List<UserDto>> suggestedShareUsers = ref.watch(driftUsersProvider);
     final sharedUsersList = useState<Set<UserDto>>({});
 
     addNewUsersHandler() {
@@ -67,17 +61,9 @@ class DriftUserSelectionPage extends HookConsumerWidget {
 
     buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
-        return CircleAvatar(
-          backgroundColor: context.primaryColor,
-          child: const Icon(
-            Icons.check_rounded,
-            size: 25,
-          ),
-        );
+        return CircleAvatar(backgroundColor: context.primaryColor, child: const Icon(Icons.check_rounded, size: 25));
       } else {
-        return UserCircleAvatar(
-          user: user,
-        );
+        return UserCircleAvatar(user: user);
       }
     }
 
@@ -90,31 +76,19 @@ class DriftUserSelectionPage extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Chip(
               backgroundColor: context.primaryColor.withValues(alpha: 0.15),
-              label: Text(
-                user.name,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              label: Text(user.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ),
           ),
         );
       }
       return ListView(
         children: [
-          Wrap(
-            children: [...usersChip],
-          ),
+          Wrap(children: [...usersChip]),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
               'suggestions'.tr(),
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
             ),
           ),
           ListView.builder(
@@ -124,31 +98,15 @@ class DriftUserSelectionPage extends HookConsumerWidget {
               return ListTile(
                 leading: buildTileIcon(users[index]),
                 dense: true,
-                title: Text(
-                  users[index].name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  users[index].email,
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
-                ),
+                title: Text(users[index].name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                subtitle: Text(users[index].email, style: const TextStyle(fontSize: 12)),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
                     sharedUsersList.value = sharedUsersList.value
-                        .where(
-                          (selectedUser) => selectedUser.id != users[index].id,
-                        )
+                        .where((selectedUser) => selectedUser.id != users[index].id)
                         .toSet();
                   } else {
-                    sharedUsersList.value = {
-                      ...sharedUsersList.value,
-                      users[index],
-                    };
+                    sharedUsersList.value = {...sharedUsersList.value, users[index]};
                   }
                 },
               );
@@ -161,9 +119,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'invite_to_album',
-        ).tr(),
+        title: const Text('invite_to_album').tr(),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -174,28 +130,21 @@ class DriftUserSelectionPage extends HookConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed:
-                sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
-            child: const Text(
-              "add",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ).tr(),
+            onPressed: sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
+            child: const Text("add", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
           ),
         ],
       ),
       body: suggestedShareUsers.widgetWhen(
         onData: (users) {
           // Get shared users for this album from the database
-          final sharedUsers =
-              ref.watch(remoteAlbumSharedUsersProvider(album.id));
+          final sharedUsers = ref.watch(remoteAlbumSharedUsersProvider(album.id));
 
           return sharedUsers.when(
             data: (albumSharedUsers) {
               // Filter out users that are already shared with this album and the owner
               final filteredUsers = users.where((user) {
-                return !albumSharedUsers
-                        .any((sharedUser) => sharedUser.id == user.id) &&
-                    user.id != album.ownerId;
+                return !albumSharedUsers.any((sharedUser) => sharedUser.id == user.id) && user.id != album.ownerId;
               }).toList();
 
               return buildUserList(filteredUsers);
@@ -203,8 +152,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stack) {
               // If we can't load shared users, just filter out the owner
-              final filteredUsers =
-                  users.where((user) => user.id != album.ownerId).toList();
+              final filteredUsers = users.where((user) => user.id != album.ownerId).toList();
               return buildUserList(filteredUsers);
             },
           );

@@ -7,6 +7,18 @@ set
 where
   "assetId" in ($2)
 
+-- AssetRepository.updateDateTimeOriginal
+update "asset_exif"
+set
+  "dateTimeOriginal" = "dateTimeOriginal" + $1::interval,
+  "timeZone" = $2
+where
+  "assetId" in ($3)
+returning
+  "assetId",
+  "dateTimeOriginal",
+  "timeZone"
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (
@@ -170,25 +182,10 @@ where
 
 -- AssetRepository.getFileSamples
 select
-  "asset"."id",
-  "asset"."originalPath",
-  "asset"."sidecarPath",
-  "asset"."encodedVideoPath",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "path"
-        from
-          "asset_file"
-        where
-          "asset"."id" = "asset_file"."assetId"
-      ) as agg
-  ) as "files"
+  "assetId",
+  "path"
 from
-  "asset"
+  "asset_file"
 limit
   3
 

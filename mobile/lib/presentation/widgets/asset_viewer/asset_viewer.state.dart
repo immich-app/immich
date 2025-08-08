@@ -79,17 +79,11 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 
   void setOpacity(int opacity) {
-    state = state.copyWith(
-      backgroundOpacity: opacity,
-      showingControls: opacity == 255 ? true : state.showingControls,
-    );
+    state = state.copyWith(backgroundOpacity: opacity, showingControls: opacity == 255 ? true : state.showingControls);
   }
 
   void setBottomSheet(bool showing) {
-    state = state.copyWith(
-      showingBottomSheet: showing,
-      showingControls: showing ? true : state.showingControls,
-    );
+    state = state.copyWith(showingBottomSheet: showing, showingControls: showing ? true : state.showingControls);
     if (showing) {
       ref.read(videoPlayerControlsProvider.notifier).pause();
     }
@@ -108,7 +102,6 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 }
 
-final assetViewerProvider =
-    AutoDisposeNotifierProvider<AssetViewerStateNotifier, AssetViewerState>(
+final assetViewerProvider = AutoDisposeNotifierProvider<AssetViewerStateNotifier, AssetViewerState>(
   AssetViewerStateNotifier.new,
 );

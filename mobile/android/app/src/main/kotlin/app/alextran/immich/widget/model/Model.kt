@@ -55,7 +55,11 @@ data class WidgetEntry (
   val deeplink: String?
 )
 
-data class ServerConfig(val serverEndpoint: String, val sessionKey: String)
+data class ServerConfig(
+  val serverEndpoint: String,
+  val sessionKey: String,
+  val customHeaders: Map<String, String>
+)
 
 // MARK: Widget State Keys
 val kImageUUID = stringPreferencesKey("uuid")

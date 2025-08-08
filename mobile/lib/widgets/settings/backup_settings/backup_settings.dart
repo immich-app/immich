@@ -15,16 +15,12 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 
 class BackupSettings extends HookConsumerWidget {
-  const BackupSettings({
-    super.key,
-  });
+  const BackupSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ignoreIcloudAssets =
-        useAppSettingsState(AppSettingsEnum.ignoreIcloudAssets);
-    final isAdvancedTroubleshooting =
-        useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
+    final ignoreIcloudAssets = useAppSettingsState(AppSettingsEnum.ignoreIcloudAssets);
+    final isAdvancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final albumSync = useAppSettingsState(AppSettingsEnum.syncAlbums);
     final isCorruptCheckInProgress = ref.watch(backupVerificationProvider);
     final isAlbumSyncInProgress = useState(false);
@@ -63,36 +59,24 @@ class BackupSettings extends HookConsumerWidget {
                   ],
                 )
               : null,
-          subtileText: !isCorruptCheckInProgress
-              ? 'check_corrupt_asset_backup_description'.tr()
-              : null,
+          subtileText: !isCorruptCheckInProgress ? 'check_corrupt_asset_backup_description'.tr() : null,
           buttonText: 'check_corrupt_asset_backup_button'.tr(),
           onButtonTap: !isCorruptCheckInProgress
-              ? () => ref
-                  .read(backupVerificationProvider.notifier)
-                  .performBackupCheck(context)
+              ? () => ref.read(backupVerificationProvider.notifier).performBackupCheck(context)
               : null,
         ),
       if (albumSync.value)
         SettingsButtonListTile(
           icon: Icons.photo_album_outlined,
           title: 'sync_albums'.tr(),
-          subtitle: Text(
-            "sync_albums_manual_subtitle".tr(),
-          ),
+          subtitle: Text("sync_albums_manual_subtitle".tr()),
           buttonText: 'sync_albums'.tr(),
           child: isAlbumSyncInProgress.value
               ? const CircularProgressIndicator()
-              : ElevatedButton(
-                  onPressed: syncAlbums,
-                  child: Text('sync'.tr()),
-                ),
+              : ElevatedButton(onPressed: syncAlbums, child: Text('sync'.tr())),
         ),
     ];
 
-    return SettingsSubPageScaffold(
-      settings: backupSettings,
-      showDivider: true,
-    );
+    return SettingsSubPageScaffold(settings: backupSettings, showDivider: true);
   }
 }

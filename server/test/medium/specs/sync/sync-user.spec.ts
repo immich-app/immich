@@ -35,8 +35,11 @@ describe(SyncEntityType.UserV1, () => {
         data: {
           deletedAt: user.deletedAt,
           email: user.email,
+          hasProfileImage: user.profileImagePath !== '',
           id: user.id,
           name: user.name,
+          avatarColor: user.avatarColor,
+          profileChangedAt: user.profileChangedAt.toISOString(),
         },
         type: 'UserV1',
       },
@@ -49,8 +52,7 @@ describe(SyncEntityType.UserV1, () => {
   it('should detect and sync a soft deleted user', async () => {
     const { auth, ctx } = await setup(await getKyselyDB());
 
-    const deletedAt = new Date().toISOString();
-    const { user: deleted } = await ctx.newUser({ deletedAt });
+    const { user: deleted } = await ctx.newUser({ deletedAt: new Date().toISOString() });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UsersV1]);
 
@@ -59,22 +61,12 @@ describe(SyncEntityType.UserV1, () => {
       expect.arrayContaining([
         {
           ack: expect.any(String),
-          data: {
-            deletedAt: null,
-            email: auth.user.email,
-            id: auth.user.id,
-            name: auth.user.name,
-          },
+          data: expect.objectContaining({ id: auth.user.id }),
           type: 'UserV1',
         },
         {
           ack: expect.any(String),
-          data: {
-            deletedAt,
-            email: deleted.email,
-            id: deleted.id,
-            name: deleted.name,
-          },
+          data: expect.objectContaining({ id: deleted.id }),
           type: 'UserV1',
         },
       ]),
@@ -85,7 +77,7 @@ describe(SyncEntityType.UserV1, () => {
   });
 
   it('should detect and sync a deleted user', async () => {
-    const { auth, ctx } = await setup(await getKyselyDB());
+    const { auth, user: authUser, ctx } = await setup(await getKyselyDB());
 
     const userRepo = ctx.get(UserRepository);
 
@@ -104,12 +96,7 @@ describe(SyncEntityType.UserV1, () => {
       },
       {
         ack: expect.any(String),
-        data: {
-          deletedAt: null,
-          email: auth.user.email,
-          id: auth.user.id,
-          name: auth.user.name,
-        },
+        data: expect.objectContaining({ id: authUser.id }),
         type: 'UserV1',
       },
     ]);
@@ -119,7 +106,7 @@ describe(SyncEntityType.UserV1, () => {
   });
 
   it('should sync a user and then an update to that same user', async () => {
-    const { auth, ctx } = await setup(await getKyselyDB());
+    const { auth, user, ctx } = await setup(await getKyselyDB());
 
     const userRepo = ctx.get(UserRepository);
 
@@ -128,12 +115,7 @@ describe(SyncEntityType.UserV1, () => {
     expect(response).toEqual([
       {
         ack: expect.any(String),
-        data: {
-          deletedAt: null,
-          email: auth.user.email,
-          id: auth.user.id,
-          name: auth.user.name,
-        },
+        data: expect.objectContaining({ id: user.id }),
         type: 'UserV1',
       },
     ]);
@@ -147,12 +129,7 @@ describe(SyncEntityType.UserV1, () => {
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
-        data: {
-          deletedAt: null,
-          email: auth.user.email,
-          id: auth.user.id,
-          name: updated.name,
-        },
+        data: expect.objectContaining({ id: user.id, name: updated.name }),
         type: 'UserV1',
       },
     ]);

@@ -5,22 +5,15 @@ import 'package:immich_mobile/widgets/common/immich_logo.dart';
 class ImmichLoadingIndicator extends HookWidget {
   final double? borderRadius;
 
-  const ImmichLoadingIndicator({
-    super.key,
-    this.borderRadius,
-  });
+  const ImmichLoadingIndicator({super.key, this.borderRadius});
 
   @override
   Widget build(BuildContext context) {
-    final logoAnimationController = useAnimationController(
-      duration: const Duration(seconds: 6),
-    )
+    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 6))
       ..reverse()
       ..repeat();
 
-    final borderAnimationController = useAnimationController(
-      duration: const Duration(seconds: 6),
-    )..repeat();
+    final borderAnimationController = useAnimationController(duration: const Duration(seconds: 6))..repeat();
 
     return Container(
       height: 80,
@@ -34,10 +27,7 @@ class ImmichLoadingIndicator extends HookWidget {
         animation: borderAnimationController,
         builder: (context, child) {
           return CustomPaint(
-            painter: GradientBorderPainter(
-              animation: borderAnimationController.value,
-              strokeWidth: 3,
-            ),
+            painter: GradientBorderPainter(animation: borderAnimationController.value, strokeWidth: 3),
             child: child,
           );
         },
@@ -45,9 +35,7 @@ class ImmichLoadingIndicator extends HookWidget {
           padding: const EdgeInsets.all(15),
           child: RotationTransition(
             turns: logoAnimationController,
-            child: const ImmichLogo(
-              heroTag: 'logo',
-            ),
+            child: const ImmichLogo(heroTag: 'logo'),
           ),
         ),
       ),
@@ -67,10 +55,7 @@ class GradientBorderPainter extends CustomPainter {
     const Color(0xFF18C249),
   ];
 
-  GradientBorderPainter({
-    required this.animation,
-    required this.strokeWidth,
-  });
+  GradientBorderPainter({required this.animation, required this.strokeWidth});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -96,10 +81,7 @@ class GradientBorderPainter extends CustomPainter {
         colors.first.withValues(alpha: opacity),
       ],
       // Add evenly distributed stops
-      stops: List.generate(
-        colors.length + 1,
-        (index) => index / colors.length,
-      ),
+      stops: List.generate(colors.length + 1, (index) => index / colors.length),
       tileMode: TileMode.clamp,
       // Use transformations to rotate the gradient
       transform: GradientRotation(-animation * 2 * 3.14159),

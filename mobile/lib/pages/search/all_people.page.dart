@@ -17,20 +17,13 @@ class AllPeoplePage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'people',
-        ).tr(),
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
+        title: const Text('people').tr(),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
       ),
       body: curatedPeople.widgetWhen(
         onData: (people) => ExploreGrid(
           isPeople: true,
-          curatedContent: people
-              .map((e) => SearchCuratedContent(label: e.name, id: e.id))
-              .toList(),
+          curatedContent: people.map((e) => SearchCuratedContent(label: e.name, id: e.id)).toList(),
         ),
       ),
     );

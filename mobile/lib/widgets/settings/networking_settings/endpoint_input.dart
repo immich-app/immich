@@ -61,8 +61,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
     final url = controller.text;
     setState(() => auxCheckStatus = AuxCheckStatus.loading);
 
-    final isValid =
-        await ref.read(authProvider.notifier).validateAuxilaryServerUrl(url);
+    final isValid = await ref.read(authProvider.notifier).validateAuxilaryServerUrl(url);
 
     setState(() {
       if (mounted) {
@@ -98,10 +97,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
         color: Colors.red,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.delete, color: Colors.white),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 24),
@@ -121,28 +117,19 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: validateUrl,
           keyboardType: TextInputType.url,
-          style: const TextStyle(
-            fontFamily: 'Inconsolata',
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
+          style: const TextStyle(fontFamily: 'Inconsolata', fontWeight: FontWeight.w600, fontSize: 14),
           decoration: InputDecoration(
             hintText: 'http(s)://immich.domain.com',
             contentPadding: const EdgeInsets.all(16),
             filled: true,
             fillColor: context.colorScheme.surfaceContainer,
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(16)),
-            ),
+            border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
             errorBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.red[300]!),
               borderRadius: const BorderRadius.all(Radius.circular(16)),
             ),
             disabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color:
-                    context.isDarkTheme ? Colors.grey[900]! : Colors.grey[300]!,
-              ),
+              borderSide: BorderSide(color: context.isDarkTheme ? Colors.grey[900]! : Colors.grey[300]!),
               borderRadius: const BorderRadius.all(Radius.circular(16)),
             ),
           ),

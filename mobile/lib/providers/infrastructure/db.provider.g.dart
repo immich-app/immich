@@ -13,8 +13,9 @@ String _$isarHash() => r'69d3a06aa7e69a4381478e03f7956eb07d7f7feb';
 final isarProvider = Provider<Isar>.internal(
   isar,
   name: r'isarProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$isarHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$isarHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

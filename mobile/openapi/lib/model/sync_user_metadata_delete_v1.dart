@@ -17,7 +17,7 @@ class SyncUserMetadataDeleteV1 {
     required this.userId,
   });
 
-  String key;
+  UserMetadataKey key;
 
   String userId;
 
@@ -51,7 +51,7 @@ class SyncUserMetadataDeleteV1 {
       final json = value.cast<String, dynamic>();
 
       return SyncUserMetadataDeleteV1(
-        key: mapValueOfType<String>(json, r'key')!,
+        key: UserMetadataKey.fromJson(json[r'key'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }

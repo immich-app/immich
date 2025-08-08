@@ -83,10 +83,10 @@ extension on AssetResponseDto {
 
 extension on AssetTypeEnum {
   AssetType toAssetType() => switch (this) {
-        AssetTypeEnum.IMAGE => AssetType.image,
-        AssetTypeEnum.VIDEO => AssetType.video,
-        AssetTypeEnum.AUDIO => AssetType.audio,
-        AssetTypeEnum.OTHER => AssetType.other,
-        _ => throw Exception('Unknown AssetType value: $this'),
-      };
+    AssetTypeEnum.IMAGE => AssetType.image,
+    AssetTypeEnum.VIDEO => AssetType.video,
+    AssetTypeEnum.AUDIO => AssetType.audio,
+    AssetTypeEnum.OTHER => AssetType.other,
+    _ => throw Exception('Unknown AssetType value: $this'),
+  };
 }

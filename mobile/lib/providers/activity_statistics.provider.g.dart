@@ -34,10 +34,7 @@ abstract class _$ActivityStatistics extends BuildlessAutoDisposeNotifier<int> {
   late final String albumId;
   late final String? assetId;
 
-  int build(
-    String albumId, [
-    String? assetId,
-  ]);
+  int build(String albumId, [String? assetId]);
 }
 
 /// Maintains the current number of comments by <shared-album, asset>
@@ -58,24 +55,15 @@ class ActivityStatisticsFamily extends Family<int> {
   /// Maintains the current number of comments by <shared-album, asset>
   ///
   /// Copied from [ActivityStatistics].
-  ActivityStatisticsProvider call(
-    String albumId, [
-    String? assetId,
-  ]) {
-    return ActivityStatisticsProvider(
-      albumId,
-      assetId,
-    );
+  ActivityStatisticsProvider call(String albumId, [String? assetId]) {
+    return ActivityStatisticsProvider(albumId, assetId);
   }
 
   @override
   ActivityStatisticsProvider getProviderOverride(
     covariant ActivityStatisticsProvider provider,
   ) {
-    return call(
-      provider.albumId,
-      provider.assetId,
-    );
+    return call(provider.albumId, provider.assetId);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -101,25 +89,22 @@ class ActivityStatisticsProvider
   /// Maintains the current number of comments by <shared-album, asset>
   ///
   /// Copied from [ActivityStatistics].
-  ActivityStatisticsProvider(
-    String albumId, [
-    String? assetId,
-  ]) : this._internal(
-          () => ActivityStatistics()
-            ..albumId = albumId
-            ..assetId = assetId,
-          from: activityStatisticsProvider,
-          name: r'activityStatisticsProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$activityStatisticsHash,
-          dependencies: ActivityStatisticsFamily._dependencies,
-          allTransitiveDependencies:
-              ActivityStatisticsFamily._allTransitiveDependencies,
-          albumId: albumId,
-          assetId: assetId,
-        );
+  ActivityStatisticsProvider(String albumId, [String? assetId])
+    : this._internal(
+        () => ActivityStatistics()
+          ..albumId = albumId
+          ..assetId = assetId,
+        from: activityStatisticsProvider,
+        name: r'activityStatisticsProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$activityStatisticsHash,
+        dependencies: ActivityStatisticsFamily._dependencies,
+        allTransitiveDependencies:
+            ActivityStatisticsFamily._allTransitiveDependencies,
+        albumId: albumId,
+        assetId: assetId,
+      );
 
   ActivityStatisticsProvider._internal(
     super._createNotifier, {
@@ -136,13 +121,8 @@ class ActivityStatisticsProvider
   final String? assetId;
 
   @override
-  int runNotifierBuild(
-    covariant ActivityStatistics notifier,
-  ) {
-    return notifier.build(
-      albumId,
-      assetId,
-    );
+  int runNotifierBuild(covariant ActivityStatistics notifier) {
+    return notifier.build(albumId, assetId);
   }
 
   @override
@@ -206,5 +186,6 @@ class _ActivityStatisticsProviderElement
   @override
   String? get assetId => (origin as ActivityStatisticsProvider).assetId;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

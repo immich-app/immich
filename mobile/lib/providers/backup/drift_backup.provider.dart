@@ -8,31 +8,21 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/services/drift_backup.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:logging/logging.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
   final int totalCount;
 
-  const EnqueueStatus({
-    required this.enqueueCount,
-    required this.totalCount,
-  });
+  const EnqueueStatus({required this.enqueueCount, required this.totalCount});
 
-  EnqueueStatus copyWith({
-    int? enqueueCount,
-    int? totalCount,
-  }) {
-    return EnqueueStatus(
-      enqueueCount: enqueueCount ?? this.enqueueCount,
-      totalCount: totalCount ?? this.totalCount,
-    );
+  EnqueueStatus copyWith({int? enqueueCount, int? totalCount}) {
+    return EnqueueStatus(enqueueCount: enqueueCount ?? this.enqueueCount, totalCount: totalCount ?? this.totalCount);
   }
 
   @override
-  String toString() =>
-      'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
+  String toString() => 'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
 }
 
 class DriftUploadStatus {
@@ -41,6 +31,7 @@ class DriftUploadStatus {
   final double progress;
   final int fileSize;
   final String networkSpeedAsString;
+  final bool? isFailed;
 
   const DriftUploadStatus({
     required this.taskId,
@@ -48,6 +39,7 @@ class DriftUploadStatus {
     required this.progress,
     required this.fileSize,
     required this.networkSpeedAsString,
+    this.isFailed,
   });
 
   DriftUploadStatus copyWith({
@@ -56,6 +48,7 @@ class DriftUploadStatus {
     double? progress,
     int? fileSize,
     String? networkSpeedAsString,
+    bool? isFailed,
   }) {
     return DriftUploadStatus(
       taskId: taskId ?? this.taskId,
@@ -63,12 +56,13 @@ class DriftUploadStatus {
       progress: progress ?? this.progress,
       fileSize: fileSize ?? this.fileSize,
       networkSpeedAsString: networkSpeedAsString ?? this.networkSpeedAsString,
+      isFailed: isFailed ?? this.isFailed,
     );
   }
 
   @override
   String toString() {
-    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString)';
+    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed)';
   }
 
   @override
@@ -79,7 +73,8 @@ class DriftUploadStatus {
         other.filename == filename &&
         other.progress == progress &&
         other.fileSize == fileSize &&
-        other.networkSpeedAsString == networkSpeedAsString;
+        other.networkSpeedAsString == networkSpeedAsString &&
+        other.isFailed == isFailed;
   }
 
   @override
@@ -88,7 +83,8 @@ class DriftUploadStatus {
         filename.hashCode ^
         progress.hashCode ^
         fileSize.hashCode ^
-        networkSpeedAsString.hashCode;
+        networkSpeedAsString.hashCode ^
+        isFailed.hashCode;
   }
 
   Map<String, dynamic> toMap() {
@@ -98,6 +94,7 @@ class DriftUploadStatus {
       'progress': progress,
       'fileSize': fileSize,
       'networkSpeedAsString': networkSpeedAsString,
+      'isFailed': isFailed,
     };
   }
 
@@ -108,6 +105,7 @@ class DriftUploadStatus {
       progress: map['progress'] as double,
       fileSize: map['fileSize'] as int,
       networkSpeedAsString: map['networkSpeedAsString'] as String,
+      isFailed: map['isFailed'] != null ? map['isFailed'] as bool : null,
     );
   }
 
@@ -190,69 +188,66 @@ class DriftBackupState {
   }
 }
 
-final driftBackupProvider =
-    StateNotifierProvider<ExpBackupNotifier, DriftBackupState>((ref) {
-  return ExpBackupNotifier(
-    ref.watch(driftBackupServiceProvider),
-    ref.watch(uploadServiceProvider),
-  );
+final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
+  return DriftBackupNotifier(ref.watch(uploadServiceProvider));
 });
 
-class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
-  ExpBackupNotifier(
-    this._backupService,
-    this._uploadService,
-  ) : super(
-          const DriftBackupState(
-            totalCount: 0,
-            backupCount: 0,
-            remainderCount: 0,
-            enqueueCount: 0,
-            enqueueTotalCount: 0,
-            isCanceling: false,
-            uploadItems: {},
-          ),
-        ) {
+class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
+  DriftBackupNotifier(this._uploadService)
+    : super(
+        const DriftBackupState(
+          totalCount: 0,
+          backupCount: 0,
+          remainderCount: 0,
+          enqueueCount: 0,
+          enqueueTotalCount: 0,
+          isCanceling: false,
+          uploadItems: {},
+        ),
+      ) {
     {
       _uploadService.taskStatusStream.listen(_handleTaskStatusUpdate);
       _uploadService.taskProgressStream.listen(_handleTaskProgressUpdate);
     }
   }
 
-  final DriftBackupService _backupService;
   final UploadService _uploadService;
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
+  final _logger = Logger("DriftBackupNotifier");
 
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {
     if (state.uploadItems.containsKey(taskId)) {
-      final updatedItems =
-          Map<String, DriftUploadStatus>.from(state.uploadItems);
+      final updatedItems = Map<String, DriftUploadStatus>.from(state.uploadItems);
       updatedItems.remove(taskId);
       state = state.copyWith(uploadItems: updatedItems);
     }
   }
 
   void _handleTaskStatusUpdate(TaskStatusUpdate update) {
+    final taskId = update.task.taskId;
+
     switch (update.status) {
       case TaskStatus.complete:
         if (update.task.group == kBackupGroup) {
-          state = state.copyWith(
-            backupCount: state.backupCount + 1,
-            remainderCount: state.remainderCount - 1,
-          );
+          state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
         }
 
         // Remove the completed task from the upload items
-        final taskId = update.task.taskId;
         if (state.uploadItems.containsKey(taskId)) {
-          Future.delayed(const Duration(milliseconds: 500), () {
+          Future.delayed(const Duration(milliseconds: 1000), () {
             _removeUploadItem(taskId);
           });
         }
 
       case TaskStatus.failed:
+        final currentItem = state.uploadItems[taskId];
+        if (currentItem == null) {
+          return;
+        }
+
+        state = state.copyWith(uploadItems: {...state.uploadItems, taskId: currentItem.copyWith(isFailed: true)});
         break;
 
       case TaskStatus.canceled:
@@ -284,9 +279,7 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
                   fileSize: update.expectedFileSize,
                   networkSpeedAsString: update.networkSpeedAsString,
                 )
-              : currentItem.copyWith(
-                  progress: progress,
-                ),
+              : currentItem.copyWith(progress: progress),
         },
       );
 
@@ -307,65 +300,53 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> getBackupStatus() async {
+  Future<void> getBackupStatus(String userId) async {
     final [totalCount, backupCount, remainderCount] = await Future.wait([
-      _backupService.getTotalCount(),
-      _backupService.getBackupCount(),
-      _backupService.getRemainderCount(),
+      _uploadService.getBackupTotalCount(),
+      _uploadService.getBackupFinishedCount(userId),
+      _uploadService.getBackupRemainderCount(userId),
     ]);
 
-    state = state.copyWith(
-      totalCount: totalCount,
-      backupCount: backupCount,
-      remainderCount: remainderCount,
-    );
+    state = state.copyWith(totalCount: totalCount, backupCount: backupCount, remainderCount: remainderCount);
   }
 
-  Future<void> backup() {
-    return _backupService.backup(_updateEnqueueCount);
+  Future<void> startBackup(String userId) {
+    return _uploadService.startBackup(userId, _updateEnqueueCount);
   }
 
   void _updateEnqueueCount(EnqueueStatus status) {
-    state = state.copyWith(
-      enqueueCount: status.enqueueCount,
-      enqueueTotalCount: status.totalCount,
-    );
+    state = state.copyWith(enqueueCount: status.enqueueCount, enqueueTotalCount: status.totalCount);
   }
 
   Future<void> cancel() async {
-    state = state.copyWith(
-      enqueueCount: 0,
-      enqueueTotalCount: 0,
-      isCanceling: true,
-    );
+    debugPrint("Canceling backup tasks...");
+    state = state.copyWith(enqueueCount: 0, enqueueTotalCount: 0, isCanceling: true);
 
-    await _backupService.cancel();
+    final activeTaskCount = await _uploadService.cancelBackup();
 
-    // Check if there are any tasks left in the queue
-    final tasks = await FileDownloader().allTasks(group: kBackupGroup);
-
-    debugPrint("Tasks left to cancel: ${tasks.length}");
-
-    if (tasks.isNotEmpty) {
+    if (activeTaskCount > 0) {
+      debugPrint("$activeTaskCount tasks left, continuing to cancel...");
       await cancel();
     } else {
+      debugPrint("All tasks canceled successfully.");
       // Clear all upload items when cancellation is complete
-      state = state.copyWith(
-        isCanceling: false,
-        uploadItems: {},
-      );
+      state = state.copyWith(isCanceling: false, uploadItems: {});
     }
   }
 
-  Future<void> handleBackupResume() async {
-    final tasks = await FileDownloader().allTasks(group: kBackupGroup);
+  Future<void> handleBackupResume(String userId) async {
+    _logger.info("Resuming backup tasks...");
+    final tasks = await _uploadService.getActiveTasks(kBackupGroup);
+    _logger.info("Found ${tasks.length} tasks");
+
     if (tasks.isEmpty) {
       // Start a new backup queue
-      await backup();
+      _logger.info("Start a new backup queue");
+      await startBackup(userId);
     }
 
-    debugPrint("Tasks to resume: ${tasks.length}");
-    await FileDownloader().start();
+    _logger.info("Tasks to resume: ${tasks.length}");
+    await _uploadService.resumeBackup();
   }
 
   @override

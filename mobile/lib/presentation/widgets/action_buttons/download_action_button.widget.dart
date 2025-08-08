@@ -35,8 +35,7 @@ class DownloadActionButton extends ConsumerWidget {
     } else if (result.count > 0) {
       ImmichToast.show(
         context: context,
-        msg: 'download_action_prompt'
-            .t(context: context, args: {'count': result.count.toString()}),
+        msg: 'download_action_prompt'.t(context: context, args: {'count': result.count.toString()}),
         gravity: ToastGravity.BOTTOM,
         toastType: ToastType.success,
       );
@@ -47,6 +46,7 @@ class DownloadActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
       iconData: Icons.download,
+      maxWidth: 95,
       label: "download".t(context: context),
       onPressed: () => _onTap(context, ref),
     );

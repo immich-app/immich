@@ -22,11 +22,11 @@ class RemoteAlbumService {
     return _repository.getAll();
   }
 
-  List<RemoteAlbum> sortAlbums(
-    List<RemoteAlbum> albums,
-    RemoteAlbumSortMode sortMode, {
-    bool isReverse = false,
-  }) {
+  Future<RemoteAlbum?> get(String albumId) {
+    return _repository.get(albumId);
+  }
+
+  List<RemoteAlbum> sortAlbums(List<RemoteAlbum> albums, RemoteAlbumSortMode sortMode, {bool isReverse = false}) {
     return sortMode.sortFn(albums, isReverse);
   }
 
@@ -44,8 +44,7 @@ class RemoteAlbumService {
       filtered = filtered
           .where(
             (album) =>
-                album.name.toLowerCase().contains(lowerQuery) ||
-                album.description.toLowerCase().contains(lowerQuery),
+                album.name.toLowerCase().contains(lowerQuery) || album.description.toLowerCase().contains(lowerQuery),
           )
           .toList();
     }
@@ -53,12 +52,10 @@ class RemoteAlbumService {
     if (userId != null) {
       switch (filterMode) {
         case QuickFilterMode.myAlbums:
-          filtered =
-              filtered.where((album) => album.ownerId == userId).toList();
+          filtered = filtered.where((album) => album.ownerId == userId).toList();
           break;
         case QuickFilterMode.sharedWithMe:
-          filtered =
-              filtered.where((album) => album.ownerId != userId).toList();
+          filtered = filtered.where((album) => album.ownerId != userId).toList();
           break;
         case QuickFilterMode.all:
           break;
@@ -68,16 +65,8 @@ class RemoteAlbumService {
     return filtered;
   }
 
-  Future<RemoteAlbum> createAlbum({
-    required String title,
-    required List<String> assetIds,
-    String? description,
-  }) async {
-    final album = await _albumApiRepository.createDriftAlbum(
-      title,
-      description: description,
-      assetIds: assetIds,
-    );
+  Future<RemoteAlbum> createAlbum({required String title, required List<String> assetIds, String? description}) async {
+    final album = await _albumApiRepository.createDriftAlbum(title, description: description, assetIds: assetIds);
 
     await _repository.create(album, assetIds);
 
@@ -119,14 +108,8 @@ class RemoteAlbumService {
     return _repository.getAssets(albumId);
   }
 
-  Future<int> addAssets({
-    required String albumId,
-    required List<String> assetIds,
-  }) async {
-    final album = await _albumApiRepository.addAssets(
-      albumId,
-      assetIds,
-    );
+  Future<int> addAssets({required String albumId, required List<String> assetIds}) async {
+    final album = await _albumApiRepository.addAssets(albumId, assetIds);
 
     await _repository.addAssets(albumId, album.added);
 
@@ -139,13 +122,22 @@ class RemoteAlbumService {
     await _repository.deleteAlbum(albumId);
   }
 
-  Future<void> addUsers({
-    required String albumId,
-    required List<String> userIds,
-  }) async {
+  Future<void> addUsers({required String albumId, required List<String> userIds}) async {
     await _albumApiRepository.addUsers(albumId, userIds);
 
     return _repository.addUsers(albumId, userIds);
+  }
+
+  Future<void> removeUser(String albumId, {required String userId}) async {
+    await _albumApiRepository.removeUser(albumId, userId: userId);
+
+    return _repository.removeUser(albumId, userId: userId);
+  }
+
+  Future<void> setActivityStatus(String albumId, bool enabled) async {
+    await _albumApiRepository.setActivityStatus(albumId, enabled);
+
+    return _repository.setActivityStatus(albumId, enabled);
   }
 
   Future<int> getCount() {

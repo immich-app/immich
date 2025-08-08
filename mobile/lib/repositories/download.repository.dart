@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/download.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 final downloadRepositoryProvider = Provider((ref) => DownloadRepository());
@@ -21,7 +21,7 @@ class DownloadRepository {
     group: '',
     updates: Updates.statusAndProgress,
   );
-  static final _dummyMetadata = {'part': LivePhotosPart.image, 'id': ''};
+  static final _dummyMetadata = {'part': LivePhotosPart.image.index, 'id': ''};
 
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
 
@@ -33,19 +33,19 @@ class DownloadRepository {
 
   DownloadRepository() {
     _downloader.registerCallbacks(
-      group: downloadGroupImage,
+      group: kDownloadGroupImage,
       taskStatusCallback: (update) => onImageDownloadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
 
     _downloader.registerCallbacks(
-      group: downloadGroupVideo,
+      group: kDownloadGroupVideo,
       taskStatusCallback: (update) => onVideoDownloadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
 
     _downloader.registerCallbacks(
-      group: downloadGroupLivePhoto,
+      group: kDownloadGroupLivePhoto,
       taskStatusCallback: (update) => onLivePhotoDownloadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
@@ -64,10 +64,7 @@ class DownloadRepository {
   }
 
   Future<List<TaskRecord>> getLiveVideoTasks() {
-    return _downloader.database.allRecordsWithStatus(
-      TaskStatus.complete,
-      group: downloadGroupLivePhoto,
-    );
+    return _downloader.database.allRecordsWithStatus(TaskStatus.complete, group: kDownloadGroupLivePhoto);
   }
 
   Future<void> deleteRecordsWithIds(List<String> ids) {
@@ -100,12 +97,12 @@ class DownloadRepository {
           headers: headers,
           filename: asset.name,
           updates: Updates.statusAndProgress,
-          group: isVideo ? downloadGroupVideo : downloadGroupImage,
+          group: isVideo ? kDownloadGroupVideo : kDownloadGroupImage,
         );
         continue;
       }
 
-      _dummyMetadata['part'] = LivePhotosPart.image;
+      _dummyMetadata['part'] = LivePhotosPart.image.index;
       _dummyMetadata['id'] = id;
       tasks[taskIndex++] = DownloadTask(
         taskId: id,
@@ -113,20 +110,18 @@ class DownloadRepository {
         headers: headers,
         filename: asset.name,
         updates: Updates.statusAndProgress,
-        group: downloadGroupLivePhoto,
+        group: kDownloadGroupLivePhoto,
         metaData: json.encode(_dummyMetadata),
       );
 
-      _dummyMetadata['part'] = LivePhotosPart.video;
+      _dummyMetadata['part'] = LivePhotosPart.video.index;
       tasks[taskIndex++] = DownloadTask(
         taskId: livePhotoVideoId,
         url: url,
         headers: headers,
-        filename: asset.name
-            .toUpperCase()
-            .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
+        filename: asset.name.toUpperCase().replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
         updates: Updates.statusAndProgress,
-        group: downloadGroupLivePhoto,
+        group: kDownloadGroupLivePhoto,
         metaData: json.encode(_dummyMetadata),
       );
     }

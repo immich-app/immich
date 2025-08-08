@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, NotNull, Selectable, UpdateResult, Updateable, sql } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
@@ -168,6 +167,21 @@ export class AssetRepository {
     }
 
     await this.db.updateTable('asset_exif').set(options).where('assetId', 'in', ids).execute();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
+  @Chunked()
+  async updateDateTimeOriginal(
+    ids: string[],
+    delta?: number,
+    timeZone?: string,
+  ): Promise<{ assetId: string; dateTimeOriginal: Date | null; timeZone: string | null }[]> {
+    return await this.db
+      .updateTable('asset_exif')
+      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`, timeZone })
+      .where('assetId', 'in', ids)
+      .returning(['assetId', 'dateTimeOriginal', 'timeZone'])
+      .execute();
   }
 
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
@@ -338,19 +352,7 @@ export class AssetRepository {
 
   @GenerateSql()
   getFileSamples() {
-    return this.db
-      .selectFrom('asset')
-      .select((eb) => [
-        'asset.id',
-        'asset.originalPath',
-        'asset.sidecarPath',
-        'asset.encodedVideoPath',
-        jsonArrayFrom(eb.selectFrom('asset_file').select('path').whereRef('asset.id', '=', 'asset_file.assetId')).as(
-          'files',
-        ),
-      ])
-      .limit(sql.lit(3))
-      .execute();
+    return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

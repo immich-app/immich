@@ -14,9 +14,7 @@ class MotionPhotoActionButton extends ConsumerWidget {
     final isPlaying = ref.watch(isPlayingMotionVideoProvider);
 
     return BaseActionButton(
-      iconData: isPlaying
-          ? Icons.motion_photos_pause_outlined
-          : Icons.play_circle_outline_rounded,
+      iconData: isPlaying ? Icons.motion_photos_pause_outlined : Icons.play_circle_outline_rounded,
       label: "play_motion_photo".t(context: context),
       onPressed: ref.read(isPlayingMotionVideoProvider.notifier).toggle,
       menuItem: menuItem,

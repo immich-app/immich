@@ -13,6 +13,9 @@ extension ContextHelper on BuildContext {
   // Returns the current height from MediaQuery
   double get height => MediaQuery.sizeOf(this).height;
 
+  // Returns the current size from MediaQuery
+  Size get sizeData => MediaQuery.sizeOf(this);
+
   // Returns true if the app is running on a mobile device (!tablets)
   bool get isMobile => width < 550;
 
@@ -60,6 +63,5 @@ extension ContextHelper on BuildContext {
   FocusScopeNode get focusScope => FocusScope.of(this);
 
   // Show SnackBars from the current context
-  void showSnackBar(SnackBar snackBar) =>
-      ScaffoldMessenger.of(this).showSnackBar(snackBar);
+  void showSnackBar(SnackBar snackBar) => ScaffoldMessenger.of(this).showSnackBar(snackBar);
 }

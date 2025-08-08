@@ -33,25 +33,20 @@ class AlbumDateRange extends ConsumerWidget {
       padding: const EdgeInsets.only(left: 16.0),
       child: Text(
         _getDateRangeText(startDate, endDate),
-        style: context.textTheme.labelLarge?.copyWith(
-          color: context.colorScheme.onSurfaceVariant,
-        ),
+        style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceVariant),
       ),
     );
   }
 
   @pragma('vm:prefer-inline')
   String _getDateRangeText(DateTime startDate, DateTime endDate) {
-    if (startDate.day == endDate.day &&
-        startDate.month == endDate.month &&
-        startDate.year == endDate.year) {
+    if (startDate.day == endDate.day && startDate.month == endDate.month && startDate.year == endDate.year) {
       return DateFormat.yMMMd().format(startDate);
     }
 
-    final String startDateText = (startDate.year == endDate.year
-            ? DateFormat.MMMd()
-            : DateFormat.yMMMd())
-        .format(startDate);
+    final String startDateText = (startDate.year == endDate.year ? DateFormat.MMMd() : DateFormat.yMMMd()).format(
+      startDate,
+    );
     final String endDateText = DateFormat.yMMMd().format(endDate);
     return "$startDateText - $endDateText";
   }

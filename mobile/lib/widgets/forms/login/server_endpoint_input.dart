@@ -7,21 +7,13 @@ class ServerEndpointInput extends StatelessWidget {
   final FocusNode focusNode;
   final Function()? onSubmit;
 
-  const ServerEndpointInput({
-    super.key,
-    required this.controller,
-    required this.focusNode,
-    this.onSubmit,
-  });
+  const ServerEndpointInput({super.key, required this.controller, required this.focusNode, this.onSubmit});
 
   String? _validateInput(String? url) {
     if (url == null || url.isEmpty) return null;
 
     final parsedUrl = Uri.tryParse(sanitizeUrl(url));
-    if (parsedUrl == null ||
-        !parsedUrl.isAbsolute ||
-        !parsedUrl.scheme.startsWith("http") ||
-        parsedUrl.host.isEmpty) {
+    if (parsedUrl == null || !parsedUrl.isAbsolute || !parsedUrl.scheme.startsWith("http") || parsedUrl.host.isEmpty) {
       return 'login_form_err_invalid_url'.tr();
     }
 

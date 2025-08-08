@@ -5,7 +5,10 @@
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import ChangeDate, {
+    type AbsoluteResult,
+    type RelativeResult,
+  } from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -85,7 +88,7 @@
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
     // TODO: check if reloading asset data is necessary
-    if (newAsset.id && !authManager.key) {
+    if (newAsset.id && !authManager.isSharedLink) {
       const data = await getAssetInfo({ id: asset.id });
       people = data?.people || [];
       unassignedFaces = data?.unassignedFaces || [];
@@ -147,10 +150,12 @@
 
   let isShowChangeDate = $state(false);
 
-  async function handleConfirmChangeDate(dateTimeOriginal: string) {
+  async function handleConfirmChangeDate(result: AbsoluteResult | RelativeResult) {
     isShowChangeDate = false;
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+      if (result.mode === 'absolute') {
+        await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal: result.date } });
+      }
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_date'));
     }
@@ -195,7 +200,7 @@
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
 
-  {#if !authManager.key && isOwner}
+  {#if !authManager.isSharedLink && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
@@ -369,6 +374,7 @@
       <ChangeDate
         initialDate={dateTime}
         initialTimeZone={timeZone ?? ''}
+        withDuration={false}
         onConfirm={handleConfirmChangeDate}
         onCancel={() => (isShowChangeDate = false)}
       />

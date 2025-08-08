@@ -6,12 +6,7 @@ class EmailInput extends StatelessWidget {
   final FocusNode? focusNode;
   final Function()? onSubmit;
 
-  const EmailInput({
-    super.key,
-    required this.controller,
-    this.focusNode,
-    this.onSubmit,
-  });
+  const EmailInput({super.key, required this.controller, this.focusNode, this.onSubmit});
 
   String? _validateInput(String? email) {
     if (email == null || email == '') return null;
@@ -32,10 +27,7 @@ class EmailInput extends StatelessWidget {
         labelText: 'email'.tr(),
         border: const OutlineInputBorder(),
         hintText: 'login_form_email_hint'.tr(),
-        hintStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 14,
-        ),
+        hintStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 14),
       ),
       validator: _validateInput,
       autovalidateMode: AutovalidateMode.always,

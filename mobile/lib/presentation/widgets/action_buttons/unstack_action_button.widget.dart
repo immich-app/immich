@@ -21,17 +21,12 @@ class UnStackActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).unStack(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'unstack_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'unstack_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success
-            ? successMessage
-            : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );

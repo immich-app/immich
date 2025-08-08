@@ -16,7 +16,10 @@ class MemoriesApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /memories/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `memoryAsset.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -48,6 +51,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memoryAsset.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -71,7 +76,10 @@ class MemoriesApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /memories' operation and returns the [Response].
+  /// This endpoint requires the `memory.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [MemoryCreateDto] memoryCreateDto (required):
@@ -100,6 +108,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memory.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [MemoryCreateDto] memoryCreateDto (required):
@@ -118,7 +128,10 @@ class MemoriesApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /memories/{id}' operation and returns the [Response].
+  /// This endpoint requires the `memory.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -148,6 +161,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memory.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -158,7 +173,10 @@ class MemoriesApi {
     }
   }
 
-  /// Performs an HTTP 'GET /memories/{id}' operation and returns the [Response].
+  /// This endpoint requires the `memory.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -188,6 +206,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memory.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -206,7 +226,10 @@ class MemoriesApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /memories/statistics' operation and returns the [Response].
+  /// This endpoint requires the `memory.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [DateTime] for_:
@@ -254,6 +277,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memory.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [DateTime] for_:
@@ -278,7 +303,10 @@ class MemoriesApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /memories/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `memoryAsset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -310,6 +338,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memoryAsset.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -333,7 +363,10 @@ class MemoriesApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /memories' operation and returns the [Response].
+  /// This endpoint requires the `memory.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [DateTime] for_:
@@ -381,6 +414,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memory.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [DateTime] for_:
@@ -408,7 +443,10 @@ class MemoriesApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /memories/{id}' operation and returns the [Response].
+  /// This endpoint requires the `memory.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -440,6 +478,8 @@ class MemoriesApi {
     );
   }
 
+  /// This endpoint requires the `memory.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

@@ -13,12 +13,7 @@ class ServerDiskInfo {
     required this.diskUsagePercentage,
   });
 
-  ServerDiskInfo copyWith({
-    String? diskAvailable,
-    String? diskSize,
-    String? diskUse,
-    double? diskUsagePercentage,
-  }) {
+  ServerDiskInfo copyWith({String? diskAvailable, String? diskSize, String? diskUse, double? diskUsagePercentage}) {
     return ServerDiskInfo(
       diskAvailable: diskAvailable ?? this.diskAvailable,
       diskSize: diskSize ?? this.diskSize,
@@ -33,10 +28,10 @@ class ServerDiskInfo {
   }
 
   ServerDiskInfo.fromDto(ServerStorageResponseDto dto)
-      : diskAvailable = dto.diskAvailable,
-        diskSize = dto.diskSize,
-        diskUse = dto.diskUse,
-        diskUsagePercentage = dto.diskUsagePercentage;
+    : diskAvailable = dto.diskAvailable,
+      diskSize = dto.diskSize,
+      diskUse = dto.diskUse,
+      diskUsagePercentage = dto.diskUsagePercentage;
 
   @override
   bool operator ==(Object other) {
@@ -51,9 +46,6 @@ class ServerDiskInfo {
 
   @override
   int get hashCode {
-    return diskAvailable.hashCode ^
-        diskSize.hashCode ^
-        diskUse.hashCode ^
-        diskUsagePercentage.hashCode;
+    return diskAvailable.hashCode ^ diskSize.hashCode ^ diskUse.hashCode ^ diskUsagePercentage.hashCode;
   }
 }
