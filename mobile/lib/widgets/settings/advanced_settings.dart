@@ -21,12 +21,14 @@ import 'package:logging/logging.dart';
 
 class AdvancedSettings extends HookConsumerWidget {
   const AdvancedSettings({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool isLoggedIn = ref.read(currentUserProvider) != null;
 
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final reviewOutOfSyncChangesAndroid = useAppSettingsState(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
@@ -46,6 +48,20 @@ class AdvancedSettings extends HookConsumerWidget {
       return false;
     }
 
+    Future<void> attemptToEnableSetting(bool value, AppSettingsEnum key) async {
+      if (value) {
+        final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+        if (key == AppSettingsEnum.manageLocalMediaAndroid) {
+          manageLocalMediaAndroid.value = result;
+          reviewOutOfSyncChangesAndroid.value = false;
+        }
+        if (key == AppSettingsEnum.reviewOutOfSyncChangesAndroid) {
+          reviewOutOfSyncChangesAndroid.value = result;
+          manageLocalMediaAndroid.value = false;
+        }
+      }
+    }
+
     final advancedSettings = [
       SettingsSwitchListTile(
         enabled: true,
@@ -62,12 +78,23 @@ class AdvancedSettings extends HookConsumerWidget {
               valueNotifier: manageLocalMediaAndroid,
               title: "advanced_settings_sync_remote_deletions_title".tr(),
               subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-              onChanged: (value) async {
-                if (value) {
-                  final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
-                  manageLocalMediaAndroid.value = result;
-                }
-              },
+              onChanged: (value) => attemptToEnableSetting(value, AppSettingsEnum.manageLocalMediaAndroid),
+            );
+          } else {
+            return const SizedBox.shrink();
+          }
+        },
+      ),
+      FutureBuilder<bool>(
+        future: checkAndroidVersion(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data == true) {
+            return SettingsSwitchListTile(
+              enabled: true,
+              valueNotifier: reviewOutOfSyncChangesAndroid,
+              title: "advanced_settings_review_remote_deletions_title".tr(),
+              subtitle: "advanced_settings_review_remote_deletions_subtitle".tr(),
+              onChanged: (value) => attemptToEnableSetting(value, AppSettingsEnum.reviewOutOfSyncChangesAndroid),
             );
           } else {
             return const SizedBox.shrink();

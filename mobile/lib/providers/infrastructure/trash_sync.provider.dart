@@ -1,10 +1,16 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 
 import 'asset.provider.dart';
+import 'db.provider.dart';
+
+final trashSyncRepositoryProvider = Provider<DriftTrashSyncRepository>(
+  (ref) => DriftTrashSyncRepository(ref.watch(driftProvider)),
+);
 
 final trashSyncServiceProvider = Provider(
   (ref) => TrashSyncService(
@@ -13,5 +19,11 @@ final trashSyncServiceProvider = Provider(
     localAssetRepository: ref.watch(localAssetRepository),
     localFilesManager: ref.watch(localFilesManagerRepositoryProvider),
     storageRepository: ref.watch(storageRepositoryProvider),
+    trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
   ),
 );
+
+final outOfSyncCountProvider = StreamProvider<int>((ref) {
+  final trashSyncService = ref.watch(trashSyncServiceProvider);
+  return trashSyncService.watchPendingDecisionCount();
+});

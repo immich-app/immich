@@ -25,7 +25,13 @@ class TabShellPage extends ConsumerStatefulWidget {
   @override
   ConsumerState<TabShellPage> createState() => _TabShellPageState();
 }
-
+///
+///     When a photo is moved to the trash on the server it should pop up a notification asking the user
+///     to review out-of-sync changes. It should then allow you to sync all photo trash events or review
+///     which photo trash events to sync by showing the photos in a UI similar to the main timeline where
+///     you can select which photos to trash
+///
+///
 class _TabShellPageState extends ConsumerState<TabShellPage> {
   @override
   void initState() {
@@ -62,7 +68,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       NavigationDestination(
         label: 'search'.tr(),
         icon: const Icon(Icons.search_rounded),
-        selectedIcon: Icon(Icons.search, color: context.primaryColor),
+        selectedIcon: Icon(Icons.telegram, color: context.primaryColor),
       ),
       NavigationDestination(
         label: 'albums'.tr(),

@@ -73,7 +73,8 @@ enum StoreKey<T> {
   betaTimeline<bool>._(1002),
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
-  useWifiForUploadPhotos<bool>._(1005);
+  useWifiForUploadPhotos<bool>._(1005),
+  reviewOutOfSyncChangesAndroid<bool>._(1006);
 
   const StoreKey._(this.id);
   final int id;

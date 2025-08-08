@@ -4,15 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_profile_info.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_server_info.dart';
@@ -33,7 +37,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
-
+    final reviewOutOfSyncChangesAndroid = ref
+        .read(appSettingsServiceProvider)
+        .getSetting<bool>(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
+    final outOfSyncCount = reviewOutOfSyncChangesAndroid
+        ? ref.watch(outOfSyncCountProvider).maybeWhen(data: (count) => count, orElse: () => 0)
+        : 0;
     useEffect(() {
       ref.read(backupProvider.notifier).updateDiskInfo();
       ref.read(currentUserProvider.notifier).refresh();
@@ -75,6 +84,18 @@ class ImmichAppBarDialog extends HookConsumerWidget {
 
     buildSettingButton() {
       return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
+    }
+
+    buildOutOfSyncButton() {
+      if (reviewOutOfSyncChangesAndroid && outOfSyncCount > 0) {
+        return buildActionButton(
+          Icons.sync,
+          'review_out_of_sync_changes'.t(context: context, args: {'count': outOfSyncCount}),
+          () => context.pushRoute(const DriftTrashSyncReviewRoute()),
+        );
+      } else {
+        return const SizedBox.shrink();
+      }
     }
 
     buildAppLogButton() {
@@ -238,6 +259,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 const AppBarProfileInfoBox(),
                 buildStorageInformation(),
                 const AppBarServerInfo(),
+                buildOutOfSyncButton(),
                 buildAppLogButton(),
                 buildSettingButton(),
                 buildSignOutButton(),

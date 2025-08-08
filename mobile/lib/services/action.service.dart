@@ -1,7 +1,6 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -9,14 +8,18 @@ import 'package:immich_mobile/infrastructure/repositories/remote_album.repositor
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import '../domain/services/trash_sync.service.dart';
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
@@ -27,6 +30,7 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(remoteAlbumRepository),
     ref.watch(assetMediaRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
+    ref.watch(trashSyncServiceProvider),
   ),
 );
 
@@ -38,6 +42,7 @@ class ActionService {
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final AssetMediaRepository _assetMediaRepository;
   final DownloadRepository _downloadRepository;
+  final TrashSyncService _trashSyncService;
 
   const ActionService(
     this._assetApiRepository,
@@ -47,6 +52,7 @@ class ActionService {
     this._remoteAlbumRepository,
     this._assetMediaRepository,
     this._downloadRepository,
+    this._trashSyncService,
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
@@ -233,5 +239,9 @@ class ActionService {
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {
     return _downloadRepository.downloadAllAssets(assets);
+  }
+
+  Future<void> setMoveToTrashDecision(Iterable<String> remoteChecksums, bool isApproved) async {
+    await _trashSyncService.setMoveToTrashDecision(remoteChecksums, isApproved);
   }
 }

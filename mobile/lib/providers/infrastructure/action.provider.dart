@@ -365,6 +365,18 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: assets.length, success: false, error: error.toString());
     }
   }
+
+  Future<ActionResult> setMoveToTrashDecision(ActionSource source, bool isApproved) async {
+    final remoteChecksums = _getAssets(source).map((a)=>a.checksum).nonNulls;
+    _logger.info('setMoveToTrashDecision, remoteChecksums: $remoteChecksums, isApproved: $isApproved');
+    try {
+      await _service.setMoveToTrashDecision(remoteChecksums, isApproved);
+      return ActionResult(count: remoteChecksums.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to ${isApproved ? 'allow' : 'deny'} to move assets to trash', error, stack);
+      return ActionResult(count: remoteChecksums.length, success: false, error: error.toString());
+    }
+  }
 }
 
 extension on Iterable<RemoteAsset> {
