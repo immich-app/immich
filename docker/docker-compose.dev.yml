@@ -17,8 +17,6 @@ services:
   immich-server:
     container_name: immich_server
     command: ['immich-dev']
-    # entrypoint: ["/bin/sh"]
-    # command: ["-c", "sleep infinity"]
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml

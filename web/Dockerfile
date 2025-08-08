@@ -6,7 +6,7 @@ ENV CHOKIDAR_USEPOLLING=true \
 
 RUN npm install --global corepack@latest && \
   corepack enable && corepack install -g pnpm && \
-  apk add --no-cache tini make bash&& \
+  apk add --no-cache tini make bash && \
   mkdir -p /buildcache/pnpm-store && \
   pnpm config set store-dir /buildcache/pnpm-store
 

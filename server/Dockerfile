@@ -5,11 +5,18 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp
 
-WORKDIR /usr/src/app
-
 RUN npm install --global corepack@latest && \
   corepack enable pnpm && \
-  pnpm config set store-dir /buildcache/pnpm-store
+  echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
+  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc
+
+COPY ./package* ./pnpm* .pnpmfile.cjs /tmp/create-dep-cache/
+COPY ./web/package* ./web/pnpm* /tmp/create-dep-cache/web/
+COPY ./server/package* ./server/pnpm* /tmp/create-dep-cache/server/
+COPY ./open-api/typescript-sdk/package* ./open-api/typescript-sdk/pnpm* /tmp/create-dep-cache/open-api/typescript-sdk/
+WORKDIR /tmp/create-dep-cache
+RUN pnpm fetch && rm -rf /tmp/create-dep-cache && chmod -R o+rw /buildcache
+WORKDIR /usr/src/app
 
 ENV PATH="${PATH}:/usr/src/app/server/bin" \
   IMMICH_ENV=development \
@@ -31,13 +38,6 @@ RUN usermod -aG sudo node && \
 RUN chown node:node -R /workspaces
 COPY --chown=node:node --chmod=755 ../.devcontainer/server/*.sh /immich-devcontainer/
 
-
-COPY ./package* ./pnpm* .pnpmfile.cjs /tmp/create-dep-cache/
-COPY ./web/package* ./web/pnpm* /tmp/create-dep-cache/web/
-COPY ./server/package* ./server/pnpm* /tmp/create-dep-cache/server/
-COPY ./open-api/typescript-sdk/package* ./open-api/typescript-sdk/pnpm* /tmp/create-dep-cache/open-api/typescript-sdk/
-WORKDIR /tmp/create-dep-cache
-RUN pnpm fetch && rm -rf /tmp/create-dep-cache
 WORKDIR /workspaces/immich
 
 FROM dev-container-server AS dev-container-mobile
@@ -67,26 +67,36 @@ RUN mkdir -p ${FLUTTER_HOME} \
   && rm flutter.tar.xz \
   && chown -R node ${FLUTTER_HOME}
 
-USER node
-RUN sudo apt-get update \
-  && wget -qO- https://dcm.dev/pgp-key.public | sudo gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
-  && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list \
-  && sudo apt-get update \
-  && sudo apt-get install dcm -y
+
+RUN apt-get update \
+  && wget -qO- https://dcm.dev/pgp-key.public | gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
+  && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | tee /etc/apt/sources.list.d/dart_stable.list \
+  && apt-get update \
+  && apt-get install dcm -y
 
 RUN dart --disable-analytics
 
+# production-builder-base image
+FROM ghcr.io/immich-app/base-server-dev:202507291116@sha256:e38543bdd77a02ed156cd9175ed11e9c16dccf48c418d46ecda48ce684de456a AS prod-builder-base
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp
+
+RUN npm install --global corepack@latest && \
+  corepack enable pnpm
+
 # server production build
-FROM dev AS server-prod
+FROM prod-builder-base AS server-prod
 
 WORKDIR /usr/src/app
 COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./server ./server/
+# SHARP_IGNORE_GLOBAL_LIBVIPS because 'deploy' will always build sharp bindings from source
 RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
   pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
 
 # web production build
-FROM dev AS web-prod
+FROM prod-builder-base AS web-prod
 
 WORKDIR /usr/src/app
 COPY ./package* ./pnpm* .pnpmfile.cjs ./
@@ -96,7 +106,7 @@ COPY ./open-api ./open-api/
 RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
   pnpm --filter @immich/sdk --filter immich-web build
 
-FROM dev AS cli-prod
+FROM prod-builder-base AS cli-prod
 
 COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./cli ./cli/
@@ -105,7 +115,7 @@ RUN pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && 
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-# prod build
+# prod base image
 FROM ghcr.io/immich-app/base-server-prod:202507291116@sha256:6e80f884c6e4f05cefe4b4fc4cc06a15bdb6ec9bd7b6e9eadf996a13b69494b6
 
 WORKDIR /usr/src/app
