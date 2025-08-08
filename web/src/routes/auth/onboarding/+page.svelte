@@ -90,8 +90,8 @@
       name: 'mobile_app',
       component: OnboardingMobileApp,
       role: OnboardingRole.USER,
-      title: 'Mobile App',
-      icon: mdiCellphone,
+      title: $t('mobile_app'),
+      icon: mdiCellphone, // or you can use mdiCellphoneArrowDownVariant
     },
   ]);
 

@@ -10,7 +10,7 @@
   let { onClose }: Props = $props();
 </script>
 
-<Modal title={$t('download')} size="large" {onClose}>
+<Modal title={$t('app_download_links')} size="large" {onClose}>
   <ModalBody>
     <AppDownloadLinks />
   </ModalBody>

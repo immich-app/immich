@@ -1,4 +1,9 @@
 {
+  "mobile_app": "Mobile App",
+  "app_architecture_variant": "Variant (Architecture)",
+  "app_download_links": "App Download Links",
+  "obtainium_configurator": "Obtainium Configurator",
+  "obtainium_configurator_instructions": "Please create an API key and select a variant to create your Obtainium configuration link.",
   "about": "About",
   "account": "Account",
   "account_settings": "Account Settings",

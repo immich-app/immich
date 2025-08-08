@@ -4,7 +4,7 @@
   import AppDownloadModal from '$lib/modals/AppDownloadModal.svelte';
   import ObtainiumConfigModal from '$lib/modals/ObtainiumConfigModal.svelte';
   import { modalManager } from '@immich/ui';
-  import { mdiContentDuplicate, mdiImageSizeSelectLarge } from '@mdi/js';
+  import { mdiCellphoneArrowDownVariant, mdiContentDuplicate, mdiImageSizeSelectLarge, mdiLinkEdit } from '@mdi/js';
   import { t } from 'svelte-i18n';
 </script>
 
@@ -37,12 +37,16 @@
     type="button"
     onclick={() => modalManager.show(ObtainiumConfigModal, {})}
     class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
-    >Obtainium Configurator
+    ><span><Icon path={mdiLinkEdit} class="text-immich-primary dark:text-immich-dark-primary" size="24" /> </span>
+    {$t('obtainium_configurator')}
   </button>
   <button
     type="button"
     onclick={() => modalManager.show(AppDownloadModal, {})}
     class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
-    >Download Links
+    ><span
+      ><Icon path={mdiCellphoneArrowDownVariant} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
+    </span>
+    {$t('app_download_links')}
   </button>
 </div>

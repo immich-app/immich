@@ -4,7 +4,7 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { createApiKey, Permission } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, obtainiumBadge } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   let inputUrl = $state(location.origin);
@@ -34,20 +34,20 @@
     <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="obtainium-configurator"
       >Obtainium</label
     >
-    <div>
+    <div id="obtainium-configurator">
       <form>
         <div class="mt-2">
-          <SettingInputField inputType={SettingInputFieldType.TEXT} label="URL:" bind:value={inputUrl} />
+          <SettingInputField inputType={SettingInputFieldType.TEXT} label={$t('url')} bind:value={inputUrl} />
         </div>
         <div class="mt-2">
-          <SettingInputField inputType={SettingInputFieldType.TEXT} label="API Key:" bind:value={inputApiKey} />
+          <SettingInputField inputType={SettingInputFieldType.TEXT} label={$t('api_key')} bind:value={inputApiKey} />
         </div>
         <div class="">
           <Button shape="round" size="small" onclick={() => handleCreate()}>{$t('new_api_key')}</Button>
         </div>
         <div class="mt-2">
           <SettingSelect
-            label="Variant (Architecture):"
+            label={$t('app_architecture_variant')}
             bind:value={archVariant}
             options={[
               { value: 'app-arm64-v8a-release', text: 'arm64-v8a' },
@@ -62,8 +62,6 @@
   </div>
 
   <div class="content-center">
-    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="obtainium-link-text"
-    ></label>
     {#if inputUrl && inputApiKey && archVariant}
       <a
         href={obtainiumLink}
@@ -71,15 +69,11 @@
         target="_blank"
         rel="noreferrer"
         id="obtainium-link"
-        ><img
-          class="pt-2 pr-5"
-          alt="Get it on Obtainium"
-          src="https://raw.githubusercontent.com/ImranR98/Obtainium/refs/heads/main/assets/graphics/badge_obtainium.png"
-        />
+        ><img class="pt-2 pr-5" alt="Get it on Obtainium" src={obtainiumBadge} />
       </a>
     {:else}
-      <p class="immich-form-label pb-2 text-sm" id="obtainium-link-text">
-        Please create an API key and select a variant to create your Obtainium configuration link.
+      <p class="immich-form-label pb-2 text-sm" id="obtainium-link">
+        {$t('obtainium_configurator_instructions')}
       </p>
     {/if}
   </div>
