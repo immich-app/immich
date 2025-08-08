@@ -1074,17 +1074,10 @@ export type ServerAboutResponseDto = {
   versionUrl: string;
 };
 export type ServerApkLinksDto = {
-<<<<<<< HEAD
   arm64v8a: string;
   armeabiv7a: string;
   universal: string;
   x86_64: string;
-=======
-    arm64v8a: string;
-    armeabiv7a: string;
-    universal: string;
-    x86_64: string;
->>>>>>> 6bc84b4ba (rename the dto and the service)
 };
 export type ServerConfigDto = {
   externalDomain: string;
@@ -4736,7 +4729,6 @@ export function getAboutInfo(opts?: Oazapfts.RequestOpts) {
     })
   );
 }
-<<<<<<< HEAD
 /**
  * This endpoint requires the `server.apkLinks` permission.
  */
@@ -4749,15 +4741,6 @@ export function getApkLinks(opts?: Oazapfts.RequestOpts) {
       ...opts,
     })
   );
-=======
-export function getAndroidLinks(opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: ServerApkLinksDto;
-    }>("/server/android-links", {
-        ...opts
-    }));
->>>>>>> 6bc84b4ba (rename the dto and the service)
 }
 export function getServerConfig(opts?: Oazapfts.RequestOpts) {
   return oazapfts.ok(
