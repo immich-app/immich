@@ -57,7 +57,12 @@
             longitude: asset.exifInfo?.longitude ?? undefined,
           });
           notificationController.show({
-            message: `${$t('copied_gps')} \n${asset.exifInfo?.latitude} \n ${asset.exifInfo?.longitude}`,
+            message: $t('copied_gps', {
+              values: {
+                lat: asset.exifInfo?.latitude,
+                lng: asset.exifInfo?.longitude,
+              },
+            }),
             type: NotificationType.Info,
           });
         } else {
@@ -73,9 +78,13 @@
     />
 
     {#if hasGps}
-      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-green-500">GPS</div>
+      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-green-500">
+        {$t('gps_on')}
+      </div>
     {:else}
-      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-500">No GPS</div>
+      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-500">
+        {$t('gps_off')}
+      </div>
     {/if}
   </div>
   <div class="text-center mt-4 px-4 text-sm font-normal truncate" title={asset.originalFileName}>
@@ -83,7 +92,7 @@
       {asset.originalFileName}
     </a>
   </div>
-  <div class="text-left">
+  <div class="text-start">
     <p class="mt-4 px-4 text-xs font-normal truncate">
       {new Date(asset.localDateTime).toLocaleString()}
     </p>

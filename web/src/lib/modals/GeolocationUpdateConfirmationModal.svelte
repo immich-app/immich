@@ -22,7 +22,7 @@
       })}
     </p>
 
-    <div class="text-left text-sm">
+    <div class="text-start text-sm">
       <p>- {$t('latitude')}: {location.latitude}</p>
       <p>- {$t('longitude')}: {location.longitude}</p>
     </div>

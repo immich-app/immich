@@ -9,13 +9,13 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { buildDateRangeFromYearMonthAndDay } from '$lib/utils/date-time';
-  import { debounce } from '$lib/utils/debounce';
   import { setQueryValue } from '$lib/utils/navigation';
   import { buildDateString } from '$lib/utils/string-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { searchAssets, updateAssets, type AssetResponseDto } from '@immich/sdk';
   import { Button, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiInformationOutline, mdiMapMarkerRadius, mdiSelectAll, mdiSelectRemove } from '@mdi/js';
+  import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
