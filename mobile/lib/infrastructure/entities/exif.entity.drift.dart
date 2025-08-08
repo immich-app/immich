@@ -699,6 +699,10 @@ typedef $$RemoteExifEntityTableProcessedTableManager =
       i1.RemoteExifEntityData,
       i0.PrefetchHooks Function({bool assetId})
     >;
+i0.Index get idxLatLng => i0.Index(
+  'idx_lat_lng',
+  'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+);
 
 class $RemoteExifEntityTable extends i2.RemoteExifEntity
     with i0.TableInfo<$RemoteExifEntityTable, i1.RemoteExifEntityData> {

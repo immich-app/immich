@@ -9979,6 +9979,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "dateTimeRelative": {
+            "type": "number"
+          },
           "description": {
             "type": "string"
           },
@@ -10006,6 +10009,9 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "timeZone": {
+            "type": "string"
           },
           "visibility": {
             "allOf": [
@@ -14944,9 +14950,11 @@
           "AlbumUserV1",
           "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
-          "AlbumAssetV1",
+          "AlbumAssetCreateV1",
+          "AlbumAssetUpdateV1",
           "AlbumAssetBackfillV1",
-          "AlbumAssetExifV1",
+          "AlbumAssetExifCreateV1",
+          "AlbumAssetExifUpdateV1",
           "AlbumAssetExifBackfillV1",
           "AlbumToAssetV1",
           "AlbumToAssetDeleteV1",

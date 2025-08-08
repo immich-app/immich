@@ -128,6 +128,18 @@ class RemoteAlbumService {
     return _repository.addUsers(albumId, userIds);
   }
 
+  Future<void> removeUser(String albumId, {required String userId}) async {
+    await _albumApiRepository.removeUser(albumId, userId: userId);
+
+    return _repository.removeUser(albumId, userId: userId);
+  }
+
+  Future<void> setActivityStatus(String albumId, bool enabled) async {
+    await _albumApiRepository.setActivityStatus(albumId, enabled);
+
+    return _repository.setActivityStatus(albumId, enabled);
+  }
+
   Future<int> getCount() {
     return _repository.getCount();
   }

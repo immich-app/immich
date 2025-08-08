@@ -23,8 +23,8 @@ export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWit
 export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
   !!(target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
 
-export function getAssetInfoFromParam({ assetId, key }: { assetId?: string; key?: string }) {
-  return assetId ? getAssetInfo({ id: assetId, key }) : undefined;
+export function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string; key?: string; slug?: string }) {
+  return assetId ? getAssetInfo({ id: assetId, slug, key }) : undefined;
 }
 
 function currentUrlWithoutAsset() {

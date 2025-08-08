@@ -668,9 +668,11 @@ export enum SyncEntityType {
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
-  AlbumAssetV1 = 'AlbumAssetV1',
+  AlbumAssetCreateV1 = 'AlbumAssetCreateV1',
+  AlbumAssetUpdateV1 = 'AlbumAssetUpdateV1',
   AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
-  AlbumAssetExifV1 = 'AlbumAssetExifV1',
+  AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1',
+  AlbumAssetExifUpdateV1 = 'AlbumAssetExifUpdateV1',
   AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',
 
   AlbumToAssetV1 = 'AlbumToAssetV1',

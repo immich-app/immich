@@ -110,6 +110,7 @@
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
     "ua-parser-js": "^2.0.0",
+    "uuid": "^11.1.0",
     "validator": "^13.12.0"
   },
   "devDependencies": {
@@ -123,7 +124,7 @@
     "@testcontainers/redis": "^11.0.0",
     "@types/archiver": "^6.0.0",
     "@types/async-lock": "^1.4.2",
-    "@types/bcrypt": "^5.0.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/body-parser": "^1.19.6",
     "@types/compression": "^1.7.5",
     "@types/cookie-parser": "^1.4.8",

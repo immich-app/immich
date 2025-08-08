@@ -6,7 +6,6 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
-import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
@@ -46,7 +45,6 @@ class HashService {
 
     stopwatch.stop();
     _log.info("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
-    DLog.log("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
   }
 
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB
@@ -101,7 +99,6 @@ class HashService {
     }
 
     _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
-    DLog.log("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
     await _storageRepository.clearCache();
