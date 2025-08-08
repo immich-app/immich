@@ -3,6 +3,7 @@ module.exports = {
     readPackage: (pkg) => {
       if (pkg.name && pkg.name === "exiftool-vendored") {
         if (pkg.optionalDependencies["exiftool-vendored.pl"]) {
+          // make exiftool-vendored.pl a regular dependency
           pkg.dependencies["exiftool-vendored.pl"] =
             pkg.optionalDependencies["exiftool-vendored.pl"];
           delete pkg.optionalDependencies["exiftool-vendored.pl"];
@@ -13,7 +14,15 @@ module.exports = {
           (dep) => dep.startsWith("@img")
         );
         for (const dep of optionalDeps) {
-          if (dep.includes("musl") || process.env.SKIP_SHARP_FILTERING) {
+          // remove all optionalDepdencies from sharp (they will be compiled from source), except:
+          //   include the precompiled musl version of sharp, for web/Dockerfile
+          //   include precompiled linux-x64 version of sharp, for server/Dockerfile, stage: web-prod
+          //   include precompiled linux-arm64 version of sharp, for server/Dockerfile, stage: web-prod
+          if (
+            dep.includes("musl") ||
+            dep.includes("linux-x64") ||
+            dep.includes("linux-arm64")
+          ) {
             continue;
           }
           delete pkg.optionalDependencies[dep];

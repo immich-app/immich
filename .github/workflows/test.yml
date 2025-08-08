@@ -233,7 +233,7 @@ jobs:
         run: pnpm install --frozen-lockfile && pnpm build
         working-directory: ./open-api/typescript-sdk
       - name: Run npm install
-        run: SKIP_SHARP_FILTERING=true pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Run tsc
         run: pnpm check:typescript
         if: ${{ !cancelled() }}
@@ -341,7 +341,7 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Run pnpm install
-        run: SKIP_SHARP_FILTERING=true pnpm install --frozen-lockfile
+        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
       - name: Run medium tests
         run: pnpm test:medium
         if: ${{ !cancelled() }}
@@ -565,7 +565,7 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install server dependencies
-        run: SKIP_SHARP_FILTERING=true pnpm --filter immich install --frozen-lockfile
+        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
       - name: Build the app
         run: pnpm --filter immich build
       - name: Run API generation
@@ -619,7 +619,7 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install server dependencies
-        run: SKIP_SHARP_FILTERING=true pnpm install --frozen-lockfile
+        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
       - name: Build the app
         run: pnpm build
       - name: Run existing migrations
