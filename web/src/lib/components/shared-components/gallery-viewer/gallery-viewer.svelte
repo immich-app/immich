@@ -61,7 +61,9 @@
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
-    scrollContainer = typeof document !== 'undefined' ? document.documentElement : null,
+    scrollContainer = typeof document !== 'undefined'
+      ? ((document.scrollingElement as HTMLElement) ?? document.documentElement)
+      : null,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
@@ -463,10 +465,19 @@
   $effect(() => {
     if (scrollContainer) {
       const handleScroll = () => updateSlidingWindow();
-      scrollContainer.addEventListener('scroll', handleScroll);
+
+      // If the scroll container is the document root, listen on window
+      const isDocumentScroller =
+        typeof document !== 'undefined' &&
+        (scrollContainer === document.documentElement ||
+          scrollContainer === (document.scrollingElement as HTMLElement | null) ||
+          scrollContainer === document.body);
+
+      const eventTarget: any = isDocumentScroller ? window : (scrollContainer as any);
+      eventTarget.addEventListener('scroll', handleScroll, { passive: true });
       updateSlidingWindow();
       return () => {
-        scrollContainer.removeEventListener('scroll', handleScroll);
+        eventTarget.removeEventListener('scroll', handleScroll as EventListener);
       };
     }
   });

@@ -57,6 +57,7 @@
     rounded?: boolean;
     showSimpleControls?: boolean;
     autoFitBounds?: boolean;
+    fullscreenContainer?: HTMLElement | string;
   }
 
   let {
@@ -75,6 +76,7 @@
     rounded = false,
     showSimpleControls = true,
     autoFitBounds = true,
+    fullscreenContainer = undefined,
   }: Props = $props();
 
   // Calculate initial bounds from markers once during initialization
@@ -310,7 +312,7 @@
 
       {#if !simplified}
         <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
+        <FullscreenControl position="top-left" container={fullscreenContainer} />
         <ScaleControl />
         <AttributionControl compact={false} />
       {/if}
