@@ -29,12 +29,7 @@
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import {
-    getTimes,
-    toTimelineAsset,
-    type ScrubberListener,
-    type TimelinePlainYearMonth,
-  } from '$lib/utils/timeline-util';
+  import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
@@ -154,12 +149,28 @@
     return height;
   };
 
+  const assetIsVisible = (assetTop: number): boolean => {
+    if (!element) {
+      return false;
+    }
+
+    const { clientHeight, scrollTop } = element;
+    return assetTop >= scrollTop && assetTop < scrollTop + clientHeight;
+  };
+
   const scrollToAssetId = async (assetId: string) => {
     const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
     if (!monthGroup) {
       return false;
     }
+
     const height = getAssetHeight(assetId, monthGroup);
+
+    // If the asset is already visible, then don't scroll.
+    if (assetIsVisible(height)) {
+      return true;
+    }
+
     scrollTo(height);
     updateSlidingWindow();
     return true;
@@ -343,7 +354,7 @@
 
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
-        let monthGroup: TimelinePlainYearMonth | undefined;
+        let monthGroup: TimelineYearMonth | undefined;
         let monthGroupHeight = 0;
         if (i === -1) {
           // lead-in

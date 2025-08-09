@@ -27,6 +27,7 @@
   import Portal from '../portal/portal.svelte';
 
   interface Props {
+    initialAssetId?: string;
     assets: (TimelineAsset | AssetResponseDto)[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
@@ -44,6 +45,7 @@
   }
 
   let {
+    initialAssetId = undefined,
     assets = $bindable(),
     assetInteraction,
     disableAssetSelect = false,
@@ -117,7 +119,14 @@
     };
   });
 
-  let currentViewAssetIndex = 0;
+  let currentIndex = 0;
+  if (initialAssetId && assets.length > 0) {
+    const index = assets.findIndex(({ id }) => id === initialAssetId);
+    if (index !== -1) {
+      currentIndex = index;
+    }
+  }
+
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
   let slidingWindow = $state({ top: 0, bottom: 0 });
@@ -136,12 +145,13 @@
 
   let lastIntersectedHeight = 0;
   $effect(() => {
-    // notify we got to (near) the end of scroll
-    const scrollPercentage =
-      ((slidingWindow.bottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0))) *
-      100;
+    const scrollRatio = slidingWindow.bottom / assetLayouts.containerHeight;
 
-    if (scrollPercentage > 90) {
+    // TODO: We may want to limit to an absolute value as the ratio scaling will
+    // get weird with lots of assets. The page may be nowhere near the bottom in
+    // absolute terms, and yet the intersection will still be triggered.
+    if (scrollRatio > 0.9) {
+      // Notify we got to (near) the end of scroll.
       const intersectedHeight = geometry?.containerHeight || 0;
       if (lastIntersectedHeight !== intersectedHeight) {
         debouncedOnIntersected();
@@ -150,8 +160,8 @@
     }
   });
   const viewAssetHandler = async (asset: TimelineAsset) => {
-    currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
-    await setAssetId(assets[currentViewAssetIndex].id);
+    currentIndex = assets.findIndex((a) => a.id == asset.id);
+    await setAssetId(assets[currentIndex].id);
     await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
   };
 
@@ -324,12 +334,12 @@
       if (onNext) {
         asset = await onNext();
       } else {
-        if (currentViewAssetIndex >= assets.length - 1) {
+        if (currentIndex >= assets.length - 1) {
           return false;
         }
 
-        currentViewAssetIndex = currentViewAssetIndex + 1;
-        asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
+        currentIndex = currentIndex + 1;
+        asset = currentIndex < assets.length ? assets[currentIndex] : undefined;
       }
 
       if (!asset) {
@@ -374,12 +384,12 @@
       if (onPrevious) {
         asset = await onPrevious();
       } else {
-        if (currentViewAssetIndex <= 0) {
+        if (currentIndex <= 0) {
           return false;
         }
 
-        currentViewAssetIndex = currentViewAssetIndex - 1;
-        asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
+        currentIndex = currentIndex - 1;
+        asset = currentIndex >= 0 ? assets[currentIndex] : undefined;
       }
 
       if (!asset) {
@@ -412,10 +422,10 @@
         );
         if (assets.length === 0) {
           await goto(AppRoute.PHOTOS);
-        } else if (currentViewAssetIndex === assets.length) {
+        } else if (currentIndex === assets.length) {
           await handlePrevious();
         } else {
-          await setAssetId(assets[currentViewAssetIndex].id);
+          await setAssetId(assets[currentIndex].id);
         }
         break;
       }

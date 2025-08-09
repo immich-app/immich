@@ -40,6 +40,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
       localDateTime: date,
       deletedAt: null,
       duration: '0:10:00.00000',
+      libraryId: null,
     });
 
     await ctx.newPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
@@ -65,6 +66,7 @@ describe(SyncRequestType.PartnerAssetsV1, () => {
           duration: asset.duration,
           stackId: null,
           livePhotoVideoId: null,
+          libraryId: asset.libraryId,
         },
         type: SyncEntityType.PartnerAssetV1,
       },

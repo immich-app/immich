@@ -487,7 +487,6 @@ export class AuthService extends BaseService {
         user: session.user,
         session: {
           id: session.id,
-          isPendingSyncReset: session.isPendingSyncReset,
           hasElevatedPermission,
         },
       };

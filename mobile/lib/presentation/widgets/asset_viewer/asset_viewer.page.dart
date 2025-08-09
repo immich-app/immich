@@ -25,7 +25,6 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:platform/platform.dart';
@@ -147,11 +146,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Precache both thumbnail and full image for smooth transitions
     unawaited(
       Future.wait([
-        precacheImage(
-          getThumbnailImageProvider(asset: asset, size: screenSize),
-          context,
-          onError: (_, __) {},
-        ),
+        precacheImage(getThumbnailImageProvider(asset: asset), context, onError: (_, __) {}),
         precacheImage(getFullImageProvider(asset, size: screenSize), context, onError: (_, __) {}),
       ]),
     );
@@ -482,7 +477,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
-      child: Thumbnail(asset: asset, fit: BoxFit.contain, size: Size(ctx.width, ctx.height)),
+      child: Thumbnail(asset: asset, fit: BoxFit.contain),
     );
   }
 
@@ -513,7 +508,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   PhotoViewGalleryPageOptions _imageBuilder(BuildContext ctx, BaseAsset asset) {
-    final size = Size(ctx.width, ctx.height);
+    final size = ctx.sizeData;
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
       imageProvider: getFullImageProvider(asset, size: size),
@@ -529,10 +524,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onTapDown: _onTapDown,
       onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
       errorBuilder: (_, __, ___) => Container(
-        width: ctx.width,
-        height: ctx.height,
+        width: size.width,
+        height: size.height,
         color: backgroundColor,
-        child: Thumbnail(asset: asset, fit: BoxFit.contain, size: size),
+        child: Thumbnail(asset: asset, fit: BoxFit.contain),
       ),
     );
   }
@@ -562,7 +557,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           asset: asset,
           image: Image(
             key: ValueKey(asset),
-            image: getFullImageProvider(asset, size: Size(ctx.width, ctx.height)),
+            image: getFullImageProvider(asset, size: ctx.sizeData),
             fit: BoxFit.contain,
             height: ctx.height,
             width: ctx.width,
@@ -598,8 +593,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       });
     });
 
-    final isInLockedView = ref.watch(inLockedViewProvider);
-
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.
     // Issue: https://github.com/flutter/flutter/issues/109037
     // TODO: Add a custom scrum builder once the fix lands on stable
@@ -627,11 +620,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         ),
         bottomNavigationBar: showingBottomSheet
             ? const SizedBox.shrink()
-            : Column(
+            : const Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [const AssetStackRow(), if (!isInLockedView) const ViewerBottomBar()],
+                children: [AssetStackRow(), ViewerBottomBar()],
               ),
       ),
     );

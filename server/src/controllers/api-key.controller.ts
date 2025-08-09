@@ -41,8 +41,8 @@ export class APIKeyController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.ApiKeyDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

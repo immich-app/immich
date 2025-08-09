@@ -27,15 +27,14 @@ final driftUsersProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async
           name: entity.name,
           email: entity.email,
           isAdmin: entity.isAdmin,
-          profileImagePath: entity.profileImagePath,
           updatedAt: entity.updatedAt,
-          quotaSizeInBytes: entity.quotaSizeInBytes ?? 0,
-          quotaUsageInBytes: entity.quotaUsageInBytes,
           isPartnerSharedBy: false,
           isPartnerSharedWith: false,
           avatarColor: AvatarColor.primary,
           memoryEnabled: true,
           inTimeline: true,
+          profileChangedAt: entity.profileChangedAt,
+          hasProfileImage: entity.hasProfileImage,
         ),
       )
       .toList();

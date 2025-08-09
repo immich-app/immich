@@ -43,6 +43,7 @@ class RemoveFromAlbumActionButton extends ConsumerWidget {
       iconData: Icons.remove_circle_outline,
       label: "remove_from_album".t(context: context),
       onPressed: () => _onTap(context, ref),
+      maxWidth: 100,
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
@@ -627,7 +628,12 @@ class _SearchResultGrid extends ConsumerWidget {
               return timelineService;
             }),
           ],
-          child: Timeline(key: ValueKey(searchResult.totalAssets), appBar: null, groupBy: GroupAssetsBy.none),
+          child: Timeline(
+            key: ValueKey(searchResult.totalAssets),
+            groupBy: GroupAssetsBy.none,
+            appBar: null,
+            bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
+          ),
         ),
       ),
     );

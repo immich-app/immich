@@ -50,12 +50,10 @@ class User {
     isAdmin: dto.isAdmin,
     isPartnerSharedBy: dto.isPartnerSharedBy,
     isPartnerSharedWith: dto.isPartnerSharedWith,
-    profileImagePath: dto.profileImagePath ?? "",
+    profileImagePath: dto.hasProfileImage ? "HAS_PROFILE_IMAGE" : "",
     avatarColor: dto.avatarColor,
     memoryEnabled: dto.memoryEnabled,
     inTimeline: dto.inTimeline,
-    quotaUsageInBytes: dto.quotaUsageInBytes,
-    quotaSizeInBytes: dto.quotaSizeInBytes,
   );
 
   UserDto toDto() => UserDto(
@@ -64,12 +62,13 @@ class User {
     name: name,
     isAdmin: isAdmin,
     updatedAt: updatedAt,
-    profileImagePath: profileImagePath.isEmpty ? null : profileImagePath,
     avatarColor: avatarColor,
     memoryEnabled: memoryEnabled,
     inTimeline: inTimeline,
     isPartnerSharedBy: isPartnerSharedBy,
     isPartnerSharedWith: isPartnerSharedWith,
+    hasProfileImage: profileImagePath.isNotEmpty,
+    profileChangedAt: updatedAt,
     quotaUsageInBytes: quotaUsageInBytes,
     quotaSizeInBytes: quotaSizeInBytes,
   );
@@ -82,11 +81,11 @@ class UserEntity extends Table with DriftDefaultsMixin {
   TextColumn get name => text()();
   BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
   TextColumn get email => text()();
-  TextColumn get profileImagePath => text().nullable()();
+
+  BoolColumn get hasProfileImage => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get profileChangedAt => dateTime().withDefault(currentDateAndTime)();
+
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  // Quota
-  IntColumn get quotaSizeInBytes => integer().nullable()();
-  IntColumn get quotaUsageInBytes => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

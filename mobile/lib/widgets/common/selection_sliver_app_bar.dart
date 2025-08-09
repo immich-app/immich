@@ -1,4 +1,3 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -26,7 +25,7 @@ class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
 
     onDone(Set<BaseAsset> selected) {
       ref.read(multiSelectProvider.notifier).reset();
-      context.maybePop<Set<BaseAsset>>(selected);
+      context.pop<Set<BaseAsset>>(selected);
     }
 
     return SliverAppBar(
