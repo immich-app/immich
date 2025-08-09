@@ -11,7 +11,7 @@ export const load = (async ({ url }) => {
   return {
     partialDate,
     meta: {
-      title: $t('geolocation'),
+      title: $t('manage_geolocation'),
     },
   };
 }) satisfies PageLoad;

@@ -31,6 +31,6 @@
     class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
   >
     <span><Icon path={mdiCrosshairsGps} class="text-immich-primary dark:text-immich-dark-primary" size="24" /> </span>
-    {$t('geolocation')}
+    {$t('manage_geolocation')}
   </a>
 </div>
