@@ -214,6 +214,34 @@
         "description": "This endpoint requires the `activity.delete` permission."
       }
     },
+    "/admin/auth/unlink-all": {
+      "post": {
+        "operationId": "unlinkAllOAuthAccountsAdmin",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Auth (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminAuth.unlinkAll",
+        "description": "This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission."
+      }
+    },
     "/admin/notifications": {
       "post": {
         "operationId": "createNotification",
@@ -961,7 +989,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1252,7 +1280,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1305,7 +1333,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2540,7 +2568,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2575,7 +2603,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -2610,7 +2638,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2637,7 +2665,7 @@
         "operationId": "lockAuthSession",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2672,7 +2700,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2894,7 +2922,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2966,7 +2994,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3095,7 +3123,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3217,7 +3245,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -4224,7 +4252,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4328,7 +4356,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4365,7 +4393,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4558,7 +4586,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4692,7 +4720,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -5170,7 +5198,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6222,7 +6250,7 @@
         "operationId": "deleteServerLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -6935,7 +6963,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -8956,7 +8984,7 @@
         "operationId": "deleteUserLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -9057,7 +9085,7 @@
         "operationId": "deleteUserOnboarding",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -12687,7 +12715,8 @@
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
-          "adminUser.delete"
+          "adminUser.delete",
+          "adminAuth.unlinkAll"
         ],
         "type": "string"
       },

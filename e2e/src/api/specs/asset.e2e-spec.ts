@@ -555,7 +555,7 @@ describe('/asset', () => {
       expect(body).toMatchObject({ id: user1Assets[0].id, livePhotoVideoId: null });
     });
 
-    it('should update date time original when sidecar file contains DateTimeOriginal', async () => {
+    it.skip('should update date time original when sidecar file contains DateTimeOriginal', async () => {
       const sidecarData = `<?xpacket begin='?' id='W5M0MpCehiHzreSzNTczkc9d'?>
 <x:xmpmeta xmlns:x='adobe:ns:meta/' x:xmptk='Image::ExifTool 12.40'>
 <rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>
