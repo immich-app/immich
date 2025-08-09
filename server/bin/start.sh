@@ -8,7 +8,7 @@ else
   echo "skipping libmimalloc - path not found $lib_path"
 fi
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/jellyfin-ffmpeg/lib"
-SERVER_HOME=/usr/src/app/server
+SERVER_HOME="$(readlink -f "$(dirname "$0")/..")"
 
 read_file_and_export() {
 	fname="${!1}"
