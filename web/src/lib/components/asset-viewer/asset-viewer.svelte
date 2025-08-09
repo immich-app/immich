@@ -11,7 +11,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isShowDetail } from '$lib/stores/preferences.store';
+  import { alwaysLoadOriginalVideo, isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -109,6 +109,11 @@
   let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
+  let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+
+  const setPlayOriginalVideo = (value: boolean) => {
+    playOriginalVideo = value;
+  };
 
   const refreshStack = async () => {
     if (authManager.isSharedLink) {
@@ -405,6 +410,8 @@
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
+        {playOriginalVideo}
+        {setPlayOriginalVideo}
       >
         {#snippet motionPhoto()}
           <MotionPhotoAction
@@ -460,6 +467,7 @@
             onClose={closeViewer}
             onVideoEnded={() => navigateAsset()}
             onVideoStarted={handleVideoStarted}
+            {playOriginalVideo}
           />
         {/if}
       {/key}
@@ -475,6 +483,7 @@
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
               onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              {playOriginalVideo}
             />
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
@@ -505,6 +514,7 @@
             onClose={closeViewer}
             onVideoEnded={() => navigateAsset()}
             onVideoStarted={handleVideoStarted}
+            {playOriginalVideo}
           />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || activityManager.commentCount > 0) && !activityManager.isLoading}
