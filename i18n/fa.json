@@ -500,7 +500,6 @@
   "map_location_service_disabled_title": "سرویس مکان‌یابی غیرفعال است",
   "map_marker_for_images": "نشانگر روی نقشه برای عکس‌های گرفته‌شده در {city}, {country}",
   "map_marker_with_image": "علامت‌گذاری نقشه با عکس",
-  "map_no_assets_in_bounds": "هیچ عکسی در این محدوده نیست",
   "map_no_location_permission_content": "برای نمایش عکس‌های اطرافتان، برنامه نیاز به دسترسی به موقعیت مکانی دارد. اجازه دسترسی می‌دهید؟",
   "map_no_location_permission_title": "دسترسی به موقعیت شما فعال نیست",
   "map_settings": "تنظیمات نقشه",
