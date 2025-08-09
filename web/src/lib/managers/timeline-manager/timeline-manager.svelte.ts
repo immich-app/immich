@@ -443,8 +443,12 @@ export class TimelineManager {
     return monthGroupInfo?.monthGroup;
   }
 
-  async getRandomAsset(): Promise<TimelineAsset | undefined> {
-    const randomAssetIndex = Math.floor(Math.random() * this.assetCount);
+  // note: the `index` input is expected to be in the range [0, assetCount). This
+  // value can be passed to make the method deterministic, which is mainly useful
+  // for testing.
+  async getRandomAsset(index?: number): Promise<TimelineAsset | undefined> {
+    const randomAssetIndex = index ?? Math.floor(Math.random() * this.assetCount);
+
     let accumulatedCount = 0;
 
     let randomMonth: MonthGroup | undefined = undefined;
@@ -459,7 +463,6 @@ export class TimelineManager {
     if (!randomMonth) {
       return;
     }
-
     await this.loadMonthGroup(randomMonth.yearMonth, { cancelable: false });
 
     let randomDay: DayGroup | undefined = undefined;
