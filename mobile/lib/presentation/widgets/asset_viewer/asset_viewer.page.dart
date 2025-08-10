@@ -511,7 +511,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final size = ctx.sizeData;
     return PhotoViewGalleryPageOptions(
       key: ValueKey(asset.heroTag),
-      // When the bottom sheet is shown and the asset is changed, 
+      // When the bottom sheet is shown and the asset is changed,
       // the cached image can have different position and scale than the normal one,
       // causing incorrect animation calculations once the image provider yields a new image.
       // This is a workaround to ensure the animation is handled correctly in this case.
