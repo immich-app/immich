@@ -1874,6 +1874,9 @@ export function createAlbum({ createAlbumDto }: {
         body: createAlbumDto
     })));
 }
+/**
+ * This endpoint requires the `albumAsset.create` permission.
+ */
 export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
     key?: string;
     slug?: string;
