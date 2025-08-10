@@ -30,7 +30,7 @@
       onAddToAlbum(assetIds, album.id);
     } else {
       await addAssetsToAlbums(
-        albums.map((a) => a.id),
+        albums.map(({ id }) => id),
         assetIds,
       );
       onAddToAlbum(assetIds, albums[0].id);

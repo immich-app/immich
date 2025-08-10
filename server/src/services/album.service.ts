@@ -195,7 +195,7 @@ export class AlbumService extends BaseService {
       assetSuccessCount: 0,
       error: BulkIdErrorReason.DUPLICATE,
     };
-    const successFulAssetIds: Set<string> = new Set();
+    const successfulAssetIds: Set<string> = new Set();
     for (const albumId of dto.albumIds) {
       try {
         const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
@@ -206,7 +206,7 @@ export class AlbumService extends BaseService {
             success = true;
             results.success = true;
             results.error = undefined;
-            successFulAssetIds.add(res.id);
+            successfulAssetIds.add(res.id);
           } else if (results.error && res.error !== BulkIdErrorReason.DUPLICATE) {
             results.error = BulkIdErrorReason.UNKNOWN;
           }
@@ -220,7 +220,7 @@ export class AlbumService extends BaseService {
         }
       }
     }
-    results.assetSuccessCount = successFulAssetIds.size;
+    results.assetSuccessCount = successfulAssetIds.size;
 
     return results;
   }

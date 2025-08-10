@@ -80,7 +80,7 @@ export class AlbumController {
   }
 
   @Put('assets')
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
   addAssetsToAlbums(@Auth() auth: AuthDto, @Body() dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
     return this.service.addAssetsToAlbums(auth, dto);
   }
