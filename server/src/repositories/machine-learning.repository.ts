@@ -68,6 +68,8 @@ export class MachineLearningRepository {
         }
       | undefined;
   };
+  // Cache whether a given ML server supports /phash to avoid repeated 404 spam
+  private pHashSupport: { [url: string]: boolean | undefined } = {};
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MachineLearningRepository.name);
@@ -175,6 +177,146 @@ export class MachineLearningRepository {
     const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, options: { language } } } };
     const response = await this.predict<ClipTextualResponse>(urls, { text }, request);
     return response[ModelTask.SEARCH];
+  }
+
+  async computePhash(urls: string[], imagePath: string): Promise<string> {
+    // Similar URL selection strategy as predict(); iterate urls until success
+    let urlCounter = 0;
+    for (const url of urls) {
+      urlCounter++;
+      const isLast = urlCounter >= urls.length;
+      // Skip if we've previously learned this endpoint lacks pHash support
+      if (this.pHashSupport[url] === false) {
+        continue;
+      }
+      if (!isLast && (await this.shouldSkipUrl(url))) {
+        continue;
+      }
+      try {
+        const formData = new FormData();
+        formData.append('image', new Blob([await readFile(imagePath)]));
+        const response = await fetch(new URL('/phash', url), { method: 'POST', body: formData });
+        if (response.status === 404) {
+          this.pHashSupport[url] = false; // mark unsupported
+          this.logger.verbose(`ML server ${url} does not support /phash (404). Disabling further attempts.`);
+          continue;
+        }
+        if (response.ok) {
+          this.setUrlAvailability(url, true);
+          this.pHashSupport[url] = true;
+          const data = (await response.json()) as { pHash?: string };
+          if (data.pHash && /^[0-9a-fA-F]{16}$/.test(data.pHash)) {
+            return data.pHash.toLowerCase();
+          }
+          this.logger.warn(`Machine learning /phash response malformed for ${url}`);
+          break;
+        }
+        this.logger.warn(
+          `Machine learning pHash request to "${url}" failed with status ${response.status}: ${response.statusText}`,
+        );
+      } catch (error: Error | unknown) {
+        this.logger.warn(
+          `Machine learning pHash request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
+        );
+      }
+      this.setUrlAvailability(url, false);
+    }
+    throw new Error('Machine learning pHash request failed for all URLs');
+  }
+
+  async autoStackScore(
+    urls: string[],
+    embeddings: Record<string, number[]>,
+    pHashes: Record<string, string>,
+  ): Promise<{ avgCos: number | null; pHashAvg: number | null; blended: number | null }> {
+    let urlCounter = 0;
+    for (const url of urls) {
+      urlCounter++;
+      const isLast = urlCounter >= urls.length;
+      if (!isLast && (await this.shouldSkipUrl(url))) {
+        continue;
+      }
+      try {
+        const response = await fetch(new URL('/auto-stack/score', url), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ embeddings, pHashes }),
+        });
+        if (response.status === 404) {
+          // Endpoint unsupported; mark server inactive for this feature only (do not spam)
+          this.logger.verbose(`ML server ${url} does not support /auto-stack/score (404)`);
+          continue;
+        }
+        if (response.ok) {
+          this.setUrlAvailability(url, true);
+          const data = await response.json();
+          return {
+            avgCos: typeof data.avgCos === 'number' ? data.avgCos : null,
+            pHashAvg: typeof data.pHashAvg === 'number' ? data.pHashAvg : null,
+            blended: typeof data.blended === 'number' ? data.blended : null,
+          };
+        }
+        this.logger.warn(
+          `Machine learning auto-stack score request to "${url}" failed with status ${response.status}: ${response.statusText}`,
+        );
+      } catch (error: any) {
+        this.logger.warn(`Machine learning auto-stack score request to "${url}" failed: ${error?.message || error}`);
+      }
+      this.setUrlAvailability(url, false);
+    }
+    throw new Error('Machine learning auto-stack score request failed for all URLs');
+  }
+
+  async autoStackScoreBatch(
+    urls: string[],
+    groups: { id: string; embeddings: Record<string, number[]>; pHashes: Record<string, string> }[],
+  ): Promise<Record<string, { avgCos: number | null; pHashAvg: number | null; blended: number | null }>> {
+    let urlCounter = 0;
+    for (const url of urls) {
+      urlCounter++;
+      const isLast = urlCounter >= urls.length;
+      if (!isLast && (await this.shouldSkipUrl(url))) {
+        continue;
+      }
+      try {
+        const response = await fetch(new URL('/auto-stack/score-batch', url), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groups }),
+        });
+        if (response.status === 404) {
+          this.logger.verbose(`ML server ${url} does not support /auto-stack/score-batch (404)`);
+          continue;
+        }
+        if (response.ok) {
+          this.setUrlAvailability(url, true);
+          const data = await response.json();
+          if (data && Array.isArray(data.results)) {
+            const out: Record<string, { avgCos: number | null; pHashAvg: number | null; blended: number | null }> = {};
+            for (const r of data.results) {
+              const id = String(r.id);
+              out[id] = {
+                avgCos: typeof r.avgCos === 'number' ? r.avgCos : null,
+                pHashAvg: typeof r.pHashAvg === 'number' ? r.pHashAvg : null,
+                blended: typeof r.blended === 'number' ? r.blended : null,
+              };
+            }
+            return out;
+          }
+          this.logger.warn('Machine learning auto-stack batch score malformed response');
+        } else {
+          this.logger.warn(
+            `Machine learning auto-stack batch score request to "${url}" failed with status ${response.status}: ${response.statusText}`,
+          );
+        }
+      } catch (error: any) {
+        this.logger.warn(
+          `Machine learning auto-stack batch score request to "${url}" failed: ${error?.message || error}`,
+        );
+      }
+      this.setUrlAvailability(url, false);
+    }
+    throw new Error('Machine learning auto-stack batch score request failed for all URLs');
   }
 
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {

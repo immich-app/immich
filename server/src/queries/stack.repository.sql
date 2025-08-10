@@ -16,7 +16,6 @@ select
           inner join lateral (
             select
               "asset_exif"."assetId",
-              "asset_exif"."autoStackId",
               "asset_exif"."bitsPerSample",
               "asset_exif"."city",
               "asset_exif"."colorspace",
@@ -100,7 +99,6 @@ select
           inner join lateral (
             select
               "asset_exif"."assetId",
-              "asset_exif"."autoStackId",
               "asset_exif"."bitsPerSample",
               "asset_exif"."city",
               "asset_exif"."colorspace",

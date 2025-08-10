@@ -6,6 +6,7 @@ import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { AutoStackCandidateRepository } from 'src/repositories/auto-stack-candidate.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -50,6 +51,7 @@ export const repositories = [
   AlbumRepository,
   AlbumUserRepository,
   AuditRepository,
+  AutoStackCandidateRepository,
   ApiKeyRepository,
   AssetRepository,
   AssetJobRepository,

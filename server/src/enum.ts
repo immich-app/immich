@@ -268,6 +268,7 @@ export enum SystemMetadataKey {
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
   License = 'license',
+  AutoStackUserPrefs = 'auto-stack-user-prefs',
 }
 
 export enum UserMetadataKey {
@@ -577,6 +578,15 @@ export enum JobName {
   StorageTemplateMigrationSingle = 'StorageTemplateMigrationSingle',
 
   TagCleanup = 'TagCleanup',
+
+  // Auto Stack Candidates (Phase1)
+  AutoStackCandidateQueueAll = 'AutoStackCandidateQueueAll',
+  AutoStackCandidateGenerate = 'AutoStackCandidateGenerate',
+  AutoStackCandidateBackfill = 'AutoStackCandidateBackfill',
+  AutoStackCandidateRescore = 'AutoStackCandidateRescore',
+  AutoStackEnqueueMissingEmbeddings = 'AutoStackEnqueueMissingEmbeddings',
+  AutoStackPHashBackfill = 'AutoStackPHashBackfill',
+  AutoStackCandidateAging = 'AutoStackCandidateAging',
 
   VersionCheck = 'VersionCheck',
 }

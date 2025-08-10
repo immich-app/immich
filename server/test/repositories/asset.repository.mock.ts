@@ -41,5 +41,12 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
     getFileSamples: vitest.fn(),
+    // auto stack additions
+    // removed deprecated getAutoStackId (autoStackId column dropped)
+    getDateTimeOriginal: vitest.fn(),
+    getTimeWindowCameraSequence: vitest.fn().mockResolvedValue([]),
+    // removed deprecated getAssetsByAutoStackId
+    getExifMakeModel: vitest.fn(),
+    getRecentAssetExifWithinHorizon: vitest.fn().mockResolvedValue([]),
   };
 };

@@ -129,6 +129,18 @@ export class JobService extends BaseService {
     await this.jobRepository.queue(asJobItem(dto));
   }
 
+  async queueSingleJob(name: JobName): Promise<void> {
+    // Limited to whitelisted job names (currently auto stack related experimental jobs)
+    switch (name) {
+      case JobName.AutoStackCandidateQueueAll:
+        return this.jobRepository.queue({ name: JobName.AutoStackCandidateQueueAll, data: {} });
+      case JobName.AutoStackCandidateBackfill:
+        return this.jobRepository.queue({ name: JobName.AutoStackCandidateBackfill, data: {} });
+      default:
+        throw new BadRequestException('Unsupported job');
+    }
+  }
+
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
     this.logger.debug(`Handling command: queue=${queueName},command=${dto.command},force=${dto.force}`);
 

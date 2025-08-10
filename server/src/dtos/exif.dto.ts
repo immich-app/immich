@@ -25,7 +25,9 @@ export class ExifResponseDto {
   country?: string | null = null;
   description?: string | null = null;
   projectionType?: string | null = null;
+  pHash?: string | null = null;
   rating?: number | null = null;
+  autoStackSource?: 'EXIF' | 'TIME_WINDOW' | 'VISUAL' | null = null;
 }
 
 export function mapExif(entity: Exif): ExifResponseDto {
@@ -51,6 +53,8 @@ export function mapExif(entity: Exif): ExifResponseDto {
     country: entity.country,
     description: entity.description,
     projectionType: entity.projectionType,
+    pHash: entity.pHash ?? null,
+    autoStackSource: (entity as any).autoStackSource ?? null,
     rating: entity.rating,
   };
 }
@@ -62,6 +66,8 @@ export function mapSanitizedExif(entity: Exif): ExifResponseDto {
     dateTimeOriginal: entity.dateTimeOriginal,
     timeZone: entity.timeZone,
     projectionType: entity.projectionType,
+    pHash: entity.pHash ?? null,
+    autoStackSource: (entity as any).autoStackSource ?? null,
     exifImageWidth: entity.exifImageWidth,
     exifImageHeight: entity.exifImageHeight,
     rating: entity.rating,

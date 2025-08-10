@@ -18,6 +18,7 @@ import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { AutoStackCandidateRepository } from 'src/repositories/auto-stack-candidate.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -225,6 +226,7 @@ export type ServiceOverrides = {
   user: UserRepository;
   versionHistory: VersionHistoryRepository;
   view: ViewRepository;
+  autoStackCandidate: AutoStackCandidateRepository;
 };
 
 type As<T> = T extends RepositoryInterface<infer U> ? U : never;
@@ -298,7 +300,41 @@ export const newTestService = <T extends BaseService>(
     user: automock(UserRepository, { strict: false }),
     versionHistory: automock(VersionHistoryRepository),
     view: automock(ViewRepository),
+    autoStackCandidate: automock(AutoStackCandidateRepository, { strict: false }),
   };
+
+  // Augment asset mock with methods used in tests if missing
+  if (!(mocks.asset as any).getClipEmbeddings) {
+    (mocks.asset as any).getClipEmbeddings = vitest.fn().mockResolvedValue({});
+  }
+  if (!(mocks.asset as any).getTimeWindowCameraSequence) {
+    (mocks.asset as any).getTimeWindowCameraSequence = vitest.fn().mockResolvedValue([]);
+  }
+
+  // Provide default implementations for autoStackCandidate repository methods used in tests
+  const asc: any = mocks.autoStackCandidate;
+  if (!asc.create.mockImplementation) {
+    // ensure it's a vitest mock
+  }
+  asc.existsForAssets.mockResolvedValue(false);
+  asc.create.mockImplementation(async () => 'cand_test');
+  asc.prune.mockResolvedValue(0);
+  asc.promote.mockResolvedValue(undefined);
+  asc.list.mockResolvedValue([]);
+  asc.listScores?.mockResolvedValue?.([]);
+  asc.getCandidateAssetIds?.mockResolvedValue?.([]);
+  asc.updateScore?.mockResolvedValue?.(undefined);
+  // hysteresis helper
+  asc.countCreatedSince = vitest.fn().mockResolvedValue(0);
+  asc.getCandidateOwner?.mockResolvedValue?.('user1');
+
+  // Provide default stack.create implementation to avoid strict mock failures
+  (mocks.stack as any).create.mockImplementation(async (entity: any, assetIds: string[]) => ({
+    id: 'stack_test',
+    ownerId: entity.ownerId,
+    primaryAssetId: assetIds[0],
+    assets: assetIds.map((id) => ({ id })),
+  }));
 
   const sut = new Service(
     overrides.logger || (mocks.logger as As<LoggingRepository>),
@@ -306,6 +342,7 @@ export const newTestService = <T extends BaseService>(
     overrides.activity || (mocks.activity as As<ActivityRepository>),
     overrides.album || (mocks.album as As<AlbumRepository>),
     overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
+    overrides.autoStackCandidate || (mocks.autoStackCandidate as As<AutoStackCandidateRepository>),
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),

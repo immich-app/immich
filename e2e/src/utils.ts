@@ -408,6 +408,8 @@ export const utils = {
   },
 
   getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
+  updateSystemConfig: (accessToken: string, systemConfigDto: any) =>
+    updateConfig({ systemConfigDto }, { headers: asBearerAuth(accessToken) }),
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 

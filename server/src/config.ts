@@ -170,6 +170,51 @@ export interface SystemConfig {
     externalDomain: string;
     loginPageMessage: string;
     publicUsers: boolean;
+    autoStack: {
+      enabled: boolean;
+      windowSeconds: number; // time window around new asset for candidate grouping
+      maxGapSeconds: number; // max allowed gap between sequential assets inside a group
+      extendedWindowSeconds?: number; // optional wider temporal window for secondary grouping/merging
+      relaxedGapMultiplier?: number; // multiplier applied to maxGapSeconds when forming secondary/merged groups
+      minGroupSize: number; // minimum assets required to store a candidate
+      horizonMinutes: number; // backfill look-back horizon for scheduled generation
+      cameraMatch: boolean; // require same make+model when available
+      maxCandidates: number; // maximum active candidate groups per user (older/low score pruned)
+      autoPromoteMinScore: number; // if >0 and group score >= value, auto-promote immediately
+      weights: { size: number; timeSpan: number; continuity: number; visual: number; exposure: number };
+      visualPromoteThreshold: number;
+      // New enhancement keys (phase: merging & bridging)
+      maxMergeGapSeconds?: number; // if two groups separated by <= this temporal gap, attempt merge
+      visualBridgeThreshold?: number; // raw cosine (0..1); if exceeded between boundary assets, allow continuity despite gap
+      mergeScoreDelta?: number; // minimum score improvement required to keep merged group (default 0 = always merge)
+      // Outlier pruning (remove assets whose removal improves avg visual similarity by at least this delta)
+      outlierPruneEnabled?: boolean;
+      outlierPruneMinDelta?: number; // 0..1 delta improvement threshold
+      outlierPruneIterative?: boolean; // iterate pruning until no further improvement
+      // pHash historical backfill
+      pHashBackfillEnabled?: boolean;
+      pHashBackfillBatchSize?: number;
+      // Candidate aging / cleanup
+      candidateAgingDays?: number; // dismiss after N days
+      candidateAgingScoreThreshold?: number; // only dismiss if below this score
+      // Google-Photos-like enhancements
+      secondaryVisualWindowSeconds?: number; // extend search radius to pull in visually near-identical shots just outside window
+      visualGroupSimilarityThreshold?: number; // cosine threshold for adding external assets into an existing group
+      pHashHammingThreshold?: number; // maximum pHash Hamming distance to consider near-duplicate
+      overlapMergeEnabled?: boolean; // merge overlapping / intersecting groups into unified stack
+      bestPrimaryHeuristic?: boolean; // choose best primary (sharpest / lowest ISO / shortest exposure)
+      secondaryVisualMaxAdds?: number; // cap number of visually expanded assets per group
+      mlOffloadEnabled?: boolean; // offload heavy scoring steps to ML service when available
+      // Session segmentation
+      sessionMaxSpanSeconds?: number;
+      sessionMinAvgAdjacency?: number;
+      sessionMinSegmentSize?: number;
+      // Hysteresis (flattened)
+      hysteresisEnabled?: boolean;
+      hysteresisCandidateWindowMinutes?: number;
+      hysteresisMaxCandidates?: number;
+      hysteresisRaiseScoreBy?: number;
+    };
   };
   user: {
     deleteDelay: number;
@@ -334,6 +379,53 @@ export const defaults = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,
+    autoStack: {
+      enabled: true,
+      // Google-Photos-aligned defaults: tighter temporal windows, stronger visual weighting
+      windowSeconds: 90, // total bi-directional scan window (was 180)
+      maxGapSeconds: 30, // max allowed gap inside a burst (was 180)
+      extendedWindowSeconds: 150, // secondary visual expansion search radius (was 180)
+      relaxedGapMultiplier: 1.5, // allow modest relaxation during secondary grouping (was 1)
+      minGroupSize: 2,
+      horizonMinutes: 10,
+      cameraMatch: true,
+      maxCandidates: 200,
+      autoPromoteMinScore: 70, // require higher overall score before auto-promotion (was 35)
+      weights: {
+        size: 30, // de-emphasize raw count (was 50)
+        timeSpan: 20,
+        continuity: 20, // emphasize sequential capture (was 10)
+        visual: 50, // emphasize visual similarity (was 15)
+        exposure: 10, // include exposure consistency (was 10)
+      },
+      visualPromoteThreshold: 0.65, // require stronger visual cohesion (was 0.65)
+      maxMergeGapSeconds: 120, // only merge groups very close in time (was 60)
+      visualBridgeThreshold: 0.70, // need higher bridge similarity (was 0.55)
+      mergeScoreDelta: 0,
+      // Outlier pruning: remove assets that hurt cohesion (avg visual similarity) beyond threshold
+      outlierPruneEnabled: true,
+      outlierPruneMinDelta: 0.2, // increased from 0.04 to make pruning less aggressive (require larger visual gain)
+      outlierPruneIterative: true, 
+      // pHash historical backfill control
+      pHashBackfillEnabled: true,
+      pHashBackfillBatchSize: 500,
+      // Candidate aging (cleanup)
+      candidateAgingDays: 14,
+      candidateAgingScoreThreshold: 25,
+      overlapMergeEnabled: true,
+      bestPrimaryHeuristic: true,
+      secondaryVisualMaxAdds: 20, // allow more visual expansion per group (was 3)
+      mlOffloadEnabled: false,
+      // Session segmentation defaults
+      sessionMaxSpanSeconds: 300, // 5 minutes
+      sessionMinAvgAdjacency: 0.65, // require moderate visual cohesion to keep long span
+      sessionMinSegmentSize: 2,
+      // Hysteresis (legacy compat; keep old structure mapping onto new flat fields)
+      hysteresisEnabled: true,
+      hysteresisCandidateWindowMinutes: 30,
+      hysteresisMaxCandidates: 200,
+      hysteresisRaiseScoreBy: 10,
+    },
   },
   notifications: {
     smtp: {

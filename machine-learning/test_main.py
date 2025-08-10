@@ -292,6 +292,23 @@ class TestOrtSession:
         assert session.sess_options.inter_op_num_threads == 0
         assert session.sess_options.intra_op_num_threads == 0
 
+
+def test_phash_endpoint() -> None:
+    from immich_ml.main import app
+
+    client = TestClient(app)
+    # Generate simple image
+    img = Image.new("RGB", (32, 32), color=(123, 45, 67))
+    buf = BytesIO()
+    img.save(buf, format="JPEG")
+    buf.seek(0)
+    response = client.post("/phash", files={"image": ("test.jpg", buf.getvalue(), "image/jpeg")})
+    assert response.status_code == 200
+    data = response.json()
+    assert "pHash" in data
+    assert isinstance(data["pHash"], str) and len(data["pHash"]) == 16
+    int(data["pHash"], 16)  # should not raise
+
     def test_sets_default_sess_options_sets_threads_if_non_cpu_and_set_threads(self, mocker: MockerFixture) -> None:
         mock_settings = mocker.patch("immich_ml.sessions.ort.settings", autospec=True)
         mock_settings.model_inter_op_threads = 2

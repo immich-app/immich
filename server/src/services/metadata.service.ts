@@ -30,6 +30,7 @@ import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
+import { computePerceptualHash } from 'src/utils/phash';
 import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
@@ -283,8 +284,36 @@ export class MetadataService extends BaseService {
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
-      autoStackId: this.getAutoStackId(exifTags),
+      // autoStackId removed (EXIF-based burst grouping superseded by visual/time heuristics)
     };
+
+    // Attempt to compute perceptual hash (pHash) early so it is persisted with the primary EXIF upsert.
+    if (asset.type === AssetType.Image && !exifData.pHash) {
+      try {
+        const { machineLearning } = await this.getConfig({ withCache: true });
+        let computed: string | null = null;
+        if (machineLearning.urls?.length) {
+          try {
+            computed = await this.machineLearningRepository.computePhash(machineLearning.urls, asset.originalPath);
+          } catch (mlErr: any) {
+            this.logger.verbose(`Remote pHash unavailable for ${asset.id}: ${mlErr?.message || mlErr}`);
+          }
+        }
+        if (!computed) {
+          try {
+            computed = await computePerceptualHash(asset.originalPath);
+            this.logger.verbose(`Computed local pHash for asset ${asset.id}`);
+          } catch (localErr: any) {
+            this.logger.verbose(`Local pHash failed for asset ${asset.id}: ${localErr?.message || localErr}`);
+          }
+        }
+        if (computed) {
+          exifData.pHash = computed.toLowerCase();
+        }
+      } catch (error: any) {
+        this.logger.verbose(`pHash pipeline error for asset ${asset.id}: ${error?.message || error}`);
+      }
+    }
 
     const promises: Promise<unknown>[] = [
       this.assetRepository.upsertExif(exifData),
@@ -830,13 +859,6 @@ export class MetadataService extends BaseService {
       tags.GPSLongitude !== undefined &&
       (tags.GPSLatitude !== 0 || tags.GPSLatitude !== 0)
     );
-  }
-
-  private getAutoStackId(tags: ImmichTags | null): string | null {
-    if (!tags) {
-      return null;
-    }
-    return tags.BurstID ?? tags.BurstUUID ?? tags.CameraBurstID ?? tags.MediaUniqueID ?? null;
   }
 
   private getBitsPerSample(tags: ImmichTags): number | null {

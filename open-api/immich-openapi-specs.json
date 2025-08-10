@@ -2784,6 +2784,202 @@
         ]
       }
     },
+    "/auto-stack/candidates": {
+      "get": {
+        "operationId": "listCandidates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AutoStackCandidateResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "AutoStack"
+        ],
+        "x-immich-permission": "stack.read",
+        "description": "This endpoint requires the `stack.read` permission."
+      }
+    },
+    "/auto-stack/candidates/score-stats": {
+      "get": {
+        "operationId": "getScoreStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "AutoStack"
+        ],
+        "x-immich-permission": "stack.read",
+        "description": "This endpoint requires the `stack.read` permission."
+      }
+    },
+    "/auto-stack/candidates/{candidateId}": {
+      "delete": {
+        "operationId": "discard",
+        "parameters": [
+          {
+            "name": "candidateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "AutoStack"
+        ],
+        "x-immich-permission": "stack.delete",
+        "description": "This endpoint requires the `stack.delete` permission."
+      }
+    },
+    "/auto-stack/candidates/{candidateId}/promote": {
+      "post": {
+        "operationId": "promote",
+        "parameters": [
+          {
+            "name": "candidateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoteCandidateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "AutoStack"
+        ],
+        "x-immich-permission": "stack.create",
+        "description": "This endpoint requires the `stack.create` permission."
+      }
+    },
+    "/auto-stack/candidates/{candidateId}/rescore": {
+      "post": {
+        "operationId": "rescore",
+        "parameters": [
+          {
+            "name": "candidateId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "AutoStack"
+        ],
+        "x-immich-permission": "stack.update",
+        "description": "This endpoint requires the `stack.update` permission."
+      }
+    },
     "/download/archive": {
       "post": {
         "operationId": "downloadArchive",
@@ -3239,6 +3435,53 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/JobCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Jobs"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "job.create",
+        "description": "This endpoint is an admin-only route, and requires the `job.create` permission."
+      }
+    },
+    "/jobs/command/{id}": {
+      "post": {
+        "operationId": "queueSingleJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/JobName"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobCommandDto"
               }
             }
           },
@@ -10833,6 +11076,107 @@
         ],
         "type": "object"
       },
+      "AutoStackCandidateAssetDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "position": {
+            "description": "Position within the candidate (0-based ordering heuristic)",
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "position"
+        ],
+        "type": "object"
+      },
+      "AutoStackCandidateResponseDto": {
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/AutoStackCandidateAssetDto"
+            },
+            "type": "array"
+          },
+          "avgCos": {
+            "description": "Average raw CLIP cosine similarity across asset pairs (-1..1), if embeddings were available",
+            "example": 0.74,
+            "type": "number"
+          },
+          "count": {
+            "description": "Number of assets in the candidate",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "score": {
+            "description": "Heuristic score 0-100 (higher is more likely a true stack)",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "scoreComponents": {
+            "description": "Breakdown of score components",
+            "example": {
+              "continuity": 5,
+              "exposure": 8,
+              "size": 40,
+              "timeSpan": 10,
+              "visual": 12
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "assets",
+          "count",
+          "id",
+          "score"
+        ],
+        "type": "object"
+      },
+      "AutoStackWeightsDto": {
+        "properties": {
+          "continuity": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "exposure": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "size": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "timeSpan": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "visual": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "continuity",
+          "exposure",
+          "size",
+          "timeSpan",
+          "visual"
+        ],
+        "type": "object"
+      },
       "AvatarUpdate": {
         "properties": {
           "color": {
@@ -11254,6 +11598,10 @@
       },
       "ExifResponseDto": {
         "properties": {
+          "autoStackSource": {
+            "default": null,
+            "type": "object"
+          },
           "city": {
             "default": null,
             "nullable": true,
@@ -11343,6 +11691,11 @@
             "type": "string"
           },
           "orientation": {
+            "default": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "pHash": {
             "default": null,
             "nullable": true,
             "type": "string"
@@ -12947,6 +13300,10 @@
         ],
         "type": "object"
       },
+      "PromoteCandidateDto": {
+        "properties": {},
+        "type": "object"
+      },
       "PurchaseResponse": {
         "properties": {
           "hideBuyButtonUntil": {
@@ -13490,6 +13847,10 @@
       },
       "ServerFeaturesDto": {
         "properties": {
+          "autoStack": {
+            "description": "Automatic stack candidate generation enabled (experimental).",
+            "type": "boolean"
+          },
           "configFile": {
             "type": "boolean"
           },
@@ -13534,6 +13895,7 @@
           }
         },
         "required": [
+          "autoStack",
           "configFile",
           "duplicateDetection",
           "email",
@@ -15395,6 +15757,221 @@
         ],
         "type": "object"
       },
+      "SystemConfigAutoStackDto": {
+        "properties": {
+          "autoPromoteMinScore": {
+            "description": "Auto-promote when heuristic score >= this value (0 disables auto-promotion)",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "bestPrimaryHeuristic": {
+            "description": "Enable best-primary heuristic (pick sharpest/lowest ISO)",
+            "type": "boolean"
+          },
+          "cameraMatch": {
+            "description": "Require matching camera make+model if metadata present",
+            "type": "boolean"
+          },
+          "candidateAgingDays": {
+            "description": "Dismiss stale candidates older than this many days",
+            "maximum": 90,
+            "minimum": 1,
+            "type": "number"
+          },
+          "candidateAgingScoreThreshold": {
+            "description": "Only age out candidates with score below this threshold",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "enabled": {
+            "description": "Enable automatic stack candidate generation",
+            "type": "boolean"
+          },
+          "extendedWindowSeconds": {
+            "description": "Optional secondary extended window (seconds) for visual expansion / merging",
+            "maximum": 7200,
+            "minimum": 0,
+            "type": "number"
+          },
+          "horizonMinutes": {
+            "description": "Backfill look-back horizon in minutes for scheduled generation",
+            "maximum": 1440,
+            "minimum": 1,
+            "type": "number"
+          },
+          "hysteresisCandidateWindowMinutes": {
+            "description": "Sliding window size (minutes) for hysteresis candidate counting",
+            "maximum": 1440,
+            "minimum": 1,
+            "type": "number"
+          },
+          "hysteresisEnabled": {
+            "description": "Enable hysteresis dynamic thresholding",
+            "type": "boolean"
+          },
+          "hysteresisMaxCandidates": {
+            "description": "Max candidates in window before raising threshold",
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "number"
+          },
+          "hysteresisRaiseScoreBy": {
+            "description": "Base raise amount for autoPromoteMinScore when hysteresis triggers",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxCandidates": {
+            "description": "Maximum active candidate groups retained per user",
+            "maximum": 1000,
+            "minimum": 10,
+            "type": "number"
+          },
+          "maxGapSeconds": {
+            "description": "Maximum gap (seconds) allowed between assets inside a temporal group",
+            "maximum": 3600,
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxMergeGapSeconds": {
+            "description": "Max temporal gap (s) to attempt merging adjacent groups",
+            "minimum": 0,
+            "type": "number"
+          },
+          "mergeScoreDelta": {
+            "description": "Minimum score improvement required to retain a merged group (0 = always merge)",
+            "minimum": 0,
+            "type": "number"
+          },
+          "minGroupSize": {
+            "description": "Minimum number of assets required to store a candidate",
+            "maximum": 50,
+            "minimum": 2,
+            "type": "number"
+          },
+          "mlOffloadEnabled": {
+            "description": "Offload heavy scoring to ML service if available",
+            "type": "boolean"
+          },
+          "outlierPruneEnabled": {
+            "description": "Enable outlier pruning that removes assets lowering visual cohesion",
+            "type": "boolean"
+          },
+          "outlierPruneIterative": {
+            "description": "Iteratively prune multiple outliers while improvement threshold met",
+            "type": "boolean"
+          },
+          "outlierPruneMinDelta": {
+            "description": "Minimum delta improvement (0-1) in avg visual similarity to prune an outlier",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "overlapMergeEnabled": {
+            "description": "Enable merging of overlapping groups (shared assets)",
+            "type": "boolean"
+          },
+          "pHashBackfillBatchSize": {
+            "description": "Batch size for pHash backfill job",
+            "maximum": 5000,
+            "minimum": 10,
+            "type": "number"
+          },
+          "pHashBackfillEnabled": {
+            "description": "Enable historical pHash backfill job",
+            "type": "boolean"
+          },
+          "pHashHammingThreshold": {
+            "description": "Maximum pHash Hamming distance to treat assets as near-duplicates",
+            "maximum": 64,
+            "minimum": 0,
+            "type": "number"
+          },
+          "relaxedGapMultiplier": {
+            "description": "Multiplier applied to maxGapSeconds when forming secondary visual groups",
+            "maximum": 10,
+            "minimum": 1,
+            "type": "number"
+          },
+          "secondaryVisualMaxAdds": {
+            "description": "Maximum number of visually expanded assets to add per group",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "secondaryVisualWindowSeconds": {
+            "description": "Secondary visual expansion window (seconds) to pull in near-duplicates",
+            "maximum": 1800,
+            "minimum": 0,
+            "type": "number"
+          },
+          "sessionMaxSpanSeconds": {
+            "description": "Maximum span (seconds) allowed for a single group before segmentation considered",
+            "maximum": 86400,
+            "minimum": 5,
+            "type": "number"
+          },
+          "sessionMinAvgAdjacency": {
+            "description": "Minimum average adjacent visual similarity (0-1) required to keep a long-span group intact",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "sessionMinSegmentSize": {
+            "description": "Minimum segment size when splitting a session",
+            "maximum": 50,
+            "minimum": 2,
+            "type": "number"
+          },
+          "visualBridgeThreshold": {
+            "description": "Visual bridge cosine threshold (0-1) to merge across a larger gap",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "visualGroupSimilarityThreshold": {
+            "description": "Cosine similarity threshold (0-1) for adding external assets to a group",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "visualPromoteThreshold": {
+            "description": "Cosine similarity threshold (0-1) for immediate promotion when embeddings present",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "weights": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutoStackWeightsDto"
+              }
+            ],
+            "description": "Scoring weights object"
+          },
+          "windowSeconds": {
+            "description": "Time window (seconds) around a new asset for candidate grouping",
+            "maximum": 3600,
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "autoPromoteMinScore",
+          "cameraMatch",
+          "enabled",
+          "horizonMinutes",
+          "maxCandidates",
+          "maxGapSeconds",
+          "minGroupSize",
+          "visualPromoteThreshold",
+          "weights",
+          "windowSeconds"
+        ],
+        "type": "object"
+      },
       "SystemConfigBackupsDto": {
         "properties": {
           "database": {
@@ -16068,6 +16645,9 @@
       },
       "SystemConfigServerDto": {
         "properties": {
+          "autoStack": {
+            "$ref": "#/components/schemas/SystemConfigAutoStackDto"
+          },
           "externalDomain": {
             "format": "uri",
             "type": "string"
@@ -16080,6 +16660,7 @@
           }
         },
         "required": [
+          "autoStack",
           "externalDomain",
           "loginPageMessage",
           "publicUsers"

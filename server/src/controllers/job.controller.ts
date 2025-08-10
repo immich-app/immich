@@ -1,7 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobIdParamDto, JobStatusDto } from 'src/dtos/job.dto';
-import { Permission } from 'src/enum';
+import {
+  AllJobStatusResponseDto,
+  JobCommandDto,
+  JobCreateDto,
+  JobIdParamDto,
+  JobNameParamDto,
+  JobStatusDto,
+} from 'src/dtos/job.dto';
+import { JobCommand, JobName, Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { JobService } from 'src/services/job.service';
 
@@ -27,5 +34,24 @@ export class JobController {
   @Authenticated({ permission: Permission.JobCreate, admin: true })
   sendJobCommand(@Param() { id }: JobIdParamDto, @Body() dto: JobCommandDto): Promise<JobStatusDto> {
     return this.service.handleCommand(id, dto);
+  }
+
+  // Experimental: queue a single job by JobName (used for auto stack candidate generation/backfill)
+  @Post('command/:id')
+  @Authenticated({ permission: Permission.JobCreate, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async queueSingleJob(@Param() { id }: JobNameParamDto, @Body() dto: JobCommandDto): Promise<void> {
+    if (dto.command !== JobCommand.Start) {
+      throw new BadRequestException('Only start command supported for single job endpoint');
+    }
+    switch (id) {
+      case JobName.AutoStackCandidateQueueAll:
+      case JobName.AutoStackCandidateBackfill: {
+        await this.service.queueSingleJob(id);
+        return;
+      }
+      default:
+        throw new BadRequestException('Unsupported job');
+    }
   }
 }

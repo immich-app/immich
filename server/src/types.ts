@@ -168,7 +168,7 @@ export type ConcurrentQueueName = Exclude<
 >;
 
 export type Jobs = { [K in JobItem['name']]: (JobItem & { name: K })['data'] };
-export type JobOf<T extends JobName> = Jobs[T];
+export type JobOf<T extends keyof Jobs> = Jobs[T];
 
 export interface IBaseJob {
   force?: boolean;
@@ -340,6 +340,13 @@ export type JobItem =
   // Tags
   | { name: JobName.TagCleanup; data?: IBaseJob }
 
+  // Auto Stack Candidates
+  | { name: JobName.AutoStackCandidateQueueAll; data: IBaseJob }
+  | { name: JobName.AutoStackCandidateGenerate; data: IEntityJob }
+  | { name: JobName.AutoStackCandidateBackfill; data: IBaseJob }
+  | { name: JobName.AutoStackCandidateRescore; data: IEntityJob }
+  | { name: JobName.AutoStackEnqueueMissingEmbeddings; data: IEntityJob }
+
   // Asset Deletion
   | { name: JobName.PersonCleanup; data?: IBaseJob }
   | { name: JobName.AssetDelete; data: IAssetDeleteJob }
@@ -463,6 +470,10 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SystemFlags]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VersionCheckState]: VersionCheckMetadata;
   [SystemMetadataKey.MemoriesState]: MemoriesState;
+  [SystemMetadataKey.AutoStackUserPrefs]: Record<
+    string,
+    { weights?: Partial<Record<'size' | 'timeSpan' | 'continuity' | 'visual' | 'exposure', number>> }
+  >;
 }
 
 export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {

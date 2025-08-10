@@ -78,3 +78,25 @@ def clean_text(text: str, canonicalize: bool = False) -> str:
 # TODO: use this in a less invasive way
 def serialize_np_array(arr: NDArray[np.float32]) -> str:
     return orjson.dumps(arr, option=orjson.OPT_SERIALIZE_NUMPY).decode()
+
+
+def compute_phash(image: Image.Image) -> str:
+    """Compute a perceptual hash (pHash) for an image.
+
+    Implementation notes:
+    - Convert to grayscale and resize to 32x32 (standard pHash preprocessing)
+    - Compute 2D DCT (cv2.dct) over float32 matrix
+    - Take the top-left 8x8 low-frequency block
+    - Exclude the DC term (index 0) when computing the median threshold
+    - Produce 64 bits (including DC comparison for positional stability) and encode as 16 hex chars
+    """
+    # Grayscale + resize
+    img = image.convert("L").resize((32, 32), resample=Image.Resampling.BICUBIC)
+    arr = np.asarray(img, dtype=np.float32)
+    # Apply DCT (expects float32)
+    dct = cv2.dct(arr)
+    low = dct[:8, :8].flatten()
+    # Median of non-DC components
+    median = float(np.median(low[1:])) if low.size > 1 else 0.0
+    bits = "".join("1" if v > median else "0" for v in low)
+    return f"{int(bits, 2):016x}"  # 64 bits -> 16 hex chars

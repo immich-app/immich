@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { JobCommand, ManualJobName, QueueName } from 'src/enum';
+import { JobCommand, JobName, ManualJobName, QueueName } from 'src/enum';
 import { ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class JobIdParamDto {
@@ -13,6 +13,12 @@ export class JobCommandDto {
 
   @ValidateBoolean({ optional: true })
   force?: boolean; // TODO: this uses undefined as a third state, which should be refactored to be more explicit
+}
+
+// Path param for a specific JobName (single job trigger endpoint)
+export class JobNameParamDto {
+  @ValidateEnum({ enum: JobName, name: 'JobName' })
+  id!: JobName;
 }
 
 export class JobCreateDto {

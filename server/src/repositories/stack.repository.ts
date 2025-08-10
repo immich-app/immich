@@ -103,13 +103,26 @@ export class StackRepository {
       const newRecord = await tx
         .insertInto('stack')
         .values({ ...entity, primaryAssetId: assetIds[0] })
+        .onConflict((oc) => oc.column('primaryAssetId').doNothing())
         .returning('id')
-        .executeTakeFirstOrThrow();
+        .executeTakeFirst();
+
+      // If conflict (already exists), fetch existing stack id by primary asset id
+      const stackId = newRecord?.id
+        ? newRecord.id
+        : (
+            await tx
+              .selectFrom('stack')
+              .select('id')
+              .where('primaryAssetId', '=', assetIds[0])
+              .where('ownerId', '=', entity.ownerId)
+              .executeTakeFirstOrThrow()
+          ).id;
 
       await tx
         .updateTable('asset')
         .set({
-          stackId: newRecord.id,
+          stackId,
           updatedAt: new Date(),
         })
         .where('id', 'in', [...uniqueIds])
@@ -119,9 +132,18 @@ export class StackRepository {
         .selectFrom('stack')
         .selectAll('stack')
         .select(withAssets)
-        .where('id', '=', newRecord.id)
+        .where('id', '=', stackId)
         .executeTakeFirstOrThrow();
     });
+  }
+
+  async attachAssets(stackId: string, assetIds: string[]) {
+    if (!assetIds.length) return;
+    await this.db.updateTable('asset').set({ stackId, updatedAt: new Date() }).where('id', 'in', assetIds).execute();
+  }
+
+  async getByPrimaryAsset(ownerId: string, primaryAssetId: string) {
+    return this.search({ ownerId, primaryAssetId }).then((r) => (r.length ? r[0] : null));
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

@@ -388,7 +388,6 @@ export const columns = {
   ],
   exif: [
     'asset_exif.assetId',
-    'asset_exif.autoStackId',
     'asset_exif.bitsPerSample',
     'asset_exif.city',
     'asset_exif.colorspace',
@@ -416,5 +415,7 @@ export const columns = {
     'asset_exif.rating',
     'asset_exif.state',
     'asset_exif.timeZone',
+    'asset_exif.autoStackSource',
+    'asset_exif.pHash',
   ],
 } as const;

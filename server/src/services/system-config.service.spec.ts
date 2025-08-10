@@ -141,6 +141,16 @@ const updatedConfig = Object.freeze<SystemConfig>({
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,
+    autoStack: {
+      enabled: true,
+      windowSeconds: 5,
+      maxGapSeconds: 5,
+      minGroupSize: 2,
+      horizonMinutes: 10,
+      cameraMatch: true,
+      maxCandidates: 200,
+      autoPromoteMinScore: 0,
+    },
   },
   storageTemplate: {
     enabled: false,
