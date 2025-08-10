@@ -7,6 +7,18 @@ set
 where
   "assetId" in ($2)
 
+-- AssetRepository.updateDateTimeOriginal
+update "asset_exif"
+set
+  "dateTimeOriginal" = "dateTimeOriginal" + $1::interval,
+  "timeZone" = $2
+where
+  "assetId" in ($3)
+returning
+  "assetId",
+  "dateTimeOriginal",
+  "timeZone"
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (

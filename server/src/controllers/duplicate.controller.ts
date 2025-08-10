@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -21,12 +21,14 @@ export class DuplicateController {
 
   @Delete()
   @Authenticated({ permission: Permission.DuplicateDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteDuplicates(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Delete(':id')
   @Authenticated({ permission: Permission.DuplicateDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteDuplicate(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

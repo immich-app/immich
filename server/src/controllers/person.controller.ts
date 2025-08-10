@@ -63,8 +63,8 @@ export class PersonController {
   }
 
   @Delete()
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.PersonDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deletePeople(@Auth() auth: AuthDto, @Body() dto: BulkIdsDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
@@ -86,8 +86,8 @@ export class PersonController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.PersonDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deletePerson(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }
@@ -122,6 +122,7 @@ export class PersonController {
 
   @Post(':id/merge')
   @Authenticated({ permission: Permission.PersonMerge })
+  @HttpCode(HttpStatus.OK)
   mergePerson(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,

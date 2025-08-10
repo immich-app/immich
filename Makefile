@@ -10,6 +10,9 @@ dev-update:
 dev-scale:
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V  --scale immich-server=3 --remove-orphans
 
+dev-docs:
+	npm --prefix docs run start
+
 .PHONY: e2e
 e2e:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans

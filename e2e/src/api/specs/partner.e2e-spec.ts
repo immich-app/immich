@@ -116,7 +116,7 @@ describe('/partners', () => {
         .delete(`/partners/${user3.userId}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
-      expect(status).toBe(200);
+      expect(status).toBe(204);
     });
 
     it('should throw a bad request if partner not found', async () => {

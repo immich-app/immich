@@ -64,6 +64,7 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
             await handleEditBirthday(context);
             context.pop();
           },
+          birthdayExists: _person.birthDate != null,
         );
       },
     );

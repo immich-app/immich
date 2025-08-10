@@ -150,6 +150,7 @@ class Permission {
   static const adminUserPeriodRead = Permission._(r'adminUser.read');
   static const adminUserPeriodUpdate = Permission._(r'adminUser.update');
   static const adminUserPeriodDelete = Permission._(r'adminUser.delete');
+  static const adminAuthPeriodUnlinkAll = Permission._(r'adminAuth.unlinkAll');
 
   /// List of all possible values in this [enum][Permission].
   static const values = <Permission>[
@@ -280,6 +281,7 @@ class Permission {
     adminUserPeriodRead,
     adminUserPeriodUpdate,
     adminUserPeriodDelete,
+    adminAuthPeriodUnlinkAll,
   ];
 
   static Permission? fromJson(dynamic value) => PermissionTypeTransformer().decode(value);
@@ -445,6 +447,7 @@ class PermissionTypeTransformer {
         case r'adminUser.read': return Permission.adminUserPeriodRead;
         case r'adminUser.update': return Permission.adminUserPeriodUpdate;
         case r'adminUser.delete': return Permission.adminUserPeriodDelete;
+        case r'adminAuth.unlinkAll': return Permission.adminAuthPeriodUnlinkAll;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

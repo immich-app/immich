@@ -84,6 +84,7 @@ export class UserController {
 
   @Delete('me/license')
   @Authenticated({ permission: Permission.UserLicenseDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUserLicense(@Auth() auth: AuthDto): Promise<void> {
     await this.service.deleteLicense(auth);
   }
@@ -102,6 +103,7 @@ export class UserController {
 
   @Delete('me/onboarding')
   @Authenticated({ permission: Permission.UserOnboardingDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   async deleteUserOnboarding(@Auth() auth: AuthDto): Promise<void> {
     await this.service.deleteOnboarding(auth);
   }
@@ -112,11 +114,11 @@ export class UserController {
     return this.service.get(id);
   }
 
+  @Post('profile-image')
+  @Authenticated({ permission: Permission.UserProfileImageUpdate })
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiBody({ description: 'A new avatar for the user', type: CreateProfileImageDto })
-  @Post('profile-image')
-  @Authenticated({ permission: Permission.UserProfileImageUpdate })
   createProfileImage(
     @Auth() auth: AuthDto,
     @UploadedFile() fileInfo: Express.Multer.File,
@@ -125,8 +127,8 @@ export class UserController {
   }
 
   @Delete('profile-image')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.UserProfileImageDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteProfileImage(@Auth() auth: AuthDto): Promise<void> {
     return this.service.deleteProfileImage(auth);
   }

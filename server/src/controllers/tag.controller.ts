@@ -57,8 +57,8 @@ export class TagController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.TagDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteTag(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }

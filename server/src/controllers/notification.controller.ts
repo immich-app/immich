@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -26,12 +26,14 @@ export class NotificationController {
 
   @Put()
   @Authenticated({ permission: Permission.NotificationUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
   updateNotifications(@Auth() auth: AuthDto, @Body() dto: NotificationUpdateAllDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
 
   @Delete()
   @Authenticated({ permission: Permission.NotificationDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteNotifications(@Auth() auth: AuthDto, @Body() dto: NotificationDeleteAllDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
@@ -54,6 +56,7 @@ export class NotificationController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.NotificationDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteNotification(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

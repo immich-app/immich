@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -68,11 +69,30 @@ class _DriftMapState extends ConsumerState<DriftMap> {
       const CustomSourceProperties(data: {'type': 'FeatureCollection', 'features': []}),
     );
 
-    await controller.addHeatmapLayer(
-      MapUtils.defaultSourceId,
-      MapUtils.defaultHeatMapLayerId,
-      MapUtils.defaultHeatmapLayerProperties,
-    );
+    if (Platform.isAndroid) {
+      await controller.addCircleLayer(
+        MapUtils.defaultSourceId,
+        MapUtils.defaultHeatMapLayerId,
+        const CircleLayerProperties(
+          circleRadius: 10,
+          circleColor: "rgba(150,86,34,0.7)",
+          circleBlur: 1.0,
+          circleOpacity: 0.7,
+          circleStrokeWidth: 0.1,
+          circleStrokeColor: "rgba(203,46,19,0.5)",
+          circleStrokeOpacity: 0.7,
+        ),
+      );
+    }
+
+    if (Platform.isIOS) {
+      await controller.addHeatmapLayer(
+        MapUtils.defaultSourceId,
+        MapUtils.defaultHeatMapLayerId,
+        MapUtils.defaultHeatmapLayerProperties,
+      );
+    }
+
     _debouncer.run(setBounds);
     controller.addListener(onMapMoved);
   }

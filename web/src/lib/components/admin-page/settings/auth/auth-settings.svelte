@@ -1,5 +1,9 @@
 <script lang="ts">
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
@@ -7,8 +11,10 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
-  import { OAuthTokenEndpointAuthMethod, type SystemConfigDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { handleError } from '$lib/utils/handle-error';
+  import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin, type SystemConfigDto } from '@immich/sdk';
+  import { Button, modalManager, Text } from '@immich/ui';
+  import { mdiRestart } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -44,6 +50,26 @@
 
     onSave({ passwordLogin: config.passwordLogin, oauth: config.oauth });
   };
+
+  const handleUnlinkAllOAuthAccounts = async () => {
+    const confirmed = await modalManager.showDialog({
+      icon: mdiRestart,
+      title: $t('admin.unlink_all_oauth_accounts'),
+      prompt: $t('admin.unlink_all_oauth_accounts_prompt'),
+      confirmColor: 'danger',
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await unlinkAllOAuthAccountsAdmin({});
+      notificationController.show({ message: $t('success'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.something_went_wrong'));
+    }
+  };
 </script>
 
 <div>
@@ -56,7 +82,7 @@
           subtitle={$t('admin.oauth_settings_description')}
         >
           <div class="ms-4 mt-4 flex flex-col gap-4">
-            <p class="text-sm dark:text-immich-dark-fg">
+            <Text size="small">
               <FormatMessage key="admin.oauth_settings_more_details">
                 {#snippet children({ message })}
                   <a
@@ -69,7 +95,7 @@
                   </a>
                 {/snippet}
               </FormatMessage>
-            </p>
+            </Text>
 
             <SettingSwitch
               {disabled}
@@ -79,6 +105,14 @@
 
             {#if config.oauth.enabled}
               <hr />
+
+              <div class="flex items-center gap-2 justify-between">
+                <Text size="small">{$t('admin.unlink_all_oauth_accounts_description')}</Text>
+                <Button size="small" onclick={handleUnlinkAllOAuthAccounts}
+                  >{$t('admin.unlink_all_oauth_accounts')}</Button
+                >
+              </div>
+
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
                 label="ISSUER_URL"
