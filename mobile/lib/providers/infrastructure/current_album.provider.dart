@@ -31,5 +31,6 @@ class CurrentAlbumNotifier extends AutoDisposeNotifier<RemoteAlbum?> {
   void dispose() {
     _keepAliveLink?.close();
     _assetSubscription?.cancel();
+    state = null;
   }
 }

@@ -79,7 +79,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                             context.back();
                             return;
                           }
-                          context.back();
+                          context.pop();
                           context.pushRoute(DriftPersonRoute(person: person));
                         },
                         onNameTap: () => showNameEditModal(person),

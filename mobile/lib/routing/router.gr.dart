@@ -668,6 +668,22 @@ class CropImageRouteArgs {
 }
 
 /// generated route for
+/// [DriftAlbumOptionsPage]
+class DriftAlbumOptionsRoute extends PageRouteInfo<void> {
+  const DriftAlbumOptionsRoute({List<PageRouteInfo>? children})
+    : super(DriftAlbumOptionsRoute.name, initialChildren: children);
+
+  static const String name = 'DriftAlbumOptionsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftAlbumOptionsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftAlbumsPage]
 class DriftAlbumsRoute extends PageRouteInfo<void> {
   const DriftAlbumsRoute({List<PageRouteInfo>? children})
@@ -760,6 +776,22 @@ class DriftBackupAlbumSelectionRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const DriftBackupAlbumSelectionPage();
+    },
+  );
+}
+
+/// generated route for
+/// [DriftBackupOptionsPage]
+class DriftBackupOptionsRoute extends PageRouteInfo<void> {
+  const DriftBackupOptionsRoute({List<PageRouteInfo>? children})
+    : super(DriftBackupOptionsRoute.name, initialChildren: children);
+
+  static const String name = 'DriftBackupOptionsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftBackupOptionsPage();
     },
   );
 }
@@ -858,6 +890,45 @@ class DriftLockedFolderRoute extends PageRouteInfo<void> {
       return const DriftLockedFolderPage();
     },
   );
+}
+
+/// generated route for
+/// [DriftMapPage]
+class DriftMapRoute extends PageRouteInfo<DriftMapRouteArgs> {
+  DriftMapRoute({
+    Key? key,
+    LatLng? initialLocation,
+    List<PageRouteInfo>? children,
+  }) : super(
+         DriftMapRoute.name,
+         args: DriftMapRouteArgs(key: key, initialLocation: initialLocation),
+         initialChildren: children,
+       );
+
+  static const String name = 'DriftMapRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftMapRouteArgs>(
+        orElse: () => const DriftMapRouteArgs(),
+      );
+      return DriftMapPage(key: args.key, initialLocation: args.initialLocation);
+    },
+  );
+}
+
+class DriftMapRouteArgs {
+  const DriftMapRouteArgs({this.key, this.initialLocation});
+
+  final Key? key;
+
+  final LatLng? initialLocation;
+
+  @override
+  String toString() {
+    return 'DriftMapRouteArgs{key: $key, initialLocation: $initialLocation}';
+  }
 }
 
 /// generated route for

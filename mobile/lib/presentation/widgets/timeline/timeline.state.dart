@@ -14,7 +14,7 @@ class TimelineArgs {
   final double maxHeight;
   final double spacing;
   final int columnCount;
-  final bool showStorageIndicator;
+  final bool? showStorageIndicator;
   final bool withStack;
   final GroupAssetsBy? groupBy;
 
@@ -23,7 +23,7 @@ class TimelineArgs {
     required this.maxHeight,
     this.spacing = kTimelineSpacing,
     this.columnCount = kTimelineColumnCount,
-    this.showStorageIndicator = false,
+    this.showStorageIndicator,
     this.withStack = false,
     this.groupBy,
   });

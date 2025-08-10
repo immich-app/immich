@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:path/path.dart' as path;
@@ -102,6 +103,10 @@ class BetaSyncSettings extends HookConsumerWidget {
           );
         }
       }
+    }
+
+    Future<void> clearFileCache() async {
+      await ref.read(storageRepositoryProvider).clearCache();
     }
 
     return FutureBuilder<List<dynamic>>(
@@ -241,6 +246,14 @@ class BetaSyncSettings extends HookConsumerWidget {
               const Divider(height: 1, indent: 16, endIndent: 16),
               const SizedBox(height: 24),
               _SectionHeaderText(text: "actions".t(context: context)),
+              ListTile(
+                title: Text(
+                  "clear_file_cache".t(context: context),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                leading: const Icon(Icons.playlist_remove_rounded),
+                onTap: clearFileCache,
+              ),
               ListTile(
                 title: Text(
                   "export_database".t(context: context),

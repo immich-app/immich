@@ -4,12 +4,28 @@ import 'package:openapi/api.dart';
 abstract final class SyncStreamStub {
   static final userV1Admin = SyncEvent(
     type: SyncEntityType.userV1,
-    data: SyncUserV1(deletedAt: DateTime(2020), email: "admin@admin", id: "1", name: "Admin", avatarColor: null),
+    data: SyncUserV1(
+      deletedAt: DateTime(2020),
+      email: "admin@admin",
+      id: "1",
+      name: "Admin",
+      avatarColor: null,
+      hasProfileImage: false,
+      profileChangedAt: DateTime(2025),
+    ),
     ack: "1",
   );
   static final userV1User = SyncEvent(
     type: SyncEntityType.userV1,
-    data: SyncUserV1(deletedAt: DateTime(2021), email: "user@user", id: "5", name: "User", avatarColor: null),
+    data: SyncUserV1(
+      deletedAt: DateTime(2021),
+      email: "user@user",
+      id: "5",
+      name: "User",
+      avatarColor: null,
+      hasProfileImage: false,
+      profileChangedAt: DateTime(2025),
+    ),
     ack: "5",
   );
   static final userDeleteV1 = SyncEvent(

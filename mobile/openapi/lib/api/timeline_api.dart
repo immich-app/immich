@@ -16,7 +16,10 @@ class TimelineApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /timeline/bucket' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] timeBucket (required):
@@ -118,6 +121,8 @@ class TimelineApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] timeBucket (required):
@@ -171,7 +176,10 @@ class TimelineApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /timeline/buckets' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId:
@@ -269,6 +277,8 @@ class TimelineApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] albumId:

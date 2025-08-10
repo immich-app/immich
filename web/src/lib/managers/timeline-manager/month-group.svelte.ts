@@ -10,8 +10,8 @@ import {
   fromTimelinePlainYearMonth,
   getTimes,
   setDifference,
-  type TimelinePlainDateTime,
-  type TimelinePlainYearMonth,
+  type TimelineDateTime,
+  type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
 
 import { t } from 'svelte-i18n';
@@ -47,11 +47,11 @@ export class MonthGroup {
   isHeightActual: boolean = $state(false);
 
   readonly monthGroupTitle: string;
-  readonly yearMonth: TimelinePlainYearMonth;
+  readonly yearMonth: TimelineYearMonth;
 
   constructor(
     store: TimelineManager,
-    yearMonth: TimelinePlainYearMonth,
+    yearMonth: TimelineYearMonth,
     initialCount: number,
     order: AssetOrder = AssetOrder.Desc,
   ) {
@@ -351,7 +351,7 @@ export class MonthGroup {
     }
   }
 
-  findClosest(target: TimelinePlainDateTime) {
+  findClosest(target: TimelineDateTime) {
     const targetDate = fromTimelinePlainDateTime(target);
     let closest = undefined;
     let smallestDiff = Infinity;

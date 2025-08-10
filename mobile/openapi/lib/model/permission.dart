@@ -101,6 +101,7 @@ class Permission {
   static const serverPeriodApkLinks = Permission._(r'server.apkLinks');
   static const serverPeriodStorage = Permission._(r'server.storage');
   static const serverPeriodStatistics = Permission._(r'server.statistics');
+  static const serverPeriodVersionCheck = Permission._(r'server.versionCheck');
   static const serverLicensePeriodRead = Permission._(r'serverLicense.read');
   static const serverLicensePeriodUpdate = Permission._(r'serverLicense.update');
   static const serverLicensePeriodDelete = Permission._(r'serverLicense.delete');
@@ -149,6 +150,7 @@ class Permission {
   static const adminUserPeriodRead = Permission._(r'adminUser.read');
   static const adminUserPeriodUpdate = Permission._(r'adminUser.update');
   static const adminUserPeriodDelete = Permission._(r'adminUser.delete');
+  static const adminAuthPeriodUnlinkAll = Permission._(r'adminAuth.unlinkAll');
 
   /// List of all possible values in this [enum][Permission].
   static const values = <Permission>[
@@ -230,6 +232,7 @@ class Permission {
     serverPeriodApkLinks,
     serverPeriodStorage,
     serverPeriodStatistics,
+    serverPeriodVersionCheck,
     serverLicensePeriodRead,
     serverLicensePeriodUpdate,
     serverLicensePeriodDelete,
@@ -278,6 +281,7 @@ class Permission {
     adminUserPeriodRead,
     adminUserPeriodUpdate,
     adminUserPeriodDelete,
+    adminAuthPeriodUnlinkAll,
   ];
 
   static Permission? fromJson(dynamic value) => PermissionTypeTransformer().decode(value);
@@ -394,6 +398,7 @@ class PermissionTypeTransformer {
         case r'server.apkLinks': return Permission.serverPeriodApkLinks;
         case r'server.storage': return Permission.serverPeriodStorage;
         case r'server.statistics': return Permission.serverPeriodStatistics;
+        case r'server.versionCheck': return Permission.serverPeriodVersionCheck;
         case r'serverLicense.read': return Permission.serverLicensePeriodRead;
         case r'serverLicense.update': return Permission.serverLicensePeriodUpdate;
         case r'serverLicense.delete': return Permission.serverLicensePeriodDelete;
@@ -442,6 +447,7 @@ class PermissionTypeTransformer {
         case r'adminUser.read': return Permission.adminUserPeriodRead;
         case r'adminUser.update': return Permission.adminUserPeriodUpdate;
         case r'adminUser.delete': return Permission.adminUserPeriodDelete;
+        case r'adminAuth.unlinkAll': return Permission.adminAuthPeriodUnlinkAll;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

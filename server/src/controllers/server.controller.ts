@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
@@ -104,12 +104,13 @@ export class ServerController {
 
   @Delete('license')
   @Authenticated({ permission: Permission.ServerLicenseDelete, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteServerLicense(): Promise<void> {
     return this.service.deleteLicense();
   }
 
   @Get('version-check')
-  @Authenticated()
+  @Authenticated({ permission: Permission.ServerVersionCheck })
   getVersionCheck(): Promise<VersionCheckStateResponseDto> {
     return this.systemMetadataService.getVersionCheckState();
   }
