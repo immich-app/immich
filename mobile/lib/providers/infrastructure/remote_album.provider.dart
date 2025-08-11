@@ -70,7 +70,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     state = state.copyWith(filteredAlbums: state.albums);
   }
 
-  void sortFilteredAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) async {
+  Future<void> sortFilteredAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) async {
     final sortedAlbums = await _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
   }
