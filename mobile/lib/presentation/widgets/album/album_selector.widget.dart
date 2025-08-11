@@ -139,19 +139,19 @@ class _SortButtonState extends ConsumerState<_SortButton> {
   RemoteAlbumSortMode albumSortOption = RemoteAlbumSortMode.lastModified;
   bool albumSortIsReverse = true;
 
-  void onMenuTapped(RemoteAlbumSortMode sortMode) {
+  Future<void> onMenuTapped(RemoteAlbumSortMode sortMode) async {
     final selected = albumSortOption == sortMode;
     // Switch direction
     if (selected) {
       setState(() {
         albumSortIsReverse = !albumSortIsReverse;
       });
-      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
+      await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     } else {
       setState(() {
         albumSortOption = sortMode;
       });
-      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
+      await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     }
   }
 
