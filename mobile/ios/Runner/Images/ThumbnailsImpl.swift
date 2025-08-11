@@ -5,7 +5,7 @@ import Photos
 
 struct Request {
   var managerId: Int32?
-  var workItem: DispatchWorkItem?
+  weak var workItem: DispatchWorkItem?
   var isCancelled = false
   let callback: (Result<[String: Int64], any Error>) -> Void
 }
