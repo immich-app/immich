@@ -265,6 +265,32 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     }).watchSingleOrNull();
   }
 
+  Future<DateTime?> getNewestAssetTimestamp(String albumId) {
+    final query = _db.remoteAlbumAssetEntity.selectOnly()
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..addColumns([_db.remoteAssetEntity.updatedAt.max()])
+      ..join([
+        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+      ]);
+
+    return query
+        .map((row) => row.read(_db.remoteAssetEntity.updatedAt.max()) ?? DateTime.fromMillisecondsSinceEpoch(0))
+        .getSingleOrNull();
+  }
+
+  Future<DateTime?> getOldestAssetTimestamp(String albumId) {
+    final query = _db.remoteAlbumAssetEntity.selectOnly()
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..addColumns([_db.remoteAssetEntity.createdAt.min()])
+      ..join([
+        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+      ]);
+
+    return query
+        .map((row) => row.read(_db.remoteAssetEntity.createdAt.min()) ?? DateTime.fromMillisecondsSinceEpoch(0))
+        .getSingleOrNull();
+  }
+
   Future<int> getCount() {
     return _db.managers.remoteAlbumEntity.count();
   }
