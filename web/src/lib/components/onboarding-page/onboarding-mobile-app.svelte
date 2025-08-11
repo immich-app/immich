@@ -25,3 +25,4 @@
     {$t('app_download_links')}
   </button>
 </div>
+<p>{$t('mobile_app_download_onboarding_note')}</p>
