@@ -159,9 +159,10 @@ class RemoteAlbumService {
 
   Future<List<RemoteAlbum>> _sortByNewestAsset(List<RemoteAlbum> albums) async {
     // map album IDs to their newest asset dates
-    final Map<String, Future<DateTime?>> assetTimestampFutures = {
-      for (var album in albums) album.id: _repository.getNewestAssetTimestamp(album.id),
-    };
+    final Map<String, Future<DateTime?>> assetTimestampFutures = {};
+    for (final album in albums) {
+      assetTimestampFutures[album.id] = _repository.getNewestAssetTimestamp(album.id);
+    }
 
     // await all database queries
     var entries = await Future.wait(
