@@ -268,13 +268,13 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   Future<DateTime?> getNewestAssetTimestamp(String albumId) {
     final query = _db.remoteAlbumAssetEntity.selectOnly()
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.updatedAt.max()])
+      ..addColumns([_db.remoteAssetEntity.createdAt.max()])
       ..join([
         innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
       ]);
 
     return query
-        .map((row) => row.read(_db.remoteAssetEntity.updatedAt.max()) ?? DateTime.fromMillisecondsSinceEpoch(0))
+        .map((row) => row.read(_db.remoteAssetEntity.createdAt.max()) ?? DateTime.fromMillisecondsSinceEpoch(0))
         .getSingleOrNull();
   }
 
