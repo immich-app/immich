@@ -14,7 +14,7 @@
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
-  import { mdiFileImagePlusOutline, mdiFolderDownloadOutline } from '@mdi/js';
+  import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -125,7 +125,7 @@
             variant="ghost"
             aria-label={$t('download')}
             onclick={() => downloadAlbum(album)}
-            icon={mdiFolderDownloadOutline}
+            icon={mdiDownload}
           />
         {/if}
         {#if sharedLink.showMetadata && $featureFlags.loaded && $featureFlags.map}
