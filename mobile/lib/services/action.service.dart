@@ -241,7 +241,11 @@ class ActionService {
     return _downloadRepository.downloadAllAssets(assets);
   }
 
-  Future<void> setMoveToTrashDecision(Iterable<String> remoteChecksums, bool isApproved) async {
+  Future<bool> setMoveToTrashDecision(Iterable<String> remoteChecksums, bool isApproved) async {
     await _trashSyncService.setMoveToTrashDecision(remoteChecksums, isApproved);
+    if (isApproved) {
+      return await _trashSyncService.applyRemoteTrash(remoteChecksums, true);
+    }
+    return true;
   }
 }

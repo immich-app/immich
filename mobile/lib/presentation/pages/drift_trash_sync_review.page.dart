@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_sync_bottom_bar.widget.dart';
@@ -19,7 +20,6 @@ class DriftTrashSyncReviewPage extends StatelessWidget {
           if (user == null) {
             throw Exception('User must be logged in to access trash');
           }
-
           final timelineService = ref.watch(timelineFactoryProvider).trashSyncReview(user.id);
           ref.onDispose(timelineService.dispose);
           return timelineService;
@@ -28,8 +28,7 @@ class DriftTrashSyncReviewPage extends StatelessWidget {
       child: Timeline(
         showStorageIndicator: true,
         appBar: SliverAppBar(
-          // title: Text('trash'.t(context: context)),
-          title: Text('trash sync review'),
+          title: Text('asset_out_of_sync_title'.tr()),
           floating: true,
           snap: true,
           pinned: true,
@@ -39,15 +38,10 @@ class DriftTrashSyncReviewPage extends StatelessWidget {
         topSliverWidgetHeight: 24,
         topSliverWidget: Consumer(
           builder: (context, ref, child) {
-
             return SliverPadding(
               padding: const EdgeInsets.all(16.0),
               sliver: SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 24.0,
-                  // child: const Text("trash_page_info").t(context: context, args: {"days": "$trashDays"}),
-                  child: const Text("trash sync review flow explanation"),
-                ),
+                child: SizedBox(height: 72.0, child: const Text("asset_out_of_sync_subtitle").tr()),
               ),
             );
           },

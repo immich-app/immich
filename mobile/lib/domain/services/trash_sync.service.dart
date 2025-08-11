@@ -42,9 +42,6 @@ class TrashSyncService {
        _platform = const LocalPlatform();
 
   Future<void> handleRemoteChanges(Iterable<({String checksum, DateTime? deletedAt})> syncItems) async {
-    if (!isServiceEnabled) {
-      return Future.value();
-    }
     final trashedAssetsChecksums = syncItems
         .where((item) => item.deletedAt != null)
         .map((syncItem) => syncItem.checksum);
@@ -59,26 +56,27 @@ class TrashSyncService {
     }
   }
 
-  Future<void> applyRemoteTrash(Iterable<String> trashedAssetsChecksums, bool allowToTrash) async {
+  Future<bool> applyRemoteTrash(Iterable<String> trashedAssetsChecksums, bool allowToTrash) async {
     final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
     if (localAssetsToTrash.isEmpty) {
-      return;
+      return false;
     }
     if (allowToTrash) {
-      await applyRemoteTrashToLocal(localAssetsToTrash);
+      return await applyRemoteTrashToLocal(localAssetsToTrash);
     } else {
       await applyRemoteTrashToReview(localAssetsToTrash);
     }
+    return true;
   }
 
-  Future<void> applyRemoteTrashToLocal(List<LocalAsset> localAssetsToTrash) async {
+  Future<bool> applyRemoteTrashToLocal(List<LocalAsset> localAssetsToTrash) async {
     final mediaUrls = await Future.wait(
       localAssetsToTrash.map(
         (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
       ),
     );
     _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-    await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+    return await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
   }
 
   Future<void> applyRemoteTrashToReview(List<LocalAsset> localAssetsToTrash) async {
@@ -117,11 +115,6 @@ class TrashSyncService {
 
   Future<void> setMoveToTrashDecision(Iterable<String> checksums, bool isApproved) async {
     await _trashSyncRepository.updateApproves(checksums, isApproved);
-    if (isApproved) {
-      //todo STOP!!!! 08/08
-      // need to update items in timeline
-      await applyRemoteTrash(checksums, true);
-    }
   }
 
   Stream<int> watchPendingDecisionCount() => _trashSyncRepository.watchPendingDecisionCount();

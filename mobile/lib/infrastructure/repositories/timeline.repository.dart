@@ -523,7 +523,8 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         ),
       ])
       ..where(
-        _db.remoteAssetEntity.deletedAt.isNotNull() &
+        _db.trashSyncEntity.isSyncApproved.isNull() &
+            _db.remoteAssetEntity.deletedAt.isNotNull() &
             _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
       )
       ..groupBy([dateExp])
@@ -546,7 +547,8 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             ),
           ])
           ..where(
-            _db.remoteAssetEntity.deletedAt.isNotNull() &
+            _db.trashSyncEntity.isSyncApproved.isNull() &
+                _db.remoteAssetEntity.deletedAt.isNotNull() &
                 _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
           )
           ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.deletedAt)])

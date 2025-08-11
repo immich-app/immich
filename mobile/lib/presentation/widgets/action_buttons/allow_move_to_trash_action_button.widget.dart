@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,33 +14,43 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 /// This action is used when the asset is selected in multi-selection mode in the review out-of-sync changes
 class AllowMoveToTrashActionButton extends ConsumerWidget {
   final ActionSource source;
+  final VoidCallback onSuccess;
 
-  const AllowMoveToTrashActionButton({super.key, required this.source});
+  const AllowMoveToTrashActionButton({super.key, required this.source, required this.onSuccess});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).setMoveToTrashDecision(source, true);
-    ref.read(multiSelectProvider.notifier).reset();
+    final actionNotifier = ref.read(actionProvider.notifier);
+    final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
 
-    final successMessage = 'assets_allowed_to_moved_to_trash_count'.t(context: context, args: {'count': result.count.toString()});
+    final result = await actionNotifier.setMoveToTrashDecision(source, true);
+    multiSelectNotifier.reset();
 
     if (context.mounted) {
+      final successMessage = 'assets_allowed_to_moved_to_trash_count'.t(
+        context: context,
+        args: {'count': result.count.toString()},
+      );
+
       ImmichToast.show(
         context: context,
         msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );
+      if (result.success) {
+        onSuccess.call();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextButton(
-      child: Text("Allow", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      child: Text("allow".tr(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       onPressed: () => _onTap(context, ref),
     );
   }
