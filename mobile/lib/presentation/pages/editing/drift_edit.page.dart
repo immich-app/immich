@@ -60,7 +60,9 @@ class DriftEditImagePage extends ConsumerWidget {
             .read(fileMediaRepositoryProvider)
             .saveLocalAsset(imageData, title: "${p.withoutExtension(asset.name)}_edited.jpg");
       } on PlatformException catch (e) {
-        Logger("SaveEditedImage").severe("Failed to retrieve the saved image back from OS", e);
+        // OS might not return the saved image back, so we handle that gracefully
+        // This can happen if app does not have full library access
+        Logger("SaveEditedImage").warning("Failed to retrieve the saved image back from OS", e);
       }
 
       ref.read(backgroundSyncProvider).syncLocal(full: true);
