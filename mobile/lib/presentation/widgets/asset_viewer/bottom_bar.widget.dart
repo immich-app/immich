@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -38,6 +39,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
       if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+      if (asset.type == AssetType.image) const EditImageActionButton(),
       if (asset.hasRemote && isOwner) const ArchiveActionButton(source: ActionSource.viewer),
       asset.isLocalOnly
           ? const DeleteLocalActionButton(source: ActionSource.viewer)
