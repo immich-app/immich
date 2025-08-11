@@ -32,9 +32,11 @@ docker image prune
 
 :::info
 If you deploy Immich using Docker Compose, see `ghcr.io/immich-app/postgres` in the `docker-compose.yml` file and have not explicitly set the `DB_VECTOR_EXTENSION` environmental variable, your Immich database is already using VectorChord and this section does not apply to you.
+:::
 
 :::important
 If you do not deploy Immich using Docker Compose and see a deprecation warning for pgvecto.rs on server startup, you should refer to the maintainers of the Immich distribution for guidance (if using a turnkey solution) or adapt the instructions for your specific setup.
+:::
 
 Immich has migrated off of the deprecated pgvecto.rs database extension to its successor, [VectorChord](https://github.com/tensorchord/VectorChord), which comes with performance improvements in almost every aspect. This section will guide you on how to make this change in a Docker Compose setup.
 
@@ -85,11 +87,13 @@ After making a backup, please modify your `docker-compose.yml` file with the fol
 
 :::important
 If you deviated from the defaults of pg14 or pgvectors0.2.0, you must adjust the pg major version and pgvecto.rs version. If you are still using the default `docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0` image, you can just follow the changes above. For example, if the previous image is `docker.io/tensorchord/pgvecto-rs:pg16-v0.3.0`, the new image should be `ghcr.io/immich-app/postgres:16-vectorchord0.3.0-pgvectors0.3.0` instead of the image specified in the diff.
+:::
 
 After making these changes, you can start Immich as normal. Immich will make some changes to the DB during startup, which can take seconds to minutes to finish, depending on hardware and library size. In particular, it’s normal for the server logs to be seemingly stuck at `Reindexing clip_index` and `Reindexing face_index`for some time if you have over 100k assets in Immich and/or Immich is on a relatively weak server. If you see these logs and there are no errors, just give it time.
 
 :::danger
 After switching to VectorChord, you should not downgrade Immich below 1.133.0.
+:::
 
 Please don’t hesitate to contact us on [GitHub](https://github.com/immich-app/immich/discussions) or [Discord](https://discord.immich.app/) if you encounter migration issues.
 
