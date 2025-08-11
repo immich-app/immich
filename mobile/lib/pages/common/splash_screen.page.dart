@@ -6,6 +6,8 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:logging/logging.dart';
 
@@ -43,17 +45,23 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final accessToken = Store.tryGet(StoreKey.accessToken);
 
     if (accessToken != null && serverUrl != null && endpoint != null) {
-      ref
-          .read(authProvider.notifier)
-          .saveAuthInfo(accessToken: accessToken)
-          .then(
-            (a) => {log.info('Successfully updated auth info with access token: $accessToken')},
-            onError: (exception) => {
-              log.severe('Failed to update auth info with access token: $accessToken'),
-              ref.read(authProvider.notifier).logout(),
-              context.replaceRoute(const LoginRoute()),
-            },
-          );
+      final infoProvider = ref.read(serverInfoProvider.notifier);
+      final wsProvider = ref.read(websocketProvider.notifier);
+      ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
+        (a) {
+          try {
+            wsProvider.connect();
+            infoProvider.getServerInfo();
+          } catch (e) {
+            log.severe('Failed establishing connection to the server: $e');
+          }
+        },
+        onError: (exception) => {
+          log.severe('Failed to update auth info with access token: $accessToken'),
+          ref.read(authProvider.notifier).logout(),
+          context.replaceRoute(const LoginRoute()),
+        },
+      );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
       ref.read(authProvider.notifier).logout();

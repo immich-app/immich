@@ -21,8 +21,8 @@ export class SystemMetadataController {
   }
 
   @Post('admin-onboarding')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.SystemMetadataUpdate, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
   updateAdminOnboarding(@Body() dto: AdminOnboardingUpdateDto): Promise<void> {
     return this.service.updateAdminOnboarding(dto);
   }

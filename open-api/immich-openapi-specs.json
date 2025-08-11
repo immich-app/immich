@@ -214,6 +214,34 @@
         "description": "This endpoint requires the `activity.delete` permission."
       }
     },
+    "/admin/auth/unlink-all": {
+      "post": {
+        "operationId": "unlinkAllOAuthAccountsAdmin",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Auth (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminAuth.unlinkAll",
+        "description": "This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission."
+      }
+    },
     "/admin/notifications": {
       "post": {
         "operationId": "createNotification",
@@ -961,7 +989,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1252,7 +1280,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1305,7 +1333,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2540,7 +2568,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2575,7 +2603,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -2610,7 +2638,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2637,7 +2665,7 @@
         "operationId": "lockAuthSession",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2672,7 +2700,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2894,7 +2922,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2966,7 +2994,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3095,7 +3123,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3217,7 +3245,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -4224,7 +4252,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4328,7 +4356,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4365,7 +4393,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4558,7 +4586,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4692,7 +4720,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -5170,7 +5198,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6222,7 +6250,7 @@
         "operationId": "deleteServerLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -6506,7 +6534,9 @@
         ],
         "tags": [
           "Server"
-        ]
+        ],
+        "x-immich-permission": "server.versionCheck",
+        "description": "This endpoint requires the `server.versionCheck` permission."
       }
     },
     "/server/version-history": {
@@ -6933,7 +6963,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -8954,7 +8984,7 @@
         "operationId": "deleteUserLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -9055,7 +9085,7 @@
         "operationId": "deleteUserOnboarding",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -9469,7 +9499,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.137.0",
+    "version": "1.137.3",
     "contact": {}
   },
   "tags": [],
@@ -9977,6 +10007,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "dateTimeRelative": {
+            "type": "number"
+          },
           "description": {
             "type": "string"
           },
@@ -10004,6 +10037,9 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "timeZone": {
+            "type": "string"
           },
           "visibility": {
             "allOf": [
@@ -12631,6 +12667,7 @@
           "server.apkLinks",
           "server.storage",
           "server.statistics",
+          "server.versionCheck",
           "serverLicense.read",
           "serverLicense.update",
           "serverLicense.delete",
@@ -12678,7 +12715,8 @@
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
-          "adminUser.delete"
+          "adminUser.delete",
+          "adminAuth.unlinkAll"
         ],
         "type": "string"
       },
@@ -14941,9 +14979,11 @@
           "AlbumUserV1",
           "AlbumUserBackfillV1",
           "AlbumUserDeleteV1",
-          "AlbumAssetV1",
+          "AlbumAssetCreateV1",
+          "AlbumAssetUpdateV1",
           "AlbumAssetBackfillV1",
-          "AlbumAssetExifV1",
+          "AlbumAssetExifCreateV1",
+          "AlbumAssetExifUpdateV1",
           "AlbumAssetExifBackfillV1",
           "AlbumToAssetV1",
           "AlbumToAssetDeleteV1",

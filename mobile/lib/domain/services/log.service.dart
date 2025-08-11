@@ -14,7 +14,7 @@ import 'package:logging/logging.dart';
 /// writes them to a persistent [ILogRepository], and manages log levels
 /// via [IStoreRepository]
 class LogService {
-  final IsarLogRepository _logRepository;
+  final LogRepository _logRepository;
   final IsarStoreRepository _storeRepository;
 
   final List<LogMessage> _msgBuffer = [];
@@ -37,7 +37,7 @@ class LogService {
   }
 
   static Future<LogService> init({
-    required IsarLogRepository logRepository,
+    required LogRepository logRepository,
     required IsarStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
@@ -50,7 +50,7 @@ class LogService {
   }
 
   static Future<LogService> create({
-    required IsarLogRepository logRepository,
+    required LogRepository logRepository,
     required IsarStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
@@ -85,7 +85,7 @@ class LogService {
 
     if (_shouldBuffer) {
       _msgBuffer.add(record);
-      _flushTimer ??= Timer(const Duration(seconds: 5), () => unawaited(flushBuffer()));
+      _flushTimer ??= Timer(const Duration(seconds: 5), () => unawaited(_flushBuffer()));
     } else {
       unawaited(_logRepository.insert(record));
     }
@@ -108,20 +108,18 @@ class LogService {
     await _logRepository.deleteAll();
   }
 
-  void flush() {
+  Future<void> flush() {
     _flushTimer?.cancel();
-    // TODO: Rename enable this after moving to sqlite - #16504
-    // await _flushBufferToDatabase();
+    return _flushBuffer();
   }
 
   Future<void> dispose() {
     _flushTimer?.cancel();
     _logSubscription.cancel();
-    return flushBuffer();
+    return _flushBuffer();
   }
 
-  // TOOD: Move this to private once Isar is removed
-  Future<void> flushBuffer() async {
+  Future<void> _flushBuffer() async {
     _flushTimer = null;
     final buffer = [..._msgBuffer];
     _msgBuffer.clear();

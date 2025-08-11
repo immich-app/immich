@@ -20,9 +20,9 @@ export class DownloadController {
   }
 
   @Post('archive')
-  @HttpCode(HttpStatus.OK)
-  @FileResponse()
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
+  @FileResponse()
+  @HttpCode(HttpStatus.OK)
   downloadArchive(@Auth() auth: AuthDto, @Body() dto: AssetIdsDto): Promise<StreamableFile> {
     return this.service.downloadArchive(auth, dto).then(asStreamableFile);
   }

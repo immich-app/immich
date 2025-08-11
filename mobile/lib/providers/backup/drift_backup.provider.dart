@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:logging/logging.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -213,6 +214,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   final UploadService _uploadService;
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
+  final _logger = Logger("DriftBackupNotifier");
 
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {
@@ -333,18 +335,18 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> handleBackupResume(String userId) async {
-    debugPrint("handleBackupResume");
+    _logger.info("Resuming backup tasks...");
     final tasks = await _uploadService.getActiveTasks(kBackupGroup);
-    debugPrint("Found ${tasks.length} tasks");
+    _logger.info("Found ${tasks.length} tasks");
 
     if (tasks.isEmpty) {
       // Start a new backup queue
-      debugPrint("Start a new backup queue");
-      await startBackup(userId);
+      _logger.info("Start a new backup queue");
+      return startBackup(userId);
     }
 
-    debugPrint("Tasks to resume: ${tasks.length}");
-    await _uploadService.resumeBackup();
+    _logger.info("Tasks to resume: ${tasks.length}");
+    return _uploadService.resumeBackup();
   }
 
   @override

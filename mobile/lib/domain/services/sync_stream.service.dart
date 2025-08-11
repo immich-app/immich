@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
-import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -26,7 +25,6 @@ class SyncStreamService {
 
   Future<void> sync() {
     _logger.info("Remote sync request for user");
-    DLog.log("Remote sync request for user");
     // Start the sync stream and handle events
     return _syncApiRepository.streamChanges(_handleEvents);
   }
@@ -139,14 +137,18 @@ class SyncStreamService {
         return _syncStreamRepository.updateAlbumUsersV1(data.cast(), debugLabel: 'backfill');
       case SyncEntityType.albumUserDeleteV1:
         return _syncStreamRepository.deleteAlbumUsersV1(data.cast());
-      case SyncEntityType.albumAssetV1:
-        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album');
+      case SyncEntityType.albumAssetCreateV1:
+        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album asset create');
+      case SyncEntityType.albumAssetUpdateV1:
+        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album asset update');
       case SyncEntityType.albumAssetBackfillV1:
-        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album backfill');
-      case SyncEntityType.albumAssetExifV1:
-        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album');
+        return _syncStreamRepository.updateAssetsV1(data.cast(), debugLabel: 'album asset backfill');
+      case SyncEntityType.albumAssetExifCreateV1:
+        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album asset exif create');
+      case SyncEntityType.albumAssetExifUpdateV1:
+        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album asset exif update');
       case SyncEntityType.albumAssetExifBackfillV1:
-        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album backfill');
+        return _syncStreamRepository.updateAssetsExifV1(data.cast(), debugLabel: 'album asset exif backfill');
       case SyncEntityType.albumToAssetV1:
         return _syncStreamRepository.updateAlbumToAssetsV1(data.cast());
       case SyncEntityType.albumToAssetBackfillV1:
