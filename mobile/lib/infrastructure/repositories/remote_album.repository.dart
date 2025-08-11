@@ -268,26 +268,26 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   Future<DateTime?> getNewestAssetTimestamp(String albumId) {
     final query = _db.remoteAlbumAssetEntity.selectOnly()
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.createdAt.max()])
+      ..addColumns([_db.remoteAssetEntity.localDateTime.max()])
       ..join([
         innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
       ]);
 
     return query
-        .map((row) => row.read(_db.remoteAssetEntity.createdAt.max()) ?? DateTime.fromMillisecondsSinceEpoch(0))
+        .map((row) => row.read(_db.remoteAssetEntity.localDateTime.max()) ?? DateTime.fromMillisecondsSinceEpoch(0))
         .getSingleOrNull();
   }
 
   Future<DateTime?> getOldestAssetTimestamp(String albumId) {
     final query = _db.remoteAlbumAssetEntity.selectOnly()
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.createdAt.min()])
+      ..addColumns([_db.remoteAssetEntity.localDateTime.min()])
       ..join([
         innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
       ]);
 
     return query
-        .map((row) => row.read(_db.remoteAssetEntity.createdAt.min()) ?? DateTime.fromMillisecondsSinceEpoch(0))
+        .map((row) => row.read(_db.remoteAssetEntity.localDateTime.min()) ?? DateTime.fromMillisecondsSinceEpoch(0))
         .getSingleOrNull();
   }
 
