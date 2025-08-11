@@ -3,16 +3,16 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
 class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with CancellableImageProviderMixin {
   final String id;
   final Size size;
 
-  LocalThumbProvider({required this.id, this.size = kTimelineThumbnailSize});
+  LocalThumbProvider({required this.id, this.size = kThumbnailResolution});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {

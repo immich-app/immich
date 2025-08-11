@@ -1,13 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -15,7 +15,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
     this.asset, {
-    this.size = kTimelineThumbnailTileSize,
+    this.size = kTimelineFixedTileExtent,
     this.fit = BoxFit.cover,
     this.showStorageIndicator,
     this.lockSelection = false,

@@ -5,7 +5,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -13,6 +12,7 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:logging/logging.dart';
 import 'package:thumbhash/thumbhash.dart' as thumbhash;
 
@@ -30,7 +30,7 @@ class Thumbnail extends StatefulWidget {
   const Thumbnail({
     this.imageProvider,
     this.fit = BoxFit.cover,
-    this.size = kTimelineThumbnailSize,
+    this.size = kThumbnailResolution,
     this.blurhash,
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
@@ -39,7 +39,7 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.fromAsset({
     required Asset asset,
     this.fit = BoxFit.cover,
-    this.size = kTimelineThumbnailSize,
+    this.size = kThumbnailResolution,
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   }) : blurhash = asset.thumbhash,
@@ -48,7 +48,7 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.fromBaseAsset({
     required BaseAsset? asset,
     this.fit = BoxFit.cover,
-    this.size = kTimelineThumbnailSize,
+    this.size = kThumbnailResolution,
     this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   }) : blurhash = switch (asset) {
