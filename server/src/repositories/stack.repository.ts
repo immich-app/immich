@@ -47,6 +47,14 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
 
 @Injectable()
 export class StackRepository {
+  getByOwnerId(id: string) {
+    return this.db
+      .selectFrom('stack')
+      .selectAll('stack')
+      .where('stack.ownerId', '=', asUuid(id))
+      .orderBy('stack.createdAt', 'desc')
+      .execute();
+    }
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })

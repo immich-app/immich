@@ -2980,6 +2980,40 @@
         "description": "This endpoint requires the `stack.update` permission."
       }
     },
+    "/auto-stack/reset": {
+      "post": {
+        "operationId": "resetAll",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "AutoStack"
+        ],
+        "x-immich-permission": "stack.update",
+        "description": "This endpoint requires the `stack.update` permission."
+      }
+    },
     "/download/archive": {
       "post": {
         "operationId": "downloadArchive",
@@ -3435,53 +3469,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/JobCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Jobs"
-        ],
-        "x-immich-admin-only": true,
-        "x-immich-permission": "job.create",
-        "description": "This endpoint is an admin-only route, and requires the `job.create` permission."
-      }
-    },
-    "/jobs/command/{id}": {
-      "post": {
-        "operationId": "queueSingleJob",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "$ref": "#/components/schemas/JobName"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JobCommandDto"
               }
             }
           },
@@ -10162,6 +10149,9 @@
       },
       "AllJobStatusResponseDto": {
         "properties": {
+          "autoStackCandidateQueueAll": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -10209,6 +10199,7 @@
           }
         },
         "required": [
+          "autoStackCandidateQueueAll",
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
@@ -11894,7 +11885,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "autoStackCandidateQueueAll"
         ],
         "type": "string"
       },
@@ -16301,6 +16293,9 @@
       },
       "SystemConfigJobDto": {
         "properties": {
+          "autoStackCandidateQueueAll": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -16336,6 +16331,7 @@
           }
         },
         "required": [
+          "autoStackCandidateQueueAll",
           "backgroundTask",
           "faceDetection",
           "library",

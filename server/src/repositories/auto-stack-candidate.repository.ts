@@ -7,6 +7,13 @@ import { asUuid } from 'src/utils/database';
 export class AutoStackCandidateRepository {
   constructor(@InjectKysely() private db: Kysely<any>) {}
 
+  deleteAll(id: string) {
+    return this.db
+      .deleteFrom('auto_stack_candidate')
+      .where('ownerId', '=', asUuid(id))
+      .execute();
+  }
+
   async create(
     ownerId: string,
     assetIds: string[],

@@ -508,6 +508,7 @@ export enum QueueName {
   Library = 'library',
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
+  AutoStackCandidateQueueAll = 'autoStackCandidateQueueAll',
 }
 
 export enum JobName {
@@ -582,11 +583,13 @@ export enum JobName {
   // Auto Stack Candidates (Phase1)
   AutoStackCandidateQueueAll = 'AutoStackCandidateQueueAll',
   AutoStackCandidateGenerate = 'AutoStackCandidateGenerate',
+  AutoStackCandidateGenerateForAsset = 'AutoStackCandidateGenerateForAsset',
   AutoStackCandidateBackfill = 'AutoStackCandidateBackfill',
   AutoStackCandidateRescore = 'AutoStackCandidateRescore',
   AutoStackEnqueueMissingEmbeddings = 'AutoStackEnqueueMissingEmbeddings',
   AutoStackPHashBackfill = 'AutoStackPHashBackfill',
   AutoStackCandidateAging = 'AutoStackCandidateAging',
+  AutoStackCandidateResetAll = 'AutoStackCandidateResetAll',
 
   VersionCheck = 'VersionCheck',
 }

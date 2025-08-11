@@ -112,6 +112,9 @@ interface GetByIdsRelations {
 
 @Injectable()
 export class AssetRepository {
+  async getAllStackIds(): Promise<string[]> {
+    return await this.db.selectFrom('asset').select('stackId').distinct().where('stackId', 'is not', null).execute().then((rows: any[]) => rows.map((r) => r.stackId).filter(Boolean));
+  }
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async upsertExif(exif: Insertable<AssetExifTable>): Promise<void> {
@@ -511,6 +514,16 @@ export class AssetRepository {
       .$if(!!tags, (qb) => qb.select(withTags))
       .limit(1)
       .executeTakeFirst();
+  }
+
+  getByOwnerId(ownerid: string) {
+    return this.db
+      .selectFrom('asset')
+      .selectAll('asset')
+      .where('ownerId', '=', asUuid(ownerid))
+      .where('deletedAt', 'is', null)
+      .orderBy('createdAt', 'desc')
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { deviceId: DummyValue.STRING }] })

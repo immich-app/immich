@@ -340,22 +340,11 @@ export class AutoStackService extends BaseService {
     try {
       const { server } = await this.getConfig({ withCache: true });
       if (!server.autoStack.enabled) return;
-      // check if the asset already has a stack
-      const asset = await this.assetRepository.getById(assetId);
-      if (asset && asset.stackId) {
-        this.logger.debug(`AutoStack: asset=${assetId} is already in a stack – skip`);
-        return;
-      }
-      this.logger.debug(`AutoStack: metadata extracted asset=${assetId} user=${userId}`);
-      const dto = await this.assetRepository.getDateTimeOriginal(assetId);
-      if (!dto) {
-        this.logger.debug(`AutoStack: asset=${assetId} has no dateTimeOriginal – skip`);
-        return;
-      }
-      const created = await this.generateTimeWindowCandidates(userId, dto, undefined, assetId);
-      this.logger.log(`AutoStack: asset=${assetId} generated ${created} visual/time-window candidate group(s)`);
+  await this.jobRepository.queue({ name: JobName.AutoStackCandidateGenerateForAsset, data: { id: assetId } });
+  this.logger.debug(`AutoStack: queued asset candidate generation job asset=${assetId} user=${userId}`);
+      this.telemetryRepository.jobs.addToCounter('immich.auto_stack.jobs_queued', 1);
     } catch (error) {
-      this.logger.warn(`AutoStackService failed for asset ${assetId}: ${error}`);
+      this.logger.warn(`AutoStackService queue-on-event failed for asset ${assetId}: ${error}`);
     }
   }
 
@@ -621,26 +610,63 @@ export class AutoStackService extends BaseService {
     return created;
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateQueueAll, queue: QueueName.BackgroundTask })
-  async handleQueueAllCandidates(): Promise<JobStatus> {
+  @OnJob({ name: JobName.AutoStackCandidateQueueAll, queue: QueueName.AutoStackCandidateQueueAll })
+  async handleQueueAllCandidates(job: JobOf<JobName.AutoStackCandidateQueueAll>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
     const users = await this.userRepository.getList({ withDeleted: false });
+    this.logger.log(`AutoStack: queuing candidate generation for ${users.length} users`);
     await this.jobRepository.queueAll(
-      users.map((u: any) => ({ name: JobName.AutoStackCandidateGenerate, data: { id: u.id } })),
+      users.map((u: any) => ({ name: JobName.AutoStackCandidateGenerate, data: { id: u.id, force: job.force } })),
     );
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateGenerate, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AutoStackCandidateGenerate, queue: QueueName.AutoStackCandidateQueueAll })
   async handleGenerateCandidates(job: JobOf<JobName.AutoStackCandidateGenerate>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
-    await this.generateTimeWindowCandidates(job.id, new Date(), server.autoStack.windowSeconds);
+    this.logger.debug(`AutoStack: generating candidates for owner=${job.id} force=${job.force}`);
+    // If force is set, delete all existing candidates for this user
+    if (job.force) {
+      this.logger.debug(`AutoStack: force mode enabled, deleting existing candidates for owner=${job.id}`);
+      await this.autoStackCandidateRepository.deleteAll(job.id);
+      const existingStacks = await this.stackRepository.getByOwnerId(job.id);
+      await this.stackRepository.deleteAll(existingStacks.map((s: any) => s.id));
+      this.telemetryRepository.jobs.addToCounter('immich.auto_stack.candidates_deleted', 1);
+    }
+    const allAssets = await this.assetRepository.getByOwnerId(job.id);
+    this.logger.debug(`AutoStack: found ${allAssets.length} assets for owner=${job.id}`);
+    if (!allAssets.length) {
+      this.logger.debug(`AutoStack: no assets found for owner=${job.id}, skipping candidate generation`);
+      return JobStatus.Skipped;
+    }
+    for (const asset of allAssets) {
+      await this.jobRepository.queue({ name: JobName.AutoStackCandidateGenerateForAsset, data: { id: asset.id } });
+    }
+    this.logger.debug(`AutoStack: queued candidate generation for ${allAssets.length} assets for owner=${job.id}`);
+      
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateBackfill, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AutoStackCandidateGenerateForAsset, queue: QueueName.AutoStackCandidateQueueAll })
+  async handleGenerateCandidatesForAsset(job: JobOf<JobName.AutoStackCandidateGenerateForAsset>): Promise<JobStatus> {
+    const { server } = await this.getConfig({ withCache: true });
+    if (!server.autoStack.enabled) return JobStatus.Skipped;
+    try {
+      const asset = await this.assetRepository.getById(job.id);
+      if (!asset) return JobStatus.Skipped;
+      const dto = await this.assetRepository.getDateTimeOriginal(job.id);
+      if (!dto) return JobStatus.Skipped;
+      await this.generateTimeWindowCandidates(asset.ownerId, dto, undefined, job.id);
+      return JobStatus.Success;
+    } catch (e) {
+      this.logger.warn(`AutoStack: asset-specific candidate generation failed asset=${job.id}: ${e}`);
+      return JobStatus.Failed;
+    }
+  }
+
+  @OnJob({ name: JobName.AutoStackCandidateBackfill, queue: QueueName.AutoStackCandidateQueueAll })
   async handleBackfill(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
@@ -686,7 +712,7 @@ export class AutoStackService extends BaseService {
   // Queue-all job to generate candidates for recent assets per user (prototype scope: last 5 minutes window centered at now)
   // Placeholder: no queue-all job yet; will add dedicated JobName in later phase.
 
-  @OnJob({ name: JobName.AutoStackEnqueueMissingEmbeddings, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AutoStackEnqueueMissingEmbeddings, queue: QueueName.AutoStackCandidateQueueAll })
   async handleEnqueueMissingEmbeddings(job: JobOf<JobName.AutoStackEnqueueMissingEmbeddings>): Promise<JobStatus> {
     const { server, machineLearning } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
@@ -702,7 +728,7 @@ export class AutoStackService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateRescore, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AutoStackCandidateRescore, queue: QueueName.AutoStackCandidateQueueAll })
   async handleRescore(job: JobOf<JobName.AutoStackCandidateRescore>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
@@ -740,7 +766,7 @@ export class AutoStackService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AutoStackPHashBackfill, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AutoStackPHashBackfill, queue: QueueName.AutoStackCandidateQueueAll })
   async handlePHashBackfill(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled || !server.autoStack.pHashBackfillEnabled) return JobStatus.Skipped;
@@ -775,7 +801,7 @@ export class AutoStackService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateAging, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.AutoStackCandidateAging, queue: QueueName.AutoStackCandidateQueueAll })
   async handleCandidateAging(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
@@ -799,6 +825,29 @@ export class AutoStackService extends BaseService {
       return JobStatus.Success;
     } catch (e) {
       this.logger.warn(`AutoStack: candidate aging failed: ${e}`);
+      return JobStatus.Failed;
+    }
+  }
+
+  @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStackCandidateQueueAll })
+  async handleResetAll(): Promise<JobStatus> {
+    const { server } = await this.getConfig({ withCache: true });
+    if (!server.autoStack.enabled) return JobStatus.Skipped;
+    try {
+      const db: any = (this.autoStackCandidateRepository as any).db;
+  // Delete all existing auto stack candidates (global reset) and stacks
+  await db.deleteFrom('auto_stack_candidate').execute();
+  // Clear stackId from assets first to avoid FK constraint issues, then delete stacks
+  await db.updateTable('asset').set({ stackId: null, updatedAt: new Date() }).where('stackId', 'is not', null).execute();
+  await db.deleteFrom('stack').execute();
+  this.logger.log('AutoStack: cleared all existing candidates and stacks');
+      const users = await this.userRepository.getList({ withDeleted: false });
+      await this.jobRepository.queueAll(
+        users.map((u: any) => ({ name: JobName.AutoStackCandidateGenerate, data: { id: u.id } })),
+      );
+      return JobStatus.Success;
+    } catch (e) {
+      this.logger.warn(`AutoStack: reset failed: ${e}`);
       return JobStatus.Failed;
     }
   }

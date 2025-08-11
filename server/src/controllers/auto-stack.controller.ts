@@ -77,4 +77,14 @@ export class AutoStackController {
     return { status: 'queued' };
   }
 
+  @Post('reset')
+  @Authenticated({ permission: Permission.StackUpdate })
+  async resetAll(@Auth() auth: AuthDto) {
+    const { server } = await (this.autoStack as any).getConfig({ withCache: true });
+    if (!server.autoStack.enabled) return { error: 'disabled' };
+    // Queue a global reset (delete all candidates and reprocess window for each user)
+    await (this.autoStack as any).jobRepository.queue({ name: 'AutoStackCandidateResetAll' });
+    return { status: 'queued' };
+  }
+
 }
