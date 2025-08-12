@@ -273,9 +273,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
       ]);
 
-    return query
-        .map((row) => row.read(_db.remoteAssetEntity.localDateTime.max()) ?? DateTime.fromMillisecondsSinceEpoch(0))
-        .getSingleOrNull();
+    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.max())).getSingleOrNull();
   }
 
   Future<DateTime?> getOldestAssetTimestamp(String albumId) {
@@ -286,9 +284,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
       ]);
 
-    return query
-        .map((row) => row.read(_db.remoteAssetEntity.localDateTime.min()) ?? DateTime.fromMillisecondsSinceEpoch(0))
-        .getSingleOrNull();
+    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.min())).getSingleOrNull();
   }
 
   Future<int> getCount() {
