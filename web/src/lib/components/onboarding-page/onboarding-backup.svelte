@@ -3,6 +3,13 @@
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
+  import type { Translations } from 'svelte-i18n';
+
+  const messageKeys = [
+    'admin.backup_onboarding_3_description',
+    'admin.backup_onboarding_2_description',
+    'admin.backup_onboarding_1_description',
+  ];
 </script>
 
 <div class="flex flex-col">
@@ -29,32 +36,16 @@
       <h2 class="mb-6"><FormatMessage key="admin.backup_onboarding_parts_title" /></h2>
 
       <div class="space-y-6">
-        <div class="flex items-start gap-6">
-          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
-            <span class="text-white dark:text-black text-xl font-semibold">3</span>
+        {#each messageKeys as keyString, index (index)}
+          <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
+              <span class="text-light text-xl font-semibold">{3 - index}</span>
+            </div>
+            <div class="leading-relaxed pt-2">
+              <FormatMessage key={keyString as Translations} />
+            </div>
           </div>
-          <div class="leading-relaxed pt-2">
-            <FormatMessage key="admin.backup_onboarding_3_description" />
-          </div>
-        </div>
-
-        <div class="flex items-start gap-6">
-          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
-            <span class="text-white dark:text-black text-xl font-semibold">2</span>
-          </div>
-          <div class="leading-relaxed pt-2">
-            <FormatMessage key="admin.backup_onboarding_2_description" />
-          </div>
-        </div>
-
-        <div class="flex items-start gap-6">
-          <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
-            <span class="text-white dark:text-black text-xl font-semibold">1</span>
-          </div>
-          <div class="leading-relaxed pt-2">
-            <FormatMessage key="admin.backup_onboarding_1_description" />
-          </div>
-        </div>
+        {/each}
       </div>
     </div>
 
