@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -18,7 +19,6 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/remote_album.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -138,21 +138,28 @@ class _SortButton extends ConsumerStatefulWidget {
 class _SortButtonState extends ConsumerState<_SortButton> {
   RemoteAlbumSortMode albumSortOption = RemoteAlbumSortMode.lastModified;
   bool albumSortIsReverse = true;
+  bool isSorting = false;
 
-  void onMenuTapped(RemoteAlbumSortMode sortMode) {
+  Future<void> onMenuTapped(RemoteAlbumSortMode sortMode) async {
     final selected = albumSortOption == sortMode;
     // Switch direction
     if (selected) {
       setState(() {
         albumSortIsReverse = !albumSortIsReverse;
+        isSorting = true;
       });
-      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
+      await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     } else {
       setState(() {
         albumSortOption = sortMode;
+        isSorting = true;
       });
-      ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
+      await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     }
+
+    setState(() {
+      isSorting = false;
+    });
   }
 
   @override
@@ -230,6 +237,16 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                   color: context.colorScheme.onSurface.withAlpha(225),
                 ),
               ),
+              isSorting
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.colorScheme.onSurface.withAlpha(225),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ],
           ),
         );
