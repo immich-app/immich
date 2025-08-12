@@ -132,7 +132,6 @@
       confirmText = $t('permanently_delete');
     }
 
-    // duplicatesIndex = 0;
     return withConfirmation(
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
@@ -146,6 +145,9 @@
         duplicates = [];
 
         deletedNotification(idsToDelete.length);
+
+        page.url.searchParams.delete('index');
+        await goto(`${AppRoute.DUPLICATES}`);
       },
       prompt,
       confirmText,
@@ -154,7 +156,6 @@
 
   const handleKeepAll = async () => {
     const ids = duplicates.map(({ duplicateId }) => duplicateId);
-    // duplicatesIndex = 0;
     return withConfirmation(
       async () => {
         await deleteDuplicates({ bulkIdsDto: { ids } });
@@ -165,6 +166,8 @@
           message: $t('resolved_all_duplicates'),
           type: NotificationType.Info,
         });
+        page.url.searchParams.delete('index');
+        await goto(`${AppRoute.DUPLICATES}`);
       },
       $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
       $t('confirm'),
