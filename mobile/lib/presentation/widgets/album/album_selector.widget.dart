@@ -138,6 +138,7 @@ class _SortButton extends ConsumerStatefulWidget {
 class _SortButtonState extends ConsumerState<_SortButton> {
   RemoteAlbumSortMode albumSortOption = RemoteAlbumSortMode.lastModified;
   bool albumSortIsReverse = true;
+  bool isSorting = false;
 
   Future<void> onMenuTapped(RemoteAlbumSortMode sortMode) async {
     final selected = albumSortOption == sortMode;
@@ -145,14 +146,20 @@ class _SortButtonState extends ConsumerState<_SortButton> {
     if (selected) {
       setState(() {
         albumSortIsReverse = !albumSortIsReverse;
+        isSorting = true;
       });
       await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     } else {
       setState(() {
         albumSortOption = sortMode;
+        isSorting = true;
       });
       await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     }
+
+    setState(() {
+      isSorting = false;
+    });
   }
 
   @override
@@ -230,6 +237,16 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                   color: context.colorScheme.onSurface.withAlpha(225),
                 ),
               ),
+              isSorting
+                  ? SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.colorScheme.onSurface.withAlpha(225),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ],
           ),
         );
