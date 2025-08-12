@@ -113,8 +113,8 @@ class TrashSyncService {
     return _trashSyncRepository.getCount();
   }
 
-  Future<void> setMoveToTrashDecision(Iterable<String> checksums, bool isApproved) async {
-    await _trashSyncRepository.updateApproves(checksums, isApproved);
+  Future<void> resolveRemoteTrash(Iterable<String> checksums, {required bool allow}) async {
+    await _trashSyncRepository.updateApproves(checksums, allow);
   }
 
   Stream<int> watchPendingDecisionCount() => _trashSyncRepository.watchPendingDecisionCount();

@@ -24,7 +24,7 @@ class DenyMoveToTrashActionButton extends ConsumerWidget {
 
     final actionNotifier = ref.read(actionProvider.notifier);
     final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
-    final result = await actionNotifier.setMoveToTrashDecision(source, false);
+    final result = await actionNotifier.resolveRemoteTrash(source, allow: false);
     multiSelectNotifier.reset();
 
     if (context.mounted) {

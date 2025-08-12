@@ -241,9 +241,9 @@ class ActionService {
     return _downloadRepository.downloadAllAssets(assets);
   }
 
-  Future<bool> setMoveToTrashDecision(Iterable<String> remoteChecksums, bool isApproved) async {
-    await _trashSyncService.setMoveToTrashDecision(remoteChecksums, isApproved);
-    if (isApproved) {
+  Future<bool> resolveRemoteTrash(Iterable<String> remoteChecksums, {required bool allow}) async {
+    await _trashSyncService.resolveRemoteTrash(remoteChecksums, allow: allow);
+    if (allow) {
       return await _trashSyncService.applyRemoteTrash(remoteChecksums, true);
     }
     return true;
