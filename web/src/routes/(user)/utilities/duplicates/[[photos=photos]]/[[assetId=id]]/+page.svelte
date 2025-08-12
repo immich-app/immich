@@ -163,10 +163,7 @@
   };
 </script>
 
-<UserPageLayout
-  title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})-${duplicatesIndex}`}
-  scrollbar={true}
->
+<UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
