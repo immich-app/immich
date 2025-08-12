@@ -1,20 +1,21 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
   import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
   import OnboardingLocale from '$lib/components/onboarding-page/onboarding-language.svelte';
+  import OnboardingMobileApp from '$lib/components/onboarding-page/onboarding-mobile-app.svelte';
   import OnboardingServerPrivacy from '$lib/components/onboarding-page/onboarding-server-privacy.svelte';
   import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import OnboardingUserPrivacy from '$lib/components/onboarding-page/onboarding-user-privacy.svelte';
-  import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { OnboardingRole } from '$lib/models/onboarding-role';
   import { retrieveServerConfig, retrieveSystemConfig, serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
-  import { mdiCloudUpload, mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
+  import { mdiCellphone, mdiCloudUpload, mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -26,7 +27,9 @@
       | typeof OnboardingStorageTemplate
       | typeof OnboardingServerPrivacy
       | typeof OnboardingUserPrivacy
+      | typeof OnboardingMobileApp
       | typeof OnboardingLocale;
+
     role: OnboardingRole;
     title?: string;
     icon?: string;
@@ -75,6 +78,13 @@
       role: OnboardingRole.SERVER,
       title: $t('admin.backup_onboarding_title'),
       icon: mdiCloudUpload,
+    },
+    {
+      name: 'mobile_app',
+      component: OnboardingMobileApp,
+      role: OnboardingRole.USER,
+      title: $t('mobile_app'),
+      icon: mdiCellphone, // or you can use mdiCellphoneArrowDownVariant
     },
   ]);
 
