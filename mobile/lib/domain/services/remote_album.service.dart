@@ -165,10 +165,10 @@ class RemoteAlbumService {
     }
 
     // await all database queries
-    var entries = await Future.wait(
+    final entries = await Future.wait(
       assetTimestampFutures.entries.map((entry) async => MapEntry(entry.key, await entry.value)),
     );
-    var assetTimestamps = Map.fromEntries(entries);
+    final assetTimestamps = Map.fromEntries(entries);
 
     final sorted = albums.sorted((a, b) {
       final aDate = assetTimestamps[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
@@ -182,14 +182,14 @@ class RemoteAlbumService {
   Future<List<RemoteAlbum>> _sortByOldestAsset(List<RemoteAlbum> albums) async {
     // map album IDs to their oldest asset dates
     final Map<String, Future<DateTime?>> assetTimestampFutures = {
-      for (var album in albums) album.id: _repository.getOldestAssetTimestamp(album.id),
+      for (final album in albums) album.id: _repository.getOldestAssetTimestamp(album.id),
     };
 
     // await all database queries
-    var entries = await Future.wait(
+    final entries = await Future.wait(
       assetTimestampFutures.entries.map((entry) async => MapEntry(entry.key, await entry.value)),
     );
-    var assetTimestamps = Map.fromEntries(entries);
+    final assetTimestamps = Map.fromEntries(entries);
 
     final sorted = albums.sorted((a, b) {
       final aDate = assetTimestamps[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
