@@ -105,7 +105,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
             ),
           if (currentAlbum.isActivityEnabled)
             IconButton(
-              icon: Icon(Icons.chat, color: actionIconColor, shadows: actionIconShadows),
+              icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
               onPressed: widget.onActivity,
             ),
           if (widget.onShowOptions != null)

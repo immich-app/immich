@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -43,7 +44,11 @@ class DriftActivitiesPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: asset == null ? Text(album.name) : null),
+      appBar: AppBar(
+        title: asset == null ? Text(album.name) : null,
+        actions: [const LikeActivityActionButton(menuItem: true)],
+        actionsPadding: const EdgeInsets.only(right: 8),
+      ),
       body: activities.widgetWhen(
         onData: (data) {
           final liked = data.firstWhereOrNull(

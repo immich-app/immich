@@ -7,10 +7,12 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
@@ -21,6 +23,7 @@ class ViewerBottomBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = ref.watch(currentAssetNotifier);
+    final album = ref.watch(currentRemoteAlbumProvider);
     if (asset == null) {
       return const SizedBox.shrink();
     }
@@ -38,6 +41,7 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
+      if (album?.isActivityEnabled ?? false) const LikeActivityActionButton(),
       if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
       if (asset.type == AssetType.image) const EditImageActionButton(),
       if (asset.hasRemote && isOwner) const ArchiveActionButton(source: ActionSource.viewer),
