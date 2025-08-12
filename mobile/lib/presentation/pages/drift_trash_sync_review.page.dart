@@ -5,14 +5,29 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_sync_bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 
 @RoutePage()
-class DriftTrashSyncReviewPage extends StatelessWidget {
+class DriftTrashSyncReviewPage extends ConsumerWidget {
   const DriftTrashSyncReviewPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = context.router;
+    ref.listen(outOfSyncCountProvider, (previous, next) {
+      final prevCount = previous?.asData?.value ?? 0;
+      final nextCount = next.asData?.value ?? 0;
+      if (prevCount > 0 && nextCount == 0) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          await Future.delayed(const Duration(milliseconds: 1600));
+          if (router.current.name == DriftTrashSyncReviewRoute.name) {
+            await router.maybePop();
+          }
+        });
+      }
+    });
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith((ref) {

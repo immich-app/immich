@@ -14,9 +14,8 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 /// This action is used when the asset is selected in multi-selection mode in the review out-of-sync changes
 class AllowMoveToTrashActionButton extends ConsumerWidget {
   final ActionSource source;
-  final VoidCallback onSuccess;
 
-  const AllowMoveToTrashActionButton({super.key, required this.source, required this.onSuccess});
+  const AllowMoveToTrashActionButton({super.key, required this.source});
 
   void _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
@@ -41,9 +40,6 @@ class AllowMoveToTrashActionButton extends ConsumerWidget {
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );
-      if (result.success) {
-        onSuccess.call();
-      }
     }
   }
 
