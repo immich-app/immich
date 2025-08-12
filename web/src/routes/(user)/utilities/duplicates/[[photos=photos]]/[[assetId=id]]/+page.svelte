@@ -191,9 +191,9 @@
     await correctDuplicateIndexAndGo();
   };
   const correctDuplicateIndexAndGo = async () => {
-    let index = page.url.searchParams.get('index') ?? '0';
-    index = Number.isNaN(Number.parseInt(index)) ? '0' : index;
-    page.url.searchParams.set('index', Math.max(0, Math.min(Number.parseInt(index), duplicates.length - 1)).toString());
+    let index = Number.parseInt(page.url.searchParams.get('index') ?? '0');
+    index = Number.isNaN(index) ? 0 : index;
+    page.url.searchParams.set('index', Math.max(0, Math.min(index, duplicates.length - 1)).toString());
     await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
   };
 </script>
