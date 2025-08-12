@@ -1,10 +1,13 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { AppRoute } from '$lib/constants';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
@@ -15,7 +18,16 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
-  import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
+  import {
+    mdiCheckOutline,
+    mdiChevronLeft,
+    mdiChevronRight,
+    mdiInformationOutline,
+    mdiKeyboard,
+    mdiPageFirst,
+    mdiPageLast,
+    mdiTrashCanOutline,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -47,7 +59,11 @@
   };
 
   let duplicates = $state(data.duplicates);
-  let duplicatesIndex = $state(0);
+  let duplicatesIndex = $derived(
+    Number.isNaN(Number.parseInt(page.url.searchParams.get('index') ?? '0'))
+      ? 0
+      : Number.parseInt(page.url.searchParams.get('index') ?? '0'),
+  );
   let hasDuplicates = $derived(duplicates.length > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
@@ -86,7 +102,7 @@
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
-        correctDuplicateIndex();
+        await correctDuplicateIndexAndGo();
       },
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
@@ -98,7 +114,7 @@
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
-    correctDuplicateIndex();
+    await correctDuplicateIndexAndGo();
   };
 
   const handleDeduplicateAll = async () => {
@@ -116,7 +132,7 @@
       confirmText = $t('permanently_delete');
     }
 
-    duplicatesIndex = 0;
+    // duplicatesIndex = 0;
     return withConfirmation(
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
@@ -138,7 +154,7 @@
 
   const handleKeepAll = async () => {
     const ids = duplicates.map(({ duplicateId }) => duplicateId);
-    duplicatesIndex = 0;
+    // duplicatesIndex = 0;
     return withConfirmation(
       async () => {
         await deleteDuplicates({ bulkIdsDto: { ids } });
@@ -155,11 +171,27 @@
     );
   };
 
-  const handleSkip = () => {
-    duplicatesIndex = Math.min(duplicatesIndex + 1, duplicates.length - 1);
+  const handleFirst = async () => {
+    page.url.searchParams.set('index', '0');
+    await correctDuplicateIndexAndGo();
   };
-  const correctDuplicateIndex = () => {
-    duplicatesIndex = Math.min(duplicatesIndex, duplicates.length - 1);
+  const handlePrevious = async () => {
+    page.url.searchParams.set('index', Math.max(duplicatesIndex - 1, 0).toString());
+    await correctDuplicateIndexAndGo();
+  };
+  const handleNext = async () => {
+    page.url.searchParams.set('index', Math.min(duplicatesIndex + 1, duplicates.length - 1).toString());
+    await correctDuplicateIndexAndGo();
+  };
+  const handleLast = async () => {
+    page.url.searchParams.set('index', (duplicates.length - 1).toString());
+    await correctDuplicateIndexAndGo();
+  };
+  const correctDuplicateIndexAndGo = async () => {
+    let index = page.url.searchParams.get('index') ?? '0';
+    index = Number.isNaN(Number.parseInt(index)) ? '0' : index;
+    page.url.searchParams.set('index', Math.max(0, Math.min(Number.parseInt(index), duplicates.length - 1)).toString());
+    await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
   };
 </script>
 
@@ -218,12 +250,58 @@
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
-          onSkip={handleSkip}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
-          disableSkip={duplicatesIndex >= duplicates.length - 1}
         />
+        <div class="max-w-216 mx-auto mb-16">
+          <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
+            <div class="flex text-xs text-black">
+              <Button
+                size="small"
+                leadingIcon={mdiPageFirst}
+                color="primary"
+                class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
+                onclick={handleFirst}
+                disabled={duplicatesIndex === 0}
+              >
+                {$t('first')}
+              </Button>
+              <Button
+                size="small"
+                leadingIcon={mdiChevronLeft}
+                color="primary"
+                class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
+                onclick={handlePrevious}
+                disabled={duplicatesIndex === 0}
+              >
+                {$t('previous')}
+              </Button>
+            </div>
+            <div class="flex text-xs text-black">
+              <Button
+                size="small"
+                trailingIcon={mdiChevronRight}
+                color="primary"
+                class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
+                onclick={handleNext}
+                disabled={duplicatesIndex === duplicates.length - 1}
+              >
+                {$t('next')}
+              </Button>
+              <Button
+                size="small"
+                trailingIcon={mdiPageLast}
+                color="primary"
+                class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
+                onclick={handleLast}
+                disabled={duplicatesIndex === duplicates.length - 1}
+              >
+                {$t('last')}
+              </Button>
+            </div>
+          </div>
+        </div>
       {/key}
     {:else}
       <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
