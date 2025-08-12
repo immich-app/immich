@@ -8,7 +8,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
-  import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiCheck, mdiChevronRight, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -17,9 +17,11 @@
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
+    onSkip: () => void;
+    disableSkip: boolean;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
+  let { assets, onResolve, onStack, onSkip, disableSkip }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
@@ -94,6 +96,10 @@
 
   const handleStack = () => {
     onStack(assets);
+  };
+
+  const handleSkip = () => {
+    onSkip();
   };
 </script>
 
@@ -173,6 +179,21 @@
         onViewAsset={(asset) => setAsset(asset)}
       />
     {/each}
+  </div>
+
+  <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-end">
+    <div class="flex text-xs text-black">
+      <Button
+        size="small"
+        trailingIcon={mdiChevronRight}
+        color="primary"
+        class="flex place-items-center rounded-full gap-2"
+        onclick={handleSkip}
+        disabled={disableSkip}
+      >
+        {$t('skip')}
+      </Button>
+    </div>
   </div>
 </div>
 

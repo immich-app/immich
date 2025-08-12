@@ -47,6 +47,7 @@
   };
 
   let duplicates = $state(data.duplicates);
+  let duplicatesIndex = $state(0);
   let hasDuplicates = $derived(duplicates.length > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
@@ -85,6 +86,7 @@
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
+        correctDuplicateIndex();
       },
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
@@ -96,6 +98,7 @@
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
+    correctDuplicateIndex();
   };
 
   const handleDeduplicateAll = async () => {
@@ -113,6 +116,7 @@
       confirmText = $t('permanently_delete');
     }
 
+    duplicatesIndex = 0;
     return withConfirmation(
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
@@ -134,6 +138,7 @@
 
   const handleKeepAll = async () => {
     const ids = duplicates.map(({ duplicateId }) => duplicateId);
+    duplicatesIndex = 0;
     return withConfirmation(
       async () => {
         await deleteDuplicates({ bulkIdsDto: { ids } });
@@ -149,9 +154,19 @@
       $t('confirm'),
     );
   };
+
+  const handleSkip = () => {
+    duplicatesIndex = Math.min(duplicatesIndex + 1, duplicates.length - 1);
+  };
+  const correctDuplicateIndex = () => {
+    duplicatesIndex = Math.min(duplicatesIndex, duplicates.length - 1);
+  };
 </script>
 
-<UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
+<UserPageLayout
+  title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})-${duplicatesIndex}`}
+  scrollbar={true}
+>
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
@@ -203,12 +218,14 @@
         />
       </div>
 
-      {#key duplicates[0].duplicateId}
+      {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
-          assets={duplicates[0].assets}
+          assets={duplicates[duplicatesIndex].assets}
+          onSkip={handleSkip}
           onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(duplicates[0].duplicateId, assets)}
+            handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
+          disableSkip={duplicatesIndex >= duplicates.length - 1}
         />
       {/key}
     {:else}
