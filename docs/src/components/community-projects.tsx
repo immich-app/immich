@@ -60,6 +60,11 @@ const projects: CommunityProjectProps[] = [
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
   {
+    title: 'Immich-Slideshow-Toolkit',
+    description: 'Commandline tools for creating video slideshow Mp4s from Immich albums.',
+    url: 'https://github.com/knom/immich-slideshow-toolkit',
+  },
+  {
     title: 'Powershell Module PSImmich',
     description: 'Powershell Module for the Immich API',
     url: 'https://github.com/hanpq/PSImmich',
