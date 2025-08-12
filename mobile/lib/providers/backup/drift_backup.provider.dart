@@ -342,11 +342,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     if (tasks.isEmpty) {
       // Start a new backup queue
       _logger.info("Start a new backup queue");
-      await startBackup(userId);
+      return startBackup(userId);
     }
 
     _logger.info("Tasks to resume: ${tasks.length}");
-    await _uploadService.resumeBackup();
+    return _uploadService.resumeBackup();
   }
 
   @override

@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/remote_album.utils.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:sliver_tools/sliver_tools.dart';
@@ -423,42 +424,72 @@ class _AlbumList extends ConsumerWidget {
       sliver: SliverList.builder(
         itemBuilder: (_, index) {
           final album = albums[index];
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: LargeLeadingTile(
-              title: Text(
-                album.name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                '${'items_count'.t(context: context, args: {'count': album.assetCount})} • ${album.ownerId != userId ? 'shared_by_user'.t(context: context, args: {'user': album.ownerName}) : 'owned'.t(context: context)}',
-                overflow: TextOverflow.ellipsis,
-                style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-              ),
-              onTap: () => onAlbumSelected(album),
-              leadingPadding: const EdgeInsets.only(right: 16),
-              leading: album.thumbnailAssetId != null
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(15)),
-                      child: SizedBox(width: 80, height: 80, child: Thumbnail(remoteId: album.thumbnailAssetId)),
-                    )
-                  : SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: context.colorScheme.surfaceContainer,
-                          borderRadius: const BorderRadius.all(Radius.circular(16)),
-                          border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
-                        ),
-                        child: const Icon(Icons.photo_album_rounded, size: 24, color: Colors.grey),
-                      ),
-                    ),
+          final albumTile = LargeLeadingTile(
+            title: Text(
+              album.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
+            subtitle: Text(
+              '${'items_count'.t(context: context, args: {'count': album.assetCount})} • ${album.ownerId != userId ? 'shared_by_user'.t(context: context, args: {'user': album.ownerName}) : 'owned'.t(context: context)}',
+              overflow: TextOverflow.ellipsis,
+              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+            ),
+            onTap: () => onAlbumSelected(album),
+            leadingPadding: const EdgeInsets.only(right: 16),
+            leading: album.thumbnailAssetId != null
+                ? ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(15)),
+                    child: SizedBox(width: 80, height: 80, child: Thumbnail(remoteId: album.thumbnailAssetId)),
+                  )
+                : SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainer,
+                        borderRadius: const BorderRadius.all(Radius.circular(16)),
+                        border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
+                      ),
+                      child: const Icon(Icons.photo_album_rounded, size: 24, color: Colors.grey),
+                    ),
+                  ),
           );
+          final isOwner = album.ownerId == userId;
+
+          if (isOwner) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Dismissible(
+                key: ValueKey(album.id),
+                background: Container(
+                  color: context.colorScheme.error,
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16),
+                  child: Icon(Icons.delete, color: context.colorScheme.onError),
+                ),
+                direction: DismissDirection.endToStart,
+                confirmDismiss: (direction) {
+                  return showDialog<bool>(
+                    context: context,
+                    builder: (context) => ConfirmDialog(
+                      onOk: () => true,
+                      title: "delete_album".t(context: context),
+                      content: "album_delete_confirmation".t(context: context, args: {'album': album.name}),
+                      ok: "delete".t(context: context),
+                    ),
+                  );
+                },
+                onDismissed: (direction) async {
+                  await ref.read(remoteAlbumProvider.notifier).deleteAlbum(album.id);
+                },
+                child: albumTile,
+              ),
+            );
+          } else {
+            return Padding(padding: const EdgeInsets.only(bottom: 8.0), child: albumTile);
+          }
         },
         itemCount: albums.length,
       ),
