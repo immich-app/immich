@@ -45,7 +45,6 @@ describe(MemoryService.name, () => {
 
     it('should map empty result', async () => {
       mocks.memory.search.mockResolvedValue([]);
-
       await expect(sut.search(factory.auth(), {})).resolves.toEqual([]);
     });
   });
