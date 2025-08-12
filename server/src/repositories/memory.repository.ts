@@ -59,21 +59,22 @@ export class MemoryRepository implements IBulkAsset {
   )
   search(ownerId: string, dto: MemorySearchDto) {
     return this.searchBuilder(ownerId, dto)
-      .select((eb) =>
-        jsonArrayFrom(
-          eb
-            .selectFrom('asset')
-            .selectAll('asset')
-            .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetsId')
-            .whereRef('memory_asset.memoriesId', '=', 'memory.id')
-            .orderBy('asset.fileCreatedAt', 'asc')
-            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-            .where('asset.deletedAt', 'is', null),
-        ).as('assets'),
-      )
-      .selectAll('memory')
-      .orderBy('memoryAt', 'desc')
-      .execute();
+    .select((eb) =>
+      jsonArrayFrom(
+        eb
+          .selectFrom('asset')
+          .selectAll('asset')
+          .innerJoin('memory_asset', 'asset.id', 'memory_asset.assetsId')
+          .whereRef('memory_asset.memoriesId', '=', 'memory.id')
+          .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+          .where('asset.deletedAt', 'is', null)
+          .where(sql<boolean>`NOT asset_linked_to_hidden_person("asset"."id")`)
+          .orderBy('asset.fileCreatedAt', 'asc'),
+      ).as('assets'),
+    )
+    .selectAll('memory')
+    .orderBy('memoryAt', 'desc')
+    .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
