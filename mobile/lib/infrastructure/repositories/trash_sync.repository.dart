@@ -46,25 +46,15 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> delete(List<String> ids) {
-    if (ids.isEmpty) {
+  Future<void> deleteUnapproved(Iterable<String> checksums) {
+    if (checksums.isEmpty) {
       return Future.value();
     }
     return _db.batch((batch) {
-      for (final slice in ids.slices(32000)) {
-        batch.deleteWhere(_db.trashSyncEntity, (e) => e.assetId.isIn(slice));
+      for (final slice in checksums.slices(900)) {
+        batch.deleteWhere(_db.trashSyncEntity, (e) => e.checksum.isIn(slice) & e.isSyncApproved.isNotValue(true));
       }
     });
-  }
-
-  Future<void> deleteAll() {
-    return _db.batch((batch) {
-      batch.deleteAll(_db.trashSyncEntity);
-    });
-  }
-
-  Future<int> getCount() {
-    return _db.managers.trashSyncEntity.count();
   }
 
   Stream<int> watchPendingDecisionCount() {

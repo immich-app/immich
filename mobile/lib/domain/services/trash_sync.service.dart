@@ -104,13 +104,11 @@ class TrashSyncService {
   }
 
   Future<void> applyRemoteRestoreToReview(List<RemoteAsset> remoteAssetsToRestore) async {
-    ///todo
-
-    return Future.value();
-  }
-
-  Future<int> getOutOfSyncCount() async {
-    return _trashSyncRepository.getCount();
+    final remoteChecksumsToRestore = remoteAssetsToRestore.map((e) => e.checksum).nonNulls;
+    if (remoteChecksumsToRestore.isEmpty) {
+      return Future.value();
+    }
+    return _trashSyncRepository.deleteUnapproved(remoteAssetsToRestore.map((e) => e.checksum).nonNulls);
   }
 
   Future<void> resolveRemoteTrash(Iterable<String> checksums, {required bool allow}) async {
