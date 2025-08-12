@@ -127,11 +127,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _delayedOperations.clear();
   }
 
-  // This is used to calculate the scale of the asset when the bottom sheet is showing.
-  // It is a small increment to ensure that the asset is slightly zoomed in when the
-  // bottom sheet is showing, which emulates the zoom effect.
-  double get _getScaleForBottomSheet => (viewController?.prevValue.scale ?? viewController?.value.scale ?? 1.0) + 0.01;
-
   double _getVerticalOffsetForBottomSheet(double extent) =>
       (context.height * extent) - (context.height * _kBottomSheetMinimumExtent);
 
@@ -217,19 +212,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       final verticalOffset =
           (context.height * bottomSheetController.size) - (context.height * _kBottomSheetMinimumExtent);
       controller.position = Offset(0, -verticalOffset);
+      // Apply the zoom effect when the bottom sheet is showing
+      initialScale = controller.scale;
+      controller.scale = (controller.scale ?? 1.0) + 0.01;
     }
   }
 
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
-
-    // If the bottom sheet is showing, we need to adjust scale the asset to
-    // emulate the zoom effect
-    if (showingBottomSheet) {
-      initialScale = controller?.scale;
-      controller?.scale = _getScaleForBottomSheet;
-    }
   }
 
   void _onDragStart(
@@ -430,7 +421,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
     initialScale = viewController?.scale;
-    viewController?.updateMultiple(scale: _getScaleForBottomSheet);
+    // viewController?.updateMultiple(scale: (viewController?.scale ?? 1.0) + 0.01);
     previousExtent = _kBottomSheetMinimumExtent;
     sheetCloseController = showBottomSheet(
       context: ctx,
@@ -515,8 +506,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       tightMode: true,
-      initialScale: PhotoViewComputedScale.contained * 0.999,
-      minScale: PhotoViewComputedScale.contained * 0.999,
       disableScaleGestures: showingBottomSheet,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
@@ -545,9 +534,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onTapDown: _onTapDown,
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
-      initialScale: PhotoViewComputedScale.contained * 0.99,
       maxScale: 1.0,
-      minScale: PhotoViewComputedScale.contained * 0.99,
       basePosition: Alignment.center,
       child: SizedBox(
         width: ctx.width,
