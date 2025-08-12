@@ -131,11 +131,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       (context.height * extent) - (context.height * _kBottomSheetMinimumExtent);
 
   Future<void> _precacheImage(int index) async {
-    if (!mounted || index < 0 || index >= totalAssets) {
+    if (!mounted) {
       return;
     }
 
-    final asset = ref.read(timelineServiceProvider).getAsset(index);
+    final timelineService = ref.read(timelineServiceProvider);
+    final asset = await timelineService.getAssetAsync(index);
+
+    if (asset == null || !mounted) {
+      return;
+    }
+
     final screenSize = Size(context.width, context.height);
 
     // Precache both thumbnail and full image for smooth transitions
@@ -147,8 +153,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
-  void _onAssetChanged(int index) {
-    final asset = ref.read(timelineServiceProvider).getAsset(index);
+  void _onAssetChanged(int index) async {
+    // Validate index bounds and try to get asset, loading buffer if needed
+    final timelineService = ref.read(timelineServiceProvider);
+    final asset = await timelineService.getAssetAsync(index);
+
+    if (asset == null) {
+      return;
+    }
+
     // Always holds the current asset from the timeline
     ref.read(assetViewerProvider.notifier).setAsset(asset);
     // The currentAssetNotifier actually holds the current asset that is displayed
@@ -403,16 +416,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _onAssetReloadEvent() {
-    setState(() {
-      final index = pageController.page?.round() ?? 0;
-      final newAsset = ref.read(timelineServiceProvider).getAsset(index);
-      final currentAsset = ref.read(currentAssetNotifier);
-      // Do not reload / close the bottom sheet if the asset has not changed
-      if (newAsset.heroTag == currentAsset?.heroTag) {
-        return;
-      }
+  void _onAssetReloadEvent() async {
+    final index = pageController.page?.round() ?? 0;
+    final timelineService = ref.read(timelineServiceProvider);
+    final newAsset = await timelineService.getAssetAsync(index);
 
+    if (newAsset == null) {
+      return;
+    }
+
+    final currentAsset = ref.read(currentAssetNotifier);
+    // Do not reload / close the bottom sheet if the asset has not changed
+    if (newAsset.heroTag == currentAsset?.heroTag) {
+      return;
+    }
+
+    setState(() {
       _onAssetChanged(pageController.page!.round());
       sheetCloseController?.close();
     });
@@ -459,16 +478,29 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   Widget _placeholderBuilder(BuildContext ctx, ImageChunkEvent? progress, int index) {
-    BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
+    final timelineService = ref.read(timelineServiceProvider);
+    final asset = timelineService.getAssetSafe(index);
+
+    // If asset is not available in buffer, show a loading container
+    if (asset == null) {
+      return Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: backgroundColor,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
     return Container(
       width: double.infinity,
       height: double.infinity,
       color: backgroundColor,
-      child: Thumbnail(asset: asset, fit: BoxFit.contain),
+      child: Thumbnail(asset: displayAsset, fit: BoxFit.contain),
     );
   }
 
@@ -484,18 +516,34 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   PhotoViewGalleryPageOptions _assetBuilder(BuildContext ctx, int index) {
     scaffoldContext ??= ctx;
-    BaseAsset asset = ref.read(timelineServiceProvider).getAsset(index);
+    final timelineService = ref.read(timelineServiceProvider);
+    final asset = timelineService.getAssetSafe(index);
+
+    // If asset is not available in buffer, return a placeholder
+    if (asset == null) {
+      return PhotoViewGalleryPageOptions.customChild(
+        heroAttributes: PhotoViewHeroAttributes(tag: 'loading_$index'),
+        child: Container(
+          width: ctx.width,
+          height: ctx.height,
+          color: backgroundColor,
+          child: const Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      asset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
-    if (asset.isImage && !isPlayingMotionVideo) {
-      return _imageBuilder(ctx, asset);
+    if (displayAsset.isImage && !isPlayingMotionVideo) {
+      return _imageBuilder(ctx, displayAsset);
     }
 
-    return _videoBuilder(ctx, asset);
+    return _videoBuilder(ctx, displayAsset);
   }
 
   PhotoViewGalleryPageOptions _imageBuilder(BuildContext ctx, BaseAsset asset) {
