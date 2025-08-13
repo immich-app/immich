@@ -51,7 +51,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final actions = <Widget>[
       if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
-      if (album?.isActivityEnabled ?? false)
+      if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {

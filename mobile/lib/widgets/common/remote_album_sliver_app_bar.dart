@@ -103,7 +103,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
               icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
               onPressed: widget.onToggleAlbumOrder,
             ),
-          if (currentAlbum.isActivityEnabled)
+          if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
             IconButton(
               icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
               onPressed: widget.onActivity,
@@ -114,6 +114,22 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
               onPressed: widget.onShowOptions,
             ),
         ],
+        title: Builder(
+          builder: (context) {
+            final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+            final scrollProgress = _calculateScrollProgress(settings);
+
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: scrollProgress > 0.95
+                  ? Text(
+                      currentAlbum.name,
+                      style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
+                    )
+                  : null,
+            );
+          },
+        ),
         flexibleSpace: Builder(
           builder: (context) {
             final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
@@ -129,16 +145,6 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
             });
 
             return FlexibleSpaceBar(
-              centerTitle: true,
-              title: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: scrollProgress > 0.95
-                    ? Text(
-                        currentAlbum.name,
-                        style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
-                      )
-                    : null,
-              ),
               background: _ExpandedBackground(
                 scrollProgress: scrollProgress,
                 icon: widget.icon,
