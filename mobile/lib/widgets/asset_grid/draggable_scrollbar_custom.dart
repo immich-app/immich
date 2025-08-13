@@ -91,7 +91,6 @@ class DraggableScrollbar extends StatefulWidget {
     required Text? labelText,
     required BoxConstraints? labelConstraints,
     required bool alwaysVisibleScrollThumb,
-    bool? isFineScrollMode,
   }) {
     var scrollThumbAndLabel = labelText == null
         ? scrollThumb
@@ -152,7 +151,6 @@ class DraggableScrollbar extends StatefulWidget {
         labelText: labelText,
         labelConstraints: labelConstraints,
         alwaysVisibleScrollThumb: alwaysVisibleScrollThumb,
-        isFineScrollMode: isFineScrollMode,
       );
     };
   }
