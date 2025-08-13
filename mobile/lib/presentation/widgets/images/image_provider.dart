@@ -30,7 +30,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size);
+    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type);
   } else {
     final String assetId;
     if (asset is LocalAsset && asset.hasRemote) {
@@ -55,7 +55,7 @@ ImageProvider getThumbnailImageProvider({BaseAsset? asset, String? remoteId, Siz
 
   if (_shouldUseLocalAsset(asset!)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    return LocalThumbProvider(id: id, size: size);
+    return LocalThumbProvider(id: id, size: size, assetType: asset.type);
   }
 
   final String assetId;

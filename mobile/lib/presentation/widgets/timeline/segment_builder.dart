@@ -28,7 +28,7 @@ abstract class SegmentBuilder {
       dimension: size.height,
       spacing: spacing,
       textDirection: Directionality.of(context),
-      children: List.generate(count, (_) => ThumbnailPlaceholder(width: size.width, height: size.height)),
+      children: List.filled(count, const ThumbnailPlaceholder()),
     ),
   );
 }

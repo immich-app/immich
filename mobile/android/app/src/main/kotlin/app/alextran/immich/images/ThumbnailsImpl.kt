@@ -21,6 +21,7 @@ import com.bumptech.glide.load.DecodeFormat
 import java.util.Base64
 import java.util.HashMap
 import java.util.concurrent.CancellationException
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
 
 data class Request(
@@ -33,9 +34,10 @@ data class Request(
 class ThumbnailsImpl(context: Context) : ThumbnailApi {
     private val ctx: Context = context.applicationContext
     private val resolver: ContentResolver = ctx.contentResolver
+    private val requestThread = Executors.newSingleThreadExecutor()
     private val threadPool =
         Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() / 2 + 1)
-    private val requestMap = HashMap<Long, Request>()
+    private val requestMap = ConcurrentHashMap<Long, Request>()
 
     companion object {
         val PROJECTION = arrayOf(
@@ -75,9 +77,9 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
                     "height" to image.height.toLong()
                 )
                 callback(Result.success(res))
-              } catch (e: Exception) {
+            } catch (e: Exception) {
                 callback(Result.failure(e))
-              }
+            }
         }
     }
 
@@ -86,12 +88,13 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
         requestId: Long,
         width: Long,
         height: Long,
+        isVideo: Boolean,
         callback: (Result<Map<String, Long>>) -> Unit
     ) {
         val signal = CancellationSignal()
         val task = threadPool.submit {
             try {
-                getThumbnailBufferInternal(assetId, width, height, callback, signal)
+                getThumbnailBufferInternal(assetId, width, height, isVideo, callback, signal)
             } catch (e: Exception) {
                 when (e) {
                     is OperationCanceledException -> callback(CANCELLED)
@@ -102,7 +105,8 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
                 requestMap.remove(requestId)
             }
         }
-        requestMap[requestId] = Request(requestId, task, signal, callback)
+        val request = Request(requestId, task, signal, callback)
+        requestMap[requestId] = request
     }
 
     override fun cancelImageRequest(requestId: Long) {
@@ -110,7 +114,12 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
         request.taskFuture.cancel(false)
         request.cancellationSignal.cancel()
         if (request.taskFuture.isCancelled) {
-            request.callback(CANCELLED)
+            requestThread.execute {
+                try {
+                    request.callback(CANCELLED)
+                } catch (_: Exception) {
+                }
+            }
         }
     }
 
@@ -118,6 +127,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
         assetId: String,
         width: Long,
         height: Long,
+        isVideo: Boolean,
         callback: (Result<Map<String, Long>>) -> Unit,
         signal: CancellationSignal
     ) {
@@ -126,24 +136,14 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
         val targetHeight = height.toInt()
         val id = assetId.toLong()
 
-        val cursor = resolver.query(URI, PROJECTION, SELECTION, arrayOf(assetId), null)
-            ?: return callback(Result.failure(RuntimeException("Asset not found")))
-
         signal.throwIfCanceled()
-        cursor.use { c ->
-            if (!c.moveToNext()) {
-                return callback(Result.failure(RuntimeException("Asset not found")))
-            }
-
-            val mediaType = c.getInt(1)
-            val bitmap = when (mediaType) {
-                MEDIA_TYPE_IMAGE -> decodeImage(id, targetWidth, targetHeight, signal)
-                MEDIA_TYPE_VIDEO -> decodeVideoThumbnail(id, targetWidth, targetHeight, signal)
-                else -> return callback(Result.failure(RuntimeException("Unsupported media type")))
-            }
-
-            processBitmap(bitmap, callback, signal)
+        val bitmap = if (isVideo) {
+            decodeVideoThumbnail(id, targetWidth, targetHeight, signal)
+        } else {
+            decodeImage(id, targetWidth, targetHeight, signal)
         }
+
+        processBitmap(bitmap, callback, signal)
     }
 
     private fun processBitmap(
@@ -162,6 +162,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
             signal.throwIfCanceled()
             val buffer = wrapAsBuffer(pointer, size)
             bitmap.copyPixelsToBuffer(buffer)
+            bitmap.recycle()
             signal.throwIfCanceled()
             val res = mapOf(
                 "pointer" to pointer,

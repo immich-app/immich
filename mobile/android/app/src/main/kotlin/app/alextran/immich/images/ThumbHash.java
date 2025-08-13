@@ -9,10 +9,6 @@ import java.nio.ByteBuffer;
 
 // modified to use native allocations
 public final class ThumbHash {
-  private static native long allocateNative(int size);
-
-  private static native ByteBuffer wrapAsBuffer(long address, int capacity);
-
   /**
    * Decodes a ThumbHash to an RGBA image. RGB is not be premultiplied by A.
    *
@@ -60,9 +56,8 @@ public final class ThumbHash {
     int w = Math.round(ratio > 1.0f ? 32.0f : 32.0f * ratio);
     int h = Math.round(ratio > 1.0f ? 32.0f / ratio : 32.0f);
     int size = w * h * 4;
-    long pointer = allocateNative(size);
-    ByteBuffer buffer = wrapAsBuffer(pointer, size);
-    byte[] rgba = buffer.array();
+    long pointer = ThumbnailsImpl.allocateNative(size);
+    ByteBuffer rgba = ThumbnailsImpl.wrapAsBuffer(pointer, size);
     int cx_stop = Math.max(lx, hasAlpha ? 5 : 3);
     int cy_stop = Math.max(ly, hasAlpha ? 5 : 3);
     float[] fx = new float[cx_stop];
@@ -106,10 +101,10 @@ public final class ThumbHash {
         float b = l - 2.0f / 3.0f * p;
         float r = (3.0f * l - b + q) / 2.0f;
         float g = r - q;
-        rgba[i] = (byte) Math.max(0, Math.round(255.0f * Math.min(1, r)));
-        rgba[i + 1] = (byte) Math.max(0, Math.round(255.0f * Math.min(1, g)));
-        rgba[i + 2] = (byte) Math.max(0, Math.round(255.0f * Math.min(1, b)));
-        rgba[i + 3] = (byte) Math.max(0, Math.round(255.0f * Math.min(1, a)));
+        rgba.put(i, (byte) Math.max(0, Math.round(255.0f * Math.min(1, r))));
+        rgba.put(i + 1, (byte) Math.max(0, Math.round(255.0f * Math.min(1, g))));
+        rgba.put(i + 2, (byte) Math.max(0, Math.round(255.0f * Math.min(1, b))));
+        rgba.put(i + 3, (byte) Math.max(0, Math.round(255.0f * Math.min(1, a))));
       }
     }
     return new Image(w, h, pointer);

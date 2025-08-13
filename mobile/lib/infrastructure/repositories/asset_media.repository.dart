@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:ffi/ffi.dart';
@@ -111,8 +112,9 @@ class LocalImageRequest extends ImageRequest {
   final String localId;
   final int width;
   final int height;
+  final AssetType assetType;
 
-  LocalImageRequest({required this.localId, required ui.Size size})
+  LocalImageRequest({required this.localId, required ui.Size size, required this.assetType})
     : width = size.width.toInt(),
       height = size.height.toInt();
 
@@ -131,6 +133,7 @@ class LocalImageRequest extends ImageRequest {
       requestId: requestId,
       width: width,
       height: height,
+      isVideo: assetType == AssetType.video,
     );
     if (!kReleaseMode) {
       stopwatch!.stop();

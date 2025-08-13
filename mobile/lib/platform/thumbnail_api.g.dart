@@ -54,6 +54,7 @@ class ThumbnailApi {
     required int requestId,
     required int width,
     required int height,
+    required bool isVideo,
   }) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.ThumbnailApi.requestImage$pigeonVar_messageChannelSuffix';
@@ -62,7 +63,13 @@ class ThumbnailApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetId, requestId, width, height]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[
+      assetId,
+      requestId,
+      width,
+      height,
+      isVideo,
+    ]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);

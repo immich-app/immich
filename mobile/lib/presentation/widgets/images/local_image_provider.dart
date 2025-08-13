@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
@@ -11,8 +12,9 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with CancellableImageProviderMixin {
   final String id;
   final Size size;
+  final AssetType assetType;
 
-  LocalThumbProvider({required this.id, this.size = kThumbnailResolution});
+  LocalThumbProvider({required this.id, required this.assetType, this.size = kThumbnailResolution});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -33,7 +35,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with Cancella
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) async* {
-    final request = this.request = LocalImageRequest(localId: key.id, size: size);
+    final request = this.request = LocalImageRequest(localId: key.id, size: size, assetType: key.assetType);
     try {
       final image = await request.load(decode);
       if (image != null) {
@@ -60,8 +62,9 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with Cancella
 class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with CancellableImageProviderMixin {
   final String id;
   final Size size;
+  final AssetType assetType;
 
-  LocalFullImageProvider({required this.id, required this.size});
+  LocalFullImageProvider({required this.id, required this.assetType, required this.size});
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -72,7 +75,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with 
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     final completer = OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(LocalThumbProvider(id: key.id)),
+      initialImage: getCachedImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
@@ -88,6 +91,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with 
     final request = this.request = LocalImageRequest(
       localId: key.id,
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+      assetType: key.assetType,
     );
 
     try {
