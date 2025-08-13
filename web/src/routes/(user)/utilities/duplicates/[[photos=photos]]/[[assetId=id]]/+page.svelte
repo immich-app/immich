@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
     notificationController,
@@ -63,13 +64,15 @@
   const correcteDuplicateIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
   };
+
   let duplicatesIndex = $derived(
-    correcteDuplicateIndex(
-      Number.isNaN(Number.parseInt(page.url.searchParams.get('index') ?? '0'))
-        ? 0
-        : Number.parseInt(page.url.searchParams.get('index') ?? '0'),
-    ),
+    (() => {
+      const indexParam = page.url.searchParams.get('index') ?? '0';
+      const parsedIndex = Number.parseInt(indexParam, 10);
+      return correcteDuplicateIndex(Number.isNaN(parsedIndex) ? 0 : parsedIndex);
+    })(),
   );
+
   let hasDuplicates = $derived(duplicates.length > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
@@ -197,6 +200,13 @@
     await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
   };
 </script>
+
+<svelte:document
+  use:shortcuts={[
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNext },
+  ]}
+/>
 
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
