@@ -29,6 +29,9 @@ abstract class ImageRequest {
       return;
     }
     _isCancelled = true;
+    if (!kReleaseMode) {
+      debugPrint('Cancelling image request $requestId');
+    }
     return _onCancelled();
   }
 
@@ -37,6 +40,9 @@ abstract class ImageRequest {
   Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
     final address = info['pointer'];
     if (address == null) {
+      if (!kReleaseMode) {
+        debugPrint('Platform image request for $requestId was cancelled');
+      }
       return null;
     }
 
@@ -84,7 +90,15 @@ class ThumbhashImageRequest extends ImageRequest {
       return null;
     }
 
+    Stopwatch? stopwatch;
+    if (!kReleaseMode) {
+      stopwatch = Stopwatch()..start();
+    }
     final Map<String, int> info = await thumbnailApi.getThumbhash(thumbhash);
+    if (!kReleaseMode) {
+      stopwatch!.stop();
+      debugPrint('Thumbhash request $requestId took ${stopwatch.elapsedMilliseconds} ms');
+    }
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
@@ -108,12 +122,20 @@ class LocalImageRequest extends ImageRequest {
       return null;
     }
 
+    Stopwatch? stopwatch;
+    if (!kReleaseMode) {
+      stopwatch = Stopwatch()..start();
+    }
     final Map<String, int> info = await thumbnailApi.requestImage(
       localId,
       requestId: requestId,
       width: width,
       height: height,
     );
+    if (!kReleaseMode) {
+      stopwatch!.stop();
+      debugPrint('Local image request $requestId took ${stopwatch.elapsedMilliseconds} ms');
+    }
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
@@ -127,7 +149,7 @@ class LocalImageRequest extends ImageRequest {
 class RemoteImageRequest extends ImageRequest {
   static final log = Logger('RemoteImageRequest');
   static final cacheManager = RemoteImageCacheManager();
-  static final client = HttpClient();
+  static final client = HttpClient()..maxConnectionsPerHost = 32;
   String uri;
   Map<String, String> headers;
   HttpClientRequest? _request;
@@ -140,29 +162,42 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    try {
-      // The DB calls made by the cache manager are a *massive* bottleneck (6+ seconds) with high concurrency.
-      // Since it isn't possible to cancel these operations, we only prefer the cache when they can be avoided.
-      // The DB hit is left as a fallback for offline use.
-      final cachedFileBuffer = await _loadCachedFile(uri, inMemoryOnly: true);
-      if (cachedFileBuffer != null) {
-        return _decodeBuffer(cachedFileBuffer, decode, scale);
-      }
+    // TODO: the cache manager makes everything sequential with its DB calls and its operations cannot be cancelled,
+    //  so it just makes things slower and more memory hungry. Even just saving files to disk
+    //  for offline use adds too much overhead as these calls add up. We only prefer fetching from it when
+    //  it can skip the DB call.
+    final cachedFileImage = await _loadCachedFile(uri, decode, scale, inMemoryOnly: true);
+    if (cachedFileImage != null) {
+      return cachedFileImage;
+    }
 
+    try {
+      Stopwatch? stopwatch;
+      if (!kReleaseMode) {
+        stopwatch = Stopwatch()..start();
+      }
       final buffer = await _downloadImage(uri);
-      if (buffer == null || _isCancelled) {
+      if (buffer == null) {
         return null;
+      }
+      if (!kReleaseMode) {
+        stopwatch!.stop();
+        debugPrint('Remote image download request $requestId took ${stopwatch.elapsedMilliseconds} ms');
       }
       return await _decodeBuffer(buffer, decode, scale);
     } catch (e) {
-      if (e is HttpException && (e.message.endsWith('aborted') || e.message.startsWith('Connection closed'))) {
+      if (_isCancelled) {
+        if (!kReleaseMode) {
+          debugPrint('Remote image download request for $requestId was cancelled');
+        }
         return null;
       }
-      log.severe('Failed to load remote image', e);
-      final buffer = await _loadCachedFile(uri, inMemoryOnly: false);
-      if (buffer != null) {
-        return _decodeBuffer(buffer, decode, scale);
+
+      final cachedFileImage = await _loadCachedFile(uri, decode, scale, inMemoryOnly: false);
+      if (cachedFileImage != null) {
+        return cachedFileImage;
       }
+
       rethrow;
     } finally {
       _request = null;
@@ -170,9 +205,14 @@ class RemoteImageRequest extends ImageRequest {
   }
 
   Future<ImmutableBuffer?> _downloadImage(String url) async {
-    final request = _request = await client.getUrl(Uri.parse(url));
     if (_isCancelled) {
       return null;
+    }
+
+    final request = _request = await client.getUrl(Uri.parse(url));
+    if (_isCancelled) {
+      request.abort();
+      return _request = null;
     }
 
     final headers = ApiService.getRequestHeaders();
@@ -180,35 +220,44 @@ class RemoteImageRequest extends ImageRequest {
       request.headers.set(entry.key, entry.value);
     }
     final response = await request.close();
-    if (_isCancelled) {
-      return null;
-    }
-
     final bytes = await consolidateHttpClientResponseBytes(response);
-    _cacheFile(url, bytes);
     if (_isCancelled) {
       return null;
     }
     return await ImmutableBuffer.fromUint8List(bytes);
   }
 
-  Future<void> _cacheFile(String url, Uint8List bytes) async {
-    try {
-      await cacheManager.putFile(url, bytes);
-    } catch (e) {
-      log.severe('Failed to cache image', e);
-    }
-  }
-
-  Future<ImmutableBuffer?> _loadCachedFile(String url, {required bool inMemoryOnly}) async {
+  Future<ImageInfo?> _loadCachedFile(
+    String url,
+    ImageDecoderCallback decode,
+    double scale, {
+    required bool inMemoryOnly,
+  }) async {
     if (_isCancelled) {
       return null;
     }
+
     final file = await (inMemoryOnly ? cacheManager.getFileFromMemory(url) : cacheManager.getFileFromCache(url));
     if (_isCancelled || file == null) {
       return null;
     }
-    return await ImmutableBuffer.fromFilePath(file.file.path);
+
+    try {
+      final buffer = await ImmutableBuffer.fromFilePath(file.file.path);
+      return await _decodeBuffer(buffer, decode, scale);
+    } catch (e) {
+      log.severe('Failed to decode cached image', e);
+      _evictFile(url);
+      return null;
+    }
+  }
+
+  Future<void> _evictFile(String url) async {
+    try {
+      await cacheManager.removeFile(url);
+    } catch (e) {
+      log.severe('Failed to remove cached image', e);
+    }
   }
 
   Future<ImageInfo?> _decodeBuffer(ImmutableBuffer buffer, ImageDecoderCallback decode, scale) async {

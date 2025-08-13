@@ -14,6 +14,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
@@ -106,7 +107,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   bool _dragging = false;
   TimelineAssetIndex? _dragAnchorIndex;
   final Set<BaseAsset> _draggedAssets = HashSet();
-  ScrollPhysics? _scrollPhysics;
+  ScrollPhysics _scrollPhysics = const ScrollUnawareScrollPhysics();
 
   int _perRow = 4;
   double _scaleFactor = 3.0;
@@ -188,7 +189,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   // Drag selection methods
   void _setDragStartIndex(TimelineAssetIndex index) {
     setState(() {
-      _scrollPhysics = const ClampingScrollPhysics();
+      _scrollPhysics = const ScrollUnawareClampingScrollPhysics();
       _dragAnchorIndex = index;
       _dragging = true;
     });
@@ -198,7 +199,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Update the physics post frame to prevent sudden change in physics on iOS.
       setState(() {
-        _scrollPhysics = null;
+        _scrollPhysics = const ScrollUnawareScrollPhysics();
       });
     });
     setState(() {

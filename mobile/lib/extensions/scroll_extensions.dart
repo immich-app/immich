@@ -32,3 +32,31 @@ class FastClampingScrollPhysics extends ClampingScrollPhysics {
     damping: 80,
   );
 }
+
+class ScrollUnawareScrollPhysics extends ScrollPhysics {
+  const ScrollUnawareScrollPhysics({super.parent});
+
+  @override
+  ScrollUnawareScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return ScrollUnawareScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  bool recommendDeferredLoading(double velocity, ScrollMetrics metrics, BuildContext context) {
+    return false;
+  }
+}
+
+class ScrollUnawareClampingScrollPhysics extends ClampingScrollPhysics {
+  const ScrollUnawareClampingScrollPhysics({super.parent});
+
+  @override
+  ScrollUnawareClampingScrollPhysics applyTo(ScrollPhysics? ancestor) {
+    return ScrollUnawareClampingScrollPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  bool recommendDeferredLoading(double velocity, ScrollMetrics metrics, BuildContext context) {
+    return false;
+  }
+}

@@ -61,7 +61,7 @@ class ImmichThumbnail extends HookConsumerWidget {
     customErrorBuilder(BuildContext ctx, Object error, StackTrace? stackTrace) {
       thumbnailProviderInstance.evict();
 
-      final originalErrorWidgetBuilder = blurHashErrorBuilder(blurhash, fit: fit);
+      final originalErrorWidgetBuilder = blurHashErrorBuilder(blurhash, width: width, height: height, fit: fit);
       return originalErrorWidgetBuilder(ctx, error, stackTrace);
     }
 
@@ -72,7 +72,7 @@ class ImmichThumbnail extends HookConsumerWidget {
         fadeInDuration: Duration.zero,
         fadeOutDuration: const Duration(milliseconds: 100),
         octoSet: OctoSet(
-          placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
+          placeholderBuilder: blurHashPlaceholderBuilder(blurhash, width: width, height: height, fit: fit),
           errorBuilder: customErrorBuilder,
         ),
         image: thumbnailProviderInstance,

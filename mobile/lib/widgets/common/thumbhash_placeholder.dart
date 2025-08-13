@@ -6,25 +6,40 @@ import 'package:octo_image/octo_image.dart';
 
 /// Simple set to show [OctoPlaceholder.circularProgressIndicator] as
 /// placeholder and [OctoError.icon] as error.
-OctoSet blurHashOrPlaceholder(Uint8List? blurhash, {BoxFit? fit, Text? errorMessage}) {
+OctoSet blurHashOrPlaceholder(
+  Uint8List? blurhash, {
+  required double width,
+  required double height,
+  BoxFit? fit,
+  Text? errorMessage,
+}) {
   return OctoSet(
-    placeholderBuilder: blurHashPlaceholderBuilder(blurhash, fit: fit),
-    errorBuilder: blurHashErrorBuilder(blurhash, fit: fit, message: errorMessage),
+    placeholderBuilder: blurHashPlaceholderBuilder(blurhash, width: width, height: height, fit: fit),
+    errorBuilder: blurHashErrorBuilder(blurhash, width: width, height: height, fit: fit, message: errorMessage),
   );
 }
 
-OctoPlaceholderBuilder blurHashPlaceholderBuilder(Uint8List? blurhash, {BoxFit? fit}) {
+OctoPlaceholderBuilder blurHashPlaceholderBuilder(
+  Uint8List? blurhash, {
+  required double width,
+  required double height,
+  BoxFit? fit,
+}) {
   return (context) => blurhash == null
       ? const ThumbnailPlaceholder()
       : FadeInPlaceholderImage(
           placeholder: const ThumbnailPlaceholder(),
           image: MemoryImage(blurhash),
           fit: fit ?? BoxFit.cover,
+          width: width,
+          height: height,
         );
 }
 
 OctoErrorBuilder blurHashErrorBuilder(
   Uint8List? blurhash, {
+  required double width,
+  required double height,
   BoxFit? fit,
   Text? message,
   IconData? icon,
@@ -32,7 +47,7 @@ OctoErrorBuilder blurHashErrorBuilder(
   double? iconSize,
 }) {
   return OctoError.placeholderWithErrorIcon(
-    blurHashPlaceholderBuilder(blurhash, fit: fit),
+    blurHashPlaceholderBuilder(blurhash, width: width, height: width, fit: fit),
     message: message,
     icon: icon,
     iconColor: iconColor,
