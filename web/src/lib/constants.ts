@@ -51,6 +51,7 @@ export enum AppRoute {
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
+  LARGE_FILES = '/utilities/large-files',
 
   FOLDERS = '/folders',
   TAGS = '/tags',

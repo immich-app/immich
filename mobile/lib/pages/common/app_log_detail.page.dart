@@ -65,7 +65,7 @@ class AppLogDetailPage extends HookConsumerWidget {
       );
     }
 
-    buildLogContext1(String context1) {
+    buildLogContext(String logger) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -86,7 +86,7 @@ class AppLogDetailPage extends HookConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SelectableText(
-                  context1.toString(),
+                  logger.toString(),
                   style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "Inconsolata"),
                 ),
               ),
@@ -103,7 +103,7 @@ class AppLogDetailPage extends HookConsumerWidget {
           children: [
             buildTextWithCopyButton("MESSAGE", logMessage.message),
             if (logMessage.error != null) buildTextWithCopyButton("DETAILS", logMessage.error.toString()),
-            if (logMessage.logger != null) buildLogContext1(logMessage.logger.toString()),
+            if (logMessage.logger != null) buildLogContext(logMessage.logger.toString()),
             if (logMessage.stack != null) buildTextWithCopyButton("STACK TRACE", logMessage.stack.toString()),
           ],
         ),

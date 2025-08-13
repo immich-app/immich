@@ -28,7 +28,7 @@ final _kWarnLog = LogMessage(
 
 void main() {
   late LogService sut;
-  late IsarLogRepository mockLogRepo;
+  late LogRepository mockLogRepo;
   late IsarStoreRepository mockStoreRepo;
 
   setUp(() async {

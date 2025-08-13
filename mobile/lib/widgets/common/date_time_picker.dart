@@ -145,7 +145,7 @@ class _DateTimePicker extends HookWidget {
               1,
             ),
             trailing: Icon(Icons.edit_outlined, size: 18, color: context.primaryColor),
-            title: Text(DateFormat("dd-MM-yyyy hh:mm a").format(date.value), style: context.textTheme.bodyMedium).tr(),
+            title: Text(DateFormat("dd-MM-yyyy hh:mm a").format(date.value), style: context.textTheme.bodyMedium),
             onTap: pickDate,
           ),
           const SizedBox(height: 24),

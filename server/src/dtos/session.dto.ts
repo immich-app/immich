@@ -1,4 +1,4 @@
-import { IsInt, IsPositive, IsString } from 'class-validator';
+import { Equals, IsInt, IsPositive, IsString } from 'class-validator';
 import { Session } from 'src/database';
 import { Optional, ValidateBoolean } from 'src/validation';
 
@@ -22,7 +22,8 @@ export class SessionCreateDto {
 
 export class SessionUpdateDto {
   @ValidateBoolean({ optional: true })
-  isPendingSyncReset?: boolean;
+  @Equals(true)
+  isPendingSyncReset?: true;
 }
 
 export class SessionResponseDto {

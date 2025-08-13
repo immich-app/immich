@@ -19,7 +19,7 @@ class Thumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final thumbHash = asset is RemoteAsset ? (asset as RemoteAsset).thumbHash : null;
-    final provider = getThumbnailImageProvider(asset: asset, remoteId: remoteId, size: size);
+    final provider = getThumbnailImageProvider(asset: asset, remoteId: remoteId);
 
     return OctoImage.fromSet(
       image: provider,

@@ -37,6 +37,16 @@ export class SessionRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async isPendingSyncReset(id: string) {
+    const result = await this.db
+      .selectFrom('session')
+      .select(['isPendingSyncReset'])
+      .where('id', '=', id)
+      .executeTakeFirst();
+    return result?.isPendingSyncReset ?? false;
+  }
+
   @GenerateSql({ params: [DummyValue.STRING] })
   getByToken(token: string) {
     return this.db

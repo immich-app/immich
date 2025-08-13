@@ -468,6 +468,33 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.updateAll).toHaveBeenCalled();
     });
+
+    it('should update exif table if dateTimeRelative and timeZone field is provided', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      const dateTimeRelative = 35;
+      const timeZone = 'UTC+2';
+      mocks.asset.updateDateTimeOriginal.mockResolvedValue([
+        { assetId: 'asset-1', dateTimeOriginal: new Date('2020-02-25T04:41:00'), timeZone },
+      ]);
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        dateTimeRelative,
+        timeZone,
+      });
+      expect(mocks.asset.updateDateTimeOriginal).toHaveBeenCalledWith(['asset-1'], dateTimeRelative, timeZone);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.SidecarWrite,
+          data: {
+            id: 'asset-1',
+            dateTimeOriginal: '2020-02-25T06:41:00.000+02:00',
+            description: undefined,
+            latitude: undefined,
+            longitude: undefined,
+          },
+        },
+      ]);
+    });
   });
 
   describe('deleteAll', () => {

@@ -1,47 +1,29 @@
-import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
+import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
+import 'package:immich_mobile/domain/models/log.model.dart' as domain;
 
-part 'log.entity.g.dart';
+class LogMessageEntity extends Table {
+  const LogMessageEntity();
 
-@Collection(inheritance: false)
-class LoggerMessage {
-  final Id id = Isar.autoIncrement;
-  final String message;
-  final String? details;
-  @Enumerated(EnumType.ordinal)
-  final LogLevel level;
-  final DateTime createdAt;
-  final String? context1;
-  final String? context2;
+  @override
+  String get tableName => 'logger_messages';
 
-  const LoggerMessage({
-    required this.message,
-    required this.details,
-    this.level = LogLevel.info,
-    required this.createdAt,
-    required this.context1,
-    required this.context2,
-  });
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get message => text()();
+  TextColumn get details => text().nullable()();
+  IntColumn get level => intEnum<domain.LogLevel>()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get logger => text().nullable()();
+  TextColumn get stack => text().nullable()();
+}
 
-  LogMessage toDto() {
-    return LogMessage(
-      message: message,
-      level: level,
-      createdAt: createdAt,
-      logger: context1,
-      error: details,
-      stack: context2,
-    );
-  }
-
-  static LoggerMessage fromDto(LogMessage log) {
-    return LoggerMessage(
-      message: log.message,
-      details: log.error,
-      level: log.level,
-      createdAt: log.createdAt,
-      context1: log.logger,
-      context2: log.stack,
-    );
-  }
+extension LogMessageEntityDataDomainEx on LogMessageEntityData {
+  domain.LogMessage toDto() => domain.LogMessage(
+    message: message,
+    level: level,
+    createdAt: createdAt,
+    logger: logger,
+    error: details,
+    stack: stack,
+  );
 }

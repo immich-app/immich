@@ -25,6 +25,8 @@ class AuthApiRepository extends ApiRepository {
   }
 
   Future<void> logout() async {
+    if (_apiService.apiClient.basePath.isEmpty) return;
+
     await _apiService.authenticationApi.logout().timeout(const Duration(seconds: 7));
   }
 

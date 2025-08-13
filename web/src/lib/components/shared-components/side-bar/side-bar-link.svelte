@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { resolveRoute } from '$app/paths';
   import { page } from '$app/state';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
@@ -8,7 +7,7 @@
 
   interface Props {
     title: string;
-    routeId: string;
+    href: string;
     icon: string;
     flippedLogo?: boolean;
     isSelected?: boolean;
@@ -19,7 +18,7 @@
 
   let {
     title,
-    routeId,
+    href,
     icon,
     flippedLogo = false,
     isSelected = $bindable(false),
@@ -28,10 +27,8 @@
     dropdownOpen = $bindable(false),
   }: Props = $props();
 
-  let routePath = $derived(resolveRoute(routeId, {}));
-
   $effect(() => {
-    isSelected = (page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
+    isSelected = (page.url.pathname.match(/^\/(admin|user)\/[^/]*/) || [])[0] === href;
   });
 </script>
 
@@ -55,7 +52,7 @@
     </span>
   {/if}
   <a
-    href={routePath}
+    {href}
     data-sveltekit-preload-data={preloadData ? 'hover' : 'off'}
     draggable="false"
     aria-current={isSelected ? 'page' : undefined}

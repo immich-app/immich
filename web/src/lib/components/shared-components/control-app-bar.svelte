@@ -97,7 +97,7 @@
       {@render children?.()}
     </div>
 
-    <div class="me-4 flex place-items-center gap-1 justify-self-end">
+    <div class="max-[350px]:me-0 max-[350px]:gap-0 me-4 flex place-items-center gap-1 justify-self-end">
       {@render trailing?.()}
     </div>
   </nav>

@@ -2,10 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class ThumbnailTile extends ConsumerWidget {
@@ -13,7 +15,7 @@ class ThumbnailTile extends ConsumerWidget {
     this.asset, {
     this.size = const Size.square(256),
     this.fit = BoxFit.cover,
-    this.showStorageIndicator = true,
+    this.showStorageIndicator,
     this.lockSelection = false,
     this.heroOffset,
     super.key,
@@ -22,7 +24,7 @@ class ThumbnailTile extends ConsumerWidget {
   final BaseAsset asset;
   final Size size;
   final BoxFit fit;
-  final bool showStorageIndicator;
+  final bool? showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
 
@@ -51,6 +53,9 @@ class ThumbnailTile extends ConsumerWidget {
         : const BoxDecoration();
 
     final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+
+    final bool storageIndicator =
+        showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
     return Stack(
       children: [
@@ -86,7 +91,7 @@ class ThumbnailTile extends ConsumerWidget {
                       child: _VideoIndicator(asset.duration),
                     ),
                   ),
-                if (showStorageIndicator)
+                if (storageIndicator)
                   switch (asset.storage) {
                     AssetState.local => const Align(
                       alignment: Alignment.bottomRight,

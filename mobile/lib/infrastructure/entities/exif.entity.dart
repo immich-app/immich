@@ -95,6 +95,7 @@ class ExifInfo {
   );
 }
 
+@TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)')
 class RemoteExifEntity extends Table with DriftDefaultsMixin {
   const RemoteExifEntity();
 

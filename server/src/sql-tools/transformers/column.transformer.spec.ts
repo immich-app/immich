@@ -116,6 +116,20 @@ describe(transformColumns.name, () => {
         }),
       ).toEqual([`ALTER TABLE "table1" ALTER COLUMN "column1" SET DEFAULT uuid_generate_v4();`]);
     });
+
+    it('should update the default value to NULL', () => {
+      expect(
+        transformColumns(ctx, {
+          type: 'ColumnAlter',
+          tableName: 'table1',
+          columnName: 'column1',
+          changes: {
+            default: 'NULL',
+          },
+          reason: 'unknown',
+        }),
+      ).toEqual([`ALTER TABLE "table1" ALTER COLUMN "column1" SET DEFAULT NULL;`]);
+    });
   });
 
   describe('ColumnDrop', () => {

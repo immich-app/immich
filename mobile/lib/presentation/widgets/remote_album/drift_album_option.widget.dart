@@ -13,6 +13,7 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
     this.onCreateSharedLink,
     this.onToggleAlbumOrder,
     this.onEditAlbum,
+    this.onShowOptions,
   });
 
   final VoidCallback? onAddPhotos;
@@ -22,6 +23,7 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
   final VoidCallback? onCreateSharedLink;
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
+  final VoidCallback? onShowOptions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,6 +70,12 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
                 leading: const Icon(Icons.link),
                 title: Text('create_shared_link'.t(context: context), style: textStyle),
                 onTap: onCreateSharedLink,
+              ),
+            if (onShowOptions != null)
+              ListTile(
+                leading: const Icon(Icons.settings),
+                title: Text('options'.t(context: context), style: textStyle),
+                onTap: onShowOptions,
               ),
             if (onDeleteAlbum != null) ...[
               const Divider(indent: 16, endIndent: 16),

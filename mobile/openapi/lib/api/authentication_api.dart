@@ -16,7 +16,10 @@ class AuthenticationApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /auth/change-password' operation and returns the [Response].
+  /// This endpoint requires the `auth.changePassword` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
@@ -45,6 +48,8 @@ class AuthenticationApi {
     );
   }
 
+  /// This endpoint requires the `auth.changePassword` permission.
+  ///
   /// Parameters:
   ///
   /// * [ChangePasswordDto] changePasswordDto (required):
@@ -63,7 +68,10 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /auth/pin-code' operation and returns the [Response].
+  /// This endpoint requires the `pinCode.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PinCodeChangeDto] pinCodeChangeDto (required):
@@ -92,6 +100,8 @@ class AuthenticationApi {
     );
   }
 
+  /// This endpoint requires the `pinCode.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [PinCodeChangeDto] pinCodeChangeDto (required):
@@ -264,7 +274,10 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /auth/pin-code' operation and returns the [Response].
+  /// This endpoint requires the `pinCode.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PinCodeResetDto] pinCodeResetDto (required):
@@ -293,6 +306,8 @@ class AuthenticationApi {
     );
   }
 
+  /// This endpoint requires the `pinCode.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [PinCodeResetDto] pinCodeResetDto (required):
@@ -303,7 +318,10 @@ class AuthenticationApi {
     }
   }
 
-  /// Performs an HTTP 'POST /auth/pin-code' operation and returns the [Response].
+  /// This endpoint requires the `pinCode.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [PinCodeSetupDto] pinCodeSetupDto (required):
@@ -332,6 +350,8 @@ class AuthenticationApi {
     );
   }
 
+  /// This endpoint requires the `pinCode.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [PinCodeSetupDto] pinCodeSetupDto (required):

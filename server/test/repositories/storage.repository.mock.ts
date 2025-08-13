@@ -41,10 +41,9 @@ export const makeMockWatcher =
     return () => Promise.resolve();
   };
 
-export const newStorageRepositoryMock = (reset = true): Mocked<RepositoryInterface<StorageRepository>> => {
-  if (reset) {
-    StorageCore.reset();
-  }
+export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRepository>> => {
+  StorageCore.reset();
+  StorageCore.setMediaLocation('/data');
 
   return {
     createZipStream: vitest.fn(),
@@ -53,6 +52,7 @@ export const newStorageRepositoryMock = (reset = true): Mocked<RepositoryInterfa
     createFile: vitest.fn(),
     createWriteStream: vitest.fn(),
     createOrOverwriteFile: vitest.fn(),
+    existsSync: vitest.fn(),
     overwriteFile: vitest.fn(),
     unlink: vitest.fn(),
     unlinkDir: vitest.fn().mockResolvedValue(true),

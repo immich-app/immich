@@ -16,7 +16,10 @@ class AlbumsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /albums/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `albumAsset.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -59,6 +62,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumAsset.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -86,7 +91,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /albums/{id}/users' operation and returns the [Response].
+  /// This endpoint requires the `albumUser.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -118,6 +126,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumUser.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -138,7 +148,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /albums' operation and returns the [Response].
+  /// This endpoint requires the `album.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -167,6 +180,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -185,7 +200,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /albums/{id}' operation and returns the [Response].
+  /// This endpoint requires the `album.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -215,6 +233,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -225,7 +245,10 @@ class AlbumsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /albums/{id}' operation and returns the [Response].
+  /// This endpoint requires the `album.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -271,6 +294,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -295,7 +320,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /albums/statistics' operation and returns the [Response].
+  /// This endpoint requires the `album.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAlbumStatisticsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/statistics';
@@ -321,6 +348,7 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.statistics` permission.
   Future<AlbumStatisticsResponseDto?> getAlbumStatistics() async {
     final response = await getAlbumStatisticsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -336,7 +364,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /albums' operation and returns the [Response].
+  /// This endpoint requires the `album.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] assetId:
@@ -375,6 +406,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] assetId:
@@ -399,7 +432,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /albums/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `albumAsset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -431,6 +467,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumAsset.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -454,7 +492,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /albums/{id}/user/{userId}' operation and returns the [Response].
+  /// This endpoint requires the `albumUser.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -487,6 +528,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumUser.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -499,7 +542,10 @@ class AlbumsApi {
     }
   }
 
-  /// Performs an HTTP 'PATCH /albums/{id}' operation and returns the [Response].
+  /// This endpoint requires the `album.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -531,6 +577,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -551,7 +599,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /albums/{id}/user/{userId}' operation and returns the [Response].
+  /// This endpoint requires the `albumUser.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -586,6 +637,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumUser.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

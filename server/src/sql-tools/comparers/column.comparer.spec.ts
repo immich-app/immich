@@ -62,6 +62,23 @@ describe('compareColumns', () => {
       ]);
     });
 
+    it('should detect a change in default', () => {
+      const source: DatabaseColumn = { ...testColumn, nullable: true };
+      const target: DatabaseColumn = { ...testColumn, nullable: true, default: "''" };
+      const reason = `default is different (null vs '')`;
+      expect(compareColumns.onCompare(source, target)).toEqual([
+        {
+          columnName: 'test',
+          tableName: 'table1',
+          type: 'ColumnAlter',
+          changes: {
+            default: 'NULL',
+          },
+          reason,
+        },
+      ]);
+    });
+
     it('should detect a comment change', () => {
       const source: DatabaseColumn = { ...testColumn, comment: 'new comment' };
       const target: DatabaseColumn = { ...testColumn, comment: 'old comment' };

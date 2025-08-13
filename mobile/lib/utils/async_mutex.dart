@@ -5,7 +5,7 @@ class AsyncMutex {
   Future _running = Future.value(null);
   int _enqueued = 0;
 
-  get enqueued => _enqueued;
+  int get enqueued => _enqueued;
 
   /// Execute [operation] exclusively, after any currently running operations.
   /// Returns a [Future] with the result of the [operation].

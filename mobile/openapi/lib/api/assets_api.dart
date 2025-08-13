@@ -128,7 +128,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
@@ -157,6 +160,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
@@ -167,7 +172,10 @@ class AssetsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /assets/{id}/original' operation and returns the [Response].
+  /// This endpoint requires the `asset.download` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -208,6 +216,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.download` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -290,7 +300,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/{id}' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -331,6 +344,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -353,7 +368,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/statistics' operation and returns the [Response].
+  /// This endpoint requires the `asset.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [bool] isFavorite:
@@ -396,6 +414,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [bool] isFavorite:
@@ -418,7 +438,7 @@ class AssetsApi {
     return null;
   }
 
-  /// This property was deprecated in v1.116.0
+  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -454,7 +474,7 @@ class AssetsApi {
     );
   }
 
-  /// This property was deprecated in v1.116.0
+  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
   ///
   /// Parameters:
   ///
@@ -477,7 +497,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/{id}/video/playback' operation and returns the [Response].
+  /// This endpoint requires the `asset.view` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -518,6 +541,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.view` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -542,7 +567,7 @@ class AssetsApi {
 
   /// replaceAsset
   ///
-  /// Replace the asset with new file, without changing its id
+  /// Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -636,7 +661,7 @@ class AssetsApi {
 
   /// replaceAsset
   ///
-  /// Replace the asset with new file, without changing its id
+  /// Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
   ///
   /// Parameters:
   ///
@@ -713,7 +738,10 @@ class AssetsApi {
     }
   }
 
-  /// Performs an HTTP 'PUT /assets/{id}' operation and returns the [Response].
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -745,6 +773,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -765,7 +795,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
@@ -794,6 +827,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
@@ -804,7 +839,10 @@ class AssetsApi {
     }
   }
 
-  /// Performs an HTTP 'POST /assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.upload` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
@@ -922,6 +960,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.upload` permission.
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
@@ -967,7 +1007,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/{id}/thumbnail' operation and returns the [Response].
+  /// This endpoint requires the `asset.view` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1013,6 +1056,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.view` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

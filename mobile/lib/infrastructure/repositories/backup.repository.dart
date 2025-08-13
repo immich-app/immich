@@ -113,6 +113,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     final query = _db.localAssetEntity.select()
       ..where(
         (lae) =>
+            lae.checksum.isNotNull() &
             existsQuery(
               _db.localAlbumAssetEntity.selectOnly()
                 ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -125,9 +126,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
               _db.remoteAssetEntity.selectOnly()
                 ..addColumns([_db.remoteAssetEntity.checksum])
                 ..where(
-                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) &
-                      _db.remoteAssetEntity.ownerId.equals(userId) &
-                      lae.checksum.isNotNull(),
+                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
                 ),
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),

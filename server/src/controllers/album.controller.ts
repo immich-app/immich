@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
   AddUsersDto,
@@ -62,6 +62,7 @@ export class AlbumController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.AlbumDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
@@ -98,6 +99,7 @@ export class AlbumController {
 
   @Put(':id/user/:userId')
   @Authenticated({ permission: Permission.AlbumUserUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
   updateAlbumUser(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -109,11 +111,12 @@ export class AlbumController {
 
   @Delete(':id/user/:userId')
   @Authenticated({ permission: Permission.AlbumUserDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   removeUserFromAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-  ) {
+  ): Promise<void> {
     return this.service.removeUser(auth, id, userId);
   }
 }

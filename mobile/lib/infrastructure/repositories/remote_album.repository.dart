@@ -173,15 +173,14 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             id: user.id,
             email: user.email,
             name: user.name,
-            profileImagePath: user.profileImagePath?.isEmpty == true ? null : user.profileImagePath,
             isAdmin: user.isAdmin,
             updatedAt: user.updatedAt,
-            quotaSizeInBytes: user.quotaSizeInBytes ?? 0,
-            quotaUsageInBytes: user.quotaUsageInBytes,
             memoryEnabled: true,
             inTimeline: false,
             isPartnerSharedBy: false,
             isPartnerSharedWith: false,
+            profileChangedAt: user.profileChangedAt,
+            hasProfileImage: user.hasProfileImage,
           ),
         )
         .get();
@@ -221,10 +220,20 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> removeUser(String albumId, {required String userId}) {
+    return _db.remoteAlbumUserEntity.deleteWhere((row) => row.albumId.equals(albumId) & row.userId.equals(userId));
+  }
+
   Future<void> deleteAlbum(String albumId) async {
     return _db.transaction(() async {
       await _db.remoteAlbumEntity.deleteWhere((table) => table.id.equals(albumId));
     });
+  }
+
+  Future<void> setActivityStatus(String albumId, bool isEnabled) async {
+    final query = _db.update(_db.remoteAlbumEntity)..where((row) => row.id.equals(albumId));
+
+    await query.write(RemoteAlbumEntityCompanion(isActivityEnabled: Value(isEnabled)));
   }
 
   Stream<RemoteAlbum?> watchAlbum(String albumId) {
@@ -254,6 +263,28 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       final album = row.readTable(_db.remoteAlbumEntity).toDto(ownerName: row.read(_db.userEntity.name)!);
       return album;
     }).watchSingleOrNull();
+  }
+
+  Future<DateTime?> getNewestAssetTimestamp(String albumId) {
+    final query = _db.remoteAlbumAssetEntity.selectOnly()
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..addColumns([_db.remoteAssetEntity.localDateTime.max()])
+      ..join([
+        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+      ]);
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.max())).getSingleOrNull();
+  }
+
+  Future<DateTime?> getOldestAssetTimestamp(String albumId) {
+    final query = _db.remoteAlbumAssetEntity.selectOnly()
+      ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
+      ..addColumns([_db.remoteAssetEntity.localDateTime.min()])
+      ..join([
+        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+      ]);
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.localDateTime.min())).getSingleOrNull();
   }
 
   Future<int> getCount() {

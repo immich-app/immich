@@ -194,6 +194,10 @@ export class UserRepository {
       .executeTakeFirstOrThrow();
   }
 
+  async updateAll(dto: Updateable<UserTable>) {
+    await this.db.updateTable('user').set(dto).execute();
+  }
+
   restore(id: string) {
     return this.db
       .updateTable('user')

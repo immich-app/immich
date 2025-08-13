@@ -11,7 +11,7 @@ describe(JobService.name, () => {
   let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, mocks } = newTestService(JobService, {}));
+    ({ sut, mocks } = newTestService(JobService));
 
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
   });

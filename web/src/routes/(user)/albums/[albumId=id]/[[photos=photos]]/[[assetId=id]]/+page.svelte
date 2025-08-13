@@ -75,7 +75,7 @@
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
-    mdiFolderDownloadOutline,
+    mdiDownload,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -664,7 +664,7 @@
                 color="secondary"
                 aria-label={$t('download')}
                 onclick={handleDownloadAlbum}
-                icon={mdiFolderDownloadOutline}
+                icon={mdiDownload}
               />
             {/if}
 

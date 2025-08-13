@@ -72,9 +72,9 @@ export const compareColumns = {
         tableName: source.tableName,
         columnName: source.name,
         changes: {
-          default: String(source.default),
+          default: String(source.default ?? 'NULL'),
         },
-        reason: `default is different (${source.default} vs ${target.default})`,
+        reason: `default is different (${source.default ?? 'null'} vs ${target.default})`,
       });
     }
 

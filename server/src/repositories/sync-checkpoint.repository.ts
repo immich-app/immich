@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely } from 'kysely';
+import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SyncEntityType } from 'src/enum';
@@ -38,5 +38,14 @@ export class SyncCheckpointRepository {
       .where('sessionId', '=', sessionId)
       .$if(!!types, (qb) => qb.where('type', 'in', types!))
       .execute();
+  }
+
+  @GenerateSql()
+  getNow() {
+    return this.db
+      .selectNoFrom((eb) => [
+        eb.fn<string>('immich_uuid_v7', [sql.raw<Date>("now() - interval '1 millisecond'")]).as('nowId'),
+      ])
+      .executeTakeFirstOrThrow();
   }
 }

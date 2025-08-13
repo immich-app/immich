@@ -63,8 +63,9 @@
       touchmoveTwoFingers: false,
       mousewheelCtrlKey: false,
       navbar,
-      minFov: 10,
-      maxFov: 120,
+      minFov: 15,
+      maxFov: 90,
+      zoomSpeed: 0.5,
       fisheye: false,
     });
     const resolutionPlugin = viewer.getPlugin(ResolutionPlugin) as ResolutionPlugin;

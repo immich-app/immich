@@ -46,8 +46,8 @@ export class ActivityController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.ActivityDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteActivity(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

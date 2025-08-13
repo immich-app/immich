@@ -40,6 +40,7 @@ void main() {
     registerFallbackValue(LocalAssetStub.image1);
 
     when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
+    when(() => mockStorageRepo.clearCache()).thenAnswer((_) async => {});
   });
 
   group('HashService hashAssets', () {

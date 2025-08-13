@@ -43,15 +43,15 @@ export class LibraryController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.LibraryDelete, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteLibrary(@Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(id);
   }
 
   @Post(':id/validate')
-  @HttpCode(200)
   @Authenticated({ admin: true })
+  @HttpCode(HttpStatus.OK)
   // TODO: change endpoint to validate current settings instead
   validate(@Param() { id }: UUIDParamDto, @Body() dto: ValidateLibraryDto): Promise<ValidateLibraryResponseDto> {
     return this.service.validate(id, dto);
@@ -64,9 +64,9 @@ export class LibraryController {
   }
 
   @Post(':id/scan')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
-  scanLibrary(@Param() { id }: UUIDParamDto) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  scanLibrary(@Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.queueScan(id);
   }
 }

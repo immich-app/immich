@@ -65,6 +65,15 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
           splashRadius: 24,
           icon: const Icon(Icons.arrow_back_ios_rounded),
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.pushRoute(const DriftBackupOptionsRoute());
+            },
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: "backup_options".t(context: context),
+          ),
+        ],
       ),
       body: Stack(
         children: [

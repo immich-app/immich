@@ -57,7 +57,7 @@ class Adapter {
     this.result = result;
     this.width = 0;
     for (const box of this.result.boxes) {
-      if (box.top < 100) {
+      if (box.top === 0) {
         this.width = box.left + box.width;
       } else {
         break;

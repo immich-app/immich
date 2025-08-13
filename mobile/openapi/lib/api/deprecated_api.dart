@@ -16,7 +16,7 @@ class DeprecatedApi {
 
   final ApiClient apiClient;
 
-  /// This property was deprecated in v1.116.0
+  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -52,7 +52,7 @@ class DeprecatedApi {
     );
   }
 
-  /// This property was deprecated in v1.116.0
+  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
   ///
   /// Parameters:
   ///

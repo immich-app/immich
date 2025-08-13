@@ -54,8 +54,8 @@ export class MemoryController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.MemoryDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
@@ -71,8 +71,8 @@ export class MemoryController {
   }
 
   @Delete(':id/assets')
-  @HttpCode(HttpStatus.OK)
   @Authenticated({ permission: Permission.MemoryAssetDelete })
+  @HttpCode(HttpStatus.OK)
   removeMemoryAssets(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,

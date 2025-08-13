@@ -21,7 +21,7 @@ abstract class SegmentBuilder {
   static Widget buildPlaceholder(
     BuildContext context,
     int count, {
-    Size size = const Size.square(kTimelineFixedTileExtent),
+    Size size = kTimelineFixedTileExtent,
     double spacing = kTimelineSpacing,
   }) => RepaintBoundary(
     child: FixedTimelineRow(

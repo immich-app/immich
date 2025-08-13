@@ -1,4 +1,4 @@
-import { setDifference, type TimelinePlainDate } from '$lib/utils/timeline-util';
+import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import type { DayGroup } from './day-group.svelte';
@@ -13,11 +13,11 @@ export class GroupInsertionCache {
   changedDayGroups = new SvelteSet<DayGroup>();
   newDayGroups = new SvelteSet<DayGroup>();
 
-  getDayGroup({ year, month, day }: TimelinePlainDate): DayGroup | undefined {
+  getDayGroup({ year, month, day }: TimelineDate): DayGroup | undefined {
     return this.#lookupCache[year]?.[month]?.[day];
   }
 
-  setDayGroup(dayGroup: DayGroup, { year, month, day }: TimelinePlainDate) {
+  setDayGroup(dayGroup: DayGroup, { year, month, day }: TimelineDate) {
     if (!this.#lookupCache[year]) {
       this.#lookupCache[year] = {};
     }

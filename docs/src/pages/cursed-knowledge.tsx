@@ -16,6 +16,9 @@ import {
   mdiCloudKeyOutline,
   mdiRegex,
   mdiCodeJson,
+  mdiClockOutline,
+  mdiAccountOutline,
+  mdiRestart,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
@@ -26,6 +29,42 @@ const withLanguage = (date: Date) => (language: string) => date.toLocaleDateStri
 type Item = Omit<TimelineItem, 'done' | 'getDateLabel'> & { date: Date };
 
 const items: Item[] = [
+  {
+    icon: mdiClockOutline,
+    iconColor: 'gray',
+    title: 'setTimeout is cursed',
+    description:
+      'The setTimeout method in JavaScript is cursed when used with small values because the implementation may or may not actually wait the specified time.',
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/20655',
+      text: '#20655',
+    },
+    date: new Date(2025, 7, 4),
+  },
+  {
+    icon: mdiAccountOutline,
+    iconColor: '#DAB1DA',
+    title: 'PostgreSQL USER is cursed',
+    description:
+      'The USER keyword in PostgreSQL is cursed because you can select from it like a table, which leads to confusion if you have a table name user as well.',
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/19891',
+      text: '#19891',
+    },
+    date: new Date(2025, 7, 4),
+  },
+  {
+    icon: mdiRestart,
+    iconColor: '#8395e3',
+    title: 'PostgreSQL RESET is cursed',
+    description:
+      'PostgreSQL RESET is cursed because it is impossible to RESET a PostgreSQL extension parameter if the extension has been uninstalled.',
+    link: {
+      url: 'https://github.com/immich-app/immich/pull/19363',
+      text: '#19363',
+    },
+    date: new Date(2025, 5, 20),
+  },
   {
     icon: mdiRegex,
     iconColor: 'purple',

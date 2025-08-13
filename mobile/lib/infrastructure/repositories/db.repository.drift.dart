@@ -84,7 +84,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
     localAlbumEntity,
     localAlbumAssetEntity,
     i4.idxLocalAssetChecksum,
-    i2.uQRemoteAssetOwnerChecksum,
+    i2.idxRemoteAssetOwnerChecksum,
+    i2.uQRemoteAssetsOwnerChecksum,
+    i2.uQRemoteAssetsOwnerLibraryChecksum,
     i2.idxRemoteAssetChecksum,
     userMetadataEntity,
     partnerEntity,
@@ -96,6 +98,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     memoryAssetEntity,
     personEntity,
     assetFaceEntity,
+    i9.idxLatLng,
   ];
   @override
   i0.StreamQueryUpdateRules

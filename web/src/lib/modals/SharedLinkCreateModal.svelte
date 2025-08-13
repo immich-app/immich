@@ -165,7 +165,7 @@
     <div class="flex flex-col gap-4 mt-4">
       <div>
         <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
-          <Input bind:value={slug} placeholder="immich-10000" />
+          <Input bind:value={slug} autocomplete="off" />
         </Field>
         {#if slug}
           <Text size="tiny" color="muted" class="pt-2">/s/{encodeURIComponent(slug)}</Text>
@@ -173,11 +173,11 @@
       </div>
 
       <Field label={$t('password')} description={$t('shared_link_password_description')}>
-        <PasswordInput bind:value={password} />
+        <PasswordInput bind:value={password} autocomplete="new-password" />
       </Field>
 
       <Field label={$t('description')}>
-        <Input bind:value={description} />
+        <Input bind:value={description} autocomplete="off" />
       </Field>
 
       <div class="mt-2">

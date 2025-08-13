@@ -16,7 +16,10 @@ class ActivitiesApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /activities' operation and returns the [Response].
+  /// This endpoint requires the `activity.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
@@ -45,6 +48,8 @@ class ActivitiesApi {
     );
   }
 
+  /// This endpoint requires the `activity.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
@@ -63,7 +68,10 @@ class ActivitiesApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /activities/{id}' operation and returns the [Response].
+  /// This endpoint requires the `activity.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +101,8 @@ class ActivitiesApi {
     );
   }
 
+  /// This endpoint requires the `activity.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -103,7 +113,10 @@ class ActivitiesApi {
     }
   }
 
-  /// Performs an HTTP 'GET /activities' operation and returns the [Response].
+  /// This endpoint requires the `activity.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -154,6 +167,8 @@ class ActivitiesApi {
     );
   }
 
+  /// This endpoint requires the `activity.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -183,7 +198,10 @@ class ActivitiesApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /activities/statistics' operation and returns the [Response].
+  /// This endpoint requires the `activity.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):
@@ -219,6 +237,8 @@ class ActivitiesApi {
     );
   }
 
+  /// This endpoint requires the `activity.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] albumId (required):

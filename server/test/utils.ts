@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { ClassConstructor } from 'class-transformer';
 import { Kysely } from 'kysely';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
-import { Writable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import postgres from 'postgres';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
@@ -71,7 +71,6 @@ import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
-import { Readable } from 'typeorm/platform/PlatformTools';
 import { assert, Mock, Mocked, vitest } from 'vitest';
 
 export type ControllerContext = {
@@ -447,6 +446,16 @@ export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> 
   }
 }
 
-export const wait = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export const wait = (ms: number): Promise<void> => {
+  return new Promise((resolve) => {
+    const target = performance.now() + ms;
+    const checkDone = () => {
+      if (performance.now() >= target) {
+        resolve();
+      } else {
+        setTimeout(checkDone, 1); // Check again after 1ms
+      }
+    };
+    setTimeout(checkDone, ms);
+  });
 };

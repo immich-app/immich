@@ -40,6 +40,11 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'isOnboarded', false);
       }
       break;
+    case 'SyncUserV1':
+      if (value is Map) {
+        addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
+        addDefault(value, 'hasProfileImage', false);
+      }
   }
 }
 

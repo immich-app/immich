@@ -26,23 +26,23 @@ export class SyncController {
   ) {}
 
   @Post('full-sync')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   getFullSyncForUser(@Auth() auth: AuthDto, @Body() dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     return this.service.getFullSync(auth, dto);
   }
 
   @Post('delta-sync')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   getDeltaSync(@Auth() auth: AuthDto, @Body() dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
     return this.service.getDeltaSync(auth, dto);
   }
 
   @Post('stream')
+  @Authenticated({ permission: Permission.SyncStream })
   @Header('Content-Type', 'application/jsonlines+json')
   @HttpCode(HttpStatus.OK)
-  @Authenticated({ permission: Permission.SyncStream })
   async getSyncStream(@Auth() auth: AuthDto, @Res() res: Response, @Body() dto: SyncStreamDto) {
     try {
       await this.service.stream(auth, res, dto);
@@ -59,16 +59,16 @@ export class SyncController {
   }
 
   @Post('ack')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.SyncCheckpointUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
   sendSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckSetDto) {
     return this.service.setAcks(auth, dto);
   }
 
   @Delete('ack')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.SyncCheckpointDelete })
-  deleteSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckDeleteDto) {
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckDeleteDto): Promise<void> {
     return this.service.deleteAcks(auth, dto);
   }
 }

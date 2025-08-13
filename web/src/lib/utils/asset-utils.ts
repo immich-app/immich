@@ -275,9 +275,9 @@ export function isFlipped(orientation?: string | null) {
   return value && (isRotated270CW(value) || isRotated90CW(value));
 }
 
-export function getFileSize(asset: AssetResponseDto): string {
+export function getFileSize(asset: AssetResponseDto, maxPrecision = 4): string {
   const size = asset.exifInfo?.fileSizeInByte || 0;
-  return size > 0 ? getByteUnitString(size, undefined, 4) : 'Invalid Data';
+  return size > 0 ? getByteUnitString(size, undefined, maxPrecision) : 'Invalid Data';
 }
 
 export function getAssetResolution(asset: AssetResponseDto): string {

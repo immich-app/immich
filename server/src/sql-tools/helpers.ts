@@ -175,7 +175,7 @@ export const isDefaultEqual = (source: DatabaseColumn, target: DatabaseColumn) =
 
   if (
     withTypeCast(source.default, getColumnType(source)) === target.default ||
-    source.default === withTypeCast(target.default, getColumnType(target))
+    withTypeCast(target.default, getColumnType(target)) === source.default
   ) {
     return true;
   }

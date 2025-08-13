@@ -12,7 +12,7 @@
     playVideoThumbnailOnHover,
     showDeleteModal,
   } from '$lib/stores/preferences.store';
-  import { findLocale } from '$lib/utils';
+  import { createDateFormatter, findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -48,21 +48,7 @@
     }
   };
   let editedLocale = $derived(findLocale($locale).code);
-  let formattedDate = $derived(
-    time.toLocaleString(editedLocale, {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }),
-  );
-  let timePortion = $derived(
-    time.toLocaleString(editedLocale, {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    }),
-  );
-  let selectedDate = $derived(`${formattedDate} ${timePortion}`);
+  let selectedDate: string = $derived(createDateFormatter(editedLocale).formatDateTime(time));
   let selectedOption = $derived({
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,

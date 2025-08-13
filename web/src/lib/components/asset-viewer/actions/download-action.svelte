@@ -6,7 +6,7 @@
   import { downloadFile } from '$lib/utils/asset-utils';
   import { getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
-  import { mdiFolderDownloadOutline } from '@mdi/js';
+  import { mdiDownload } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -26,10 +26,10 @@
     color="secondary"
     shape="round"
     variant="ghost"
-    icon={mdiFolderDownloadOutline}
+    icon={mdiDownload}
     aria-label={$t('download')}
     onclick={onDownloadFile}
   />
 {:else}
-  <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} onClick={onDownloadFile} />
+  <MenuOption icon={mdiDownload} text={$t('download')} onClick={onDownloadFile} />
 {/if}

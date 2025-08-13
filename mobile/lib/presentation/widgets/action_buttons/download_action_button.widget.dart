@@ -46,6 +46,7 @@ class DownloadActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
       iconData: Icons.download,
+      maxWidth: 95,
       label: "download".t(context: context),
       onPressed: () => _onTap(context, ref),
     );

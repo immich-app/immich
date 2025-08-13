@@ -172,6 +172,7 @@ export enum Permission {
   ServerApkLinks = 'server.apkLinks',
   ServerStorage = 'server.storage',
   ServerStatistics = 'server.statistics',
+  ServerVersionCheck = 'server.versionCheck',
 
   ServerLicenseRead = 'serverLicense.read',
   ServerLicenseUpdate = 'serverLicense.update',
@@ -234,6 +235,8 @@ export enum Permission {
   AdminUserRead = 'adminUser.read',
   AdminUserUpdate = 'adminUser.update',
   AdminUserDelete = 'adminUser.delete',
+
+  AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
 
 export enum SharedLinkType {
@@ -413,6 +416,11 @@ export enum LogLevel {
   Fatal = 'fatal',
 }
 
+export enum ApiCustomExtension {
+  Permission = 'x-immich-permission',
+  AdminOnly = 'x-immich-admin-only',
+}
+
 export enum MetadataKey {
   AuthRoute = 'auth_route',
   AdminRoute = 'admin_route',
@@ -475,6 +483,8 @@ export enum DatabaseExtension {
 export enum BootstrapEventPriority {
   // Database service should be initialized before anything else, most other services need database access
   DatabaseService = -200,
+  // Detect and configure the media location before jobs are queued which may use it
+  StorageService = -195,
   // Other services may need to queue jobs on bootstrap.
   JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap
@@ -660,9 +670,11 @@ export enum SyncEntityType {
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
-  AlbumAssetV1 = 'AlbumAssetV1',
+  AlbumAssetCreateV1 = 'AlbumAssetCreateV1',
+  AlbumAssetUpdateV1 = 'AlbumAssetUpdateV1',
   AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
-  AlbumAssetExifV1 = 'AlbumAssetExifV1',
+  AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1',
+  AlbumAssetExifUpdateV1 = 'AlbumAssetExifUpdateV1',
   AlbumAssetExifBackfillV1 = 'AlbumAssetExifBackfillV1',
 
   AlbumToAssetV1 = 'AlbumToAssetV1',

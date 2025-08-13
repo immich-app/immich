@@ -1,9 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { join } from 'node:path';
-import { APP_MEDIA_LOCATION } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, JobName, JobStatus, QueueName, StorageFolder, SystemMetadataKey } from 'src/enum';
+import {
+  BootstrapEventPriority,
+  DatabaseLock,
+  JobName,
+  JobStatus,
+  QueueName,
+  StorageFolder,
+  SystemMetadataKey,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, SystemFlags } from 'src/types';
 import { ImmichStartupError } from 'src/utils/misc';
@@ -12,9 +19,32 @@ const docsMessage = `Please see https://immich.app/docs/administration/system-in
 
 @Injectable()
 export class StorageService extends BaseService {
-  @OnEvent({ name: 'AppBootstrap' })
-  async onBootstrap() {
+  private detectMediaLocation(): string {
     const envData = this.configRepository.getEnv();
+    if (envData.storage.mediaLocation) {
+      return envData.storage.mediaLocation;
+    }
+
+    const targets: string[] = [];
+    const candidates = ['/data', '/usr/src/app/upload'];
+
+    for (const candidate of candidates) {
+      const exists = this.storageRepository.existsSync(candidate);
+      if (exists) {
+        targets.push(candidate);
+      }
+    }
+
+    if (targets.length === 1) {
+      return targets[0];
+    }
+
+    return '/usr/src/app/upload';
+  }
+
+  @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.StorageService })
+  async onBootstrap() {
+    StorageCore.setMediaLocation(this.detectMediaLocation());
 
     await this.databaseRepository.withLock(DatabaseLock.SystemFileMounts, async () => {
       const flags =
@@ -53,6 +83,7 @@ export class StorageService extends BaseService {
 
         this.logger.log('Successfully verified system mount folder checks');
       } catch (error) {
+        const envData = this.configRepository.getEnv();
         if (envData.storage.ignoreMountCheckErrors) {
           this.logger.error(error as Error);
           this.logger.warn('Ignoring mount folder errors');
@@ -63,28 +94,40 @@ export class StorageService extends BaseService {
     });
 
     await this.databaseRepository.withLock(DatabaseLock.MediaLocation, async () => {
-      const current = APP_MEDIA_LOCATION;
+      const current = StorageCore.getMediaLocation();
+      const samples = await this.assetRepository.getFileSamples();
       const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
-      let previous = savedValue?.location || '';
+      if (samples.length > 0) {
+        const path = samples[0].path;
 
-      if (previous !== current) {
-        this.logger.log(`Media location changed (from=${previous}, to=${current})`);
+        let previous = savedValue?.location || '';
 
-        const samples = await this.assetRepository.getFileSamples();
-        if (samples.length > 0) {
-          const originalPath = samples[0].originalPath;
-          if (!previous) {
-            previous = originalPath.startsWith('upload/') ? 'upload' : '/usr/src/app/upload';
-          }
-
-          if (previous && originalPath.startsWith(previous)) {
-            this.logger.warn(
-              `Detected a change to IMMICH_MEDIA_LOCATION, performing an automatic migration of file paths from ${previous} to ${current}, this may take awhile`,
-            );
-            await this.databaseRepository.migrateFilePaths(previous, current);
-          }
+        if (!previous && this.configRepository.getEnv().storage.mediaLocation) {
+          previous = current;
         }
 
+        if (!previous) {
+          previous = path.startsWith('upload/') ? 'upload' : '/usr/src/app/upload';
+        }
+
+        if (previous !== current) {
+          this.logger.log(`Media location changed (from=${previous}, to=${current})`);
+
+          if (!path.startsWith(previous)) {
+            throw new Error(
+              'Detected an inconsistent media location. For more information, see https://immich.app/errors#inconsistent-media-location',
+            );
+          }
+
+          this.logger.warn(
+            `Detected a change to media location, performing an automatic migration of file paths from ${previous} to ${current}, this may take awhile`,
+          );
+          await this.databaseRepository.migrateFilePaths(previous, current);
+        }
+      }
+
+      // Only set MediaLocation in systemMetadataRepository if needed
+      if (savedValue?.location !== current) {
         await this.systemMetadataRepository.set(SystemMetadataKey.MediaLocation, { location: current });
       }
     });

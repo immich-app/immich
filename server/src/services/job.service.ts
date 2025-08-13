@@ -382,6 +382,7 @@ export class JobService extends BaseService {
                 visibility: asset.visibility,
                 livePhotoVideoId: asset.livePhotoVideoId,
                 stackId: asset.stackId,
+                libraryId: asset.libraryId,
               },
               exif: {
                 assetId: exif.assetId,

@@ -17,7 +17,13 @@ export const asQueryString = ({ slug, key }: { slug?: string; key?: string }) =>
   return params.toString();
 };
 
-export const loadSharedLink = async ({ url, params }: { url: URL; params: { key?: string; slug?: string } }) => {
+export const loadSharedLink = async ({
+  url,
+  params,
+}: {
+  url: URL;
+  params: { key?: string; slug?: string; assetId?: string };
+}) => {
   const { key, slug } = params;
   await authenticate(url, { public: true });
 

@@ -35,9 +35,11 @@ describe(SyncEntityType.UserV1, () => {
         data: {
           deletedAt: user.deletedAt,
           email: user.email,
+          hasProfileImage: user.profileImagePath !== '',
           id: user.id,
           name: user.name,
           avatarColor: user.avatarColor,
+          profileChangedAt: user.profileChangedAt.toISOString(),
         },
         type: 'UserV1',
       },

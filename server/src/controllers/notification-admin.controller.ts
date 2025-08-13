@@ -25,15 +25,15 @@ export class NotificationAdminController {
   }
 
   @Post('test-email')
-  @HttpCode(HttpStatus.OK)
   @Authenticated({ admin: true })
+  @HttpCode(HttpStatus.OK)
   sendTestEmailAdmin(@Auth() auth: AuthDto, @Body() dto: SystemConfigSmtpDto): Promise<TestEmailResponseDto> {
     return this.service.sendTestEmail(auth.user.id, dto);
   }
 
   @Post('templates/:name')
-  @HttpCode(HttpStatus.OK)
   @Authenticated({ admin: true })
+  @HttpCode(HttpStatus.OK)
   getNotificationTemplateAdmin(
     @Auth() auth: AuthDto,
     @Param('name') name: EmailTemplate,

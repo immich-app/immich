@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/entities/asset.entity.dart' hide AssetType;
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
@@ -13,6 +14,18 @@ class FileMediaRepository {
   Future<Asset?> saveImage(Uint8List data, {required String title, String? relativePath}) async {
     final entity = await PhotoManager.editor.saveImage(data, filename: title, title: title, relativePath: relativePath);
     return AssetMediaRepository.toAsset(entity);
+  }
+
+  Future<LocalAsset?> saveLocalAsset(Uint8List data, {required String title, String? relativePath}) async {
+    final entity = await PhotoManager.editor.saveImage(data, filename: title, title: title, relativePath: relativePath);
+
+    return LocalAsset(
+      id: entity.id,
+      name: title,
+      type: AssetType.image,
+      createdAt: entity.createDateTime,
+      updatedAt: entity.modifiedDateTime,
+    );
   }
 
   Future<Asset?> saveImageWithFile(String filePath, {String? title, String? relativePath}) async {
