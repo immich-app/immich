@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -18,7 +19,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/migration.dart';
+import 'package:logging/logging.dart';
 
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
@@ -37,17 +38,28 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       ref.read(websocketProvider.notifier).connect();
 
       final isEnableBackup = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+      final backgroundManager = ref.read(backgroundSyncProvider);
 
-      await runNewSync(ref, full: true).then((_) async {
-        if (isEnableBackup) {
-          final currentUser = ref.read(currentUserProvider);
-          if (currentUser == null) {
-            return;
+      try {
+        await Future.wait([
+          Future(() async {
+            await backgroundManager.syncLocal(full: true);
+            await backgroundManager.hashAssets();
+          }),
+          backgroundManager.syncRemote(),
+        ]).then((_) async {
+          if (isEnableBackup) {
+            final currentUser = ref.read(currentUserProvider);
+            if (currentUser == null) {
+              return;
+            }
+
+            await ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
           }
-
-          await ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-        }
-      });
+        });
+      } catch (e, stackTrace) {
+        Logger("TabShellPage").severe("Error during background sync", e, stackTrace);
+      }
     });
   }
 
