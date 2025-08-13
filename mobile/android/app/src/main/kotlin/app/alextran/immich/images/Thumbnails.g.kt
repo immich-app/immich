@@ -61,6 +61,7 @@ private open class ThumbnailsPigeonCodec : StandardMessageCodec() {
 interface ThumbnailApi {
   fun requestImage(assetId: String, requestId: Long, width: Long, height: Long, callback: (Result<Map<String, Long>>) -> Unit)
   fun cancelImageRequest(requestId: Long)
+  fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit)
 
   companion object {
     /** The codec used by ThumbnailApi. */
@@ -107,6 +108,26 @@ interface ThumbnailApi {
               ThumbnailsPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbhash$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val thumbhashArg = args[0] as String
+            api.getThumbhash(thumbhashArg) { result: Result<Map<String, Long>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(ThumbnailsPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(ThumbnailsPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)

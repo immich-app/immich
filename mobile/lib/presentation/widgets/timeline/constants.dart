@@ -1,7 +1,8 @@
 import 'dart:ui';
 
 const double kTimelineHeaderExtent = 80.0;
-const Size kTimelineFixedTileExtent = Size.square(256);
+const double kTimelineFixedTileExtentPixels = 256;
+const Size kTimelineFixedTileExtent = Size.square(kTimelineFixedTileExtentPixels);
 const Size kThumbnailResolution = Size.square(384);
 const double kTimelineSpacing = 2.0;
 const int kTimelineColumnCount = 3;

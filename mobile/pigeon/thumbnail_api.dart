@@ -18,4 +18,7 @@ abstract class ThumbnailApi {
   Map<String, int> requestImage(String assetId, {required int requestId, required int width, required int height});
 
   void cancelImageRequest(int requestId);
+
+  @async
+  Map<String, int> getThumbhash(String thumbhash);
 }

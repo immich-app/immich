@@ -18,6 +18,7 @@ import java.util.concurrent.Executors
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DecodeFormat
+import java.util.Base64
 import java.util.HashMap
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Future
@@ -61,6 +62,23 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
 
         @JvmStatic
         external fun wrapAsBuffer(address: Long, capacity: Int): ByteBuffer
+    }
+
+    override fun getThumbhash(thumbhash: String, callback: (Result<Map<String, Long>>) -> Unit) {
+        threadPool.execute {
+            try {
+                val bytes = Base64.getDecoder().decode(thumbhash)
+                val image = ThumbHash.thumbHashToRGBA(bytes)
+                val res = mapOf(
+                    "pointer" to image.pointer,
+                    "width" to image.width.toLong(),
+                    "height" to image.height.toLong()
+                )
+                callback(Result.success(res))
+              } catch (e: Exception) {
+                callback(Result.failure(e))
+              }
+        }
     }
 
     override fun requestImage(

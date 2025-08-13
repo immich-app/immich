@@ -47,6 +47,16 @@ class ThumbnailApiImpl: ThumbnailApi {
     return assetCache
   }()
   
+  func getThumbhash(thumbhash: String, completion: @escaping (Result<[String : Int64], any Error>) -> Void) {
+    Self.processingQueue.async {
+      guard let data = Data(base64Encoded: thumbhash)
+      else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
+
+      let (width, height, pointer) = thumbHashToRGBA(hash: data)
+      completion(.success(["pointer": Int64(Int(bitPattern: pointer.baseAddress)), "width": Int64(width), "height": Int64(height)]))
+    }
+  }
+  
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
     let request = Request(callback: completion)
     let item = DispatchWorkItem {

@@ -83,11 +83,11 @@ android {
     }
   }
   namespace 'app.alextran.immich'
-}
 
-externalNativeBuild {
-  cmake {
-    path "CMakeLists.txt"
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
   }
 }
 

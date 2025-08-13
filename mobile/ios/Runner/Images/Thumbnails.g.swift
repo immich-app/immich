@@ -72,6 +72,7 @@ class ThumbnailsPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 protocol ThumbnailApi {
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], Error>) -> Void)
   func cancelImageRequest(requestId: Int64) throws
+  func getThumbhash(thumbhash: String, completion: @escaping (Result<[String: Int64], Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -114,6 +115,23 @@ class ThumbnailApiSetup {
       }
     } else {
       cancelImageRequestChannel.setMessageHandler(nil)
+    }
+    let getThumbhashChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ThumbnailApi.getThumbhash\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getThumbhashChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let thumbhashArg = args[0] as! String
+        api.getThumbhash(thumbhash: thumbhashArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getThumbhashChannel.setMessageHandler(nil)
     }
   }
 }

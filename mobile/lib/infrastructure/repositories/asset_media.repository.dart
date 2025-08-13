@@ -33,30 +33,8 @@ abstract class ImageRequest {
   }
 
   void _onCancelled();
-}
 
-class LocalImageRequest extends ImageRequest {
-  final String localId;
-  final int width;
-  final int height;
-
-  LocalImageRequest({required this.localId, required ui.Size size})
-    : width = size.width.toInt(),
-      height = size.height.toInt();
-
-  @override
-  Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
-    if (_isCancelled) {
-      return null;
-    }
-
-    final Map<String, int> info = await thumbnailApi.requestImage(
-      localId,
-      requestId: requestId,
-      width: width,
-      height: height,
-    );
-
+  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
     final address = info['pointer'];
     if (address == null) {
       return null;
@@ -88,11 +66,56 @@ class LocalImageRequest extends ImageRequest {
         return null;
       }
 
-      final frame = await codec.getNextFrame();
-      return ImageInfo(image: frame.image, scale: scale);
+      return await codec.getNextFrame();
     } finally {
       malloc.free(pointer);
     }
+  }
+}
+
+class ThumbhashImageRequest extends ImageRequest {
+  final String thumbhash;
+
+  ThumbhashImageRequest({required this.thumbhash});
+
+  @override
+  Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
+    if (_isCancelled) {
+      return null;
+    }
+
+    final Map<String, int> info = await thumbnailApi.getThumbhash(thumbhash);
+    final frame = await _fromPlatformImage(info);
+    return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
+  }
+
+  @override
+  void _onCancelled() {}
+}
+
+class LocalImageRequest extends ImageRequest {
+  final String localId;
+  final int width;
+  final int height;
+
+  LocalImageRequest({required this.localId, required ui.Size size})
+    : width = size.width.toInt(),
+      height = size.height.toInt();
+
+  @override
+  Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
+    if (_isCancelled) {
+      return null;
+    }
+
+    final Map<String, int> info = await thumbnailApi.requestImage(
+      localId,
+      requestId: requestId,
+      width: width,
+      height: height,
+    );
+    final frame = await _fromPlatformImage(info);
+    return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
   @override
