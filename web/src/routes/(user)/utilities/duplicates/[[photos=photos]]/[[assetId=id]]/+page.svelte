@@ -61,7 +61,7 @@
 
   let duplicates = $state(data.duplicates);
 
-  const correcteDuplicateIndex = (index: number) => {
+  const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
   };
 
@@ -69,7 +69,7 @@
     (() => {
       const indexParam = page.url.searchParams.get('index') ?? '0';
       const parsedIndex = Number.parseInt(indexParam, 10);
-      return correcteDuplicateIndex(Number.isNaN(parsedIndex) ? 0 : parsedIndex);
+      return correctDuplicatesIndex(Number.isNaN(parsedIndex) ? 0 : parsedIndex);
     })(),
   );
 
@@ -111,7 +111,7 @@
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
-        await correctDuplicateIndexAndGo(duplicatesIndex);
+        await correctDuplicatesIndexAndGo(duplicatesIndex);
       },
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
@@ -123,7 +123,7 @@
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
-    await correctDuplicateIndexAndGo(duplicatesIndex);
+    await correctDuplicatesIndexAndGo(duplicatesIndex);
   };
 
   const handleDeduplicateAll = async () => {
@@ -184,19 +184,19 @@
   };
 
   const handleFirst = async () => {
-    await correctDuplicateIndexAndGo(0);
+    await correctDuplicatesIndexAndGo(0);
   };
   const handlePrevious = async () => {
-    await correctDuplicateIndexAndGo(Math.max(duplicatesIndex - 1, 0));
+    await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
   };
   const handleNext = async () => {
-    await correctDuplicateIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
+    await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
   };
   const handleLast = async () => {
-    await correctDuplicateIndexAndGo(duplicates.length - 1);
+    await correctDuplicatesIndexAndGo(duplicates.length - 1);
   };
-  const correctDuplicateIndexAndGo = async (index: number) => {
-    page.url.searchParams.set('index', correcteDuplicateIndex(index).toString());
+  const correctDuplicatesIndexAndGo = async (index: number) => {
+    page.url.searchParams.set('index', correctDuplicatesIndex(index).toString());
     await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
   };
 </script>

@@ -27,8 +27,6 @@
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
-  let disableSkip = false;
-
   onMount(() => {
     const suggestedAsset = suggestDuplicate(assets);
 
