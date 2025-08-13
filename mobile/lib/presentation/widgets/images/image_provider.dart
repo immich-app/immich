@@ -6,12 +6,18 @@ import 'package:immich_mobile/presentation/widgets/images/local_image_provider.d
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
-ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080, 1920)}) {
+ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080, 1920), bool showCached = true}) {
   // Create new provider and cache it
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, type: asset.type, updatedAt: asset.updatedAt);
+    provider = LocalFullImageProvider(
+      id: id,
+      size: size,
+      type: asset.type,
+      updatedAt: asset.updatedAt,
+      showCached: showCached,
+    );
   } else {
     final String assetId;
     if (asset is LocalAsset && asset.hasRemote) {
@@ -21,7 +27,7 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(assetId: assetId);
+    provider = RemoteFullImageProvider(assetId: assetId, showCached: showCached);
   }
 
   return provider;

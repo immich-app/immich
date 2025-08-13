@@ -95,8 +95,15 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   final Size size;
   final AssetType type;
   final DateTime updatedAt; // temporary, only exists to fetch cached thumbnail until local disk cache is removed
+  final bool showCached;
 
-  const LocalFullImageProvider({required this.id, required this.size, required this.type, required this.updatedAt});
+  const LocalFullImageProvider({
+    required this.id,
+    required this.size,
+    required this.type,
+    required this.updatedAt,
+    this.showCached = true,
+  });
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -107,7 +114,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(LocalThumbProvider(id: key.id, updatedAt: key.updatedAt)),
+      initialImage: showCached ? getCachedImage(LocalThumbProvider(id: key.id, updatedAt: key.updatedAt)) : null,
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<DateTime>('Updated at', key.updatedAt),

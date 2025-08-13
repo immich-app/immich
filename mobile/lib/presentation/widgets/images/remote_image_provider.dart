@@ -71,9 +71,10 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
 
 class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
   final String assetId;
+  final bool showCached;
   final CacheManager? cacheManager;
 
-  const RemoteFullImageProvider({required this.assetId, this.cacheManager});
+  const RemoteFullImageProvider({required this.assetId, this.cacheManager, this.showCached = true});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -85,7 +86,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
     final cache = cacheManager ?? RemoteImageCacheManager();
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, cache, decode),
-      initialImage: getCachedImage(RemoteThumbProvider(assetId: key.assetId)),
+      initialImage: showCached ? getCachedImage(RemoteThumbProvider(assetId: key.assetId)) : null,
     );
   }
 
