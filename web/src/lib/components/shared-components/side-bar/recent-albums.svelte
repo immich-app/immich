@@ -14,10 +14,6 @@
   let unsubscribeWebsocket: (() => void) | undefined;
 
   onMount(async () => {
-    if (userInteraction.recentAlbums) {
-      albums = userInteraction.recentAlbums;
-      return;
-    }
     try {
       allAlbums = await getAllAlbums({});
       albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
@@ -28,34 +24,30 @@
   });
 
   onMount(() => {
-    unsubscribeWebsocket = websocketEvents.on('on_album_delete', (albumId) => {
-      // Remove the deleted album from allAlbums
+    const unsubscribeDelete = websocketEvents.on('on_album_delete', (albumId) => {
       allAlbums = allAlbums.filter((album) => album.id !== albumId);
-      // Update the displayed albums with the filtered and sorted result
       albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
       userInteraction.recentAlbums = albums;
     });
 
-    // Add listener for album creation
-    const unsubscribeCreate = websocketEvents.on('on_album_create', async (albumId) => {
+    const unsubscribeUpdate = websocketEvents.on('on_album_update', async (albumId) => {
       try {
-        // Fetch the newly created album details
-        const newAlbum = await getAlbumInfo({ id: albumId });
-        // Add the new album to allAlbums
-        allAlbums = [newAlbum, ...allAlbums];
-        // Update the displayed albums with the new sorted result
-        albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
-        userInteraction.recentAlbums = albums;
+        const updatedAlbum = await getAlbumInfo({ id: albumId });
+
+        const index = allAlbums.findIndex((album) => album.id === albumId);
+        if (index !== -1) {
+          allAlbums[index] = updatedAlbum;
+          albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
+          userInteraction.recentAlbums = albums;
+        }
       } catch (error) {
-        console.error('Failed to fetch new album details:', error);
+        console.error('Failed to fetch updated album details:', error);
       }
     });
 
-    // Return a combined unsubscribe function
-    const originalUnsubscribe = unsubscribeWebsocket;
     unsubscribeWebsocket = () => {
-      originalUnsubscribe?.();
-      unsubscribeCreate?.();
+      unsubscribeDelete?.();
+      unsubscribeUpdate?.();
     };
   });
 

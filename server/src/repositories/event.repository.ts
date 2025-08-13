@@ -49,7 +49,7 @@ type EventMap = {
   ConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  AlbumUpdate: [{ id: string; recipientId: string }];
+  AlbumUpdate: [{ id: string; userId: string; notifyRecipients?: boolean }];
   AlbumInvite: [{ id: string; userId: string }];
   AlbumDelete: [{ id: string; userId: string }];
   AlbumCreate: [{ id: string; userId: string }];
@@ -114,6 +114,7 @@ export interface ClientEventMap {
   on_session_delete: [string];
   on_album_delete: [string];
   on_album_create: [string];
+  on_album_update: [string];
 
   AssetUploadReadyV1: [{ asset: SyncAssetV1; exif: SyncAssetExifV1 }];
 }

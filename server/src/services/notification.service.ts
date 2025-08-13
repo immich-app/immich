@@ -198,12 +198,35 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'AlbumUpdate' })
-  async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
-    await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
-    await this.jobRepository.queue({
-      name: JobName.NotifyAlbumUpdate,
-      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
-    });
+  async onAlbumUpdate({ id, userId, notifyRecipients }: ArgOf<'AlbumUpdate'>) {
+    if (notifyRecipients) {
+      // Fetch album with users to get recipient list
+      const album = await this.albumRepository.getById(id, { withAssets: false });
+      if (!album) {
+        this.logger.warn(`Album ${id} not found for update notification`);
+        return;
+      }
+
+      // Get all users except the one who made the update
+      const allRecipients = [...album.albumUsers.map(({ user }) => user.id), album.owner.id].filter(
+        (recipientUserId) => recipientUserId !== userId,
+      );
+
+      // Send notifications and websocket events to all recipients
+      for (const recipient of allRecipients) {
+        await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipient}`);
+        await this.jobRepository.queue({
+          name: JobName.NotifyAlbumUpdate,
+          data: { id, recipientId: recipient, delay: NotificationService.albumUpdateEmailDelayMs },
+        });
+
+        // Send websocket event to the recipient
+        this.eventRepository.clientSend('on_album_update', recipient, id);
+      }
+    }
+
+    // Always send websocket event to the user who made the update
+    this.eventRepository.clientSend('on_album_update', userId, id);
   }
 
   @OnEvent({ name: 'AlbumInvite' })

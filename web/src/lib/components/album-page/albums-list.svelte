@@ -249,11 +249,37 @@
       }
     });
 
+    // Add listener for album updates
+    const unsubscribeUpdate = websocketEvents.on('on_album_update', async (albumId) => {
+      console.log(`Album update event received for album ID: ${albumId}`);
+
+      try {
+        // Fetch the updated album details
+        const updatedAlbum = await getAlbumInfo({ id: albumId });
+
+        // Update the album in the appropriate array
+        const ownedIndex = ownedAlbums.findIndex((album) => album.id === albumId);
+        if (ownedIndex !== -1) {
+          ownedAlbums[ownedIndex] = updatedAlbum;
+          ownedAlbums = [...ownedAlbums]; // Trigger reactivity
+        }
+
+        const sharedIndex = sharedAlbums.findIndex((album) => album.id === albumId);
+        if (sharedIndex !== -1) {
+          sharedAlbums[sharedIndex] = updatedAlbum;
+          sharedAlbums = [...sharedAlbums]; // Trigger reactivity
+        }
+      } catch (error) {
+        console.error('Failed to fetch updated album details:', error);
+      }
+    });
+
     // Return a combined unsubscribe function
     const originalUnsubscribe = unsubscribeWebsocket;
     unsubscribeWebsocket = () => {
       originalUnsubscribe?.();
       unsubscribeCreate?.();
+      unsubscribeUpdate?.();
     };
   });
 

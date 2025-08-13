@@ -150,6 +150,12 @@ export class AlbumService extends BaseService {
       order: dto.order,
     });
 
+    // Emit AlbumUpdate event with notifyRecipients flag for notification service to handle recipient lookup
+    await this.eventRepository.emit('AlbumUpdate', {
+      id: album.id,
+      userId: auth.user.id,
+    });
+
     return mapAlbumWithoutAssets({ ...updatedAlbum, assets: album.assets });
   }
 
@@ -177,13 +183,12 @@ export class AlbumService extends BaseService {
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
       });
 
-      const allUsersExceptUs = [...album.albumUsers.map(({ user }) => user.id), album.owner.id].filter(
-        (userId) => userId !== auth.user.id,
-      );
-
-      for (const recipientId of allUsersExceptUs) {
-        await this.eventRepository.emit('AlbumUpdate', { id, recipientId });
-      }
+      // Emit AlbumUpdate event with notifyRecipients flag for notification service to handle recipient lookup
+      await this.eventRepository.emit('AlbumUpdate', {
+        id,
+        userId: auth.user.id,
+        notifyRecipients: true,
+      });
     }
 
     return results;
@@ -202,6 +207,15 @@ export class AlbumService extends BaseService {
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
     if (removedIds.length > 0 && album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
       await this.albumRepository.updateThumbnails();
+    }
+
+    // Emit AlbumUpdate event if any assets were successfully removed
+    if (removedIds.length > 0) {
+      await this.eventRepository.emit('AlbumUpdate', {
+        id,
+        userId: auth.user.id,
+        notifyRecipients: false,
+      });
     }
 
     return results;
@@ -231,6 +245,12 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id, userId });
     }
 
+    // Emit AlbumUpdate event to notify all album members about new users being added
+    await this.eventRepository.emit('AlbumUpdate', {
+      id,
+      userId: auth.user.id,
+    });
+
     return this.findOrFail(id, { withAssets: true }).then(mapAlbumWithoutAssets);
   }
 
@@ -256,11 +276,23 @@ export class AlbumService extends BaseService {
     }
 
     await this.albumUserRepository.delete({ albumsId: id, usersId: userId });
+
+    // Emit AlbumUpdate event to notify remaining album members about user removal
+    await this.eventRepository.emit('AlbumUpdate', {
+      id,
+      userId: auth.user.id,
+    });
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
     await this.albumUserRepository.update({ albumsId: id, usersId: userId }, { role: dto.role });
+
+    // Emit AlbumUpdate event to notify all album members about role changes
+    await this.eventRepository.emit('AlbumUpdate', {
+      id,
+      userId: auth.user.id,
+    });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {
