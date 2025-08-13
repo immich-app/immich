@@ -24,13 +24,15 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> with Cancel
 
   @override
   ImageStreamCompleter loadImage(RemoteThumbProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(
+    final completer = OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
     );
+    completer.addOnLastListenerRemovedCallback(cancel);
+    return completer;
   }
 
   Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) async* {
@@ -73,7 +75,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> wit
 
   @override
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(
+    final completer = OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getCachedImage(RemoteThumbProvider(assetId: assetId)),
       informationCollector: () => <DiagnosticsNode>[
@@ -81,6 +83,8 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> wit
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
     );
+    completer.addOnLastListenerRemovedCallback(cancel);
+    return completer;
   }
 
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {

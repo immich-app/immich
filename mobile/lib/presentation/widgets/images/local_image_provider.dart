@@ -21,13 +21,15 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with Cancella
 
   @override
   ImageStreamCompleter loadImage(LocalThumbProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(
+    final completer = OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
     );
+    completer.addOnLastListenerRemovedCallback(cancel);
+    return completer;
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) async* {
@@ -68,7 +70,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with 
 
   @override
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(
+    final completer = OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getCachedImage(LocalThumbProvider(id: key.id)),
       informationCollector: () => <DiagnosticsNode>[
@@ -77,6 +79,8 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with 
         DiagnosticsProperty<Size>('Size', key.size),
       ],
     );
+    completer.addOnLastListenerRemovedCallback(cancel);
+    return completer;
   }
 
   Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
