@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
-enum ToastType { info, success, error }
+enum ToastType { info, success, error, warning }
 
 class ImmichToast {
   static show({
@@ -11,6 +11,7 @@ class ImmichToast {
     ToastType toastType = ToastType.info,
     ToastGravity gravity = ToastGravity.BOTTOM,
     int durationInSecond = 3,
+    Function(FToast instance)? onTap,
   }) {
     final fToast = FToast();
     fToast.init(context);
@@ -19,36 +20,45 @@ class ImmichToast {
       ToastType.info => context.primaryColor,
       ToastType.success => const Color.fromARGB(255, 78, 140, 124),
       ToastType.error => const Color.fromARGB(255, 220, 48, 85),
+      ToastType.warning => const Color.fromARGB(255, 255, 184, 0),
     };
 
     Icon getIcon(ToastType type) => switch (type) {
       ToastType.info => Icon(Icons.info_outline_rounded, color: context.primaryColor),
       ToastType.success => const Icon(Icons.check_circle_rounded, color: Color.fromARGB(255, 78, 140, 124)),
       ToastType.error => const Icon(Icons.error_outline_rounded, color: Color.fromARGB(255, 240, 162, 156)),
+      ToastType.warning => const Icon(Icons.error_rounded, color: Color.fromARGB(255, 255, 184, 0)),
     };
 
-    fToast.showToast(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(16.0)),
-          color: context.colorScheme.surfaceContainer,
-          border: Border.all(color: context.colorScheme.outline.withValues(alpha: .5), width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            getIcon(toastType),
-            const SizedBox(width: 12.0),
-            Flexible(
-              child: Text(
-                msg,
-                style: TextStyle(color: getColor(toastType, context), fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-            ),
-          ],
-        ),
+    final content = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(16.0)),
+        color: context.colorScheme.surfaceContainer,
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: .5), width: 1),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          getIcon(toastType),
+          const SizedBox(width: 12.0),
+          Flexible(
+            child: Text(
+              msg,
+              style: TextStyle(color: getColor(toastType, context), fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    fToast.showToast(
+      child: onTap != null ?
+      GestureDetector(
+        onTap: () {
+          onTap.call(fToast);},
+        child: content,
+      ) : content,
       positionedToastBuilder: (context, child, gravity) {
         return Positioned(
           top: gravity == ToastGravity.TOP ? 150 : null,

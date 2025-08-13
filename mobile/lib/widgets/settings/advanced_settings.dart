@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -60,6 +61,7 @@ class AdvancedSettings extends HookConsumerWidget {
           manageLocalMediaAndroid.value = false;
         }
       }
+      ref.invalidate(appSettingsServiceProvider);
     }
 
     final advancedSettings = [

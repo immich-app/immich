@@ -1,14 +1,17 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -17,6 +20,7 @@ import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class TabShellPage extends ConsumerStatefulWidget {
@@ -87,6 +91,27 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         groupAlignment: 0.0,
       );
     }
+
+    ///     When a photo is moved to the trash on the server it should pop up a notification asking the user
+    ///     to review out-of-sync changes. (EXPERIMENTAL, if outOfSync review is on)
+    ref.listen<int>(outOfSyncCountProvider.select((av) => av.value ?? 0), (prev, next) {
+      if (!mounted) return;
+      if (prev == null) return;
+      final router = context.router;
+      if (next > prev && router.current.name != DriftTrashSyncReviewRoute.name) {
+        ImmichToast.show(
+          context: context,
+          msg: 'review_out_of_sync_changes'.t(context: context, args: {'count': next}),
+          toastType: ToastType.warning,
+          gravity: ToastGravity.BOTTOM,
+          durationInSecond: 5,
+          onTap: (fToast) {
+            fToast.removeCustomToast();
+            router.push(const DriftTrashSyncReviewRoute());
+          },
+        );
+      }
+    });
 
     return AutoTabsRouter(
       routes: [const MainTimelineRoute(), DriftSearchRoute(), const DriftAlbumsRoute(), const DriftLibraryRoute()],

@@ -4,6 +4,7 @@ import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 
 import 'asset.provider.dart';
 import 'db.provider.dart';
@@ -24,6 +25,11 @@ final trashSyncServiceProvider = Provider(
 );
 
 final outOfSyncCountProvider = StreamProvider<int>((ref) {
-  final trashSyncService = ref.watch(trashSyncServiceProvider);
-  return trashSyncService.watchPendingDecisionCount();
+  final enabledAV = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
+  final service = ref.watch(trashSyncServiceProvider);
+  return enabledAV.when(
+    data: (enabled) => (enabled as bool? ?? false) ? service.watchPendingDecisionCount() : Stream<int>.value(0),
+    loading: () => Stream<int>.value(0),
+    error: (_, __) => Stream<int>.value(0),
+  );
 });
