@@ -6,7 +6,7 @@
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { navigate } from '$lib/utils/navigation';
@@ -17,6 +17,9 @@
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { fly, scale } from 'svelte/transition';
+
+  import { onMount } from 'svelte';
+  import { DateGroupActionLib } from './date-group-actions-lib.svelte';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -29,11 +32,13 @@
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
     customLayout?: Snippet<[TimelineAsset]>;
+    onSelect: (asset: TimelineAsset) => void;
 
-    onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
-    onSelectAssets: (asset: TimelineAsset) => void;
-    onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
+    // onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
+    // onSelectAssets: (asset: TimelineAsset) => void;
+    // onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+    scrollTop: (top: number) => void;
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
@@ -57,11 +62,20 @@
     timelineManager,
     customLayout,
     onSelect,
-    onSelectAssets,
-    onSelectAssetCandidates,
     onScrollCompensation,
+    scrollTop,
     onThumbnailClick,
   }: Props = $props();
+
+  const actionLib = new DateGroupActionLib();
+
+  onMount(() => {
+    actionLib.assetInteraction = assetInteraction;
+    actionLib.timelineManager = timelineManager;
+    actionLib.singleSelect = singleSelect;
+    actionLib.onSelect = onSelect;
+    actionLib.scrollTop = scrollTop;
+  });
 
   let isMouseOverGroup = $state(false);
   let hoveredDayGroup = $state();
@@ -83,15 +97,14 @@
     void navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
-  const handleSelectGroup = (title: string, assets: TimelineAsset[]) => onSelect({ title, assets });
-
+  // called when clicking asset with shift key pressed or with mouse
   const assetSelectHandler = (
     timelineManager: TimelineManager,
     asset: TimelineAsset,
     assetsInDayGroup: TimelineAsset[],
     groupTitle: string,
   ) => {
-    onSelectAssets(asset);
+    void actionLib.onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
     let selectedAssetsInGroupCount = assetsInDayGroup.filter((asset) =>
@@ -117,7 +130,7 @@
     hoveredDayGroup = groupTitle;
 
     if (assetInteraction.selectionActive) {
-      onSelectAssetCandidates(asset);
+      actionLib.onSelectAssetCandidates(asset);
     }
   };
 
@@ -142,6 +155,8 @@
     }
   });
 </script>
+
+<svelte:document onkeydown={actionLib.onKeyDown} onkeyup={actionLib.onKeyUp} />
 
 {#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
   {@const absoluteWidth = dayGroup.left}
@@ -173,8 +188,10 @@
         <div
           transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
           class="inline-block pe-2 hover:cursor-pointer"
-          onclick={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
-          onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
+          onclick={() =>
+            actionLib.onDateGroupSelect({ title: dayGroup.groupTitle, assets: assetsSnapshot(dayGroup.getAssets()) })}
+          onkeydown={() =>
+            actionLib.onDateGroupSelect({ title: dayGroup.groupTitle, assets: assetsSnapshot(dayGroup.getAssets()) })}
         >
           {#if assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
             <Icon path={mdiCheckCircle} size="24" class="text-primary" />
