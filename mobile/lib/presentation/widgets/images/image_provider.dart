@@ -5,13 +5,32 @@ import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
+
+abstract class CancellableImageProvider {
+  void cancel();
+}
+
+mixin class CancellableImageProviderMixin implements CancellableImageProvider {
+  ImageRequest? request;
+
+  @override
+  void cancel() {
+    final request = this.request;
+    if (request == null) {
+      return;
+    }
+    this.request = null;
+    return request.cancel();
+  }
+}
 
 ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080, 1920)}) {
   // Create new provider and cache it
   final ImageProvider provider;
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, type: asset.type, updatedAt: asset.updatedAt);
+    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type);
   } else {
     final String assetId;
     if (asset is LocalAsset && asset.hasRemote) {
@@ -36,7 +55,7 @@ ImageProvider getThumbnailImageProvider({BaseAsset? asset, String? remoteId, Siz
 
   if (_shouldUseLocalAsset(asset!)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    return LocalThumbProvider(id: id, updatedAt: asset.updatedAt, size: size);
+    return LocalThumbProvider(id: id, size: size, assetType: asset.type);
   }
 
   final String assetId;
