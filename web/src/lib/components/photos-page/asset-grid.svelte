@@ -4,7 +4,6 @@
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import AssetDateGroupActions from '$lib/components/photos-page/asset-date-group-actions.svelte';
   import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
-  import AssetViewerAndActions from '$lib/components/photos-page/asset-viewer-and-actions.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AssetAction } from '$lib/constants';
@@ -15,12 +14,11 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { type ScrubberListener, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
-  import { AssetVisibility, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { getTimes, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
+  import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
-  import Portal from '../shared-components/portal/portal.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
 
   interface Props {
@@ -69,7 +67,7 @@
     empty,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, gridScrollTarget, mutex, viewingAsset} = assetViewingStore;
+  let { isViewing: showAssetViewer, gridScrollTarget, asset: viewingAsset } = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
 

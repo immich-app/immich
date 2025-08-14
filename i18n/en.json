@@ -1334,6 +1334,8 @@
   "my_albums": "My albums",
   "name": "Name",
   "name_or_nickname": "Name or nickname",
+  "navigate": "Navigate",
+  "navigate_to_time": "Navigate to Time",
   "network_requirement_photos_upload": "Use cellular data to backup photos",
   "network_requirement_videos_upload": "Use cellular data to backup videos",
   "network_requirements_updated": "Network requirements changed, resetting backup queue",
