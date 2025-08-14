@@ -2,6 +2,7 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
+  import AssetDateGroupSelectionAware from '$lib/components/photos-page/asset-date-group-selection-aware.svelte';
   import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
   import AssetViewerAndActions from '$lib/components/photos-page/asset-viewer-and-actions.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
@@ -17,7 +18,6 @@
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
-  import AssetDateGroup from './asset-date-group.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -324,7 +324,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <AssetDateGroup
+          <AssetDateGroupSelectionAware
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
