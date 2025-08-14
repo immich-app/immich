@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AssetGridWithoutScrubber from '$lib/components/photos-page/asset-grid-without-scrubber.svelte';
+  import TimelineViewer from '$lib/components/timeline-viewer/timeline-viewer.svelte';
   import { AssetAction } from '$lib/constants';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -170,7 +170,7 @@
   };
 </script>
 
-<AssetGridWithoutScrubber
+<TimelineViewer
   {isSelectionMode}
   {singleSelect}
   {enableRouting}
@@ -205,4 +205,4 @@
       />
     {/if}
   {/snippet}
-</AssetGridWithoutScrubber>
+</TimelineViewer>
