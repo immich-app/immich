@@ -13,6 +13,7 @@ export class DayGroup {
   readonly monthGroup: MonthGroup;
   readonly index: number;
   readonly groupTitle: string;
+  readonly groupTitleFull: string;
   readonly day: number;
   viewerAssets: ViewerAsset[] = $state([]);
 
@@ -31,6 +32,7 @@ export class DayGroup {
     this.monthGroup = monthGroup;
     this.day = day;
     this.groupTitle = groupTitle;
+    this.groupTitleFull = groupTitle;
   }
 
   get top() {

@@ -24,6 +24,7 @@
     showArchiveIcon: boolean;
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
+
     customLayout?: Snippet<[TimelineAsset]>;
 
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
@@ -46,6 +47,7 @@
     showArchiveIcon,
     monthGroup,
     timelineManager,
+
     customLayout,
 
     onScrollCompensation,

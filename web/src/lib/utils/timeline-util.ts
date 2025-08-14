@@ -152,6 +152,14 @@ export function formatGroupTitle(_date: DateTime): string {
   return getDateLocaleString(date, { locale: get(locale) });
 }
 
+export const formatGroupTitleFull = (_date: DateTime): string => {
+  if (!_date.isValid) {
+    return _date.toString();
+  }
+  const date = _date as DateTime<true>;
+  return getDateLocaleString(date);
+};
+
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
