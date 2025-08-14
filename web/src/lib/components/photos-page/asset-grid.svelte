@@ -1,13 +1,11 @@
 <script lang="ts">
-  import AssetGridWithoutScrubber from '$lib/components/photos-page/asset-grid-without-scrubber.svelte';
+  import TimelineViewer from '$lib/components/timeline-viewer/timeline-viewer.svelte';
   import { AssetAction } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { modalManager } from '@immich/ui';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { getTimes, ScrubberListener, TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+  import type { ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
   import type { Snippet } from 'svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
@@ -172,7 +170,7 @@
   };
 </script>
 
-<AssetGridWithoutScrubber
+<TimelineViewer
   {isSelectionMode}
   {singleSelect}
   {enableRouting}
@@ -207,4 +205,4 @@
       />
     {/if}
   {/snippet}
-</AssetGridWithoutScrubber>
+</TimelineViewer>

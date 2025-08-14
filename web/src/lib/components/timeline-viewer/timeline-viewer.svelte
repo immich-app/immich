@@ -5,7 +5,7 @@
   import AssetDateGroupSelectionAware from '$lib/components/photos-page/asset-date-group-selection-aware.svelte';
   import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
   import AssetGridAssetViewer from '$lib/components/photos-page/asset-grid-asset-viewer.svelte';
-  import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import Skeleton from '$lib/components/timeline-viewer/skeleton.svelte';
   import { AssetAction } from '$lib/constants';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
