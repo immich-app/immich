@@ -40,7 +40,9 @@ class DriftMemoryBottomInfo extends StatelessWidget {
                 style: TextStyle(color: Colors.grey[400], fontSize: 13.0, fontWeight: FontWeight.w500),
               ),
               Text(
-                isOwner ? df.format(fileCreatedDate) : "${df.format(fileCreatedDate)}, From Shared",
+                isOwner
+                    ? df.format(fileCreatedDate)
+                    : "${df.format(fileCreatedDate)}, ${'memory_from_shared_album'.tr()}",
                 style: const TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.w500),
               ),
             ],

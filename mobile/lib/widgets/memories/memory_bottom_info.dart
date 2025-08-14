@@ -39,7 +39,7 @@ class MemoryBottomInfo extends StatelessWidget {
               Text(
                 isOwner
                     ? df.format(memory.assets[0].fileCreatedAt)
-                    : "${df.format(memory.assets[0].fileCreatedAt)}, From Shared",
+                    : "${df.format(memory.assets[0].fileCreatedAt)}, ${'memory_from_shared_album'.tr()}",
                 style: const TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.w500),
               ),
             ],

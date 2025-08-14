@@ -529,6 +529,10 @@
                     shape="round"
                   />
                 </div>
+              {:else}
+                <div class="text-sm font-medium text-white">
+                  <p>{$t('memory_from_shared_album')}</p>
+                </div>
               {/if}
             </div>
             <!-- CONTROL BUTTONS -->
