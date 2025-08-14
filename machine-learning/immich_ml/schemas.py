@@ -112,8 +112,4 @@ def has_profiling(obj: Any) -> TypeGuard[HasProfiling]:
     return hasattr(obj, "profiling") and isinstance(obj.profiling, dict)
 
 
-def is_ndarray(obj: Any, dtype: "type[np._DTypeScalar_co]") -> "TypeGuard[npt.NDArray[np._DTypeScalar_co]]":
-    return isinstance(obj, np.ndarray) and obj.dtype == dtype
-
-
 T = TypeVar("T")

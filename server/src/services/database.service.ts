@@ -53,6 +53,9 @@ const messages = {
     `The database currently has ${name} ${installedVersion} activated, but the Postgres instance only has ${availableVersion} available.
     This most likely means the extension was downgraded.
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
+  deprecatedExtension: (name: string) =>
+    `DEPRECATION WARNING: The ${name} extension is deprecated and support for it will be removed very soon.
+     See https://immich.app/docs/install/upgrading#migrating-to-vectorchord in order to switch to the VectorChord extension instead.`,
 };
 
 @Injectable()
@@ -71,6 +74,9 @@ export class DatabaseService extends BaseService {
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
       const extension = await this.databaseRepository.getVectorExtension();
       const name = EXTENSION_NAMES[extension];
+      if (extension === DatabaseExtension.Vectors) {
+        this.logger.warn(messages.deprecatedExtension(name));
+      }
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
       const extensionVersions = await this.databaseRepository.getExtensionVersions(VECTOR_EXTENSIONS);

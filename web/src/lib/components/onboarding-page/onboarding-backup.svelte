@@ -1,16 +1,22 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import { Heading, HStack, Stack } from '@immich/ui';
-  import { mdiAlert } from '@mdi/js';
+  import { Stack } from '@immich/ui';
+  import { mdiAlertCircleOutline } from '@mdi/js';
+  import type { Translations } from 'svelte-i18n';
+
+  const messageKeys = [
+    'admin.backup_onboarding_3_description',
+    'admin.backup_onboarding_2_description',
+    'admin.backup_onboarding_1_description',
+  ];
 </script>
 
 <div class="flex flex-col">
   <Stack gap={2}>
-    <HStack gap={4}>
-      <Icon path={mdiAlert} size="96" class="text-warning" />
-      <p class="mb-2">
+    <div class="flex items-start gap-4 p-6 my-10 bg-gray-100 dark:bg-gray-800/40 rounded-xl border border-gray-700/50">
+      <Icon path={mdiAlertCircleOutline} size="36" class="text-warning flex-shrink-0 mt-0.5" />
+      <div class="text-gray-800 dark:text-gray-300 leading-relaxed">
         <FormatMessage key="admin.backup_onboarding_description">
           {#snippet children({ message })}
             <a
@@ -23,40 +29,41 @@
             </a>
           {/snippet}
         </FormatMessage>
+      </div>
+    </div>
+
+    <div class="space-y-1">
+      <h2 class="mb-6"><FormatMessage key="admin.backup_onboarding_parts_title" /></h2>
+
+      <div class="space-y-6">
+        {#each messageKeys as keyString, index (index)}
+          <div class="flex items-start gap-6">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
+              <span class="text-light text-xl font-semibold">{3 - index}</span>
+            </div>
+            <div class="leading-relaxed pt-2">
+              <FormatMessage key={keyString as Translations} />
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+
+    <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mt-4">
+      <p>
+        <FormatMessage key="admin.backup_onboarding_footer">
+          {#snippet children({ message })}
+            <a
+              href="https://immich.app/docs/administration/backup-and-restore/"
+              class="underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {message}
+            </a>
+          {/snippet}
+        </FormatMessage>
       </p>
-    </HStack>
-
-    <p class="text-lg font-semibold">
-      <FormatBoldMessage key="admin.backup_onboarding_parts_title"></FormatBoldMessage>
-    </p>
-
-    <Stack class="bg-gray-100 dark:bg-gray-800 rounded-xl p-4" gap={4}>
-      <HStack gap={6}>
-        <Heading tag="h1" size="title" color="primary">3</Heading>
-        <FormatMessage key="admin.backup_onboarding_3_description" />
-      </HStack>
-      <HStack gap={6}>
-        <Heading tag="h1" size="title" color="primary">2</Heading>
-        <FormatMessage key="admin.backup_onboarding_2_description" />
-      </HStack>
-      <HStack gap={6} class="ml-2">
-        <Heading tag="h1" size="title" color="primary">1</Heading>
-        <FormatMessage key="admin.backup_onboarding_1_description" />
-      </HStack>
-    </Stack>
-    <p>
-      <FormatMessage key="admin.backup_onboarding_footer">
-        {#snippet children({ message })}
-          <a
-            href="https://immich.app/docs/administration/backup-and-restore/"
-            class="underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {message}
-          </a>
-        {/snippet}
-      </FormatMessage>
-    </p>
+    </div>
   </Stack>
 </div>

@@ -169,6 +169,36 @@ class TimelineService {
     return _buffer.elementAt(index - _bufferOffset);
   }
 
+  /// Gets an asset at the given index, automatically loading the buffer if needed.
+  /// This is an async version that can handle out-of-range indices by loading the appropriate buffer.
+  Future<BaseAsset?> getAssetAsync(int index) async {
+    if (index < 0 || index >= _totalAssets) {
+      return null;
+    }
+
+    if (hasRange(index, 1)) {
+      return _buffer.elementAt(index - _bufferOffset);
+    }
+
+    // Load the buffer containing the requested index
+    try {
+      final assets = await loadAssets(index, 1);
+      return assets.isNotEmpty ? assets.first : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Safely gets an asset at the given index without throwing a RangeError.
+  /// Returns null if the index is out of bounds or not currently in the buffer.
+  /// For automatic buffer loading, use getAssetAsync instead.
+  BaseAsset? getAssetSafe(int index) {
+    if (index < 0 || index >= _totalAssets || !hasRange(index, 1)) {
+      return null;
+    }
+    return _buffer.elementAt(index - _bufferOffset);
+  }
+
   Future<void> dispose() async {
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;

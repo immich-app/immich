@@ -18,7 +18,7 @@ ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 FROM dev AS dev-container-server
 
 RUN rm -rf /usr/src/app
-RUN apt-get update && \
+RUN apt-get update --allow-releaseinfo-change && \
   apt-get install sudo inetutils-ping openjdk-11-jre-headless \
   vim nano \
   -y --no-install-recommends --fix-missing
@@ -68,8 +68,6 @@ RUN sudo apt-get update \
   && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list \
   && sudo apt-get update \
   && sudo apt-get install dcm -y
-
-COPY --chmod=777 ../.devcontainer/mobile/container-mobile-post-create.sh /immich-devcontainer/container-mobile-post-create.sh
 
 RUN dart --disable-analytics
 

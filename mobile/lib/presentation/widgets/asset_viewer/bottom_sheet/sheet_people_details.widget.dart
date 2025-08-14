@@ -61,7 +61,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                 ),
               ),
               SizedBox(
-                height: 150,
+                height: 160,
                 child: ListView(
                   padding: const EdgeInsets.only(left: 16.0),
                   scrollDirection: Axis.horizontal,
