@@ -50,7 +50,7 @@
     "editor.formatOnSave": true,
     "editor.tabSize": 2
   },
-  "cSpell.words": ["immich"],
+  "cSpell.words": ["immich", "intersectable", "intersectables"],
   "editor.formatOnSave": true,
   "eslint.validate": ["javascript", "svelte"],
   "explorer.fileNesting.enabled": true,

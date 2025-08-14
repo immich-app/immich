@@ -184,10 +184,8 @@
         <div
           transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
           class="inline-block pe-2 hover:cursor-pointer"
-          onclick={() =>
-            actionLib.onDateGroupSelect({ title: dayGroup.groupTitle, assets: assetsSnapshot(dayGroup.getAssets()) })}
-          onkeydown={() =>
-            actionLib.onDateGroupSelect({ title: dayGroup.groupTitle, assets: assetsSnapshot(dayGroup.getAssets()) })}
+          onclick={() => actionLib.onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
+          onkeydown={() => actionLib.onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
         >
           {#if assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
             <Icon path={mdiCheckCircle} size="24" class="text-primary" />
