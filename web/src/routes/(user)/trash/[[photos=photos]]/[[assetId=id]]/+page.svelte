@@ -11,7 +11,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import AssetGrid from '$lib/components/timeline-viewer/base-timeline.svelte';
+  import AssetGrid from '$lib/components/timeline-viewer/base-components/base-timeline.svelte';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';

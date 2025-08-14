@@ -21,7 +21,7 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
-  import AssetGrid from '../timeline-viewer/base-timeline.svelte';
+  import AssetGrid from '../timeline-viewer/base-components/base-timeline.svelte';
   import AlbumSummary from './album-summary.svelte';
 
   interface Props {

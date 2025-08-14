@@ -7,7 +7,7 @@
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { navigate } from '$lib/utils/navigation';
 
-  import TimelineDay from '$lib/components/timeline-viewer/timeline-day/timeline-day.svelte';
+  import TimelineDay from '$lib/components/timeline/base-components/timeline-day.svelte';
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { searchStore } from '$lib/stores/search.svelte';

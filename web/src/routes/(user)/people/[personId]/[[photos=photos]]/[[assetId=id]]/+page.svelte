@@ -29,7 +29,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import AssetGrid from '$lib/components/timeline-viewer/base-timeline.svelte';
+  import AssetGrid from '$lib/components/timeline-viewer/base-components/base-timeline.svelte';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
