@@ -5,9 +5,11 @@
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
   } from '$lib/components/photos-page/actions/focus-actions';
-  import ChangeDate, { AbsoluteResult, RelativeResult } from '$lib/components/shared-components/change-date.svelte';
+  import ChangeDate, {
+    type AbsoluteResult,
+    type RelativeResult,
+  } from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -20,7 +22,10 @@
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
+  import { mdiCalendarBlankOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -197,15 +202,16 @@
 
 {#if isShowSelectDate}
   <ChangeDate
-    title="Navigate to Time"
+    withDuration={false}
+    icon={mdiCalendarBlankOutline}
+    confirmText={$t('navigate')}
+    title={$t('navigate_to_time')}
     initialDate={DateTime.now()}
     timezoneInput={false}
     onConfirm={async (result: AbsoluteResult | RelativeResult) => {
       isShowSelectDate = false;
       if (result.mode === 'absolute') {
-        const asset = await timelineManager.getClosestAssetToDate(
-          (DateTime.fromISO(result.date) as DateTime<true>).toObject(),
-        );
+        const asset = await timelineManager.getClosestAssetToDate(result.dateTime.toObject());
         if (asset) {
           setFocusAsset(asset);
         }

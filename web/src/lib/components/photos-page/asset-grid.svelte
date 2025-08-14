@@ -15,7 +15,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { type ScrubberListener } from '$lib/utils/timeline-util';
+  import { getTimes, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -82,7 +82,7 @@
     onThumbnailClick,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, gridScrollTarget, mutex, viewingAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, gridScrollTarget, asset: viewingAsset } = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
 
