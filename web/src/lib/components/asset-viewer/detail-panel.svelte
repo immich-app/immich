@@ -5,10 +5,7 @@
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import ChangeDate, {
-    type AbsoluteResult,
-    type RelativeResult,
-  } from '$lib/components/shared-components/change-date.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -24,7 +21,7 @@
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -112,10 +109,16 @@
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
-  let isShowChangeDate = $state(false);
-
-  async function handleConfirmChangeDate(result: AbsoluteResult | RelativeResult) {
-    isShowChangeDate = false;
+  const showChangeDate = async () => {
+    const result = await modalManager.show(ChangeDate, {
+      initialDate: dateTime,
+      initialTimeZone: timeZone ?? '',
+      withDuration: false,
+      timezoneInput: false,
+    });
+    if (!result) {
+      return;
+    }
     try {
       if (result.mode === 'absolute') {
         await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal: result.date } });
@@ -123,7 +126,7 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_date'));
     }
-  }
+  };
 </script>
 
 <section class="relative p-2">
@@ -280,7 +283,7 @@
       <button
         type="button"
         class="flex w-full text-start justify-between place-items-start gap-4 py-4"
-        onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
+        onclick={() => (isOwner ? showChangeDate() : null)}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:text-primary={isOwner}
       >
@@ -334,16 +337,6 @@
           <Icon icon={mdiPencil} size="20" />
         </div>
       </div>
-    {/if}
-
-    {#if isShowChangeDate}
-      <ChangeDate
-        initialDate={dateTime}
-        initialTimeZone={timeZone ?? ''}
-        withDuration={false}
-        onConfirm={handleConfirmChangeDate}
-        onCancel={() => (isShowChangeDate = false)}
-      />
     {/if}
 
     <div class="flex gap-4 py-4">

@@ -2,10 +2,7 @@
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
-  import ChangeDate, {
-    type AbsoluteResult,
-    type RelativeResult,
-  } from '$lib/components/shared-components/change-date.svelte';
+  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import {
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
@@ -25,6 +22,7 @@
   import { AssetVisibility } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   interface Props {
@@ -42,8 +40,6 @@
     onEscape,
     scrollToAsset,
   }: Props = $props();
-
-  let isShowSelectDate = $state(false);
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
@@ -147,6 +143,25 @@
     }
   });
 
+  const openChangeDateDialog = async () => {
+    const result = await modalManager.show(ChangeDate, {
+      withDuration: false,
+      title: $t('navigate_to_time'),
+      initialDate: DateTime.now(),
+      timezoneInput: false,
+    });
+    if (!result) {
+      return;
+    }
+    if (result.mode !== 'absolute') {
+      return;
+    }
+    const asset = await timelineManager.getClosestAssetToDate(result.dateTime.toObject());
+    if (asset) {
+      setFocusAsset(asset);
+    }
+  };
+
   const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
   const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
 
@@ -168,7 +183,7 @@
         { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
         { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
         { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
-        { shortcut: { key: 'G' }, onShortcut: () => (isShowSelectDate = true) },
+        { shortcut: { key: 'G' }, onShortcut: openChangeDateDialog },
       ];
       if (onEscape) {
         shortcuts.push({ shortcut: { key: 'Escape' }, onShortcut: onEscape });
@@ -196,26 +211,5 @@
     size={idsSelectedAssets.length}
     onCancel={() => (isShowDeleteConfirmation = false)}
     onConfirm={() => handlePromiseError(trashOrDelete(true))}
-  />
-{/if}
-
-{#if isShowSelectDate}
-  <ChangeDate
-    withDuration={false}
-    title="Navigate to Time"
-    initialDate={DateTime.now()}
-    timezoneInput={false}
-    onConfirm={async (dateString: AbsoluteResult | RelativeResult) => {
-      isShowSelectDate = false;
-      if (dateString.mode == 'absolute') {
-        const asset = await timelineManager.getClosestAssetToDate(
-          (DateTime.fromISO(dateString.date) as DateTime<true>).toObject(),
-        );
-        if (asset) {
-          setFocusAsset(asset);
-        }
-      }
-    }}
-    onCancel={() => (isShowSelectDate = false)}
   />
 {/if}
