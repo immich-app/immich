@@ -4,7 +4,6 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
-  import { uploadAssetsStore } from '$lib/stores/upload';
   import { navigate } from '$lib/utils/navigation';
 
   import TimelineDay from '$lib/components/timeline/base-components/timeline-day.svelte';
@@ -12,8 +11,6 @@
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
   import type { Snippet } from 'svelte';
-
-  let { isUploading } = uploadAssetsStore;
 
   interface Props {
     isSelectionMode: boolean;
@@ -264,7 +261,6 @@
 
 <TimelineDay
   {customThumbnailLayout}
-  {isSelectionMode}
   {singleSelect}
   {withStacked}
   {showArchiveIcon}

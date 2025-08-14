@@ -212,7 +212,9 @@
     onConfirm={async (result: AbsoluteResult | RelativeResult) => {
       isShowSelectDate = false;
       if (result.mode === 'absolute') {
-        const asset = await timelineManager.getClosestAssetToDate(result.dateTime.toObject());
+        const asset = await timelineManager.getClosestAssetToDate(
+          (DateTime.fromISO(result.date) as DateTime<true>).toObject(),
+        );
         if (asset) {
           setFocusAsset(asset);
         }

@@ -6,7 +6,7 @@
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
-  import AssetGrid from '$lib/components/timeline/base-components/base-timeline.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
@@ -117,11 +117,11 @@
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
     {#if tag.hasAssets}
-      <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
+      <Timeline enableRouting={true} {timelineManager} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
           <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}
-      </AssetGrid>
+      </Timeline>
     {:else}
       <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
     {/if}

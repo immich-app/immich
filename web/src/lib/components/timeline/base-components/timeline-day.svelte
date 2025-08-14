@@ -19,7 +19,6 @@
 
   interface Props {
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
-    isSelectionMode: boolean;
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;

@@ -1,15 +1,13 @@
 <script lang="ts">
-  import TimelineViewer from '$lib/components/timeline/base-components/base-timeline-viewer.svelte';
-  import { AssetAction } from '$lib/constants';
+  import BaseTimelineViewer from '$lib/components/timeline/base-components/base-timeline-viewer.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { ScrubberListener, TimelineYearMonth } from '$lib/utils/timeline-util';
-  import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
   import type { Snippet } from 'svelte';
-  import Scrubber from '../../shared-components/scrubber/scrubber.svelte';
+  import Scrubber from './scrubber.svelte';
 
   interface Props {
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
@@ -22,20 +20,12 @@
     enableRouting: boolean;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
-    removeAction?:
-      | AssetAction.UNARCHIVE
-      | AssetAction.ARCHIVE
-      | AssetAction.FAVORITE
-      | AssetAction.UNFAVORITE
-      | AssetAction.SET_VISIBILITY_TIMELINE;
+
     withStacked?: boolean;
     showArchiveIcon?: boolean;
-    isShared?: boolean;
-    album?: AlbumResponseDto | null;
-    person?: PersonResponseDto | null;
-    isShowDeleteConfirmation?: boolean;
+    showSkeleton?: boolean;
 
-    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
+    isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
 
@@ -50,16 +40,13 @@
     enableRouting,
     timelineManager = $bindable(),
     assetInteraction,
-    removeAction,
+
     withStacked = false,
     showArchiveIcon = false,
-    isShared = false,
-    album = null,
-    person = null,
+    showSkeleton = $bindable(true),
     isShowDeleteConfirmation = $bindable(false),
     onAssetOpen,
     onSelect = () => {},
-    onEscape = () => {},
     children,
     empty,
   }: Props = $props();
@@ -176,25 +163,22 @@
 
     handleScrollTop?.(scrollToTop);
   };
+  let baseTimelineViewer: BaseTimelineViewer | undefined = $state();
+  export const scrollToAsset = (asset: TimelineAsset) => baseTimelineViewer?.scrollToAsset(asset) ?? false;
 </script>
 
 <TimelineViewer
-  {customThumbnailLayout}
   {isSelectionMode}
   {singleSelect}
   {enableRouting}
   {timelineManager}
   {assetInteraction}
-  {removeAction}
   {withStacked}
   {showArchiveIcon}
-  {isShared}
-  {album}
-  {person}
+  {showSkeleton}
   {isShowDeleteConfirmation}
   {onAssetOpen}
   {onSelect}
-  {onEscape}
   {children}
   {empty}
   {handleTimelineScroll}
@@ -215,4 +199,4 @@
       />
     {/if}
   {/snippet}
-</TimelineViewer>
+</BaseTimelineViewer>
