@@ -4,6 +4,7 @@
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import AssetGrid from '$lib/components/timeline/base-components/base-timeline.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -21,7 +22,6 @@
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
-  import AssetGrid from '../timeline-viewer/base-timeline.svelte';
   import AlbumSummary from './album-summary.svelte';
 
   interface Props {

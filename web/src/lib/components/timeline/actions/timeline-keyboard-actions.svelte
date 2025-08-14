@@ -27,14 +27,13 @@
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   interface Props {
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
     isShowDeleteConfirmation: boolean;
-    onEscape: () => void;
+    onEscape?: () => void;
     scrollToAsset: (asset: TimelineAsset) => boolean;
   }
 
@@ -82,7 +81,7 @@
 
     updateStackedAssetInTimeline(timelineManager, result);
 
-    onEscape();
+    onEscape?.();
   };
 
   const toggleArchive = async () => {
@@ -160,7 +159,6 @@
       }
 
       const shortcuts: ShortcutOptions[] = [
-        { shortcut: { key: 'Escape' }, onShortcut: onEscape },
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(timelineManager, assetInteraction) },
@@ -174,6 +172,9 @@
         { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
         { shortcut: { key: 'G' }, onShortcut: () => (isShowSelectDate = true) },
       ];
+      if (onEscape) {
+        shortcuts.push({ shortcut: { key: 'Escape' }, onShortcut: onEscape });
+      }
 
       if (assetInteraction.selectionActive) {
         shortcuts.push(

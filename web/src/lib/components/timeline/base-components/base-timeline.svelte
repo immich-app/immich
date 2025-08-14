@@ -1,14 +1,14 @@
 <script lang="ts">
-  import TimelineViewer from '$lib/components/timeline-viewer/timeline-viewer.svelte';
+  import TimelineViewer from '$lib/components/timeline/base-components/base-timeline-viewer.svelte';
   import { AssetAction } from '$lib/constants';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { ScrubberListener } from '$lib/utils/timeline-util';
+  import type { ScrubberListener, TimelineYearMonth } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
   import type { Snippet } from 'svelte';
-  import Scrubber from '../shared-components/scrubber/scrubber.svelte';
+  import Scrubber from '../../shared-components/scrubber/scrubber.svelte';
 
   interface Props {
     isSelectionMode?: boolean;

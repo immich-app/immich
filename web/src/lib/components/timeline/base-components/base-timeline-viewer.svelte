@@ -2,10 +2,10 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import AssetGridActions from '$lib/components/timeline-viewer/actions/timeline-keyboard-actions.svelte';
-  import Skeleton from '$lib/components/timeline-viewer/skeleton.svelte';
-  import TimelineAssetViewer from '$lib/components/timeline-viewer/timeline-asset-viewer.svelte';
-  import SelectableTimelineDay from '$lib/components/timeline-viewer/timeline-day/selectable-timeline-day.svelte';
+  import AssetGridActions from '$lib/components/timeline/actions/timeline-keyboard-actions.svelte';
+  import Skeleton from '$lib/components/timeline/base-components/skeleton.svelte';
+  import SelectableTimelineDay from '$lib/components/timeline/internal-components/selectable-timeline-day.svelte';
+  import TimelineAssetViewer from '$lib/components/timeline/internal-components/timeline-asset-viewer.svelte';
   import { AssetAction } from '$lib/constants';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -17,12 +17,12 @@
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
-  import Portal from '../shared-components/portal/portal.svelte';
+  import Portal from '../../shared-components/portal/portal.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
     singleSelect?: boolean;
-    /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
+    /** `true` if this asset grid responds to navigation events; if `true`, then look at the
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
@@ -61,8 +61,8 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
-    onSelect = (asset: TimelineAsset) => void 0,
-    onEscape = () => {},
+    onSelect,
+    onEscape,
     children,
     empty,
     header,

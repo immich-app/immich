@@ -5,7 +5,7 @@
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import DeleteAssetDialog from '../../timeline-viewer/actions/delete-asset-dialog.svelte';
+  import DeleteAssetDialog from '../../timeline/actions/delete-asset-dialog.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
