@@ -1,14 +1,13 @@
-import 'dart:convert' hide Codec;
-import 'dart:ui';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-import 'package:thumbhash/thumbhash.dart';
+import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 
-class ThumbHashProvider extends ImageProvider<ThumbHashProvider> {
+class ThumbHashProvider extends ImageProvider<ThumbHashProvider> with CancellableImageProviderMixin {
   final String thumbHash;
 
-  const ThumbHashProvider({required this.thumbHash});
+  ThumbHashProvider({required this.thumbHash});
 
   @override
   Future<ThumbHashProvider> obtainKey(ImageConfiguration configuration) {
@@ -17,12 +16,21 @@ class ThumbHashProvider extends ImageProvider<ThumbHashProvider> {
 
   @override
   ImageStreamCompleter loadImage(ThumbHashProvider key, ImageDecoderCallback decode) {
-    return MultiFrameImageStreamCompleter(codec: _loadCodec(key, decode), scale: 1.0);
+    final completer = OneFramePlaceholderImageStreamCompleter(_loadCodec(key, decode));
+    completer.addOnLastListenerRemovedCallback(cancel);
+    return completer;
   }
 
-  Future<Codec> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) async {
-    final image = thumbHashToRGBA(base64Decode(key.thumbHash));
-    return decode(await ImmutableBuffer.fromUint8List(rgbaToBmp(image)));
+  Stream<ImageInfo> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) async* {
+    final request = this.request = ThumbhashImageRequest(thumbhash: thumbHash);
+    try {
+      final image = await request.load(decode);
+      if (image != null) {
+        yield image;
+      }
+    } finally {
+      this.request = null;
+    }
   }
 
   @override
