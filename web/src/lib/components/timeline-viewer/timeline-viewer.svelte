@@ -2,11 +2,12 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
+  import AssetGridActions from '$lib/components/timeline-viewer/actions/timeline-keyboard-actions.svelte';
   import Skeleton from '$lib/components/timeline-viewer/skeleton.svelte';
   import TimelineAssetViewer from '$lib/components/timeline-viewer/timeline-asset-viewer.svelte';
   import SelectableTimelineDay from '$lib/components/timeline-viewer/timeline-day/selectable-timeline-day.svelte';
   import { AssetAction } from '$lib/constants';
+  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -20,6 +21,7 @@
   import Portal from '../shared-components/portal/portal.svelte';
 
   interface Props {
+    customLayout?: Snippet<[TimelineAsset]>;
     isSelectionMode?: boolean;
     singleSelect?: boolean;
     /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
@@ -40,6 +42,7 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
+    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     header?: Snippet<[handleScrollTop: (top: number) => void]>;
@@ -49,6 +52,7 @@
   }
 
   let {
+    customLayout,
     isSelectionMode = false,
     singleSelect = false,
     enableRouting,
@@ -61,6 +65,7 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
+    onAssetOpen,
     onSelect = (asset: TimelineAsset) => void 0,
     onEscape = () => {},
     children,
@@ -317,6 +322,7 @@
           style:width="100%"
         >
           <SelectableTimelineDay
+            {customLayout}
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
@@ -324,6 +330,7 @@
             {isSelectionMode}
             {singleSelect}
             {monthGroup}
+            {onAssetOpen}
             {onSelect}
             {onScrollToTop}
             {onScrollCompensation}

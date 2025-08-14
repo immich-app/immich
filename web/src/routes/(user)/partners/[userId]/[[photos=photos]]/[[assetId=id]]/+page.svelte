@@ -3,10 +3,10 @@
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import AssetGrid from '$lib/components/timeline-viewer/base-timeline.svelte';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';

@@ -7,10 +7,10 @@
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import AssetGrid from '$lib/components/timeline-viewer/base-timeline.svelte';
   import { AssetAction } from '$lib/constants';
 
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';

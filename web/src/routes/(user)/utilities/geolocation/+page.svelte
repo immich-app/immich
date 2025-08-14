@@ -110,17 +110,7 @@
     return !!asset.latitude && !!asset.longitude;
   };
 
-  const handleThumbnailClick = (
-    asset: TimelineAsset,
-    timelineManager: TimelineManager,
-    dayGroup: DayGroup,
-    onClick: (
-      timelineManager: TimelineManager,
-      assets: TimelineAsset[],
-      groupTitle: string,
-      asset: TimelineAsset,
-    ) => void,
-  ) => {
+  const handleOnAssetOpen = (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => {
     if (hasGps(asset)) {
       locationUpdated = true;
       setTimeout(() => {
@@ -128,9 +118,9 @@
       }, 1500);
       location = { latitude: asset.latitude!, longitude: asset.longitude! };
       void setQueryValue('at', asset.id);
-    } else {
-      onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+      return;
     }
+    defaultAssetOpen();
   };
 </script>
 
@@ -193,7 +183,7 @@
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
-    onThumbnailClick={handleThumbnailClick}
+    onAssetOpen={handleOnAssetOpen}
   >
     {#snippet customLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}

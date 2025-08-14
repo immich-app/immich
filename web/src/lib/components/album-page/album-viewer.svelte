@@ -18,10 +18,10 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
-  import AssetGrid from '../photos-page/asset-grid.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
+  import AssetGrid from '../timeline-viewer/base-timeline.svelte';
   import AlbumSummary from './album-summary.svelte';
 
   interface Props {

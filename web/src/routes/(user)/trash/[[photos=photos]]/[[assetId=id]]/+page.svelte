@@ -5,13 +5,13 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import RestoreAssets from '$lib/components/photos-page/actions/restore-assets.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import AssetGrid from '$lib/components/timeline-viewer/base-timeline.svelte';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';

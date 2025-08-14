@@ -20,7 +20,6 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -30,6 +29,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import AssetGrid from '$lib/components/timeline-viewer/base-timeline.svelte';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';

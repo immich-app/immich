@@ -1,21 +1,21 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import DeleteAssetDialog from '$lib/components/timeline-viewer/actions/delete-asset-dialog.svelte';
   import { AssetAction } from '$lib/constants';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction, PreAction } from './action';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     asset: AssetResponseDto;

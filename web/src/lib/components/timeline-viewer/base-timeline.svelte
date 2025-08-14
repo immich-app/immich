@@ -1,18 +1,16 @@
 <script lang="ts">
   import TimelineViewer from '$lib/components/timeline-viewer/timeline-viewer.svelte';
   import { AssetAction } from '$lib/constants';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { ScrubberListener, TimelineYearMonth } from '$lib/utils/timeline-util';
+  import type { ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
   import type { Snippet } from 'svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
 
   interface Props {
-    customLayout?: Snippet<[TimelineAsset]>;
     isSelectionMode?: boolean;
     singleSelect?: boolean;
     /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
@@ -33,18 +31,6 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
-    /**
-     * Customizes what happens when an asset is opened (clicked/tapped).
-     * 
-     * @param dayGroup - The day group containing the asset
-     * @param asset - The asset that was opened
-     * @param defaultAssetOpen - Callback that executes the default behavior:
-     *   - If selection mode is active: Selects/deselects the asset
-     *   - If selection mode is inactive: Navigates to the asset detail view
-     * 
-     * If not provided, the default behavior is used automatically.
-     */
-    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -52,7 +38,6 @@
   }
 
   let {
-    customLayout,
     isSelectionMode = false,
     singleSelect = false,
     enableRouting,
@@ -65,7 +50,6 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
-    onAssetOpen,
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -187,7 +171,6 @@
 </script>
 
 <TimelineViewer
-  {customLayout}
   {isSelectionMode}
   {singleSelect}
   {enableRouting}
@@ -200,7 +183,6 @@
   {album}
   {person}
   {isShowDeleteConfirmation}
-  {onAssetOpen}
   {onSelect}
   {onEscape}
   {children}
