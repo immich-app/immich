@@ -1,14 +1,14 @@
 <script lang="ts">
+  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import DurationInput from '$lib/elements/DurationInput.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util.js';
-  import { ConfirmModal, Field, Switch } from '@immich/ui';
-  import { mdiCalendarEditOutline } from '@mdi/js';
+  import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util';
+  import { Button, Field, HStack, Modal, ModalBody, ModalFooter, Switch } from '@immich/ui';
+  import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
-  import Combobox, { type ComboBoxOption } from './combobox.svelte';
 
   interface Props {
     title?: string;
@@ -17,8 +17,9 @@
     timezoneInput?: boolean;
     withDuration?: boolean;
     currentInterval?: { start: DateTime; end: DateTime };
-    onCancel: () => void;
-    onConfirm: (result: AbsoluteResult | RelativeResult) => void;
+    icon?: string;
+    confirmText?: string;
+    onClose: (result?: AbsoluteResult | RelativeResult) => void;
   }
 
   let {
@@ -28,13 +29,15 @@
     timezoneInput = true,
     withDuration = true,
     currentInterval = undefined,
-    onCancel,
-    onConfirm,
+    icon = mdiCalendarEdit,
+    confirmText = $t('confirm'),
+    onClose,
   }: Props = $props();
 
   export type AbsoluteResult = {
     mode: 'absolute';
     date: string;
+    dateTime: DateTime<true>;
   };
 
   export type RelativeResult = {
@@ -191,14 +194,23 @@
       const fixedOffsetZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: offsetMinutes }).toFormat('hh:mm')}`;
 
       // Create a DateTime object in this fixed-offset zone, preserving the local time.
-      const finalDateTime = DateTime.fromObject(dtComponents.toObject(), { zone: fixedOffsetZone });
+      const fixedOffsetDateTime = DateTime.fromObject(dtComponents.toObject(), {
+        zone: fixedOffsetZone,
+      }) as DateTime<true>;
 
-      onConfirm({ mode: 'absolute', date: finalDateTime.toISO({ includeOffset: true })! });
+      onClose({
+        mode: 'absolute',
+        date: fixedOffsetDateTime.toISO({ includeOffset: true })!,
+        dateTime: fixedOffsetDateTime,
+      });
+      return;
     }
 
     if (showRelative && (selectedDuration || selectedRelativeOption)) {
-      onConfirm({ mode: 'relative', duration: selectedDuration, timeZone: selectedRelativeOption?.value });
+      onClose({ mode: 'relative', duration: selectedDuration, timeZone: selectedRelativeOption?.value });
+      return;
     }
+    onClose();
   };
 
   const handleOnSelect = (option?: ComboBoxOption) => {
@@ -234,15 +246,8 @@
   );
 </script>
 
-<ConfirmModal
-  confirmColor="primary"
-  {title}
-  icon={mdiCalendarEditOutline}
-  prompt="Please select a new date:"
-  disabled={!date.isValid}
-  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
->
-  {#snippet promptSnippet()}
+<Modal {title} {icon} {onClose}>
+  <ModalBody>
     {#if withDuration}
       <div class="mb-5">
         <Field label={$t('edit_date_and_time_by_offset')}>
@@ -280,5 +285,15 @@
         </div>
       </div>
     </div>
-  {/snippet}
-</ConfirmModal>
+  </ModalBody>
+  <ModalFooter>
+    <HStack fullWidth>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>
+        {$t('cancel')}
+      </Button>
+      <Button shape="round" color="primary" fullWidth onclick={handleConfirm} disabled={!date.isValid}>
+        {confirmText}
+      </Button>
+    </HStack>
+  </ModalFooter>
+</Modal>
