@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
 
 data class Request(
-  val requestId: Long,
   val taskFuture: Future<*>,
   val cancellationSignal: CancellationSignal,
   val callback: (Result<Map<String, Long>>) -> Unit
@@ -40,15 +39,6 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
   private val requestMap = ConcurrentHashMap<Long, Request>()
 
   companion object {
-    val PROJECTION = arrayOf(
-      MediaStore.MediaColumns.DATE_MODIFIED,
-      MediaStore.Files.FileColumns.MEDIA_TYPE,
-    )
-    const val SELECTION = "${MediaStore.MediaColumns._ID} = ?"
-    val URI: Uri = MediaStore.Files.getContentUri("external")
-
-    const val MEDIA_TYPE_IMAGE = MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
-    const val MEDIA_TYPE_VIDEO = MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO
     val CANCELLED = Result.success<Map<String, Long>>(mapOf())
     val OPTIONS = BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 }
 
@@ -105,7 +95,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
         requestMap.remove(requestId)
       }
     }
-    val request = Request(requestId, task, signal, callback)
+    val request = Request(task, signal, callback)
     requestMap[requestId] = request
   }
 
