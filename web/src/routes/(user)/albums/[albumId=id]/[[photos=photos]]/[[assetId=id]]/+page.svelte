@@ -31,7 +31,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import AssetGrid from '$lib/components/timeline-viewer/base-components/base-timeline.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -442,7 +442,7 @@
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">
     <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-      <AssetGrid
+      <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
         {timelineManager}
@@ -543,7 +543,7 @@
             </section>
           {/if}
         {/if}
-      </AssetGrid>
+      </Timeline>
 
       {#if showActivityStatus && !activityManager.isLoading}
         <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">

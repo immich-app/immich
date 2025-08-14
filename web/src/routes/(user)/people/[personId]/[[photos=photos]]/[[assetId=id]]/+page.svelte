@@ -29,7 +29,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import AssetGrid from '$lib/components/timeline-viewer/base-components/base-timeline.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -386,7 +386,7 @@
   }}
 >
   {#key person.id}
-    <AssetGrid
+    <Timeline
       enableRouting={true}
       {person}
       {timelineManager}
@@ -498,7 +498,7 @@
           {/if}
         </div>
       {/if}
-    </AssetGrid>
+    </Timeline>
   {/key}
 </main>
 

@@ -17,7 +17,6 @@
   let { isUploading } = uploadAssetsStore;
 
   interface Props {
-    isSelectionMode: boolean;
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;

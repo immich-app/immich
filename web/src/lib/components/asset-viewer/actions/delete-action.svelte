@@ -5,7 +5,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import DeleteAssetDialog from '$lib/components/timeline-viewer/actions/delete-asset-dialog.svelte';
+  import DeleteAssetDialog from '$lib/components/timeline/actions/delete-asset-dialog.svelte';
   import { AssetAction } from '$lib/constants';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';

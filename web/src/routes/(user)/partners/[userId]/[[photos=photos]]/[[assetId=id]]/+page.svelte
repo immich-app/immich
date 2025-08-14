@@ -6,7 +6,7 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import AssetGrid from '$lib/components/timeline-viewer/base-components/base-timeline.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -43,7 +43,7 @@
 </script>
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape} />
+  <Timeline enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape} />
 </main>
 
 {#if assetInteraction.selectionActive}

@@ -2,11 +2,8 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import AssetGridActions from '$lib/components/timeline/actions/timeline-keyboard-actions.svelte';
   import Skeleton from '$lib/components/timeline/base-components/skeleton.svelte';
   import SelectableTimelineDay from '$lib/components/timeline/internal-components/selectable-timeline-day.svelte';
-  import TimelineAssetViewer from '$lib/components/timeline/internal-components/timeline-asset-viewer.svelte';
-  import { AssetAction } from '$lib/constants';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -14,10 +11,8 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
-  import Portal from '../../shared-components/portal/portal.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -28,20 +23,11 @@
     enableRouting: boolean;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
-    removeAction?:
-      | AssetAction.UNARCHIVE
-      | AssetAction.ARCHIVE
-      | AssetAction.FAVORITE
-      | AssetAction.UNFAVORITE
-      | AssetAction.SET_VISIBILITY_TIMELINE;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
-    isShared?: boolean;
-    album?: AlbumResponseDto | null;
-    person?: PersonResponseDto | null;
+    showSkeleton?: boolean;
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
-    onEscape?: () => void;
     header?: Snippet<[handleScrollTop: (top: number) => void]>;
     children?: Snippet;
     empty?: Snippet;
@@ -54,28 +40,21 @@
     enableRouting,
     timelineManager = $bindable(),
     assetInteraction,
-    removeAction,
     withStacked = false,
+    showSkeleton = $bindable(true),
     showArchiveIcon = false,
-    isShared = false,
-    album = null,
-    person = null,
     isShowDeleteConfirmation = $bindable(false),
-    onSelect = (asset: TimelineAsset) => void 0,
-    onEscape = () => {},
+    onSelect = (_asset: TimelineAsset) => void 0,
     children,
     empty,
     header,
     handleTimelineScroll = () => {},
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, gridScrollTarget } = assetViewingStore;
+  let { gridScrollTarget } = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
-
   let timelineElement: HTMLElement | undefined = $state();
-  let showSkeleton = $state(true);
-
   let scrubberWidth = $state(0);
 
   const maxMd = $derived(mobileDevice.maxMd);
@@ -153,7 +132,7 @@
     return true;
   };
 
-  const scrollToAsset = (asset: TimelineAsset) => {
+  export const scrollToAsset = (asset: TimelineAsset) => {
     const monthGroup = timelineManager.getMonthGroupByAssetId(asset.id);
     if (!monthGroup) {
       return false;
@@ -256,9 +235,6 @@
   });
 </script>
 
-<AssetGridActions {scrollToAsset} {timelineManager} {assetInteraction} bind:isShowDeleteConfirmation {onEscape}
-></AssetGridActions>
-
 {@render header?.(scrollTop)}
 
 <!-- Right margin MUST be equal to the width of scrubber -->
@@ -341,12 +317,6 @@
     ></div>
   </section>
 </section>
-
-<Portal target="body">
-  {#if $showAssetViewer}
-    <TimelineAssetViewer bind:showSkeleton {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
-  {/if}
-</Portal>
 
 <style>
   #asset-grid {
