@@ -4,7 +4,7 @@
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import AssetDateGroupSelectionAware from '$lib/components/photos-page/asset-date-group-selection-aware.svelte';
   import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
-  import AssetViewerAndActions from '$lib/components/photos-page/asset-viewer-and-actions.svelte';
+  import AssetGridAssetViewer from '$lib/components/photos-page/asset-grid-asset-viewer.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AssetAction } from '$lib/constants';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
@@ -92,10 +92,6 @@
   let showSkeleton = $state(true);
 
   let scrubberWidth = $state(0);
-
-  // 60 is the bottom spacer element at 60px
-  let bottomSectionHeight = 60;
-  let leadout = $state(false);
 
   const maxMd = $derived(mobileDevice.maxMd);
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
@@ -273,10 +269,6 @@
       disposeHmr();
     };
   });
-
-  let onDateGroupSelect = <({ title, assets }: { title: string; assets: TimelineAsset[] }) => void>$state();
-  let onSelectAssets = <(asset: TimelineAsset) => Promise<void>>$state();
-  let onSelectAssetCandidates = <(asset: TimelineAsset | null) => void>$state();
 </script>
 
 <AssetGridActions {scrollToAsset} {timelineManager} {assetInteraction} bind:isShowDeleteConfirmation {onEscape}
@@ -369,7 +361,7 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <AssetViewerAndActions
+    <AssetGridAssetViewer
       bind:showSkeleton
       {timelineManager}
       {removeAction}
@@ -377,8 +369,7 @@
       {isShared}
       {album}
       {person}
-      {isShowDeleteConfirmation}
-    ></AssetViewerAndActions>
+    />
   {/if}
 </Portal>
 
