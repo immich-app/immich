@@ -33,12 +33,8 @@
     assetInteraction: AssetInteraction;
     customLayout?: Snippet<[TimelineAsset]>;
     onSelect: (asset: TimelineAsset) => void;
-
-    // onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
-    // onSelectAssets: (asset: TimelineAsset) => void;
-    // onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
-    scrollTop: (top: number) => void;
+    onScrollToTop: () => void;
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
@@ -63,7 +59,7 @@
     customLayout,
     onSelect,
     onScrollCompensation,
-    scrollTop,
+    onScrollToTop,
     onThumbnailClick,
   }: Props = $props();
 
@@ -74,7 +70,7 @@
     actionLib.timelineManager = timelineManager;
     actionLib.singleSelect = singleSelect;
     actionLib.onSelect = onSelect;
-    actionLib.scrollTop = scrollTop;
+    actionLib.onScrollToTop = onScrollToTop;
   });
 
   let isMouseOverGroup = $state(false);
