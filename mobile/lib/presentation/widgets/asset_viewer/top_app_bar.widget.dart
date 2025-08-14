@@ -15,7 +15,6 @@ import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -44,10 +43,9 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final websocketConnected = ref.watch(websocketProvider.select((c) => c.isConnected));
 
     final actions = <Widget>[
-      if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       if (showViewInTimelineButton)
         IconButton(
           onPressed: () async {
@@ -67,7 +65,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     ];
 
     final lockedViewActions = <Widget>[
-      if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       const _KebabMenu(),
     ];
 
