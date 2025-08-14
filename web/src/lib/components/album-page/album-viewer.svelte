@@ -4,7 +4,7 @@
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
-  import AssetGrid from '$lib/components/timeline/base-components/base-timeline.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -61,7 +61,7 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <AssetGrid enableRouting={true} {album} {timelineManager} {assetInteraction}>
+  <Timeline enableRouting={true} {album} {timelineManager} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1
@@ -83,7 +83,7 @@
         </p>
       {/if}
     </section>
-  </AssetGrid>
+  </Timeline>
 </main>
 
 <header>
