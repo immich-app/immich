@@ -117,6 +117,7 @@
   const scrollToTop = () => {
     scrollTo(0);
   };
+  const onScrollToTop = scrollToTop;
 
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
     // the following method may trigger any layouts, so need to
@@ -124,7 +125,7 @@
     const height = monthGroup!.findAssetAbsolutePosition(assetId);
 
     while (timelineManager.scrollCompensation.monthGroup) {
-      handleScrollCompensation(timelineManager.scrollCompensation);
+      scrollCompensation(timelineManager.scrollCompensation);
       timelineManager.clearScrollCompensation();
     }
     return height;
@@ -232,7 +233,7 @@
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
 
-  const handleScrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
+  const scrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
     if (heightDelta !== undefined) {
       scrollBy(heightDelta);
     } else if (scrollTop !== undefined) {
@@ -244,6 +245,7 @@
     // causing bad perf, and also, disrupting focus of those elements.
     updateSlidingWindow();
   };
+  const onScrollCompensation = scrollCompensation;
 
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
@@ -331,8 +333,8 @@
             {singleSelect}
             {monthGroup}
             {onSelect}
-            {scrollTop}
-            onScrollCompensation={handleScrollCompensation}
+            {onScrollToTop}
+            {onScrollCompensation}
           />
         </div>
       {/if}

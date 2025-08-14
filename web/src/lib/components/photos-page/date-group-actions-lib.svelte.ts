@@ -10,7 +10,7 @@ import { searchStore } from '$lib/stores/search.svelte';
  */
 export class DateGroupActionLib {
   onSelect: (asset: TimelineAsset) => void = () => void 0;
-  scrollTop: (top: number) => void = () => void 0;
+  onScrollToTop: () => void = () => void 0;
   assetInteraction: AssetInteraction = $state(new AssetInteraction());
   timelineManager: TimelineManager = $state(new TimelineManager());
   singleSelect: boolean = $state(false);
@@ -94,7 +94,7 @@ export class DateGroupActionLib {
     this.onSelect(asset);
 
     if (this.singleSelect) {
-      this.scrollTop(0);
+      this.onScrollToTop();
 
       return;
     }
