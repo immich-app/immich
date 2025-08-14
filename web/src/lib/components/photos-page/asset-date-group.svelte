@@ -29,12 +29,8 @@
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
     onSelect: (asset: TimelineAsset) => void;
-
-    // onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
-    // onSelectAssets: (asset: TimelineAsset) => void;
-    // onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
-    scrollTop: (top: number) => void;
+    onScrollToTop: () => void;
   }
 
   let {
@@ -47,7 +43,7 @@
     timelineManager,
     onSelect,
     onScrollCompensation,
-    scrollTop,
+    onScrollToTop,
   }: Props = $props();
 
   const actionLib = new DateGroupActionLib();
@@ -57,7 +53,7 @@
     actionLib.timelineManager = timelineManager;
     actionLib.singleSelect = singleSelect;
     actionLib.onSelect = onSelect;
-    actionLib.scrollTop = scrollTop;
+    actionLib.onScrollToTop = onScrollToTop;
   });
 
   let isMouseOverGroup = $state(false);
