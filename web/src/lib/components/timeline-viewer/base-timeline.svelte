@@ -5,7 +5,7 @@
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { ScrubberListener, TimelineYearMonth } from '$lib/utils/timeline-util';
+  import type { ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, PersonResponseDto } from '@immich/sdk';
   import type { Snippet } from 'svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
