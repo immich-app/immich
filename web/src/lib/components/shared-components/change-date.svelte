@@ -4,7 +4,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util.js';
   import { ConfirmModal, Field, Switch } from '@immich/ui';
-  import { mdiCalendarEditOutline } from '@mdi/js';
+  import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
@@ -17,6 +17,8 @@
     timezoneInput?: boolean;
     withDuration?: boolean;
     currentInterval?: { start: DateTime; end: DateTime };
+    icon?: string;
+    confirmText?: string;
     onCancel: () => void;
     onConfirm: (result: AbsoluteResult | RelativeResult) => void;
   }
@@ -28,6 +30,8 @@
     timezoneInput = true,
     withDuration = true,
     currentInterval = undefined,
+    icon = mdiCalendarEdit,
+    confirmText,
     onCancel,
     onConfirm,
   }: Props = $props();
@@ -35,6 +39,7 @@
   export type AbsoluteResult = {
     mode: 'absolute';
     date: string;
+    dateTime: DateTime<true>;
   };
 
   export type RelativeResult = {
@@ -191,9 +196,15 @@
       const fixedOffsetZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: offsetMinutes }).toFormat('hh:mm')}`;
 
       // Create a DateTime object in this fixed-offset zone, preserving the local time.
-      const finalDateTime = DateTime.fromObject(dtComponents.toObject(), { zone: fixedOffsetZone });
+      const fixedOffsetDateTime = DateTime.fromObject(dtComponents.toObject(), {
+        zone: fixedOffsetZone,
+      }) as DateTime<true>;
 
-      onConfirm({ mode: 'absolute', date: finalDateTime.toISO({ includeOffset: true })! });
+      onConfirm({
+        mode: 'absolute',
+        date: fixedOffsetDateTime.toISO({ includeOffset: true })!,
+        dateTime: fixedOffsetDateTime,
+      });
     }
 
     if (showRelative && (selectedDuration || selectedRelativeOption)) {
@@ -237,7 +248,8 @@
 <ConfirmModal
   confirmColor="primary"
   {title}
-  icon={mdiCalendarEditOutline}
+  {icon}
+  {confirmText}
   prompt="Please select a new date:"
   disabled={!date.isValid}
   onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
