@@ -2,10 +2,10 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import AssetDateGroupSelectionAware from '$lib/components/photos-page/asset-date-group-selection-aware.svelte';
   import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
-  import AssetGridAssetViewer from '$lib/components/photos-page/asset-grid-asset-viewer.svelte';
+  import TimelineAssetViewer from '$lib/components/photos-page/timeline-asset-viewer.svelte';
   import Skeleton from '$lib/components/timeline-viewer/skeleton.svelte';
+  import SelectableTimelineDay from '$lib/components/timeline-viewer/timeline-day/selectable-timeline-day.svelte';
   import { AssetAction } from '$lib/constants';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -316,7 +316,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <AssetDateGroupSelectionAware
+          <SelectableTimelineDay
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
@@ -344,15 +344,7 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <AssetGridAssetViewer
-      bind:showSkeleton
-      {timelineManager}
-      {removeAction}
-      {withStacked}
-      {isShared}
-      {album}
-      {person}
-    />
+    <TimelineAssetViewer bind:showSkeleton {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
   {/if}
 </Portal>
 

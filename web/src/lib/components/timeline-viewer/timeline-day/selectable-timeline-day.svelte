@@ -7,7 +7,7 @@
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { navigate } from '$lib/utils/navigation';
 
-  import AssetDateGroupComp from '$lib/components/photos-page/asset-date-group-comp.svelte';
+  import TimelineDay from '$lib/components/timeline-viewer/timeline-day/timeline-day.svelte';
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
@@ -247,7 +247,7 @@
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
-<AssetDateGroupComp
+<TimelineDay
   {isSelectionMode}
   {singleSelect}
   {withStacked}
@@ -263,4 +263,4 @@
   isAssetSelected={(asset) => assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
   isAssetSelectionCandidate={(asset) => assetInteraction.hasSelectionCandidate(asset.id)}
   isAssetDisabled={(asset) => timelineManager.albumAssets.has(asset.id)}
-></AssetDateGroupComp>
+/>
