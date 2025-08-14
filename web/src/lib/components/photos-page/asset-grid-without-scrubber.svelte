@@ -2,7 +2,6 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import AssetDateGroupActions from '$lib/components/photos-page/asset-date-group-actions.svelte';
   import AssetGridActions from '$lib/components/photos-page/asset-grid-actions.svelte';
   import AssetViewerAndActions from '$lib/components/photos-page/asset-viewer-and-actions.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
@@ -62,7 +61,7 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
-    onSelect = () => {},
+    onSelect = (asset: TimelineAsset) => void 0,
     onEscape = () => {},
     children,
     empty,
@@ -263,16 +262,6 @@
   let onSelectAssetCandidates = <(asset: TimelineAsset | null) => void>$state();
 </script>
 
-<AssetDateGroupActions
-  {timelineManager}
-  {assetInteraction}
-  handleScrollTop={scrollTop}
-  {onSelect}
-  bind:onDateGroupSelect
-  bind:onSelectAssets
-  bind:onSelectAssetCandidates
-></AssetDateGroupActions>
-
 <AssetGridActions {scrollToAsset} {timelineManager} {assetInteraction} bind:isShowDeleteConfirmation {onEscape}
 ></AssetGridActions>
 
@@ -341,9 +330,8 @@
             {isSelectionMode}
             {singleSelect}
             {monthGroup}
-            onSelect={onDateGroupSelect}
-            {onSelectAssetCandidates}
-            {onSelectAssets}
+            {onSelect}
+            {scrollTop}
             onScrollCompensation={handleScrollCompensation}
           />
         </div>
