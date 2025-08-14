@@ -57,12 +57,28 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
     });
   }
 
-  Stream<int> watchPendingDecisionCount() {
+  Stream<int> watchPendingApprovalCount() {
     final countExpr = _db.trashSyncEntity.assetId.count();
     final q = _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([countExpr])
       ..where(_db.trashSyncEntity.isSyncApproved.isNull());
     return q.watchSingle().map((row) => row.read(countExpr) ?? 0).distinct();
+  }
+
+  // Stream<bool> watchIsApprovalPending(String checksum) {
+  //   return (_db.select(_db.trashSyncEntity)
+  //     ..where((t) => t.checksum.equals(checksum) & t.isSyncApproved.isNull()))
+  //       .watch()
+  //       .map((rows) => rows.isNotEmpty);
+  // }
+
+  Stream<Set<String>> watchPendingApprovalChecksums() {
+    final query = _db.select(_db.trashSyncEntity)
+      ..where((t) => t.isSyncApproved.isNull());
+    return query
+        .watch()
+        .map((rows) => rows.map((e) => e.checksum).toSet())
+        .distinct((previous, next) => const SetEquality<String>().equals(previous, next));
   }
 
   Future<List<TrashSyncDecision>> getByChecksums(Iterable<String> checksums) {

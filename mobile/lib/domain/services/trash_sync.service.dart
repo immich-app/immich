@@ -115,7 +115,11 @@ class TrashSyncService {
     await _trashSyncRepository.updateApproves(checksums, allow);
   }
 
-  Stream<int> watchPendingDecisionCount() => _trashSyncRepository.watchPendingDecisionCount();
+  Stream<int> watchPendingApprovalCount() => _trashSyncRepository.watchPendingApprovalCount();
+
+  // Stream<bool> watchIsApprovalPending(String checksum) => _trashSyncRepository.watchIsApprovalPending(checksum);
+
+  Stream<Set<String>> watchPendingApprovalChecksums() => _trashSyncRepository.watchPendingApprovalChecksums();
 
   bool get isServiceEnabled => isAutoSyncMode || isReviewMode;
 

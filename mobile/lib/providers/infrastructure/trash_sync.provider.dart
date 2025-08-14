@@ -25,11 +25,28 @@ final trashSyncServiceProvider = Provider(
 );
 
 final outOfSyncCountProvider = StreamProvider<int>((ref) {
-  final enabledAV = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
+  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
   final service = ref.watch(trashSyncServiceProvider);
-  return enabledAV.when(
-    data: (enabled) => (enabled as bool? ?? false) ? service.watchPendingDecisionCount() : Stream<int>.value(0),
+  return enabledReviewMode.when(
+    data: (enabled) => (enabled as bool? ?? false) ? service.watchPendingApprovalCount() : Stream<int>.value(0),
     loading: () => Stream<int>.value(0),
     error: (_, __) => Stream<int>.value(0),
+  );
+});
+
+// final isApprovalPendingProvider = StreamProvider.autoDispose.family<bool, String?>((ref, checksum) async* {
+//   yield false;
+//   if (checksum != null) {
+//     yield* ref.watch(trashSyncServiceProvider).watchIsApprovalPending(checksum);
+//   }
+// });
+
+final pendingApprovalChecksumsProvider = StreamProvider<Set<String>>((ref) {
+  final enabledReviewMode = ref.watch(appSettingStreamProvider(AppSettingsEnum.reviewOutOfSyncChangesAndroid));
+  final service = ref.watch(trashSyncServiceProvider);
+  return enabledReviewMode.when(
+    data: (enabled) => (enabled as bool? ?? false) ? service.watchPendingApprovalChecksums() : Stream.value(<String>{}),
+    loading: () => Stream.value(<String>{}),
+    error: (_, __) => Stream.value(<String>{}),
   );
 });

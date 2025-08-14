@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -27,13 +29,16 @@ class AllowMoveToTrashActionButton extends ConsumerWidget {
 
     final result = await actionNotifier.resolveRemoteTrash(source, allow: true);
     multiSelectNotifier.reset();
-
+    if (source == ActionSource.viewer) {
+      EventStream.shared.emit(const ViewerReloadAssetEvent());
+    }
+    debugPrint('result: $result');
     if (context.mounted) {
       final successMessage = 'assets_allowed_to_moved_to_trash_count'.t(
         context: context,
         args: {'count': result.count.toString()},
       );
-
+      debugPrint('successMessage: $successMessage');
       ImmichToast.show(
         context: context,
         msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),

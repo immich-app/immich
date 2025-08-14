@@ -20,7 +20,7 @@ class ImmichToast {
       ToastType.info => context.primaryColor,
       ToastType.success => const Color.fromARGB(255, 78, 140, 124),
       ToastType.error => const Color.fromARGB(255, 220, 48, 85),
-      ToastType.warning => const Color.fromARGB(255, 255, 184, 0),
+      ToastType.warning => context.primaryColor,
     };
 
     Icon getIcon(ToastType type) => switch (type) {

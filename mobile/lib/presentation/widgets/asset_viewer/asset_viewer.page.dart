@@ -390,6 +390,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
 
     if (event is ViewerReloadAssetEvent) {
+      debugPrint('asset.checksum:  event is ViewerReloadAssetEvent');
+
       assetReloadRequested = true;
       return;
     }
