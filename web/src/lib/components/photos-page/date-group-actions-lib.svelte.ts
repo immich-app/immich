@@ -1,3 +1,4 @@
+import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
@@ -67,7 +68,8 @@ export class DateGroupActionLib {
     this.lastAssetMouseEvent = asset;
   };
 
-  onDateGroupSelect = ({ title: group, assets }: { title: string; assets: TimelineAsset[] }) => {
+  onDayGroupSelect = (dayGroup: DayGroup, assets: TimelineAsset[]) => {
+    const group = dayGroup.groupTitle;
     if (this.assetInteraction.selectedGroup.has(group)) {
       this.assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
