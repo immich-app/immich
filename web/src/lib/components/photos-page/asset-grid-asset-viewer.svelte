@@ -7,13 +7,18 @@
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
 
-  let { asset: viewingAsset, gridScrollTarget, mutex } = assetViewingStore;
+  let { asset: viewingAsset, gridScrollTarget, mutex, preloadAssets } = assetViewingStore;
 
   interface Props {
     timelineManager: TimelineManager;
     showSkeleton: boolean;
+    withStacked?: boolean;
+    isShared?: boolean;
+    album?: AlbumResponseDto | null;
+    person?: PersonResponseDto | null;
+
     removeAction?:
       | AssetAction.UNARCHIVE
       | AssetAction.ARCHIVE
@@ -32,6 +37,10 @@
     timelineManager = $bindable(),
     showSkeleton = $bindable(false),
     removeAction,
+    withStacked = false,
+    isShared = false,
+    album = null,
+    person = null,
     handlePreAction = $bindable(),
     handleAction = $bindable(),
     handleNext = $bindable(),
@@ -160,3 +169,20 @@
     }
   };
 </script>
+
+{#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+  <AssetViewer
+    {withStacked}
+    asset={$viewingAsset}
+    preloadAssets={$preloadAssets}
+    {isShared}
+    {album}
+    {person}
+    preAction={handlePreAction}
+    onAction={handleAction}
+    onPrevious={handlePrevious}
+    onNext={handleNext}
+    onRandom={handleRandom}
+    onClose={handleClose}
+  />
+{/await}
