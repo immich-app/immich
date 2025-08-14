@@ -23,7 +23,8 @@
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import DeleteAssetDialog from '../../timeline-viewer/actions/delete-asset-dialog.svelte';
+
+  import DeleteAssetDialog from '$lib/components/timeline/actions/delete-asset-dialog.svelte';
   import Portal from '../portal/portal.svelte';
 
   interface Props {

@@ -170,7 +170,7 @@
   };
 </script>
 
-{#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+{#await import('../../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
   <AssetViewer
     {withStacked}
     asset={$viewingAsset}

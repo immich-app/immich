@@ -27,7 +27,7 @@ export class DayGroup {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(monthGroup: MonthGroup, index: number, day: number, groupTitle: string) {
+  constructor(monthGroup: MonthGroup, index: number, day: number, groupTitle: string, groupTitleFull: string) {
     this.index = index;
     this.monthGroup = monthGroup;
     this.day = day;

@@ -18,14 +18,13 @@
   let { isUploading } = uploadAssetsStore;
 
   interface Props {
+    customThumbnailLayout?: Snippet<[TimelineAsset]>;
     isSelectionMode: boolean;
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
-
-    customLayout?: Snippet<[TimelineAsset]>;
 
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
 
@@ -42,14 +41,13 @@
   }
 
   let {
+    customThumbnailLayout,
+
     singleSelect,
     withStacked,
     showArchiveIcon,
     monthGroup,
     timelineManager,
-
-    customLayout,
-
     onScrollCompensation,
 
     onHover,
@@ -165,8 +163,8 @@
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
           />
-          {#if customLayout}
-            {@render customLayout(asset)}
+          {#if customThumbnailLayout}
+            {@render customThumbnailLayout(asset)}
           {/if}
         </div>
       {/each}

@@ -18,13 +18,14 @@
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
-  import Portal from '../shared-components/portal/portal.svelte';
+  import Portal from '../../shared-components/portal/portal.svelte';
 
   interface Props {
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
+
     isSelectionMode?: boolean;
     singleSelect?: boolean;
-    /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
+    /** `true` if this asset grid responds to navigation events; if `true`, then look at the
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
@@ -53,6 +54,7 @@
 
   let {
     customThumbnailLayout,
+
     isSelectionMode = false,
     singleSelect = false,
     enableRouting,
@@ -65,9 +67,10 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
+
     onAssetOpen,
-    onSelect = (asset: TimelineAsset) => void 0,
-    onEscape = () => {},
+    onSelect,
+    onEscape,
     children,
     empty,
     header,
