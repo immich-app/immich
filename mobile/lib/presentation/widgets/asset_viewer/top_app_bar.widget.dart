@@ -13,6 +13,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_act
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -26,6 +27,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     if (asset == null) {
       return const SizedBox.shrink();
     }
+
+    final album = ref.watch(currentRemoteAlbumProvider);
 
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
@@ -49,6 +52,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final actions = <Widget>[
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
+      if (album != null && album.isActivityEnabled && album.isShared)
+        IconButton(
+          icon: const Icon(Icons.chat_outlined),
+          onPressed: () {
+            context.navigateTo(const DriftActivitiesRoute());
+          },
+        ),
       if (showViewInTimelineButton)
         IconButton(
           onPressed: () async {

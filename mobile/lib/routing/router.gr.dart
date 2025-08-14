@@ -668,6 +668,22 @@ class CropImageRouteArgs {
 }
 
 /// generated route for
+/// [DriftActivitiesPage]
+class DriftActivitiesRoute extends PageRouteInfo<void> {
+  const DriftActivitiesRoute({List<PageRouteInfo>? children})
+    : super(DriftActivitiesRoute.name, initialChildren: children);
+
+  static const String name = 'DriftActivitiesRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftActivitiesPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftAlbumOptionsPage]
 class DriftAlbumOptionsRoute extends PageRouteInfo<void> {
   const DriftAlbumOptionsRoute({List<PageRouteInfo>? children})
