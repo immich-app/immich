@@ -5,9 +5,11 @@
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
   } from '$lib/components/photos-page/actions/focus-actions';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import ChangeDate, {
+    type AbsoluteResult,
+    type RelativeResult,
+  } from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute } from '$lib/constants';
-  import { modalManager } from '@immich/ui';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -20,6 +22,7 @@
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
+  import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
 
@@ -200,7 +203,7 @@
     title="Navigate to Time"
     initialDate={DateTime.now()}
     timezoneInput={false}
-    onConfirm={async (dateString: string) => {
+    onConfirm={async (dateString: AbsoluteResult | RelativeResult) => {
       isShowSelectDate = false;
       const asset = await timelineManager.getClosestAssetToDate(
         (DateTime.fromISO(dateString) as DateTime<true>).toObject(),
