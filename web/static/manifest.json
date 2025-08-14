@@ -1,6 +1,6 @@
 {
   "background_color": "#ffffff",
-  "description": "Self-hosted photo and video backup solution directly from your mobile phone.",
+  "description": "",
   "display": "standalone",
   "icons": [
     {
@@ -29,7 +29,7 @@
     }
   ],
   "lang": "en",
-  "name": "Immich",
-  "short_name": "Immich",
+  "name": "MAC",
+  "short_name": "MAC",
   "start_url": "/"
 }

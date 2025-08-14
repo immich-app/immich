@@ -105,18 +105,5 @@
       variant="ghost"
       color="secondary">{$t('sign_out')}</Button
     >
-
-    <button
-      type="button"
-      class="text-center mt-4 underline text-xs text-immich-primary dark:text-immich-dark-primary"
-      onclick={async () => {
-        onClose();
-        if (info) {
-          await modalManager.show(HelpAndFeedbackModal, { info });
-        }
-      }}
-    >
-      {$t('support_and_feedback')}
-    </button>
   </div>
 </div>

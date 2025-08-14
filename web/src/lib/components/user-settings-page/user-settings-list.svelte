@@ -151,14 +151,4 @@
   >
     <ChangePinCodeSettings />
   </SettingAccordion>
-
-  <SettingAccordion
-    icon={mdiKeyOutline}
-    key="user-purchase-settings"
-    title={$t('user_purchase_settings')}
-    subtitle={$t('user_purchase_settings_description')}
-    autoScrollTo={true}
-  >
-    <UserPurchaseSettings />
-  </SettingAccordion>
 </SettingAccordionState>
