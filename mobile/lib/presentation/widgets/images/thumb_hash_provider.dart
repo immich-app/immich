@@ -22,7 +22,7 @@ class ThumbHashProvider extends ImageProvider<ThumbHashProvider> with Cancellabl
   }
 
   Stream<ImageInfo> _loadCodec(ThumbHashProvider key, ImageDecoderCallback decode) async* {
-    final request = this.request = ThumbhashImageRequest(thumbhash: thumbHash);
+    final request = this.request = ThumbhashImageRequest(thumbhash: key.thumbHash);
     try {
       final image = await request.load(decode);
       if (image != null) {
