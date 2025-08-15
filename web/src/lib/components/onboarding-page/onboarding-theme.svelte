@@ -24,7 +24,7 @@
     </button>
     <button
       type="button"
-      class="dark w-1/2 aspect-square bg-light rounded-3xl dark:border-[3px] dark:border-immich-dark-primary border border-transparent"
+      class="w-1/2 aspect-square bg-dark dark:bg-light rounded-3xl transition-all shadow-sm hover:shadow-xl dark:border-[3px] dark:border-immich-dark-primary border border-transparent"
       onclick={() => themeManager.setTheme(Theme.DARK)}
     >
       <div
