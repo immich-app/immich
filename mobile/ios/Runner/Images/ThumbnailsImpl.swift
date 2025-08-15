@@ -57,7 +57,7 @@ class ThumbnailApiImpl: ThumbnailApi {
     }
   }
   
-  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
+  func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
     let request = Request(callback: completion)
     let item = DispatchWorkItem {
       if request.isCancelled {
@@ -88,7 +88,7 @@ class ThumbnailApiImpl: ThumbnailApi {
       Self.imageManager.requestImage(
         for: asset,
         targetSize: CGSize(width: Double(width), height: Double(height)),
-        contentMode: .aspectFit,
+        contentMode: .aspectFill,
         options: Self.requestOptions,
         resultHandler: { (_image, info) -> Void in
           image = _image
