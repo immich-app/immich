@@ -86,6 +86,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
   Size? _imageSize;
   Object? _lastException;
   StackTrace? _lastStack;
+  bool _didLoadSynchronously = false;
 
   @override
   void dispose() {
@@ -130,9 +131,11 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _loadingProgress = null;
         _lastException = null;
         _lastStack = null;
+
+        _didLoadSynchronously = synchronousCall;
       }
 
-      synchronousCall ? setupCB() : setState(setupCB);
+      synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
     }
 
     void handleError(dynamic error, StackTrace? stackTrace) {

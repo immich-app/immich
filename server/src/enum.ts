@@ -235,6 +235,8 @@ export enum Permission {
   AdminUserRead = 'adminUser.read',
   AdminUserUpdate = 'adminUser.update',
   AdminUserDelete = 'adminUser.delete',
+
+  AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
 
 export enum SharedLinkType {

@@ -36,7 +36,7 @@ class _ScopedMapTimeline extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: const Timeline(appBar: null, bottomSheet: null),
+      child: const Timeline(appBar: null, bottomSheet: null, withScrubber: false),
     );
   }
 }

@@ -96,9 +96,10 @@ export class StorageService extends BaseService {
     await this.databaseRepository.withLock(DatabaseLock.MediaLocation, async () => {
       const current = StorageCore.getMediaLocation();
       const samples = await this.assetRepository.getFileSamples();
+      const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
       if (samples.length > 0) {
         const path = samples[0].path;
-        const savedValue = await this.systemMetadataRepository.get(SystemMetadataKey.MediaLocation);
+
         let previous = savedValue?.location || '';
 
         if (!previous && this.configRepository.getEnv().storage.mediaLocation) {
@@ -125,7 +126,10 @@ export class StorageService extends BaseService {
         }
       }
 
-      await this.systemMetadataRepository.set(SystemMetadataKey.MediaLocation, { location: current });
+      // Only set MediaLocation in systemMetadataRepository if needed
+      if (savedValue?.location !== current) {
+        await this.systemMetadataRepository.set(SystemMetadataKey.MediaLocation, { location: current });
+      }
     });
   }
 

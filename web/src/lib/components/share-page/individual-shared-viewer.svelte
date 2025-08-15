@@ -14,7 +14,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
-  import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -135,7 +135,7 @@
               variant="ghost"
               aria-label={$t('download')}
               onclick={downloadAssets}
-              icon={mdiFolderDownloadOutline}
+              icon={mdiDownload}
             />
           {/if}
         {/snippet}
