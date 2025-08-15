@@ -47,6 +47,8 @@ program
   .addOption(new Option('-i, --ignore <pattern>', 'Pattern to ignore').env('IMMICH_IGNORE_PATHS'))
   .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
   .addOption(new Option('-H, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
+  .addOption(new Option('-R, --replace-assets', 'Replace with upload').env('IMMICH_REPLACE_ASSETS').default(false))
+  .addOption(new Option('-P, --replace-path <prefixes>', 'Replace local path prefix').env('IMMICH_REPLACE_PATH'))
   .addOption(
     new Option('-a, --album', 'Automatically create albums based on folder name')
       .env('IMMICH_AUTO_CREATE_ALBUM')
