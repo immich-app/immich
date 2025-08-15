@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202507291116@sha256:e38543bdd77a02ed156cd9175ed11e9c16dccf48c418d46ecda48ce684de456a AS dev
+FROM ghcr.io/immich-app/base-server-dev:commit-e54882f68fed72fa84c0bb3c422e374a7c082703 AS dev
 
 WORKDIR /usr/src/app
 COPY ./server/package* ./server/
@@ -94,7 +94,7 @@ WORKDIR /usr/src/app/web
 RUN npm ci && npm run build
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:202507291116@sha256:6e80f884c6e4f05cefe4b4fc4cc06a15bdb6ec9bd7b6e9eadf996a13b69494b6
+FROM ghcr.io/immich-app/base-server-prod:commit-e54882f68fed72fa84c0bb3c422e374a7c082703
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
