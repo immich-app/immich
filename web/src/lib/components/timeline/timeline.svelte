@@ -4,6 +4,7 @@
   import BaseTimeline from '$lib/components/timeline/base-components/base-timeline.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/internal-components/timeline-asset-viewer.svelte';
   import type { AssetAction } from '$lib/constants';
+  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -14,6 +15,7 @@
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   interface Props {
+    customThumbnailLayout?: Snippet<[TimelineAsset]>;
     isSelectionMode?: boolean;
     singleSelect?: boolean;
     /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
@@ -34,6 +36,7 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
+    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
@@ -41,6 +44,7 @@
   }
 
   let {
+    customThumbnailLayout,
     isSelectionMode = false,
     singleSelect = false,
     enableRouting,
@@ -53,6 +57,7 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
+    onAssetOpen,
     onSelect = () => {},
     onEscape = () => {},
     children,
@@ -65,6 +70,7 @@
 
 <BaseTimeline
   bind:this={viewer}
+  {customThumbnailLayout}
   {isSelectionMode}
   {singleSelect}
   {enableRouting}
@@ -74,6 +80,7 @@
   {showArchiveIcon}
   {isShowDeleteConfirmation}
   {showSkeleton}
+  {onAssetOpen}
   {onSelect}
   {children}
   {empty}

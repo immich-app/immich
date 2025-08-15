@@ -26,8 +26,8 @@
     showSkeleton?: boolean;
 
     isShowDeleteConfirmation?: boolean;
+    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onSelect?: (asset: TimelineAsset) => void;
-    onEscape?: () => void;
 
     children?: Snippet;
     empty?: Snippet;
@@ -51,16 +51,16 @@
     empty,
   }: Props = $props();
 
-  let leadout = $state(false);
+  let leadOut = $state(false);
   let scrubberMonthPercent = $state(0);
   let scrubberMonth: { year: number; month: number } | undefined = $state(undefined);
   let scrubOverallPercent: number = $state(0);
   let scrubberWidth: number = $state(0);
 
-  // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
+  // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   // this function updates the scrubber position based on the current scroll position in the timeline
   const handleTimelineScroll = () => {
-    leadout = false;
+    leadOut = false;
 
     if (timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
@@ -119,7 +119,7 @@
         top = next;
       }
       if (!found) {
-        leadout = true;
+        leadOut = true;
         scrubberMonth = undefined;
         scrubberMonthPercent = 0;
         scrubOverallPercent = 1;
@@ -127,7 +127,7 @@
     }
   };
 
-  // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
+  // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   // this function scrolls the timeline to the specified month group and offset, based on scrubber interaction
   const onScrub: ScrubberListener = ({
     scrubberMonth,
@@ -167,7 +167,8 @@
   export const scrollToAsset = (asset: TimelineAsset) => baseTimelineViewer?.scrollToAsset(asset) ?? false;
 </script>
 
-<TimelineViewer
+<BaseTimelineViewer
+  {customThumbnailLayout}
   {isSelectionMode}
   {singleSelect}
   {enableRouting}
@@ -177,6 +178,7 @@
   {showArchiveIcon}
   {showSkeleton}
   {isShowDeleteConfirmation}
+  styleMarginRightOverride={scrubberWidth + 'px'}
   {onAssetOpen}
   {onSelect}
   {children}
@@ -190,7 +192,7 @@
         height={timelineManager.viewportHeight}
         timelineTopOffset={timelineManager.topSectionHeight}
         timelineBottomOffset={timelineManager.bottomSectionHeight}
-        {leadout}
+        {leadOut}
         {scrubOverallPercent}
         {scrubberMonthPercent}
         {scrubberMonth}

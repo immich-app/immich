@@ -18,7 +18,7 @@
     scrubOverallPercent?: number;
     scrubberMonthPercent?: number;
     scrubberMonth?: { year: number; month: number };
-    leadout?: boolean;
+    leadOut?: boolean;
     scrubberWidth?: number;
     onScrub?: ScrubberListener;
     onScrubKeyDown?: (event: KeyboardEvent, element: HTMLElement) => void;
@@ -34,7 +34,7 @@
     scrubOverallPercent = 0,
     scrubberMonthPercent = 0,
     scrubberMonth = undefined,
-    leadout = false,
+    leadOut = false,
     onScrub = undefined,
     onScrubKeyDown = undefined,
     startScrub = undefined,
@@ -100,7 +100,7 @@
         offset += scrubberMonthPercent * relativeBottomOffset;
       }
       return offset;
-    } else if (leadout) {
+    } else if (leadOut) {
       let offset = relativeTopOffset;
       for (const segment of segments) {
         offset += segment.height;

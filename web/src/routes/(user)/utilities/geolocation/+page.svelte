@@ -2,7 +2,7 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import AssetGrid from '$lib/components/timeline/base-components/base-timeline.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
@@ -175,7 +175,7 @@
     </div>
   {/if}
 
-  <AssetGrid
+  <Timeline
     isSelectionMode={true}
     enableRouting={true}
     {timelineManager}
@@ -199,5 +199,5 @@
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} />
     {/snippet}
-  </AssetGrid>
+  </Timeline>
 </UserPageLayout>
