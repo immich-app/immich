@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -39,6 +40,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       return;
     }
 
+    await ref.read(backgroundSyncProvider).syncRemote();
     await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
     await ref.read(driftBackupProvider.notifier).startBackup(currentUser.id);
   }

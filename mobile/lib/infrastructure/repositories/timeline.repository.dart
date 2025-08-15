@@ -258,7 +258,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   );
 
   TimelineQuery favorite(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-    filter: (row) => row.deletedAt.isNull() & row.isFavorite.equals(true) & row.ownerId.equals(userId),
+    filter: (row) =>
+        row.deletedAt.isNull() &
+        row.isFavorite.equals(true) &
+        row.ownerId.equals(userId) &
+        row.visibility.equalsValue(AssetVisibility.timeline),
     groupBy: groupBy,
   );
 
