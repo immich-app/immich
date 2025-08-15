@@ -12,7 +12,6 @@ typedef ScrollThumbBuilder =
       double height, {
       Text? labelText,
       BoxConstraints? labelConstraints,
-      bool? isFineScrollMode,
     });
 
 /// Build a Text widget using the current scroll offset
@@ -122,17 +121,13 @@ class DraggableScrollbar extends StatefulWidget {
       double height, {
       Text? labelText,
       BoxConstraints? labelConstraints,
-      bool? isFineScrollMode,
     }) {
-      Color thumbColor = isFineScrollMode == true ? Colors.orange : backgroundColor;
-      double thumbElevation = isFineScrollMode == true ? 8.0 : 4.0;
-
       final scrollThumb = CustomPaint(
         key: scrollThumbKey,
         foregroundPainter: ArrowCustomPainter(Colors.white),
         child: Material(
-          elevation: thumbElevation,
-          color: thumbColor,
+          elevation: 4.0,
+          color: backgroundColor,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(height),
             bottomLeft: Radius.circular(height),
@@ -199,10 +194,6 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
   late bool _isDragInProcess;
   late int _currentItem;
 
-  late double _dragStartX;
-  late double _currentDragX;
-  late bool _isFineScrollMode;
-
   late AnimationController _thumbAnimationController;
   late Animation<double> _thumbAnimation;
   late AnimationController _labelAnimationController;
@@ -215,10 +206,6 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
     _barOffset = 0.0;
     _isDragInProcess = false;
     _currentItem = 0;
-
-    _dragStartX = 0.0;
-    _currentDragX = 0.0;
-    _isFineScrollMode = false;
 
     _thumbAnimationController = AnimationController(vsync: this, duration: widget.scrollbarAnimationDuration);
 
@@ -264,9 +251,9 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
               RepaintBoundary(child: widget.child),
               RepaintBoundary(
                 child: GestureDetector(
-                  onPanStart: _onPanStart,
-                  onPanUpdate: _onPanUpdate,
-                  onPanEnd: _onPanEnd,
+                  onVerticalDragStart: _onVerticalDragStart,
+                  onVerticalDragUpdate: _onVerticalDragUpdate,
+                  onVerticalDragEnd: _onVerticalDragEnd,
                   child: Container(
                     alignment: Alignment.topRight,
                     margin: EdgeInsets.only(top: _barOffset),
@@ -278,7 +265,6 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
                       widget.heightScrollThumb,
                       labelText: labelText,
                       labelConstraints: widget.labelConstraints,
-                      isFineScrollMode: _isFineScrollMode,
                     ),
                   ),
                 ),
@@ -333,15 +319,11 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
     });
   }
 
-  void _onPanStart(DragStartDetails details) {
+  void _onVerticalDragStart(DragStartDetails details) {
     setState(() {
       _isDragInProcess = true;
       _labelAnimationController.forward();
       _fadeoutTimer?.cancel();
-
-      _dragStartX = details.globalPosition.dx;
-      _currentDragX = _dragStartX;
-      _isFineScrollMode = false;
     });
 
     widget.scrollStateListener(true);
@@ -373,28 +355,13 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
   Timer? dragHaltTimer;
   int lastTimerPosition = 0;
 
-  void _onPanUpdate(DragUpdateDetails details) {
+  void _onVerticalDragUpdate(DragUpdateDetails details) {
     setState(() {
       if (_thumbAnimationController.status != AnimationStatus.forward) {
         _thumbAnimationController.forward();
       }
       if (_isDragInProcess) {
-        _currentDragX += details.delta.dx;
-
-        double horizontalDragDistance = _dragStartX - _currentDragX;
-        double screenWidth = MediaQuery.of(context).size.width;
-        _isFineScrollMode = horizontalDragDistance > screenWidth * 0.33;
-
-        double scrollSensitivity = 1.0;
-        if (_isFineScrollMode) {
-          double triggerDistance = screenWidth * 0.33;
-          double effectiveDragDistance = horizontalDragDistance - triggerDistance;
-          double maxEffectiveDrag = screenWidth * 0.67;
-          scrollSensitivity = 1.0 - (effectiveDragDistance / maxEffectiveDrag).clamp(0.0, 0.99);
-        }
-
-        double adjustedDeltaY = details.delta.dy * scrollSensitivity;
-        _barOffset += adjustedDeltaY;
+        _barOffset += details.delta.dy;
 
         if (_barOffset < barMinScrollExtent) {
           _barOffset = barMinScrollExtent;
@@ -418,7 +385,7 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
     });
   }
 
-  void _onPanEnd(DragEndDetails details) {
+  void _onVerticalDragEnd(DragEndDetails details) {
     _fadeoutTimer = Timer(widget.scrollbarTimeToFade, () {
       _thumbAnimationController.reverse();
       _labelAnimationController.reverse();
@@ -428,7 +395,6 @@ class DraggableScrollbarState extends State<DraggableScrollbar> with TickerProvi
     setState(() {
       _jumpToBarPosition();
       _isDragInProcess = false;
-      _isFineScrollMode = false;
     });
 
     widget.scrollStateListener(false);
