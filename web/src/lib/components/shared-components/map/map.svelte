@@ -57,6 +57,7 @@
     rounded?: boolean;
     showSimpleControls?: boolean;
     autoFitBounds?: boolean;
+    fullscreenContainer?: HTMLElement | string;
   }
 
   let {
@@ -75,6 +76,7 @@
     rounded = false,
     showSimpleControls = true,
     autoFitBounds = true,
+    fullscreenContainer = undefined,
   }: Props = $props();
 
   // Calculate initial bounds from markers once during initialization
@@ -121,7 +123,7 @@
     }
 
     const mapSource = map?.getSource('geojson') as GeoJSONSource;
-    const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
+    const leaves = await mapSource.getClusterLeaves(clusterId, Infinity, 0);
     const ids = leaves.map((leaf) => leaf.properties?.id);
     onSelect(ids);
   }
@@ -310,7 +312,7 @@
 
       {#if !simplified}
         <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
+        <FullscreenControl position="top-left" container={fullscreenContainer} />
         <ScaleControl />
         <AttributionControl compact={false} />
       {/if}
