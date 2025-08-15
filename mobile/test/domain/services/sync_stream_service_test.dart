@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/sync_stream.stub.dart';
 import '../../infrastructure/repository.mock.dart';
+import '../service.mock.dart';
 
 class _AbortCallbackWrapper {
   const _AbortCallbackWrapper();
@@ -30,6 +32,7 @@ void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
   late SyncApiRepository mockSyncApiRepo;
+  late TrashSyncService mockTrashService;
   late Function(List<SyncEvent>, Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
 
@@ -39,7 +42,7 @@ void main() {
     mockSyncStreamRepo = MockSyncStreamRepository();
     mockSyncApiRepo = MockSyncApiRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
-
+    mockTrashService = MockTrashSyncService();
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
     when(() => mockSyncApiRepo.streamChanges(any())).thenAnswer((invocation) async {
@@ -81,7 +84,11 @@ void main() {
     when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
 
-    sut = SyncStreamService(syncApiRepository: mockSyncApiRepo, syncStreamRepository: mockSyncStreamRepo);
+    sut = SyncStreamService(
+      syncApiRepository: mockSyncApiRepo,
+      syncStreamRepository: mockSyncStreamRepo,
+      trashSyncService: mockTrashService,
+    );
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
@@ -146,6 +153,7 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
+        trashSyncService: mockTrashService,
         cancelChecker: cancellationChecker.call,
       );
       await sut.sync();
@@ -181,6 +189,7 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
+        trashSyncService: mockTrashService,
         cancelChecker: cancellationChecker.call,
       );
 
