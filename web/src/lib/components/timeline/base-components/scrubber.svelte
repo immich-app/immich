@@ -18,7 +18,7 @@
     scrubOverallPercent?: number;
     scrubberMonthPercent?: number;
     scrubberMonth?: { year: number; month: number };
-    leadout?: boolean;
+    leadOut?: boolean;
     scrubberWidth?: number;
     onScrub?: ScrubberListener;
     onScrubKeyDown?: (event: KeyboardEvent, element: HTMLElement) => void;
@@ -34,7 +34,7 @@
     scrubOverallPercent = 0,
     scrubberMonthPercent = 0,
     scrubberMonth = undefined,
-    leadout = false,
+    leadOut = false,
     onScrub = undefined,
     onScrubKeyDown = undefined,
     startScrub = undefined,
@@ -100,7 +100,7 @@
         offset += scrubberMonthPercent * relativeBottomOffset;
       }
       return offset;
-    } else if (leadout) {
+    } else if (leadOut) {
       let offset = relativeTopOffset;
       for (const segment of segments) {
         offset += segment.height;
@@ -295,12 +295,24 @@
 
     const scrollPercent = toTimelineY(hoverY);
     if (wasDragging === false && isDragging) {
-      void startScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
-      void onScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
+      void startScrub?.({
+        scrubberMonth: segmentDate!,
+        overallScrollPercent: scrollPercent,
+        scrubberMonthScrollPercent: monthGroupPercentY,
+      });
+      void onScrub?.({
+        scrubberMonth: segmentDate!,
+        overallScrollPercent: scrollPercent,
+        scrubberMonthScrollPercent: monthGroupPercentY,
+      });
     }
 
     if (wasDragging && !isDragging) {
-      void stopScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
+      void stopScrub?.({
+        scrubberMonth: segmentDate!,
+        overallScrollPercent: scrollPercent,
+        scrubberMonthScrollPercent: monthGroupPercentY,
+      });
       return;
     }
 
@@ -308,7 +320,11 @@
       return;
     }
 
-    void onScrub?.(segmentDate!, scrollPercent, monthGroupPercentY);
+    void onScrub?.({
+      scrubberMonth: segmentDate!,
+      overallScrollPercent: scrollPercent,
+      scrubberMonthScrollPercent: monthGroupPercentY,
+    });
   };
   /* eslint-disable tscompat/tscompat */
   const getTouch = (event: TouchEvent) => {
@@ -412,7 +428,11 @@
       }
       if (next) {
         event.preventDefault();
-        void onScrub?.({ year: next.year, month: next.month }, -1, 0);
+        void onScrub?.({
+          scrubberMonth: { year: next.year, month: next.month },
+          overallScrollPercent: -1,
+          scrubberMonthScrollPercent: 0,
+        });
         return true;
       }
     }
@@ -422,7 +442,11 @@
         const next = segments[idx + 1];
         if (next) {
           event.preventDefault();
-          void onScrub?.({ year: next.year, month: next.month }, -1, 0);
+          void onScrub?.({
+            scrubberMonth: { year: next.year, month: next.month },
+            overallScrollPercent: -1,
+            scrubberMonthScrollPercent: 0,
+          });
           return true;
         }
       }
