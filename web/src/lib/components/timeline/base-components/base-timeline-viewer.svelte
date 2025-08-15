@@ -27,6 +27,7 @@
     showArchiveIcon?: boolean;
     showSkeleton?: boolean;
     isShowDeleteConfirmation?: boolean;
+    styleMarginRightOverride?: string;
     onSelect?: (asset: TimelineAsset) => void;
     header?: Snippet<[handleScrollTop: (top: number) => void]>;
     children?: Snippet;
@@ -43,8 +44,9 @@
     withStacked = false,
     showSkeleton = $bindable(true),
     showArchiveIcon = false,
+    styleMarginRightOverride,
     isShowDeleteConfirmation = $bindable(false),
-    onSelect = (_asset: TimelineAsset) => void 0,
+    onSelect = (_: TimelineAsset) => void 0,
     children,
     empty,
     header,
@@ -55,10 +57,8 @@
 
   let element: HTMLElement | undefined = $state();
   let timelineElement: HTMLElement | undefined = $state();
-  let scrubberWidth = $state(0);
 
   const maxMd = $derived(mobileDevice.maxMd);
-  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
 
   $effect(() => {
@@ -205,7 +205,7 @@
   };
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
-  // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
+  // note: don't throttle, debounce, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
 
   const scrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
@@ -241,7 +241,7 @@
 <section
   id="asset-grid"
   class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
-  style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
+  style:margin-right={styleMarginRightOverride}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}

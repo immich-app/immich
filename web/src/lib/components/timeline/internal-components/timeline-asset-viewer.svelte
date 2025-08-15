@@ -7,7 +7,7 @@
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAssetInfo, type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
 
   let { asset: viewingAsset, gridScrollTarget, mutex, preloadAssets } = assetViewingStore;
 
@@ -25,31 +25,19 @@
       | AssetAction.FAVORITE
       | AssetAction.UNFAVORITE
       | AssetAction.SET_VISIBILITY_TIMELINE;
-    handlePreAction?: (action: Action) => Promise<void>;
-    handleAction?: (action: Action) => void;
-    handleNext?: () => Promise<boolean>;
-    handlePrevious?: () => Promise<boolean>;
-    handleRandom?: () => Promise<AssetResponseDto | undefined>;
-    handleClose?: (asset: { id: string }) => Promise<void>;
   }
 
   let {
-    timelineManager = $bindable(),
+    timelineManager,
     showSkeleton = $bindable(false),
     removeAction,
     withStacked = false,
     isShared = false,
     album = null,
     person = null,
-    handlePreAction = $bindable(),
-    handleAction = $bindable(),
-    handleNext = $bindable(),
-    handlePrevious = $bindable(),
-    handleRandom = $bindable(),
-    handleClose = $bindable(),
   }: Props = $props();
 
-  handlePrevious = async () => {
+  const handlePrevious = async () => {
     const release = await mutex.acquire();
     const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
 
@@ -64,7 +52,7 @@
     return !!laterAsset;
   };
 
-  handleNext = async () => {
+  const handleNext = async () => {
     const release = await mutex.acquire();
     const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
 
@@ -79,7 +67,7 @@
     return !!earlierAsset;
   };
 
-  handleRandom = async () => {
+  const handleRandom = async () => {
     const randomAsset = await timelineManager.getRandomAsset();
 
     if (randomAsset) {
@@ -90,14 +78,14 @@
     }
   };
 
-  handleClose = async (asset: { id: string }) => {
+  const handleClose = async (asset: { id: string }) => {
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
     $gridScrollTarget = { at: asset.id };
     await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
   };
 
-  handlePreAction = async (action: Action) => {
+  const handlePreAction = async (action: Action) => {
     switch (action.type) {
       case removeAction:
       case AssetAction.TRASH:
@@ -116,7 +104,7 @@
       }
     }
   };
-  handleAction = (action: Action) => {
+  const handleAction = (action: Action) => {
     switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:

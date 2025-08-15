@@ -245,7 +245,6 @@
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
 <TimelineDay
-  {isSelectionMode}
   {singleSelect}
   {withStacked}
   {showArchiveIcon}
