@@ -11014,6 +11014,9 @@
       },
       "CreateLibraryDto": {
         "properties": {
+          "excludeFromTranscodeJob": {
+            "type": "boolean"
+          },
           "exclusionPatterns": {
             "items": {
               "type": "string"
@@ -11581,6 +11584,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "excludeFromTranscodeJob": {
+            "default": false,
+            "type": "boolean"
+          },
           "exclusionPatterns": {
             "items": {
               "type": "string"
@@ -11615,6 +11622,7 @@
         "required": [
           "assetCount",
           "createdAt",
+          "excludeFromTranscodeJob",
           "exclusionPatterns",
           "id",
           "importPaths",
@@ -16750,6 +16758,9 @@
       },
       "UpdateLibraryDto": {
         "properties": {
+          "excludeFromTranscodeJob": {
+            "type": "boolean"
+          },
           "exclusionPatterns": {
             "items": {
               "type": "string"

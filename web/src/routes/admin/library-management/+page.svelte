@@ -217,6 +217,31 @@
     editScanSettings = index;
   };
 
+  const onChangeTranscoding = async (index: number, exclude: boolean) => {
+    closeAll();
+    const library = libraries[index];
+    if (!library) {
+      return;
+    }
+
+    try {
+
+      await updateLibrary({
+        id: library.id,
+        updateLibraryDto: { excludeFromTranscodeJob: exclude },
+      });
+
+      notificationController.show({
+        message: $t('admin.transcoding_setting_updated', { values: { library: library.name } }),
+        type: NotificationType.Info,
+      });
+      
+      await readLibraryList();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_transcoding_setting'));
+    }
+  };
+
   const handleDelete = async (library: LibraryResponseDto, index: number) => {
     closeAll();
 
@@ -280,19 +305,20 @@
           <thead
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
           >
-            <tr class="grid grid-cols-6 w-full place-items-center">
+            <tr class="grid grid-cols-7 w-full place-items-center">
               <th class="text-center text-sm font-medium">{$t('name')}</th>
               <th class="text-center text-sm font-medium">{$t('owner')}</th>
               <th class="text-center text-sm font-medium">{$t('photos')}</th>
               <th class="text-center text-sm font-medium">{$t('videos')}</th>
               <th class="text-center text-sm font-medium">{$t('size')}</th>
+              <th class="text-center text-sm font-medium">Transcode?</th>
               <th class="text-center text-sm font-medium"></th>
             </tr>
           </thead>
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
             {#each libraries as library, index (library.id)}
               <tr
-                class="grid grid-cols-6 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+                class="grid grid-cols-7 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
               >
                 <td class="text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class="text-ellipsis px-4 text-sm">
@@ -322,7 +348,13 @@
                     {diskUsageUnit[index]}
                   {/if}
                 </td>
-
+                <td class="text-ellipsis px-4 text-sm">
+                  {#if library.excludeFromTranscodeJob}
+                    <Text>{$t('no')}</Text>
+                  {:else}
+                    <Text>{$t('yes')}</Text>
+                  {/if}
+                </td>
                 <td class="text-ellipsis px-4 text-sm">
                   <ButtonContextMenu
                     align="top-right"
@@ -338,7 +370,12 @@
                     <MenuOption onClick={() => onRenameClicked(index)} text={$t('rename')} />
                     <MenuOption onClick={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
                     <MenuOption onClick={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
-                    <hr />
+                    {#if library.excludeFromTranscodeJob}
+                      <MenuOption onClick={() => onChangeTranscoding(index, false)} text='enable_transcode' />
+                    {:else}
+                      <MenuOption onClick={() => onChangeTranscoding(index, true)} text='disable_transcoding' />
+                    {/if}
+                    <hr />  
                     <MenuOption
                       onClick={() => handleDelete(library, index)}
                       activeColor="bg-red-200"

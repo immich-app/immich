@@ -220,6 +220,7 @@ export class LibraryService extends BaseService {
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*', '**/#recycle/**', '**/#snapshot/**'],
+      excludeFromTranscodeJob: dto.excludeFromTranscodeJob ?? false,
     });
     return mapLibrary(library);
   }
