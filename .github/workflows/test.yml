@@ -462,6 +462,8 @@ jobs:
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
       - name: Generate translation file
         run: make translation
         working-directory: ./mobile
