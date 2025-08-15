@@ -59,6 +59,8 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
       ref.read(websocketProvider.notifier).stopListenToOldEvents();
       ref.read(websocketProvider.notifier).startListeningToBetaEvents();
 
+      await ref.read(driftProvider).reset();
+      await Store.put(StoreKey.shouldResetSync, true);
       final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
 
       if (permission.isGranted) {
