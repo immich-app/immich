@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: get_body
     container:
-      image: yshavit/mdq:0.7.2
+      image: yshavit/mdq:0.8.0@sha256:c69224d34224a0043d9a3ee46679ba4a2a25afaac445f293d92afe13cd47fcea
     outputs:
       json: ${{ steps.get_checkbox.outputs.json }}
     steps:
