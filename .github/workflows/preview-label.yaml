@@ -20,7 +20,7 @@ jobs:
 
   remove-label:
     runs-on: ubuntu-latest
-    if: ${{ github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview') }}
+    if: ${{ (github.event.action == 'closed' || github.event.pull_request.head.repo.fork) && contains(github.event.pull_request.labels.*.name, 'preview') }}
     permissions:
       pull-requests: write
     steps:
@@ -33,3 +33,15 @@ jobs:
               repo: context.repo.repo,
               name: 'preview'
             })
+
+      - uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2
+        if: ${{ github.event.pull_request.head.repo.fork }}
+        with:
+          message-id: 'preview-status'
+          message: 'PRs from forks cannot have preview environments.'
+
+      - uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        with:
+          message-id: 'preview-status'
+          message: 'Preview environment has been removed.'

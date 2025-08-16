@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/remote_album_bot
 import 'package:immich_mobile/presentation/widgets/remote_album/drift_album_option.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -164,6 +165,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
   }
 
+  Future<void> showActivity(BuildContext context) async {
+    context.pushRoute(const DriftActivitiesRoute());
+  }
+
   void showOptionSheet(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
@@ -215,22 +220,35 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      overrides: [
-        timelineServiceProvider.overrideWith((ref) {
-          final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
-          ref.onDispose(timelineService.dispose);
-          return timelineService;
-        }),
-      ],
-      child: Timeline(
-        appBar: RemoteAlbumSliverAppBar(
-          icon: Icons.photo_album_outlined,
-          onShowOptions: () => showOptionSheet(context),
-          onToggleAlbumOrder: () => toggleAlbumOrder(),
-          onEditTitle: () => showEditTitleAndDescription(context),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          Future.microtask(() {
+            if (mounted) {
+              ref.read(currentRemoteAlbumProvider.notifier).dispose();
+              ref.read(remoteAlbumProvider.notifier).refresh();
+            }
+          });
+        }
+      },
+      child: ProviderScope(
+        overrides: [
+          timelineServiceProvider.overrideWith((ref) {
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
+            ref.onDispose(timelineService.dispose);
+            return timelineService;
+          }),
+        ],
+        child: Timeline(
+          appBar: RemoteAlbumSliverAppBar(
+            icon: Icons.photo_album_outlined,
+            onShowOptions: () => showOptionSheet(context),
+            onToggleAlbumOrder: () => toggleAlbumOrder(),
+            onEditTitle: () => showEditTitleAndDescription(context),
+            onActivity: () => showActivity(context),
+          ),
+          bottomSheet: RemoteAlbumBottomSheet(album: _album),
         ),
-        bottomSheet: RemoteAlbumBottomSheet(album: _album),
       ),
     );
   }
