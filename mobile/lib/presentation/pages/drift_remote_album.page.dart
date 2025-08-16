@@ -165,6 +165,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
   }
 
+  Future<void> showActivity(BuildContext context) async {
+    context.pushRoute(const DriftActivitiesRoute());
+  }
+
   void showOptionSheet(BuildContext context) {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
@@ -241,6 +245,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             onShowOptions: () => showOptionSheet(context),
             onToggleAlbumOrder: () => toggleAlbumOrder(),
             onEditTitle: () => showEditTitleAndDescription(context),
+            onActivity: () => showActivity(context),
           ),
           bottomSheet: RemoteAlbumBottomSheet(album: _album),
         ),

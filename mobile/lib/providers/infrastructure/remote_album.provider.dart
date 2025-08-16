@@ -5,7 +5,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/utils/remote_album.utils.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -71,8 +70,8 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     state = state.copyWith(filteredAlbums: state.albums);
   }
 
-  void sortFilteredAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) {
-    final sortedAlbums = _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
+  Future<void> sortFilteredAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) async {
+    final sortedAlbums = await _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
   }
 
