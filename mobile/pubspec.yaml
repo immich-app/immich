@@ -142,7 +142,7 @@ flutter:
       fonts:
         - asset: fonts/overpass/OverpassMono.ttf
 flutter_launcher_icons:
-  image_path_android: 'assets/immich-logo.png'
+  image_path_android: 'assets/pixelunion-logo.png'
   adaptive_icon_background: '#ffffff'
   adaptive_icon_foreground: 'assets/immich-logo-android-adaptive-icon.png'
   image_path_ios: 'assets/immich-logo-w-bg.png'
