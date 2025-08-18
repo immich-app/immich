@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <stdlib.h>
 
 JNIEXPORT jlong JNICALL
 Java_app_alextran_immich_images_ThumbnailsImpl_00024Companion_allocateNative(
