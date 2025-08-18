@@ -193,7 +193,6 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.AssetEncodeVideoQueueAll, data: { force } });
       }
       case QueueName.AutoStackCandidateQueueAll: {
-        // Start by queueing a global generation pass (queue-all) and backfill
         await this.jobRepository.queue({ name: JobName.AutoStackCandidateQueueAll, data: { force } });
         return;
       }

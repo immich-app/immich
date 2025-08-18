@@ -195,7 +195,6 @@ describe(AutoStackService.name, () => {
           cameraMatch: false,
           maxCandidates: 100,
           autoPromoteMinScore: 0,
-          mlOffloadEnabled: true,
           weights: { size: 50, timeSpan: 10, continuity: 10, visual: 15, exposure: 10 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
@@ -242,7 +241,6 @@ describe(AutoStackService.name, () => {
           cameraMatch: false,
           maxCandidates: 100,
           autoPromoteMinScore: 0,
-          mlOffloadEnabled: true,
           weights: { size: 50, timeSpan: 10, continuity: 10, visual: 15, exposure: 10 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
@@ -261,42 +259,6 @@ describe(AutoStackService.name, () => {
     await sut.generateTimeWindowCandidates('user1', t0, 5);
     expect(mocks.machineLearning.autoStackScore).toHaveBeenCalled();
     expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
-  });
-
-  it('raises dynamic threshold under hysteresis overload', async () => {
-    mocks.systemMetadata.get.mockResolvedValue({
-      server: {
-        autoStack: {
-          enabled: true,
-          windowSeconds: 5,
-          maxGapSeconds: 5,
-          minGroupSize: 2,
-          horizonMinutes: 10,
-          cameraMatch: false,
-          maxCandidates: 100,
-          autoPromoteMinScore: 10,
-          weights: { size: 50, timeSpan: 10, continuity: 10, visual: 15, exposure: 10 },
-          visualPromoteThreshold: 0.9,
-          outlierPruneEnabled: false,
-          hysteresisEnabled: true,
-          hysteresisCandidateWindowMinutes: 30,
-          hysteresisMaxCandidates: 1,
-          hysteresisRaiseScoreBy: 50,
-        },
-      },
-    });
-    mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
-      { id: 'h1', originalFileName: 'IMG_7001.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:00Z') },
-      { id: 'h2', originalFileName: 'IMG_7002.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:01Z') },
-    ] as any);
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    // Simulate recent overload by making repository countCreatedSince return 5 (> maxCandidates =1)
-    (mocks.autoStackCandidate.countCreatedSince as any).mockResolvedValue(5);
-    await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
-    // Candidate created but NOT auto-promoted (autoPromoteMinScore effectively raised above raw score)
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
-    expect(mocks.stack.create).not.toHaveBeenCalled();
-    expect(mocks.telemetry.jobs.addToCounter).toHaveBeenCalledWith('immich.auto_stack.hysteresis_threshold_raised', 1);
   });
 
   it('splits long low-cohesion group via session segmentation', async () => {

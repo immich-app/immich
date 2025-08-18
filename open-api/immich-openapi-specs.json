@@ -15753,7 +15753,7 @@
         "properties": {
           "autoPromoteMinScore": {
             "description": "Auto-promote when overall heuristic score >= this value (0 disables auto-promotion)",
-            "maximum": 100,
+            "maximum": 9007199254740991,
             "minimum": 0,
             "type": "number"
           },
@@ -15781,37 +15781,9 @@
             "description": "Enable automatic stack candidate generation",
             "type": "boolean"
           },
-          "extendedWindowSeconds": {
-            "description": "Optional secondary extended window (seconds) used for visual expansion/merging searches",
-            "maximum": 7200,
-            "minimum": 0,
-            "type": "number"
-          },
           "horizonMinutes": {
             "description": "Backfill look-back horizon in minutes for scheduled generation",
             "maximum": 1440,
-            "minimum": 1,
-            "type": "number"
-          },
-          "hysteresisCandidateWindowMinutes": {
-            "description": "Sliding window size (minutes) for hysteresis candidate counting",
-            "maximum": 1440,
-            "minimum": 1,
-            "type": "number"
-          },
-          "hysteresisEnabled": {
-            "description": "Enable hysteresis dynamic thresholding",
-            "type": "boolean"
-          },
-          "hysteresisMaxCandidates": {
-            "description": "Max candidates in window before raising threshold",
-            "maximum": 10000,
-            "minimum": 1,
-            "type": "number"
-          },
-          "hysteresisRaiseScoreBy": {
-            "description": "Base raise amount for autoPromoteMinScore when hysteresis triggers",
-            "maximum": 100,
             "minimum": 1,
             "type": "number"
           },
@@ -15842,10 +15814,6 @@
             "maximum": 50,
             "minimum": 2,
             "type": "number"
-          },
-          "mlOffloadEnabled": {
-            "description": "Offload heavy scoring to ML service if available",
-            "type": "boolean"
           },
           "outlierPruneEnabled": {
             "description": "Enable outlier pruning that removes assets lowering visual cohesion",
@@ -15881,12 +15849,6 @@
             "minimum": 0,
             "type": "number"
           },
-          "relaxedGapMultiplier": {
-            "description": "Multiplier applied to maxGapSeconds during secondary grouping/merging",
-            "maximum": 10,
-            "minimum": 1,
-            "type": "number"
-          },
           "secondaryVisualMaxAdds": {
             "description": "Maximum number of visually expanded assets to add per group",
             "maximum": 100,
@@ -15914,7 +15876,7 @@
           "sessionMinSegmentSize": {
             "description": "Minimum segment size when splitting a session",
             "maximum": 50,
-            "minimum": 2,
+            "minimum": 1,
             "type": "number"
           },
           "visualBridgeThreshold": {

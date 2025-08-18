@@ -2,7 +2,6 @@ import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from '@nest
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AutoStackCandidateResponseDto } from 'src/dtos/auto-stack.dto';
-import { StackCreateDto } from 'src/dtos/stack.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AutoStackService } from 'src/services/auto-stack.service';

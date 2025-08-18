@@ -296,7 +296,7 @@ export class MetadataService extends BaseService {
           try {
             computed = await this.machineLearningRepository.computePhash(machineLearning.urls, asset.originalPath);
           } catch (mlErr: any) {
-            this.logger.verbose(`Remote pHash unavailable for ${asset.id}: ${mlErr?.message || mlErr}`);
+            this.logger.log(`Remote pHash unavailable for ${asset.id}: ${mlErr?.message || mlErr}`);
           }
         }
         if (!computed) {

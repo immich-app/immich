@@ -24,48 +24,19 @@ export class AutoStackService extends BaseService {
   /*
    * NOTE: This file was becoming very long and hard to follow. The core
    * generateTimeWindowCandidates method contained many tightly coupled blocks:
-   *   1. Hysteresis / dynamic threshold adjustment
-   *   2. Window sampling + embedding preload
-   *   3. Initial temporal / filename continuity grouping
-   *   4. Session segmentation
-   *   5. Merge + visual bridge phase
-   *   6. Overlap/intersection merge
-   *   7. Secondary visual expansion (outside-window augment)
-   *   8. Outlier pruning
-   *   9. Primary asset heuristic reordering
-   *  10. Scoring + candidate creation + auto-promotion
+   *   1. Window sampling + embedding preload
+   *   2. Initial temporal / filename continuity grouping
+   *   3. Session segmentation
+   *   4. Merge + visual bridge phase
+   *   5. Overlap/intersection merge
+   *   6. Secondary visual expansion (outside-window augment)
+   *   7. Outlier pruning
+   *   8. Primary asset heuristic reordering
+   *   9. Scoring + candidate creation + auto-promotion
    *
    * For readability the logic is now decomposed into small private helpers
    * with clear names and doc comments. Behavioral intent is unchanged.
    */
-
-  /** Hysteresis dynamic threshold raising; returns possibly raised autoPromoteMinScore. */
-  private async applyHysteresis(
-    ownerId: string,
-    baseScore: number,
-    hysteresis: { enabled: boolean; candidateWindowMinutes?: number; maxCandidates?: number; raiseScoreBy?: number },
-  ): Promise<number> {
-    if (!hysteresis?.enabled) return baseScore;
-    let dynamic = baseScore;
-    try {
-      const winMinutes = hysteresis.candidateWindowMinutes ?? 30;
-      const maxPerWindow = hysteresis.maxCandidates ?? 100;
-      const raiseBase = hysteresis.raiseScoreBy ?? 10;
-      const now = new Date();
-      const since = new Date(now.getTime() - winMinutes * 60_000);
-      const recent = await this.autoStackCandidateRepository.countCreatedSince(ownerId, since);
-      if (recent > maxPerWindow) {
-        const factor = Math.min(3, recent / maxPerWindow); // cap 3x raise
-        const raise = Math.round(raiseBase * factor);
-        dynamic += raise;
-        this.inc('immich.auto_stack.hysteresis_threshold_raised', 1);
-        this.inc('immich.auto_stack.hysteresis_recent_overload', recent - maxPerWindow);
-      }
-    } catch (e) {
-      this.logger.verbose(`AutoStack: hysteresis computation failed: ${e}`);
-    }
-    return dynamic;
-  }
 
   /** Build initial continuity-based groups (temporal OR sequential filename). */
   private buildInitialGroups(
@@ -579,21 +550,10 @@ export class AutoStackService extends BaseService {
       overlapMergeEnabled,
       bestPrimaryHeuristic,
       secondaryVisualMaxAdds = 5,
-      mlOffloadEnabled,
-      hysteresisEnabled,
-      hysteresisCandidateWindowMinutes,
-      hysteresisMaxCandidates,
-      hysteresisRaiseScoreBy,
       sessionMaxSpanSeconds,
       sessionMinAvgAdjacency,
       sessionMinSegmentSize,
     } = server.autoStack;
-    const dynamicAutoPromoteMinScore = await this.applyHysteresis(ownerId, autoPromoteMinScore, {
-      enabled: !!hysteresisEnabled,
-      candidateWindowMinutes: hysteresisCandidateWindowMinutes,
-      maxCandidates: hysteresisMaxCandidates,
-      raiseScoreBy: hysteresisRaiseScoreBy,
-    });
 
     // Time window sample
     const effectiveWindow = overrideWindowSeconds || windowSeconds;
@@ -678,66 +638,9 @@ export class AutoStackService extends BaseService {
     }
 
     let created = 0;
-    // Batch ML scoring (default behavior when enabled)
-    let batchScores: Record<string, { avgCos: number | null; pHashAvg: number | null; blended: number | null }> | null =
-      null;
-    if (mlOffloadEnabled && groups.length) {
-      try {
-        const { machineLearning } = await this.getConfig({ withCache: true });
-        const batchPayload = groups.map((g, idx) => {
-          const subset = workingSample.filter((s: any) => g.includes(s.id));
-          const emb: Record<string, number[]> = {};
-          for (const s of subset) {
-            if (embeddingMap[s.id]) emb[s.id] = embeddingMap[s.id];
-          }
-          const pHashes: Record<string, string> = {};
-          for (const s of subset) {
-            if (s.pHash && /^[0-9a-fA-F]{16}$/.test(s.pHash)) pHashes[s.id] = s.pHash.toLowerCase();
-          }
-          return { id: String(idx), embeddings: emb, pHashes };
-        });
-        batchScores = await this.machineLearningRepository.autoStackScoreBatch(machineLearning.urls, batchPayload);
-      } catch (e) {
-        this.logger.debug(`AutoStack: batch ML scoring failed; will fallback per-group (${e})`);
-      }
-    }
     const scoreGroup = async (assetIds: string[], groupIndex: number) => {
       const subset = workingSample.filter((s: any) => assetIds.includes(s.id));
-      let result: { avgCos: number | null; pHashAvg: number | null; blended: number | null } | null = null;
-      if (batchScores && batchScores[String(groupIndex)]) {
-        result = batchScores[String(groupIndex)];
-      } else if (mlOffloadEnabled) {
-        try {
-          const emb: Record<string, number[]> = {};
-          for (const s of subset) {
-            if (embeddingMap[s.id]) emb[s.id] = embeddingMap[s.id];
-          }
-          const pHashes: Record<string, string> = {};
-          for (const s of subset) {
-            if (s.pHash && /^[0-9a-fA-F]{16}$/.test(s.pHash)) pHashes[s.id] = s.pHash.toLowerCase();
-          }
-          const { machineLearning } = await this.getConfig({ withCache: true });
-          result = await this.machineLearningRepository.autoStackScore(machineLearning.urls, emb, pHashes);
-        } catch (e) {
-          this.logger.debug(`AutoStack: per-group ML scoring failed (${e})`);
-        }
-      }
       const local = computeAutoStackScore({ assets: subset, embeddingMap, weights, maxGapSeconds, windowSeconds });
-      if (result && result.blended != null) {
-        const visualWeight = weights?.visual ?? 15;
-        local.components.visual = Math.round(result.blended * visualWeight);
-        if (result.avgCos != null) local.avgCos = result.avgCos;
-        local.total = Math.min(
-          100,
-          Math.round(
-            local.components.size +
-              local.components.timeSpan +
-              local.components.continuity +
-              local.components.visual +
-              local.components.exposure,
-          ),
-        );
-      }
       return local;
     };
 
@@ -762,18 +665,6 @@ export class AutoStackService extends BaseService {
       this.logger.debug(
         `AutoStack: creating candidate size=${g.length} score=${score} components=${JSON.stringify(components)} owner=${ownerId}`,
       );
-      // Prevent duplicates: if any asset in this group is already part of an active candidate, skip creation
-      try {
-        const existing = await this.autoStackCandidateRepository.listActiveIdsByAssetIds(ownerId, g);
-        if (existing.length) {
-          this.logger.debug(
-            `AutoStack: skipping candidate (overlaps existing active candidate(s)=${existing.length}) owner=${ownerId}`,
-          );
-          continue;
-        }
-      } catch (e) {
-        this.logger.debug(`AutoStack: de-dup check failed (continuing): ${e}`);
-      }
       const id = await this.autoStackCandidateRepository.create(ownerId, g, score, components, avgCos);
       if (id && (avgCos === undefined || avgCos === null)) {
         const missing = g.filter((aid) => !embeddingMap[aid]);
@@ -789,13 +680,16 @@ export class AutoStackService extends BaseService {
         prunedTotal += pruned;
         const promoteByVisual =
           visualPromoteThreshold && components.visual / (weights?.visual ?? 15) >= visualPromoteThreshold;
-        if ((dynamicAutoPromoteMinScore > 0 && score >= dynamicAutoPromoteMinScore) || promoteByVisual) {
+        if ((autoPromoteMinScore > 0 && score >= autoPromoteMinScore) || promoteByVisual) {
           let stack;
           try {
             stack = await this.stackRepository.create({ ownerId }, g);
             await Promise.all(
               g.map((id: string) => this.assetRepository.upsertExif({ assetId: id, autoStackSource: 'VISUAL' as any })),
             );
+            // this.logger.log(
+            //   `AutoStack: auto-promoted candidate to stack id=${stack.id} owner=${ownerId} size=${g.length} score=${score}${JSON.stringify(components)} visual=${components.visual}`,
+            // );
           } catch (e: any) {
             const msg = e?.message || String(e);
             if (msg.includes('duplicate key') && msg.includes('stack_primaryAssetId_uq')) {
@@ -809,7 +703,7 @@ export class AutoStackService extends BaseService {
           await this.autoStackCandidateRepository.promote(id, ownerId, stack.id);
           await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: ownerId });
           this.inc('immich.auto_stack.candidates_auto_promoted', 1);
-          continue; // skip incrementing created (auto-promoted)
+          continue;
         }
         created++;
       }
@@ -925,9 +819,6 @@ export class AutoStackService extends BaseService {
     };
   }
 
-  // Queue-all job to generate candidates for recent assets per user (prototype scope: last 5 minutes window centered at now)
-  // Placeholder: no queue-all job yet; will add dedicated JobName in later phase.
-
   @OnJob({ name: JobName.AutoStackEnqueueMissingEmbeddings, queue: QueueName.AutoStackCandidateQueueAll })
   async handleEnqueueMissingEmbeddings(job: JobOf<JobName.AutoStackEnqueueMissingEmbeddings>): Promise<JobStatus> {
     const { server, machineLearning } = await this.getConfig({ withCache: true });
@@ -1028,7 +919,7 @@ export class AutoStackService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStackCandidateQueueAll })
+  @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStackCandidateQueueAll, })
   async handleResetAll(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;

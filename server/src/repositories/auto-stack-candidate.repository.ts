@@ -147,7 +147,6 @@ export class AutoStackCandidateRepository {
       .select(['score'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('dismissedAt', 'is', null)
-      .where('promotedStackId', 'is', null)
       .execute();
     return rows.map((r: any) => r.score as number);
   }

@@ -8,10 +8,8 @@ AutoStack groups photos shot close together into "stack candidates" using tempor
 
 Key behaviors
 - Temporal grouping around a new asset within `windowSeconds`, ensuring adjacent assets inside a group are within `maxGapSeconds`.
-- Optional visual expansion within `extendedWindowSeconds` with a relaxed gap (`relaxedGapMultiplier`).
 - Optional merge of adjacent groups when the temporal gap is small (`maxMergeGapSeconds`) and the visual bridge is strong (`visualBridgeThreshold`).
 - Outlier pruning can remove assets that reduce average visual cohesion when improvement exceeds `outlierPruneMinDelta`.
-- Hysteresis can raise `autoPromoteMinScore` during bursts of candidate activity.
 
 Scoring (overview)
 The overall candidate score is a 0-100 value blended from:
@@ -21,12 +19,9 @@ The overall candidate score is a 0-100 value blended from:
 - visual: average pairwise cosine similarity of embeddings (normalized to 0..1)
 - exposure: consistency of exposure settings
 
-The ML server uses the same math for visual components and can optionally be used (guarded by `mlOffloadEnabled`). Normalized cosine similarity is computed as (avgCos + 1) / 2 to map from [-1..1] to [0..1]. pHash similarity is derived from the Hamming distance of the 16-hex pHash strings and can be blended in where available.
-
 Important settings (server.autoStack)
 - enabled: master switch for candidate generation
 - windowSeconds / maxGapSeconds: primary temporal grouping control
-- extendedWindowSeconds / relaxedGapMultiplier: secondary grouping/merge search
 - minGroupSize: minimum assets in a candidate
 - horizonMinutes: backfill look-back window for scheduled generation
 - cameraMatch: require same camera make+model when present
@@ -40,9 +35,7 @@ Important settings (server.autoStack)
 - Aging: candidateAgingDays, candidateAgingScoreThreshold
 - Visual expansion: secondaryVisualWindowSeconds, visualGroupSimilarityThreshold, pHashHammingThreshold, secondaryVisualMaxAdds
 - Overlap & primary: overlapMergeEnabled, bestPrimaryHeuristic
-- ML: mlOffloadEnabled
 - Session segmentation: sessionMaxSpanSeconds, sessionMinAvgAdjacency, sessionMinSegmentSize
-- Hysteresis: hysteresisEnabled, hysteresisCandidateWindowMinutes, hysteresisMaxCandidates, hysteresisRaiseScoreBy
 
 API endpoints (authenticated)
 - GET /api/auto-stack/candidates — List active candidates ordered by score and recency.

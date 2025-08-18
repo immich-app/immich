@@ -84,31 +84,6 @@ class SystemConfigAutoStackDto {
   })
   maxGapSeconds!: number;
 
-  @IsInt()
-  @Min(0)
-  @Max(7200)
-  @Optional()
-  @Type(() => Number)
-  @ApiProperty({
-    required: false,
-    description: 'Optional secondary extended window (seconds) used for visual expansion/merging searches',
-    minimum: 0,
-    maximum: 7200,
-  })
-  extendedWindowSeconds?: number;
-
-  @IsNumber()
-  @Min(1)
-  @Max(10)
-  @Optional()
-  @Type(() => Number)
-  @ApiProperty({
-    required: false,
-    description: 'Multiplier applied to maxGapSeconds during secondary grouping/merging',
-    minimum: 1,
-    maximum: 10,
-  })
-  relaxedGapMultiplier?: number;
 
   @IsInt()
   @Min(2)
@@ -147,7 +122,7 @@ class SystemConfigAutoStackDto {
   @ApiProperty({
     description: 'Auto-promote when overall heuristic score >= this value (0 disables auto-promotion)',
     minimum: 0,
-    maximum: 100,
+    maximum: Number.MAX_SAFE_INTEGER,
   })
   autoPromoteMinScore!: number;
   @IsObject()
@@ -318,12 +293,6 @@ class SystemConfigAutoStackDto {
   })
   secondaryVisualMaxAdds?: number;
 
-  // Optional ML offload
-  @ValidateBoolean()
-  @Optional()
-  @ApiProperty({ required: false, description: 'Offload heavy scoring to ML service if available' })
-  mlOffloadEnabled?: boolean;
-
   // Session segmentation (split long temporal spans with low cohesion)
   @IsInt()
   @Min(5)
@@ -348,55 +317,17 @@ class SystemConfigAutoStackDto {
   })
   sessionMinAvgAdjacency?: number;
   @IsInt()
-  @Min(2)
+  @Min(1)
   @Max(50)
   @Optional()
   @ApiProperty({
     required: false,
     description: 'Minimum segment size when splitting a session',
-    minimum: 2,
+    minimum: 1,
     maximum: 50,
   })
   sessionMinSegmentSize?: number;
 
-  // Hysteresis (sliding window) config
-  @ValidateBoolean()
-  @Optional()
-  @ApiProperty({ required: false, description: 'Enable hysteresis dynamic thresholding' })
-  hysteresisEnabled?: boolean;
-  @IsInt()
-  @Min(1)
-  @Max(1440)
-  @Optional()
-  @ApiProperty({
-    required: false,
-    description: 'Sliding window size (minutes) for hysteresis candidate counting',
-    minimum: 1,
-    maximum: 1440,
-  })
-  hysteresisCandidateWindowMinutes?: number;
-  @IsInt()
-  @Min(1)
-  @Max(10000)
-  @Optional()
-  @ApiProperty({
-    required: false,
-    description: 'Max candidates in window before raising threshold',
-    minimum: 1,
-    maximum: 10000,
-  })
-  hysteresisMaxCandidates?: number;
-  @IsInt()
-  @Min(1)
-  @Max(100)
-  @Optional()
-  @ApiProperty({
-    required: false,
-    description: 'Base raise amount for autoPromoteMinScore when hysteresis triggers',
-    minimum: 1,
-    maximum: 100,
-  })
-  hysteresisRaiseScoreBy?: number;
 }
 
 export class DatabaseBackupConfig {
