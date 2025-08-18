@@ -2,6 +2,7 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
+  import Hmr from '$lib/components/timeline/base-components/hmr.svelte';
   import Skeleton from '$lib/components/timeline/base-components/skeleton.svelte';
   import SelectableTimelineDay from '$lib/components/timeline/internal-components/selectable-timeline-day.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
@@ -10,9 +11,7 @@
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { navigate } from '$lib/utils/navigation';
   import { onMount, type Snippet } from 'svelte';
-  import type { UpdatePayload } from 'vite';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -163,47 +162,6 @@
     complete.then(completeNav, completeNav);
   });
 
-  const hmrSupport = () => {
-    // when hmr happens, skeleton is initialized to true by default
-    // normally, loading asset-grid is part of a navigation event, and the completion of
-    // that event triggers a scroll-to-asset, if necessary, when then clears the skeleton.
-    // this handler will run the navigation/scroll-to-asset handler when hmr is performed,
-    // preventing skeleton from showing after hmr
-    if (import.meta && import.meta.hot) {
-      const afterApdate = (payload: UpdatePayload) => {
-        const assetGridUpdate = payload.updates.some(
-          (update) => update.path.endsWith('asset-grid.svelte') || update.path.endsWith('assets-store.ts'),
-        );
-
-        if (assetGridUpdate) {
-          setTimeout(() => {
-            const asset = $page.url.searchParams.get('at');
-            if (asset) {
-              $gridScrollTarget = { at: asset };
-              void navigate(
-                { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
-                { replaceState: true, forceNavigate: true },
-              );
-            } else {
-              scrollToTop();
-            }
-            showSkeleton = false;
-          }, 500);
-        }
-      };
-      import.meta.hot?.on('vite:afterUpdate', afterApdate);
-      import.meta.hot?.on('vite:beforeUpdate', (payload) => {
-        const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('asset-grid.svelte'));
-        if (assetGridUpdate) {
-          timelineManager.destroy();
-        }
-      });
-
-      return () => import.meta.hot?.off('vite:afterUpdate', afterApdate);
-    }
-    return () => void 0;
-  };
-
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounce, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
@@ -228,12 +186,18 @@
     if (!enableRouting) {
       showSkeleton = false;
     }
-    const disposeHmr = hmrSupport();
-    return () => {
-      disposeHmr();
-    };
   });
 </script>
+
+<Hmr
+  onHmr={() => {
+    const asset = $page.url.searchParams.get('at');
+    if (asset) {
+      $gridScrollTarget = { at: asset };
+    }
+    void completeNav();
+  }}
+/>
 
 {@render header?.(scrollTop)}
 
