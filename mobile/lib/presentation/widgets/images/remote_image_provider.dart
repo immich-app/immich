@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';

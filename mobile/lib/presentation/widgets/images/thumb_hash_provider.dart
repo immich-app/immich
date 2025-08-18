@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
-import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 

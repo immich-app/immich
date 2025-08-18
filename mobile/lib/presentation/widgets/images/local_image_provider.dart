@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';

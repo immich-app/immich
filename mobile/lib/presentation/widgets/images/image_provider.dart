@@ -2,10 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
+import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
-import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 
 abstract class CancellableImageProvider {
   void cancel();
