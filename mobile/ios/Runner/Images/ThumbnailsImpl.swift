@@ -169,7 +169,7 @@ class ThumbnailApiImpl: ThumbnailApi {
       request.isCancelled = true
       guard let item = request.workItem else { return }
       if item.isCancelled {
-        request.callback(Self.cancelledResult)
+        cancelQueue.async { request.callback(Self.cancelledResult) }
       }
     }
   }
