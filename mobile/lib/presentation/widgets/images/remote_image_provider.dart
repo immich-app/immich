@@ -78,21 +78,22 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> wit
 
   @override
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
-    final completer = OneFramePlaceholderImageStreamCompleter(
+    return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getCachedImage(RemoteThumbProvider(assetId: assetId)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
+      onDispose: cancel,
     );
-    // TODO: these callbacks gets called a bit too late in the timeline, need to investigate
-    //  Probably related to the viewport's cacheExtent
-    completer.addOnLastListenerRemovedCallback(cancel);
-    return completer;
   }
 
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
+    if (isCancelled) {
+      return;
+    }
+
     try {
       final request = this.request = RemoteImageRequest(
         uri: getPreviewUrlForRemoteId(key.assetId),
@@ -106,6 +107,11 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> wit
       yield image;
     } finally {
       request = null;
+    }
+
+    if (isCancelled) {
+      evict();
+      return;
     }
 
     if (AppSetting.get(Setting.loadOriginal)) {

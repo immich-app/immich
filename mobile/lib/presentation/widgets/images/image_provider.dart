@@ -12,10 +12,12 @@ abstract class CancellableImageProvider {
 }
 
 mixin class CancellableImageProviderMixin implements CancellableImageProvider {
+  bool isCancelled = false;
   ImageRequest? request;
 
   @override
   void cancel() {
+    isCancelled = true;
     final request = this.request;
     if (request == null) {
       return;
