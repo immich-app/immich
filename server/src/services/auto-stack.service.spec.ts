@@ -124,24 +124,6 @@ describe(AutoStackService.name, () => {
     );
   });
 
-  it('enqueues embedding and rescore jobs when embeddings missing', async () => {
-    mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
-      { id: 'e1', originalFileName: 'IMG_4001.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:00Z') },
-      { id: 'e2', originalFileName: 'IMG_4002.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:01Z') },
-    ] as any);
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    mocks.asset.getClipEmbeddings.mockResolvedValue({}); // no embeddings present
-    await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
-    // Candidate created
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalled();
-    // Embedding jobs queued per asset and a rescore job queued
-    const queuedJobs = mocks.job.queueAll.mock.calls.flatMap((c: any) => c[0]);
-    expect(queuedJobs.filter((j: any) => j.name === 'SmartSearch').length).toBeGreaterThanOrEqual(2);
-    expect(mocks.job.queue).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'AutoStackCandidateRescore', data: expect.any(Object) }),
-    );
-  });
-
   it('iteratively prunes multiple outliers when enabled', async () => {
     mocks.systemMetadata.get.mockResolvedValue({
       server: {

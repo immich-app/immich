@@ -13,7 +13,6 @@ import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
-import { AutoStackCandidateRepository } from 'src/repositories/auto-stack-candidate.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -59,7 +58,6 @@ export const BASE_SERVICE_DEPENDENCIES = [
   LoggingRepository,
   AccessRepository,
   ActivityRepository,
-  AutoStackCandidateRepository,
   AlbumRepository,
   AlbumUserRepository,
   ApiKeyRepository,
@@ -114,7 +112,6 @@ export class BaseService {
     protected activityRepository: ActivityRepository,
     protected albumRepository: AlbumRepository,
     protected albumUserRepository: AlbumUserRepository,
-    protected autoStackCandidateRepository: AutoStackCandidateRepository,
     protected apiKeyRepository: ApiKeyRepository,
     protected assetRepository: AssetRepository,
     protected assetJobRepository: AssetJobRepository,

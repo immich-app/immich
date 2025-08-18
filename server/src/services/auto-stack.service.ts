@@ -665,47 +665,31 @@ export class AutoStackService extends BaseService {
       this.logger.debug(
         `AutoStack: creating candidate size=${g.length} score=${score} components=${JSON.stringify(components)} owner=${ownerId}`,
       );
-      const id = await this.autoStackCandidateRepository.create(ownerId, g, score, components, avgCos);
-      if (id && (avgCos === undefined || avgCos === null)) {
-        const missing = g.filter((aid) => !embeddingMap[aid]);
-        if (missing.length) {
-          await this.jobRepository.queueAll(
-            missing.map((aid) => ({ name: JobName.SmartSearch as const, data: { id: aid } })),
+      const promoteByVisual =
+        visualPromoteThreshold && components.visual / (weights?.visual ?? 15) >= visualPromoteThreshold;
+      if ((autoPromoteMinScore > 0 && score >= autoPromoteMinScore) || promoteByVisual) {
+        let stack;
+        try {
+          stack = await this.stackRepository.create({ ownerId }, g);
+          await Promise.all(
+            g.map((id: string) => this.assetRepository.upsertExif({ assetId: id, autoStackSource: 'VISUAL' as any })),
           );
-          await this.jobRepository.queue({ name: JobName.AutoStackCandidateRescore, data: { id } });
-        }
-      }
-      if (id) {
-        const pruned = await this.autoStackCandidateRepository.prune(ownerId, maxCandidates);
-        prunedTotal += pruned;
-        const promoteByVisual =
-          visualPromoteThreshold && components.visual / (weights?.visual ?? 15) >= visualPromoteThreshold;
-        if ((autoPromoteMinScore > 0 && score >= autoPromoteMinScore) || promoteByVisual) {
-          let stack;
-          try {
-            stack = await this.stackRepository.create({ ownerId }, g);
-            await Promise.all(
-              g.map((id: string) => this.assetRepository.upsertExif({ assetId: id, autoStackSource: 'VISUAL' as any })),
+          // this.logger.log(
+          //   `AutoStack: auto-promoted candidate to stack id=${stack.id} owner=${ownerId} size=${g.length} score=${score}${JSON.stringify(components)} visual=${components.visual}`,
+          // );
+        } catch (e: any) {
+          const msg = e?.message || String(e);
+          if (msg.includes('duplicate key') && msg.includes('stack_primaryAssetId_uq')) {
+            this.logger.debug(
+              `AutoStack: auto-promote race detected; stack already exists for primary=${g[0]} owner=${ownerId}`,
             );
-            // this.logger.log(
-            //   `AutoStack: auto-promoted candidate to stack id=${stack.id} owner=${ownerId} size=${g.length} score=${score}${JSON.stringify(components)} visual=${components.visual}`,
-            // );
-          } catch (e: any) {
-            const msg = e?.message || String(e);
-            if (msg.includes('duplicate key') && msg.includes('stack_primaryAssetId_uq')) {
-              this.logger.debug(
-                `AutoStack: auto-promote race detected; stack already exists for primary=${g[0]} owner=${ownerId}`,
-              );
-              continue;
-            }
-            throw e;
+            continue;
           }
-          await this.autoStackCandidateRepository.promote(id, ownerId, stack.id);
-          await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: ownerId });
-          this.inc('immich.auto_stack.candidates_auto_promoted', 1);
-          continue;
+          throw e;
         }
-        created++;
+        await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: ownerId });
+        this.inc('immich.auto_stack.candidates_auto_promoted', 1);
+        continue;
       }
     }
     if (prunedTotal) {
@@ -740,10 +724,8 @@ export class AutoStackService extends BaseService {
     // If force is set, delete all existing candidates for this user
     if (job.force) {
       this.logger.verbose(`AutoStack: force mode enabled, deleting existing candidates for owner=${job.id}`);
-      await this.autoStackCandidateRepository.deleteAll(job.id);
       const existingStacks = await this.stackRepository.getByOwnerId(job.id);
       await this.stackRepository.deleteAll(existingStacks.map((s: any) => s.id));
-      this.inc('immich.auto_stack.candidates_deleted', 1);
     }
     const allAssets = await this.assetRepository.getByOwnerId(job.id);
     this.logger.debug(`AutoStack: found ${allAssets.length} assets for owner=${job.id}`);
@@ -776,102 +758,6 @@ export class AutoStackService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateBackfill, queue: QueueName.AutoStackCandidateQueueAll })
-  async handleBackfill(): Promise<JobStatus> {
-    const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
-    const { horizonMinutes } = server.autoStack;
-    const users = await this.userRepository.getList({ withDeleted: false });
-    const now = Date.now();
-    let total = 0;
-    for (const u of users) {
-      // sample reference points every window across the horizon
-      const windowMs = server.autoStack.windowSeconds * 1000;
-      for (let t = now - horizonMinutes * 60_000; t <= now; t += windowMs) {
-        total += await this.generateTimeWindowCandidates(u.id, new Date(t), server.autoStack.windowSeconds);
-      }
-    }
-    this.logger.log(`AutoStack: backfill processed users=${users.length} created=${total}`);
-    return JobStatus.Success;
-  }
-
-  async listCandidates(ownerId: string) {
-    return this.autoStackCandidateRepository.list(ownerId);
-  }
-
-  async getScoreDistribution(ownerId: string) {
-    const scores = await this.autoStackCandidateRepository.listScores(ownerId);
-    if (!scores.length) return { histogram: [], recommendedAutoPromote: null };
-    const bins = Array.from({ length: 11 }, () => 0); // 0-10,11-20,...,100
-    for (const s of scores) {
-      const idx = Math.min(10, Math.floor(s / 10));
-      bins[idx]++;
-    }
-    // Suggest threshold: smallest score where cumulative above is <= 5 candidates or top 10% whichever lower
-    const sorted = [...scores].sort((a, b) => b - a);
-    const topK = Math.ceil(sorted.length * 0.1);
-    const cap = Math.min(5, topK);
-    const slice = sorted.slice(0, cap);
-    const recommended = slice.length ? Math.min(95, Math.max(50, Math.floor(slice[slice.length - 1] / 5) * 5)) : null;
-    return {
-      histogram: bins.map((count, i) => ({ range: `${i * 10}-${i === 10 ? 100 : i * 10 + 9}`, count })),
-      recommendedAutoPromote: recommended,
-    };
-  }
-
-  @OnJob({ name: JobName.AutoStackEnqueueMissingEmbeddings, queue: QueueName.AutoStackCandidateQueueAll })
-  async handleEnqueueMissingEmbeddings(job: JobOf<JobName.AutoStackEnqueueMissingEmbeddings>): Promise<JobStatus> {
-    const { server, machineLearning } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
-    // For each asset in candidate, if no embedding, enqueue SmartSearch job
-    const assetIds = await this.autoStackCandidateRepository.getCandidateAssetIds(job.id);
-    if (!assetIds.length) return JobStatus.Skipped;
-    const embeddingMap = await this.assetRepository.getClipEmbeddings(assetIds);
-    const missing = assetIds.filter((id) => !embeddingMap[id]);
-    if (!missing.length) return JobStatus.Success;
-    await this.jobRepository.queueAll(missing.map((id) => ({ name: JobName.SmartSearch as const, data: { id } })));
-    // After embeddings are generated, a separate trigger should queue a rescore. For now we optimistically queue rescore.
-    await this.jobRepository.queue({ name: JobName.AutoStackCandidateRescore, data: { id: job.id } });
-    return JobStatus.Success;
-  }
-
-  @OnJob({ name: JobName.AutoStackCandidateRescore, queue: QueueName.AutoStackCandidateQueueAll })
-  async handleRescore(job: JobOf<JobName.AutoStackCandidateRescore>): Promise<JobStatus> {
-    const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
-    const candidateId = job.id;
-    const assetIds = await this.autoStackCandidateRepository.getCandidateAssetIds(candidateId);
-    if (assetIds.length < 2) return JobStatus.Skipped;
-    const workingSample = await this.assetRepository.getAssetsScoringInfo(assetIds);
-    const embeddingMap = await this.assetRepository.getClipEmbeddings(assetIds);
-    const {
-      maxGapSeconds,
-      windowSeconds,
-      weights,
-      autoPromoteMinScore: apMinScore,
-      visualPromoteThreshold: visPromote,
-    } = server.autoStack;
-    const { total, components, avgCos } = computeAutoStackScore({
-      assets: workingSample,
-      embeddingMap,
-      weights,
-      maxGapSeconds,
-      windowSeconds,
-    });
-    await this.autoStackCandidateRepository.updateScore(candidateId, total, components, avgCos);
-    this.inc('immich.auto_stack.candidates_rescored', 1);
-    // Auto promote if thresholds now satisfied
-    const { autoPromoteMinScore: apMinScore2, visualPromoteThreshold: visPromote2 } = server.autoStack;
-    const ownerId = await this.autoStackCandidateRepository.getCandidateOwner(candidateId);
-    const promoteByVisual = visPromote2 && components.visual / (weights?.visual ?? 15) >= visPromote2;
-    if (ownerId && ((apMinScore2 > 0 && total >= apMinScore2) || promoteByVisual)) {
-      const stack = await this.stackRepository.create({ ownerId }, assetIds);
-      await this.autoStackCandidateRepository.promote(candidateId, ownerId, stack.id);
-      await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: ownerId });
-      this.inc('immich.auto_stack.candidates_auto_promoted', 1);
-    }
-    return JobStatus.Success;
-  }
 
   @OnJob({ name: JobName.AutoStackPHashBackfill, queue: QueueName.AutoStackCandidateQueueAll })
   async handlePHashBackfill(): Promise<JobStatus> {
@@ -900,31 +786,11 @@ export class AutoStackService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateAging, queue: QueueName.AutoStackCandidateQueueAll })
-  async handleCandidateAging(): Promise<JobStatus> {
-    const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
-    const { candidateAgingDays, candidateAgingScoreThreshold } = server.autoStack as any;
-    if (!candidateAgingDays) return JobStatus.Skipped;
-    const cutoff = new Date(Date.now() - candidateAgingDays * 24 * 60 * 60 * 1000);
-    try {
-      const dismissed = await this.autoStackCandidateRepository.dismissOlderThan(cutoff, candidateAgingScoreThreshold);
-      if (dismissed > 0) {
-        this.inc('immich.auto_stack.candidates_dismissed', dismissed);
-      }
-      return JobStatus.Success;
-    } catch (e) {
-      this.logger.warn(`AutoStack: candidate aging failed: ${e}`);
-      return JobStatus.Failed;
-    }
-  }
-
   @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStackCandidateQueueAll, })
   async handleResetAll(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
     try {
-      await this.autoStackCandidateRepository.resetAll();
       await this.stackRepository.clearAll();
       this.logger.log('AutoStack: cleared all existing candidates and stacks');
       const users = await this.userRepository.getList({ withDeleted: false });
@@ -936,45 +802,6 @@ export class AutoStackService extends BaseService {
       this.logger.warn(`AutoStack: reset failed: ${e}`);
       return JobStatus.Failed;
     }
-  }
-
-  /** Controller-facing: promote a candidate to a stack (no behavior change vs controller). */
-  async promoteCandidate(auth: AuthDto, candidateId: string, primaryAssetId?: string) {
-    const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return { error: 'disabled' } as const;
-    const candidates = await this.listCandidates(auth.user.id);
-    const candidate: any = candidates.find((c: any) => c.id === candidateId);
-    if (!candidate) return { error: 'not-found' } as const;
-    const assetIds: string[] = candidate.assets.map((a: any) => a.assetId);
-    const primary = primaryAssetId && assetIds.includes(primaryAssetId) ? primaryAssetId : assetIds[0];
-    // Create stack directly via repository (mirrors existing service flows) and emit events
-    const stack = await this.stackRepository.create({ ownerId: auth.user.id }, assetIds);
-    if (primary !== stack.primaryAssetId) {
-      await this.stackRepository.update(stack.id, { id: stack.id, primaryAssetId: primary });
-      await this.eventRepository.emit('StackUpdate', { stackId: stack.id, userId: auth.user.id });
-    }
-    await this.autoStackCandidateRepository.promote(candidateId, auth.user.id, stack.id);
-    await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: auth.user.id });
-    this.inc('immich.auto_stack.candidates_promoted', 1);
-    return { stackId: stack.id, primaryAssetId: primary } as const;
-  }
-
-  /** Controller-facing: dismiss a candidate. */
-  async dismissCandidate(auth: AuthDto, candidateId: string) {
-    await this.autoStackCandidateRepository.dismiss(candidateId, auth.user.id);
-    this.inc('immich.auto_stack.candidates_dismissed', 1);
-    return { status: 'dismissed' } as const;
-  }
-
-  /** Controller-facing: rescore a candidate by queuing the job. */
-  async rescoreCandidate(auth: AuthDto, candidateId: string) {
-    const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return { error: 'disabled' } as const;
-    const candidates = await this.listCandidates(auth.user.id);
-    const exists = candidates.some((c: any) => c.id === candidateId);
-    if (!exists) return { error: 'not-found' } as const;
-    await this.jobRepository.queue({ name: JobName.AutoStackCandidateRescore, data: { id: candidateId } });
-    return { status: 'queued' } as const;
   }
 
   /** Controller-facing: queue global reset of candidates and stacks. */

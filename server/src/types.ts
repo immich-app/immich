@@ -344,9 +344,6 @@ export type JobItem =
   | { name: JobName.AutoStackCandidateQueueAll; data: IBaseJob }
   | { name: JobName.AutoStackCandidateGenerate; data: IEntityJob }
   | { name: JobName.AutoStackCandidateGenerateForAsset; data: IEntityJob }
-  | { name: JobName.AutoStackCandidateBackfill; data: IBaseJob }
-  | { name: JobName.AutoStackCandidateRescore; data: IEntityJob }
-  | { name: JobName.AutoStackEnqueueMissingEmbeddings; data: IEntityJob }
 
   // Asset Deletion
   | { name: JobName.PersonCleanup; data?: IBaseJob }
