@@ -29,7 +29,7 @@ abstract class ImageRequest {
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0});
 
   void cancel() {
-    if (isCancelled) {
+    if (_isCancelled) {
       return;
     }
     _isCancelled = true;

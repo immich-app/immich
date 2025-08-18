@@ -142,15 +142,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    final screenSize = Size(context.width, context.height);
-
-    // Precache both thumbnail and full image for smooth transitions
-    unawaited(
-      Future.wait([
-        precacheImage(getThumbnailImageProvider(asset: asset), context, onError: (_, __) {}),
-        precacheImage(getFullImageProvider(asset, size: screenSize), context, onError: (_, __) {}),
-      ]),
-    );
+    unawaited(precacheImage(getFullImageProvider(asset, size: context.sizeData), context, onError: (_, __) {}));
   }
 
   void _onAssetChanged(int index) async {
@@ -478,29 +470,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   Widget _placeholderBuilder(BuildContext ctx, ImageChunkEvent? progress, int index) {
-    final timelineService = ref.read(timelineServiceProvider);
-    final asset = timelineService.getAssetSafe(index);
-
-    // If asset is not available in buffer, show a loading container
-    if (asset == null) {
       return Container(
         width: double.infinity,
         height: double.infinity,
         color: backgroundColor,
         child: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    BaseAsset displayAsset = asset;
-    final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
-    if (stackChildren != null && stackChildren.isNotEmpty) {
-      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
-    }
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      color: backgroundColor,
-      child: Thumbnail(asset: displayAsset, fit: BoxFit.contain),
     );
   }
 

@@ -29,9 +29,7 @@ class LocalImageRequest extends ImageRequest {
     );
     if (!kReleaseMode) {
       stopwatch!.stop();
-      debugPrint(
-        'Local image request $requestId took ${stopwatch.elapsedMilliseconds}ms for $localId of size $width x $height',
-      );
+      debugPrint('Local request $requestId took ${stopwatch.elapsedMilliseconds}ms for $localId of $width x $height');
     }
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);

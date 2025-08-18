@@ -11,7 +11,7 @@ import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.d
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
-class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider>
+class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
     with CancellableImageProviderMixin<RemoteThumbProvider> {
   static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
@@ -25,24 +25,24 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider>
 
   @override
   ImageStreamCompleter loadImage(RemoteThumbProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(
+    final completer = OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
-      onDispose: cancel,
     );
+    completer.addOnLastListenerRemovedCallback(cancel);
+    return completer;
   }
 
-  Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) async* {
-    final preview = getThumbnailUrlForRemoteId(key.assetId);
+  Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) {
     final request = RemoteImageRequest(
-      uri: preview,
+      uri: getThumbnailUrlForRemoteId(key.assetId),
       headers: ApiService.getRequestHeaders(),
       cacheManager: cacheManager,
     );
-    yield* loadRequest(request, decode);
+    return loadRequest(request, decode);
   }
 
   @override
@@ -59,7 +59,7 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider>
   int get hashCode => assetId.hashCode;
 }
 
-class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider>
+class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
     with CancellableImageProviderMixin<RemoteFullImageProvider> {
   static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
@@ -75,7 +75,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider>
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(RemoteThumbProvider(assetId: key.assetId)),
+      // initialImage: getCachedImage(RemoteThumbProvider(assetId: key.assetId)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),

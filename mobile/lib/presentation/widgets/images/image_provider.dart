@@ -8,11 +8,11 @@ import 'package:immich_mobile/presentation/widgets/images/local_image_provider.d
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
-abstract class CancellableImageProvider<T extends Object> implements ImageProvider<T> {
+abstract class CancellableImageProvider<T extends Object> extends ImageProvider<T> {
   void cancel();
 }
 
-abstract mixin class CancellableImageProviderMixin<T extends Object> implements CancellableImageProvider<T> {
+mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvider<T> {
   bool isCancelled = false;
   ImageRequest? request;
   CancelableOperation<ImageInfo?>? cachedOperation;
@@ -31,10 +31,15 @@ abstract mixin class CancellableImageProviderMixin<T extends Object> implements 
       }
     }, onError: completer.completeError);
 
-    completer.operation.value.whenComplete(() => cachedStream.removeListener(listener));
     cachedStream.addListener(listener);
-    cachedOperation = cachedImage == null ? completer.operation : null;
-    return cachedImage;
+    if (cachedImage != null) {
+      cachedStream.removeListener(listener);
+      return cachedImage;
+    }
+
+    completer.operation.value.whenComplete(() => cachedStream.removeListener(listener));
+    cachedOperation = completer.operation;
+    return null;
   }
 
   Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {

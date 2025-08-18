@@ -9,7 +9,7 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
-class LocalThumbProvider extends ImageProvider<LocalThumbProvider>
+class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
     with CancellableImageProviderMixin<LocalThumbProvider> {
   final String id;
   final Size size;
@@ -24,14 +24,15 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider>
 
   @override
   ImageStreamCompleter loadImage(LocalThumbProvider key, ImageDecoderCallback decode) {
-    return OneFramePlaceholderImageStreamCompleter(
+    final completer = OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
-      onDispose: cancel,
     );
+    completer.addOnLastListenerRemovedCallback(cancel);
+    return completer;
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
@@ -51,7 +52,7 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider>
   int get hashCode => id.hashCode ^ size.hashCode;
 }
 
-class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider>
+class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
     with CancellableImageProviderMixin<LocalFullImageProvider> {
   final String id;
   final Size size;
@@ -68,7 +69,7 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider>
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+      // initialImage: getCachedImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),

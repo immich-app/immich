@@ -11,15 +11,7 @@ class ThumbhashImageRequest extends ImageRequest {
       return null;
     }
 
-    Stopwatch? stopwatch;
-    if (!kReleaseMode) {
-      stopwatch = Stopwatch()..start();
-    }
     final Map<String, int> info = await thumbnailApi.getThumbhash(thumbhash);
-    if (!kReleaseMode) {
-      stopwatch!.stop();
-      debugPrint('Thumbhash request $requestId took ${stopwatch.elapsedMilliseconds}ms');
-    }
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }

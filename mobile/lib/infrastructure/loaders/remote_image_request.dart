@@ -34,14 +34,11 @@ class RemoteImageRequest extends ImageRequest {
       }
       if (!kReleaseMode) {
         stopwatch!.stop();
-        debugPrint('Remote image download request $requestId took ${stopwatch.elapsedMilliseconds}ms for $uri');
+        debugPrint('Remote image download $requestId took ${stopwatch.elapsedMilliseconds}ms for $uri');
       }
       return await _decodeBuffer(buffer, decode, scale);
     } catch (e) {
       if (_isCancelled) {
-        if (!kReleaseMode) {
-          debugPrint('Remote image download request $requestId for $uri was cancelled');
-        }
         return null;
       }
 
@@ -143,7 +140,7 @@ class RemoteImageRequest extends ImageRequest {
     _request?.abort();
     _request = null;
     if (!kReleaseMode) {
-      debugPrint('Remote image request $requestId for $uri was cancelled');
+      debugPrint('Cancelled remote image request $requestId for $uri');
     }
   }
 }
