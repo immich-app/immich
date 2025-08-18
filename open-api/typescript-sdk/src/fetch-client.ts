@@ -2027,6 +2027,14 @@ export function createApiKey({ apiKeyCreateDto }: {
         body: apiKeyCreateDto
     })));
 }
+export function getMyApiKey(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ApiKeyResponseDto;
+    }>("/api-keys/me", {
+        ...opts
+    }));
+}
 /**
  * This endpoint requires the `apiKey.delete` permission.
  */

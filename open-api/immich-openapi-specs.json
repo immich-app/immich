@@ -1488,6 +1488,38 @@
         "description": "This endpoint requires the `apiKey.create` permission."
       }
     },
+    "/api-keys/me": {
+      "get": {
+        "operationId": "getMyApiKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "API Keys"
+        ]
+      }
+    },
     "/api-keys/{id}": {
       "delete": {
         "operationId": "deleteApiKey",

@@ -77,6 +77,7 @@ Class | Method | HTTP request | Description
 *APIKeysApi* | [**deleteApiKey**](doc//APIKeysApi.md#deleteapikey) | **DELETE** /api-keys/{id} | 
 *APIKeysApi* | [**getApiKey**](doc//APIKeysApi.md#getapikey) | **GET** /api-keys/{id} | 
 *APIKeysApi* | [**getApiKeys**](doc//APIKeysApi.md#getapikeys) | **GET** /api-keys | 
+*APIKeysApi* | [**getMyApiKey**](doc//APIKeysApi.md#getmyapikey) | **GET** /api-keys/me | 
 *APIKeysApi* | [**updateApiKey**](doc//APIKeysApi.md#updateapikey) | **PUT** /api-keys/{id} | 
 *ActivitiesApi* | [**createActivity**](doc//ActivitiesApi.md#createactivity) | **POST** /activities | 
 *ActivitiesApi* | [**deleteActivity**](doc//ActivitiesApi.md#deleteactivity) | **DELETE** /activities/{id} | 
