@@ -111,10 +111,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
     if (AppSetting.get(Setting.loadOriginal)) {
       try {
-        final request = RemoteImageRequest(
-          uri: getOriginalUrlForRemoteId(key.assetId),
-          headers: headers,
-        );
+        final request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
         yield* loadRequest(request, decode);
       } finally {
         request = null;
