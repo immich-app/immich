@@ -25,6 +25,7 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
 import 'package:platform/platform.dart';
@@ -470,12 +471,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   Widget _placeholderBuilder(BuildContext ctx, ImageChunkEvent? progress, int index) {
-      return Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: backgroundColor,
-        child: const Center(child: CircularProgressIndicator()),
-    );
+    return const Center(child: ImmichLoadingIndicator());
   }
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
