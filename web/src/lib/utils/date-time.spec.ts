@@ -21,6 +21,26 @@ describe('converting time to seconds', () => {
   it('ignores ignores double milliseconds hh:mm:ss.SSS.SSSSSS', () => {
     expect(timeToSeconds('01:02:03.456.123456')).toBeCloseTo(3723.456);
   });
+
+  // Test edge cases that can cause crashes
+  it('handles "0" string input', () => {
+    expect(timeToSeconds('0')).toBe(0);
+  });
+
+  it('handles empty string input', () => {
+    expect(timeToSeconds('')).toBe(0);
+  });
+
+  it('handles malformed time strings', () => {
+    expect(timeToSeconds('invalid')).toBe(0);
+    expect(timeToSeconds('01:02')).toBe(0); // Missing seconds
+    expect(timeToSeconds('01')).toBe(0); // Missing minutes and seconds
+  });
+
+  it('handles time strings with invalid numbers', () => {
+    expect(timeToSeconds('aa:bb:cc')).toBe(0);
+    expect(timeToSeconds('01:bb:03')).toBe(0);
+  });
 });
 
 describe('getAlbumDate', () => {

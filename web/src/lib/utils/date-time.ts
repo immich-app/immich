@@ -7,10 +7,29 @@ import { get } from 'svelte/store';
  * Convert time like `01:02:03.456` to seconds.
  */
 export function timeToSeconds(time: string) {
+  // Handle edge cases: null, undefined, empty string, or "0"
+  if (!time || time === '0') {
+    return 0;
+  }
+
   const parts = time.split(':');
-  parts[2] = parts[2].split('.').slice(0, 2).join('.');
+
+  // Handle cases where the time format is not as expected (e.g., missing colons)
+  if (parts.length < 3) {
+    return 0;
+  }
+
+  // Handle the seconds part which might contain milliseconds
+  if (parts[2]) {
+    parts[2] = parts[2].split('.').slice(0, 2).join('.');
+  }
 
   const [hours, minutes, seconds] = parts.map(Number);
+
+  // Validate that the parts are valid numbers
+  if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
+    return 0;
+  }
 
   return Duration.fromObject({ hours, minutes, seconds }).as('seconds');
 }
