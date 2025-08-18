@@ -54,7 +54,7 @@ export class StackRepository {
       .where('stack.ownerId', '=', asUuid(id))
       .orderBy('stack.createdAt', 'desc')
       .execute();
-    }
+  }
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
@@ -157,6 +157,16 @@ export class StackRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
     await this.db.deleteFrom('stack').where('id', '=', asUuid(id)).execute();
+  }
+
+  /** Clears all stacks and removes stackId from assets to respect FK constraints. */
+  async clearAll() {
+    await this.db
+      .updateTable('asset')
+      .set({ stackId: null, updatedAt: new Date() })
+      .where('stackId', 'is not', null)
+      .execute();
+    await this.db.deleteFrom('stack').execute();
   }
 
   async deleteAll(ids: string[]): Promise<void> {

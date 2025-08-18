@@ -40,51 +40,24 @@ export class AutoStackController {
     @Param('candidateId', ParseUUIDPipe) candidateId: string,
     @Body() dto: PromoteCandidateDto,
   ) {
-    const { server } = await (this.autoStack as any).getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return { error: 'disabled' };
-    const candidates = await this.autoStack.listCandidates(auth.user.id);
-    const candidate = candidates.find((c: any) => c.id === candidateId);
-    if (!candidate) return { error: 'not-found' };
-    const assetIds = candidate.assets.map((a: any) => a.assetId);
-    const primary = dto.primaryAssetId && assetIds.includes(dto.primaryAssetId) ? dto.primaryAssetId : assetIds[0];
-    const createDto: StackCreateDto = { assetIds };
-    const stack = await this.stackService.create(auth, createDto);
-    if (primary !== stack.primaryAssetId) {
-      await this.stackService.update(auth, stack.id, { primaryAssetId: primary });
-    }
-    await (this.autoStack as any).autoStackCandidateRepository.promote(candidateId, auth.user.id, stack.id);
-    (this.autoStack as any).telemetryRepository.jobs.addToCounter('immich.auto_stack.candidates_promoted', 1);
-    return { stackId: stack.id, primaryAssetId: primary };
+    return this.autoStack.promoteCandidate(auth, candidateId, dto.primaryAssetId);
   }
 
   @Delete('candidates/:candidateId')
   @Authenticated({ permission: Permission.StackDelete })
-  discard(@Auth() _auth: AuthDto, @Param('candidateId', ParseUUIDPipe) _candidateId: string) {
-    (this.autoStack as any).autoStackCandidateRepository.dismiss(_candidateId, _auth.user.id);
-    (this.autoStack as any).telemetryRepository.jobs.addToCounter('immich.auto_stack.candidates_dismissed', 1);
-    return { status: 'dismissed' };
+  discard(@Auth() auth: AuthDto, @Param('candidateId', ParseUUIDPipe) candidateId: string) {
+    return this.autoStack.dismissCandidate(auth, candidateId);
   }
 
   @Post('candidates/:candidateId/rescore')
   @Authenticated({ permission: Permission.StackUpdate })
   async rescore(@Auth() auth: AuthDto, @Param('candidateId', ParseUUIDPipe) candidateId: string) {
-    const { server } = await (this.autoStack as any).getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return { error: 'disabled' };
-    const candidates = await this.autoStack.listCandidates(auth.user.id);
-    const candidate = candidates.find((c: any) => c.id === candidateId);
-    if (!candidate) return { error: 'not-found' };
-    await (this.autoStack as any).jobRepository.queue({ name: 'AutoStackCandidateRescore', data: { id: candidateId } });
-    return { status: 'queued' };
+    return this.autoStack.rescoreCandidate(auth, candidateId);
   }
 
   @Post('reset')
   @Authenticated({ permission: Permission.StackUpdate })
   async resetAll(@Auth() auth: AuthDto) {
-    const { server } = await (this.autoStack as any).getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return { error: 'disabled' };
-    // Queue a global reset (delete all candidates and reprocess window for each user)
-    await (this.autoStack as any).jobRepository.queue({ name: 'AutoStackCandidateResetAll' });
-    return { status: 'queued' };
+    return this.autoStack.resetAll(auth);
   }
-
 }

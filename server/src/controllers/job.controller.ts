@@ -1,12 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import {
-  AllJobStatusResponseDto,
-  JobCommandDto,
-  JobCreateDto,
-  JobIdParamDto,
-  JobStatusDto
-} from 'src/dtos/job.dto';
+import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobIdParamDto, JobStatusDto } from 'src/dtos/job.dto';
 import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { JobService } from 'src/services/job.service';
@@ -34,5 +28,4 @@ export class JobController {
   sendJobCommand(@Param() { id }: JobIdParamDto, @Body() dto: JobCommandDto): Promise<JobStatusDto> {
     return this.service.handleCommand(id, dto);
   }
-
 }

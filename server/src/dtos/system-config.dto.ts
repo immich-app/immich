@@ -1,35 +1,35 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Transform, Type } from 'class-transformer';
 import {
-    ArrayMinSize,
-    IsInt,
-    IsNotEmpty,
-    IsNumber,
-    IsObject,
-    IsPositive,
-    IsString,
-    IsUrl,
-    Max,
-    Min,
-    ValidateIf,
-    ValidateNested,
+  ArrayMinSize,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsPositive,
+  IsString,
+  IsUrl,
+  Max,
+  Min,
+  ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
 import { PropertyLifecycle } from 'src/decorators';
 import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import {
-    AudioCodec,
-    CQMode,
-    Colorspace,
-    ImageFormat,
-    LogLevel,
-    OAuthTokenEndpointAuthMethod,
-    QueueName,
-    ToneMapping,
-    TranscodeHardwareAcceleration,
-    TranscodePolicy,
-    VideoCodec,
-    VideoContainer,
+  AudioCodec,
+  CQMode,
+  Colorspace,
+  ImageFormat,
+  LogLevel,
+  OAuthTokenEndpointAuthMethod,
+  QueueName,
+  ToneMapping,
+  TranscodeHardwareAcceleration,
+  TranscodePolicy,
+  VideoCodec,
+  VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName } from 'src/types';
 import { IsCronExpression, IsDateStringFormat, Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
@@ -48,17 +48,26 @@ class AutoStackWeightsDto {
   @IsInt() @Min(0) @Max(100) @Type(() => Number) exposure!: number;
 }
 
+/**
+ * AutoStack configuration (server.autoStack)
+ *
+ * Groups photos shot close together into stack candidates using time gaps, filename continuity,
+ * and visual similarity. This class exposes the knobs to tune grouping, scoring, merging,
+ * pruning, and housekeeping. See docs: docs/developer/auto-stack.md
+ */
 class SystemConfigAutoStackDto {
+  // Core toggle
   @ValidateBoolean()
   @ApiProperty({ description: 'Enable automatic stack candidate generation' })
   enabled!: boolean;
 
+  // Core time windows and grouping
   @IsInt()
   @Min(1)
   @Max(3600)
   @Type(() => Number)
   @ApiProperty({
-    description: 'Time window (seconds) around a new asset for candidate grouping',
+    description: 'Primary time window (seconds) around a new asset for temporal grouping scan',
     minimum: 1,
     maximum: 3600,
   })
@@ -69,7 +78,7 @@ class SystemConfigAutoStackDto {
   @Max(3600)
   @Type(() => Number)
   @ApiProperty({
-    description: 'Maximum gap (seconds) allowed between assets inside a temporal group',
+    description: 'Maximum allowed gap (seconds) between adjacent assets within a group',
     minimum: 1,
     maximum: 3600,
   })
@@ -82,7 +91,7 @@ class SystemConfigAutoStackDto {
   @Type(() => Number)
   @ApiProperty({
     required: false,
-    description: 'Optional secondary extended window (seconds) for visual expansion / merging',
+    description: 'Optional secondary extended window (seconds) used for visual expansion/merging searches',
     minimum: 0,
     maximum: 7200,
   })
@@ -95,7 +104,7 @@ class SystemConfigAutoStackDto {
   @Type(() => Number)
   @ApiProperty({
     required: false,
-    description: 'Multiplier applied to maxGapSeconds when forming secondary visual groups',
+    description: 'Multiplier applied to maxGapSeconds during secondary grouping/merging',
     minimum: 1,
     maximum: 10,
   })
@@ -119,6 +128,7 @@ class SystemConfigAutoStackDto {
   })
   horizonMinutes!: number;
 
+  // Heuristics and limits
   @ValidateBoolean()
   @ApiProperty({ description: 'Require matching camera make+model if metadata present' })
   cameraMatch!: boolean;
@@ -135,7 +145,7 @@ class SystemConfigAutoStackDto {
   @Max(100)
   @Type(() => Number)
   @ApiProperty({
-    description: 'Auto-promote when heuristic score >= this value (0 disables auto-promotion)',
+    description: 'Auto-promote when overall heuristic score >= this value (0 disables auto-promotion)',
     minimum: 0,
     maximum: 100,
   })
@@ -143,20 +153,22 @@ class SystemConfigAutoStackDto {
   @IsObject()
   @ValidateNested()
   @Type(() => AutoStackWeightsDto)
-  @ApiProperty({ description: 'Scoring weights object' })
+  @ApiProperty({ description: 'Scoring weights for { size, timeSpan, continuity, visual, exposure }' })
   weights!: AutoStackWeightsDto;
 
+  // Visual similarity thresholds and fast-paths
   @IsNumber()
   @Min(0)
   @Max(1)
   @Type(() => Number)
   @ApiProperty({
-    description: 'Cosine similarity threshold (0-1) for immediate promotion when embeddings present',
+    description: 'Cosine similarity threshold (0-1) to immediately promote when embeddings indicate strong cohesion',
     minimum: 0,
     maximum: 1,
   })
   visualPromoteThreshold!: number;
 
+  // Merging and bridging of adjacent groups
   @IsNumber()
   @Min(0)
   @Optional()
@@ -185,6 +197,7 @@ class SystemConfigAutoStackDto {
   })
   mergeScoreDelta?: number;
 
+  // Outlier pruning
   @ValidateBoolean()
   @Optional()
   @ApiProperty({ required: false, description: 'Enable outlier pruning that removes assets lowering visual cohesion' })
@@ -207,6 +220,7 @@ class SystemConfigAutoStackDto {
   @ApiProperty({ required: false, description: 'Iteratively prune multiple outliers while improvement threshold met' })
   outlierPruneIterative?: boolean;
 
+  // pHash backfill
   @ValidateBoolean()
   @Optional()
   @ApiProperty({ required: false, description: 'Enable historical pHash backfill job' })
@@ -219,6 +233,7 @@ class SystemConfigAutoStackDto {
   @ApiProperty({ required: false, description: 'Batch size for pHash backfill job', minimum: 10, maximum: 5000 })
   pHashBackfillBatchSize?: number;
 
+  // Candidate aging and cleanup
   @IsInt()
   @Min(1)
   @Max(90)
@@ -243,6 +258,7 @@ class SystemConfigAutoStackDto {
   })
   candidateAgingScoreThreshold?: number;
 
+  // Visual expansion: pull in near-duplicates just outside the window
   @IsInt()
   @Min(0)
   @Max(1800)
@@ -273,12 +289,13 @@ class SystemConfigAutoStackDto {
   @Optional()
   @ApiProperty({
     required: false,
-    description: 'Maximum pHash Hamming distance to treat assets as near-duplicates',
+    description: 'Maximum pHash Hamming distance (0-64) to treat assets as near-duplicates',
     minimum: 0,
     maximum: 64,
   })
   pHashHammingThreshold?: number;
 
+  // Overlap merging and primary selection
   @ValidateBoolean()
   @Optional()
   @ApiProperty({ required: false, description: 'Enable merging of overlapping groups (shared assets)' })
@@ -301,6 +318,7 @@ class SystemConfigAutoStackDto {
   })
   secondaryVisualMaxAdds?: number;
 
+  // Optional ML offload
   @ValidateBoolean()
   @Optional()
   @ApiProperty({ required: false, description: 'Offload heavy scoring to ML service if available' })
@@ -566,7 +584,6 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @IsObject()
   @Type(() => JobSettingsDto)
   [QueueName.AutoStackCandidateQueueAll]!: JobSettingsDto;
-
 }
 
 class SystemConfigLibraryScanDto {

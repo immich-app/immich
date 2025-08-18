@@ -15752,7 +15752,7 @@
       "SystemConfigAutoStackDto": {
         "properties": {
           "autoPromoteMinScore": {
-            "description": "Auto-promote when heuristic score >= this value (0 disables auto-promotion)",
+            "description": "Auto-promote when overall heuristic score >= this value (0 disables auto-promotion)",
             "maximum": 100,
             "minimum": 0,
             "type": "number"
@@ -15782,7 +15782,7 @@
             "type": "boolean"
           },
           "extendedWindowSeconds": {
-            "description": "Optional secondary extended window (seconds) for visual expansion / merging",
+            "description": "Optional secondary extended window (seconds) used for visual expansion/merging searches",
             "maximum": 7200,
             "minimum": 0,
             "type": "number"
@@ -15822,7 +15822,7 @@
             "type": "number"
           },
           "maxGapSeconds": {
-            "description": "Maximum gap (seconds) allowed between assets inside a temporal group",
+            "description": "Maximum allowed gap (seconds) between adjacent assets within a group",
             "maximum": 3600,
             "minimum": 1,
             "type": "number"
@@ -15876,13 +15876,13 @@
             "type": "boolean"
           },
           "pHashHammingThreshold": {
-            "description": "Maximum pHash Hamming distance to treat assets as near-duplicates",
+            "description": "Maximum pHash Hamming distance (0-64) to treat assets as near-duplicates",
             "maximum": 64,
             "minimum": 0,
             "type": "number"
           },
           "relaxedGapMultiplier": {
-            "description": "Multiplier applied to maxGapSeconds when forming secondary visual groups",
+            "description": "Multiplier applied to maxGapSeconds during secondary grouping/merging",
             "maximum": 10,
             "minimum": 1,
             "type": "number"
@@ -15930,7 +15930,7 @@
             "type": "number"
           },
           "visualPromoteThreshold": {
-            "description": "Cosine similarity threshold (0-1) for immediate promotion when embeddings present",
+            "description": "Cosine similarity threshold (0-1) to immediately promote when embeddings indicate strong cohesion",
             "maximum": 1,
             "minimum": 0,
             "type": "number"
@@ -15941,10 +15941,10 @@
                 "$ref": "#/components/schemas/AutoStackWeightsDto"
               }
             ],
-            "description": "Scoring weights object"
+            "description": "Scoring weights for { size, timeSpan, continuity, visual, exposure }"
           },
           "windowSeconds": {
-            "description": "Time window (seconds) around a new asset for candidate grouping",
+            "description": "Primary time window (seconds) around a new asset for temporal grouping scan",
             "maximum": 3600,
             "minimum": 1,
             "type": "number"

@@ -45,6 +45,8 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     // removed deprecated getAutoStackId (autoStackId column dropped)
     getDateTimeOriginal: vitest.fn(),
     getTimeWindowCameraSequence: vitest.fn().mockResolvedValue([]),
+    getClipEmbeddings: vitest.fn().mockResolvedValue({}),
+    listMissingPHash: vitest.fn().mockResolvedValue([]),
     // removed deprecated getAssetsByAutoStackId
     getExifMakeModel: vitest.fn(),
     getRecentAssetExifWithinHorizon: vitest.fn().mockResolvedValue([]),

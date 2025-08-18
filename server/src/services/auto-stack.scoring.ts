@@ -1,5 +1,16 @@
-// Shared scoring helper for AutoStackService
-// NOTE: Keep in sync with AUTO_STACK_PLAN.md (UPDATE_REQUIRED on change)
+import { extractNumericSuffix, hammingHex64, norm } from './auto-stack.utils';
+/**
+ * Compute the AutoStack group score.
+ * Blends size/time/continuity/visual/exposure components into a 0..100 total.
+ * Visual component prefers CLIP cosine avg mapped to [0,1], optionally blended with pHash average (0.7/0.3).
+ *
+ * Weights contract:
+ * - size: favors more assets in a candidate group (log2 curve; typical: 30–50)
+ * - timeSpan: penalizes groups that exceed the ideal span (derived from maxGapSeconds) (typical: 10–20)
+ * - continuity: rewards sequential filename numbers (e.g., IMG_0123 -> 0124) (typical: 10–20)
+ * - visual: rewards visual similarity via embeddings (and optionally pHash/Thumbhash) (typical: 30–60)
+ * - exposure: rewards consistent ISO/exposure values within the group (typical: 5–15)
+ */
 export interface AutoStackScoringInputs {
   assets: Array<{
     id: string;
@@ -40,13 +51,12 @@ export function computeAutoStackScore({
   const timeSpanScore =
     (spanMs <= idealSpanMs ? 1 : Math.max(0, 1 - (spanMs - idealSpanMs) / (windowSeconds * 1000))) *
     (weights?.timeSpan ?? 15);
-  const suffix = (name: string) => name.match(/(\d+)(?=\.[^.]+$)/)?.[1] ?? '';
-  const toNum = (s: string) => (s === '' ? NaN : Number.parseInt(s));
+  // Continuity based on trailing numeric filename suffixes
   let continuityOk = 0;
   for (let i = 1; i < assets.length; i++) {
-    const prev = toNum(suffix(assets[i - 1].originalFileName));
-    const cur = toNum(suffix(assets[i].originalFileName));
-    if (!Number.isNaN(prev) && !Number.isNaN(cur) && (cur === prev || cur === prev + 1)) continuityOk++;
+    const prev = extractNumericSuffix(assets[i - 1].originalFileName);
+    const cur = extractNumericSuffix(assets[i].originalFileName);
+    if (prev != null && cur != null && (cur === prev || cur === prev + 1)) continuityOk++;
   }
   const continuityScore = (assets.length > 1 ? continuityOk / (assets.length - 1) : 0) * (weights?.continuity ?? 10);
   let visualSimilarityScore = 0;
@@ -54,24 +64,17 @@ export function computeAutoStackScore({
   // Collect pHashes (normalized to 16-char hex) if present
   const pHashes = assets.map((a) => a.pHash?.toLowerCase()).filter((v): v is string => !!v && /^[0-9a-f]{16}$/.test(v));
   const haveAllPHash = pHashes.length === assets.length && assets.length > 1;
-  const hamming = (a: string, b: string) => {
-    let bits = 0;
-    for (let i = 0; i < a.length; i++) {
-      const x = parseInt(a[i], 16) ^ parseInt(b[i], 16);
-      bits += (x & 1) + ((x >> 1) & 1) + ((x >> 2) & 1) + ((x >> 3) & 1);
-    }
-    return bits; // number of differing bits (out of length*4)
-  };
+  // Shared utils for math
   const embAssets = assets.filter((s) => embeddingMap[s.id]);
   if (embAssets.length > 1) {
     let pairs = 0;
     let sumCos = 0;
     for (let i = 0; i < embAssets.length; i++) {
       const ei = embeddingMap[embAssets[i].id];
-      const normI = Math.sqrt(ei.reduce((a, b) => a + b * b, 0));
+      const normI = norm(ei);
       for (let j = i + 1; j < embAssets.length; j++) {
         const ej = embeddingMap[embAssets[j].id];
-        const normJ = Math.sqrt(ej.reduce((a, b) => a + b * b, 0));
+        const normJ = norm(ej);
         if (!normI || !normJ) continue;
         let dot = 0;
         for (let k = 0; k < Math.min(ei.length, ej.length); k++) dot += ei[k] * ej[k];
@@ -88,7 +91,7 @@ export function computeAutoStackScore({
       const totalBits = 64; // 16 hex * 4 bits
       for (let i = 0; i < pHashes.length; i++) {
         for (let j = i + 1; j < pHashes.length; j++) {
-          const diff = hamming(pHashes[i], pHashes[j]);
+          const diff = hammingHex64(pHashes[i], pHashes[j]);
           hashSum += 1 - diff / totalBits;
           hashPairs++;
         }
@@ -106,7 +109,7 @@ export function computeAutoStackScore({
       const totalBits = 64;
       for (let i = 0; i < pHashes.length; i++) {
         for (let j = i + 1; j < pHashes.length; j++) {
-          const diff = hamming(pHashes[i], pHashes[j]);
+          const diff = hammingHex64(pHashes[i], pHashes[j]);
           hashSum += 1 - diff / totalBits;
           hashPairs++;
         }

@@ -324,6 +324,8 @@ export const newTestService = <T extends BaseService>(
   asc.listScores?.mockResolvedValue?.([]);
   asc.getCandidateAssetIds?.mockResolvedValue?.([]);
   asc.updateScore?.mockResolvedValue?.(undefined);
+  // default for de-dup helper
+  asc.listActiveIdsByAssetIds?.mockResolvedValue?.([]);
   // hysteresis helper
   asc.countCreatedSince = vitest.fn().mockResolvedValue(0);
   asc.getCandidateOwner?.mockResolvedValue?.('user1');

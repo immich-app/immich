@@ -1,17 +1,17 @@
 import { CronExpression } from '@nestjs/schedule';
 import {
-    AudioCodec,
-    Colorspace,
-    CQMode,
-    ImageFormat,
-    LogLevel,
-    OAuthTokenEndpointAuthMethod,
-    QueueName,
-    ToneMapping,
-    TranscodeHardwareAcceleration,
-    TranscodePolicy,
-    VideoCodec,
-    VideoContainer,
+  AudioCodec,
+  Colorspace,
+  CQMode,
+  ImageFormat,
+  LogLevel,
+  OAuthTokenEndpointAuthMethod,
+  QueueName,
+  ToneMapping,
+  TranscodeHardwareAcceleration,
+  TranscodePolicy,
+  VideoCodec,
+  VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/types';
 
@@ -401,12 +401,12 @@ export const defaults = Object.freeze<SystemConfig>({
       },
       visualPromoteThreshold: 0.65, // require stronger visual cohesion (was 0.65)
       maxMergeGapSeconds: 120, // only merge groups very close in time (was 60)
-      visualBridgeThreshold: 0.70, // need higher bridge similarity (was 0.55)
+      visualBridgeThreshold: 0.7, // need higher bridge similarity (was 0.55)
       mergeScoreDelta: 0,
       // Outlier pruning: remove assets that hurt cohesion (avg visual similarity) beyond threshold
       outlierPruneEnabled: true,
       outlierPruneMinDelta: 0.2, // increased from 0.04 to make pruning less aggressive (require larger visual gain)
-      outlierPruneIterative: true, 
+      outlierPruneIterative: true,
       // pHash historical backfill control
       pHashBackfillEnabled: true,
       pHashBackfillBatchSize: 500,
@@ -426,8 +426,6 @@ export const defaults = Object.freeze<SystemConfig>({
       hysteresisCandidateWindowMinutes: 30,
       hysteresisMaxCandidates: 200,
       hysteresisRaiseScoreBy: 10,
-  // Jobs: AutoStack now queues background jobs (AutoStackCandidateGenerateForAsset) on metadata extraction
-  // Debounce: per-user auto stack job queueing has an in-memory 5s debounce to coalesce rapid imports
     },
   },
   notifications: {

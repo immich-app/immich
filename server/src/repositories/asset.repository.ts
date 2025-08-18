@@ -113,7 +113,13 @@ interface GetByIdsRelations {
 @Injectable()
 export class AssetRepository {
   async getAllStackIds(): Promise<string[]> {
-    return await this.db.selectFrom('asset').select('stackId').distinct().where('stackId', 'is not', null).execute().then((rows: any[]) => rows.map((r) => r.stackId).filter(Boolean));
+    return await this.db
+      .selectFrom('asset')
+      .select('stackId')
+      .distinct()
+      .where('stackId', 'is not', null)
+      .execute()
+      .then((rows: any[]) => rows.map((r) => r.stackId).filter(Boolean));
   }
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
@@ -218,9 +224,9 @@ export class AssetRepository {
         'asset_exif.iso as iso',
         'asset_exif.exposureTime as exposureTime',
         'asset_exif.pHash as pHash',
-  // include dimensions for orientation-based grouping constraints
-  'asset_exif.exifImageWidth as exifImageWidth',
-  'asset_exif.exifImageHeight as exifImageHeight',
+        // include dimensions for orientation-based grouping constraints
+        'asset_exif.exifImageWidth as exifImageWidth',
+        'asset_exif.exifImageHeight as exifImageHeight',
       ])
       .where('asset.ownerId', '=', asUuid(ownerId))
       .where('asset.deletedAt', 'is', null)
@@ -269,13 +275,26 @@ export class AssetRepository {
         'asset_exif.iso as iso',
         'asset_exif.exposureTime as exposureTime',
         'asset_exif.pHash as pHash',
-  'asset_exif.exifImageWidth as exifImageWidth',
-  'asset_exif.exifImageHeight as exifImageHeight',
+        'asset_exif.exifImageWidth as exifImageWidth',
+        'asset_exif.exifImageHeight as exifImageHeight',
       ])
       .where('asset.id', 'in', assetIds.map(asUuid))
       .orderBy('asset_exif.dateTimeOriginal', 'asc')
       .orderBy('asset.id')
       .execute();
+  }
+
+  /** Return a batch of assets that are missing pHash, excluding deleted. */
+  async listMissingPHash(limit: number): Promise<{ id: string; originalPath: string }[]> {
+    const rows = await this.db
+      .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['asset.id', 'asset.originalPath'])
+      .where('asset_exif.pHash', 'is', null)
+      .where('asset.deletedAt', 'is', null)
+      .limit(limit)
+      .execute();
+    return rows as any;
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })

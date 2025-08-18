@@ -365,20 +365,40 @@ describe(AutoStackService.name, () => {
     // Base group (two assets) + one similar asset 10s later outside primary 5s window but inside 30s secondary window
     mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
       { id: 'vx1', originalFileName: 'IMG_0101.jpg', dateTimeOriginal: t0, pHash: 'aaaaaaaaaaaaaaaa' },
-      { id: 'vx2', originalFileName: 'IMG_0102.jpg', dateTimeOriginal: new Date(t0.getTime() + 1000), pHash: 'aaaaaaaaaaaaaaab' },
+      {
+        id: 'vx2',
+        originalFileName: 'IMG_0102.jpg',
+        dateTimeOriginal: new Date(t0.getTime() + 1000),
+        pHash: 'aaaaaaaaaaaaaaab',
+      },
     ] as any);
     // Secondary fetch when expanding: include candidate vx3 (simulate repository call by returning superset when wider window asked)
     mocks.asset.getTimeWindowCameraSequence.mockImplementation(async (args: any) => {
       if (args.from && args.from < new Date(t0.getTime() - 4000)) {
         return [
           { id: 'vx1', originalFileName: 'IMG_0101.jpg', dateTimeOriginal: t0, pHash: 'aaaaaaaaaaaaaaaa' },
-          { id: 'vx2', originalFileName: 'IMG_0102.jpg', dateTimeOriginal: new Date(t0.getTime() + 1000), pHash: 'aaaaaaaaaaaaaaab' },
-          { id: 'vx3', originalFileName: 'IMG_0103.jpg', dateTimeOriginal: new Date(t0.getTime() + 10_000), pHash: 'aaaaaaaaaaaaaaac' },
+          {
+            id: 'vx2',
+            originalFileName: 'IMG_0102.jpg',
+            dateTimeOriginal: new Date(t0.getTime() + 1000),
+            pHash: 'aaaaaaaaaaaaaaab',
+          },
+          {
+            id: 'vx3',
+            originalFileName: 'IMG_0103.jpg',
+            dateTimeOriginal: new Date(t0.getTime() + 10_000),
+            pHash: 'aaaaaaaaaaaaaaac',
+          },
         ] as any;
       }
       return [
         { id: 'vx1', originalFileName: 'IMG_0101.jpg', dateTimeOriginal: t0, pHash: 'aaaaaaaaaaaaaaaa' },
-        { id: 'vx2', originalFileName: 'IMG_0102.jpg', dateTimeOriginal: new Date(t0.getTime() + 1000), pHash: 'aaaaaaaaaaaaaaab' },
+        {
+          id: 'vx2',
+          originalFileName: 'IMG_0102.jpg',
+          dateTimeOriginal: new Date(t0.getTime() + 1000),
+          pHash: 'aaaaaaaaaaaaaaab',
+        },
       ] as any;
     });
     // Embeddings - make vx3 similar to vx1/vx2
@@ -502,9 +522,27 @@ describe(AutoStackService.name, () => {
     // Provide 4 assets: two landscape (4:3) and two portrait (3:4) interleaved by time
     mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
       { id: 'o1', originalFileName: 'IMG_0001.jpg', dateTimeOriginal: t0, exifImageWidth: 4000, exifImageHeight: 3000 },
-      { id: 'o2', originalFileName: 'IMG_0002.jpg', dateTimeOriginal: new Date(t0.getTime() + 1000), exifImageWidth: 3000, exifImageHeight: 4000 },
-      { id: 'o3', originalFileName: 'IMG_0003.jpg', dateTimeOriginal: new Date(t0.getTime() + 2000), exifImageWidth: 4010, exifImageHeight: 3000 },
-      { id: 'o4', originalFileName: 'IMG_0004.jpg', dateTimeOriginal: new Date(t0.getTime() + 3000), exifImageWidth: 2990, exifImageHeight: 4000 },
+      {
+        id: 'o2',
+        originalFileName: 'IMG_0002.jpg',
+        dateTimeOriginal: new Date(t0.getTime() + 1000),
+        exifImageWidth: 3000,
+        exifImageHeight: 4000,
+      },
+      {
+        id: 'o3',
+        originalFileName: 'IMG_0003.jpg',
+        dateTimeOriginal: new Date(t0.getTime() + 2000),
+        exifImageWidth: 4010,
+        exifImageHeight: 3000,
+      },
+      {
+        id: 'o4',
+        originalFileName: 'IMG_0004.jpg',
+        dateTimeOriginal: new Date(t0.getTime() + 3000),
+        exifImageWidth: 2990,
+        exifImageHeight: 4000,
+      },
     ] as any);
     mocks.asset.getClipEmbeddings.mockResolvedValue({});
     mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
