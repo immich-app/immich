@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.137.3
+ * 1.138.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -2056,6 +2056,14 @@ export function createApiKey({ apiKeyCreateDto }: {
         method: "POST",
         body: apiKeyCreateDto
     })));
+}
+export function getMyApiKey(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ApiKeyResponseDto;
+    }>("/api-keys/me", {
+        ...opts
+    }));
 }
 /**
  * This endpoint requires the `apiKey.delete` permission.

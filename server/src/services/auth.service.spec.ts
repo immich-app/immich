@@ -518,6 +518,20 @@ describe(AuthService.name, () => {
       await expect(result).rejects.toThrow('Missing required permission: all');
     });
 
+    it('should not require any permission when metadata is set to `false`', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [Permission.ActivityRead] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+
+      const result = sut.authenticate({
+        headers: { 'x-api-key': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: false },
+      });
+      await expect(result).resolves.toEqual({ user: authUser, apiKey: expect.objectContaining(authApiKey) });
+    });
+
     it('should return an auth dto', async () => {
       const authUser = factory.authUser();
       const authApiKey = factory.authApiKey({ permissions: [Permission.All] });

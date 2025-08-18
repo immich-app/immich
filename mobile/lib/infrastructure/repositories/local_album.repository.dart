@@ -319,7 +319,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-          ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)])
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
           ..limit(1);
 
     final results = await query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
