@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.10.2)
-project("native_buffer")
+cmake_minimum_required(VERSION 3.12)
+
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+project(native_buffer LANGUAGES C)
 
 add_library(native_buffer SHARED
-    src/main/cpp/native_buffer.c)
-
-find_library(log-lib log)
-
-target_link_libraries(native_buffer ${log-lib})
+    src/main/cpp/native_buffer.c
+)
