@@ -49,32 +49,12 @@ export class StackService extends BaseService {
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: [id] });
-    // fetch stack with assets
-    const stack = await this.stackRepository.getById(id);
-    if (stack?.assets && Array.isArray(stack.assets) && stack.assets.length > 0) {
-      const assetIds = stack.assets.map((a: any) => a.id);
-      await this.assetRepository.updateAll(assetIds, { deletedAt: new Date(), status: AssetStatus.Trashed });
-      await this.eventRepository.emit('AssetTrashAll', { assetIds, userId: auth.user.id });
-    }
     await this.stackRepository.delete(id); // this will null stackId on assets via FK (SET NULL)
     await this.eventRepository.emit('StackDelete', { stackId: id, userId: auth.user.id });
   }
 
   async deleteAll(auth: AuthDto, dto: BulkIdsDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: dto.ids });
-    const now = new Date();
-    const trashedAssetIds: string[] = [];
-    for (const stackId of dto.ids) {
-      const stack = await this.stackRepository.getById(stackId);
-      if (stack?.assets && Array.isArray(stack.assets) && stack.assets.length > 0) {
-        const assetIds = stack.assets.map((a: any) => a.id);
-        trashedAssetIds.push(...assetIds);
-        await this.assetRepository.updateAll(assetIds, { deletedAt: now, status: AssetStatus.Trashed });
-      }
-    }
-    if (trashedAssetIds.length) {
-      await this.eventRepository.emit('AssetTrashAll', { assetIds: trashedAssetIds, userId: auth.user.id });
-    }
     await this.stackRepository.deleteAll(dto.ids);
     await this.eventRepository.emit('StackDeleteAll', { stackIds: dto.ids, userId: auth.user.id });
   }

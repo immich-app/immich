@@ -388,6 +388,7 @@ export const columns = {
   ],
   exif: [
     'asset_exif.assetId',
+    'asset_exif.autoStackId',
     'asset_exif.bitsPerSample',
     'asset_exif.city',
     'asset_exif.colorspace',

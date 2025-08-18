@@ -145,6 +145,7 @@ export class AssetRepository {
               projectionType: eb.ref('excluded.projectionType'),
               city: eb.ref('excluded.city'),
               livePhotoCID: eb.ref('excluded.livePhotoCID'),
+              autoStackId: eb.ref('excluded.autoStackId'),
               autoStackSource: eb.ref('excluded.autoStackSource'),
               state: eb.ref('excluded.state'),
               country: eb.ref('excluded.country'),

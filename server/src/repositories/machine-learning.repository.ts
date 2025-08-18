@@ -68,8 +68,6 @@ export class MachineLearningRepository {
         }
       | undefined;
   };
-  // Cache whether a given ML server supports /phash to avoid repeated 404 spam
-  private pHashSupport: { [url: string]: boolean | undefined } = {};
 
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MachineLearningRepository.name);
