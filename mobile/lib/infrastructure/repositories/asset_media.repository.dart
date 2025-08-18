@@ -10,7 +10,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:ffi/ffi.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 
 abstract class ImageRequest {
@@ -30,9 +29,6 @@ abstract class ImageRequest {
       return;
     }
     _isCancelled = true;
-    if (!kReleaseMode) {
-      debugPrint('Cancelling image request $requestId');
-    }
     return _onCancelled();
   }
 
@@ -98,14 +94,18 @@ class ThumbhashImageRequest extends ImageRequest {
     final Map<String, int> info = await thumbnailApi.getThumbhash(thumbhash);
     if (!kReleaseMode) {
       stopwatch!.stop();
-      debugPrint('Thumbhash request $requestId took ${stopwatch.elapsedMilliseconds} ms');
+      debugPrint('Thumbhash request $requestId took ${stopwatch.elapsedMilliseconds}ms');
     }
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
   @override
-  void _onCancelled() {}
+  void _onCancelled() {
+    if (!kReleaseMode) {
+      debugPrint('Thumbhash request $requestId for $thumbhash was cancelled');
+    }
+  }
 }
 
 class LocalImageRequest extends ImageRequest {
@@ -137,7 +137,9 @@ class LocalImageRequest extends ImageRequest {
     );
     if (!kReleaseMode) {
       stopwatch!.stop();
-      debugPrint('Local image request $requestId took ${stopwatch.elapsedMilliseconds} ms');
+      debugPrint(
+        'Local image request $requestId took ${stopwatch.elapsedMilliseconds}ms for $localId of size $width x $height',
+      );
     }
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
@@ -145,6 +147,9 @@ class LocalImageRequest extends ImageRequest {
 
   @override
   Future<void> _onCancelled() {
+    if (!kReleaseMode) {
+      debugPrint('Local image request $requestId for $localId of size $width x $height was cancelled');
+    }
     return thumbnailApi.cancelImageRequest(requestId);
   }
 }
@@ -183,13 +188,13 @@ class RemoteImageRequest extends ImageRequest {
       }
       if (!kReleaseMode) {
         stopwatch!.stop();
-        debugPrint('Remote image download request $requestId took ${stopwatch.elapsedMilliseconds} ms');
+        debugPrint('Remote image download request $requestId took ${stopwatch.elapsedMilliseconds}ms for $uri');
       }
       return await _decodeBuffer(buffer, decode, scale);
     } catch (e) {
       if (_isCancelled) {
         if (!kReleaseMode) {
-          debugPrint('Remote image download request for $requestId was cancelled');
+          debugPrint('Remote image download request $requestId for $uri was cancelled');
         }
         return null;
       }
@@ -216,7 +221,6 @@ class RemoteImageRequest extends ImageRequest {
       return _request = null;
     }
 
-    final headers = ApiService.getRequestHeaders();
     for (final entry in headers.entries) {
       request.headers.set(entry.key, entry.value);
     }
@@ -292,5 +296,8 @@ class RemoteImageRequest extends ImageRequest {
   void _onCancelled() {
     _request?.abort();
     _request = null;
+    if (!kReleaseMode) {
+      debugPrint('Remote image request $requestId for $uri was cancelled');
+    }
   }
 }
