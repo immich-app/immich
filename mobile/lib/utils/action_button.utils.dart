@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/download_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
@@ -36,214 +37,124 @@ class ActionButtonContext {
   });
 }
 
-abstract class ActionButtonRule {
-  bool shouldShow(ActionButtonContext context);
-  Widget buildButton(ActionButtonContext context);
-}
+enum ActionButtonType {
+  share,
+  shareLink,
+  archive,
+  unarchive,
+  download,
+  trash,
+  deletePermanent,
+  delete,
+  moveToLockFolder,
+  removeFromLockFolder,
+  deleteLocal,
+  upload,
+  removeFromAlbum,
+  likeActivity;
 
-class ShareActionRule extends ActionButtonRule {
-  @override
   bool shouldShow(ActionButtonContext context) {
-    return !context.isInLockedView;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return ShareActionButton(source: context.source);
-  }
-}
-
-class ShareLinkActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return !context.isInLockedView && //
-        context.asset.hasRemote;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return ShareLinkActionButton(source: context.source);
-  }
-}
-
-class ArchiveActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return context.isOwner && //
+    return switch (this) {
+      ActionButtonType.share => true,
+      ActionButtonType.shareLink =>
         !context.isInLockedView && //
-        context.asset.hasRemote && //
-        !context.isArchived;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return ArchiveActionButton(source: context.source);
-  }
-}
-
-class UnarchiveActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return context.isOwner && //
+            context.asset.hasRemote,
+      ActionButtonType.archive =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.asset.hasRemote && //
+            !context.isArchived,
+      ActionButtonType.unarchive =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.asset.hasRemote && //
+            context.isArchived,
+      ActionButtonType.download =>
         !context.isInLockedView && //
-        context.asset.hasRemote && //
-        context.isArchived;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return UnArchiveActionButton(source: context.source);
-  }
-}
-
-class DownloadActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return !context.isInLockedView && //
-        context.asset.hasRemote && //
-        !context.asset.hasLocal;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return DownloadActionButton(source: context.source);
-  }
-}
-
-class TrashActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return context.isOwner && //
+            context.asset.hasRemote && //
+            !context.asset.hasLocal,
+      ActionButtonType.trash =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.asset.hasRemote && //
+            context.isTrashEnabled,
+      ActionButtonType.deletePermanent =>
+        context.isOwner && //
+                context.asset.hasRemote && //
+                !context.isTrashEnabled ||
+            context.isInLockedView,
+      ActionButtonType.delete =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.asset.hasRemote,
+      ActionButtonType.moveToLockFolder =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.asset.hasRemote,
+      ActionButtonType.removeFromLockFolder =>
+        context.isOwner && //
+            context.isInLockedView && //
+            context.asset.hasRemote,
+      ActionButtonType.deleteLocal =>
         !context.isInLockedView && //
-        context.asset.hasRemote && //
-        context.isTrashEnabled;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return TrashActionButton(source: context.source);
-  }
-}
-
-class DeletePermanentActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return context.isOwner && //
+            context.asset.storage == AssetState.local,
+      ActionButtonType.upload =>
         !context.isInLockedView && //
-        context.asset.hasRemote && //
-        !context.isTrashEnabled;
+            context.asset.storage == AssetState.local,
+      ActionButtonType.removeFromAlbum =>
+        context.isOwner && //
+            !context.isInLockedView && //
+            context.currentAlbum != null,
+      ActionButtonType.likeActivity =>
+        !context.isInLockedView &&
+            context.currentAlbum != null &&
+            context.currentAlbum!.isActivityEnabled &&
+            context.currentAlbum!.isShared,
+    };
   }
 
-  @override
   Widget buildButton(ActionButtonContext context) {
-    return DeletePermanentActionButton(source: context.source);
-  }
-}
-
-class DeleteActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return context.isOwner && //
-        !context.isInLockedView && //
-        context.asset.hasRemote;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return DeleteActionButton(source: context.source);
-  }
-}
-
-class MoveToLockFolderActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return context.isOwner && //
-        !context.isInLockedView && //
-        context.asset.hasRemote;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return MoveToLockFolderActionButton(source: context.source);
-  }
-}
-
-class DeleteLocalActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return !context.isInLockedView && //
-        context.asset.storage == AssetState.local;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return DeleteLocalActionButton(source: context.source);
-  }
-}
-
-class UploadActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return !context.isInLockedView && //
-        context.asset.storage == AssetState.local;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return UploadActionButton(source: context.source);
-  }
-}
-
-class RemoveFromAlbumActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return context.isOwner && //
-        !context.isInLockedView && //
-        context.currentAlbum != null;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return RemoveFromAlbumActionButton(albumId: context.currentAlbum!.id, source: context.source);
-  }
-}
-
-class LikeActivityActionRule extends ActionButtonRule {
-  @override
-  bool shouldShow(ActionButtonContext context) {
-    return !context.isInLockedView && //
-        context.currentAlbum != null && //
-        context.currentAlbum!.isActivityEnabled && //
-        context.currentAlbum!.isShared;
-  }
-
-  @override
-  Widget buildButton(ActionButtonContext context) {
-    return const LikeActivityActionButton();
+    return switch (this) {
+      ActionButtonType.share => ShareActionButton(source: context.source),
+      ActionButtonType.shareLink => ShareLinkActionButton(source: context.source),
+      ActionButtonType.archive => ArchiveActionButton(source: context.source),
+      ActionButtonType.unarchive => UnArchiveActionButton(source: context.source),
+      ActionButtonType.download => DownloadActionButton(source: context.source),
+      ActionButtonType.trash => TrashActionButton(source: context.source),
+      ActionButtonType.deletePermanent => DeletePermanentActionButton(source: context.source),
+      ActionButtonType.delete => DeleteActionButton(source: context.source),
+      ActionButtonType.moveToLockFolder => MoveToLockFolderActionButton(source: context.source),
+      ActionButtonType.removeFromLockFolder => RemoveFromLockFolderActionButton(source: context.source),
+      ActionButtonType.deleteLocal => DeleteLocalActionButton(source: context.source),
+      ActionButtonType.upload => UploadActionButton(source: context.source),
+      ActionButtonType.removeFromAlbum => RemoveFromAlbumActionButton(
+        albumId: context.currentAlbum!.id,
+        source: context.source,
+      ),
+      ActionButtonType.likeActivity => const LikeActivityActionButton(),
+    };
   }
 }
 
 class ActionButtonBuilder {
-  static final List<ActionButtonRule> _rules = [
-    ShareActionRule(),
-    ShareLinkActionRule(),
-    LikeActivityActionRule(),
-    ArchiveActionRule(),
-    UnarchiveActionRule(),
-    DownloadActionRule(),
-    TrashActionRule(),
-    DeletePermanentActionRule(),
-    DeleteActionRule(),
-    MoveToLockFolderActionRule(),
-    DeleteLocalActionRule(),
-    UploadActionRule(),
-    RemoveFromAlbumActionRule(),
+  static const List<ActionButtonType> _actionTypes = [
+    ActionButtonType.share,
+    ActionButtonType.shareLink,
+    ActionButtonType.likeActivity,
+    ActionButtonType.archive,
+    ActionButtonType.unarchive,
+    ActionButtonType.download,
+    ActionButtonType.trash,
+    ActionButtonType.deletePermanent,
+    ActionButtonType.delete,
+    ActionButtonType.moveToLockFolder,
+    ActionButtonType.removeFromLockFolder,
+    ActionButtonType.deleteLocal,
+    ActionButtonType.upload,
+    ActionButtonType.removeFromAlbum,
   ];
 
   static List<Widget> build(ActionButtonContext context) {
-    return _rules
-        .where((rule) => rule.shouldShow(context)) //
-        .map((rule) => rule.buildButton(context)) //
-        .toList();
+    return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 }
