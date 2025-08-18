@@ -48,7 +48,8 @@ export type ValidateRequest = {
   metadata: {
     sharedLinkRoute: boolean;
     adminRoute: boolean;
-    permission?: Permission;
+    /** `false` explicitly means no permission is required, which otherwise defaults to `all` */
+    permission?: Permission | false;
     uri: string;
   };
 };
@@ -187,7 +188,11 @@ export class AuthService extends BaseService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (authDto.apiKey && !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })) {
+    if (
+      authDto.apiKey &&
+      requestedPermission !== false &&
+      !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })
+    ) {
       throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
 
