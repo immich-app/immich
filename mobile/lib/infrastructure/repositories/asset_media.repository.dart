@@ -151,13 +151,13 @@ class LocalImageRequest extends ImageRequest {
 
 class RemoteImageRequest extends ImageRequest {
   static final log = Logger('RemoteImageRequest');
-  static final cacheManager = RemoteImageCacheManager();
   static final client = HttpClient()..maxConnectionsPerHost = 32;
-  String uri;
-  Map<String, String> headers;
+  final RemoteCacheManager? cacheManager;
+  final String uri;
+  final Map<String, String> headers;
   HttpClientRequest? _request;
 
-  RemoteImageRequest({required this.uri, required this.headers});
+  RemoteImageRequest({required this.uri, required this.headers, this.cacheManager});
 
   @override
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
@@ -166,9 +166,7 @@ class RemoteImageRequest extends ImageRequest {
     }
 
     // TODO: the cache manager makes everything sequential with its DB calls and its operations cannot be cancelled,
-    //  so it just makes things slower and more memory hungry. Even just saving files to disk
-    //  for offline use adds too much overhead as these calls add up. We only prefer fetching from it when
-    //  it can skip the DB call.
+    //  so it ends up being a bottleneck.  We only prefer fetching from it when it can skip the DB call.
     final cachedFileImage = await _loadCachedFile(uri, decode, scale, inMemoryOnly: true);
     if (cachedFileImage != null) {
       return cachedFileImage;
@@ -223,10 +221,21 @@ class RemoteImageRequest extends ImageRequest {
       request.headers.set(entry.key, entry.value);
     }
     final response = await request.close();
-    final bytes = await consolidateHttpClientResponseBytes(response);
     if (_isCancelled) {
       return null;
     }
+    final bytes = Uint8List(response.contentLength);
+    int offset = 0;
+    final subscription = response.listen((List<int> chunk) {
+      // this is important to break the response stream if the request is cancelled
+      if (_isCancelled) {
+        throw StateError('Cancelled request');
+      }
+      bytes.setAll(offset, chunk);
+      offset += chunk.length;
+    }, cancelOnError: true);
+    cacheManager?.putStreamedFile(url, response);
+    await subscription.asFuture();
     return await ImmutableBuffer.fromUint8List(bytes);
   }
 
@@ -236,7 +245,8 @@ class RemoteImageRequest extends ImageRequest {
     double scale, {
     required bool inMemoryOnly,
   }) async {
-    if (_isCancelled) {
+    final cacheManager = this.cacheManager;
+    if (_isCancelled || cacheManager == null) {
       return null;
     }
 
@@ -257,7 +267,7 @@ class RemoteImageRequest extends ImageRequest {
 
   Future<void> _evictFile(String url) async {
     try {
-      await cacheManager.removeFile(url);
+      await cacheManager?.removeFile(url);
     } catch (e) {
       log.severe('Failed to remove cached image', e);
     }

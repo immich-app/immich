@@ -2,20 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
+import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
 class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> with CancellableImageProviderMixin {
+  static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
-  final CacheManager? cacheManager;
 
-  RemoteThumbProvider({required this.assetId, this.cacheManager});
+  RemoteThumbProvider({required this.assetId});
 
   @override
   Future<RemoteThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -37,7 +37,11 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> with Cancel
 
   Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) async* {
     final preview = getThumbnailUrlForRemoteId(key.assetId);
-    final request = this.request = RemoteImageRequest(uri: preview, headers: ApiService.getRequestHeaders());
+    final request = this.request = RemoteImageRequest(
+      uri: preview,
+      headers: ApiService.getRequestHeaders(),
+      cacheManager: cacheManager,
+    );
     try {
       final image = await request.load(decode);
       if (image != null) {
@@ -63,10 +67,10 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> with Cancel
 }
 
 class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> with CancellableImageProviderMixin {
+  static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
-  final CacheManager? cacheManager;
 
-  RemoteFullImageProvider({required this.assetId, this.cacheManager});
+  RemoteFullImageProvider({required this.assetId});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -94,6 +98,7 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> wit
       final request = this.request = RemoteImageRequest(
         uri: getPreviewUrlForRemoteId(key.assetId),
         headers: ApiService.getRequestHeaders(),
+        cacheManager: cacheManager,
       );
       final image = await request.load(decode);
       if (image == null) {
