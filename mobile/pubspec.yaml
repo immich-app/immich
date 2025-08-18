@@ -144,8 +144,8 @@ flutter:
 flutter_launcher_icons:
   image_path_android: 'assets/pixelunion-logo.png'
   adaptive_icon_background: '#ffffff'
-  adaptive_icon_foreground: 'assets/immich-logo-android-adaptive-icon.png'
-  image_path_ios: 'assets/immich-logo-w-bg.png'
+  adaptive_icon_foreground: 'assets/pixelunion-logo-android-adaptive-icon.png'
+  image_path_ios: 'assets/pixelunion-logo-w-bg.png'
   android: 'ic_launcher'
   ios: false
   remove_alpha_ios: true
