@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 // ignore: implementation_imports
 import 'package:flutter_cache_manager/src/cache_store.dart';
@@ -37,7 +35,7 @@ abstract class RemoteCacheManager extends CacheManager {
     String fileExtension = 'file',
   }) async {
     final path = '${const Uuid().v1()}.$fileExtension';
-    final file = File(path);
+    final file = await store.fileSystem.createFile(path);
     final sink = file.openWrite();
     try {
       await source.pipe(sink);
