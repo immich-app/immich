@@ -9,7 +9,8 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
-class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with CancellableImageProviderMixin {
+class LocalThumbProvider extends ImageProvider<LocalThumbProvider>
+    with CancellableImageProviderMixin<LocalThumbProvider> {
   final String id;
   final Size size;
   final AssetType assetType;
@@ -33,20 +34,8 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with Cancella
     );
   }
 
-  Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) async* {
-    if (isCancelled) {
-      return;
-    }
-    
-    final request = this.request = LocalImageRequest(localId: key.id, size: size, assetType: key.assetType);
-    try {
-      final image = await request.load(decode);
-      if (image != null) {
-        yield image;
-      }
-    } finally {
-      this.request = null;
-    }
+  Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
+    return loadRequest(LocalImageRequest(localId: key.id, size: size, assetType: key.assetType), decode);
   }
 
   @override
@@ -62,7 +51,8 @@ class LocalThumbProvider extends ImageProvider<LocalThumbProvider> with Cancella
   int get hashCode => id.hashCode ^ size.hashCode;
 }
 
-class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with CancellableImageProviderMixin {
+class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider>
+    with CancellableImageProviderMixin<LocalFullImageProvider> {
   final String id;
   final Size size;
   final AssetType assetType;
@@ -89,21 +79,21 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> with 
   }
 
   Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
+    yield* initialImageStream();
+
+    if (isCancelled) {
+      evict();
+      return;
+    }
+
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    final request = this.request = LocalImageRequest(
+    final request = LocalImageRequest(
       localId: key.id,
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
     );
 
-    try {
-      final image = await request.load(decode);
-      if (image != null) {
-        yield image;
-      }
-    } finally {
-      this.request = null;
-    }
+    yield* loadRequest(request, decode);
   }
 
   @override

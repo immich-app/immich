@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
@@ -7,23 +8,86 @@ import 'package:immich_mobile/presentation/widgets/images/local_image_provider.d
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
-abstract class CancellableImageProvider {
+abstract class CancellableImageProvider<T extends Object> implements ImageProvider<T> {
   void cancel();
 }
 
-mixin class CancellableImageProviderMixin implements CancellableImageProvider {
+abstract mixin class CancellableImageProviderMixin<T extends Object> implements CancellableImageProvider<T> {
   bool isCancelled = false;
   ImageRequest? request;
+  CancelableOperation<ImageInfo?>? cachedOperation;
+
+  ImageInfo? getInitialImage(CancellableImageProvider provider) {
+    final completer = CancelableCompleter<ImageInfo?>(onCancel: provider.cancel);
+    final cachedStream = provider.resolve(const ImageConfiguration());
+    ImageInfo? cachedImage;
+    final listener = ImageStreamListener((image, synchronousCall) {
+      if (synchronousCall) {
+        cachedImage = image;
+      }
+
+      if (!completer.isCompleted) {
+        completer.complete(image);
+      }
+    }, onError: completer.completeError);
+
+    completer.operation.value.whenComplete(() => cachedStream.removeListener(listener));
+    cachedStream.addListener(listener);
+    cachedOperation = cachedImage == null ? completer.operation : null;
+    return cachedImage;
+  }
+
+  Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {
+    if (isCancelled) {
+      evict();
+      return;
+    }
+
+    this.request = request;
+
+    try {
+      final image = await request.load(decode);
+      if (image == null) {
+        evict();
+        return;
+      }
+      yield image;
+    } finally {
+      this.request = null;
+    }
+  }
+
+  Stream<ImageInfo> initialImageStream() async* {
+    final cachedOperation = this.cachedOperation;
+    if (cachedOperation == null) {
+      return;
+    }
+
+    try {
+      final cachedImage = await cachedOperation.valueOrCancellation();
+      if (cachedImage != null) {
+        yield cachedImage;
+      }
+    } catch (_) {
+    } finally {
+      this.cachedOperation = null;
+    }
+  }
 
   @override
   void cancel() {
     isCancelled = true;
     final request = this.request;
-    if (request == null) {
-      return;
+    if (request != null) {
+      this.request = null;
+      request.cancel();
     }
-    this.request = null;
-    return request.cancel();
+
+    final operation = cachedOperation;
+    if (operation != null) {
+      this.cachedOperation = null;
+      operation.cancel();
+    }
   }
 }
 
