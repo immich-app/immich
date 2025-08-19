@@ -145,14 +145,6 @@ export class StackRepository {
     });
   }
 
-  async attachAssets(stackId: string, assetIds: string[]) {
-    if (!assetIds.length) return;
-    await this.db.updateTable('asset').set({ stackId, updatedAt: new Date() }).where('id', 'in', assetIds).execute();
-  }
-
-  async getByPrimaryAsset(ownerId: string, primaryAssetId: string) {
-    return this.search({ ownerId, primaryAssetId }).then((r) => (r.length ? r[0] : null));
-  }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {

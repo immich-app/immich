@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
-import { AssetStatus, Permission } from 'src/enum';
+import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { UUIDAssetIDParamDto } from 'src/validation';
 
@@ -14,7 +14,7 @@ export class StackService extends BaseService {
       primaryAssetId: dto.primaryAssetId,
     });
 
-    return stacks.map((stack: any) => mapStack(stack, { auth }));
+    return stacks.map((stack) => mapStack(stack, { auth }));
   }
 
   async create(auth: AuthDto, dto: StackCreateDto): Promise<StackResponseDto> {
@@ -36,7 +36,7 @@ export class StackService extends BaseService {
   async update(auth: AuthDto, id: string, dto: StackUpdateDto): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.StackUpdate, ids: [id] });
     const stack = await this.findOrFail(id);
-    if (dto.primaryAssetId && !stack.assets.some(({ id }: any) => id === dto.primaryAssetId)) {
+    if (dto.primaryAssetId && !stack.assets.some(({ id }) => id === dto.primaryAssetId)) {
       throw new BadRequestException('Primary asset must be in the stack');
     }
 
@@ -49,7 +49,7 @@ export class StackService extends BaseService {
 
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.StackDelete, ids: [id] });
-    await this.stackRepository.delete(id); // this will null stackId on assets via FK (SET NULL)
+    await this.stackRepository.delete(id);
     await this.eventRepository.emit('StackDelete', { stackId: id, userId: auth.user.id });
   }
 

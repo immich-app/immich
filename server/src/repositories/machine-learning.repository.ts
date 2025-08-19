@@ -177,41 +177,6 @@ export class MachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
-  async computePhash(urls: string[], imagePath: string): Promise<string> {
-    // Similar URL selection strategy as predict(); iterate urls until success
-    let urlCounter = 0;
-    for (const url of urls) {
-      urlCounter++;
-      const isLast = urlCounter >= urls.length;
-      if (!isLast && (await this.shouldSkipUrl(url))) {
-        continue;
-      }
-      try {
-        const formData = new FormData();
-        formData.append('image', new Blob([await readFile(imagePath)]));
-        const response = await fetch(new URL('/phash', url), { method: 'POST', body: formData });
-        if (response.ok) {
-          this.setUrlAvailability(url, true);
-          const data = (await response.json()) as { pHash?: string };
-          if (data.pHash && /^[0-9a-fA-F]{16}$/.test(data.pHash)) {
-            return data.pHash.toLowerCase();
-          }
-          this.logger.warn(`Machine learning /phash response malformed for ${url}`);
-          break;
-        }
-        this.logger.warn(
-          `Machine learning pHash request to "${url}" failed with status ${response.status}: ${response.statusText}`,
-        );
-      } catch (error: Error | unknown) {
-        this.logger.warn(
-          `Machine learning pHash request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
-        );
-      }
-      this.setUrlAvailability(url, false);
-    }
-    throw new Error('Machine learning pHash request failed for all URLs');
-  }
-
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {
     const formData = new FormData();
     formData.append('entries', JSON.stringify(config));

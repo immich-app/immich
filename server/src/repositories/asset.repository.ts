@@ -11,22 +11,22 @@ import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
-    anyUuid,
-    asUuid,
-    hasPeople,
-    removeUndefinedKeys,
-    truncatedDate,
-    unnest,
-    withDefaultVisibility,
-    withExif,
-    withFaces,
-    withFacesAndPeople,
-    withFiles,
-    withLibrary,
-    withOwner,
-    withSmartSearch,
-    withTagId,
-    withTags,
+  anyUuid,
+  asUuid,
+  hasPeople,
+  removeUndefinedKeys,
+  truncatedDate,
+  unnest,
+  withDefaultVisibility,
+  withExif,
+  withFaces,
+  withFacesAndPeople,
+  withFiles,
+  withLibrary,
+  withOwner,
+  withSmartSearch,
+  withTagId,
+  withTags,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 
@@ -112,15 +112,6 @@ interface GetByIdsRelations {
 
 @Injectable()
 export class AssetRepository {
-  async getAllStackIds(): Promise<string[]> {
-    return await this.db
-      .selectFrom('asset')
-      .select('stackId')
-      .distinct()
-      .where('stackId', 'is not', null)
-      .execute()
-      .then((rows: any[]) => rows.map((r) => r.stackId).filter(Boolean));
-  }
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async upsertExif(exif: Insertable<AssetExifTable>): Promise<void> {
@@ -189,19 +180,6 @@ export class AssetRepository {
     return { make: row.make ?? null, model: row.model ?? null };
   }
 
-  async getRecentAssetExifWithinHorizon(ownerId: string, from: Date, to: Date) {
-    return this.db
-      .selectFrom('asset')
-      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .select(['asset.id', 'asset_exif.dateTimeOriginal as dateTimeOriginal'])
-      .where('asset.ownerId', '=', asUuid(ownerId))
-      .where('asset.deletedAt', 'is', null)
-      .where('asset_exif.dateTimeOriginal', '>=', from)
-      .where('asset_exif.dateTimeOriginal', '<=', to)
-      .orderBy('asset_exif.dateTimeOriginal', 'asc')
-      .execute();
-  }
-
   /**
    * Get assets in a time window around a reference date for the same camera (make+model).
    * Ordered by dateTimeOriginal asc, then id.
@@ -261,28 +239,6 @@ export class AssetRepository {
       if (nums.length) map[r.assetId] = nums;
     }
     return map;
-  }
-
-  async getAssetsScoringInfo(assetIds: string[]) {
-    if (!assetIds.length) return [] as any[];
-    return this.db
-      .selectFrom('asset')
-      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .select([
-        'asset.id',
-        'asset.originalFileName',
-        'asset.thumbhash as thumbhash',
-        'asset_exif.dateTimeOriginal as dateTimeOriginal',
-        'asset_exif.iso as iso',
-        'asset_exif.exposureTime as exposureTime',
-        'asset_exif.pHash as pHash',
-        'asset_exif.exifImageWidth as exifImageWidth',
-        'asset_exif.exifImageHeight as exifImageHeight',
-      ])
-      .where('asset.id', 'in', assetIds.map(asUuid))
-      .orderBy('asset_exif.dateTimeOriginal', 'asc')
-      .orderBy('asset.id')
-      .execute();
   }
 
   /** Return a batch of assets that are missing pHash, excluding deleted. */

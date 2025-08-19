@@ -850,6 +850,7 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith({
         assetId: assetStub.image.id,
         bitsPerSample: expect.any(Number),
+        autoStackId: null,
         colorspace: tags.ColorSpace,
         dateTimeOriginal: dateForTest,
         description: tags.ImageDescription,
