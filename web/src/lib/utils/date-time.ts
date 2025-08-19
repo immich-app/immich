@@ -7,14 +7,12 @@ import { get } from 'svelte/store';
  * Convert time like `01:02:03.456` to seconds.
  */
 export function timeToSeconds(time: string) {
-  // Handle edge cases: null, undefined, empty string, or "0"
   if (!time || time === '0') {
     return 0;
   }
 
   const seconds = Duration.fromISOTime(time).as('seconds');
 
-  // Return 0 for invalid inputs that result in NaN
   return isNaN(seconds) ? 0 : seconds;
 }
 export function parseUtcDate(date: string) {
