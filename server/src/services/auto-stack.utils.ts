@@ -5,9 +5,13 @@
 
 /** Euclidean norm (L2). Returns 0 for empty vectors. */
 export function norm(v: number[]): number {
-  if (!Array.isArray(v) || v.length === 0) {return 0;}
+  if (!Array.isArray(v) || v.length === 0) {
+    return 0;
+  }
   let s = 0;
-  for (let i = 0; i < v.length; i++) {s += v[i] * v[i];}
+  for (let i = 0; i < v.length; i++) {
+    s += v[i] * v[i];
+  }
   return Math.sqrt(s);
 }
 
@@ -15,26 +19,33 @@ export function norm(v: number[]): number {
 export function cosSim01(a: number[], b: number[]): number {
   const na = norm(a);
   const nb = norm(b);
-  if (!na || !nb) {return 0;}
+  if (!na || !nb) {
+    return 0;
+  }
   let dot = 0;
   const len = Math.min(a.length, b.length);
-  for (let i = 0; i < len; i++) {dot += a[i] * b[i];}
+  for (let i = 0; i < len; i++) {
+    dot += a[i] * b[i];
+  }
   const cos = dot / (na * nb);
   return (cos + 1) / 2;
 }
 
 const nibbles = (ch: string) => Number.parseInt(ch, 16);
 
-
 /**
  * Hamming distance between two 16-character hex pHashes (64-bit).
  * Returns a number in [0, 64]. If inputs are invalid, returns +Infinity.
  */
 export function hammingHex64(a?: string | null, b?: string | null): number {
-  if (!a || !b) {return Number.POSITIVE_INFINITY;}
+  if (!a || !b) {
+    return Number.POSITIVE_INFINITY;
+  }
   const A = a.toLowerCase();
   const B = b.toLowerCase();
-  if (!/^[0-9a-f]{16}$/.test(A) || !/^[0-9a-f]{16}$/.test(B)) {return Number.POSITIVE_INFINITY;}
+  if (!/^[0-9a-f]{16}$/.test(A) || !/^[0-9a-f]{16}$/.test(B)) {
+    return Number.POSITIVE_INFINITY;
+  }
 
   try {
     // Use BigInt popcount for speed and consistency
@@ -62,7 +73,9 @@ export function hammingHex64(a?: string | null, b?: string | null): number {
 /** Extract trailing numeric suffix before extension (e.g., IMG_0123.jpg -> 123). Returns null if none. */
 export function extractNumericSuffix(fileName: string): number | null {
   const m = fileName.match(/(\d+)(?=\.[^.]+$)/);
-  if (!m) {return null;}
+  if (!m) {
+    return null;
+  }
   const n = Number.parseInt(m[1]);
   return Number.isNaN(n) ? null : n;
 }

@@ -9919,7 +9919,7 @@
       },
       "AllJobStatusResponseDto": {
         "properties": {
-          "autoStackCandidateQueueAll": {
+          "autoStack": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
           "backgroundTask": {
@@ -9969,7 +9969,7 @@
           }
         },
         "required": [
-          "autoStackCandidateQueueAll",
+          "autoStack",
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
@@ -11592,7 +11592,7 @@
           "library",
           "notifications",
           "backupDatabase",
-          "autoStackCandidateQueueAll"
+          "autoStack"
         ],
         "type": "string"
       },
@@ -15471,18 +15471,6 @@
             "description": "Enable automatic stack candidate generation",
             "type": "boolean"
           },
-          "horizonMinutes": {
-            "description": "Backfill look-back horizon in minutes for scheduled generation",
-            "maximum": 1440,
-            "minimum": 1,
-            "type": "number"
-          },
-          "maxCandidates": {
-            "description": "Maximum active candidate groups retained per user",
-            "maximum": 1000,
-            "minimum": 10,
-            "type": "number"
-          },
           "maxGapSeconds": {
             "description": "Maximum allowed gap (seconds) between adjacent assets within a group",
             "maximum": 3600,
@@ -15596,8 +15584,6 @@
           "autoPromoteMinScore",
           "cameraMatch",
           "enabled",
-          "horizonMinutes",
-          "maxCandidates",
           "maxGapSeconds",
           "minGroupSize",
           "visualPromoteThreshold",
@@ -15935,7 +15921,7 @@
       },
       "SystemConfigJobDto": {
         "properties": {
-          "autoStackCandidateQueueAll": {
+          "autoStack": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
           "backgroundTask": {
@@ -15973,7 +15959,7 @@
           }
         },
         "required": [
-          "autoStackCandidateQueueAll",
+          "autoStack",
           "backgroundTask",
           "faceDetection",
           "library",

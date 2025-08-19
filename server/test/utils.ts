@@ -310,7 +310,7 @@ export const newTestService = <T extends BaseService>(
   }
 
   // Provide default stack.create implementation to avoid strict mock failures
-  (mocks.stack as any).create.mockImplementation(async (entity: any, assetIds: string[]) => {
+  (mocks.stack as any).create.mockImplementation((entity: any, assetIds: string[]) => {
     return {
       id: 'stack_test',
       ownerId: entity.ownerId,

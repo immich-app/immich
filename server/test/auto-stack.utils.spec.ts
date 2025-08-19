@@ -1,5 +1,5 @@
+import { cosSim01, extractNumericSuffix, hammingHex64, norm } from 'src/services/auto-stack.utils';
 import { describe, expect, it } from 'vitest';
-import { cosSim01, extractNumericSuffix, hammingHex64, norm } from '../src/services/auto-stack.utils';
 
 describe('auto-stack.utils', () => {
   it('norm computes L2 correctly', () => {

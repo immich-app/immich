@@ -221,7 +221,7 @@ describe(AutoStackService.name, () => {
       },
     ] as any);
     // Secondary fetch when expanding: include candidate vx3 (simulate repository call by returning superset when wider window asked)
-    mocks.asset.getTimeWindowCameraSequence.mockImplementation(async (args: any) => {
+    mocks.asset.getTimeWindowCameraSequence.mockImplementation((args: any) => {
       if (args.from && args.from < new Date(t0.getTime() - 4000)) {
         return [
           { id: 'vx1', originalFileName: 'IMG_0101.jpg', dateTimeOriginal: t0, pHash: 'aaaaaaaaaaaaaaaa' },
@@ -281,7 +281,7 @@ describe(AutoStackService.name, () => {
       },
     });
     const t0 = new Date('2024-03-01T00:00:00Z');
-    mocks.asset.getTimeWindowCameraSequence.mockImplementation(async (args: any) => {
+    mocks.asset.getTimeWindowCameraSequence.mockImplementation((args: any) => {
       if (args.from && args.from < new Date(t0.getTime() - 1000)) {
         return [
           { id: 'cx1', originalFileName: 'IMG_1001.jpg', dateTimeOriginal: t0 },

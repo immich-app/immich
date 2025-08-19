@@ -1,5 +1,5 @@
+import { computeAutoStackScore } from 'src/services/auto-stack.scoring';
 import { describe, expect, it } from 'vitest';
-import { computeAutoStackScore } from './auto-stack.scoring';
 
 const weights = { size: 30, timeSpan: 20, continuity: 10, visual: 50, exposure: 10 };
 const maxGapSeconds = 30;

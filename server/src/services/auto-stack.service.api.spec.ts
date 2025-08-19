@@ -15,11 +15,13 @@ describe(`${AutoStackService.name} API`, () => {
       server: { autoStack: { enabled: true } },
     });
     // default stack.update implementation for strict automock
-    (mocks.stack.update as any).mockImplementation(async (id: string, entity: any) => ({
-      id,
-      primaryAssetId: entity.primaryAssetId,
-      assets: [],
-    }));
+    (mocks.stack.update as any).mockImplementation((id: string, entity: any) => {
+      return {
+        id,
+        primaryAssetId: entity.primaryAssetId,
+        assets: [],
+      };
+    });
   });
 
   it('resetAll: queues queue-all job and returns status', async () => {

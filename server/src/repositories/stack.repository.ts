@@ -116,16 +116,16 @@ export class StackRepository {
         .executeTakeFirst();
 
       // If conflict (already exists), fetch existing stack id by primary asset id
-      const stackId = newRecord?.id
-        ? newRecord.id
-        : (
-            await tx
-              .selectFrom('stack')
-              .select('id')
-              .where('primaryAssetId', '=', assetIds[0])
-              .where('ownerId', '=', entity.ownerId)
-              .executeTakeFirstOrThrow()
-          ).id;
+      let stackId = newRecord?.id;
+      if (!stackId) {
+        const stackInfo = await tx
+          .selectFrom('stack')
+          .select('id')
+          .where('primaryAssetId', '=', assetIds[0])
+          .where('ownerId', '=', entity.ownerId)
+          .executeTakeFirstOrThrow();
+        stackId = stackInfo.id;
+      }
 
       await tx
         .updateTable('asset')

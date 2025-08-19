@@ -126,8 +126,8 @@
       disabled: !$featureFlags.facialRecognition,
     },
     // FIXME: find why the JobName.AutoStackCandidateQueueAll is not working
-    // [JobName.AutoStackCandidateQueue]: {
-    autoStackCandidateQueueAll: {
+    // [JobName.AutoStack]: {
+    autoStack: {
       icon: mdiLayersTriple,
       title: $getJobName(JobName.AutoStackCandidateQueueAll),
       subtitle: $t('admin.auto_stack_job_description'),

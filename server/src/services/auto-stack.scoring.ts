@@ -1,4 +1,4 @@
-import { extractNumericSuffix, hammingHex64, norm } from './auto-stack.utils';
+import { extractNumericSuffix, hammingHex64, norm } from 'src/services/auto-stack.utils';
 /**
  * Compute the AutoStack group score.
  * Blends size/time/continuity/visual/exposure components into a 0..100 total.
@@ -33,6 +33,25 @@ export interface AutoStackScoreResult {
   avgCos?: number;
 }
 
+const parseExposure = (v: string) =>
+  v.includes('/')
+    ? (() => {
+        const [n, d] = v.split('/');
+        const nn = Number(n);
+        const dd = Number(d);
+        return dd ? nn / dd : Number(v);
+      })()
+    : Number(v);
+
+const variance = (arr: number[]) => {
+  if (arr.length < 2) {
+    return 0;
+  }
+  const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+  return arr.reduce((a, b) => a + (b - mean) ** 2, 0) / (arr.length - 1);
+};
+const normVar = (v: number) => (v === 0 ? 1 : 1 / (1 + v));
+
 export function computeAutoStackScore({
   assets,
   embeddingMap,
@@ -46,7 +65,7 @@ export function computeAutoStackScore({
     .map((s) => (s.dateTimeOriginal ? new Date(s.dateTimeOriginal).getTime() : Number.NaN))
     .filter((t) => !Number.isNaN(t))
     .sort();
-  const spanMs = times.length > 0 ? times.at(-1) - times[0] : 0;
+  const spanMs = times.length > 0 ? (times.at(-1) ?? 0 - times[0]) : 0;
   const idealSpanMs = maxGapSeconds * 1000 * (size - 1);
   const timeSpanScore =
     (spanMs <= idealSpanMs ? 1 : Math.max(0, 1 - (spanMs - idealSpanMs) / (windowSeconds * 1000))) *
@@ -56,7 +75,9 @@ export function computeAutoStackScore({
   for (let i = 1; i < assets.length; i++) {
     const prev = extractNumericSuffix(assets[i - 1].originalFileName);
     const cur = extractNumericSuffix(assets[i].originalFileName);
-    if (prev != null && cur != null && (cur === prev || cur === prev + 1)) {continuityOk++;}
+    if (prev != null && cur != null && (cur === prev || cur === prev + 1)) {
+      continuityOk++;
+    }
   }
   const continuityScore = (assets.length > 1 ? continuityOk / (assets.length - 1) : 0) * (weights?.continuity ?? 10);
   let visualSimilarityScore = 0;
@@ -75,9 +96,13 @@ export function computeAutoStackScore({
       for (let j = i + 1; j < embAssets.length; j++) {
         const ej = embeddingMap[embAssets[j].id];
         const normJ = norm(ej);
-        if (!normI || !normJ) {continue;}
+        if (!normI || !normJ) {
+          continue;
+        }
         let dot = 0;
-        for (let k = 0; k < Math.min(ei.length, ej.length); k++) {dot += ei[k] * ej[k];}
+        for (let k = 0; k < Math.min(ei.length, ej.length); k++) {
+          dot += ei[k] * ej[k];
+        }
         sumCos += dot / (normI * normJ);
         pairs++;
       }
@@ -130,7 +155,9 @@ export function computeAutoStackScore({
             for (let k = 0; k < len; k++) {
               const x = a[k] ^ b[k];
               let diffBits = 0;
-              for (let bit = 0; bit < 8; bit++) {diffBits += (x >> bit) & 1;}
+              for (let bit = 0; bit < 8; bit++) {
+                diffBits += (x >> bit) & 1;
+              }
               equalBits += 8 - diffBits;
             }
             totalSim += equalBits / (len * 8);
@@ -145,22 +172,7 @@ export function computeAutoStackScore({
   let exposureConsistencyScore = 0;
   const isoValues = assets.map((s) => s.iso).filter((v): v is number => typeof v === 'number');
   const exposureValues = assets.map((s) => s.exposureTime).filter((v): v is string => typeof v === 'string');
-  const parseExposure = (v: string) =>
-    v.includes('/')
-      ? (() => {
-          const [n, d] = v.split('/');
-          const nn = Number(n);
-          const dd = Number(d);
-          return dd ? nn / dd : Number(v);
-        })()
-      : Number(v);
-  const expNums = exposureValues.map(parseExposure).filter((v) => Number.isFinite(v) && v > 0);
-  const variance = (arr: number[]) => {
-    if (arr.length < 2) {return 0;}
-    const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-    return arr.reduce((a, b) => a + (b - mean) ** 2, 0) / (arr.length - 1);
-  };
-  const normVar = (v: number) => (v === 0 ? 1 : 1 / (1 + v));
+  const expNums = exposureValues.map((exp) => parseExposure(exp)).filter((v) => Number.isFinite(v) && v > 0);
   if (isoValues.length > 1 || expNums.length > 1) {
     const isoScore = isoValues.length > 1 ? normVar(variance(isoValues)) : 1;
     const expScore = expNums.length > 1 ? normVar(variance(expNums)) : 1;
