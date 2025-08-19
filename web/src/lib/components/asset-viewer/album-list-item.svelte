@@ -128,7 +128,7 @@
     type="button"
     onclick={onAlbumClick}
     use:scrollIntoViewIfSelected
-    class="flex gap-4 px-2 py-2 text-start"
+    class="flex w-full gap-4 px-2 py-2 text-start"
     class:bg-gray-200={selected}
     class:dark:bg-gray-700={selected}
     use:longPress={{ onLongPress: () => handleMultiSelectClicked() }}
@@ -158,7 +158,7 @@
     <button
       type="button"
       onclick={handleMultiSelectClicked}
-      class="p-3 focus:outline-none hover:cursor-pointer"
+      class="absolute right-0 top-4 p-3 focus:outline-none hover:cursor-pointer"
       role="checkbox"
       tabindex={-1}
       aria-checked={selected}
