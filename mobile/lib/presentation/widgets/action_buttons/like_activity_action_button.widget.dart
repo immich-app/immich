@@ -44,6 +44,7 @@ class LikeActivityActionButton extends ConsumerWidget {
         );
 
         return BaseActionButton(
+          maxWidth: 60,
           iconData: liked != null ? Icons.favorite : Icons.favorite_border,
           label: "like".t(context: context),
           onPressed: () => onTap(liked),

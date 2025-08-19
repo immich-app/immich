@@ -8,7 +8,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/utils/database.utils.dart';
 import 'package:platform/platform.dart';
 
-enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount }
+enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount, newestAsset }
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -40,6 +40,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           SortLocalAlbumsBy.isIosSharedAlbum => OrderingTerm.asc(_db.localAlbumEntity.isIosSharedAlbum),
           SortLocalAlbumsBy.name => OrderingTerm.asc(_db.localAlbumEntity.name),
           SortLocalAlbumsBy.assetCount => OrderingTerm.desc(assetCount),
+          SortLocalAlbumsBy.newestAsset => OrderingTerm.desc(_db.localAlbumEntity.updatedAt),
         });
       }
       query.orderBy(orderings);
@@ -319,7 +320,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
-          ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)])
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
           ..limit(1);
 
     final results = await query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
