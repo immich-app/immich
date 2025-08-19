@@ -51,7 +51,7 @@ jobs:
         run: |
           gh api graphql \
             -f issueId="$NODE_ID" \
-            -f body="This issue has automatically been closed as it is likely a duplicate. We get a lot of duplicate threads each day, which is why we ask you in the template to confirm that you searched for duplicates before opening one." \
+            -f body="This issue has automatically been closed as it is likely a duplicate. We get a lot of duplicate threads each day, which is why we ask you in the template to confirm that you searched for duplicates before opening one. If you're sure this is not a duplicate, please leave a comment and we will reopen the thread if necessary." \
             -f query='
               mutation CommentAndCloseIssue($issueId: ID!, $body: String!) {
                 addComment(input: {
@@ -77,7 +77,7 @@ jobs:
         run: |
           gh api graphql \
             -f discussionId="$NODE_ID" \
-            -f body="This discussion has automatically been closed as it is likely a duplicate. We get a lot of duplicate threads each day, which is why we ask you in the template to confirm that you searched for duplicates before opening one." \
+            -f body="This discussion has automatically been closed as it is likely a duplicate. We get a lot of duplicate threads each day, which is why we ask you in the template to confirm that you searched for duplicates before opening one. If you're sure this is not a duplicate, please leave a comment and we will reopen the thread if necessary." \
             -f query='
               mutation CommentAndCloseDiscussion($discussionId: ID!, $body: String!) {
                 addDiscussionComment(input: {
