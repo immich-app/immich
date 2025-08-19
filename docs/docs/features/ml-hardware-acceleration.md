@@ -83,7 +83,6 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for RKNN specific settings
   - In particular, setting `MACHINE_LEARNING_RKNN_THREADS` to 2 or 3 can _dramatically_ improve performance for RK3576 and RK3588 compared to the default of 1, at the expense of multiplying the amount of RAM each model uses by that amount.
 
-
 ## Setup
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
