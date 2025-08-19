@@ -239,13 +239,11 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AlbumDelete' })
   onAlbumDelete({ id, userId }: ArgOf<'AlbumDelete'>) {
-    console.log(`Album ${id} deleted by user ${userId}`);
     this.eventRepository.clientSend('on_album_delete', userId, id);
   }
 
   @OnEvent({ name: 'AlbumCreate' })
   onAlbumCreate({ id, userId }: ArgOf<'AlbumCreate'>) {
-    console.log(`Album ${id} created by user ${userId}`);
     this.eventRepository.clientSend('on_album_create', userId, id);
   }
 

@@ -251,8 +251,6 @@
 
     // Add listener for album updates
     const unsubscribeUpdate = websocketEvents.on('on_album_update', async (albumId) => {
-      console.log(`Album update event received for album ID: ${albumId}`);
-
       try {
         // Fetch the updated album details
         const updatedAlbum = await getAlbumInfo({ id: albumId });
