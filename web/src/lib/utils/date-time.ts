@@ -12,35 +12,11 @@ export function timeToSeconds(time: string) {
     return 0;
   }
 
-  // Try Luxon's ISO time parsing first
-  const luxonSeconds = Duration.fromISOTime(time).as('seconds');
-  if (!isNaN(luxonSeconds)) {
-    return luxonSeconds;
-  }
+  const seconds = Duration.fromISOTime(time).as('seconds');
 
-  // Fall back to custom parsing for non-ISO formats
-  const parts = time.split(':');
-  
-  // Handle cases where the time format is not as expected (e.g., missing colons)
-  if (parts.length < 3) {
-    return 0;
-  }
-
-  // Handle the seconds part which might contain milliseconds
-  if (parts[2]) {
-    parts[2] = parts[2].split('.').slice(0, 2).join('.');
-  }
-
-  const [hours, minutes, seconds] = parts.map(Number);
-
-  // Validate that the parts are valid numbers
-  if (isNaN(hours) || isNaN(minutes) || isNaN(seconds)) {
-    return 0;
-  }
-
-  return Duration.fromObject({ hours, minutes, seconds }).as('seconds');
+  // Return 0 for invalid inputs that result in NaN
+  return isNaN(seconds) ? 0 : seconds;
 }
-
 export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
 }
