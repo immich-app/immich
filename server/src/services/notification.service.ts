@@ -199,31 +199,32 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AlbumUpdate' })
   async onAlbumUpdate({ id, userId, notifyRecipients }: ArgOf<'AlbumUpdate'>) {
-    if (notifyRecipients) {
-      // Fetch album with users to get recipient list
-      const album = await this.albumRepository.getById(id, { withAssets: false });
-      if (!album) {
-        this.logger.warn(`Album ${id} not found for update notification`);
-        // Still send websocket event to updater and return early
-        this.eventRepository.clientSend('on_album_update', userId, id);
-        return;
-      }
+    // Fetch album with users to get recipient list
+    const album = await this.albumRepository.getById(id, { withAssets: false });
+    if (!album) {
+      this.logger.warn(`Album ${id} not found for update notification`);
+      // Still send websocket event to updater and return early
+      this.eventRepository.clientSend('on_album_update', userId, id);
+      return;
+    }
 
-      // Get all users except the one who made the update
-      const allRecipients = [...new Set([...album.albumUsers.map(({ user }) => user.id), album.owner.id])].filter(
-        (recipientUserId) => recipientUserId !== userId,
-      );
+    // Get all users except the one who made the update
+    const allRecipients = [...new Set([...album.albumUsers.map(({ user }) => user.id), album.owner.id])].filter(
+      (recipientUserId) => recipientUserId !== userId,
+    );
 
-      // Send notifications and websocket events to all recipients
-      for (const recipient of allRecipients) {
+    // Always send websocket events to all recipients
+    for (const recipient of allRecipients) {
+      // Send websocket event to the recipient
+      this.eventRepository.clientSend('on_album_update', recipient, id);
+
+      // Only send email notifications if notifyRecipients is true
+      if (notifyRecipients) {
         await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipient}`);
         await this.jobRepository.queue({
           name: JobName.NotifyAlbumUpdate,
           data: { id, recipientId: recipient, delay: NotificationService.albumUpdateEmailDelayMs },
         });
-
-        // Send websocket event to the recipient
-        this.eventRepository.clientSend('on_album_update', recipient, id);
       }
     }
 

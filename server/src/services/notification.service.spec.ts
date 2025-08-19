@@ -160,7 +160,7 @@ describe(NotificationService.name, () => {
         owner: userStub.admin,
         albumUsers: [{ user: { ...userStub.user1, id: '42' } }],
       };
-      mocks.album.getById.mockResolvedValue(album as any);
+      mocks.album.getById.mockResolvedValue(album);
 
       await sut.onAlbumUpdate({ id: 'album', userId: '1', notifyRecipients: true });
       expect(mocks.job.queue).toHaveBeenCalledWith({
@@ -514,7 +514,7 @@ describe(NotificationService.name, () => {
         owner: userStub.admin,
         albumUsers: [{ user: userStub.user2 }], // user2 will be notified
       };
-      mocks.album.getById.mockResolvedValue(album as any);
+      mocks.album.getById.mockResolvedValue(album);
 
       await sut.onAlbumUpdate({ id: '1', userId: '1', notifyRecipients: true });
       expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `1/${userStub.user2.id}`);
@@ -567,10 +567,21 @@ describe(NotificationService.name, () => {
     });
 
     it('should only send websocket event to user when notifyRecipients is false', async () => {
+      const album = {
+        ...albumStub.empty,
+        id: 'album-id',
+        owner: userStub.admin,
+        albumUsers: [{ user: userStub.user1 }],
+      };
+      mocks.album.getById.mockResolvedValue(album);
+
       await sut.onAlbumUpdate({ id: 'album-id', userId: 'user-id', notifyRecipients: false });
 
-      expect(mocks.album.getById).not.toHaveBeenCalled();
+      expect(mocks.album.getById).toHaveBeenCalledWith('album-id', { withAssets: false });
       expect(mocks.job.queue).not.toHaveBeenCalled();
+      // Should send websocket events to all recipients and the updater
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.admin.id, 'album-id');
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.user1.id, 'album-id');
       expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', 'user-id', 'album-id');
     });
 
