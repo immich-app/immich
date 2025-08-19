@@ -113,9 +113,7 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
       timeout: 5000,
       message: $t('assets_added_to_albums_count', {
         values: {
-          albumCount: result.albumSuccessCount,
           albumTotal: albumIds.length,
-          assetCount: result.assetSuccessCount,
           assetTotal: assetIds.length,
         },
       }),
