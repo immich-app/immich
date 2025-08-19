@@ -1,11 +1,10 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
+  import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import DatePicker from '$lib/components/shared-components/date-picker.svelte';
-  import NumberRangeInput from '$lib/components/shared-components/number-range-input.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import Geolocation from '$lib/components/utilities-page/geolocation/geolocation.svelte';
-  import GeolocationInformationModal from '$lib/modals/GeolocationInformationModal.svelte';
-  import GeolocationUpdateConfirmationModal from '$lib/modals/GeolocationUpdateConfirmationModal.svelte';
+  import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { buildDateRangeFromYearMonthAndDay } from '$lib/utils/date-time';
@@ -13,9 +12,8 @@
   import { buildDateString } from '$lib/utils/string-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { searchAssets, updateAssets, type AssetResponseDto } from '@immich/sdk';
-  import { Button, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
-  import { mdiInformationOutline, mdiMapMarkerRadius, mdiSelectAll, mdiSelectRemove } from '@mdi/js';
-  import { debounce } from 'lodash-es';
+  import { Button, LoadingSpinner, modalManager, Text } from '@immich/ui';
+  import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectAll, mdiSelectRemove } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -30,8 +28,7 @@
   let assets = $state<AssetResponseDto[]>([]);
   let shiftKeyIsDown = $state(false);
   let assetInteraction = new AssetInteraction();
-  let location = $state<{ latitude: number | undefined; longitude: number | undefined } | null>(null);
-  let assetsStats = $state({ displayed: 0, total: 0 });
+  let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
   let assetsToDisplay = $state(200);
   let takenRange = $state<{ takenAfter?: string; takenBefore?: string } | null>(null);
 
@@ -66,10 +63,6 @@
       });
 
       assets = searchResult.assets.items;
-      assetsStats = {
-        displayed: assets.length,
-        total: searchResult.assets.total,
-      };
       isLoading = false;
     }
   };
@@ -100,11 +93,16 @@
     await setQueryValue('date', '');
   };
 
-  const onLocationClick = (locationFromAsset: { latitude: number | undefined; longitude: number | undefined }) => {
-    location = locationFromAsset;
-  };
+  const handleUpdate = async () => {
+    const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
+      location: location ?? { latitude: 0, longitude: 0 },
+      assetCount: assetInteraction.selectedAssets.length,
+    });
 
-  const onUpdateLocation = async () => {
+    if (!confirmed) {
+      return;
+    }
+
     await updateAssets({
       assetBulkUpdateDto: {
         ids: assetInteraction.selectedAssets.map((asset) => asset.id),
@@ -112,18 +110,9 @@
         longitude: location?.longitude ?? undefined,
       },
     });
+
     void loadAssets();
     handleDeselectAll();
-  };
-
-  const debouncedLoadAssets = debounce(loadAssets, 400);
-
-  const handleAssetsToDisplayInput = (value: number | null) => {
-    if (value === null) {
-      return;
-    }
-    assetsToDisplay = value;
-    void debouncedLoadAssets();
   };
 
   // Assets selection handlers
@@ -194,107 +183,84 @@
   const handleDeselectAll = () => {
     cancelMultiselect(assetInteraction);
   };
+
+  const handlePickOnMap = async () => {
+    const point = await modalManager.show(ChangeLocation, {
+      point: {
+        lat: location.latitude,
+        lng: location.longitude,
+      },
+    });
+    if (!point) {
+      return;
+    }
+
+    location = { latitude: point.lat, longitude: point.lng };
+  };
 </script>
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
 <UserPageLayout title={data.meta.title} scrollbar={true}>
-  <div
-    class="sticky -top-2 z-10 bg-immich-bg dark:bg-immich-dark-bg flex-row items-center justify-between flex-wrap border-b"
-  >
-    <div class="flex flex-wrap gap-2 items-center justify-between">
+  {#snippet buttons()}
+    <div class="flex gap-2 justify-end place-items-center">
+      <Text>{location.latitude.toFixed(3)},{location.longitude.toFixed(3)}</Text>
+      <Button size="small" color="secondary" variant="ghost" leadingIcon={mdiPencilOutline} onclick={handlePickOnMap}
+        >{$t('location_picker_choose_on_map')}</Button
+      >
+      <Button
+        leadingIcon={mdiMapMarkerMultipleOutline}
+        size="small"
+        color="primary"
+        disabled={assetInteraction.selectedAssets.length === 0}
+        onclick={() => handleUpdate()}
+      >
+        {$t('apply_count', { values: { count: assetInteraction.selectedAssets.length } })}
+      </Button>
+    </div>
+  {/snippet}
+
+  <div class="bg-light flex items-center justify-between flex-wrap border-b">
+    <div class="flex gap-2 items-center">
       <DatePicker
         onDateChange={handleDateChange}
         onClearFilters={handleClearFilters}
         defaultDate={partialDate || undefined}
       />
-      <div class="flex gap-2 items-center pr-8">
-        <div class="flex-row gap-2 w-40">
-          <label for="assets-count" class="immich-form-label">
-            {$t('assets_to_display')}
-          </label>
-          <NumberRangeInput
-            min={0}
-            max={1000}
-            id="assets-count"
-            onInput={handleAssetsToDisplayInput}
-            value={assetsToDisplay}
-            step={20}
-          />
-        </div>
-        <div class="w-8 pt-6">
-          {#if isLoading}
-            <LoadingSpinner size="large" />
-          {/if}
-        </div>
-      </div>
-      <div class="flex gap-2 w-80">
-        <CoordinatesInput
-          lat={location?.latitude}
-          lng={location?.longitude}
-          onUpdate={(lat, lng) => {
-            location = { latitude: lat, longitude: lng };
-          }}
-        />
-      </div>
-      <div class="flex gap-2 pt-6">
-        <Button
-          leadingIcon={mdiMapMarkerRadius}
-          size="medium"
-          color="primary"
-          variant="ghost"
-          disabled={assetInteraction.selectedAssets.length === 0}
-          onclick={() =>
-            modalManager.show(GeolocationUpdateConfirmationModal, {
-              location: location ?? { latitude: 0, longitude: 0 },
-              assetCount: assetInteraction.selectedAssets.length,
-              onUpdateLocation,
-            })}
-        >
-          {$t('update_location')}
-        </Button>
-        <Button
-          leadingIcon={assetInteraction.selectionActive ? mdiSelectRemove : mdiSelectAll}
-          size="medium"
-          color="secondary"
-          variant="ghost"
-          onclick={assetInteraction.selectionActive ? handleDeselectAll : handleSelectAll}
-        >
-          {assetInteraction.selectionActive ? $t('unselect_all') : $t('select_all')}
-        </Button>
-        <IconButton
-          shape="round"
-          variant="ghost"
-          color="secondary"
-          icon={mdiInformationOutline}
-          aria-label={$t('deduplication_info')}
-          size="small"
-          onclick={() => modalManager.show(GeolocationInformationModal)}
-        />
-      </div>
     </div>
-    <p class="text-sm text-gray-500">
-      {$t('geolocation_assets_displayed', {
-        values: { displayed: assetsStats.displayed, total: assetsStats.total },
-      })}
-    </p>
+
+    <Button
+      leadingIcon={assetInteraction.selectionActive ? mdiSelectRemove : mdiSelectAll}
+      size="small"
+      color="secondary"
+      variant="ghost"
+      onclick={assetInteraction.selectionActive ? handleDeselectAll : handleSelectAll}
+    >
+      {assetInteraction.selectionActive ? $t('unselect_all') : $t('select_all')}
+    </Button>
   </div>
 
-  <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
-    {#if assets && assets.length > 0}
+  {#if isLoading}
+    <div class="h-full w-full flex items-center justify-center">
+      <LoadingSpinner size="giant" />
+    </div>
+  {/if}
+
+  {#if assets && assets.length > 0}
+    <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
       {#each assets as asset (asset.id)}
         <Geolocation
           {asset}
           {assetInteraction}
           onSelectAsset={(asset) => handleSelectAssets(asset)}
           onMouseEvent={(asset) => assetMouseEventHandler(asset)}
-          onLocationClick={(location) => onLocationClick(location)}
+          onLocation={(selected) => (location = selected)}
         />
       {/each}
-    {:else}
-      <p class="text-center text-lg dark:text-white flex place-items-center place-content-center">
-        {$t('no_assets_to_show')}
-      </p>
-    {/if}
-  </div>
+    </div>
+  {:else}
+    <div class="w-full">
+      <EmptyPlaceholder text={$t('no_assets_to_show')} />
+    </div>
+  {/if}
 </UserPageLayout>

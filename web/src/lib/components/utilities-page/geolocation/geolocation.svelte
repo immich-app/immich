@@ -1,9 +1,5 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -15,10 +11,10 @@
     assetInteraction: AssetInteraction;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onMouseEvent: (asset: AssetResponseDto) => void;
-    onLocationClick: (location: { latitude: number | undefined; longitude: number | undefined }) => void;
+    onLocation: (location: { latitude: number; longitude: number }) => void;
   }
 
-  let { asset, assetInteraction, onSelectAsset, onMouseEvent, onLocationClick }: Props = $props();
+  let { asset, assetInteraction, onSelectAsset, onMouseEvent, onLocation }: Props = $props();
 
   let assetData = $derived(
     JSON.stringify(
@@ -52,19 +48,7 @@
       asset={timelineAsset}
       onClick={() => {
         if (asset.exifInfo?.latitude && asset.exifInfo?.longitude) {
-          onLocationClick({
-            latitude: asset.exifInfo?.latitude ?? undefined,
-            longitude: asset.exifInfo?.longitude ?? undefined,
-          });
-          notificationController.show({
-            message: $t('copied_gps', {
-              values: {
-                lat: asset.exifInfo?.latitude,
-                lng: asset.exifInfo?.longitude,
-              },
-            }),
-            type: NotificationType.Info,
-          });
+          onLocation({ latitude: asset.exifInfo?.latitude, longitude: asset.exifInfo?.longitude });
         } else {
           onSelectAsset(asset);
         }
@@ -79,11 +63,11 @@
 
     {#if hasGps}
       <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-green-500">
-        {$t('gps_on')}
+        {$t('gps')}
       </div>
     {:else}
       <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-500">
-        {$t('gps_off')}
+        {$t('gps_missing')}
       </div>
     {/if}
   </div>

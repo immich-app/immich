@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -105,14 +106,8 @@
       </select>
     </div>
 
-    <div class="flex-2 min-w-16">
-      <button
-        type="button"
-        onclick={clearFilters}
-        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors duration-200"
-      >
-        {$t('clear_value')}
-      </button>
+    <div class="flex">
+      <Button color="secondary" variant="ghost" onclick={clearFilters}>{$t('reset')}</Button>
     </div>
   </div>
 </div>
