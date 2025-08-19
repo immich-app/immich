@@ -115,51 +115,36 @@
   }
 </script>
 
-<div role="group" class="relative flex w-full text-start" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
-  {#if mouseOver || multiSelected}
-    <div class="absolute left-3.5 z-[1] rounded-full">
-      <button
-        type="button"
-        onclick={handleMultiSelectClicked}
-        class="absolute p-2 focus:outline-none"
-        role="checkbox"
-        tabindex={-1}
-        aria-checked={selected}
-      >
-        {#if multiSelected}
-          <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
-          </div>
-        {:else}
-          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
-        {/if}
-      </button>
-    </div>
-  {/if}
+<div
+  role="group"
+  class={[
+    'relative flex w-full text-start justify-between transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl my-2 hover:cursor-pointer',
+    { 'bg-primary/10 hover:bg-primary/10': multiSelected },
+  ]}
+  onmouseenter={onMouseEnter}
+  onmouseleave={onMouseLeave}
+>
   <button
     type="button"
     onclick={onAlbumClick}
     use:scrollIntoViewIfSelected
-    class="flex w-full gap-4 px-6 py-2 text-start transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
+    class="flex gap-4 px-2 py-2 text-start"
     class:bg-gray-200={selected}
     class:dark:bg-gray-700={selected}
     use:longPress={{ onLongPress: () => handleMultiSelectClicked() }}
   >
-    <span class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">
+    <span class="h-16 w-16 shrink-0 rounded-xl bg-slate-300">
       {#if album.albumThumbnailAssetId}
         <img
           src={getAssetThumbnailUrl(album.albumThumbnailAssetId)}
           alt={album.albumName}
-          class={[
-            'h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg',
-            { 'scale-[0.85]': multiSelected },
-          ]}
+          class={['h-full w-full rounded-xl object-cover transition-all duration-300 hover:shadow-lg']}
           data-testid="album-image"
           draggable="false"
         />
       {/if}
     </span>
-    <span class="flex h-12 flex-col items-start justify-center overflow-hidden">
+    <span class="flex h-full flex-col items-start justify-center overflow-hidden">
       <span class="w-full shrink overflow-hidden text-ellipsis whitespace-nowrap"
         >{albumNameArray[0]}<b>{albumNameArray[1]}</b>{albumNameArray[2]}</span
       >
@@ -168,4 +153,23 @@
       </span>
     </span>
   </button>
+
+  {#if mouseOver || multiSelected}
+    <button
+      type="button"
+      onclick={handleMultiSelectClicked}
+      class="p-3 focus:outline-none hover:cursor-pointer"
+      role="checkbox"
+      tabindex={-1}
+      aria-checked={selected}
+    >
+      {#if multiSelected}
+        <div class="rounded-full">
+          <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+        </div>
+      {:else}
+        <Icon path={mdiCheckCircle} size="24" class="text-gray-300 hover:text-primary/75" />
+      {/if}
+    </button>
+  {/if}
 </div>

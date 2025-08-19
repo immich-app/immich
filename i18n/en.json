@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_already_exists": "Already in {album}",
   "add_to_album_toggle": "Toggle selection for {album}",
   "add_to_albums": "Add to albums",
+  "add_to_albums_count": "Add to albums ({count})",
   "add_to_shared_album": "Add to shared album",
   "add_url": "Add URL",
   "added_to_archive": "Added to archive",
