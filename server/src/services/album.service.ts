@@ -205,6 +205,7 @@ export class AlbumService extends BaseService {
       results.error = BulkIdErrorReason.NO_PERMISSION;
       return results;
     }
+
     const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
     if (allowedAssetIds.size === 0) {
       results.error = BulkIdErrorReason.NO_PERMISSION;
@@ -223,14 +224,9 @@ export class AlbumService extends BaseService {
       results.error = undefined;
 
       for (const assetId of notPresentAssetIds) {
-        const hasAsset = existingAssetIds.has(assetId);
-        if (hasAsset) {
-          continue;
-        }
-        existingAssetIds.add(assetId);
         albumAssetValues.push({ albumsId: albumId, assetsId: assetId });
       }
-      await this.albumRepository.update(albumId, {
+      this.albumRepository.update(albumId, {
         id: albumId,
         updatedAt: new Date(),
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? notPresentAssetIds[0],
@@ -240,6 +236,7 @@ export class AlbumService extends BaseService {
       );
       events.push({ id: albumId, recipients: allUsersExceptUs });
     }
+
     await this.albumRepository.addAssetIdsToAlbums(albumAssetValues);
     for (const event of events) {
       for (const recipientId of event.recipients) {
