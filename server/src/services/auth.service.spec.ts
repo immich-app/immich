@@ -839,7 +839,7 @@ describe(AuthService.name, () => {
       mocks.crypto.randomUUID.mockReturnValue(fileId);
       mocks.oauth.getProfilePicture.mockResolvedValue({
         contentType: 'image/jpeg',
-        data: new Uint8Array([1, 2, 3, 4, 5]),
+        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
       });
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
