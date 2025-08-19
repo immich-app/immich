@@ -59,8 +59,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 #### OpenVINO-WSL
 
-- Ensure your container can access the /dev/dri directory, you can verify this by doing `docker exec -t immich_machine_learning ls -la /dev/dri`.
-  If this is not the case execute `getent group render` and `getent group video` on the WSL host, then add those groups to hwaccel.ml.yaml
+- Ensure your container can access the /dev/dri directory, you can verify this by doing `docker exec -t immich_machine_learning ls -la /dev/dri`. If this is not the case execute `getent group render` and `getent group video` on the WSL host, then add those groups to hwaccel.ml.yaml
   ```yaml
   openvino-wsl:
     devices:
