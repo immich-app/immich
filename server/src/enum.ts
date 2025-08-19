@@ -584,7 +584,6 @@ export enum JobName {
   AutoStackCandidateQueueAll = 'AutoStackCandidateQueueAll',
   AutoStackCandidateGenerate = 'AutoStackCandidateGenerate',
   AutoStackCandidateGenerateForAsset = 'AutoStackCandidateGenerateForAsset',
-  AutoStackPHashBackfill = 'AutoStackPHashBackfill',
   AutoStackCandidateResetAll = 'AutoStackCandidateResetAll',
 
   VersionCheck = 'VersionCheck',

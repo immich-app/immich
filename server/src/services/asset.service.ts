@@ -215,29 +215,23 @@ export class AssetService extends BaseService {
       return JobStatus.Failed;
     }
 
-    // Stack cleanup to avoid FK violations on stack.primaryAssetId.
-    // Use dedicated lightweight lookup to avoid relying on fields from asset join that may be missing.
-    const stackInfo = await this.stackRepository.getForAssetRemoval(id);
-    if (stackInfo?.id) {
-      if (stackInfo.primaryAssetId === id) {
-        const fullStack = await this.stackRepository.getById(stackInfo.id);
-        const remainingIds = (fullStack?.assets || []).map((a: any) => a.id).filter((x: string) => x !== id);
-        // If deleting primary leaves <=1 asset, delete whole stack for simplicity
-        if (remainingIds.length === 0) {
-          await this.stackRepository.delete(stackInfo.id);
-        } else {
-          await this.stackRepository.update(stackInfo.id, { id: stackInfo.id, primaryAssetId: remainingIds[0] });
-        }
+    // Replace the parent of the stack children with a new asset
+    if (asset.stack?.primaryAssetId === id) {
+      const stackAssetIds = asset.stack?.assets.map((a) => a.id) ?? [];
+      if (stackAssetIds.length > 2) {
+        const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
+        await this.stackRepository.update(asset.stack.id, {
+          id: asset.stack.id,
+          primaryAssetId: newPrimaryAssetId,
+        });
       } else {
-        await this.assetRepository.updateAll([id], { stackId: null as any });
+        await this.stackRepository.delete(asset.stack.id);
       }
     }
 
     await this.assetRepository.remove(asset);
     if (!asset.libraryId) {
-      // Fetch exif size only if needed for usage decrement
-      const sizeAsset = await this.assetRepository.getById(id, { exifInfo: true });
-      await this.userRepository.updateUsage(asset.ownerId, -(sizeAsset?.exifInfo?.fileSizeInByte || 0));
+      await this.userRepository.updateUsage(asset.ownerId, -(asset?.exifInfo?.fileSizeInByte || 0));
     }
 
     await this.eventRepository.emit('AssetDelete', { assetId: id, userId: asset.ownerId });

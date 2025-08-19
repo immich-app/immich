@@ -573,6 +573,7 @@ describe(AssetService.name, () => {
       const assetWithFace = { ...assetStub.image, faces: [faceStub.face1, faceStub.mergeFace1] };
 
       mocks.assetJob.getForAssetDeletion.mockResolvedValue(assetWithFace);
+      mocks.stackgetForAssetRemoval.mockResolvedValue([faceStub.face1.id, faceStub.mergeFace1.id]);
 
       await sut.handleAssetDeletion({ id: assetWithFace.id, deleteOnDisk: true });
 
@@ -644,6 +645,7 @@ describe(AssetService.name, () => {
       } as any;
       mocks.stack.getForAssetRemoval.mockResolvedValue({ id: 'stack-1', primaryAssetId: assetStub.primaryImage.id });
       mocks.stack.getById.mockResolvedValue(reducedStack);
+      mocks.stack.getForAssetRemoval.mockResolvedValue([assetStub.primaryImage.id]);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
@@ -664,6 +666,7 @@ describe(AssetService.name, () => {
         files: assetStub.livePhotoStillAsset.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
       } as any);
       mocks.asset.getLivePhotoCount.mockResolvedValue(0);
+      mocks.stack.getForAssetRemoval.mockResolvedValue([assetStub.livePhotoStillAsset.id]);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -712,6 +715,7 @@ describe(AssetService.name, () => {
         visibility: assetStub.livePhotoStillAsset.visibility,
         files: assetStub.livePhotoStillAsset.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
       } as any);
+      mocks.stack.getForAssetRemoval.mockResolvedValue([assetStub.livePhotoStillAsset.id]);
 
       await sut.handleAssetDeletion({
         id: assetStub.livePhotoStillAsset.id,
@@ -750,6 +754,7 @@ describe(AssetService.name, () => {
         visibility: assetStub.image.visibility,
         files: assetStub.image.files.map((f: any) => ({ id: f.id, path: f.path, type: f.type })),
       } as any);
+      mocks.stack.getForAssetRemoval.mockResolvedValue([assetStub.image.id]);
       await sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.image.ownerId, -5000);
     });

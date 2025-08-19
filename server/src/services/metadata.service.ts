@@ -284,7 +284,7 @@ export class MetadataService extends BaseService {
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
-			autoStackId: this.getAutoStackId(exifTags),
+      autoStackId: this.getAutoStackId(exifTags),
     };
 
     // Attempt to compute perceptual hash (pHash) early so it is persisted with the primary EXIF upsert.

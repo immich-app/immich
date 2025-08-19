@@ -84,7 +84,6 @@ class SystemConfigAutoStackDto {
   })
   maxGapSeconds!: number;
 
-
   @IsInt()
   @Min(2)
   @Max(50)
@@ -195,44 +194,6 @@ class SystemConfigAutoStackDto {
   @ApiProperty({ required: false, description: 'Iteratively prune multiple outliers while improvement threshold met' })
   outlierPruneIterative?: boolean;
 
-  // pHash backfill
-  @ValidateBoolean()
-  @Optional()
-  @ApiProperty({ required: false, description: 'Enable historical pHash backfill job' })
-  pHashBackfillEnabled?: boolean;
-
-  @IsInt()
-  @Min(10)
-  @Max(5000)
-  @Optional()
-  @ApiProperty({ required: false, description: 'Batch size for pHash backfill job', minimum: 10, maximum: 5000 })
-  pHashBackfillBatchSize?: number;
-
-  // Candidate aging and cleanup
-  @IsInt()
-  @Min(1)
-  @Max(90)
-  @Optional()
-  @ApiProperty({
-    required: false,
-    description: 'Dismiss stale candidates older than this many days',
-    minimum: 1,
-    maximum: 90,
-  })
-  candidateAgingDays?: number;
-
-  @IsInt()
-  @Min(0)
-  @Max(100)
-  @Optional()
-  @ApiProperty({
-    required: false,
-    description: 'Only age out candidates with score below this threshold',
-    minimum: 0,
-    maximum: 100,
-  })
-  candidateAgingScoreThreshold?: number;
-
   // Visual expansion: pull in near-duplicates just outside the window
   @IsInt()
   @Min(0)
@@ -327,7 +288,6 @@ class SystemConfigAutoStackDto {
     maximum: 50,
   })
   sessionMinSegmentSize?: number;
-
 }
 
 export class DatabaseBackupConfig {

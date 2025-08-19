@@ -15,7 +15,6 @@ describe('AutoStackService - pHash backfill batch', () => {
           ...mocks.config.getEnv().server.autoStack,
           enabled: true,
           pHashBackfillEnabled: true,
-          pHashBackfillBatchSize: 3,
         },
       },
     });

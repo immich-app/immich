@@ -55,10 +55,10 @@ describe(AutoStackService.name, () => {
       { id: 'a2', originalFileName: 'IMG_0002.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:01Z') },
       { id: 'a3', originalFileName: 'IMG_0100.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:10Z') },
     ] as any);
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    const created = await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
-    expect(created).toBe(1);
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
+  const created = await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
+  // Service no longer stores separate candidates; with a high autoPromoteMinScore, no stack is created
+  expect(created).toBe(0);
+  expect(mocks.stack.create).not.toHaveBeenCalled();
   });
 
   it('computes higher score for larger tight groups and triggers auto-promotion', async () => {
@@ -67,47 +67,9 @@ describe(AutoStackService.name, () => {
       { id: 'b2', originalFileName: 'IMG_1002.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:01Z') },
       { id: 'b3', originalFileName: 'IMG_1003.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:02Z') },
     ] as any);
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
     await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
     // Auto-promotion should create a stack and not count as candidate creation
     expect(mocks.stack.create).toHaveBeenCalledTimes(1);
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
-    expect(mocks.autoStackCandidate.promote).toHaveBeenCalledTimes(1);
-  });
-
-  it('prunes oldest candidates beyond maxCandidates', async () => {
-    mocks.systemMetadata.get.mockResolvedValue({
-      server: {
-        autoStack: {
-          enabled: true,
-          windowSeconds: 5,
-          maxGapSeconds: 5,
-          minGroupSize: 2,
-          horizonMinutes: 10,
-          cameraMatch: true,
-          maxCandidates: 1,
-          autoPromoteMinScore: 0,
-          weights: { size: 50, timeSpan: 10, continuity: 10, visual: 15, exposure: 10 },
-          visualPromoteThreshold: 0.9,
-          outlierPruneEnabled: true,
-          outlierPruneMinDelta: 0.05,
-        },
-      },
-    });
-    mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
-      { id: 'c1', originalFileName: 'IMG_2001.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:00Z') },
-      { id: 'c2', originalFileName: 'IMG_2002.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:01Z') },
-    ] as any);
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
-    // Second generation with different assets should trigger prune
-    mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
-      { id: 'd1', originalFileName: 'IMG_3001.jpg', dateTimeOriginal: new Date('2024-01-01T00:05:00Z') },
-      { id: 'd2', originalFileName: 'IMG_3002.jpg', dateTimeOriginal: new Date('2024-01-01T00:05:01Z') },
-    ] as any);
-    await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:05:00Z'), 5);
-    expect(mocks.autoStackCandidate.prune).toHaveBeenCalledWith('user1', 1);
   });
 
   it('passes make/model when cameraMatch enabled and reference asset provided', async () => {
@@ -117,7 +79,6 @@ describe(AutoStackService.name, () => {
       { id: 'a1', originalFileName: 'IMG_0001.jpg', dateTimeOriginal: refDate },
       { id: 'a2', originalFileName: 'IMG_0002.jpg', dateTimeOriginal: refDate },
     ] as any);
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
     await sut.generateTimeWindowCandidates('user1', refDate, 5, 'a1');
     expect(mocks.asset.getTimeWindowCameraSequence).toHaveBeenCalledWith(
       expect.objectContaining({ make: 'Canon', model: 'R5' }),
@@ -159,13 +120,12 @@ describe(AutoStackService.name, () => {
       p3: emb([0, 1, 0]),
       p4: emb([0, 0.9, 0.1]),
     });
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
     await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
     // Expect candidate created after pruning attempts
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
+    expect(mocks.stack.create).toHaveBeenCalledTimes(1);
   });
 
-  it('uses ML offload scoring when enabled to override visual component', async () => {
+  it('creates a stack for a tight group using local scoring (no ML offload)', async () => {
     mocks.systemMetadata.get.mockResolvedValue({
       server: {
         autoStack: {
@@ -176,15 +136,13 @@ describe(AutoStackService.name, () => {
           horizonMinutes: 10,
           cameraMatch: false,
           maxCandidates: 100,
-          autoPromoteMinScore: 0,
+          autoPromoteMinScore: 10,
           weights: { size: 50, timeSpan: 10, continuity: 10, visual: 15, exposure: 10 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
         },
       },
-      machineLearning: { urls: ['http://ml:3003'] },
     });
-    // Provide 2 assets with embeddings, ensure local score visual would be lower than ML returned blended
     const t0 = new Date('2024-01-01T00:00:00Z');
     mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
       { id: 'm1', originalFileName: 'IMG_1001.jpg', dateTimeOriginal: t0, pHash: 'aaaaaaaaaaaaaaaa' },
@@ -195,52 +153,12 @@ describe(AutoStackService.name, () => {
         pHash: 'aaaaaaaaaaaaaaab',
       },
     ] as any);
-    // Embeddings moderately similar (cos ~0.5) so local blended ~0.75* visualWeight maybe; ML returns blended 0.95
     mocks.asset.getClipEmbeddings.mockResolvedValue({
       m1: [1, 0, 0],
       m2: [0.5, 0.5, 0],
     });
-    (mocks.machineLearning.autoStackScore as any).mockResolvedValue({ avgCos: 0.8, pHashAvg: 0.99, blended: 0.95 });
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
     await sut.generateTimeWindowCandidates('user1', t0, 5);
-    expect(mocks.machineLearning.autoStackScore).toHaveBeenCalled();
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
-    const createArgs = mocks.autoStackCandidate.create.mock.calls[0];
-    const components = createArgs[3];
-    // visual component should reflect blended * visualWeight (15) ~= 14 (rounded)
-    expect(components.visual).toBeGreaterThanOrEqual(13);
-  });
-
-  it('falls back to local scoring when ML offload fails', async () => {
-    mocks.systemMetadata.get.mockResolvedValue({
-      server: {
-        autoStack: {
-          enabled: true,
-          windowSeconds: 5,
-          maxGapSeconds: 5,
-          minGroupSize: 2,
-          horizonMinutes: 10,
-          cameraMatch: false,
-          maxCandidates: 100,
-          autoPromoteMinScore: 0,
-          weights: { size: 50, timeSpan: 10, continuity: 10, visual: 15, exposure: 10 },
-          visualPromoteThreshold: 0.99,
-          outlierPruneEnabled: false,
-        },
-      },
-      machineLearning: { urls: ['http://ml:3003'] },
-    });
-    const t0 = new Date('2024-01-01T00:00:00Z');
-    mocks.asset.getTimeWindowCameraSequence.mockResolvedValue([
-      { id: 'f1', originalFileName: 'IMG_2001.jpg', dateTimeOriginal: t0 },
-      { id: 'f2', originalFileName: 'IMG_2002.jpg', dateTimeOriginal: new Date(t0.getTime() + 400) },
-    ] as any);
-    mocks.asset.getClipEmbeddings.mockResolvedValue({ f1: [1, 0], f2: [0.1, 0.99] });
-    (mocks.machineLearning.autoStackScore as any).mockRejectedValue(new Error('ml down'));
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    await sut.generateTimeWindowCandidates('user1', t0, 5);
-    expect(mocks.machineLearning.autoStackScore).toHaveBeenCalled();
-    expect(mocks.autoStackCandidate.create).toHaveBeenCalledTimes(1);
+    expect(mocks.stack.create).toHaveBeenCalledTimes(1);
   });
 
   it('splits long low-cohesion group via session segmentation', async () => {
@@ -254,7 +172,7 @@ describe(AutoStackService.name, () => {
           horizonMinutes: 10,
           cameraMatch: false,
           maxCandidates: 100,
-          autoPromoteMinScore: 9999,
+          autoPromoteMinScore: 10,
           weights: { size: 50, timeSpan: 10, continuity: 10, visual: 15, exposure: 10 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
@@ -278,10 +196,9 @@ describe(AutoStackService.name, () => {
       s3: [1, 0],
       s4: [0, 1],
     });
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    await sut.generateTimeWindowCandidates('user1', base, 600);
-    // Expect at least two create calls due to segmentation
-    expect(mocks.autoStackCandidate.create.mock.calls.length).toBeGreaterThanOrEqual(2);
+  await sut.generateTimeWindowCandidates('user1', base, 600);
+  // With auto-promotion enabled, expect at least two stacks created due to segmentation
+  expect(mocks.stack.create.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
   it('expands a group with visually similar neighbors inside secondary visual window', async () => {
@@ -295,7 +212,7 @@ describe(AutoStackService.name, () => {
           horizonMinutes: 10,
           cameraMatch: false,
           maxCandidates: 100,
-          autoPromoteMinScore: 9999,
+          autoPromoteMinScore: 0,
           weights: { size: 10, timeSpan: 5, continuity: 5, visual: 15, exposure: 5 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
@@ -351,10 +268,9 @@ describe(AutoStackService.name, () => {
       vx2: [0.9, 0.1, 0],
       vx3: [0.95, 0.05, 0],
     });
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    await sut.generateTimeWindowCandidates('user1', t0, 5);
-    // Expect candidate created with 3 assets after visual expansion
-    const createdArgs = mocks.autoStackCandidate.create.mock.calls[0];
+  await sut.generateTimeWindowCandidates('user1', t0, 5);
+  // Expect stack created with 3 assets after visual expansion
+    const createdArgs = mocks.stack.create.mock.calls[0];
     expect(createdArgs[1].length).toBe(3);
   });
 
@@ -369,7 +285,7 @@ describe(AutoStackService.name, () => {
           horizonMinutes: 10,
           cameraMatch: false,
           maxCandidates: 100,
-          autoPromoteMinScore: 9999,
+          autoPromoteMinScore: 0,
           weights: { size: 10, timeSpan: 5, continuity: 5, visual: 15, exposure: 5 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
@@ -401,9 +317,8 @@ describe(AutoStackService.name, () => {
       cx3: [0.97, 0.03],
       cx4: [0.96, 0.04],
     });
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    await sut.generateTimeWindowCandidates('user1', t0, 2);
-    const createdArgs = mocks.autoStackCandidate.create.mock.calls[0];
+  await sut.generateTimeWindowCandidates('user1', t0, 2);
+    const createdArgs = mocks.stack.create.mock.calls[0];
     // Should only add at most one beyond the initial 2 (maxAdds=1)
     expect(createdArgs[1].length).toBeLessThanOrEqual(4);
     expect(createdArgs[1].length).toBeGreaterThanOrEqual(3); // still expect at least one add
@@ -420,7 +335,7 @@ describe(AutoStackService.name, () => {
           horizonMinutes: 10,
           cameraMatch: false,
           maxCandidates: 100,
-          autoPromoteMinScore: 9999,
+          autoPromoteMinScore: 10,
           weights: { size: 10, timeSpan: 5, continuity: 5, visual: 15, exposure: 5 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
@@ -435,9 +350,8 @@ describe(AutoStackService.name, () => {
       { id: 'rp3', originalFileName: 'IMG_0003.jpg', dateTimeOriginal: new Date(t0.getTime() + 4000) },
     ] as any);
     mocks.asset.getClipEmbeddings.mockResolvedValue({});
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    await sut.generateTimeWindowCandidates('user1', t0, 10);
-    const createdArgs = mocks.autoStackCandidate.create.mock.calls[0];
+  await sut.generateTimeWindowCandidates('user1', t0, 10);
+    const createdArgs = mocks.stack.create.mock.calls[0];
     const groupIds: string[] = createdArgs[1];
     // Expect primary chosen not always first; heuristic might pick center (rp2) or best continuity
     expect(groupIds[0]).not.toBeUndefined();
@@ -455,7 +369,7 @@ describe(AutoStackService.name, () => {
           horizonMinutes: 10,
           cameraMatch: false,
           maxCandidates: 100,
-          autoPromoteMinScore: 9999,
+          autoPromoteMinScore: 1,
           weights: { size: 10, timeSpan: 5, continuity: 5, visual: 15, exposure: 5 },
           visualPromoteThreshold: 0.99,
           outlierPruneEnabled: false,
@@ -489,11 +403,10 @@ describe(AutoStackService.name, () => {
       },
     ] as any);
     mocks.asset.getClipEmbeddings.mockResolvedValue({});
-    mocks.autoStackCandidate.existsForAssets.mockResolvedValue(false as any);
-    await sut.generateTimeWindowCandidates('user1', t0, 20);
-    // Expect at least two candidate create calls (landscape group and portrait group)
-    expect(mocks.autoStackCandidate.create.mock.calls.length).toBeGreaterThanOrEqual(2);
-    const createdGroups = mocks.autoStackCandidate.create.mock.calls.map((c: any) => c[1]);
+  await sut.generateTimeWindowCandidates('user1', t0, 20);
+  // With auto-promotion enabled, expect at least two stack create calls (landscape group and portrait group)
+  expect(mocks.stack.create.mock.calls.length).toBeGreaterThanOrEqual(2);
+    const createdGroups = mocks.stack.create.mock.calls.map((c: any) => c[1]);
     const allIds = createdGroups.flat();
     expect(allIds).toContain('o1');
     expect(allIds).toContain('o2');

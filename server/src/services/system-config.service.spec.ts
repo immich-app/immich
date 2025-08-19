@@ -143,8 +143,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     publicUsers: true,
     autoStack: {
       enabled: true,
-      windowSeconds: 5,
-      maxGapSeconds: 5,
       minGroupSize: 2,
       horizonMinutes: 10,
       cameraMatch: true,

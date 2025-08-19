@@ -145,7 +145,6 @@ export class StackRepository {
     });
   }
 
-
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
     await this.db.deleteFrom('stack').where('id', '=', asUuid(id)).execute();

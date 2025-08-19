@@ -89,7 +89,7 @@ export class AssetExifTable {
   // provenance for how the asset joined a stack: EXIF (explicit ID), TIME_WINDOW (temporal heuristic), VISUAL (visual merge/bridge)
   @Column({ type: 'character varying', nullable: true, index: true })
   autoStackSource!: 'EXIF' | 'TIME_WINDOW' | 'VISUAL' | null;
-  
+
   @Column({ type: 'character varying', nullable: true, index: true })
   autoStackId!: string | null;
 

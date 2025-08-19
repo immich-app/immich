@@ -758,35 +758,7 @@ export class AutoStackService extends BaseService {
     }
   }
 
-
-  @OnJob({ name: JobName.AutoStackPHashBackfill, queue: QueueName.AutoStackCandidateQueueAll })
-  async handlePHashBackfill(): Promise<JobStatus> {
-    const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled || !server.autoStack.pHashBackfillEnabled) return JobStatus.Skipped;
-    // Batch process assets missing pHash
-    const batchSize = server.autoStack.pHashBackfillBatchSize || 500;
-    try {
-      const rows = await this.assetRepository.listMissingPHash(batchSize);
-      if (!rows.length) return JobStatus.Success;
-      for (const row of rows) {
-        try {
-          const ph = await this.machineLearningRepository.computePhash(
-            (await this.getConfig({ withCache: true })).machineLearning.urls,
-            row.originalPath,
-          );
-          if (ph) {
-            await this.assetRepository.upsertExif({ assetId: row.id, pHash: ph } as any);
-          }
-        } catch {}
-      }
-      return JobStatus.Success;
-    } catch (e) {
-      this.logger.warn(`AutoStack: pHash backfill failed: ${e}`);
-      return JobStatus.Failed;
-    }
-  }
-
-  @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStackCandidateQueueAll, })
+  @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStackCandidateQueueAll })
   async handleResetAll(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;

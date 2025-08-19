@@ -15467,18 +15467,6 @@
             "description": "Require matching camera make+model if metadata present",
             "type": "boolean"
           },
-          "candidateAgingDays": {
-            "description": "Dismiss stale candidates older than this many days",
-            "maximum": 90,
-            "minimum": 1,
-            "type": "number"
-          },
-          "candidateAgingScoreThreshold": {
-            "description": "Only age out candidates with score below this threshold",
-            "maximum": 100,
-            "minimum": 0,
-            "type": "number"
-          },
           "enabled": {
             "description": "Enable automatic stack candidate generation",
             "type": "boolean"
@@ -15533,16 +15521,6 @@
           },
           "overlapMergeEnabled": {
             "description": "Enable merging of overlapping groups (shared assets)",
-            "type": "boolean"
-          },
-          "pHashBackfillBatchSize": {
-            "description": "Batch size for pHash backfill job",
-            "maximum": 5000,
-            "minimum": 10,
-            "type": "number"
-          },
-          "pHashBackfillEnabled": {
-            "description": "Enable historical pHash backfill job",
             "type": "boolean"
           },
           "pHashHammingThreshold": {

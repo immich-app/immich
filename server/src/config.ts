@@ -189,12 +189,6 @@ export interface SystemConfig {
       outlierPruneEnabled?: boolean;
       outlierPruneMinDelta?: number; // 0..1 delta improvement threshold
       outlierPruneIterative?: boolean; // iterate pruning until no further improvement
-      // pHash historical backfill
-      pHashBackfillEnabled?: boolean;
-      pHashBackfillBatchSize?: number;
-      // Candidate aging / cleanup
-      candidateAgingDays?: number; // dismiss after N days
-      candidateAgingScoreThreshold?: number; // only dismiss if below this score
       // Google-Photos-like enhancements
       secondaryVisualWindowSeconds?: number; // extend search radius to pull in visually near-identical shots just outside window
       visualGroupSimilarityThreshold?: number; // cosine threshold for adding external assets into an existing group
@@ -397,18 +391,12 @@ export const defaults = Object.freeze<SystemConfig>({
       outlierPruneEnabled: true,
       outlierPruneMinDelta: 0.2, // increased from 0.04 to make pruning less aggressive (require larger visual gain)
       outlierPruneIterative: true,
-      // pHash historical backfill control
-      pHashBackfillEnabled: true,
-      pHashBackfillBatchSize: 500,
-      // Candidate aging (cleanup)
-      candidateAgingDays: 14,
-      candidateAgingScoreThreshold: 25,
       overlapMergeEnabled: true,
       bestPrimaryHeuristic: true,
       secondaryVisualMaxAdds: 20, // allow more visual expansion per group (was 3)
       // Session segmentation defaults
       sessionMaxSpanSeconds: 300, // 5 minutes
-      sessionMinAvgAdjacency: 0.70, // require moderate visual cohesion to keep long span
+      sessionMinAvgAdjacency: 0.7, // require moderate visual cohesion to keep long span
       sessionMinSegmentSize: 1,
     },
   },
