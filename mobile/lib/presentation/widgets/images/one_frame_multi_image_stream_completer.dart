@@ -10,7 +10,6 @@ import 'package:flutter/painting.dart';
 /// An ImageStreamCompleter with support for loading multiple images.
 class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
   void Function()? _onDispose;
-  ImageInfo? _initialImage;
 
   /// The constructor to create an OneFramePlaceholderImageStreamCompleter. The [images]
   /// should be the primary images to display (typically asynchronously as they load).
@@ -22,10 +21,12 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
     InformationCollector? informationCollector,
     void Function()? onDispose,
   }) {
-    _initialImage = initialImage;
+    if (initialImage != null) {
+      setImage(initialImage);
+    }
     _onDispose = onDispose;
     images.listen(
-      _onImage,
+      setImage,
       onError: (Object error, StackTrace stack) {
         reportError(
           context: ErrorDescription('resolving a single-frame image stream'),
@@ -35,48 +36,16 @@ class OneFramePlaceholderImageStreamCompleter extends ImageStreamCompleter {
           silent: true,
         );
       },
-      onDone: _disposeInitialImage,
     );
-  }
-
-  void _onImage(ImageInfo image) {
-    setImage(image);
-    _disposeInitialImage();
-  }
-
-  @override
-  void addListener(ImageStreamListener listener) {
-    final initialImage = _initialImage;
-    if (initialImage != null) {
-      try {
-        listener.onImage(initialImage.clone(), true);
-      } catch (exception, stack) {
-        reportError(
-          context: ErrorDescription('by a synchronously-called image listener'),
-          exception: exception,
-          stack: stack,
-        );
-      }
-    }
-    super.addListener(listener);
   }
 
   @override
   void onDisposed() {
-    _disposeInitialImage();
     final onDispose = _onDispose;
     if (onDispose != null) {
       _onDispose = null;
       onDispose();
     }
     super.onDisposed();
-  }
-
-  void _disposeInitialImage() {
-    final initialImage = _initialImage;
-    if (initialImage != null) {
-      _initialImage = null;
-      initialImage.dispose();
-    }
   }
 }

@@ -64,6 +64,7 @@ const double _kBottomSheetMinimumExtent = 0.4;
 const double _kBottomSheetSnapExtent = 0.7;
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
+  static final _dummyListener = ImageStreamListener((image, _) => image.dispose());
   late PageController pageController;
   late DraggableScrollableController bottomSheetController;
   PersistentBottomSheetController? sheetCloseController;
@@ -91,6 +92,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // Delayed operations that should be cancelled on disposal
   final List<Timer> _delayedOperations = [];
 
+  ImageStream? _prevPreCacheStream;
+  ImageStream? _nextPreCacheStream;
+
   @override
   void initState() {
     super.initState();
@@ -111,6 +115,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     bottomSheetController.dispose();
     _cancelTimers();
     reloadSubscription?.cancel();
+    _prevPreCacheStream?.removeListener(_dummyListener);
+    _nextPreCacheStream?.removeListener(_dummyListener);
     super.dispose();
   }
 
@@ -131,19 +137,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   double _getVerticalOffsetForBottomSheet(double extent) =>
       (context.height * extent) - (context.height * _kBottomSheetMinimumExtent);
 
-  Future<void> _precacheImage(int index) async {
-    if (!mounted) {
-      return;
-    }
-
-    final timelineService = ref.read(timelineServiceProvider);
-    final asset = await timelineService.getAssetAsync(index);
-
-    if (asset == null || !mounted) {
-      return;
-    }
-
-    unawaited(precacheImage(getFullImageProvider(asset, size: context.sizeData), context, onError: (_, __) {}));
+  ImageStream _precacheImage(BaseAsset asset) {
+    final provider = getFullImageProvider(asset, size: context.sizeData);
+    return provider.resolve(ImageConfiguration.empty)..addListener(_dummyListener);
   }
 
   void _onAssetChanged(int index) async {
@@ -169,13 +165,19 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
-    final timer = Timer(Durations.medium4, () {
+    final timer = Timer(Durations.medium4, () async {
       // Check if widget is still mounted before proceeding
       if (!mounted) return;
 
-      for (final offset in [-1, 1]) {
-        unawaited(_precacheImage(index + offset));
-      }
+      final (prevAsset, nextAsset) = await (
+        timelineService.getAssetAsync(index - 1),
+        timelineService.getAssetAsync(index + 1),
+      ).wait;
+      if (!mounted) return;
+      _prevPreCacheStream?.removeListener(_dummyListener);
+      _nextPreCacheStream?.removeListener(_dummyListener);
+      _prevPreCacheStream = prevAsset != null ? _precacheImage(prevAsset) : null;
+      _nextPreCacheStream = nextAsset != null ? _precacheImage(nextAsset) : null;
     });
     _delayedOperations.add(timer);
 

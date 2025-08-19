@@ -25,15 +25,13 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
 
   @override
   ImageStreamCompleter loadImage(RemoteThumbProvider key, ImageDecoderCallback decode) {
-    final completer = OneFramePlaceholderImageStreamCompleter(
+    return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
-    );
-    completer.addOnLastListenerRemovedCallback(cancel);
-    return completer;
+    )..addOnLastListenerRemovedCallback(cancel);
   }
 
   Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) {

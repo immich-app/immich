@@ -24,15 +24,13 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
 
   @override
   ImageStreamCompleter loadImage(LocalThumbProvider key, ImageDecoderCallback decode) {
-    final completer = OneFramePlaceholderImageStreamCompleter(
+    return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
-    );
-    completer.addOnLastListenerRemovedCallback(cancel);
-    return completer;
+    )..addOnLastListenerRemovedCallback(cancel);
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {

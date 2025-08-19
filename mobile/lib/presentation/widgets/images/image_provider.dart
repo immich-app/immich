@@ -7,12 +7,15 @@ import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+import 'package:logging/logging.dart';
 
 abstract class CancellableImageProvider<T extends Object> extends ImageProvider<T> {
   void cancel();
 }
 
 mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvider<T> {
+  static final _log = Logger('CancellableImageProviderMixin');
+
   bool isCancelled = false;
   ImageRequest? request;
   CancelableOperation<ImageInfo?>? cachedOperation;
@@ -37,7 +40,10 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       return cachedImage;
     }
 
-    completer.operation.value.whenComplete(() => cachedStream.removeListener(listener));
+    completer.operation.valueOrCancellation().whenComplete(() {
+      cachedStream.removeListener(listener);
+      cachedOperation = null;
+    });
     cachedOperation = completer.operation;
     return null;
   }
@@ -52,7 +58,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
     try {
       final image = await request.load(decode);
-      if (image == null) {
+      if (image == null || isCancelled) {
         evict();
         return;
       }
@@ -70,10 +76,11 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
     try {
       final cachedImage = await cachedOperation.valueOrCancellation();
-      if (cachedImage != null) {
+      if (cachedImage != null && !isCancelled) {
         yield cachedImage;
       }
-    } catch (_) {
+    } catch (e, stack) {
+      _log.severe('Error loading initial image', e, stack);
     } finally {
       this.cachedOperation = null;
     }
