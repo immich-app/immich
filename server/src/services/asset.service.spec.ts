@@ -615,11 +615,7 @@ describe(AssetService.name, () => {
         stack: {
           id: 'stack-1',
           primaryAssetId: assetStub.primaryImage.id,
-          assets: [
-            { id: 'stack-child-asset-1' },
-            { id: 'stack-child-asset-2' },
-            { id: assetStub.primaryImage.id },
-          ],
+          assets: [{ id: 'stack-child-asset-1' }, { id: 'stack-child-asset-2' }, { id: assetStub.primaryImage.id }],
         },
       } as any);
 
@@ -647,10 +643,7 @@ describe(AssetService.name, () => {
         stack: {
           id: 'stack-1',
           primaryAssetId: assetStub.primaryImage.id,
-          assets: [
-            { id: assetStub.primaryImage.id },
-            { id: 'stack-child-asset-1' },
-          ],
+          assets: [{ id: assetStub.primaryImage.id }, { id: 'stack-child-asset-1' }],
         },
       } as any);
 

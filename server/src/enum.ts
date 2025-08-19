@@ -508,7 +508,7 @@ export enum QueueName {
   Library = 'library',
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
-  AutoStackCandidateQueueAll = 'autoStackCandidateQueueAll',
+  AutoStack = 'autoStack',
 }
 
 export enum JobName {

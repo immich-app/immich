@@ -175,9 +175,7 @@ export interface SystemConfig {
       windowSeconds: number; // time window around new asset for candidate grouping
       maxGapSeconds: number; // max allowed gap between sequential assets inside a group
       minGroupSize: number; // minimum assets required to store a candidate
-      horizonMinutes: number; // backfill look-back horizon for scheduled generation
       cameraMatch: boolean; // require same make+model when available
-      maxCandidates: number; // maximum active candidate groups per user (older/low score pruned)
       autoPromoteMinScore: number; // if >0 and group score >= value, auto-promote immediately
       weights: { size: number; timeSpan: number; continuity: number; visual: number; exposure: number };
       visualPromoteThreshold: number;
@@ -240,7 +238,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
-    [QueueName.AutoStackCandidateQueueAll]: { concurrency: 1 },
+    [QueueName.AutoStack]: { concurrency: 1 },
     [QueueName.SmartSearch]: { concurrency: 2 },
     [QueueName.MetadataExtraction]: { concurrency: 5 },
     [QueueName.FaceDetection]: { concurrency: 2 },
@@ -371,9 +369,7 @@ export const defaults = Object.freeze<SystemConfig>({
       windowSeconds: 180, // total bi-directional scan window (was 180)
       maxGapSeconds: 30, // max allowed gap inside a burst (was 180)
       minGroupSize: 2,
-      horizonMinutes: 10,
       cameraMatch: true,
-      maxCandidates: 200,
       autoPromoteMinScore: 70,
       weights: {
         size: 10, // de-emphasize raw count

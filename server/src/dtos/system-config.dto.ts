@@ -91,28 +91,10 @@ class SystemConfigAutoStackDto {
   @ApiProperty({ description: 'Minimum number of assets required to store a candidate', minimum: 2, maximum: 50 })
   minGroupSize!: number;
 
-  @IsInt()
-  @Min(1)
-  @Max(1440)
-  @Type(() => Number)
-  @ApiProperty({
-    description: 'Backfill look-back horizon in minutes for scheduled generation',
-    minimum: 1,
-    maximum: 1440,
-  })
-  horizonMinutes!: number;
-
   // Heuristics and limits
   @ValidateBoolean()
   @ApiProperty({ description: 'Require matching camera make+model if metadata present' })
   cameraMatch!: boolean;
-
-  @IsInt()
-  @Min(10)
-  @Max(1000)
-  @Type(() => Number)
-  @ApiProperty({ description: 'Maximum active candidate groups retained per user', minimum: 10, maximum: 1000 })
-  maxCandidates!: number;
 
   @IsInt()
   @Min(0)
@@ -474,7 +456,7 @@ class SystemConfigJobDto implements Record<ConcurrentQueueName, JobSettingsDto> 
   @ValidateNested()
   @IsObject()
   @Type(() => JobSettingsDto)
-  [QueueName.AutoStackCandidateQueueAll]!: JobSettingsDto;
+  [QueueName.AutoStack]!: JobSettingsDto;
 }
 
 class SystemConfigLibraryScanDto {

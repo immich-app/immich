@@ -17,7 +17,6 @@ describe('AutoStackService - candidate de-duplication', () => {
           maxGapSeconds: 10,
           minGroupSize: 2,
           cameraMatch: false,
-          maxCandidates: 10,
           autoPromoteMinScore: 0,
           weights: { size: 10, timeSpan: 10, continuity: 10, visual: 10, exposure: 10 },
         },

@@ -28,9 +28,7 @@ server:
 		windowSeconds: 90
 		maxGapSeconds: 30
 		minGroupSize: 2
-		horizonMinutes: 10
 		cameraMatch: true
-		maxCandidates: 200
 		autoPromoteMinScore: 70
 ```
 

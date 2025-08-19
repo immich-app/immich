@@ -192,7 +192,7 @@ export class JobService extends BaseService {
       case QueueName.VideoConversion: {
         return this.jobRepository.queue({ name: JobName.AssetEncodeVideoQueueAll, data: { force } });
       }
-      case QueueName.AutoStackCandidateQueueAll: {
+      case QueueName.AutoStack: {
         await this.jobRepository.queue({ name: JobName.AutoStackCandidateQueueAll, data: { force } });
         return;
       }

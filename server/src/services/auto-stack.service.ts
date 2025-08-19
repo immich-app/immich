@@ -537,7 +537,6 @@ export class AutoStackService extends BaseService {
       maxGapSeconds,
       minGroupSize,
       cameraMatch,
-      maxCandidates,
       autoPromoteMinScore,
       weights,
       visualPromoteThreshold,
@@ -704,7 +703,7 @@ export class AutoStackService extends BaseService {
     return created;
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateQueueAll, queue: QueueName.AutoStackCandidateQueueAll })
+  @OnJob({ name: JobName.AutoStackCandidateQueueAll, queue: QueueName.AutoStack })
   async handleQueueAllCandidates(job: JobOf<JobName.AutoStackCandidateQueueAll>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
@@ -716,7 +715,7 @@ export class AutoStackService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateGenerate, queue: QueueName.AutoStackCandidateQueueAll })
+  @OnJob({ name: JobName.AutoStackCandidateGenerate, queue: QueueName.AutoStack })
   async handleGenerateCandidates(job: JobOf<JobName.AutoStackCandidateGenerate>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
@@ -741,7 +740,7 @@ export class AutoStackService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateGenerateForAsset, queue: QueueName.AutoStackCandidateQueueAll })
+  @OnJob({ name: JobName.AutoStackCandidateGenerateForAsset, queue: QueueName.AutoStack })
   async handleGenerateCandidatesForAsset(job: JobOf<JobName.AutoStackCandidateGenerateForAsset>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
@@ -758,7 +757,7 @@ export class AutoStackService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStackCandidateQueueAll })
+  @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStack })
   async handleResetAll(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
     if (!server.autoStack.enabled) return JobStatus.Skipped;
