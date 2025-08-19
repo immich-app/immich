@@ -5,6 +5,7 @@
 !.vscode/launch.json
 !.vscode/extensions.json
 .idea
+**/.pnpm-store/**
 
 docker/upload
 docker/library
