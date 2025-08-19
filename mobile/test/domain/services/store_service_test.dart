@@ -16,11 +16,13 @@ final _kBackupFailedSince = DateTime.utc(2023);
 void main() {
   late StoreService sut;
   late IsarStoreRepository mockStoreRepo;
+  late DriftStoreRepository mockDriftStoreRepo;
   late StreamController<StoreDto<Object>> controller;
 
   setUp(() async {
     controller = StreamController<StoreDto<Object>>.broadcast();
     mockStoreRepo = MockStoreRepository();
+    mockDriftStoreRepo = MockDriftStoreRepository();
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
     registerFallbackValue(StoreKey.accessToken);
     registerFallbackValue(StoreKey.backupTriggerDelay);
@@ -37,7 +39,21 @@ void main() {
     );
     when(() => mockStoreRepo.watchAll()).thenAnswer((_) => controller.stream);
 
-    sut = await StoreService.create(storeRepository: mockStoreRepo);
+    when(() => mockDriftStoreRepo.getAll()).thenAnswer(
+      (_) async => [
+        const StoreDto(StoreKey.accessToken, _kAccessToken),
+        const StoreDto(StoreKey.backgroundBackup, _kBackgroundBackup),
+        const StoreDto(StoreKey.groupAssetsBy, _kGroupAssetsBy),
+        StoreDto(StoreKey.backupFailedSince, _kBackupFailedSince),
+      ],
+    );
+    when(() => mockDriftStoreRepo.watchAll()).thenAnswer((_) => controller.stream);
+
+    sut = await StoreService.create(
+      storeRepository: mockStoreRepo,
+      driftStoreRepository: mockDriftStoreRepo,
+      isBetaTimeline: false,
+    );
   });
 
   tearDown(() async {
@@ -84,6 +100,7 @@ void main() {
   group('Store Service put:', () {
     setUp(() {
       when(() => mockStoreRepo.insert<String>(any<StoreKey<String>>(), any())).thenAnswer((_) async => true);
+      when(() => mockDriftStoreRepo.insert<String>(any<StoreKey<String>>(), any())).thenAnswer((_) async => true);
     });
 
     test('Skip insert when value is not modified', () async {
@@ -105,6 +122,7 @@ void main() {
     setUp(() {
       valueController = StreamController<String?>.broadcast();
       when(() => mockStoreRepo.watch<String>(any<StoreKey<String>>())).thenAnswer((_) => valueController.stream);
+      when(() => mockDriftStoreRepo.watch<String>(any<StoreKey<String>>())).thenAnswer((_) => valueController.stream);
     });
 
     tearDown(() async {
@@ -129,6 +147,7 @@ void main() {
   group('Store Service delete:', () {
     setUp(() {
       when(() => mockStoreRepo.delete<String>(any<StoreKey<String>>())).thenAnswer((_) async => true);
+      when(() => mockDriftStoreRepo.delete<String>(any<StoreKey<String>>())).thenAnswer((_) async => true);
     });
 
     test('Removes the value from the DB', () async {
@@ -145,6 +164,7 @@ void main() {
   group('Store Service clear:', () {
     setUp(() {
       when(() => mockStoreRepo.deleteAll()).thenAnswer((_) async => true);
+      when(() => mockDriftStoreRepo.deleteAll()).thenAnswer((_) async => true);
     });
 
     test('Clears all values from the store', () async {

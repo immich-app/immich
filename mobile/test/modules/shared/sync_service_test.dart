@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
@@ -69,7 +70,11 @@ void main() {
     final db = await TestUtils.initIsar();
 
     db.writeTxnSync(() => db.clearSync());
-    await StoreService.init(storeRepository: IsarStoreRepository(db));
+    Drift drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    await StoreService.init(
+      storeRepository: IsarStoreRepository(db),
+      driftStoreRepository: DriftStoreRepository(drift),
+    );
     await Store.put(StoreKey.currentUser, owner);
     await LogService.init(logRepository: logRepository, storeRepository: IsarStoreRepository(db));
   });

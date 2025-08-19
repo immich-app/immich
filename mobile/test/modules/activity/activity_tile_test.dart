@@ -2,12 +2,15 @@
 @Tags(['widget'])
 library;
 
+import 'package:drift/drift.dart' hide isNull, isNotNull;
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
@@ -30,7 +33,11 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     // For UserCircleAvatar
-    await StoreService.init(storeRepository: IsarStoreRepository(db));
+    Drift drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    await StoreService.init(
+      storeRepository: IsarStoreRepository(db),
+      driftStoreRepository: DriftStoreRepository(drift),
+    );
     Store.put(StoreKey.currentUser, UserStub.admin);
     Store.put(StoreKey.serverEndpoint, '');
     Store.put(StoreKey.accessToken, '');

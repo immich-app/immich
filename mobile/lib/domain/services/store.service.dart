@@ -6,13 +6,23 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 /// Provides access to a persistent key-value store with an in-memory cache.
 /// Listens for repository changes to keep the cache updated.
 class StoreService {
-  final IsarStoreRepository _storeRepository;
+  final IsarStoreRepository _isarStoreRepository;
+  final DriftStoreRepository _driftStoreRepository;
+  final bool _isBetaTimeline;
 
   /// In-memory cache. Keys are [StoreKey.id]
   final Map<int, Object?> _cache = {};
   late final StreamSubscription<StoreDto> _storeUpdateSubscription;
 
-  StoreService._({required IsarStoreRepository storeRepository}) : _storeRepository = storeRepository;
+  StoreService._({
+    required IsarStoreRepository isarStoreRepository,
+    required DriftStoreRepository driftStoreRepository,
+    required bool isBetaTimeline,
+  }) : _isarStoreRepository = isarStoreRepository,
+       _driftStoreRepository = driftStoreRepository,
+       _isBetaTimeline = isBetaTimeline;
+
+  IStoreRepository get _storeRepository => _isBetaTimeline ? _driftStoreRepository : _isarStoreRepository;
 
   // TODO: Temporary typedef to make minimal changes. Remove this and make the presentation layer access store through a provider
   static StoreService? _instance;
@@ -24,13 +34,44 @@ class StoreService {
   }
 
   // TODO: Replace the implementation with the one from create after removing the typedef
-  static Future<StoreService> init({required IsarStoreRepository storeRepository}) async {
-    _instance ??= await create(storeRepository: storeRepository);
+  static Future<StoreService> init({
+    required IsarStoreRepository storeRepository,
+    required DriftStoreRepository driftStoreRepository,
+  }) async {
+    final isBetaTimeline = await driftStoreRepository.tryGet(StoreKey.betaTimeline) ?? false;
+    _instance ??= await create(
+      storeRepository: storeRepository,
+      driftStoreRepository: driftStoreRepository,
+      isBetaTimeline: isBetaTimeline,
+    );
     return _instance!;
   }
 
-  static Future<StoreService> create({required IsarStoreRepository storeRepository}) async {
-    final instance = StoreService._(storeRepository: storeRepository);
+  static Future<void> switchRepo(bool isBetaTimeline) async {
+    final current = I;
+    if (current._isBetaTimeline == isBetaTimeline) {
+      return;
+    }
+
+    final newInstance = await create(
+      storeRepository: current._isarStoreRepository,
+      driftStoreRepository: current._driftStoreRepository,
+      isBetaTimeline: isBetaTimeline,
+    );
+
+    _instance = newInstance;
+  }
+
+  static Future<StoreService> create({
+    required IsarStoreRepository storeRepository,
+    required DriftStoreRepository driftStoreRepository,
+    required bool isBetaTimeline,
+  }) async {
+    final instance = StoreService._(
+      isarStoreRepository: storeRepository,
+      driftStoreRepository: driftStoreRepository,
+      isBetaTimeline: isBetaTimeline,
+    );
     await instance._populateCache();
     instance._storeUpdateSubscription = instance._listenForChange();
     return instance;

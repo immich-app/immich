@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
@@ -21,18 +22,23 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 abstract final class Bootstrap {
-  static Future<Isar> initIsar() async {
-    if (Isar.getInstance() != null) {
-      return Isar.getInstance()!;
+  static Future<(Isar isar, Drift drift, DriftLogger logDb)> initIsar() async {
+    final drift = Drift();
+    final logDb = DriftLogger();
+
+    Isar? isar = Isar.getInstance();
+
+    if (isar != null) {
+      return (isar, drift, logDb);
     }
 
     final dir = await getApplicationDocumentsDirectory();
-    return await Isar.open(
+    isar = await Isar.open(
       [
         StoreValueSchema,
-        ExifInfoSchema,
         AssetSchema,
         AlbumSchema,
+        ExifInfoSchema,
         UserSchema,
         BackupAlbumSchema,
         DuplicatedAssetSchema,
@@ -45,10 +51,15 @@ abstract final class Bootstrap {
       maxSizeMiB: 2048,
       inspector: kDebugMode,
     );
+
+    return (isar, drift, logDb);
   }
 
-  static Future<void> initDomain(Isar db, DriftLogger logDb, {bool shouldBufferLogs = true}) async {
-    await StoreService.init(storeRepository: IsarStoreRepository(db));
+  static Future<void> initDomain(Isar db, Drift drift, DriftLogger logDb, {bool shouldBufferLogs = true}) async {
+    await StoreService.init(
+      storeRepository: IsarStoreRepository(db),
+      driftStoreRepository: DriftStoreRepository(drift),
+    );
 
     await LogService.init(
       logRepository: LogRepository(logDb),
