@@ -1,10 +1,14 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -15,6 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 @RoutePage()
@@ -37,46 +42,71 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
   }
 
   Future<void> _handleMigration() async {
-    if (widget.switchingToBeta) {
-      final assetNotifier = ref.read(assetProvider.notifier);
-      if (assetNotifier.mounted) {
-        assetNotifier.dispose();
+    try {
+      if (widget.switchingToBeta) {
+        final assetNotifier = ref.read(assetProvider.notifier);
+        if (assetNotifier.mounted) {
+          assetNotifier.dispose();
+        }
+        final albumNotifier = ref.read(albumProvider.notifier);
+        if (albumNotifier.mounted) {
+          albumNotifier.dispose();
+        }
+
+        // Cancel uploads
+        await Store.put(StoreKey.backgroundBackup, false);
+        ref
+            .read(backupProvider.notifier)
+            .configureBackgroundBackup(enabled: false, onBatteryInfo: () {}, onError: (_) {});
+        ref.read(backupProvider.notifier).setAutoBackup(false);
+        ref.read(backupProvider.notifier).cancelBackup();
+        ref.read(manualUploadProvider.notifier).cancelBackup();
+        // Start listening to new websocket events
+        ref.read(websocketProvider.notifier).stopListenToOldEvents();
+        ref.read(websocketProvider.notifier).startListeningToBetaEvents();
+
+        final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+
+        if (permission.isGranted) {
+          await ref.read(backgroundSyncProvider).syncLocal(full: true);
+          await migrateDeviceAssetToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+          await migrateBackupAlbumsToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+          await migrateStoreToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+        }
+      } else {
+        await ref.read(backgroundSyncProvider).cancel();
+        ref.read(websocketProvider.notifier).stopListeningToBetaEvents();
+        ref.read(websocketProvider.notifier).startListeningToOldEvents();
+        await migrateStoreToIsar(ref.read(isarProvider), ref.read(driftProvider));
       }
-      final albumNotifier = ref.read(albumProvider.notifier);
-      if (albumNotifier.mounted) {
-        albumNotifier.dispose();
-      }
 
-      // Cancel uploads
-      await Store.put(StoreKey.backgroundBackup, false);
-      ref
-          .read(backupProvider.notifier)
-          .configureBackgroundBackup(enabled: false, onBatteryInfo: () {}, onError: (_) {});
-      ref.read(backupProvider.notifier).setAutoBackup(false);
-      ref.read(backupProvider.notifier).cancelBackup();
-      ref.read(manualUploadProvider.notifier).cancelBackup();
-      // Start listening to new websocket events
-      ref.read(websocketProvider.notifier).stopListenToOldEvents();
-      ref.read(websocketProvider.notifier).startListeningToBetaEvents();
-
-      final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-
-      if (permission.isGranted) {
-        await ref.read(backgroundSyncProvider).syncLocal(full: true);
-        await migrateDeviceAssetToSqlite(ref.read(isarProvider), ref.read(driftProvider));
-        await migrateBackupAlbumsToSqlite(ref.read(isarProvider), ref.read(driftProvider));
-      }
-    } else {
-      await ref.read(backgroundSyncProvider).cancel();
-      ref.read(websocketProvider.notifier).stopListeningToBetaEvents();
-      ref.read(websocketProvider.notifier).startListeningToOldEvents();
-    }
-
-    if (mounted) {
-      setState(() {
-        HapticFeedback.heavyImpact();
-        hasMigrated = true;
+      // Update both DBs with the current beta timeline state
+      await ref.read(isarProvider).writeTxn(() async {
+        await ref
+            .read(isarProvider)
+            .storeValues
+            .put(StoreValue(StoreKey.betaTimeline.id, intValue: widget.switchingToBeta ? 1 : 0, strValue: null));
       });
+      await ref
+          .read(driftProvider)
+          .storeEntity
+          .insertOnConflictUpdate(
+            StoreEntityCompanion(
+              id: Value(StoreKey.betaTimeline.id),
+              stringValue: const Value(null),
+              intValue: Value(widget.switchingToBeta ? 1 : 0),
+            ),
+          );
+      await StoreService.switchRepo(widget.switchingToBeta);
+
+      if (mounted) {
+        setState(() {
+          HapticFeedback.heavyImpact();
+          hasMigrated = true;
+        });
+      }
+    } catch (e, s) {
+      Logger("ChangeExperiencePage").severe("Error during migration", e, s);
     }
   }
 

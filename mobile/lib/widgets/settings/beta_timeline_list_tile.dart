@@ -89,7 +89,6 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                   ElevatedButton(
                     onPressed: () async {
                       Navigator.of(context).pop();
-                      await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.betaTimeline, value);
                       context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: value)]);
                     },
                     child: Text("ok".t(context: context)),

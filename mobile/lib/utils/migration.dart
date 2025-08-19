@@ -20,6 +20,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -212,6 +213,39 @@ Future<void> migrateBackupAlbumsToSqlite(Isar db, Drift drift) async {
     });
   } catch (error) {
     debugPrint("[MIGRATION] Error while migrating backup albums to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToSqlite(Isar db, Drift drift) async {
+  try {
+    final isarStoreValues = await db.storeValues.where().findAll();
+    await drift.batch((batch) {
+      for (final storeValue in isarStoreValues) {
+        final companion = StoreEntityCompanion(
+          id: Value(storeValue.id),
+          stringValue: Value(storeValue.strValue),
+          intValue: Value(storeValue.intValue),
+        );
+        batch.insert(drift.storeEntity, companion, onConflict: DoUpdate((_) => companion));
+      }
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
+  try {
+    final driftStoreValues = await drift.storeEntity
+        .select()
+        .map((entity) => StoreValue(entity.id, intValue: entity.intValue, strValue: entity.stringValue))
+        .get();
+
+    await db.writeTxn(() async {
+      await db.storeValues.putAll(driftStoreValues);
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to Isar: $error");
   }
 }
 
