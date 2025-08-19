@@ -2,7 +2,7 @@ import { plainToInstance } from 'class-transformer';
 import { defaults, SystemConfig } from 'src/config';
 import { AlbumUser } from 'src/database';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
+import { AlbumUserRole, AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { NotificationService } from 'src/services/notification.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -158,7 +158,7 @@ describe(NotificationService.name, () => {
         ...albumStub.empty,
         id: 'album',
         owner: userStub.admin,
-        albumUsers: [{ user: { ...userStub.user1, id: '42' } }],
+        albumUsers: [{ role: AlbumUserRole.Editor, user: { ...userStub.user1, id: '42' } }],
       };
       mocks.album.getById.mockResolvedValue(album);
 
@@ -436,7 +436,7 @@ describe(NotificationService.name, () => {
     it('should skip recipient that could not be looked up', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
+        albumUsers: [{ role: AlbumUserRole.Editor, user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValueOnce(userStub.user1);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
@@ -450,7 +450,7 @@ describe(NotificationService.name, () => {
     it('should skip recipient with disabled email notifications', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
+        albumUsers: [{ role: AlbumUserRole.Editor, user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
@@ -472,7 +472,7 @@ describe(NotificationService.name, () => {
     it('should skip recipient with disabled email notifications for the album update event', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
+        albumUsers: [{ role: AlbumUserRole.Editor, user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue({
         ...userStub.user1,
@@ -494,7 +494,7 @@ describe(NotificationService.name, () => {
     it('should send email', async () => {
       mocks.album.getById.mockResolvedValue({
         ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
+        albumUsers: [{ role: AlbumUserRole.Editor, user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue(userStub.user1);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
@@ -512,7 +512,7 @@ describe(NotificationService.name, () => {
         ...albumStub.empty,
         id: '1',
         owner: userStub.admin,
-        albumUsers: [{ user: userStub.user2 }], // user2 will be notified
+        albumUsers: [{ role: AlbumUserRole.Editor, user: userStub.user2 }], // user2 will be notified
       };
       mocks.album.getById.mockResolvedValue(album);
 
@@ -558,7 +558,7 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumUpdate', () => {
     it('should skip if album could not be found', async () => {
-      mocks.album.getById.mockResolvedValue(null);
+      mocks.album.getById.mockResolvedValue(undefined);
 
       await sut.onAlbumUpdate({ id: 'album-id', userId: 'user-id', notifyRecipients: true });
 
@@ -571,7 +571,7 @@ describe(NotificationService.name, () => {
         ...albumStub.empty,
         id: 'album-id',
         owner: userStub.admin,
-        albumUsers: [{ user: userStub.user1 }],
+        albumUsers: [{ role: AlbumUserRole.Editor, user: userStub.user1 }],
       };
       mocks.album.getById.mockResolvedValue(album);
 
@@ -590,7 +590,10 @@ describe(NotificationService.name, () => {
         ...albumStub.empty,
         id: 'album-id',
         owner: userStub.admin,
-        albumUsers: [{ user: userStub.user1 }, { user: userStub.user2 }],
+        albumUsers: [
+          { role: AlbumUserRole.Editor, user: userStub.user1 },
+          { role: AlbumUserRole.Editor, user: userStub.user2 },
+        ],
       };
       mocks.album.getById.mockResolvedValue(album);
 
@@ -622,7 +625,10 @@ describe(NotificationService.name, () => {
         ...albumStub.empty,
         id: 'album-id',
         owner: userStub.admin,
-        albumUsers: [{ user: userStub.user1 }, { user: userStub.user2 }],
+        albumUsers: [
+          { role: AlbumUserRole.Editor, user: userStub.user1 },
+          { role: AlbumUserRole.Editor, user: userStub.user2 },
+        ],
       };
       mocks.album.getById.mockResolvedValue(album);
 
@@ -673,8 +679,8 @@ describe(NotificationService.name, () => {
         id: 'album-id',
         owner: userStub.admin,
         albumUsers: [
-          { user: userStub.admin }, // Owner is also in album users
-          { user: userStub.user1 },
+          { role: AlbumUserRole.Editor, user: userStub.admin }, // Owner is also in album users
+          { role: AlbumUserRole.Editor, user: userStub.user1 },
         ],
       };
       mocks.album.getById.mockResolvedValue(album);
