@@ -195,32 +195,84 @@ export class AlbumService extends BaseService {
       assetSuccessCount: 0,
       error: BulkIdErrorReason.DUPLICATE,
     };
-    const successfulAssetIds: Set<string> = new Set();
-    for (const albumId of dto.albumIds) {
-      try {
-        const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
 
-        let success = false;
-        for (const res of albumResults) {
-          if (res.success) {
-            success = true;
-            results.success = true;
-            results.error = undefined;
-            successfulAssetIds.add(res.id);
-          } else if (results.error && res.error !== BulkIdErrorReason.DUPLICATE) {
-            results.error = BulkIdErrorReason.UNKNOWN;
-          }
+    const allowedAlbumIds = await this.checkAccess({
+      auth,
+      permission: Permission.AlbumAssetCreate,
+      ids: dto.albumIds,
+    });
+    if (allowedAlbumIds.size === 0) {
+      results.error = BulkIdErrorReason.NO_PERMISSION;
+      return results;
+    }
+    const allowedAssetIds = await this.checkAccess({ auth, permission: Permission.AssetShare, ids: dto.assetIds });
+    if (allowedAssetIds.size === 0) {
+      results.error = BulkIdErrorReason.NO_PERMISSION;
+      return results;
+    }
+
+    const albumAssetValues: { albumsId: string; assetsId: string }[] = [];
+    const events: { id: string; recipients: string[] }[] = [];
+    for (const albumId of allowedAlbumIds) {
+      const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
+      const notPresentAssetIds = [...allowedAssetIds].filter((id) => !existingAssetIds.has(id));
+      if (notPresentAssetIds.length === 0) {
+        continue;
+      }
+      const album = await this.findOrFail(albumId, { withAssets: false });
+      results.error = undefined;
+
+      for (const assetId of notPresentAssetIds) {
+        const hasAsset = existingAssetIds.has(assetId);
+        if (hasAsset) {
+          continue;
         }
-        if (success) {
-          results.albumSuccessCount++;
-        }
-      } catch {
-        if (results.error) {
-          results.error = BulkIdErrorReason.UNKNOWN;
-        }
+        existingAssetIds.add(assetId);
+        albumAssetValues.push({ albumsId: albumId, assetsId: assetId });
+      }
+      await this.albumRepository.update(albumId, {
+        id: albumId,
+        updatedAt: new Date(),
+        albumThumbnailAssetId: album.albumThumbnailAssetId ?? notPresentAssetIds[0],
+      });
+      const allUsersExceptUs = [...album.albumUsers.map(({ user }) => user.id), album.owner.id].filter(
+        (userId) => userId !== auth.user.id,
+      );
+      events.push({ id: albumId, recipients: allUsersExceptUs });
+    }
+    await this.albumRepository.addAssetIdsToAlbums(albumAssetValues);
+    for (const event of events) {
+      for (const recipientId of event.recipients) {
+        await this.eventRepository.emit('AlbumUpdate', { id: event.id, recipientId });
       }
     }
-    results.assetSuccessCount = successfulAssetIds.size;
+
+    // const successfulAssetIds: Set<string> = new Set();
+    // for (const albumId of dto.albumIds) {
+    //   try {
+    //     const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
+
+    //     let success = false;
+    //     for (const res of albumResults) {
+    //       if (res.success) {
+    //         success = true;
+    //         results.success = true;
+    //         results.error = undefined;
+    //         successfulAssetIds.add(res.id);
+    //       } else if (results.error && res.error !== BulkIdErrorReason.DUPLICATE) {
+    //         results.error = BulkIdErrorReason.UNKNOWN;
+    //       }
+    //     }
+    //     if (success) {
+    //       results.albumSuccessCount++;
+    //     }
+    //   } catch {
+    //     if (results.error) {
+    //       results.error = BulkIdErrorReason.UNKNOWN;
+    //     }
+    //   }
+    // }
+    // results.assetSuccessCount = successfulAssetIds.size;
 
     return results;
   }
