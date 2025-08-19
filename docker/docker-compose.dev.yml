@@ -21,17 +21,16 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    user: "${UID:-1000}:${GID:-1000}"
     build:
       context: ../
       dockerfile: server/Dockerfile
       target: dev
     restart: unless-stopped
     volumes:
-      - ../server:/usr/src/app/server
-      - ../open-api:/usr/src/app/open-api
+      - ..:/usr/src/app
       - ${UPLOAD_LOCATION}/photos:/data
       - ${UPLOAD_LOCATION}/photos/upload:/data/upload
-      - /usr/src/app/server/node_modules
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -58,8 +57,12 @@ services:
       - 9231:9231
       - 2283:2283
     depends_on:
-      - redis
-      - database
+      redis:
+        condition: service_started
+      database:
+        condition: service_started
+      init:
+        condition: service_completed_successfully
     healthcheck:
       disable: false
 
@@ -68,6 +71,7 @@ services:
     image: immich-web-dev:latest
     # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
     # user: 0:0
+    user: "${UID:-1000}:${GID:-1000}"
     build:
       context: ../
       dockerfile: web/Dockerfile
@@ -78,18 +82,17 @@ services:
       - 3000:3000
       - 24678:24678
     volumes:
-      - ../web:/usr/src/app/web
-      - ../i18n:/usr/src/app/i18n
-      - ../open-api/:/usr/src/app/open-api/
-      # - ../../ui:/usr/ui
-      - /usr/src/app/web/node_modules
+      - ..:/usr/src/app
     ulimits:
       nofile:
         soft: 1048576
         hard: 1048576
     restart: unless-stopped
     depends_on:
-      - immich-server
+      immich-server:
+        condition: service_started
+      init:
+        condition: service_completed_successfully
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -117,7 +120,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:facc1d2c3462975c34e10fccb167bfa92b0e0dbd992fc282c29a61c3243afb11
+    image: docker.io/valkey/valkey:8-bookworm@sha256:a137a2b60aca1a75130022d6bb96af423fefae4eb55faf395732db3544803280
     healthcheck:
       test: redis-cli ping || exit 1
 
@@ -156,6 +159,14 @@ services:
   #   image: grafana/grafana:10.3.3-ubuntu
   #   volumes:
   #     - grafana-data:/var/lib/grafana
+
+  init:
+    container_name: init
+    image: busybox
+    env_file:
+      - .env
+    user: 0:0
+    command: sh -c 'for path in /usr/src/app/.pnpm-store /usr/src/app/server/node_modules /usr/src/app/.github/node_modules /usr/src/app/cli/node_modules /usr/src/app/docs/node_modules /usr/src/app/e2e/node_modules /usr/src/app/open-api/typescript-sdk/node_modules /usr/src/app/web/.svelte-kit /usr/src/app/web/coverage /usr/src/app/node_modules /usr/src/app/web/node_modules; do [ -e "$$path" ] && chown -R ${UID:-1000}:${GID:-1000} "$$path" || true; done'
 
 volumes:
   model-cache:

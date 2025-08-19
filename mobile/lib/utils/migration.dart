@@ -223,11 +223,11 @@ class _DeviceAsset {
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
 }
 
-Future<void> runNewSync(WidgetRef ref, {bool full = false}) async {
+Future<List<void>> runNewSync(WidgetRef ref, {bool full = false}) async {
   ref.read(backupProvider.notifier).cancelBackup();
 
   final backgroundManager = ref.read(backgroundSyncProvider);
-  Future.wait([
+  return Future.wait([
     backgroundManager.syncLocal(full: full).then((_) {
       Logger("runNewSync").fine("Hashing assets after syncLocal");
       backgroundManager.hashAssets();

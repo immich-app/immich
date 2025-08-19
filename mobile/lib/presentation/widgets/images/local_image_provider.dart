@@ -11,7 +11,6 @@ import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/extensions/codec_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/image/cache/thumbnail_image_cache_manager.dart';
@@ -107,7 +106,6 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(LocalThumbProvider(id: key.id, updatedAt: key.updatedAt)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<DateTime>('Updated at', key.updatedAt),
@@ -117,13 +115,30 @@ class LocalFullImageProvider extends ImageProvider<LocalFullImageProvider> {
   }
 
   // Streams in each stage of the image as we ask for it
-  Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) {
+  Stream<ImageInfo> _codec(LocalFullImageProvider key, ImageDecoderCallback decode) async* {
     try {
-      return switch (key.type) {
+      // First, yield the thumbnail image from LocalThumbProvider
+      final thumbProvider = LocalThumbProvider(id: key.id, updatedAt: key.updatedAt);
+      try {
+        final thumbCodec = await thumbProvider._codec(
+          thumbProvider,
+          thumbProvider.cacheManager ?? ThumbnailImageCacheManager(),
+          decode,
+        );
+        final thumbImageInfo = await thumbCodec.getImageInfo();
+        yield thumbImageInfo;
+      } catch (_) {}
+
+      // Then proceed with the main image loading stream
+      final mainStream = switch (key.type) {
         AssetType.image => _decodeProgressive(key, decode),
         AssetType.video => _getThumbnailCodec(key, decode),
         _ => throw StateError('Unsupported asset type ${key.type}'),
       };
+
+      await for (final imageInfo in mainStream) {
+        yield imageInfo;
+      }
     } catch (error, stack) {
       Logger('ImmichLocalImageProvider').severe('Error loading local image ${key.id}', error, stack);
       throw const ImageLoadingException('Could not load image from local storage');

@@ -55,6 +55,7 @@ void main() {
     updatedAt: DateTime(2023, 1, 2),
     ownerId: 'owner1',
     ownerName: "Test User",
+    isShared: false,
   );
 
   final albumB = RemoteAlbum(
@@ -68,6 +69,7 @@ void main() {
     updatedAt: DateTime(2023, 2, 2),
     ownerId: 'owner2',
     ownerName: "Test User",
+    isShared: false,
   );
 
   group('sortAlbums', () {

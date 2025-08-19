@@ -80,6 +80,7 @@ import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/feat_in_development.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_activities.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album_options.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_archive.page.dart';
@@ -339,6 +340,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DriftEditImageRoute.page),
     AutoRoute(page: DriftCropImageRoute.page),
     AutoRoute(page: DriftFilterImageRoute.page),
+    AutoRoute(page: DriftActivitiesRoute.page, guards: [_authGuard, _duplicateGuard]),
     // required to handle all deeplinks in deep_link.service.dart
     // auto_route_library#1722
     RedirectRoute(path: '*', redirectTo: '/'),

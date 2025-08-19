@@ -1,6 +1,6 @@
 {
   "name": "immich-e2e",
-  "version": "1.137.3",
+  "version": "1.138.1",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -26,7 +26,7 @@
     "@playwright/test": "^1.44.1",
     "@socket.io/component-emitter": "^3.1.2",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^22.17.0",
+    "@types/node": "^22.17.1",
     "@types/oidc-provider": "^9.0.0",
     "@types/pg": "^8.15.1",
     "@types/pngjs": "^6.0.4",

@@ -25,6 +25,7 @@ import UIKit
     
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
     NativeSyncApiSetup.setUp(binaryMessenger: controller.binaryMessenger, api: NativeSyncApiImpl())
+    ThumbnailApiSetup.setUp(binaryMessenger: controller.binaryMessenger, api: ThumbnailApiImpl())
 
     BackgroundServicePlugin.setPluginRegistrantCallback { registry in
       if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
