@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -163,7 +164,14 @@ class _PlaceTile extends StatelessWidget {
       title: Text(place.$1, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
       leading: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
-        child: Thumbnail(size: const Size(80, 80), fit: BoxFit.cover, remoteId: place.$2),
+        child: SizedBox(
+          width: 80,
+          height: 80,
+          child: Thumbnail(
+            fit: BoxFit.cover,
+            imageProvider: RemoteThumbProvider(assetId: place.$2),
+          ),
+        ),
       ),
     );
   }

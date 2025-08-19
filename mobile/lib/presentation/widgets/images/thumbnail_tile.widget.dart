@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -21,7 +22,7 @@ class ThumbnailTile extends ConsumerWidget {
     super.key,
   });
 
-  final BaseAsset asset;
+  final BaseAsset? asset;
   final Size size;
   final BoxFit fit;
   final bool? showStorageIndicator;
@@ -30,6 +31,7 @@ class ThumbnailTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final asset = this.asset;
     final heroIndex = heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final assetContainerColor = context.isDarkTheme
@@ -39,6 +41,7 @@ class ThumbnailTile extends ConsumerWidget {
     final isSelected = ref.watch(
       multiSelectProvider.select((multiselect) => multiselect.selectedAssets.contains(asset)),
     );
+    final isScrubbing = ref.watch(timelineStateProvider.select((state) => state.isScrubbing));
 
     final borderStyle = lockSelection
         ? BoxDecoration(
@@ -52,7 +55,7 @@ class ThumbnailTile extends ConsumerWidget {
           )
         : const BoxDecoration();
 
-    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+    final hasStack = asset is RemoteAsset && asset.stackId != null;
 
     final bool storageIndicator =
         showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
@@ -71,8 +74,17 @@ class ThumbnailTile extends ConsumerWidget {
               children: [
                 Positioned.fill(
                   child: Hero(
-                    tag: '${asset.heroTag}_$heroIndex',
-                    child: Thumbnail(asset: asset, fit: fit, size: size),
+                    tag: '${asset?.heroTag ?? ''}_$heroIndex',
+                    child: Thumbnail.fromAsset(
+                      asset: asset,
+                      size: size,
+                      thumbhashMode: ThumbhashMode.disabled,
+                      // thumbhashMode: isScrubbing
+                      //     ? ThumbhashMode.only
+                      //     : asset != null && asset.hasLocal
+                      //     ? ThumbhashMode.disabled
+                      //     : ThumbhashMode.enabled,
+                    ),
                   ),
                 ),
                 if (hasStack)
@@ -83,7 +95,7 @@ class ThumbnailTile extends ConsumerWidget {
                       child: const _TileOverlayIcon(Icons.burst_mode_rounded),
                     ),
                   ),
-                if (asset.isVideo)
+                if (asset != null && asset.isVideo)
                   Align(
                     alignment: Alignment.topRight,
                     child: Padding(
@@ -91,7 +103,7 @@ class ThumbnailTile extends ConsumerWidget {
                       child: _VideoIndicator(asset.duration),
                     ),
                   ),
-                if (storageIndicator)
+                if (storageIndicator && asset != null)
                   switch (asset.storage) {
                     AssetState.local => const Align(
                       alignment: Alignment.bottomRight,
@@ -115,7 +127,7 @@ class ThumbnailTile extends ConsumerWidget {
                       ),
                     ),
                   },
-                if (asset.isFavorite)
+                if (asset != null && asset.isFavorite)
                   const Align(
                     alignment: Alignment.bottomLeft,
                     child: Padding(

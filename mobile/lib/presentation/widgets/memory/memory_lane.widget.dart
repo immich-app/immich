@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -61,7 +62,10 @@ class DriftMemoryCard extends ConsumerWidget {
             child: SizedBox(
               width: 205,
               height: 200,
-              child: Thumbnail(remoteId: memory.assets[0].id, fit: BoxFit.cover),
+              child: Thumbnail(
+                imageProvider: RemoteThumbProvider(assetId: memory.assets[0].id),
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           Positioned(
