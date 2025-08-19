@@ -176,7 +176,7 @@ export class AssetRepository {
       .select(['make', 'model'])
       .where('assetId', '=', asUuid(assetId))
       .executeTakeFirst();
-    if (!row) return null;
+    if (!row) {return null;}
     return { make: row.make ?? null, model: row.model ?? null };
   }
 
@@ -220,7 +220,7 @@ export class AssetRepository {
 
   /** Fetch CLIP embeddings (if any) for a set of asset ids. Returns a map assetId -> float[] */
   async getClipEmbeddings(assetIds: string[]): Promise<Record<string, number[]>> {
-    if (!assetIds.length) return {};
+    if (assetIds.length === 0) {return {};}
     const rows = await this.db
       .selectFrom('smart_search')
       .select(['assetId', 'embedding'])
@@ -229,14 +229,14 @@ export class AssetRepository {
     const map: Record<string, number[]> = {};
     for (const r of rows as any[]) {
       const raw = r.embedding as unknown as string; // postgres vector comes back as string like '[0.1,0.2,...]'
-      if (!raw) continue;
-      const trimmed = raw.replace(/[\[\]{}]/g, '');
+      if (!raw) {continue;}
+      const trimmed = raw.replaceAll(/[\[\]{}]/g, '');
       const parts = trimmed
         .split(',')
         .map((p) => p.trim())
         .filter((p) => p.length);
       const nums = parts.map((p) => Number.parseFloat(p)).filter((n) => Number.isFinite(n));
-      if (nums.length) map[r.assetId] = nums;
+      if (nums.length > 0) {map[r.assetId] = nums;}
     }
     return map;
   }

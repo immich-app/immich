@@ -9,7 +9,7 @@ const dctCos: number[][] = Array.from({ length: N }, (_, u) =>
 const c = (u: number) => (u === 0 ? Math.SQRT1_2 : 1);
 
 function dct2(block: number[][]): number[][] {
-  const out = Array.from({ length: N }, () => Array<number>(N).fill(0));
+  const out = Array.from({ length: N }, () => Array.from({length: N}).fill(0));
   for (let u = 0; u < N; u++) {
     const cu = c(u);
     for (let v = 0; v < N; v++) {
@@ -39,9 +39,9 @@ export async function computePerceptualHash(path: string): Promise<string> {
     .raw()
     .toBuffer({ resolveWithObject: true });
 
-  const block: number[][] = Array.from({ length: N }, () => Array<number>(N).fill(0));
+  const block: number[][] = Array.from({ length: N }, () => Array.from({length: N}).fill(0));
   for (let i = 0; i < data.length; i++) {
-    block[(i / N) | 0][i % N] = data[i];
+    block[Math.trunc((i / N))][i % N] = data[i];
   }
   const dct = dct2(block);
 
@@ -55,9 +55,8 @@ export async function computePerceptualHash(path: string): Promise<string> {
   // Median of AC terms (exclude DC at index 0)
   const ac = low
     .slice(1)
-    .slice()
     .sort((a, b) => a - b);
-  const median = ac[(ac.length / 2) | 0];
+  const median = ac[Math.trunc((ac.length / 2))];
 
   let hash = 0n;
   for (let i = 0; i < 64; i++) {

@@ -107,19 +107,18 @@ describe(AutoStackService.name, () => {
       { id: 'p4', originalFileName: 'IMG_9001.jpg', dateTimeOriginal: new Date('2024-01-01T00:00:03Z') }, // second outlier
     ] as any);
     // Embeddings: make first two similar and last two dissimilar to first pair (simulate by high cosine within pairs only)
-    const emb = (v: number[]) => v;
     mocks.asset.getClipEmbeddings.mockResolvedValue({
-      p1: emb([1, 0, 0]),
-      p2: emb([0.9, 0.1, 0]),
-      p3: emb([0, 1, 0]),
-      p4: emb([0, 0.9, 0.1]),
+      p1: [1, 0, 0],
+      p2: [0.9, 0.1, 0],
+      p3: [0, 1, 0],
+      p4: [0, 0.9, 0.1],
     });
     await sut.generateTimeWindowCandidates('user1', new Date('2024-01-01T00:00:00Z'), 5);
     // Expect candidate created after pruning attempts
     expect(mocks.stack.create).toHaveBeenCalledTimes(1);
   });
 
-  it('creates a stack for a tight group using local scoring (no ML offload)', async () => {
+  it('creates a stack for a tight group using local scoring', async () => {
     mocks.systemMetadata.get.mockResolvedValue({
       server: {
         autoStack: {

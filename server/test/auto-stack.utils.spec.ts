@@ -9,8 +9,8 @@ describe('auto-stack.utils', () => {
 
   it('cosSim01 maps orthogonal/identical/opposite', () => {
     expect(cosSim01([1, 0], [0, 1])).toBeCloseTo(0.5, 6);
-    expect(cosSim01([1, 0], [1, 0])).toBeCloseTo(1.0, 6);
-    expect(cosSim01([1, 0], [-1, 0])).toBeCloseTo(0.0, 6);
+    expect(cosSim01([1, 0], [1, 0])).toBeCloseTo(1, 6);
+    expect(cosSim01([1, 0], [-1, 0])).toBeCloseTo(0, 6);
   });
 
   it('hammingHex64 computes bit differences for 16-hex strings', () => {

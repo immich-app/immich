@@ -310,12 +310,14 @@ export const newTestService = <T extends BaseService>(
   }
 
   // Provide default stack.create implementation to avoid strict mock failures
-  (mocks.stack as any).create.mockImplementation(async (entity: any, assetIds: string[]) => ({
-    id: 'stack_test',
-    ownerId: entity.ownerId,
-    primaryAssetId: assetIds[0],
-    assets: assetIds.map((id) => ({ id })),
-  }));
+  (mocks.stack as any).create.mockImplementation(async (entity: any, assetIds: string[]) => {
+    return {
+      id: 'stack_test',
+      ownerId: entity.ownerId,
+      primaryAssetId: assetIds[0],
+      assets: assetIds.map((id) => ({ id })),
+    };
+  });
 
   const sut = new Service(
     overrides.logger || (mocks.logger as As<LoggingRepository>),

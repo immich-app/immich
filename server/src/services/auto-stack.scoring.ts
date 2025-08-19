@@ -43,10 +43,10 @@ export function computeAutoStackScore({
   const size = assets.length;
   const sizeScore = Math.min(1, Math.log2(size + 1) / 4) * (weights?.size ?? 50);
   const times = assets
-    .map((s) => (s.dateTimeOriginal ? new Date(s.dateTimeOriginal).getTime() : NaN))
+    .map((s) => (s.dateTimeOriginal ? new Date(s.dateTimeOriginal).getTime() : Number.NaN))
     .filter((t) => !Number.isNaN(t))
     .sort();
-  const spanMs = times.length ? times[times.length - 1] - times[0] : 0;
+  const spanMs = times.length > 0 ? times.at(-1) - times[0] : 0;
   const idealSpanMs = maxGapSeconds * 1000 * (size - 1);
   const timeSpanScore =
     (spanMs <= idealSpanMs ? 1 : Math.max(0, 1 - (spanMs - idealSpanMs) / (windowSeconds * 1000))) *
@@ -56,7 +56,7 @@ export function computeAutoStackScore({
   for (let i = 1; i < assets.length; i++) {
     const prev = extractNumericSuffix(assets[i - 1].originalFileName);
     const cur = extractNumericSuffix(assets[i].originalFileName);
-    if (prev != null && cur != null && (cur === prev || cur === prev + 1)) continuityOk++;
+    if (prev != null && cur != null && (cur === prev || cur === prev + 1)) {continuityOk++;}
   }
   const continuityScore = (assets.length > 1 ? continuityOk / (assets.length - 1) : 0) * (weights?.continuity ?? 10);
   let visualSimilarityScore = 0;
@@ -75,15 +75,15 @@ export function computeAutoStackScore({
       for (let j = i + 1; j < embAssets.length; j++) {
         const ej = embeddingMap[embAssets[j].id];
         const normJ = norm(ej);
-        if (!normI || !normJ) continue;
+        if (!normI || !normJ) {continue;}
         let dot = 0;
-        for (let k = 0; k < Math.min(ei.length, ej.length); k++) dot += ei[k] * ej[k];
+        for (let k = 0; k < Math.min(ei.length, ej.length); k++) {dot += ei[k] * ej[k];}
         sumCos += dot / (normI * normJ);
         pairs++;
       }
     }
     avgCos = pairs ? sumCos / pairs : 0;
-    let clipComponent = (avgCos + 1) / 2;
+    const clipComponent = (avgCos + 1) / 2;
     if (haveAllPHash) {
       // Blend pHash similarity (average) with CLIP cosine; simple average for now (future: config weights)
       let hashPairs = 0;
@@ -130,7 +130,7 @@ export function computeAutoStackScore({
             for (let k = 0; k < len; k++) {
               const x = a[k] ^ b[k];
               let diffBits = 0;
-              for (let bit = 0; bit < 8; bit++) diffBits += (x >> bit) & 1;
+              for (let bit = 0; bit < 8; bit++) {diffBits += (x >> bit) & 1;}
               equalBits += 8 - diffBits;
             }
             totalSim += equalBits / (len * 8);
@@ -156,7 +156,7 @@ export function computeAutoStackScore({
       : Number(v);
   const expNums = exposureValues.map(parseExposure).filter((v) => Number.isFinite(v) && v > 0);
   const variance = (arr: number[]) => {
-    if (arr.length < 2) return 0;
+    if (arr.length < 2) {return 0;}
     const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
     return arr.reduce((a, b) => a + (b - mean) ** 2, 0) / (arr.length - 1);
   };

@@ -1,5 +1,5 @@
 import { AutoStackService } from 'src/services/auto-stack.service';
-import { newTestService } from './utils';
+import { newTestService } from 'test/utils';
 
 describe('AutoStackService - candidate de-duplication', () => {
   it('skips creating a candidate if assets overlap an active candidate', async () => {

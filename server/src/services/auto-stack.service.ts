@@ -3,10 +3,10 @@ import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
+import { computeAutoStackScore } from 'src/services/auto-stack.scoring';
+import { cosSim01, extractNumericSuffix, hammingHex64, norm } from 'src/services/auto-stack.utils';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
-import { computeAutoStackScore } from './auto-stack.scoring';
-import { cosSim01, extractNumericSuffix, hammingHex64, norm } from './auto-stack.utils';
 
 /**
  * AutoStackService listens to metadata extraction events and creates stacks automatically
@@ -43,15 +43,14 @@ export class AutoStackService extends BaseService {
     sample: any[],
     maxGapSeconds: number,
     minGroupSize: number,
-    windowSeconds: number,
   ): string[][] {
     const groups: string[][] = [];
     let current: string[] = [];
     for (let i = 0; i < sample.length; i++) {
       const cur = sample[i];
       const prev = i > 0 ? sample[i - 1] : null;
-      const curTime = cur.dateTimeOriginal ? new Date(cur.dateTimeOriginal).getTime() : NaN;
-      const prevTime = prev?.dateTimeOriginal ? new Date(prev.dateTimeOriginal).getTime() : NaN;
+      const curTime = cur.dateTimeOriginal ? new Date(cur.dateTimeOriginal).getTime() : Number.NaN;
+      const prevTime = prev?.dateTimeOriginal ? new Date(prev.dateTimeOriginal).getTime() : Number.NaN;
       const timeOk = prev
         ? !Number.isNaN(curTime) && !Number.isNaN(prevTime) && curTime - prevTime <= maxGapSeconds * 1000
         : true;
@@ -61,20 +60,18 @@ export class AutoStackService extends BaseService {
       if (!prev || timeOk || seqOk) {
         current.push(cur.id);
       } else {
-        if (current.length >= minGroupSize) groups.push(current);
+        if (current.length >= minGroupSize) {groups.push(current);}
         this.logger.verbose(
           `AutoStack: split group due to gap (timeOk=${timeOk} seqOk=${seqOk}) prev=${prev?.id} cur=${cur.id} sizeSoFar=${current.length}`,
         );
         current = [cur.id];
       }
     }
-    if (current.length >= minGroupSize) groups.push(current);
-    if (!groups.length) {
-      if (sample.length >= minGroupSize) {
+    if (current.length >= minGroupSize) {groups.push(current);}
+    if (groups.length === 0 && sample.length >= minGroupSize) {
         this.logger.verbose(`AutoStack: fallback grouping all ${sample.length} assets (no continuity groups)`);
         groups.push(sample.map((s: any) => s.id));
       }
-    }
     this.logger.verbose(`AutoStack: formed ${groups.length} group(s) sizes=[${groups.map((g) => g.length).join(',')}]`);
     return groups;
   }
@@ -92,7 +89,7 @@ export class AutoStackService extends BaseService {
     },
   ): string[][] {
     const { sessionMaxSpanSeconds, sessionMinAvgAdjacency, sessionMinSegmentSize, minGroupSize } = opts;
-    if (!sessionMaxSpanSeconds || sessionMaxSpanSeconds <= 0) return groups;
+    if (!sessionMaxSpanSeconds || sessionMaxSpanSeconds <= 0) {return groups;}
     const byId: Record<string, any> = Object.fromEntries(workingSample.map((r: any) => [r.id, r]));
     const segMinSize = sessionMinSegmentSize || minGroupSize;
     const newGroups: string[][] = [];
@@ -102,14 +99,14 @@ export class AutoStackService extends BaseService {
         continue;
       }
       const times = g
-        .map((id) => (byId[id]?.dateTimeOriginal ? new Date(byId[id].dateTimeOriginal).getTime() : NaN))
+        .map((id) => (byId[id]?.dateTimeOriginal ? new Date(byId[id].dateTimeOriginal).getTime() : Number.NaN))
         .filter((t) => !Number.isNaN(t))
         .sort();
-      if (!times.length) {
+      if (times.length === 0) {
         newGroups.push(g);
         continue;
       }
-      const spanSecs = (times[times.length - 1] - times[0]) / 1000;
+      const spanSecs = (times.at(-1) - times[0]) / 1000;
       if (spanSecs <= sessionMaxSpanSeconds) {
         newGroups.push(g);
         continue;
@@ -117,7 +114,6 @@ export class AutoStackService extends BaseService {
       // compute adjacency similarity
       const embGroup = g.map((id) => ({ id, emb: embeddingMap[id] })).filter((x) => x.emb);
       const adjScores: number[] = [];
-      const normLocal = (v: number[]) => norm(v);
       for (let i = 1; i < embGroup.length; i++) {
         const a = embGroup[i - 1];
         const b = embGroup[i];
@@ -125,23 +121,23 @@ export class AutoStackService extends BaseService {
           adjScores.push(0);
           continue;
         }
-        const na = normLocal(a.emb);
-        const nb = normLocal(b.emb);
+        const na = norm(a.emb);
+        const nb = norm(b.emb);
         if (!na || !nb) {
           adjScores.push(0);
           continue;
         }
         let dot = 0;
-        for (let k = 0; k < Math.min(a.emb.length, b.emb.length); k++) dot += a.emb[k] * b.emb[k];
+        for (let k = 0; k < Math.min(a.emb.length, b.emb.length); k++) {dot += a.emb[k] * b.emb[k];}
         adjScores.push((dot / (na * nb) + 1) / 2);
       }
-      const avgAdj = adjScores.length ? adjScores.reduce((a, b) => a + b, 0) / adjScores.length : 1;
+      const avgAdj = adjScores.length > 0 ? adjScores.reduce((a, b) => a + b, 0) / adjScores.length : 1;
       if (sessionMinAvgAdjacency && avgAdj >= sessionMinAvgAdjacency) {
         newGroups.push(g);
         continue;
       }
       // split at largest temporal gap
-      const ordered = g.slice().sort((a, b) => {
+      const ordered = [...g].sort((a, b) => {
         const ta = byId[a]?.dateTimeOriginal ? new Date(byId[a].dateTimeOriginal).getTime() : 0;
         const tb = byId[b]?.dateTimeOriginal ? new Date(byId[b].dateTimeOriginal).getTime() : 0;
         return ta - tb;
@@ -160,14 +156,14 @@ export class AutoStackService extends BaseService {
       if (bestIdx > 0) {
         const left = ordered.slice(0, bestIdx);
         const right = ordered.slice(bestIdx);
-        if (left.length >= segMinSize) newGroups.push(left);
-        if (right.length >= segMinSize) newGroups.push(right);
-        if (left.length < segMinSize || right.length < segMinSize) newGroups.push(g); // fallback keep original
+        if (left.length >= segMinSize) {newGroups.push(left);}
+        if (right.length >= segMinSize) {newGroups.push(right);}
+        if (left.length < segMinSize || right.length < segMinSize) {newGroups.push(g);} // fallback keep original
         this.inc('immich.auto_stack.session_segments_split', 1);
-      } else newGroups.push(g);
+      } else {newGroups.push(g);}
     }
     if (newGroups.length !== groups.length)
-      this.logger.verbose(`AutoStack: session segmentation adjusted groups ${groups.length} -> ${newGroups.length}`);
+      {this.logger.verbose(`AutoStack: session segmentation adjusted groups ${groups.length} -> ${newGroups.length}`);}
     return newGroups;
   }
 
@@ -187,7 +183,7 @@ export class AutoStackService extends BaseService {
   ): Promise<string[][]> {
     const { maxGapSeconds, maxMergeGapSeconds, visualBridgeThreshold, mergeScoreDelta, windowSeconds, weights } =
       options;
-    if (!(groups.length > 1 && (maxMergeGapSeconds > maxGapSeconds || visualBridgeThreshold))) return groups;
+    if (!(groups.length > 1 && (maxMergeGapSeconds > maxGapSeconds || visualBridgeThreshold))) {return groups;}
     const byId: Record<string, any> = Object.fromEntries(workingSample.map((r: any) => [r.id, r]));
     const groupScore: Map<number, { total: number; components: Record<string, number> }> = new Map();
     const computeGroupScoreLocal = async (ids: string[]) => {
@@ -201,17 +197,17 @@ export class AutoStackService extends BaseService {
       });
       return { total, components };
     };
-    for (let gi = 0; gi < groups.length; gi++) groupScore.set(gi, await computeGroupScoreLocal(groups[gi]));
+    for (let gi = 0; gi < groups.length; gi++) {groupScore.set(gi, (await computeGroupScoreLocal(groups[gi])));}
     let merged = true;
     while (merged) {
       merged = false;
       for (let i = 0; i < groups.length - 1; i++) {
         const g1 = groups[i];
         const g2 = groups[i + 1];
-        const last1 = byId[g1[g1.length - 1]];
+        const last1 = byId[g1.at(-1)];
         const first2 = byId[g2[0]];
-        const t1 = last1?.dateTimeOriginal ? new Date(last1.dateTimeOriginal).getTime() : NaN;
-        const t2 = first2?.dateTimeOriginal ? new Date(first2.dateTimeOriginal).getTime() : NaN;
+        const t1 = last1?.dateTimeOriginal ? new Date(last1.dateTimeOriginal).getTime() : Number.NaN;
+        const t2 = first2?.dateTimeOriginal ? new Date(first2.dateTimeOriginal).getTime() : Number.NaN;
         const gapSecs = !Number.isNaN(t1) && !Number.isNaN(t2) ? (t2 - t1) / 1000 : Number.POSITIVE_INFINITY;
         const timeEligible = gapSecs <= maxMergeGapSeconds && gapSecs > maxGapSeconds;
         let visualEligible = false;
@@ -224,19 +220,19 @@ export class AutoStackService extends BaseService {
             const nB = norm(embB);
             if (nA && nB) {
               let dot = 0;
-              for (let k = 0; k < Math.min(embA.length, embB.length); k++) dot += embA[k] * embB[k];
+              for (let k = 0; k < Math.min(embA.length, embB.length); k++) {dot += embA[k] * embB[k];}
               bridgeSim = (dot / (nA * nB) + 1) / 2;
-              if (bridgeSim >= visualBridgeThreshold) visualEligible = true;
+              if (bridgeSim >= visualBridgeThreshold) {visualEligible = true;}
             }
           }
         }
-        if (!(timeEligible || visualEligible)) continue;
+        if (!(timeEligible || visualEligible)) {continue;}
         const mergedIds = [...g1, ...g2];
         const mergedScore = await computeGroupScoreLocal(mergedIds);
         const s1 = groupScore.get(i)!;
         const s2 = groupScore.get(i + 1)!;
         const gain = mergedScore.total - Math.max(s1.total, s2.total);
-        if (mergeScoreDelta !== undefined && mergeScoreDelta !== null && gain < mergeScoreDelta) continue;
+        if (mergeScoreDelta !== undefined && mergeScoreDelta !== null && gain < mergeScoreDelta) {continue;}
         this.logger.verbose(
           `AutoStack: merging groups i=${i} sizes=(${g1.length}+${g2.length}) gap=${gapSecs.toFixed(2)}s timeEligible=${timeEligible} visualEligible=${visualEligible} bridgeSim=${bridgeSim?.toFixed(3)}`,
         );
@@ -265,14 +261,14 @@ export class AutoStackService extends BaseService {
   private getOrientationBucket(rec: any): string {
     const w = rec?.exifImageWidth || rec?.width || rec?.imageWidth || null;
     const h = rec?.exifImageHeight || rec?.height || rec?.imageHeight || null;
-    if (!w || !h || w <= 0 || h <= 0) return 'unknown';
+    if (!w || !h || w <= 0 || h <= 0) {return 'unknown';}
     const ratio = w / h;
-    if (ratio >= 0.95 && ratio <= 1.05) return 'square';
-    if (ratio > 1.05 && ratio < 2.2) return 'landscape';
-    if (ratio >= 2.2 && ratio < 3.5) return 'panorama';
-    if (ratio >= 3.5) return 'ultrawide';
-    if (ratio < 0.95 && ratio > 0.5) return 'portrait';
-    if (ratio <= 0.5) return 'tall';
+    if (ratio >= 0.95 && ratio <= 1.05) {return 'square';}
+    if (ratio > 1.05 && ratio < 2.2) {return 'landscape';}
+    if (ratio >= 2.2 && ratio < 3.5) {return 'panorama';}
+    if (ratio >= 3.5) {return 'ultrawide';}
+    if (ratio < 0.95 && ratio > 0.5) {return 'portrait';}
+    if (ratio <= 0.5) {return 'tall';}
     return 'unknown';
   }
 
@@ -309,7 +305,7 @@ export class AutoStackService extends BaseService {
 
   /** Overlap/intersection merge pass. */
   private mergeOverlapGroups(groups: string[][]): string[][] {
-    if (!(groups.length > 1)) return groups;
+    if (!(groups.length > 1)) {return groups;}
     let changed = true;
     while (changed) {
       changed = false;
@@ -319,8 +315,8 @@ export class AutoStackService extends BaseService {
           const b = groups[j];
           const setA = new Set(a);
           const inter = b.filter((x) => setA.has(x));
-          if (inter.length) {
-            groups[i] = Array.from(new Set([...a, ...b]));
+          if (inter.length > 0) {
+            groups[i] = [...new Set([...a, ...b])];
             groups.splice(j, 1);
             changed = true;
             this.logger.debug(`AutoStack: overlap merge groups (${i},${j}) newSize=${groups[i].length}`);
@@ -364,7 +360,7 @@ export class AutoStackService extends BaseService {
       secondaryVisualMaxAdds,
     } = params;
     if (!secondaryVisualWindowSeconds || !(visualGroupSimilarityThreshold || pHashHammingThreshold !== undefined))
-      return;
+      {return;}
     try {
       const expandFrom = new Date(reference.getTime() - secondaryVisualWindowSeconds * 1000);
       const expandTo = new Date(reference.getTime() + secondaryVisualWindowSeconds * 1000);
@@ -376,12 +372,15 @@ export class AutoStackService extends BaseService {
         model,
       });
       const outside = wideSample.filter((r: any) => r.dateTimeOriginal < from || r.dateTimeOriginal > to);
-      if (!outside.length || !groups.length) return;
+      if (outside.length === 0 || groups.length === 0) {return;}
       const extraIds = outside.map((o: any) => o.id).filter((id: string) => !embeddingMap[id]);
-      if (extraIds.length) {
+      if (extraIds.length > 0) {
         try {
           Object.assign(embeddingMap, await this.assetRepository.getClipEmbeddings(extraIds));
-        } catch {}
+        } catch {
+          this.logger.warn(`AutoStack: failed to preload embeddings for ${extraIds.length} outside assets`);
+          return;
+        }
       }
       const hamming = (a?: string, b?: string) => hammingHex64(a ?? undefined, b ?? undefined);
       for (const g of groups) {
@@ -389,16 +388,15 @@ export class AutoStackService extends BaseService {
         const gSet = new Set(g);
         const groupEmbeddings = g.map((id) => embeddingMap[id]).filter(Boolean);
         let centroid: number[] | null = null;
-        if (groupEmbeddings.length) {
+        if (groupEmbeddings.length > 0) {
           const dim = groupEmbeddings[0].length;
-          centroid = new Array(dim).fill(0);
-          for (const v of groupEmbeddings) for (let d = 0; d < dim; d++) centroid[d] += v[d];
-          for (let d = 0; d < dim; d++) centroid[d] /= groupEmbeddings.length;
+          centroid = Array.from({length: dim}).fill(0) as number[];
+          for (const v of groupEmbeddings) {for (let d = 0; d < dim; d++) {centroid[d] += v[d];}}
+          for (let d = 0; d < dim; d++) {centroid[d] /= groupEmbeddings.length;}
         }
-        const cosSim01Local = (a: number[], b: number[]) => cosSim01(a, b);
         for (const cand of outside) {
-          if (added >= (secondaryVisualMaxAdds ?? 5)) break;
-          if (gSet.has(cand.id)) continue;
+          if (added >= (secondaryVisualMaxAdds ?? 5)) {break;}
+          if (gSet.has(cand.id)) {continue;}
           let phOk = false;
           if (pHashHammingThreshold !== undefined && pHashHammingThreshold !== null && cand.pHash) {
             for (const mid of g) {
@@ -412,7 +410,7 @@ export class AutoStackService extends BaseService {
           let visOk = false;
           if (!visOk && visualGroupSimilarityThreshold && centroid) {
             const emb = embeddingMap[cand.id];
-            if (emb) visOk = cosSim01Local(centroid, emb) >= visualGroupSimilarityThreshold;
+            if (emb) {visOk = cosSim01(centroid, emb) >= visualGroupSimilarityThreshold;}
           }
           if (visOk || phOk) {
             g.push(cand.id);
@@ -424,8 +422,8 @@ export class AutoStackService extends BaseService {
           }
         }
       }
-    } catch (e) {
-      this.logger.debug(`AutoStack: secondary visual expansion error: ${e}`);
+    } catch (error) {
+      this.logger.debug(`AutoStack: secondary visual expansion error: ${error}`);
     }
   }
 
@@ -442,8 +440,8 @@ export class AutoStackService extends BaseService {
     },
   ): Promise<{ group: string[]; pruned: number }> {
     const { enabled, iterative, minDelta, score, weights } = options;
-    if (!enabled || group.length <= 2) return { group, pruned: 0 };
-    let g = group.slice();
+    if (!enabled || group.length <= 2) {return { group, pruned: 0 };}
+    let g = [...group];
     let pruned = 0;
     let improved = true;
     let passes = 0;
@@ -456,7 +454,7 @@ export class AutoStackService extends BaseService {
       let bestGroup: string[] | null = null;
       for (const removeId of g) {
         const trial = g.filter((id) => id !== removeId);
-        if (trial.length < 2) continue;
+        if (trial.length < 2) {continue;}
         const trialScore = await score(trial, gi);
         const trialVisual = trialScore.components?.visual ?? 0;
         const gain = trialVisual - baseVisual;
@@ -473,26 +471,26 @@ export class AutoStackService extends BaseService {
         pruned++;
         improved = iterative && g.length > 2;
       }
-      if (!iterative) break;
+      if (!iterative) {break;}
     }
     return { group: g, pruned };
   }
 
   /** Reorder group primary by image quality heuristic. */
   private reorderPrimary(group: string[], workingSample: any[], enabled: boolean): string[] {
-    if (!enabled || group.length < 2) return group;
+    if (!enabled || group.length < 2) {return group;}
     try {
       const details = workingSample.filter((s: any) => group.includes(s.id));
       details.sort((a: any, b: any) => {
         const isoA = a.iso ?? Number.MAX_SAFE_INTEGER;
         const isoB = b.iso ?? Number.MAX_SAFE_INTEGER;
-        if (isoA !== isoB) return isoA - isoB;
+        if (isoA !== isoB) {return isoA - isoB;}
         const expA = a.exposureTime ?? Number.MAX_VALUE;
         const expB = b.exposureTime ?? Number.MAX_VALUE;
-        if (expA !== expB) return expA - expB;
+        if (expA !== expB) {return expA - expB;}
         const tA = a.dateTimeOriginal ? new Date(a.dateTimeOriginal).getTime() : Number.MAX_SAFE_INTEGER;
         const tB = b.dateTimeOriginal ? new Date(b.dateTimeOriginal).getTime() : Number.MAX_SAFE_INTEGER;
-        if (tA !== tB) return tA - tB;
+        if (tA !== tB) {return tA - tB;}
         return a.id.localeCompare(b.id);
       });
       const reordered = details.map((d: any) => d.id);
@@ -501,7 +499,9 @@ export class AutoStackService extends BaseService {
         this.inc('immich.auto_stack.primary_reordered_quality', 1);
         return reordered;
       }
-    } catch {}
+    } catch {
+      this.logger.warn(`AutoStack: primary heuristic reordering failed for group ${group.join(',')}`);
+    }
     return group;
   }
 
@@ -514,7 +514,7 @@ export class AutoStackService extends BaseService {
   async onAssetMetadataExtracted({ assetId, userId }: ArgOf<'AssetMetadataExtracted'>) {
     try {
       const { server } = await this.getConfig({ withCache: true });
-      if (!server.autoStack.enabled) return;
+      if (!server.autoStack.enabled) {return;}
       await this.jobRepository.queue({ name: JobName.AutoStackCandidateGenerateForAsset, data: { id: assetId } });
       this.logger.debug(`AutoStack: queued asset candidate generation job asset=${assetId} user=${userId}`);
       this.inc('immich.auto_stack.jobs_queued', 1);
@@ -531,7 +531,7 @@ export class AutoStackService extends BaseService {
     referenceAssetId?: string,
   ): Promise<number> {
     const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return 0;
+    if (!server.autoStack.enabled) {return 0;}
     const {
       windowSeconds,
       maxGapSeconds,
@@ -581,13 +581,13 @@ export class AutoStackService extends BaseService {
     let embeddingMap: Record<string, number[]> = {};
     try {
       embeddingMap = await this.assetRepository.getClipEmbeddings(workingSample.map((s: any) => s.id));
-    } catch (e) {
-      this.logger.debug(`AutoStack: embedding preload failed: ${e}`);
+    } catch (error) {
+      this.logger.debug(`AutoStack: embedding preload failed: ${error}`);
     }
 
     // 1. Initial groups
     let groups = this.buildInitialGroups(workingSample, maxGapSeconds, minGroupSize, windowSeconds);
-    if (!groups.length) {
+    if (groups.length === 0) {
       this.logger.debug(
         `AutoStack: no groups >= minGroupSize=${minGroupSize} (candidates examined=${workingSample.length}) owner=${ownerId}`,
       );
@@ -611,7 +611,7 @@ export class AutoStackService extends BaseService {
       weights,
     });
     // 4. Overlap merge if enabled
-    if (overlapMergeEnabled) groups = this.mergeOverlapGroups(groups);
+    if (overlapMergeEnabled) {groups = this.mergeOverlapGroups(groups);}
     // 5. Secondary visual expansion
     await this.expandGroupsVisually({
       groups,
@@ -636,14 +636,14 @@ export class AutoStackService extends BaseService {
       this.logger.debug(`AutoStack: orientation enforcement adjusted groups ${beforeOrientation} -> ${groups.length}`);
     }
 
-    let created = 0;
-    const scoreGroup = async (assetIds: string[], groupIndex: number) => {
+    const created = 0;
+    const scoreGroup = async (assetIds: string[], _: number) => {
       const subset = workingSample.filter((s: any) => assetIds.includes(s.id));
       const local = computeAutoStackScore({ assets: subset, embeddingMap, weights, maxGapSeconds, windowSeconds });
       return local;
     };
 
-    let prunedTotal = 0;
+    const prunedTotal = 0;
     for (let gi = 0; gi < groups.length; gi++) {
       let g = groups[gi];
       try {
@@ -654,13 +654,13 @@ export class AutoStackService extends BaseService {
           score: scoreGroup,
           weights,
         });
-        if (pruned) this.inc('immich.auto_stack.candidates_pruned_outliers', pruned);
+        if (pruned) {this.inc('immich.auto_stack.candidates_pruned_outliers', pruned);}
         g = prunedGroup;
-      } catch (e) {
-        this.logger.debug(`AutoStack: outlier pruning error: ${e}`);
+      } catch (error) {
+        this.logger.debug(`AutoStack: outlier pruning error: ${error}`);
       }
       g = this.reorderPrimary(g, workingSample, !!bestPrimaryHeuristic);
-      const { total: score, components, avgCos } = await scoreGroup(g, gi);
+      const { total: score, components } = await scoreGroup(g, gi);
       this.logger.debug(
         `AutoStack: creating candidate size=${g.length} score=${score} components=${JSON.stringify(components)} owner=${ownerId}`,
       );
@@ -673,18 +673,18 @@ export class AutoStackService extends BaseService {
           await Promise.all(
             g.map((id: string) => this.assetRepository.upsertExif({ assetId: id, autoStackSource: 'VISUAL' as any })),
           );
-          // this.logger.log(
-          //   `AutoStack: auto-promoted candidate to stack id=${stack.id} owner=${ownerId} size=${g.length} score=${score}${JSON.stringify(components)} visual=${components.visual}`,
-          // );
-        } catch (e: any) {
-          const msg = e?.message || String(e);
+          this.logger.debug(
+            `AutoStack: auto-promoted candidate to stack id=${stack.id} owner=${ownerId} size=${g.length} score=${score}${JSON.stringify(components)} visual=${components.visual}`,
+          );
+        } catch (error: any) {
+          const msg = error?.message || String(error);
           if (msg.includes('duplicate key') && msg.includes('stack_primaryAssetId_uq')) {
             this.logger.debug(
               `AutoStack: auto-promote race detected; stack already exists for primary=${g[0]} owner=${ownerId}`,
             );
             continue;
           }
-          throw e;
+          throw error;
         }
         await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: ownerId });
         this.inc('immich.auto_stack.candidates_auto_promoted', 1);
@@ -706,7 +706,7 @@ export class AutoStackService extends BaseService {
   @OnJob({ name: JobName.AutoStackCandidateQueueAll, queue: QueueName.AutoStack })
   async handleQueueAllCandidates(job: JobOf<JobName.AutoStackCandidateQueueAll>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
+    if (!server.autoStack.enabled) {return JobStatus.Skipped;}
     const users = await this.userRepository.getList({ withDeleted: false });
     this.logger.log(`AutoStack: queuing candidate generation for ${users.length} users`);
     await this.jobRepository.queueAll(
@@ -718,7 +718,7 @@ export class AutoStackService extends BaseService {
   @OnJob({ name: JobName.AutoStackCandidateGenerate, queue: QueueName.AutoStack })
   async handleGenerateCandidates(job: JobOf<JobName.AutoStackCandidateGenerate>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
+    if (!server.autoStack.enabled) {return JobStatus.Skipped;}
     this.logger.verbose(`AutoStack: generating candidates for owner=${job.id} force=${job.force}`);
     // If force is set, delete all existing candidates for this user
     if (job.force) {
@@ -728,7 +728,7 @@ export class AutoStackService extends BaseService {
     }
     const allAssets = await this.assetRepository.getByOwnerId(job.id);
     this.logger.debug(`AutoStack: found ${allAssets.length} assets for owner=${job.id}`);
-    if (!allAssets.length) {
+    if (allAssets.length === 0) {
       this.logger.debug(`AutoStack: no assets found for owner=${job.id}, skipping candidate generation`);
       return JobStatus.Skipped;
     }
@@ -743,16 +743,16 @@ export class AutoStackService extends BaseService {
   @OnJob({ name: JobName.AutoStackCandidateGenerateForAsset, queue: QueueName.AutoStack })
   async handleGenerateCandidatesForAsset(job: JobOf<JobName.AutoStackCandidateGenerateForAsset>): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
+    if (!server.autoStack.enabled) {return JobStatus.Skipped;}
     try {
       const asset = await this.assetRepository.getById(job.id);
-      if (!asset) return JobStatus.Skipped;
+      if (!asset) {return JobStatus.Skipped;}
       const dto = await this.assetRepository.getDateTimeOriginal(job.id);
-      if (!dto) return JobStatus.Skipped;
+      if (!dto) {return JobStatus.Skipped;}
       await this.generateTimeWindowCandidates(asset.ownerId, dto, undefined, job.id);
       return JobStatus.Success;
-    } catch (e) {
-      this.logger.warn(`AutoStack: asset-specific candidate generation failed asset=${job.id}: ${e}`);
+    } catch (error) {
+      this.logger.warn(`AutoStack: asset-specific candidate generation failed asset=${job.id}: ${error}`);
       return JobStatus.Failed;
     }
   }
@@ -760,7 +760,7 @@ export class AutoStackService extends BaseService {
   @OnJob({ name: JobName.AutoStackCandidateResetAll, queue: QueueName.AutoStack })
   async handleResetAll(): Promise<JobStatus> {
     const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return JobStatus.Skipped;
+    if (!server.autoStack.enabled) {return JobStatus.Skipped;}
     try {
       await this.stackRepository.clearAll();
       this.logger.log('AutoStack: cleared all existing candidates and stacks');
@@ -769,16 +769,16 @@ export class AutoStackService extends BaseService {
         users.map((u: any) => ({ name: JobName.AutoStackCandidateGenerate, data: { id: u.id } })),
       );
       return JobStatus.Success;
-    } catch (e) {
-      this.logger.warn(`AutoStack: reset failed: ${e}`);
+    } catch (error) {
+      this.logger.warn(`AutoStack: reset failed: ${error}`);
       return JobStatus.Failed;
     }
   }
 
   /** Controller-facing: queue global reset of candidates and stacks. */
-  async resetAll(auth: AuthDto) {
+  async resetAll(_: AuthDto) {
     const { server } = await this.getConfig({ withCache: true });
-    if (!server.autoStack.enabled) return { error: 'disabled' } as const;
+    if (!server.autoStack.enabled) {return { error: 'disabled' } as const;}
     // Queue a global reset: use existing queue-all job placeholder (same as controller intent)
     await this.jobRepository.queue({ name: JobName.AutoStackCandidateQueueAll, data: {} as any });
     return { status: 'queued' } as const;

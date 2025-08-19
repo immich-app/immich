@@ -1,6 +1,6 @@
 import { JobStatus } from 'src/enum';
 import { AutoStackService } from 'src/services/auto-stack.service';
-import { newTestService } from './utils';
+import { newTestService } from 'test/utils';
 
 describe('AutoStackService - pHash backfill batch', () => {
   it('calls listMissingPHash and processes a batch', async () => {

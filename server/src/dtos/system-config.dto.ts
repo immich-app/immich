@@ -239,13 +239,13 @@ class SystemConfigAutoStackDto {
   // Session segmentation (split long temporal spans with low cohesion)
   @IsInt()
   @Min(5)
-  @Max(86400)
+  @Max(86_400)
   @Optional()
   @ApiProperty({
     required: false,
     description: 'Maximum span (seconds) allowed for a single group before segmentation considered',
     minimum: 5,
-    maximum: 86400,
+    maximum: 86_400,
   })
   sessionMaxSpanSeconds?: number;
   @IsNumber()
