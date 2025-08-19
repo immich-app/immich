@@ -7,7 +7,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
@@ -41,7 +40,6 @@ class ThumbnailTile extends ConsumerWidget {
     final isSelected = ref.watch(
       multiSelectProvider.select((multiselect) => multiselect.selectedAssets.contains(asset)),
     );
-    final isScrubbing = ref.watch(timelineStateProvider.select((state) => state.isScrubbing));
 
     final borderStyle = lockSelection
         ? BoxDecoration(
@@ -75,16 +73,7 @@ class ThumbnailTile extends ConsumerWidget {
                 Positioned.fill(
                   child: Hero(
                     tag: '${asset?.heroTag ?? ''}_$heroIndex',
-                    child: Thumbnail.fromAsset(
-                      asset: asset,
-                      size: size,
-                      thumbhashMode: ThumbhashMode.disabled,
-                      // thumbhashMode: isScrubbing
-                      //     ? ThumbhashMode.only
-                      //     : asset != null && asset.hasLocal
-                      //     ? ThumbhashMode.disabled
-                      //     : ThumbhashMode.enabled,
-                    ),
+                    child: Thumbnail.fromAsset(asset: asset, size: size),
                   ),
                 ),
                 if (hasStack)

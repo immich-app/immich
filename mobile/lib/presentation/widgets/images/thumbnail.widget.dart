@@ -1,7 +1,7 @@
 import 'dart:ui' as ui;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -19,32 +19,36 @@ class Thumbnail extends StatefulWidget {
   final ImageProvider? imageProvider;
   final ImageProvider? thumbhashProvider;
   final BoxFit fit;
-  final ThumbhashMode thumbhashMode;
 
-  const Thumbnail({
-    this.imageProvider,
-    this.fit = BoxFit.cover,
-    this.thumbhashProvider,
-    this.thumbhashMode = ThumbhashMode.enabled,
-    super.key,
-  });
+  const Thumbnail({this.imageProvider, this.fit = BoxFit.cover, this.thumbhashProvider, super.key});
 
   Thumbnail.fromAsset({
     required BaseAsset? asset,
     this.fit = BoxFit.cover,
+
+    /// The logical UI size of the thumbnail. This is only used to determine the ideal image resolution and does not affect the widget size.
     Size size = kThumbnailResolution,
-    this.thumbhashMode = ThumbhashMode.enabled,
     super.key,
   }) : thumbhashProvider = switch (asset) {
-         RemoteAsset() when asset.thumbHash != null => ThumbHashProvider(thumbHash: asset.thumbHash!),
+         RemoteAsset() when asset.thumbHash != null && asset.localId == null => ThumbHashProvider(
+           thumbHash: asset.thumbHash!,
+         ),
          _ => null,
        },
        imageProvider = switch (asset) {
          RemoteAsset() =>
            asset.localId == null
                ? RemoteThumbProvider(assetId: asset.id)
-               : LocalThumbProvider(id: asset.localId!, size: size, assetType: asset.type),
-         LocalAsset() => LocalThumbProvider(id: asset.id, size: size, assetType: asset.type),
+               : LocalThumbProvider(
+                   id: asset.localId!,
+                   size: size * PlatformDispatcher.instance.views.first.devicePixelRatio,
+                   assetType: asset.type,
+                 ),
+         LocalAsset() => LocalThumbProvider(
+           id: asset.id,
+           size: size * PlatformDispatcher.instance.views.first.devicePixelRatio,
+           assetType: asset.type,
+         ),
          _ => null,
        };
 
@@ -52,8 +56,13 @@ class Thumbnail extends StatefulWidget {
   State<Thumbnail> createState() => _ThumbnailState();
 }
 
-class _ThumbnailState extends State<Thumbnail> {
+class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMixin {
   ui.Image? _providerImage;
+  ui.Image? _previousImage;
+
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
   ImageStream? _imageStream;
   ImageStreamListener? _imageStreamListener;
   ImageStream? _thumbhashStream;
@@ -63,51 +72,42 @@ class _ThumbnailState extends State<Thumbnail> {
 
   @override
   void initState() {
-    _loadImage();
     super.initState();
-  }
-
-  @override
-  void didUpdateWidget(Thumbnail oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.imageProvider != oldWidget.imageProvider) {
-      _loadFromImageProvider();
-    }
-
-    if (_providerImage == null &&
-            (oldWidget.thumbhashMode == ThumbhashMode.disabled && widget.thumbhashMode != ThumbhashMode.disabled) ||
-        (widget.thumbhashMode != ThumbhashMode.disabled && oldWidget.thumbhashProvider != widget.thumbhashProvider)) {
-      _loadFromThumbhashProvider();
-    }
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
+    _fadeController = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeController.addStatusListener(_onAnimationStatusChanged);
     _loadImage();
   }
 
-  void _loadImage() {
-    _loadFromImageProvider();
-    _loadFromThumbhashProvider();
+  void _onAnimationStatusChanged(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _previousImage?.dispose();
+      _previousImage = null;
+    }
   }
 
   void _loadFromThumbhashProvider() {
     _stopListeningToThumbhashStream();
     final thumbhashProvider = widget.thumbhashProvider;
-    if (thumbhashProvider == null || widget.thumbhashMode == ThumbhashMode.disabled || _providerImage != null) return;
+    if (thumbhashProvider == null || _providerImage != null) return;
 
     final thumbhashStream = _thumbhashStream = thumbhashProvider.resolve(ImageConfiguration.empty);
     final thumbhashStreamListener = _thumbhashStreamListener = ImageStreamListener(
       (ImageInfo imageInfo, bool synchronousCall) {
-        if (!mounted || _providerImage != null) return;
+        _stopListeningToThumbhashStream();
+        if (!mounted || _providerImage != null) {
+          imageInfo.dispose();
+          return;
+        }
+        _fadeController.value = 1.0;
 
         setState(() {
           _providerImage = imageInfo.image;
         });
       },
       onError: (exception, stackTrace) {
-        log.severe('Error loading thumbhash: $exception', exception, stackTrace);
+        log.severe('Error loading thumbhash', exception, stackTrace);
+        _stopListeningToThumbhashStream();
       },
     );
     thumbhashStream.addListener(thumbhashStreamListener);
@@ -116,22 +116,42 @@ class _ThumbnailState extends State<Thumbnail> {
   void _loadFromImageProvider() {
     _stopListeningToImageStream();
     final imageProvider = widget.imageProvider;
-    if (imageProvider == null || widget.thumbhashMode == ThumbhashMode.only) return;
+    if (imageProvider == null) return;
 
     final imageStream = _imageStream = imageProvider.resolve(ImageConfiguration.empty);
     final imageStreamListener = _imageStreamListener = ImageStreamListener(
       (ImageInfo imageInfo, bool synchronousCall) {
-        _stopListeningToThumbhashStream();
-        if (!mounted) return;
-
-        if (_providerImage != imageInfo.image) {
-          setState(() {
-            _providerImage = imageInfo.image;
-          });
+        _stopListeningToStream();
+        if (!mounted) {
+          imageInfo.dispose();
+          return;
         }
+
+        if (_providerImage == imageInfo.image) {
+          return;
+        }
+
+        if (synchronousCall && _providerImage == null) {
+          _fadeController.value = 1.0;
+        } else if (_fadeController.isAnimating) {
+          _fadeController.forward();
+        } else {
+          _fadeController.forward(from: 0.0);
+        }
+
+        setState(() {
+          _previousImage?.dispose();
+          if (_providerImage != null) {
+            _previousImage = _providerImage;
+          } else {
+            _previousImage = null;
+          }
+          _providerImage = imageInfo.image;
+        });
       },
       onError: (exception, stackTrace) {
         log.severe('Error loading image: $exception', exception, stackTrace);
+        _stopListeningToImageStream();
       },
     );
     imageStream.addListener(imageStreamListener);
@@ -159,6 +179,35 @@ class _ThumbnailState extends State<Thumbnail> {
   }
 
   @override
+  void didUpdateWidget(Thumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.imageProvider != oldWidget.imageProvider) {
+      if (_fadeController.isAnimating) {
+        _fadeController.stop();
+        _previousImage?.dispose();
+        _previousImage = null;
+      }
+      _loadFromImageProvider();
+    }
+
+    if (_providerImage == null && oldWidget.thumbhashProvider != widget.thumbhashProvider) {
+      _loadFromThumbhashProvider();
+    }
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    _loadImage();
+  }
+
+  void _loadImage() {
+    _loadFromImageProvider();
+    _loadFromThumbhashProvider();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final gradient = _gradientCache[colorScheme] ??= LinearGradient(
@@ -167,89 +216,106 @@ class _ThumbnailState extends State<Thumbnail> {
       end: Alignment.bottomCenter,
     );
 
-    return _ThumbnailLeaf(image: _providerImage, fit: widget.fit, placeholderGradient: gradient);
+    return AnimatedBuilder(
+      animation: _fadeAnimation,
+      builder: (context, child) {
+        return _ThumbnailLeaf(
+          image: _providerImage,
+          previousImage: _previousImage,
+          fadeValue: _fadeAnimation.value,
+          fit: widget.fit,
+          placeholderGradient: gradient,
+        );
+      },
+    );
   }
 
   @override
   void dispose() {
+    _fadeController.removeStatusListener(_onAnimationStatusChanged);
+    _fadeController.dispose();
     _stopListeningToStream();
     _providerImage?.dispose();
+    _previousImage?.dispose();
     super.dispose();
   }
 }
 
 class _ThumbnailLeaf extends LeafRenderObjectWidget {
   final ui.Image? image;
+  final ui.Image? previousImage;
+  final double fadeValue;
   final BoxFit fit;
   final Gradient placeholderGradient;
 
-  const _ThumbnailLeaf({required this.image, required this.fit, required this.placeholderGradient});
+  const _ThumbnailLeaf({
+    required this.image,
+    required this.previousImage,
+    required this.fadeValue,
+    required this.fit,
+    required this.placeholderGradient,
+  });
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _ThumbnailRenderBox(image: image, fit: fit, placeholderGradient: placeholderGradient);
+    return _ThumbnailRenderBox(
+      image: image,
+      previousImage: previousImage,
+      fadeValue: fadeValue,
+      fit: fit,
+      placeholderGradient: placeholderGradient,
+    );
   }
 
   @override
   void updateRenderObject(BuildContext context, _ThumbnailRenderBox renderObject) {
-    renderObject.fit = fit;
-    renderObject.image = image;
-    renderObject.placeholderGradient = placeholderGradient;
+    renderObject
+      ..image = image
+      ..previousImage = previousImage
+      ..fadeValue = fadeValue
+      ..fit = fit
+      ..placeholderGradient = placeholderGradient;
   }
 }
 
 class _ThumbnailRenderBox extends RenderBox {
   ui.Image? _image;
   ui.Image? _previousImage;
+  double _fadeValue;
   BoxFit _fit;
   Gradient _placeholderGradient;
-  DateTime _lastImageRequest;
-
-  double _crossFadeProgress = 1.0;
-  static const _fadeDuration = Duration(milliseconds: 100);
-  DateTime? _fadeStartTime;
 
   @override
   bool isRepaintBoundary = true;
 
-  _ThumbnailRenderBox({required ui.Image? image, required BoxFit fit, required Gradient placeholderGradient})
-    : _image = image,
-      _fit = fit,
-      _placeholderGradient = placeholderGradient,
-      _lastImageRequest = DateTime.now();
+  _ThumbnailRenderBox({
+    required ui.Image? image,
+    required ui.Image? previousImage,
+    required double fadeValue,
+    required BoxFit fit,
+    required Gradient placeholderGradient,
+  }) : _image = image,
+       _previousImage = previousImage,
+       _fadeValue = fadeValue,
+       _fit = fit,
+       _placeholderGradient = placeholderGradient;
 
   @override
   void paint(PaintingContext context, Offset offset) {
     final rect = offset & size;
     final canvas = context.canvas;
 
-    if (_fadeStartTime != null) {
-      final elapsed = DateTime.now().difference(_fadeStartTime!);
-      _crossFadeProgress = (elapsed.inMilliseconds / _fadeDuration.inMilliseconds).clamp(0.0, 1.0);
-
-      if (_crossFadeProgress < 1.0) {
-        SchedulerBinding.instance.scheduleFrameCallback((_) {
-          markNeedsPaint();
-        });
-      } else {
-        _previousImage?.dispose();
-        _previousImage = null;
-        _fadeStartTime = null;
-      }
-    }
-
-    if (_previousImage != null && _crossFadeProgress < 1.0) {
+    if (_previousImage != null && _fadeValue < 1.0) {
       paintImage(
         canvas: canvas,
         rect: rect,
         image: _previousImage!,
         fit: _fit,
         filterQuality: FilterQuality.low,
-        opacity: 1.0 - _crossFadeProgress,
+        opacity: 1.0 - _fadeValue,
       );
-    } else if (_image == null) {
-      final paint = Paint();
-      paint.shader = _placeholderGradient.createShader(rect);
+    } else if (_image == null || _fadeValue < 1.0) {
+      final paint = Paint()..shader = _placeholderGradient.createShader(rect);
       canvas.drawRect(rect, paint);
     }
 
@@ -260,7 +326,7 @@ class _ThumbnailRenderBox extends RenderBox {
         image: _image!,
         fit: _fit,
         filterQuality: FilterQuality.low,
-        opacity: _crossFadeProgress,
+        opacity: _fadeValue,
       );
     }
   }
@@ -271,45 +337,37 @@ class _ThumbnailRenderBox extends RenderBox {
   }
 
   set image(ui.Image? value) {
-    if (_image == value) {
-      return;
+    if (_image != value) {
+      _image = value;
+      markNeedsPaint();
     }
+  }
 
-    final time = DateTime.now();
-    if (time.difference(_lastImageRequest).inMilliseconds >= 16) {
-      _fadeStartTime = time;
-      _previousImage = _image;
+  set previousImage(ui.Image? value) {
+    if (_previousImage != value) {
+      _previousImage = value;
+      markNeedsPaint();
     }
-    _image = value;
-    _lastImageRequest = time;
-    markNeedsPaint();
+  }
+
+  set fadeValue(double value) {
+    if (_fadeValue != value) {
+      _fadeValue = value;
+      markNeedsPaint();
+    }
   }
 
   set fit(BoxFit value) {
-    if (_fit == value) {
-      return;
-    }
-
-    _fit = value;
-    if (_image != null) {
+    if (_fit != value) {
+      _fit = value;
       markNeedsPaint();
     }
   }
 
   set placeholderGradient(Gradient value) {
-    if (_placeholderGradient == value) {
-      return;
-    }
-
-    _placeholderGradient = value;
-    if (_image == null) {
+    if (_placeholderGradient != value) {
+      _placeholderGradient = value;
       markNeedsPaint();
     }
-  }
-
-  @override
-  dispose() {
-    _previousImage?.dispose();
-    super.dispose();
   }
 }

@@ -41,13 +41,13 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalThumbProvider) {
-      return id == other.id && size == other.size;
+      return id == other.id;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode;
+  int get hashCode => id.hashCode;
 }
 
 class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
