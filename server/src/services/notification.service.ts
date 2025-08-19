@@ -204,11 +204,13 @@ export class NotificationService extends BaseService {
       const album = await this.albumRepository.getById(id, { withAssets: false });
       if (!album) {
         this.logger.warn(`Album ${id} not found for update notification`);
+        // Still send websocket event to updater and return early
+        this.eventRepository.clientSend('on_album_update', userId, id);
         return;
       }
 
       // Get all users except the one who made the update
-      const allRecipients = [...album.albumUsers.map(({ user }) => user.id), album.owner.id].filter(
+      const allRecipients = [...new Set([...album.albumUsers.map(({ user }) => user.id), album.owner.id])].filter(
         (recipientUserId) => recipientUserId !== userId,
       );
 

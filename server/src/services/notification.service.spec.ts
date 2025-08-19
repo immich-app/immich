@@ -4,7 +4,6 @@ import { AlbumUser } from 'src/database';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { AssetFileType, JobName, JobStatus, UserMetadataKey } from 'src/enum';
 import { NotificationService } from 'src/services/notification.service';
-import { INotifyAlbumUpdateJob } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -154,7 +153,16 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumUpdateEvent', () => {
     it('should queue notify album update event', async () => {
-      await sut.onAlbumUpdate({ id: 'album', recipientId: '42' });
+      // Setup an album with a user to be notified
+      const album = {
+        ...albumStub.empty,
+        id: 'album',
+        owner: userStub.admin,
+        albumUsers: [{ user: { ...userStub.user1, id: '42' } }],
+      };
+      mocks.album.getById.mockResolvedValue(album as any);
+
+      await sut.onAlbumUpdate({ id: 'album', userId: '1', notifyRecipients: true });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NotifyAlbumUpdate,
         data: { id: 'album', recipientId: '42', delay: 300_000 },
@@ -499,14 +507,23 @@ describe(NotificationService.name, () => {
     });
 
     it('should add new recipients for new images if job is already queued', async () => {
-      await sut.onAlbumUpdate({ id: '1', recipientId: '2' } as INotifyAlbumUpdateJob);
-      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, '1/2');
+      // Setup an album with a user to be notified
+      const album = {
+        ...albumStub.empty,
+        id: '1',
+        owner: userStub.admin,
+        albumUsers: [{ user: userStub.user2 }], // user2 will be notified
+      };
+      mocks.album.getById.mockResolvedValue(album as any);
+
+      await sut.onAlbumUpdate({ id: '1', userId: '1', notifyRecipients: true });
+      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `1/${userStub.user2.id}`);
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NotifyAlbumUpdate,
         data: {
           id: '1',
           delay: 300_000,
-          recipientId: '2',
+          recipientId: userStub.user2.id,
         },
       });
     });
@@ -536,6 +553,136 @@ describe(NotificationService.name, () => {
 
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.Success);
       expect(mocks.email.sendEmail).toHaveBeenCalledWith(expect.objectContaining({ replyTo: 'demo@immich.app' }));
+    });
+  });
+
+  describe('onAlbumUpdate', () => {
+    it('should skip if album could not be found', async () => {
+      mocks.album.getById.mockResolvedValue(null);
+
+      await sut.onAlbumUpdate({ id: 'album-id', userId: 'user-id', notifyRecipients: true });
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', 'user-id', 'album-id');
+    });
+
+    it('should only send websocket event to user when notifyRecipients is false', async () => {
+      await sut.onAlbumUpdate({ id: 'album-id', userId: 'user-id', notifyRecipients: false });
+
+      expect(mocks.album.getById).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', 'user-id', 'album-id');
+    });
+
+    it('should notify all album users except the updater', async () => {
+      const album = {
+        ...albumStub.empty,
+        id: 'album-id',
+        owner: userStub.admin,
+        albumUsers: [{ user: userStub.user1 }, { user: userStub.user2 }],
+      };
+      mocks.album.getById.mockResolvedValue(album);
+
+      await sut.onAlbumUpdate({ id: 'album-id', userId: userStub.user1.id, notifyRecipients: true });
+
+      // Should remove existing jobs for each recipient
+      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `album-id/${userStub.admin.id}`);
+      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `album-id/${userStub.user2.id}`);
+      expect(mocks.job.removeJob).not.toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `album-id/${userStub.user1.id}`);
+
+      // Should queue notification jobs for recipients (excluding updater)
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id: 'album-id', recipientId: userStub.admin.id, delay: 300_000 },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id: 'album-id', recipientId: userStub.user2.id, delay: 300_000 },
+      });
+
+      // Should send websocket events to all recipients including updater
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.admin.id, 'album-id');
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.user2.id, 'album-id');
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.user1.id, 'album-id');
+    });
+
+    it('should handle owner being the updater', async () => {
+      const album = {
+        ...albumStub.empty,
+        id: 'album-id',
+        owner: userStub.admin,
+        albumUsers: [{ user: userStub.user1 }, { user: userStub.user2 }],
+      };
+      mocks.album.getById.mockResolvedValue(album);
+
+      await sut.onAlbumUpdate({ id: 'album-id', userId: userStub.admin.id, notifyRecipients: true });
+
+      // Should notify album users but not owner (who is the updater)
+      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `album-id/${userStub.user1.id}`);
+      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `album-id/${userStub.user2.id}`);
+      expect(mocks.job.removeJob).not.toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `album-id/${userStub.admin.id}`);
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id: 'album-id', recipientId: userStub.user1.id, delay: 300_000 },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id: 'album-id', recipientId: userStub.user2.id, delay: 300_000 },
+      });
+
+      // Should still send websocket events to everyone
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.user1.id, 'album-id');
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.user2.id, 'album-id');
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.admin.id, 'album-id');
+    });
+
+    it('should handle album with no additional users', async () => {
+      const album = {
+        ...albumStub.empty,
+        id: 'album-id',
+        owner: userStub.admin,
+        albumUsers: [],
+      };
+      mocks.album.getById.mockResolvedValue(album);
+
+      await sut.onAlbumUpdate({ id: 'album-id', userId: userStub.admin.id, notifyRecipients: true });
+
+      // No recipients to notify since owner is the updater
+      expect(mocks.job.removeJob).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+
+      // Should still send websocket event to the updater
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.admin.id, 'album-id');
+    });
+
+    it('should handle duplicate user IDs (owner also in albumUsers)', async () => {
+      const album = {
+        ...albumStub.empty,
+        id: 'album-id',
+        owner: userStub.admin,
+        albumUsers: [
+          { user: userStub.admin }, // Owner is also in album users
+          { user: userStub.user1 },
+        ],
+      };
+      mocks.album.getById.mockResolvedValue(album);
+
+      await sut.onAlbumUpdate({ id: 'album-id', userId: userStub.user1.id, notifyRecipients: true });
+
+      // Should only notify owner once (not duplicate)
+      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, `album-id/${userStub.admin.id}`);
+      expect(mocks.job.removeJob).toHaveBeenCalledTimes(1);
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.NotifyAlbumUpdate,
+        data: { id: 'album-id', recipientId: userStub.admin.id, delay: 300_000 },
+      });
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
+
+      // Should send websocket events to both recipients and updater
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.admin.id, 'album-id');
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_album_update', userStub.user1.id, 'album-id');
     });
   });
 });

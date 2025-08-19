@@ -664,7 +664,8 @@ describe(AlbumService.name, () => {
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-123',
-        recipientId: 'admin_id',
+        notifyRecipients: true,
+        userId: 'user-id',
       });
     });
 
@@ -873,11 +874,13 @@ describe(AlbumService.name, () => {
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-321', ['asset-1', 'asset-2', 'asset-3']);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-123',
-        recipientId: 'admin_id',
+        userId: 'user-id',
+        notifyRecipients: true,
       });
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-321',
-        recipientId: 'admin_id',
+        userId: 'user-id',
+        notifyRecipients: true,
       });
     });
 
@@ -931,7 +934,8 @@ describe(AlbumService.name, () => {
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: 'album-123',
-        recipientId: 'user-id',
+        userId: 'admin_id',
+        notifyRecipients: true,
       });
       expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalledWith(
         authStub.adminSharedLink.sharedLink?.id,
