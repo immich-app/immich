@@ -12,8 +12,15 @@ export function timeToSeconds(time: string) {
     return 0;
   }
 
-  const parts = time.split(':');
+  // Try Luxon's ISO time parsing first
+  const luxonSeconds = Duration.fromISOTime(time).as('seconds');
+  if (!isNaN(luxonSeconds)) {
+    return luxonSeconds;
+  }
 
+  // Fall back to custom parsing for non-ISO formats
+  const parts = time.split(':');
+  
   // Handle cases where the time format is not as expected (e.g., missing colons)
   if (parts.length < 3) {
     return 0;

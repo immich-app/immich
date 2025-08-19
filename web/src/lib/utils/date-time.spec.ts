@@ -31,10 +31,16 @@ describe('converting time to seconds', () => {
     expect(timeToSeconds('')).toBe(0);
   });
 
+  it('parses HH:MM format correctly', () => {
+    expect(timeToSeconds('01:02')).toBe(3720); // 1 hour 2 minutes = 3720 seconds
+  });
+
   it('handles malformed time strings', () => {
     expect(timeToSeconds('invalid')).toBe(0);
-    expect(timeToSeconds('01:02')).toBe(0); // Missing seconds
-    expect(timeToSeconds('01')).toBe(0); // Missing minutes and seconds
+  });
+
+  it('parses single hour format correctly', () => {
+    expect(timeToSeconds('01')).toBe(3600); // Luxon interprets "01" as 1 hour
   });
 
   it('handles time strings with invalid numbers', () => {
