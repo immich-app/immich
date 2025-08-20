@@ -332,4 +332,8 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   Future<int> getCount() {
     return _db.managers.localAlbumEntity.count();
   }
+
+  Future<void> unlinkRemoteAlbum(String id) async {}
+
+  Future<void> linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {}
 }
