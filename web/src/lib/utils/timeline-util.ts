@@ -151,6 +151,12 @@ export function formatGroupTitle(_date: DateTime): string {
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
+export const getDateTimeOffsetLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
+  date.toLocaleString(
+    { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'longOffset' },
+    opts,
+  );
+
 export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): TimelineAsset => {
   if (isTimelineAsset(unknownAsset)) {
     return unknownAsset;

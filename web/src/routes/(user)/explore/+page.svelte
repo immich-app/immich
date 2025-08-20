@@ -52,7 +52,7 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4">
+      <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4">
         {#snippet children({ itemCount })}
           {#each people.slice(0, itemCount) as person (person.id)}
             <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center relative">
@@ -86,7 +86,7 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4">
+      <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4">
         {#snippet children({ itemCount })}
           {#each places.slice(0, itemCount) as item (item.data.id)}
             <a

@@ -65,7 +65,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
   }
 
   Future<void> _handleSyncUploadAlbums(String ownerId) async {
-    // Check and create mirror remote albums for selected local albums
+    // Check and create linked remote albums for selected local albums
     final selectedAlbums = ref
         .read(backupAlbumProvider)
         .where((album) => album.backupSelection == BackupSelection.selected)
@@ -75,7 +75,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       return;
     }
 
-    await ref.read(albumInfoSyncProvider.notifier).createMirrorAlbums(selectedAlbums, ownerId);
+    await ref.read(albumInfoSyncProvider.notifier).manageLinkedAlbums(selectedAlbums, ownerId);
   }
 
   Future<void> handlePagePopped() async {

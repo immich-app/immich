@@ -47,14 +47,11 @@ abstract final class Bootstrap {
     );
   }
 
-  static Future<void> initDomain(Isar db, {bool shouldBufferLogs = true}) async {
-    // load drift dbs
-    final loggerDb = DriftLogger();
-
+  static Future<void> initDomain(Isar db, DriftLogger logDb, {bool shouldBufferLogs = true}) async {
     await StoreService.init(storeRepository: IsarStoreRepository(db));
 
     await LogService.init(
-      logRepository: LogRepository(loggerDb),
+      logRepository: LogRepository(logDb),
       storeRepository: IsarStoreRepository(db),
       shouldBuffer: shouldBufferLogs,
     );

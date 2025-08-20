@@ -261,8 +261,12 @@ describe(DatabaseService.name, () => {
 
         await expect(sut.onBootstrap()).rejects.toThrow('Failed to update extension');
 
-        expect(mocks.logger.warn.mock.calls[0][0]).toContain(
-          `The ${extensionName} extension can be updated to ${updateInRange}.`,
+        expect(mocks.logger.warn.mock.calls).toEqual(
+          expect.arrayContaining([
+            expect.arrayContaining([
+              expect.stringContaining(`The ${extensionName} extension can be updated to ${updateInRange}.`),
+            ]),
+          ]),
         );
         expect(mocks.logger.fatal).not.toHaveBeenCalled();
         expect(mocks.database.updateVectorExtension).toHaveBeenCalledWith(extension, updateInRange);
@@ -281,8 +285,10 @@ describe(DatabaseService.name, () => {
 
         await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-        expect(mocks.logger.warn).toHaveBeenCalledTimes(1);
-        expect(mocks.logger.warn.mock.calls[0][0]).toContain(extensionName);
+        expect(mocks.logger.warn.mock.calls).toEqual(
+          expect.arrayContaining([expect.arrayContaining([expect.stringContaining(extensionName)])]),
+        );
+
         expect(mocks.database.updateVectorExtension).toHaveBeenCalledWith(extension, updateInRange);
         expect(mocks.database.runMigrations).toHaveBeenCalledTimes(1);
         expect(mocks.logger.fatal).not.toHaveBeenCalled();
@@ -414,6 +420,22 @@ describe(DatabaseService.name, () => {
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
       expect(mocks.database.dropExtension).not.toHaveBeenCalled();
+    });
+
+    it(`should warn if using pgvecto.rs`, async () => {
+      mocks.database.getExtensionVersions.mockResolvedValue([
+        {
+          name: DatabaseExtension.Vectors,
+          installedVersion: minVersionInRange,
+          availableVersion: minVersionInRange,
+        },
+      ]);
+      mocks.database.getVectorExtension.mockResolvedValue(DatabaseExtension.Vectors);
+
+      await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+      expect(mocks.logger.warn).toHaveBeenCalledTimes(1);
+      expect(mocks.logger.warn.mock.calls[0][0]).toContain('DEPRECATION WARNING');
     });
   });
 });

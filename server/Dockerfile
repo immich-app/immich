@@ -1,14 +1,23 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202507291116@sha256:e38543bdd77a02ed156cd9175ed11e9c16dccf48c418d46ecda48ce684de456a AS dev
+FROM ghcr.io/immich-app/base-server-dev:202508191104@sha256:0608857ef682099c458f0fb319afdcaf09462bbb5670b6dcd3642029f12eee1c AS dev
 
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp
+
+RUN npm install --global corepack@latest && \
+  corepack enable pnpm && \
+  echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
+  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc
+
+COPY ./package* ./pnpm* .pnpmfile.cjs /tmp/create-dep-cache/
+COPY ./web/package* ./web/pnpm* /tmp/create-dep-cache/web/
+COPY ./server/package* ./server/pnpm* /tmp/create-dep-cache/server/
+COPY ./open-api/typescript-sdk/package* ./open-api/typescript-sdk/pnpm* /tmp/create-dep-cache/open-api/typescript-sdk/
+WORKDIR /tmp/create-dep-cache
+RUN pnpm fetch && rm -rf /tmp/create-dep-cache && chmod -R o+rw /buildcache
 WORKDIR /usr/src/app
-COPY ./server/package* ./server/
-WORKDIR /usr/src/app/server
-RUN npm ci && \
-  # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
-  # they're marked as optional dependencies, so we need to copy them manually after pruning
-  rm -rf node_modules/@img/sharp-libvips* && \
-  rm -rf node_modules/@img/sharp-linuxmusl-x64
+
 ENV PATH="${PATH}:/usr/src/app/server/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
@@ -17,23 +26,19 @@ ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 
 FROM dev AS dev-container-server
 
-RUN rm -rf /usr/src/app
-RUN apt-get update && \
+RUN apt-get update --allow-releaseinfo-change && \
   apt-get install sudo inetutils-ping openjdk-11-jre-headless \
   vim nano \
   -y --no-install-recommends --fix-missing
 
-RUN usermod -aG sudo node
-RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-RUN mkdir -p /workspaces/immich
-RUN chown node -R /workspaces
-COPY --chown=node:node --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
+RUN usermod -aG sudo node && \
+  echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+  mkdir -p /workspaces/immich
 
-USER node
-COPY --chown=node:node .. /tmp/create-dep-cache/
-WORKDIR /tmp/create-dep-cache
-RUN make ci-all && rm -rf /tmp/create-dep-cache
+RUN chown node:node -R /workspaces
+COPY --chown=node:node --chmod=755 ../.devcontainer/server/*.sh /immich-devcontainer/
 
+WORKDIR /workspaces/immich
 
 FROM dev-container-server AS dev-container-mobile
 USER root
@@ -62,57 +67,69 @@ RUN mkdir -p ${FLUTTER_HOME} \
   && rm flutter.tar.xz \
   && chown -R node ${FLUTTER_HOME}
 
-USER node
-RUN sudo apt-get update \
-  && wget -qO- https://dcm.dev/pgp-key.public | sudo gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
-  && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list \
-  && sudo apt-get update \
-  && sudo apt-get install dcm -y
 
-COPY --chmod=777 ../.devcontainer/mobile/container-mobile-post-create.sh /immich-devcontainer/container-mobile-post-create.sh
+RUN apt-get update \
+  && wget -qO- https://dcm.dev/pgp-key.public | gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
+  && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | tee /etc/apt/sources.list.d/dart_stable.list \
+  && apt-get update \
+  && apt-get install dcm -y
 
 RUN dart --disable-analytics
 
-FROM dev AS prod
+# production-builder-base image
+FROM ghcr.io/immich-app/base-server-dev:202508191104@sha256:0608857ef682099c458f0fb319afdcaf09462bbb5670b6dcd3642029f12eee1c AS prod-builder-base
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp
 
-COPY server .
-RUN npm run build
-RUN npm prune --omit=dev --omit=optional
-COPY --from=dev /usr/src/app/server/node_modules/@img ./node_modules/@img
-COPY --from=dev /usr/src/app/server/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
+RUN npm install --global corepack@latest && \
+  corepack enable pnpm
 
-# web build
-FROM node:22.16.0-alpine3.20@sha256:2289fb1fba0f4633b08ec47b94a89c7e20b829fc5679f9b7b298eaa2f1ed8b7e AS web
+# server production build
+FROM prod-builder-base AS server-prod
 
 WORKDIR /usr/src/app
+COPY ./package* ./pnpm* .pnpmfile.cjs ./
+COPY ./server ./server/
+# SHARP_IGNORE_GLOBAL_LIBVIPS because 'deploy' will always build sharp bindings from source
+RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
+  pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
+
+# web production build
+FROM prod-builder-base AS web-prod
+
+WORKDIR /usr/src/app
+COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./web ./web/
 COPY ./i18n ./i18n/
-COPY ./open-api/typescript-sdk ./open-api/typescript-sdk/
+COPY ./open-api ./open-api/
+RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
+  pnpm --filter @immich/sdk --filter immich-web build
 
-WORKDIR /usr/src/app/open-api/typescript-sdk
-RUN npm ci && npm run build
+FROM prod-builder-base AS cli-prod
 
-WORKDIR /usr/src/app/web
-RUN npm ci && npm run build
+COPY ./package* ./pnpm* .pnpmfile.cjs ./
+COPY ./cli ./cli/
+COPY ./open-api ./open-api/
+RUN pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && \
+  pnpm --filter @immich/sdk --filter @immich/cli build && \
+  pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-# prod build
-FROM ghcr.io/immich-app/base-server-prod:202507291116@sha256:6e80f884c6e4f05cefe4b4fc4cc06a15bdb6ec9bd7b6e9eadf996a13b69494b6
+# prod base image
+FROM ghcr.io/immich-app/base-server-prod:202508191104@sha256:4cce4119f5555fce5e383b681e4feea31956ceadb94cafcbcbbae2c7b94a1b62
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
 
-COPY --from=prod /usr/src/app/server/node_modules ./server/node_modules
-COPY --from=prod /usr/src/app/server/dist ./server/dist
-COPY --from=prod /usr/src/app/server/bin ./server/bin
-COPY --from=web /usr/src/app/web/build /build/www
-COPY ./server/resources ./server/resources
-COPY ./server/package.json server/package-lock.json ./
+COPY --from=server-prod /output/server-pruned ./server
+COPY --from=web-prod /usr/src/app/web/build /build/www
+COPY --from=cli-prod /output/cli-pruned ./cli
+RUN ln -s ./cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 
-RUN npm install -g @immich/cli && npm cache clean --force
 ENV PATH="${PATH}:/usr/src/app/server/bin"
 
 ARG BUILD_ID

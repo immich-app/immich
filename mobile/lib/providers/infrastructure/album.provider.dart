@@ -18,7 +18,7 @@ final localAlbumServiceProvider = Provider<LocalAlbumService>(
 );
 
 final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
-  (ref) => LocalAlbumService(ref.watch(localAlbumRepository)).getAll(),
+  (ref) => LocalAlbumService(ref.watch(localAlbumRepository)).getAll(sortBy: {SortLocalAlbumsBy.newestAsset}),
 );
 
 final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(

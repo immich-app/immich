@@ -6383,11 +6383,11 @@ class DatabaseAtV7 extends GeneratedDatabase {
       LocalAlbumAssetEntity(this);
   late final Index idxLocalAssetChecksum = Index(
     'idx_local_asset_checksum',
-    'CREATE INDEX idx_local_asset_checksum ON local_asset_entity (checksum)',
+    'CREATE INDEX IF NOT EXISTS idx_local_asset_checksum ON local_asset_entity (checksum)',
   );
   late final Index idxRemoteAssetOwnerChecksum = Index(
     'idx_remote_asset_owner_checksum',
-    'CREATE INDEX idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
   );
   late final Index uQRemoteAssetsOwnerChecksum = Index(
     'UQ_remote_assets_owner_checksum',
@@ -6399,7 +6399,7 @@ class DatabaseAtV7 extends GeneratedDatabase {
   );
   late final Index idxRemoteAssetChecksum = Index(
     'idx_remote_asset_checksum',
-    'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
   );
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
   late final PartnerEntity partnerEntity = PartnerEntity(this);
@@ -6415,7 +6415,7 @@ class DatabaseAtV7 extends GeneratedDatabase {
   late final AssetFaceEntity assetFaceEntity = AssetFaceEntity(this);
   late final Index idxLatLng = Index(
     'idx_lat_lng',
-    'CREATE INDEX idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+    'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>

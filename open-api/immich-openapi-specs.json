@@ -214,6 +214,34 @@
         "description": "This endpoint requires the `activity.delete` permission."
       }
     },
+    "/admin/auth/unlink-all": {
+      "post": {
+        "operationId": "unlinkAllOAuthAccountsAdmin",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Auth (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminAuth.unlinkAll",
+        "description": "This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission."
+      }
+    },
     "/admin/notifications": {
       "post": {
         "operationId": "createNotification",
@@ -912,6 +940,67 @@
         "description": "This endpoint requires the `album.create` permission."
       }
     },
+    "/albums/assets": {
+      "put": {
+        "operationId": "addAssetsToAlbums",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumsAddAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumsAddAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumAsset.create",
+        "description": "This endpoint requires the `albumAsset.create` permission."
+      }
+    },
     "/albums/statistics": {
       "get": {
         "operationId": "getAlbumStatistics",
@@ -961,7 +1050,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1252,7 +1341,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1305,7 +1394,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -1458,6 +1547,38 @@
         ],
         "x-immich-permission": "apiKey.create",
         "description": "This endpoint requires the `apiKey.create` permission."
+      }
+    },
+    "/api-keys/me": {
+      "get": {
+        "operationId": "getMyApiKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "API Keys"
+        ]
       }
     },
     "/api-keys/{id}": {
@@ -2540,7 +2661,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2575,7 +2696,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -2610,7 +2731,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2637,7 +2758,7 @@
         "operationId": "lockAuthSession",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2672,7 +2793,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2894,7 +3015,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -2966,7 +3087,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3095,7 +3216,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -3217,7 +3338,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "204": {
             "description": ""
           }
         },
@@ -4224,7 +4345,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4328,7 +4449,7 @@
           "required": true
         },
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4365,7 +4486,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -4558,7 +4679,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4692,7 +4813,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -5170,7 +5291,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -6222,7 +6343,7 @@
         "operationId": "deleteServerLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -6935,7 +7056,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -8956,7 +9077,7 @@
         "operationId": "deleteUserLicense",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -9057,7 +9178,7 @@
         "operationId": "deleteUserOnboarding",
         "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
@@ -9471,7 +9592,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.137.3",
+    "version": "1.138.1",
     "contact": {}
   },
   "tags": [],
@@ -9861,6 +9982,55 @@
         ],
         "type": "string"
       },
+      "AlbumsAddAssetsDto": {
+        "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "albumIds",
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "AlbumsAddAssetsResponseDto": {
+        "properties": {
+          "albumSuccessCount": {
+            "type": "integer"
+          },
+          "assetSuccessCount": {
+            "type": "integer"
+          },
+          "error": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BulkIdErrorReason"
+              }
+            ]
+          },
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "albumSuccessCount",
+          "assetSuccessCount",
+          "success"
+        ],
+        "type": "object"
+      },
       "AlbumsResponse": {
         "properties": {
           "defaultAssetOrder": {
@@ -9979,6 +10149,9 @@
           "dateTimeOriginal": {
             "type": "string"
           },
+          "dateTimeRelative": {
+            "type": "number"
+          },
           "description": {
             "type": "string"
           },
@@ -10006,6 +10179,9 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "timeZone": {
+            "type": "string"
           },
           "visibility": {
             "allOf": [
@@ -10810,6 +10986,15 @@
           }
         },
         "type": "object"
+      },
+      "BulkIdErrorReason": {
+        "enum": [
+          "duplicate",
+          "no_permission",
+          "not_found",
+          "unknown"
+        ],
+        "type": "string"
       },
       "BulkIdResponseDto": {
         "properties": {
@@ -12681,7 +12866,8 @@
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
-          "adminUser.delete"
+          "adminUser.delete",
+          "adminAuth.unlinkAll"
         ],
         "type": "string"
       },

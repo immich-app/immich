@@ -145,13 +145,10 @@
 
   let lastIntersectedHeight = 0;
   $effect(() => {
-    // notify we got to (near) the end of scroll
-    const scrollPercentage =
-      ((slidingWindow.bottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0))) *
-      100;
-
-    if (scrollPercentage > 90) {
-      const intersectedHeight = geometry?.containerHeight || 0;
+    // Intersect if there's only one viewport worth of assets left to scroll.
+    if (assetLayouts.containerHeight - slidingWindow.bottom <= viewport.height) {
+      // Notify we got to (near) the end of scroll.
+      const intersectedHeight = assetLayouts.containerHeight;
       if (lastIntersectedHeight !== intersectedHeight) {
         debouncedOnIntersected();
         lastIntersectedHeight = intersectedHeight;

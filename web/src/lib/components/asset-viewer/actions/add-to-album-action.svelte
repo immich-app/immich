@@ -4,7 +4,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
-  import { addAssetsToAlbum } from '$lib/utils/asset-utils';
+  import { addAssetsToAlbum, addAssetsToAlbums } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
@@ -20,14 +20,23 @@
   let { asset, onAction, shared = false }: Props = $props();
 
   const onClick = async () => {
-    const album = await modalManager.show(AlbumPickerModal, { shared });
+    const albums = await modalManager.show(AlbumPickerModal, { shared });
 
-    if (!album) {
+    if (!albums || albums.length === 0) {
       return;
     }
 
-    await addAssetsToAlbum(album.id, [asset.id]);
-    onAction({ type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album });
+    if (albums.length === 1) {
+      const album = albums[0];
+      await addAssetsToAlbum(album.id, [asset.id]);
+      onAction({ type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album });
+    } else {
+      await addAssetsToAlbums(
+        albums.map((a) => a.id),
+        [asset.id],
+      );
+      onAction({ type: AssetAction.ADD_TO_ALBUM, asset: toTimelineAsset(asset), album: albums[0] });
+    }
   };
 </script>
 

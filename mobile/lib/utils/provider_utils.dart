@@ -19,5 +19,6 @@ void invalidateAllApiRepositoryProviders(WidgetRef ref) {
   ref.invalidate(timelineRepositoryProvider);
   ref.invalidate(searchApiRepositoryProvider);
 
+  // Drift
   ref.invalidate(driftAlbumApiRepositoryProvider);
 }

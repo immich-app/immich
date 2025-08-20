@@ -18,7 +18,7 @@ class AlbumInfoSyncNotifier extends Notifier<bool> {
     return true;
   }
 
-  Future<void> createMirrorAlbums(List<LocalAlbum> localAlbums, String ownerId) async {
+  Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) async {
     for (final localAlbum in localAlbums) {
       debugPrint("Creating mirror albums for ${localAlbum.name}");
       final remoteAlbum = await _remoteAlbumService.getByName(localAlbum.name, ownerId);
