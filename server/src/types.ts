@@ -435,7 +435,7 @@ export type StorageAsset = {
   fileCreatedAt: Date;
   originalPath: string;
   originalFileName: string;
-  sidecarPath: string | null;
+  sidecarPath?: string | null;
   fileSizeInByte: number | null;
 };
 

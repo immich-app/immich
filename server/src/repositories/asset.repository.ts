@@ -794,6 +794,14 @@ export class AssetRepository {
       .execute();
   }
 
+  async deleteFile(file: Pick<Selectable<AssetFileTable>, 'assetId' | 'type'>): Promise<void> {
+    await this.db
+      .deleteFrom('asset_file')
+      .where('assetId', '=', asUuid(file.assetId))
+      .where('type', '=', file.type)
+      .execute();
+  }
+
   async deleteFiles(files: Pick<Selectable<AssetFileTable>, 'id'>[]): Promise<void> {
     if (files.length === 0) {
       return;

@@ -36,6 +36,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getChangedDeltaSync: vitest.fn(),
     upsertFile: vitest.fn(),
     upsertFiles: vitest.fn(),
+    deleteFile: vitest.fn(),
     deleteFiles: vitest.fn(),
     detectOfflineExternalAssets: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),

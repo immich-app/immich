@@ -585,8 +585,8 @@ describe(AssetService.name, () => {
                 '/uploads/user-id/webp/path.ext',
                 '/uploads/user-id/thumbs/path.jpg',
                 '/uploads/user-id/fullsize/path.webp',
-                assetWithFace.encodedVideoPath,
-                assetWithFace.sidecarPath,
+                assetWithFace.encodedVideoPath, // this value is null
+                undefined, // no sidecar path
                 assetWithFace.originalPath,
               ],
             },

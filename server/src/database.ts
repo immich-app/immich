@@ -117,7 +117,6 @@ export type Asset = {
   originalFileName: string;
   originalPath: string;
   ownerId: string;
-  sidecarPath: string | null;
   type: AssetType;
 };
 
@@ -302,7 +301,6 @@ export const columns = {
     'asset.originalFileName',
     'asset.originalPath',
     'asset.ownerId',
-    'asset.sidecarPath',
     'asset.type',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type'],
