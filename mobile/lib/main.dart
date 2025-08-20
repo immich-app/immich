@@ -45,7 +45,7 @@ void main() async {
   await initApp();
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
-  await migrateDatabaseIfNeeded(isar);
+  await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
   runApp(
