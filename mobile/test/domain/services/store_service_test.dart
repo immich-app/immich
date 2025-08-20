@@ -17,10 +17,10 @@ void main() {
   late StoreService sut;
   late IsarStoreRepository mockStoreRepo;
   late DriftStoreRepository mockDriftStoreRepo;
-  late StreamController<StoreDto<Object>> controller;
+  late StreamController<List<StoreDto<Object>>> controller;
 
   setUp(() async {
-    controller = StreamController<StoreDto<Object>>.broadcast();
+    controller = StreamController<List<StoreDto<Object>>>.broadcast();
     mockStoreRepo = MockStoreRepository();
     mockDriftStoreRepo = MockDriftStoreRepository();
     // For generics, we need to provide fallback to each concrete type to avoid runtime errors
@@ -74,7 +74,7 @@ void main() {
 
     test('Listens to stream of store updates', () async {
       final event = StoreDto(StoreKey.accessToken, _kAccessToken.toUpperCase());
-      controller.add(event);
+      controller.add([event]);
 
       await pumpEventQueue();
 

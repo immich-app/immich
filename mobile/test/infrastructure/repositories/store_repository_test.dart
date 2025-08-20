@@ -133,12 +133,19 @@ void main() {
       final stream = sut.watchAll();
       expectLater(
         stream,
-        emitsInAnyOrder([
-          emits(const StoreDto<Object>(StoreKey.version, _kTestVersion)),
-          emits(StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed)),
-          emits(const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken)),
-          emits(const StoreDto<Object>(StoreKey.colorfulInterface, _kTestColorfulInterface)),
-          emits(const StoreDto<Object>(StoreKey.version, _kTestVersion + 10)),
+        emitsInOrder([
+          [
+            const StoreDto<Object>(StoreKey.version, _kTestVersion),
+            StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
+            const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+            const StoreDto<Object>(StoreKey.colorfulInterface, _kTestColorfulInterface),
+          ],
+          [
+            const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
+            StoreDto<Object>(StoreKey.backupFailedSince, _kTestBackupFailed),
+            const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+            const StoreDto<Object>(StoreKey.colorfulInterface, _kTestColorfulInterface),
+          ],
         ]),
       );
       await sut.upsert(StoreKey.version, _kTestVersion + 10);
