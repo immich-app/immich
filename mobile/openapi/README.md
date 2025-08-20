@@ -77,12 +77,14 @@ Class | Method | HTTP request | Description
 *APIKeysApi* | [**deleteApiKey**](doc//APIKeysApi.md#deleteapikey) | **DELETE** /api-keys/{id} | 
 *APIKeysApi* | [**getApiKey**](doc//APIKeysApi.md#getapikey) | **GET** /api-keys/{id} | 
 *APIKeysApi* | [**getApiKeys**](doc//APIKeysApi.md#getapikeys) | **GET** /api-keys | 
+*APIKeysApi* | [**getMyApiKey**](doc//APIKeysApi.md#getmyapikey) | **GET** /api-keys/me | 
 *APIKeysApi* | [**updateApiKey**](doc//APIKeysApi.md#updateapikey) | **PUT** /api-keys/{id} | 
 *ActivitiesApi* | [**createActivity**](doc//ActivitiesApi.md#createactivity) | **POST** /activities | 
 *ActivitiesApi* | [**deleteActivity**](doc//ActivitiesApi.md#deleteactivity) | **DELETE** /activities/{id} | 
 *ActivitiesApi* | [**getActivities**](doc//ActivitiesApi.md#getactivities) | **GET** /activities | 
 *ActivitiesApi* | [**getActivityStatistics**](doc//ActivitiesApi.md#getactivitystatistics) | **GET** /activities/statistics | 
 *AlbumsApi* | [**addAssetsToAlbum**](doc//AlbumsApi.md#addassetstoalbum) | **PUT** /albums/{id}/assets | 
+*AlbumsApi* | [**addAssetsToAlbums**](doc//AlbumsApi.md#addassetstoalbums) | **PUT** /albums/assets | 
 *AlbumsApi* | [**addUsersToAlbum**](doc//AlbumsApi.md#adduserstoalbum) | **PUT** /albums/{id}/users | 
 *AlbumsApi* | [**createAlbum**](doc//AlbumsApi.md#createalbum) | **POST** /albums | 
 *AlbumsApi* | [**deleteAlbum**](doc//AlbumsApi.md#deletealbum) | **DELETE** /albums/{id} | 
@@ -299,6 +301,8 @@ Class | Method | HTTP request | Description
  - [AlbumUserCreateDto](doc//AlbumUserCreateDto.md)
  - [AlbumUserResponseDto](doc//AlbumUserResponseDto.md)
  - [AlbumUserRole](doc//AlbumUserRole.md)
+ - [AlbumsAddAssetsDto](doc//AlbumsAddAssetsDto.md)
+ - [AlbumsAddAssetsResponseDto](doc//AlbumsAddAssetsResponseDto.md)
  - [AlbumsResponse](doc//AlbumsResponse.md)
  - [AlbumsUpdate](doc//AlbumsUpdate.md)
  - [AllJobStatusResponseDto](doc//AllJobStatusResponseDto.md)
@@ -333,6 +337,7 @@ Class | Method | HTTP request | Description
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthStatusResponseDto](doc//AuthStatusResponseDto.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
+ - [BulkIdErrorReason](doc//BulkIdErrorReason.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
  - [CLIPConfig](doc//CLIPConfig.md)

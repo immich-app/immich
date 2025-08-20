@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -24,6 +24,9 @@
 		FAC6F89B2D287C890078CB2F /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FAC6F8902D287C890078CB2F /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FAC6F8B72D287F120078CB2F /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC6F8B52D287F120078CB2F /* ShareViewController.swift */; };
 		FAC6F8B92D287F120078CB2F /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FAC6F8B32D287F120078CB2F /* MainInterface.storyboard */; };
+		FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */; };
+		FED3B1962E253E9B0030FD97 /* ThumbnailsImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */; };
+		FED3B1972E253E9B0030FD97 /* Thumbnails.g.swift in Sources */ = {isa = PBXBuildFile; fileRef = FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -102,6 +105,9 @@
 		FAC6F8B42D287F120078CB2F /* ShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ShareExtension.entitlements; sourceTree = "<group>"; };
 		FAC6F8B52D287F120078CB2F /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		FAC7416727DB9F5500C668D8 /* RunnerProfile.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = RunnerProfile.entitlements; sourceTree = "<group>"; };
+		FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbhash.swift; sourceTree = "<group>"; };
+		FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Thumbnails.g.swift; sourceTree = "<group>"; };
+		FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailsImpl.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -117,8 +123,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B2CF7F8C2DDE4EBB00744BF6 /* Sync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Sync;
 			sourceTree = "<group>";
 		};
@@ -243,6 +247,7 @@
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				FED3B1952E253E9B0030FD97 /* Images */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -256,6 +261,16 @@
 				FAC6F8B52D287F120078CB2F /* ShareViewController.swift */,
 			);
 			path = ShareExtension;
+			sourceTree = "<group>";
+		};
+		FED3B1952E253E9B0030FD97 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				FEAFA8722E4D42F4001E47FE /* Thumbhash.swift */,
+				FED3B1932E253E9B0030FD97 /* Thumbnails.g.swift */,
+				FED3B1942E253E9B0030FD97 /* ThumbnailsImpl.swift */,
+			);
+			path = Images;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -523,6 +538,9 @@
 			files = (
 				65F32F31299BD2F800CE9261 /* BackgroundServicePlugin.swift in Sources */,
 				74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */,
+				FEAFA8732E4D42F4001E47FE /* Thumbhash.swift in Sources */,
+				FED3B1962E253E9B0030FD97 /* ThumbnailsImpl.swift in Sources */,
+				FED3B1972E253E9B0030FD97 /* Thumbnails.g.swift in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
 				65F32F33299D349D00CE9261 /* BackgroundSyncWorker.swift in Sources */,
 			);
@@ -649,7 +667,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/RunnerProfile.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
@@ -793,7 +811,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
@@ -823,7 +841,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
@@ -857,7 +875,7 @@
 				CODE_SIGN_ENTITLEMENTS = WidgetExtension/WidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -900,7 +918,7 @@
 				CODE_SIGN_ENTITLEMENTS = WidgetExtension/WidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -940,7 +958,7 @@
 				CODE_SIGN_ENTITLEMENTS = WidgetExtension/WidgetExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -979,7 +997,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1023,7 +1041,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1064,7 +1082,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 213;
+				CURRENT_PROJECT_VERSION = 215;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;

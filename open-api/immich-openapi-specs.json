@@ -940,6 +940,67 @@
         "description": "This endpoint requires the `album.create` permission."
       }
     },
+    "/albums/assets": {
+      "put": {
+        "operationId": "addAssetsToAlbums",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumsAddAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumsAddAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumAsset.create",
+        "description": "This endpoint requires the `albumAsset.create` permission."
+      }
+    },
     "/albums/statistics": {
       "get": {
         "operationId": "getAlbumStatistics",
@@ -1486,6 +1547,38 @@
         ],
         "x-immich-permission": "apiKey.create",
         "description": "This endpoint requires the `apiKey.create` permission."
+      }
+    },
+    "/api-keys/me": {
+      "get": {
+        "operationId": "getMyApiKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "API Keys"
+        ]
       }
     },
     "/api-keys/{id}": {
@@ -9889,6 +9982,55 @@
         ],
         "type": "string"
       },
+      "AlbumsAddAssetsDto": {
+        "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "albumIds",
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "AlbumsAddAssetsResponseDto": {
+        "properties": {
+          "albumSuccessCount": {
+            "type": "integer"
+          },
+          "assetSuccessCount": {
+            "type": "integer"
+          },
+          "error": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BulkIdErrorReason"
+              }
+            ]
+          },
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "albumSuccessCount",
+          "assetSuccessCount",
+          "success"
+        ],
+        "type": "object"
+      },
       "AlbumsResponse": {
         "properties": {
           "defaultAssetOrder": {
@@ -10844,6 +10986,15 @@
           }
         },
         "type": "object"
+      },
+      "BulkIdErrorReason": {
+        "enum": [
+          "duplicate",
+          "no_permission",
+          "not_found",
+          "unknown"
+        ],
+        "type": "string"
       },
       "BulkIdResponseDto": {
         "properties": {
