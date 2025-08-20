@@ -33,7 +33,7 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     // For UserCircleAvatar
-    Drift drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    final drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(
       storeRepository: IsarStoreRepository(db),
       driftStoreRepository: DriftStoreRepository(drift),

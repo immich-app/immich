@@ -70,7 +70,7 @@ void main() {
     final db = await TestUtils.initIsar();
 
     db.writeTxnSync(() => db.clearSync());
-    Drift drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    final drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(
       storeRepository: IsarStoreRepository(db),
       driftStoreRepository: DriftStoreRepository(drift),

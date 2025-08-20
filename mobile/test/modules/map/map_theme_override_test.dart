@@ -34,7 +34,7 @@ void main() {
   setUp(() async {
     mapState = const MapState(themeMode: ThemeMode.dark);
     mapStateNotifier = MockMapStateNotifier(mapState);
-    Drift drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    final drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(
       storeRepository: IsarStoreRepository(db),
       driftStoreRepository: DriftStoreRepository(drift),
