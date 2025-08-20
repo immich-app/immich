@@ -106,7 +106,7 @@ jobs:
         run: flutter pub get
 
       - name: Generate translation file
-        run: make translation
+        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
         working-directory: ./mobile
 
       - name: Generate platform APIs
