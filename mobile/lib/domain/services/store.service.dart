@@ -38,7 +38,7 @@ class StoreService {
     required IsarStoreRepository storeRepository,
     required DriftStoreRepository driftStoreRepository,
   }) async {
-    final isBetaTimeline = await driftStoreRepository.tryGet(StoreKey.betaTimeline) ?? false;
+    final isBetaTimeline = await storeRepository.tryGet(StoreKey.betaTimeline) ?? false;
     _instance ??= await create(
       storeRepository: storeRepository,
       driftStoreRepository: driftStoreRepository,
