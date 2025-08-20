@@ -53,13 +53,12 @@ class StoreService {
       return;
     }
 
-    final newInstance = await create(
+    current.dispose();
+    _instance = await create(
       storeRepository: current._isarStoreRepository,
       driftStoreRepository: current._driftStoreRepository,
       isBetaTimeline: isBetaTimeline,
     );
-
-    _instance = newInstance;
   }
 
   static Future<StoreService> create({
