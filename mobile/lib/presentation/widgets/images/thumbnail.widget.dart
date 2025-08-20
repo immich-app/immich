@@ -1,5 +1,4 @@
 import 'dart:ui' as ui;
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -39,16 +38,8 @@ class Thumbnail extends StatefulWidget {
          RemoteAsset() =>
            asset.localId == null
                ? RemoteThumbProvider(assetId: asset.id)
-               : LocalThumbProvider(
-                   id: asset.localId!,
-                   size: size * PlatformDispatcher.instance.views.first.devicePixelRatio,
-                   assetType: asset.type,
-                 ),
-         LocalAsset() => LocalThumbProvider(
-           id: asset.id,
-           size: size * PlatformDispatcher.instance.views.first.devicePixelRatio,
-           assetType: asset.type,
-         ),
+               : LocalThumbProvider(id: asset.localId!, size: size, assetType: asset.type),
+         LocalAsset() => LocalThumbProvider(id: asset.id, size: size, assetType: asset.type),
          _ => null,
        };
 

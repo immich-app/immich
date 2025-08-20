@@ -7,13 +7,14 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class ThumbnailTile extends ConsumerWidget {
   const ThumbnailTile(
     this.asset, {
-    this.size = const Size.square(256),
+    this.size = kThumbnailResolution,
     this.fit = BoxFit.cover,
     this.showStorageIndicator,
     this.lockSelection = false,

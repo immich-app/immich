@@ -133,7 +133,6 @@ class _FixedSegmentRow extends ConsumerWidget {
               key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
               asset: assets[i],
               assetIndex: assetIndex + i,
-              tileHeight: tileHeight,
             ),
           ),
       ],
@@ -144,9 +143,8 @@ class _FixedSegmentRow extends ConsumerWidget {
 class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
-  final double tileHeight;
 
-  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex, required this.tileHeight});
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
 
   Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
     final multiSelectState = ref.read(multiSelectProvider);
@@ -202,7 +200,6 @@ class _AssetTileWidget extends ConsumerWidget {
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
           heroOffset: heroOffset,
-          size: Size(tileHeight, tileHeight),
         ),
       ),
     );
