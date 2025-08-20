@@ -73,7 +73,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(RemoteThumbProvider(assetId: key.assetId)),
+      initialImage: getInitialImage(RemoteThumbProvider(assetId: key.assetId)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
