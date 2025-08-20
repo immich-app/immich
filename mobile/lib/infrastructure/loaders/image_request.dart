@@ -38,7 +38,8 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
+  
+Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
     final address = info['pointer'];
     if (address == null) {
       if (!kReleaseMode) {
@@ -48,34 +49,43 @@ abstract class ImageRequest {
     }
 
     final pointer = Pointer<Uint8>.fromAddress(address);
+    if (_isCancelled) {
+      malloc.free(pointer);
+      return null;
+    }
+
+    final int actualWidth;
+    final int actualHeight;
+    final int actualSize;
+    final ui.ImmutableBuffer buffer;
     try {
-      if (_isCancelled) {
-        return null;
-      }
-
-      final actualWidth = info['width']!;
-      final actualHeight = info['height']!;
-      final actualSize = actualWidth * actualHeight * 4;
-
-      final buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
-      if (_isCancelled) {
-        return null;
-      }
-
-      final descriptor = ui.ImageDescriptor.raw(
-        buffer,
-        width: actualWidth,
-        height: actualHeight,
-        pixelFormat: ui.PixelFormat.rgba8888,
-      );
-      final codec = await descriptor.instantiateCodec();
-      if (_isCancelled) {
-        return null;
-      }
-
-      return await codec.getNextFrame();
+      actualWidth = info['width']!;
+      actualHeight = info['height']!;
+      actualSize = actualWidth * actualHeight * 4;
+      buffer = await ImmutableBuffer.fromUint8List(pointer.asTypedList(actualSize));
     } finally {
       malloc.free(pointer);
     }
+
+    if (_isCancelled) {
+      buffer.dispose();
+      return null;
+    }
+
+    final descriptor = ui.ImageDescriptor.raw(
+      buffer,
+      width: actualWidth,
+      height: actualHeight,
+      pixelFormat: ui.PixelFormat.rgba8888,
+    );
+    final codec = await descriptor.instantiateCodec();
+    if (_isCancelled) {
+      buffer.dispose();
+      descriptor.dispose();
+      codec.dispose();
+      return null;
+    }
+
+    return await codec.getNextFrame();
   }
 }
