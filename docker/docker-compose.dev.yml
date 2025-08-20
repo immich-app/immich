@@ -21,7 +21,7 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    user: "${UID:-1000}:${GID:-1000}"
+    user: '${UID:-1000}:${GID:-1000}'
     build:
       context: ../
       dockerfile: server/Dockerfile
@@ -71,10 +71,11 @@ services:
     image: immich-web-dev:latest
     # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
     # user: 0:0
-    user: "${UID:-1000}:${GID:-1000}"
+    user: '${UID:-1000}:${GID:-1000}'
     build:
       context: ../
-      dockerfile: web/Dockerfile
+      dockerfile: server/Dockerfile
+      target: dev
     command: ['immich-web']
     env_file:
       - .env
