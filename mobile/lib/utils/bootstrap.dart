@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -10,6 +11,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
@@ -61,9 +63,13 @@ abstract final class Bootstrap {
       driftStoreRepository: DriftStoreRepository(drift),
     );
 
+    final IStoreRepository storeRepo = Store.get(StoreKey.betaTimeline, false)
+        ? DriftStoreRepository(drift)
+        : IsarStoreRepository(db);
+
     await LogService.init(
       logRepository: LogRepository(logDb),
-      storeRepository: IsarStoreRepository(db),
+      storeRepository: storeRepo,
       shouldBuffer: shouldBufferLogs,
     );
   }
