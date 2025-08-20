@@ -10,7 +10,7 @@ import 'package:isar/isar.dart';
 // Temporary interface until Isar is removed to make the service work with both Isar and Sqlite
 abstract class IStoreRepository {
   Future<bool> deleteAll();
-  Stream<StoreDto<Object>> watchAll();
+  Stream<List<StoreDto<Object>>> watchAll();
   Future<void> delete<T>(StoreKey<T> key);
   Future<bool> upsert<T>(StoreKey<T> key, T value);
   Future<T?> tryGet<T>(StoreKey<T> key);
@@ -33,12 +33,12 @@ class IsarStoreRepository extends IsarDatabaseRepository implements IStoreReposi
   }
 
   @override
-  Stream<StoreDto<Object>> watchAll() {
+  Stream<List<StoreDto<Object>>> watchAll() {
     return _db.storeValues
         .filter()
         .anyOf(validStoreKeys, (query, id) => query.idEqualTo(id))
         .watch(fireImmediately: true)
-        .asyncExpand((entities) => Stream.fromFutures(entities.map((e) async => _toUpdateEvent(e))));
+        .asyncMap((entities) => Future.wait(entities.map((entity) => _toUpdateEvent(entity))));
   }
 
   @override
@@ -126,10 +126,10 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
   }
 
   @override
-  Stream<StoreDto<Object>> watchAll() {
+  Stream<List<StoreDto<Object>>> watchAll() {
     final query = _db.storeEntity.select()..where((entity) => entity.id.isIn(validStoreKeys));
 
-    return query.watch().asyncExpand((entities) => Stream.fromFutures(entities.map((e) async => _toUpdateEvent(e))));
+    return query.asyncMap((entity) => _toUpdateEvent(entity)).watch();
   }
 
   @override

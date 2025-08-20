@@ -12,7 +12,7 @@ class StoreService {
 
   /// In-memory cache. Keys are [StoreKey.id]
   final Map<int, Object?> _cache = {};
-  late final StreamSubscription<StoreDto> _storeUpdateSubscription;
+  late final StreamSubscription<List<StoreDto>> _storeUpdateSubscription;
 
   StoreService._({
     required IsarStoreRepository isarStoreRepository,
@@ -83,8 +83,10 @@ class StoreService {
     }
   }
 
-  StreamSubscription<StoreDto> _listenForChange() => _storeRepository.watchAll().listen((event) {
-    _cache[event.key.id] = event.value;
+  StreamSubscription<List<StoreDto>> _listenForChange() => _storeRepository.watchAll().listen((events) {
+    for (final event in events) {
+      _cache[event.key.id] = event.value;
+    }
   });
 
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
