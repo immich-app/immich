@@ -99,19 +99,19 @@ void main() {
 
   group('Store Service put:', () {
     setUp(() {
-      when(() => mockStoreRepo.insert<String>(any<StoreKey<String>>(), any())).thenAnswer((_) async => true);
-      when(() => mockDriftStoreRepo.insert<String>(any<StoreKey<String>>(), any())).thenAnswer((_) async => true);
+      when(() => mockStoreRepo.upsert<String>(any<StoreKey<String>>(), any())).thenAnswer((_) async => true);
+      when(() => mockDriftStoreRepo.upsert<String>(any<StoreKey<String>>(), any())).thenAnswer((_) async => true);
     });
 
     test('Skip insert when value is not modified', () async {
       await sut.put(StoreKey.accessToken, _kAccessToken);
-      verifyNever(() => mockStoreRepo.insert<String>(StoreKey.accessToken, any()));
+      verifyNever(() => mockStoreRepo.upsert<String>(StoreKey.accessToken, any()));
     });
 
     test('Insert value when modified', () async {
       final newAccessToken = _kAccessToken.toUpperCase();
       await sut.put(StoreKey.accessToken, newAccessToken);
-      verify(() => mockStoreRepo.insert<String>(StoreKey.accessToken, newAccessToken)).called(1);
+      verify(() => mockStoreRepo.upsert<String>(StoreKey.accessToken, newAccessToken)).called(1);
       expect(sut.tryGet(StoreKey.accessToken), newAccessToken);
     });
   });

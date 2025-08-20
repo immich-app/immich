@@ -64,12 +64,12 @@ void main() {
 
   group("Log Service Set Level:", () {
     setUp(() async {
-      when(() => mockStoreRepo.insert<int>(StoreKey.logLevel, any())).thenAnswer((_) async => true);
+      when(() => mockStoreRepo.upsert<int>(StoreKey.logLevel, any())).thenAnswer((_) async => true);
       await sut.setLogLevel(LogLevel.shout);
     });
 
     test('Updates the log level in store', () {
-      final index = verify(() => mockStoreRepo.insert<int>(StoreKey.logLevel, captureAny())).captured.firstOrNull;
+      final index = verify(() => mockStoreRepo.upsert<int>(StoreKey.logLevel, captureAny())).captured.firstOrNull;
       expect(index, LogLevel.shout.index);
     });
 

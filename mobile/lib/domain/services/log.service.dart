@@ -92,7 +92,7 @@ class LogService {
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _storeRepository.insert(StoreKey.logLevel, level.index);
+    await _storeRepository.upsert(StoreKey.logLevel, level.index);
     Logger.root.level = level.toLevel();
   }
 

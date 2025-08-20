@@ -12,9 +12,8 @@ abstract class IStoreRepository {
   Future<bool> deleteAll();
   Stream<StoreDto<Object>> watchAll();
   Future<void> delete<T>(StoreKey<T> key);
-  Future<bool> insert<T>(StoreKey<T> key, T value);
+  Future<bool> upsert<T>(StoreKey<T> key, T value);
   Future<T?> tryGet<T>(StoreKey<T> key);
-  Future<bool> update<T>(StoreKey<T> key, T value);
   Stream<T?> watch<T>(StoreKey<T> key);
   Future<List<StoreDto<Object>>> getAll();
 }
@@ -48,7 +47,7 @@ class IsarStoreRepository extends IsarDatabaseRepository implements IStoreReposi
   }
 
   @override
-  Future<bool> insert<T>(StoreKey<T> key, T value) async {
+  Future<bool> upsert<T>(StoreKey<T> key, T value) async {
     return await transaction(() async {
       await _db.storeValues.put(await _fromValue(key, value));
       return true;
@@ -62,14 +61,6 @@ class IsarStoreRepository extends IsarDatabaseRepository implements IStoreReposi
       return null;
     }
     return await _toValue(key, entity);
-  }
-
-  @override
-  Future<bool> update<T>(StoreKey<T> key, T value) async {
-    return await transaction(() async {
-      await _db.storeValues.put(await _fromValue(key, value));
-      return true;
-    });
   }
 
   @override
@@ -148,7 +139,7 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
   }
 
   @override
-  Future<bool> insert<T>(StoreKey<T> key, T value) async {
+  Future<bool> upsert<T>(StoreKey<T> key, T value) async {
     await _db.storeEntity.insertOnConflictUpdate(await _fromValue(key, value));
     return true;
   }
@@ -160,12 +151,6 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
       return null;
     }
     return await _toValue(key, entity);
-  }
-
-  @override
-  Future<bool> update<T>(StoreKey<T> key, T value) async {
-    await _db.storeEntity.update().write(await _fromValue(key, value));
-    return true;
   }
 
   @override
