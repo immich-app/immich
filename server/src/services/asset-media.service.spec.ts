@@ -171,7 +171,6 @@ const assetEntity = Object.freeze({
     longitude: 10.703_075,
   },
   livePhotoVideoId: null,
-  sidecarPath: null,
 } as MapAsset);
 
 const existingAsset = Object.freeze({
