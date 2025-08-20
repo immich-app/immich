@@ -1,4 +1,5 @@
 <script lang="ts">
+  import emptyUrl from '$lib/assets/empty-5.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import DatePicker from '$lib/components/shared-components/date-picker.svelte';
@@ -29,7 +30,7 @@
   let shiftKeyIsDown = $state(false);
   let assetInteraction = new AssetInteraction();
   let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
-  let assetsToDisplay = $state(200);
+  let assetsToDisplay = $state(500);
   let takenRange = $state<{ takenAfter?: string; takenBefore?: string } | null>(null);
 
   void init();
@@ -260,7 +261,7 @@
     </div>
   {:else}
     <div class="w-full">
-      <EmptyPlaceholder text={$t('no_assets_to_show')} />
+      <EmptyPlaceholder text={$t('no_assets_to_show')} src={emptyUrl} />
     </div>
   {/if}
 </UserPageLayout>
