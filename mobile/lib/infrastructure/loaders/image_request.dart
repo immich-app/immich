@@ -38,8 +38,7 @@ abstract class ImageRequest {
 
   void _onCancelled();
 
-  
-Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
+  Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
     final address = info['pointer'];
     if (address == null) {
       if (!kReleaseMode) {
