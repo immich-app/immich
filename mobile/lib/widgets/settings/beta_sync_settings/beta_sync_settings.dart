@@ -1,13 +1,12 @@
 import 'dart:io';
 
-import 'package:drift/drift.dart' as drift_db;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
@@ -38,28 +37,7 @@ class BetaSyncSettings extends HookConsumerWidget {
     }
 
     Future<void> resetDatabase() async {
-      // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
-      final drift = ref.read(driftProvider);
-      final database = drift.attachedDatabase;
-      await database.exclusively(() async {
-        // https://stackoverflow.com/a/65743498/25690041
-        await database.customStatement('PRAGMA writable_schema = 1;');
-        await database.customStatement('DELETE FROM sqlite_master;');
-        await database.customStatement('VACUUM;');
-        await database.customStatement('PRAGMA writable_schema = 0;');
-        await database.customStatement('PRAGMA integrity_check');
-
-        await database.customStatement('PRAGMA user_version = 0');
-        await database.beforeOpen(
-          // ignore: invalid_use_of_internal_member
-          database.resolvedEngine.executor,
-          drift_db.OpeningDetails(null, database.schemaVersion),
-        );
-        await database.customStatement('PRAGMA user_version = ${database.schemaVersion}');
-
-        // Refresh all stream queries
-        database.notifyUpdates({for (final table in database.allTables) drift_db.TableUpdate.onTable(table)});
-      });
+      await ref.read(driftProvider).reset();
     }
 
     Future<void> exportDatabase() async {

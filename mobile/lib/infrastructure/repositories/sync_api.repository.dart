@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -31,6 +33,7 @@ class SyncApiRepository {
     final headerParams = <String, String>{};
     await _api.applyToParams([], headerParams);
     headers.addAll(headerParams);
+    final shouldReset = Store.get(StoreKey.shouldResetSync, false);
 
     final request = http.Request('POST', Uri.parse(endpoint));
     request.headers.addAll(headers);
@@ -56,6 +59,7 @@ class SyncApiRepository {
           SyncRequestType.peopleV1,
           SyncRequestType.assetFacesV1,
         ],
+        reset: shouldReset,
       ).toJson(),
     );
 
@@ -76,6 +80,9 @@ class SyncApiRepository {
         final errorBody = await response.stream.bytesToString();
         throw ApiException(response.statusCode, 'Failed to get sync stream: $errorBody');
       }
+
+      // Reset after successful stream start
+      await Store.put(StoreKey.shouldResetSync, false);
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
         if (shouldAbort) {
