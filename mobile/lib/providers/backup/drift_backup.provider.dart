@@ -248,6 +248,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       case TaskStatus.failed:
         // Ignore retry errors to avoid confusing users
         if (update.exception?.description == 'Delayed or retried enqueue failed') {
+          _removeUploadItem(taskId);
           return;
         }
 
