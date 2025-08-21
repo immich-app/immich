@@ -11,7 +11,6 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
@@ -58,14 +57,10 @@ abstract final class Bootstrap {
   }
 
   static Future<void> initDomain(Isar db, Drift drift, DriftLogger logDb, {bool shouldBufferLogs = true}) async {
-    await StoreService.init(
-      storeRepository: IsarStoreRepository(db),
-      driftStoreRepository: DriftStoreRepository(drift),
-    );
+    final isBeta = await IsarStoreRepository(db).tryGet(StoreKey.betaTimeline) ?? false;
+    final IStoreRepository storeRepo = isBeta ? DriftStoreRepository(drift) : IsarStoreRepository(db);
 
-    final IStoreRepository storeRepo = Store.get(StoreKey.betaTimeline, false)
-        ? DriftStoreRepository(drift)
-        : IsarStoreRepository(db);
+    await StoreService.init(storeRepository: storeRepo);
 
     await LogService.init(
       logRepository: LogRepository(logDb),
