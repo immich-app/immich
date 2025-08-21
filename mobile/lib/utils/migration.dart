@@ -34,6 +34,7 @@ import 'package:photo_manager/photo_manager.dart';
 const int targetVersion = 14;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
+  final hasVersion = Store.tryGet(StoreKey.version) != null;
   final int version = Store.get(StoreKey.version, targetVersion);
 
   if (version < 9) {
@@ -59,7 +60,8 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     await Store.put(StoreKey.photoManagerCustomFilter, true);
   }
 
-  if (version < 14) {
+  // This means that the SQLite DB is just created and has no version
+  if (version < 14 || !hasVersion) {
     await migrateStoreToSqlite(db, drift);
   }
 
