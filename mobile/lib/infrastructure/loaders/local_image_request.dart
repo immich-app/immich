@@ -16,10 +16,6 @@ class LocalImageRequest extends ImageRequest {
       return null;
     }
 
-    Stopwatch? stopwatch;
-    if (!kReleaseMode) {
-      stopwatch = Stopwatch()..start();
-    }
     final Map<String, int> info = await thumbnailApi.requestImage(
       localId,
       requestId: requestId,
@@ -27,19 +23,13 @@ class LocalImageRequest extends ImageRequest {
       height: height,
       isVideo: assetType == AssetType.video,
     );
-    if (!kReleaseMode) {
-      stopwatch!.stop();
-      debugPrint('Local request $requestId took ${stopwatch.elapsedMilliseconds}ms for $localId of $width x $height');
-    }
+
     final frame = await _fromPlatformImage(info);
     return frame == null ? null : ImageInfo(image: frame.image, scale: scale);
   }
 
   @override
   Future<void> _onCancelled() {
-    if (!kReleaseMode) {
-      debugPrint('Local image request $requestId for $localId of size $width x $height was cancelled');
-    }
     return thumbnailApi.cancelImageRequest(requestId);
   }
 }

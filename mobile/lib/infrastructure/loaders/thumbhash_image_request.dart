@@ -17,9 +17,5 @@ class ThumbhashImageRequest extends ImageRequest {
   }
 
   @override
-  void _onCancelled() {
-    if (!kReleaseMode) {
-      debugPrint('Thumbhash request $requestId for $thumbhash was cancelled');
-    }
-  }
+  void _onCancelled() {}
 }
