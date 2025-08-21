@@ -1,3 +1,4 @@
+import 'package:immich_mobile/constants/errors.dart';
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/repositories/activity_api.repository.dart';
@@ -30,7 +31,11 @@ class ActivityService with ErrorLoggerMixin {
   Future<bool> removeActivity(String id) async {
     return logError(
       () async {
-        await _activityApiRepository.delete(id);
+        try {
+          await _activityApiRepository.delete(id);
+        } on NoResponseDtoError {
+          return true;
+        }
         return true;
       },
       defaultValue: false,

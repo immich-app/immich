@@ -6,9 +6,6 @@ source /immich-devcontainer/container-common.sh
 log "Setting up Immich dev container..."
 fix_permissions
 
-log "Installing npm dependencies (node_modules)..."
-install_dependencies
-
 log "Setup complete, please wait while backend and frontend services automatically start"
 log
 log "If necessary, the services may be manually started using"

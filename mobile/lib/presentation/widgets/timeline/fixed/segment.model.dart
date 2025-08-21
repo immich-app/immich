@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -11,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -126,10 +127,14 @@ class _FixedSegmentRow extends ConsumerWidget {
       textDirection: Directionality.of(context),
       children: [
         for (int i = 0; i < assets.length; i++)
-          _AssetTileWidget(
-            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-            asset: assets[i],
+          TimelineAssetIndexWrapper(
             assetIndex: assetIndex + i,
+            segmentIndex: 0, // For simplicity, using 0 for now
+            child: _AssetTileWidget(
+              key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+              asset: assets[i],
+              assetIndex: assetIndex + i,
+            ),
           ),
       ],
     );

@@ -264,11 +264,15 @@ class SharedLinkEditPage extends HookConsumerWidget {
             expiresAt: expiryAfter.value == 0 ? null : calculateExpiry(),
           );
       ref.invalidate(sharedLinksStateProvider);
+
+      await ref.read(serverInfoProvider.notifier).getServerConfig();
       final externalDomain = ref.read(serverInfoProvider.select((s) => s.serverConfig.externalDomain));
+
       var serverUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
       if (serverUrl != null && !serverUrl.endsWith('/')) {
         serverUrl += '/';
       }
+
       if (newLink != null && serverUrl != null) {
         newShareLink.value = "${serverUrl}share/${newLink.key}";
         copyLinkToClipboard();

@@ -7,7 +7,9 @@ build:
 
 pigeon:
 	dart run pigeon --input pigeon/native_sync_api.dart
+	dart run pigeon --input pigeon/thumbnail_api.dart
 	dart format lib/platform/native_sync_api.g.dart
+	dart format lib/platform/thumbnail_api.g.dart
 
 watch:
 	dart run build_runner watch --delete-conflicting-outputs
@@ -25,6 +27,7 @@ migration:
 	dart run drift_dev make-migrations
 
 translation:
+	npm --prefix ../web run format:i18n
 	dart run easy_localization:generate -S ../i18n
 	dart run bin/generate_keys.dart
 	dart format lib/generated/codegen_loader.g.dart

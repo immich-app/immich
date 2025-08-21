@@ -446,6 +446,16 @@ export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> 
   }
 }
 
-export const wait = (ms: number) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export const wait = (ms: number): Promise<void> => {
+  return new Promise((resolve) => {
+    const target = performance.now() + ms;
+    const checkDone = () => {
+      if (performance.now() >= target) {
+        resolve();
+      } else {
+        setTimeout(checkDone, 1); // Check again after 1ms
+      }
+    };
+    setTimeout(checkDone, ms);
+  });
 };

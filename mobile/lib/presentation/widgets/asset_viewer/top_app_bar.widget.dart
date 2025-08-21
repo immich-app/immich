@@ -14,9 +14,9 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -29,13 +29,18 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       return const SizedBox.shrink();
     }
 
+    final album = ref.watch(currentRemoteAlbumProvider);
+
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final previousRouteName = ref.watch(previousRouteNameProvider);
-    final showViewInTimelineButton = previousRouteName != TabShellRoute.name && previousRouteName != null;
+    final showViewInTimelineButton =
+        previousRouteName != TabShellRoute.name &&
+        previousRouteName != AssetViewerRoute.name &&
+        previousRouteName != null;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
@@ -46,10 +51,16 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final websocketConnected = ref.watch(websocketProvider.select((c) => c.isConnected));
 
     final actions = <Widget>[
-      if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
+      if (album != null && album.isActivityEnabled && album.isShared)
+        IconButton(
+          icon: const Icon(Icons.chat_outlined),
+          onPressed: () {
+            context.navigateTo(const DriftActivitiesRoute());
+          },
+        ),
       if (showViewInTimelineButton)
         IconButton(
           onPressed: () async {
@@ -69,7 +80,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     ];
 
     final lockedViewActions = <Widget>[
-      if (isCasting || (asset.hasRemote && websocketConnected)) const CastActionButton(menuItem: true),
+      if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       const _KebabMenu(),
     ];
 
