@@ -24,7 +24,7 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 abstract final class Bootstrap {
-  static Future<(Isar isar, Drift drift, DriftLogger logDb)> initIsar() async {
+  static Future<(Isar isar, Drift drift, DriftLogger logDb)> initDB() async {
     final drift = Drift();
     final logDb = DriftLogger();
 

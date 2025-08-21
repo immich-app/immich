@@ -330,7 +330,7 @@ class BackgroundService {
   }
 
   Future<bool> _onAssetsChanged() async {
-    final (isar, drift, logDb) = await Bootstrap.initIsar();
+    final (isar, drift, logDb) = await Bootstrap.initDB();
     await Bootstrap.initDomain(isar, drift, logDb);
 
     final ref = ProviderContainer(

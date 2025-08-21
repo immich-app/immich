@@ -39,7 +39,7 @@ class ImmichTestHelper {
   static Future<void> loadApp(WidgetTester tester) async {
     await EasyLocalization.ensureInitialized();
     // Clear all data from Isar (reuse existing instance if available)
-    final (isar, drift, logDb) = await Bootstrap.initIsar();
+    final (isar, drift, logDb) = await Bootstrap.initDB();
     await Bootstrap.initDomain(isar, drift, logDb);
     await Store.clear();
     await isar.writeTxn(() => isar.clear());
