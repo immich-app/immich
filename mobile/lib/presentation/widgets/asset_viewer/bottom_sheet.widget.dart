@@ -57,10 +57,6 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     List<Widget> getSheetActions() {
       if (isReadonlyModeEnabled) return [];
 
-      if (isInLockedView) {
-        return lockedViewActions;
-      }
-
       return actions;
     }
 
