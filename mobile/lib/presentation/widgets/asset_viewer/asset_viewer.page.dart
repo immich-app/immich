@@ -536,7 +536,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         width: size.width,
         height: size.height,
         color: backgroundColor,
-        child: Thumbnail(asset: asset, fit: BoxFit.contain),
+        child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
       ),
     );
   }
