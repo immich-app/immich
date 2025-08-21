@@ -2,7 +2,7 @@ part of 'image_request.dart';
 
 class RemoteImageRequest extends ImageRequest {
   static final log = Logger('RemoteImageRequest');
-  static final client = HttpClient()..maxConnectionsPerHost = 32;
+  static final client = HttpClient()..maxConnectionsPerHost = 16;
   final RemoteCacheManager? cacheManager;
   final String uri;
   final Map<String, String> headers;
