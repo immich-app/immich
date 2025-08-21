@@ -1,9 +1,6 @@
-import 'package:drift/drift.dart' hide isNull;
-import 'package:drift/native.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -27,7 +24,6 @@ void main() {
   late MockUploadService uploadService;
   late MockAppSettingService appSettingsService;
   late Isar db;
-  late Drift drift;
 
   setUp(() async {
     authApiRepository = MockAuthApiRepository();
@@ -53,11 +49,7 @@ void main() {
   setUpAll(() async {
     db = await TestUtils.initIsar();
     db.writeTxnSync(() => db.clearSync());
-    drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(
-      storeRepository: IsarStoreRepository(db),
-      driftStoreRepository: DriftStoreRepository(drift),
-    );
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
   });
 
   group('validateServerUrl', () {
@@ -65,10 +57,7 @@ void main() {
       WidgetsFlutterBinding.ensureInitialized();
       final db = await TestUtils.initIsar();
       db.writeTxnSync(() => db.clearSync());
-      await StoreService.init(
-        storeRepository: IsarStoreRepository(db),
-        driftStoreRepository: DriftStoreRepository(drift),
-      );
+      await StoreService.init(storeRepository: IsarStoreRepository(db));
     });
 
     test('Should resolve HTTP endpoint', () async {

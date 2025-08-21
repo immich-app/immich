@@ -2,13 +2,10 @@
 @Tags(['widget'])
 library;
 
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
@@ -34,11 +31,7 @@ void main() {
   setUp(() async {
     mapState = const MapState(themeMode: ThemeMode.dark);
     mapStateNotifier = MockMapStateNotifier(mapState);
-    final drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(
-      storeRepository: IsarStoreRepository(db),
-      driftStoreRepository: DriftStoreRepository(drift),
-    );
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     overrides = [
       mapStateNotifierProvider.overrideWith(() => mapStateNotifier),
       localeProvider.overrideWithValue(const Locale("en")),

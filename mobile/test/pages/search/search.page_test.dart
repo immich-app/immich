@@ -2,13 +2,10 @@
 @Tags(['pages'])
 library;
 
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -32,11 +29,7 @@ void main() {
   setUpAll(() async {
     TestUtils.init();
     db = await TestUtils.initIsar();
-    final drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(
-      storeRepository: IsarStoreRepository(db),
-      driftStoreRepository: DriftStoreRepository(drift),
-    );
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     mockApiService = MockApiService();
     mockSearchApi = MockSearchApi();
     when(() => mockApiService.searchApi).thenReturn(mockSearchApi);

@@ -49,11 +49,7 @@ void main() {
     );
     when(() => mockDriftStoreRepo.watchAll()).thenAnswer((_) => controller.stream);
 
-    sut = await StoreService.create(
-      storeRepository: mockStoreRepo,
-      driftStoreRepository: mockDriftStoreRepo,
-      isBetaTimeline: false,
-    );
+    sut = await StoreService.create(storeRepository: mockStoreRepo);
   });
 
   tearDown(() async {

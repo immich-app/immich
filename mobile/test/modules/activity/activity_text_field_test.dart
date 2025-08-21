@@ -2,14 +2,11 @@
 @Tags(['widget'])
 library;
 
-import 'package:drift/drift.dart' hide isNull, isNotNull;
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
@@ -37,11 +34,7 @@ void main() {
   setUpAll(() async {
     TestUtils.init();
     db = await TestUtils.initIsar();
-    final drift = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(
-      storeRepository: IsarStoreRepository(db),
-      driftStoreRepository: DriftStoreRepository(drift),
-    );
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     Store.put(StoreKey.currentUser, UserStub.admin);
     Store.put(StoreKey.serverEndpoint, '');
   });
