@@ -182,7 +182,8 @@ export class MachineLearningRepository {
     formData.append('entries', JSON.stringify(config));
 
     if ('imagePath' in payload) {
-      formData.append('image', new Blob([await readFile(payload.imagePath)]));
+      const fileBuffer = await readFile(payload.imagePath);
+      formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);
     } else {
