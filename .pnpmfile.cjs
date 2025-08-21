@@ -18,10 +18,10 @@ module.exports = {
             (dep) => dep.startsWith("@img")
           );
           for (const dep of optionalDeps) {
-            // remove all optionalDepdencies from sharp (they will be compiled from source), except:
-            //   include the precompiled musl version of sharp, for web/Dockerfile
-            //   include precompiled linux-x64 version of sharp, for server/Dockerfile, stage: web-prod
-            //   include precompiled linux-arm64 version of sharp, for server/Dockerfile, stage: web-prod
+            // remove all optionalDependencies from sharp (they will be compiled from source), except:
+            //   include the precompiled musl version of sharp, for web
+            //   include precompiled linux-x64 version of sharp, for server (stage: web-prod)
+            //   include precompiled linux-arm64 version of sharp, for server (stage: web-prod)
             if (
               dep.includes("musl") ||
               dep.includes("linux-x64") ||
