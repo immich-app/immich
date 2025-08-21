@@ -66,7 +66,11 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
                 ),
                 leading: ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
-                  child: Thumbnail.fromAsset(asset: asset, size: const Size(64, 64), fit: BoxFit.cover),
+                  child: SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: Thumbnail.fromAsset(asset: asset, size: const Size(64, 64), fit: BoxFit.cover),
+                  ),
                 ),
                 trailing: const Padding(padding: EdgeInsets.only(right: 24, left: 8), child: Icon(Icons.image_search)),
                 onTap: () async {
