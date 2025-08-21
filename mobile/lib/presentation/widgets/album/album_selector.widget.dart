@@ -462,7 +462,7 @@ class _AlbumList extends ConsumerWidget {
                     child: SizedBox(
                       width: 80,
                       height: 80,
-                      child: Thumbnail(imageProvider: RemoteThumbProvider(assetId: album.thumbnailAssetId!)),
+                      child: Thumbnail.remote(remoteId: album.thumbnailAssetId!),
                     ),
                   )
                 : SizedBox(
@@ -582,7 +582,7 @@ class _GridAlbumCard extends ConsumerWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: album.thumbnailAssetId != null
-                      ? Thumbnail(imageProvider: RemoteThumbProvider(assetId: album.thumbnailAssetId!))
+                      ? Thumbnail.remote(remoteId: album.thumbnailAssetId!)
                       : Container(
                           color: context.colorScheme.surfaceContainerHighest,
                           child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
