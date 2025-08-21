@@ -90,7 +90,6 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           imageInfo.dispose();
           return;
         }
-        _fadeController.value = 1.0;
 
         setState(() {
           _providerImage = imageInfo.image;
@@ -124,6 +123,8 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
         if (synchronousCall && _providerImage == null) {
           _fadeController.value = 1.0;
+        } else if (_fadeController.isAnimating) {
+          _fadeController.forward();
         } else {
           _fadeController.forward(from: 0.0);
         }
