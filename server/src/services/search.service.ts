@@ -127,7 +127,7 @@ export class SearchService extends BaseService {
     } else if (dto.exampleAssetId) {
       const assetEmbedding = (await this.searchRepository.getEmbedding(dto.exampleAssetId))?.embedding;
       if (assetEmbedding === undefined) {
-        throw new BadRequestException('`exampleAssetId` has no embedding');
+        throw new BadRequestException(`Asset ${dto.exampleAssetId} has no embedding`);
       }
       embedding = assetEmbedding;
     } else {
