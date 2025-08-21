@@ -30,7 +30,8 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
-    )..addOnLastListenerRemovedCallback(cancel);
+      onDispose: cancel,
+    );
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
