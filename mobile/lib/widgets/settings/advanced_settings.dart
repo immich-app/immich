@@ -10,7 +10,6 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custome_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
@@ -29,7 +28,6 @@ class AdvancedSettings extends HookConsumerWidget {
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
-    final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
     final useAlternatePMFilter = useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
 
     final logLevel = Level.LEVELS[levelId.value].name;
@@ -88,15 +86,8 @@ class AdvancedSettings extends HookConsumerWidget {
         subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
       ),
       const LocalStorageSettings(),
-      SettingsSwitchListTile(
-        enabled: !isLoggedIn,
-        valueNotifier: allowSelfSignedSSLCert,
-        title: "advanced_settings_self_signed_ssl_title".tr(),
-        subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
-        onChanged: HttpSSLOptions.applyFromSettings,
-      ),
       const CustomeProxyHeaderSettings(),
-      SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
+      SslClientCertSettings(isLoggedIn: isLoggedIn),
       SettingsSwitchListTile(
         valueNotifier: useAlternatePMFilter,
         title: "advanced_settings_enable_alternate_media_filter_title".tr(),
