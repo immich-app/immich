@@ -31,12 +31,12 @@ class StoreService {
 
   static Future<StoreService> create({required IStoreRepository storeRepository}) async {
     final instance = StoreService._(isarStoreRepository: storeRepository);
-    await instance._populateCache();
+    await instance.populateCache();
     instance._storeUpdateSubscription = instance._listenForChange();
     return instance;
   }
 
-  Future<void> _populateCache() async {
+  Future<void> populateCache() async {
     final storeValues = await _storeRepository.getAll();
     for (StoreDto storeValue in storeValues) {
       _cache[storeValue.key.id] = storeValue.value;

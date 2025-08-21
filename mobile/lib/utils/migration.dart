@@ -63,6 +63,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   // This means that the SQLite DB is just created and has no version
   if (version < 14 || !hasVersion) {
     await migrateStoreToSqlite(db, drift);
+    await Store.populateCache();
   }
 
   if (targetVersion >= 12) {
