@@ -224,7 +224,7 @@ class FileDetailDialog extends ConsumerWidget {
                           borderRadius: const BorderRadius.all(Radius.circular(12)),
                         ),
                         child: asset != null
-                            ? Thumbnail(asset: asset, size: const Size(512, 512), fit: BoxFit.cover)
+                            ? Thumbnail.fromAsset(asset: asset, size: const Size(128, 128), fit: BoxFit.cover)
                             : null,
                       ),
                     ),

@@ -2,7 +2,7 @@ part of 'image_request.dart';
 
 class RemoteImageRequest extends ImageRequest {
   static final log = Logger('RemoteImageRequest');
-  static final client = HttpClient()..maxConnectionsPerHost = 32;
+  static final client = HttpClient()..maxConnectionsPerHost = 16;
   final RemoteCacheManager? cacheManager;
   final String uri;
   final Map<String, String> headers;
@@ -24,18 +24,11 @@ class RemoteImageRequest extends ImageRequest {
     }
 
     try {
-      Stopwatch? stopwatch;
-      if (!kReleaseMode) {
-        stopwatch = Stopwatch()..start();
-      }
       final buffer = await _downloadImage(uri);
       if (buffer == null) {
         return null;
       }
-      if (!kReleaseMode) {
-        stopwatch!.stop();
-        debugPrint('Remote image download $requestId took ${stopwatch.elapsedMilliseconds}ms for $uri');
-      }
+
       return await _decodeBuffer(buffer, decode, scale);
     } catch (e) {
       if (_isCancelled) {
@@ -139,8 +132,5 @@ class RemoteImageRequest extends ImageRequest {
   void _onCancelled() {
     _request?.abort();
     _request = null;
-    if (!kReleaseMode) {
-      debugPrint('Cancelled remote image request $requestId for $uri');
-    }
   }
 }
