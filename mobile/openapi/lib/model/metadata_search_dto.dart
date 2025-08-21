@@ -32,6 +32,10 @@ class MetadataSearchDto {
     this.lensModel,
     this.libraryId,
     this.make,
+    this.maxHeight,
+    this.maxWidth,
+    this.minHeight,
+    this.minWidth,
     this.model,
     this.order = AssetOrder.desc,
     this.originalFileName,
@@ -179,6 +183,42 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? make;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? maxHeight;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? maxWidth;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? minHeight;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? minWidth;
 
   String? model;
 
@@ -368,6 +408,10 @@ class MetadataSearchDto {
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
     other.make == make &&
+    other.maxHeight == maxHeight &&
+    other.maxWidth == maxWidth &&
+    other.minHeight == minHeight &&
+    other.minWidth == minWidth &&
     other.model == model &&
     other.order == order &&
     other.originalFileName == originalFileName &&
@@ -415,6 +459,10 @@ class MetadataSearchDto {
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
+    (maxHeight == null ? 0 : maxHeight!.hashCode) +
+    (maxWidth == null ? 0 : maxWidth!.hashCode) +
+    (minHeight == null ? 0 : minHeight!.hashCode) +
+    (minWidth == null ? 0 : minWidth!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (order.hashCode) +
     (originalFileName == null ? 0 : originalFileName!.hashCode) +
@@ -441,7 +489,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, maxHeight=$maxHeight, maxWidth=$maxWidth, minHeight=$minHeight, minWidth=$minWidth, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -535,6 +583,26 @@ class MetadataSearchDto {
       json[r'make'] = this.make;
     } else {
     //  json[r'make'] = null;
+    }
+    if (this.maxHeight != null) {
+      json[r'maxHeight'] = this.maxHeight;
+    } else {
+    //  json[r'maxHeight'] = null;
+    }
+    if (this.maxWidth != null) {
+      json[r'maxWidth'] = this.maxWidth;
+    } else {
+    //  json[r'maxWidth'] = null;
+    }
+    if (this.minHeight != null) {
+      json[r'minHeight'] = this.minHeight;
+    } else {
+    //  json[r'minHeight'] = null;
+    }
+    if (this.minWidth != null) {
+      json[r'minWidth'] = this.minWidth;
+    } else {
+    //  json[r'minWidth'] = null;
     }
     if (this.model != null) {
       json[r'model'] = this.model;
@@ -681,6 +749,10 @@ class MetadataSearchDto {
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
+        maxHeight: num.parse('${json[r'maxHeight']}'),
+        maxWidth: num.parse('${json[r'maxWidth']}'),
+        minHeight: num.parse('${json[r'minHeight']}'),
+        minWidth: num.parse('${json[r'minWidth']}'),
         model: mapValueOfType<String>(json, r'model'),
         order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),

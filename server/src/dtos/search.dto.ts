@@ -179,6 +179,30 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   encodedVideoPath?: string;
 
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  minWidth?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  maxWidth?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  minHeight?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  maxHeight?: number;
+
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, default: AssetOrder.Desc })
   order?: AssetOrder;
 

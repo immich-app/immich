@@ -12239,6 +12239,22 @@
           "make": {
             "type": "string"
           },
+          "maxHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxWidth": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minWidth": {
+            "minimum": 1,
+            "type": "number"
+          },
           "model": {
             "nullable": true,
             "type": "string"

@@ -891,6 +891,10 @@ export type MetadataSearchDto = {
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
+    maxHeight?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    minWidth?: number;
     model?: string | null;
     order?: AssetOrder;
     originalFileName?: string;
