@@ -295,6 +295,25 @@ export class SearchRepository {
 
   @GenerateSql({
     params: [
+      { page: 1, size: 200 },
+      {
+        takenAfter: DummyValue.DATE,
+        embedding: DummyValue.VECTOR,
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  getEmbedding(assetId: string) {
+    return this.db.transaction().execute(async (trx) => {
+      return trx.selectFrom('smart_search').selectAll().where('assetId', '=', assetId).executeTakeFirst();
+    });
+  }
+
+  @GenerateSql({
+    params: [
       {
         userIds: [DummyValue.UUID],
         embedding: DummyValue.VECTOR,

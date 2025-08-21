@@ -19,6 +19,7 @@ class SmartSearchDto {
     this.createdAfter,
     this.createdBefore,
     this.deviceId,
+    this.exampleAssetId,
     this.isEncoded,
     this.isFavorite,
     this.isMotion,
@@ -31,7 +32,7 @@ class SmartSearchDto {
     this.model,
     this.page,
     this.personIds = const [],
-    required this.query,
+    this.query,
     this.rating,
     this.size,
     this.state,
@@ -77,6 +78,14 @@ class SmartSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? deviceId;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? exampleAssetId;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -151,7 +160,13 @@ class SmartSearchDto {
 
   List<String> personIds;
 
-  String query;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? query;
 
   /// Minimum value: -1
   /// Maximum value: 5
@@ -265,6 +280,7 @@ class SmartSearchDto {
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
     other.deviceId == deviceId &&
+    other.exampleAssetId == exampleAssetId &&
     other.isEncoded == isEncoded &&
     other.isFavorite == isFavorite &&
     other.isMotion == isMotion &&
@@ -302,6 +318,7 @@ class SmartSearchDto {
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
+    (exampleAssetId == null ? 0 : exampleAssetId!.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isMotion == null ? 0 : isMotion!.hashCode) +
@@ -314,7 +331,7 @@ class SmartSearchDto {
     (model == null ? 0 : model!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
-    (query.hashCode) +
+    (query == null ? 0 : query!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
@@ -331,7 +348,7 @@ class SmartSearchDto {
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, exampleAssetId=$exampleAssetId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -360,6 +377,11 @@ class SmartSearchDto {
       json[r'deviceId'] = this.deviceId;
     } else {
     //  json[r'deviceId'] = null;
+    }
+    if (this.exampleAssetId != null) {
+      json[r'exampleAssetId'] = this.exampleAssetId;
+    } else {
+    //  json[r'exampleAssetId'] = null;
     }
     if (this.isEncoded != null) {
       json[r'isEncoded'] = this.isEncoded;
@@ -417,7 +439,11 @@ class SmartSearchDto {
     //  json[r'page'] = null;
     }
       json[r'personIds'] = this.personIds;
+    if (this.query != null) {
       json[r'query'] = this.query;
+    } else {
+    //  json[r'query'] = null;
+    }
     if (this.rating != null) {
       json[r'rating'] = this.rating;
     } else {
@@ -508,6 +534,7 @@ class SmartSearchDto {
         createdAfter: mapDateTime(json, r'createdAfter', r''),
         createdBefore: mapDateTime(json, r'createdBefore', r''),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
+        exampleAssetId: mapValueOfType<String>(json, r'exampleAssetId'),
         isEncoded: mapValueOfType<bool>(json, r'isEncoded'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isMotion: mapValueOfType<bool>(json, r'isMotion'),
@@ -522,7 +549,7 @@ class SmartSearchDto {
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        query: mapValueOfType<String>(json, r'query')!,
+        query: mapValueOfType<String>(json, r'query'),
         rating: num.parse('${json[r'rating']}'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
@@ -586,7 +613,6 @@ class SmartSearchDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'query',
   };
 }
 

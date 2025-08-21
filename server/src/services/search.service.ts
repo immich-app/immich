@@ -113,14 +113,25 @@ export class SearchService extends BaseService {
     }
 
     const userIds = this.getUserIdsToSearch(auth);
-    const key = machineLearning.clip.modelName + dto.query + dto.language;
-    let embedding = this.embeddingCache.get(key);
-    if (!embedding) {
-      embedding = await this.machineLearningRepository.encodeText(machineLearning.urls, dto.query, {
-        modelName: machineLearning.clip.modelName,
-        language: dto.language,
-      });
-      this.embeddingCache.set(key, embedding);
+    let embedding;
+    if (dto.query) {
+      const key = machineLearning.clip.modelName + dto.query + dto.language;
+      embedding = this.embeddingCache.get(key);
+      if (!embedding) {
+        embedding = await this.machineLearningRepository.encodeText(machineLearning.urls, dto.query, {
+          modelName: machineLearning.clip.modelName,
+          language: dto.language,
+        });
+        this.embeddingCache.set(key, embedding);
+      }
+    } else if (dto.exampleAssetId) {
+      const assetEmbedding = (await this.searchRepository.getEmbedding(dto.exampleAssetId))?.embedding;
+      if (assetEmbedding === undefined) {
+        throw new BadRequestException('`exampleAssetId` has no embedding');
+      }
+      embedding = assetEmbedding;
+    } else {
+      throw new BadRequestException('Either `query` or `exampleAssetId` must be set');
     }
     const page = dto.page ?? 1;
     const size = dto.size || 100;

@@ -1014,6 +1014,7 @@
     "unable_to_update_user": "Unable to update user",
     "unable_to_upload_file": "Unable to upload file"
   },
+  "example_asset_id": "Example Asset ID",
   "exif": "Exif",
   "exif_bottom_sheet_description": "Add Description...",
   "exif_bottom_sheet_description_error": "Error updating description",
@@ -2051,6 +2052,7 @@
   "view_all_users": "View all users",
   "view_details": "View Details",
   "view_in_timeline": "View in timeline",
+  "view_similar_photos": "View similar photos",
   "view_link": "View link",
   "view_links": "View links",
   "view_name": "View",
