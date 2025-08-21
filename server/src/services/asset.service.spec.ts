@@ -487,8 +487,6 @@ describe(AssetService.name, () => {
           name: JobName.SidecarWrite,
           data: {
             id: 'asset-1',
-            // The computed timezone-aware time depends on how the Date literal is interpreted by the environment.
-            // With the current service logic, this resolves to +02:00 adjusted time below.
             dateTimeOriginal: '2020-02-25T05:41:00.000+02:00',
             description: undefined,
             latitude: undefined,
