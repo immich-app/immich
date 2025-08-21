@@ -41,9 +41,6 @@ abstract class ImageRequest {
   Future<ui.FrameInfo?> _fromPlatformImage(Map<String, int> info) async {
     final address = info['pointer'];
     if (address == null) {
-      if (!kReleaseMode) {
-        debugPrint('Platform image request for $requestId was cancelled');
-      }
       return null;
     }
 
