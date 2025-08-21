@@ -24,6 +24,7 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
       body: result.when(
         data: (List<LocalAsset> candidates) {
           return ListView.separated(
+            padding: const EdgeInsets.only(top: 16.0),
             separatorBuilder: (context, index) => Divider(color: context.colorScheme.outlineVariant),
             itemCount: candidates.length,
             itemBuilder: (context, index) {
