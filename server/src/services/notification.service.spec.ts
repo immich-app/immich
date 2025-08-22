@@ -558,8 +558,6 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumUpdate', () => {
     it('should skip if album could not be found', async () => {
-      mocks.album.getById.mockResolvedValue(undefined);
-
       await sut.onAlbumUpdate({ id: 'album-id', userId: 'user-id', notifyRecipients: true });
 
       expect(mocks.job.queue).not.toHaveBeenCalled();
