@@ -14,6 +14,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockStoreRepository extends Mock implements IsarStoreRepository {}
 
+class MockDriftStoreRepository extends Mock implements DriftStoreRepository {}
+
 class MockLogRepository extends Mock implements LogRepository {}
 
 class MockIsarUserRepository extends Mock implements IsarUserRepository {}

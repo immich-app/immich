@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.138.1",
+  "version": "1.139.2",
   "description": "",
   "author": "",
   "private": true,
@@ -84,7 +84,7 @@
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "mnemonist": "^0.40.3",
-    "multer": "^2.0.1",
+    "multer": "^2.0.2",
     "nest-commander": "^3.16.0",
     "nestjs-cls": "^5.0.0",
     "nestjs-kysely": "^3.0.0",

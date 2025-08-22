@@ -18,7 +18,7 @@ WORKDIR /tmp/create-dep-cache
 RUN pnpm fetch && rm -rf /tmp/create-dep-cache && chmod -R o+rw /buildcache
 WORKDIR /usr/src/app
 
-ENV PATH="${PATH}:/usr/src/app/server/bin" \
+ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
