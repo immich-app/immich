@@ -5,5 +5,5 @@ if [ "$IMMICH_ENV" != "development" ]; then
   exit 1
 fi
 
-cd /usr/src/app/server || exit 1
-npm exec nest -- start --debug "0.0.0.0:9230" --watch -- "$@"
+cd /usr/src/app || exit
+pnpm --filter immich exec nest start --debug "0.0.0.0:9230" --watch -- "$@"

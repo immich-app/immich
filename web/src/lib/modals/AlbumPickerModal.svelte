@@ -6,8 +6,8 @@
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
-  import { type AlbumResponseDto, createAlbum, getAllAlbums } from '@immich/sdk';
-  import { Modal, ModalBody } from '@immich/ui';
+  import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
+  import { Button, Modal, ModalBody } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import AlbumListItem from '../components/asset-viewer/album-list-item.svelte';
@@ -21,7 +21,7 @@
 
   interface Props {
     shared: boolean;
-    onClose: (album?: AlbumResponseDto) => void;
+    onClose: (albums?: AlbumResponseDto[]) => void;
   }
 
   let { shared, onClose }: Props = $props();
@@ -32,13 +32,54 @@
     loading = false;
   });
 
+  const multiSelectedAlbumIds: string[] = $state([]);
+  const multiSelectActive = $derived(multiSelectedAlbumIds.length > 0);
+
   const rowConverter = new AlbumModalRowConverter(shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
-  const albumModalRows = $derived(rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex));
+  const albumModalRows = $derived(
+    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds),
+  );
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
   const onNewAlbum = async (name: string) => {
     const album = await createAlbum({ createAlbumDto: { albumName: name } });
-    onClose(album);
+    onClose([album]);
+  };
+
+  const handleAlbumClick = (album?: AlbumResponseDto) => {
+    if (multiSelectActive) {
+      handleMultiSelect(album);
+      return;
+    }
+    if (album) {
+      onClose([album]);
+      return;
+    }
+    onClose();
+  };
+
+  const handleMultiSelect = (album?: AlbumResponseDto) => {
+    const selectedAlbum = album ?? albumModalRows.find(({ selected }) => selected)?.album;
+
+    if (!selectedAlbum) {
+      return;
+    }
+
+    const index = multiSelectedAlbumIds.indexOf(selectedAlbum.id);
+    if (index === -1) {
+      multiSelectedAlbumIds.push(selectedAlbum.id);
+      return;
+    }
+    multiSelectedAlbumIds.splice(index, 1);
+  };
+
+  const handleMultiSubmit = () => {
+    const albums = new Set(albumModalRows.filter((row) => row.multiSelected).map(({ album }) => album!));
+    if (albums.size > 0) {
+      onClose([...albums]);
+    } else {
+      onClose();
+    }
   };
 
   const onEnter = async () => {
@@ -53,8 +94,12 @@
         break;
       }
       case AlbumModalRowType.ALBUM_ITEM: {
+        if (multiSelectActive) {
+          handleMultiSubmit();
+          break;
+        }
         if (item.album) {
-          onClose(item.album);
+          onClose([item.album]);
         }
         break;
       }
@@ -86,6 +131,11 @@
       case 'Enter': {
         e.preventDefault();
         await onEnter();
+        break;
+      }
+      case 'm': {
+        e.preventDefault();
+        handleMultiSelect();
         break;
       }
       default: {
@@ -133,13 +183,20 @@
               <AlbumListItem
                 album={row.album}
                 selected={row.selected || false}
+                multiSelected={row.multiSelected}
                 searchQuery={search}
-                onAlbumClick={() => onClose(row.album)}
+                onAlbumClick={() => handleAlbumClick(row.album)}
+                onMultiSelect={() => handleMultiSelect(row.album)}
               />
             {/if}
           {/each}
         </div>
       {/if}
     </div>
+    {#if multiSelectActive}
+      <Button size="small" shape="round" fullWidth onclick={handleMultiSubmit}
+        >{$t('add_to_albums_count', { values: { count: multiSelectedAlbumIds.length } })}</Button
+      >
+    {/if}
   </ModalBody>
 </Modal>

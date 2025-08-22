@@ -56,7 +56,8 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart",
-    "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
+    "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock, pnpm-workspace.yaml, .pnpmfile.cjs"
   },
   "svelte.enable-ts-plugin": true,
   "typescript.preferences.importModuleSpecifier": "non-relative"

@@ -776,6 +776,338 @@ describe(AlbumService.name, () => {
     });
   });
 
+  describe('addAssetsToAlbums', () => {
+    it('should allow the owner to add assets', async () => {
+      mocks.access.album.checkOwnerAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set(['album-321']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.empty))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.oneAsset));
+      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.admin, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({ success: true, albumSuccessCount: 2, assetSuccessCount: 3 });
+
+      expect(mocks.album.update).toHaveBeenCalledTimes(2);
+      expect(mocks.album.update).toHaveBeenNthCalledWith(1, 'album-123', {
+        id: 'album-123',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.update).toHaveBeenNthCalledWith(2, 'album-321', {
+        id: 'album-321',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-321', ['asset-1', 'asset-2', 'asset-3']);
+    });
+
+    it('should not set the thumbnail if the album has one already', async () => {
+      mocks.access.album.checkOwnerAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set(['album-321']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep({ ...albumStub.empty, albumThumbnailAssetId: 'asset-id' }))
+        .mockResolvedValueOnce(_.cloneDeep({ ...albumStub.oneAsset, albumThumbnailAssetId: 'asset-id' }));
+      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.admin, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({ success: true, albumSuccessCount: 2, assetSuccessCount: 3 });
+
+      expect(mocks.album.update).toHaveBeenCalledTimes(2);
+      expect(mocks.album.update).toHaveBeenNthCalledWith(1, 'album-123', {
+        id: 'album-123',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-id',
+      });
+      expect(mocks.album.update).toHaveBeenNthCalledWith(2, 'album-321', {
+        id: 'album-321',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-id',
+      });
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-321', ['asset-1', 'asset-2', 'asset-3']);
+    });
+
+    it('should allow a shared user to add assets', async () => {
+      mocks.access.album.checkSharedAlbumAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set(['album-321']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithUser))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithMultiple));
+      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.user1, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({ success: true, albumSuccessCount: 2, assetSuccessCount: 3 });
+
+      expect(mocks.album.update).toHaveBeenCalledTimes(2);
+      expect(mocks.album.update).toHaveBeenNthCalledWith(1, 'album-123', {
+        id: 'album-123',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.update).toHaveBeenNthCalledWith(2, 'album-321', {
+        id: 'album-321',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-321', ['asset-1', 'asset-2', 'asset-3']);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
+        id: 'album-123',
+        recipientId: 'admin_id',
+      });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
+        id: 'album-321',
+        recipientId: 'admin_id',
+      });
+    });
+
+    it('should not allow a shared user with viewer access to add assets', async () => {
+      mocks.access.album.checkSharedAlbumAccess.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithUser))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithAdmin));
+      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.user2, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({
+        success: false,
+        albumSuccessCount: 0,
+        assetSuccessCount: 0,
+        error: BulkIdErrorReason.UNKNOWN,
+      });
+
+      expect(mocks.album.update).not.toHaveBeenCalled();
+    });
+
+    it('should not allow a shared link user to add assets to multiple albums', async () => {
+      mocks.access.album.checkSharedLinkAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set());
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithUser))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithMultiple));
+      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.adminSharedLink, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({ success: true, albumSuccessCount: 1, assetSuccessCount: 3 });
+
+      expect(mocks.album.update).toHaveBeenCalledTimes(1);
+      expect(mocks.album.update).toHaveBeenNthCalledWith(1, 'album-123', {
+        id: 'album-123',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.addAssetIds).toHaveBeenCalledTimes(1);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
+        id: 'album-123',
+        recipientId: 'user-id',
+      });
+      expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalledWith(
+        authStub.adminSharedLink.sharedLink?.id,
+        new Set(['album-123']),
+      );
+    });
+
+    it('should allow adding assets shared via partner sharing', async () => {
+      mocks.access.album.checkOwnerAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set(['album-321']));
+      mocks.access.asset.checkPartnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.empty))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.oneAsset));
+      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.admin, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({ success: true, albumSuccessCount: 2, assetSuccessCount: 3 });
+
+      expect(mocks.album.update).toHaveBeenCalledTimes(2);
+      expect(mocks.album.update).toHaveBeenNthCalledWith(1, 'album-123', {
+        id: 'album-123',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.update).toHaveBeenNthCalledWith(2, 'album-321', {
+        id: 'album-321',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-123', ['asset-1', 'asset-2', 'asset-3']);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-321', ['asset-1', 'asset-2', 'asset-3']);
+      expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1', 'asset-2', 'asset-3']),
+      );
+    });
+
+    it('should skip some duplicate assets', async () => {
+      mocks.access.album.checkOwnerAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set(['album-321']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2', 'asset-3']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.empty))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.oneAsset));
+      mocks.album.getAssetIds
+        .mockResolvedValueOnce(new Set(['asset-1', 'asset-2', 'asset-3']))
+        .mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.admin, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({ success: true, albumSuccessCount: 1, assetSuccessCount: 3 });
+
+      expect(mocks.album.update).toHaveBeenCalledTimes(1);
+      expect(mocks.album.update).toHaveBeenNthCalledWith(1, 'album-321', {
+        id: 'album-321',
+        updatedAt: expect.any(Date),
+        albumThumbnailAssetId: 'asset-1',
+      });
+      expect(mocks.album.addAssetIds).toHaveBeenCalledTimes(1);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith('album-321', ['asset-1', 'asset-2', 'asset-3']);
+    });
+
+    it('should skip all duplicate assets', async () => {
+      mocks.access.album.checkOwnerAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set(['album-321']));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.empty))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.oneAsset));
+      mocks.album.getAssetIds.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.admin, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2'],
+        }),
+      ).resolves.toEqual({
+        success: false,
+        albumSuccessCount: 0,
+        assetSuccessCount: 0,
+        error: BulkIdErrorReason.DUPLICATE,
+      });
+
+      expect(mocks.album.update).not.toHaveBeenCalled();
+      expect(mocks.album.addAssetIds).not.toHaveBeenCalled();
+    });
+
+    it('should skip assets not shared with user', async () => {
+      mocks.access.album.checkSharedAlbumAccess
+        .mockResolvedValueOnce(new Set(['album-123']))
+        .mockResolvedValueOnce(new Set(['album-321']));
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithUser))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithMultiple));
+      mocks.album.getAssetIds.mockResolvedValueOnce(new Set()).mockResolvedValueOnce(new Set());
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.admin, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({
+        success: false,
+        albumSuccessCount: 0,
+        assetSuccessCount: 0,
+        error: BulkIdErrorReason.UNKNOWN,
+      });
+
+      expect(mocks.album.update).not.toHaveBeenCalled();
+      expect(mocks.album.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1', 'asset-2', 'asset-3']),
+        false,
+      );
+      expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1', 'asset-2', 'asset-3']),
+      );
+    });
+
+    it('should not allow unauthorized access to the albums', async () => {
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithUser))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.sharedWithMultiple));
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.admin, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({
+        success: false,
+        albumSuccessCount: 0,
+        assetSuccessCount: 0,
+        error: BulkIdErrorReason.UNKNOWN,
+      });
+
+      expect(mocks.album.update).not.toHaveBeenCalled();
+      expect(mocks.album.addAssetIds).not.toHaveBeenCalled();
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalled();
+      expect(mocks.access.album.checkSharedAlbumAccess).toHaveBeenCalled();
+    });
+
+    it('should not allow unauthorized shared link access to the album', async () => {
+      mocks.album.getById
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.empty))
+        .mockResolvedValueOnce(_.cloneDeep(albumStub.oneAsset));
+
+      await expect(
+        sut.addAssetsToAlbums(authStub.adminSharedLink, {
+          albumIds: ['album-123', 'album-321'],
+          assetIds: ['asset-1', 'asset-2', 'asset-3'],
+        }),
+      ).resolves.toEqual({
+        success: false,
+        albumSuccessCount: 0,
+        assetSuccessCount: 0,
+        error: BulkIdErrorReason.UNKNOWN,
+      });
+
+      expect(mocks.access.album.checkSharedLinkAccess).toHaveBeenCalled();
+    });
+  });
+
   describe('removeAssets', () => {
     it('should allow the owner to remove assets', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-123']));

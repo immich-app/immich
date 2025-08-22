@@ -163,7 +163,11 @@ class _PlaceTile extends StatelessWidget {
       title: Text(place.$1, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
       leading: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
-        child: Thumbnail(size: const Size(80, 80), fit: BoxFit.cover, remoteId: place.$2),
+        child: SizedBox(
+          width: 80,
+          height: 80,
+          child: Thumbnail.remote(remoteId: place.$2, fit: BoxFit.cover),
+        ),
       ),
     );
   }

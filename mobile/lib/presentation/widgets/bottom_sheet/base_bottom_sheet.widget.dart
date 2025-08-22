@@ -69,10 +69,8 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
       shouldCloseOnMinExtent: widget.shouldCloseOnMinExtent,
       builder: (BuildContext context, ScrollController scrollController) {
         return Card(
-          color: widget.backgroundColor ?? context.colorScheme.surface,
-          borderOnForeground: false,
-          clipBehavior: Clip.antiAlias,
-          elevation: 6.0,
+          color: widget.backgroundColor ?? context.colorScheme.surfaceContainer,
+          elevation: 3.0,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
           margin: const EdgeInsets.symmetric(horizontal: 0),
           child: CustomScrollView(

@@ -17,7 +17,7 @@ import { UAParser } from 'ua-parser-js';
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };
-type AuthenticatedOptions = { permission?: Permission } & (AdminRoute | SharedLinkRoute);
+type AuthenticatedOptions = { permission?: Permission | false } & (AdminRoute | SharedLinkRoute);
 
 export const Authenticated = (options: AuthenticatedOptions = {}): MethodDecorator => {
   const decorators: MethodDecorator[] = [
@@ -32,7 +32,7 @@ export const Authenticated = (options: AuthenticatedOptions = {}): MethodDecorat
   }
 
   if (options?.permission) {
-    decorators.push(ApiExtension(ApiCustomExtension.Permission, options.permission ?? Permission.All));
+    decorators.push(ApiExtension(ApiCustomExtension.Permission, options.permission));
   }
 
   if ((options as SharedLinkRoute)?.sharedLink) {
