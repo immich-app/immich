@@ -989,7 +989,6 @@ export type SmartSearchDto = {
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;
-    exampleAssetId?: string;
     isEncoded?: boolean;
     isFavorite?: boolean;
     isMotion?: boolean;
@@ -1003,6 +1002,7 @@ export type SmartSearchDto = {
     page?: number;
     personIds?: string[];
     query?: string;
+    queryAssetId?: string;
     rating?: number;
     size?: number;
     state?: string | null;

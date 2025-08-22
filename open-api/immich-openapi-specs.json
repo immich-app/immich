@@ -14256,9 +14256,6 @@
           "deviceId": {
             "type": "string"
           },
-          "exampleAssetId": {
-            "type": "string"
-          },
           "isEncoded": {
             "type": "boolean"
           },
@@ -14305,6 +14302,9 @@
             "type": "array"
           },
           "query": {
+            "type": "string"
+          },
+          "queryAssetId": {
             "type": "string"
           },
           "rating": {

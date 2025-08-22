@@ -293,10 +293,11 @@ export class SearchRepository {
     });
   }
 
+  @GenerateSql({
+    params: [DummyValue.UUID],
+  })
   async getEmbedding(assetId: string) {
-    return this.db.transaction().execute(async (trx) => {
-      return trx.selectFrom('smart_search').selectAll().where('assetId', '=', assetId).executeTakeFirst();
-    });
+    return this.db.selectFrom('smart_search').selectAll().where('assetId', '=', assetId).executeTakeFirst();
   }
 
   @GenerateSql({

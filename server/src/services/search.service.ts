@@ -124,14 +124,14 @@ export class SearchService extends BaseService {
         });
         this.embeddingCache.set(key, embedding);
       }
-    } else if (dto.exampleAssetId) {
-      const assetEmbedding = (await this.searchRepository.getEmbedding(dto.exampleAssetId))?.embedding;
-      if (assetEmbedding === undefined) {
-        throw new BadRequestException(`Asset ${dto.exampleAssetId} has no embedding`);
+    } else if (dto.queryAssetId) {
+      const assetEmbedding = (await this.searchRepository.getEmbedding(dto.queryAssetId))?.embedding;
+      if (!assetEmbedding) {
+        throw new BadRequestException(`Asset ${dto.queryAssetId} has no embedding`);
       }
       embedding = assetEmbedding;
     } else {
-      throw new BadRequestException('Either `query` or `exampleAssetId` must be set');
+      throw new BadRequestException('Either `query` or `queryAssetId` must be set');
     }
     const page = dto.page ?? 1;
     const size = dto.size || 100;

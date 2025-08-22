@@ -203,7 +203,7 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
 
   @IsString()
   @Optional()
-  exampleAssetId?: string;
+  queryAssetId?: string;
 
   @IsString()
   @IsNotEmpty()
