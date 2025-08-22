@@ -1014,7 +1014,6 @@
     "unable_to_update_user": "Unable to update user",
     "unable_to_upload_file": "Unable to upload file"
   },
-  "query_asset_id": "Query Asset ID",
   "exif": "Exif",
   "exif_bottom_sheet_description": "Add Description...",
   "exif_bottom_sheet_description_error": "Error updating description",
@@ -1547,6 +1546,7 @@
   "purchase_server_description_2": "Supporter status",
   "purchase_server_title": "Server",
   "purchase_settings_server_activated": "The server product key is managed by the admin",
+  "query_asset_id": "Query Asset ID",
   "queue_status": "Queuing {count}/{total}",
   "rating": "Star rating",
   "rating_clear": "Clear rating",
