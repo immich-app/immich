@@ -34,5 +34,5 @@
     }
     onkeydown?.(e);
   }}
-  step={1}
+  step=".001"
 />
