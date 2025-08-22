@@ -241,12 +241,18 @@ class FileDetailDialog extends ConsumerWidget {
                     _buildInfoSection(context, [
                       _buildInfoRow(context, "filename".t(context: context), path.basename(uploadStatus.filename)),
                       _buildInfoRow(context, "local_id".t(context: context), asset.id),
-                      _buildInfoRow(context, "file_size".t(context: context), formatHumanReadableBytes(uploadStatus.fileSize, 2)),
+                      _buildInfoRow(
+                        context,
+                        "file_size".t(context: context),
+                        formatHumanReadableBytes(uploadStatus.fileSize, 2),
+                      ),
                       if (asset.width != null) _buildInfoRow(context, "width".t(context: context), "${asset.width}px"),
-                      if (asset.height != null) _buildInfoRow(context, "height".t(context: context), "${asset.height}px"),
+                      if (asset.height != null)
+                        _buildInfoRow(context, "height".t(context: context), "${asset.height}px"),
                       _buildInfoRow(context, "created_at".t(context: context), asset.createdAt.toString()),
                       _buildInfoRow(context, "updated_at".t(context: context), asset.updatedAt.toString()),
-                      if (asset.checksum != null) _buildInfoRow(context, "checksum".t(context: context), asset.checksum!),
+                      if (asset.checksum != null)
+                        _buildInfoRow(context, "checksum".t(context: context), asset.checksum!),
                     ]),
                   ],
                 ],
