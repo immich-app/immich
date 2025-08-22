@@ -9,6 +9,7 @@
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { navigate } from '$lib/utils/navigation';
+  import type { UserResponseDto } from '@immich/sdk';
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
@@ -25,6 +26,7 @@
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
+    albumUsers?: UserResponseDto[];
 
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
@@ -40,6 +42,7 @@
     monthGroup = $bindable(),
     assetInteraction,
     timelineManager,
+    albumUsers = [],
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
@@ -189,6 +192,7 @@
             showStackedIcon={withStacked}
             {showArchiveIcon}
             {asset}
+            {albumUsers}
             {groupIndex}
             onClick={(asset) => onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset)}
             onSelect={(asset) => assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle)}

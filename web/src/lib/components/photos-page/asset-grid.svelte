@@ -30,7 +30,13 @@
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
-  import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
+  import {
+    AssetVisibility,
+    getAssetInfo,
+    type AlbumResponseDto,
+    type PersonResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -87,6 +93,15 @@
   }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
+
+  const isUser = (user: UserResponseDto | undefined): user is UserResponseDto => {
+    return !!user;
+  };
+  const albumUsers = $derived(
+    album?.shared && album?.albumUsers.length
+      ? [album?.owner, ...(album?.albumUsers?.map(({ user }) => user) ?? [])].filter((element) => isUser(element))
+      : [],
+  );
 
   let element: HTMLElement | undefined = $state();
 
@@ -936,6 +951,7 @@
             {isSelectionMode}
             {singleSelect}
             {monthGroup}
+            {albumUsers}
             onSelect={({ title, assets }) => handleGroupSelect(timelineManager, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
