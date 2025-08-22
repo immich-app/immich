@@ -134,6 +134,10 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
     ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
+  if (index == 3) {
+    ref.invalidate(localAlbumProvider);
+  }
+
   ref.read(hapticFeedbackProvider.notifier).selectionClick();
   router.setActiveIndex(index);
   ref.read(tabProvider.notifier).state = TabEnum.values[index];
