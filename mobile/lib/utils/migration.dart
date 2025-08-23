@@ -20,6 +20,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -30,9 +31,10 @@ import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 13;
+const int targetVersion = 14;
 
-Future<void> migrateDatabaseIfNeeded(Isar db) async {
+Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
+  final hasVersion = Store.tryGet(StoreKey.version) != null;
   final int version = Store.get(StoreKey.version, targetVersion);
 
   if (version < 9) {
@@ -56,6 +58,12 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
 
   if (version < 13) {
     await Store.put(StoreKey.photoManagerCustomFilter, true);
+  }
+
+  // This means that the SQLite DB is just created and has no version
+  if (version < 14 || !hasVersion) {
+    await migrateStoreToSqlite(db, drift);
+    await Store.populateCache();
   }
 
   if (targetVersion >= 12) {
@@ -212,6 +220,39 @@ Future<void> migrateBackupAlbumsToSqlite(Isar db, Drift drift) async {
     });
   } catch (error) {
     debugPrint("[MIGRATION] Error while migrating backup albums to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToSqlite(Isar db, Drift drift) async {
+  try {
+    final isarStoreValues = await db.storeValues.where().findAll();
+    await drift.batch((batch) {
+      for (final storeValue in isarStoreValues) {
+        final companion = StoreEntityCompanion(
+          id: Value(storeValue.id),
+          stringValue: Value(storeValue.strValue),
+          intValue: Value(storeValue.intValue),
+        );
+        batch.insert(drift.storeEntity, companion, onConflict: DoUpdate((_) => companion));
+      }
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
+  try {
+    final driftStoreValues = await drift.storeEntity
+        .select()
+        .map((entity) => StoreValue(entity.id, intValue: entity.intValue, strValue: entity.stringValue))
+        .get();
+
+    await db.writeTxn(() async {
+      await db.storeValues.putAll(driftStoreValues);
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to Isar: $error");
   }
 }
 

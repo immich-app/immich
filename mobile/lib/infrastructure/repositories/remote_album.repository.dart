@@ -17,7 +17,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   const DriftRemoteAlbumRepository(this._db) : super(_db);
 
   Future<List<RemoteAlbum>> getAll({Set<SortRemoteAlbumsBy> sortBy = const {SortRemoteAlbumsBy.updatedAt}}) {
-    final assetCount = _db.remoteAlbumAssetEntity.assetId.count();
+    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
 
     final query = _db.remoteAlbumEntity.select().join([
       leftOuterJoin(
@@ -41,7 +41,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       ..where(_db.remoteAssetEntity.deletedAt.isNull())
       ..addColumns([assetCount])
       ..addColumns([_db.userEntity.name])
-      ..addColumns([_db.remoteAlbumUserEntity.userId.count()])
+      ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
       ..groupBy([_db.remoteAlbumEntity.id]);
 
     if (sortBy.isNotEmpty) {
@@ -62,14 +62,14 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               .toDto(
                 assetCount: row.read(assetCount) ?? 0,
                 ownerName: row.read(_db.userEntity.name)!,
-                isShared: row.read(_db.remoteAlbumUserEntity.userId.count())! > 2,
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
               ),
         )
         .get();
   }
 
   Future<RemoteAlbum?> get(String albumId) {
-    final assetCount = _db.remoteAlbumAssetEntity.assetId.count();
+    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
 
     final query =
         _db.remoteAlbumEntity.select().join([
@@ -97,7 +97,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
           ..where(_db.remoteAlbumEntity.id.equals(albumId) & _db.remoteAssetEntity.deletedAt.isNull())
           ..addColumns([assetCount])
           ..addColumns([_db.userEntity.name])
-          ..addColumns([_db.remoteAlbumUserEntity.userId.count()])
+          ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
           ..groupBy([_db.remoteAlbumEntity.id]);
 
     return query
@@ -107,7 +107,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               .toDto(
                 assetCount: row.read(assetCount) ?? 0,
                 ownerName: row.read(_db.userEntity.name)!,
-                isShared: row.read(_db.remoteAlbumUserEntity.userId.count())! > 2,
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
               ),
         )
         .getSingleOrNull();
@@ -282,7 +282,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
           ])
           ..where(_db.remoteAlbumEntity.id.equals(albumId))
           ..addColumns([_db.userEntity.name])
-          ..addColumns([_db.remoteAlbumUserEntity.userId.count()])
+          ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
           ..groupBy([_db.remoteAlbumEntity.id]);
 
     return query.map((row) {
@@ -290,7 +290,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
           .readTable(_db.remoteAlbumEntity)
           .toDto(
             ownerName: row.read(_db.userEntity.name)!,
-            isShared: row.read(_db.remoteAlbumUserEntity.userId.count())! > 2,
+            isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
           );
       return album;
     }).watchSingleOrNull();
