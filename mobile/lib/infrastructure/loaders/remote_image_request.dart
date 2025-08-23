@@ -67,7 +67,7 @@ class RemoteImageRequest extends ImageRequest {
 
     // Handle unknown content length from reverse proxy
     final contentLength = response.contentLength;
-    late Uint8List bytes;
+    final Uint8List bytes;
     int offset = 0;
 
     if (contentLength >= 0) {
@@ -100,7 +100,6 @@ class RemoteImageRequest extends ImageRequest {
 
       // Combine all chunks into a single buffer
       bytes = Uint8List(totalLength);
-      offset = 0;
       for (final chunk in chunks) {
         bytes.setAll(offset, chunk);
         offset += chunk.length;
