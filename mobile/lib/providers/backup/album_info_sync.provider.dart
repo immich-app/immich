@@ -1,4 +1,3 @@
-import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
@@ -19,19 +18,17 @@ class AlbumInfoSyncNotifier extends Notifier<bool> {
   }
 
   Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) async {
-    for (final localAlbum in localAlbums) {
-      await _processLocalAlbum(localAlbum, ownerId);
-    }
+    Future.wait(localAlbums.map((album) => _processLocalAlbum(album, ownerId)));
   }
 
   /// Processes a single local album to ensure proper linking with remote albums
-  Future<void> _processLocalAlbum(LocalAlbum localAlbum, String ownerId) async {
+  Future<void> _processLocalAlbum(LocalAlbum localAlbum, String ownerId) {
     final hasLinkedRemoteAlbum = localAlbum.linkedRemoteAlbumId != null;
 
     if (hasLinkedRemoteAlbum) {
-      await _handleLinkedAlbum(localAlbum);
+      return _handleLinkedAlbum(localAlbum);
     } else {
-      await _handleUnlinkedAlbum(localAlbum, ownerId);
+      return _handleUnlinkedAlbum(localAlbum, ownerId);
     }
   }
 
@@ -42,7 +39,7 @@ class AlbumInfoSyncNotifier extends Notifier<bool> {
 
     final remoteAlbumExists = remoteAlbum != null;
     if (!remoteAlbumExists) {
-      await _localAlbumService.unlinkRemoteAlbum(localAlbum.id);
+      return _localAlbumService.unlinkRemoteAlbum(localAlbum.id);
     }
   }
 
@@ -51,9 +48,9 @@ class AlbumInfoSyncNotifier extends Notifier<bool> {
     final existingRemoteAlbum = await _remoteAlbumService.getByName(localAlbum.name, ownerId);
 
     if (existingRemoteAlbum != null) {
-      await _linkToExistingRemoteAlbum(localAlbum, existingRemoteAlbum);
+      return _linkToExistingRemoteAlbum(localAlbum, existingRemoteAlbum);
     } else {
-      await _createAndLinkNewRemoteAlbum(localAlbum);
+      return _createAndLinkNewRemoteAlbum(localAlbum);
     }
   }
 
@@ -65,6 +62,6 @@ class AlbumInfoSyncNotifier extends Notifier<bool> {
   /// Creates a new remote album and links it to the local album
   Future<void> _createAndLinkNewRemoteAlbum(LocalAlbum localAlbum) async {
     final newRemoteAlbum = await _remoteAlbumService.createAlbum(title: localAlbum.name, assetIds: []);
-    await _localAlbumService.linkRemoteAlbum(localAlbum.id, newRemoteAlbum.id);
+    return _localAlbumService.linkRemoteAlbum(localAlbum.id, newRemoteAlbum.id);
   }
 }

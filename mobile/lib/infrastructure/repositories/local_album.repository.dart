@@ -337,7 +337,15 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return _db.managers.localAlbumEntity.count();
   }
 
-  Future<void> unlinkRemoteAlbum(String id) async {}
+  Future unlinkRemoteAlbum(String id) async {
+    return _db.localAlbumEntity.update()
+      ..where((row) => row.id.equals(id))
+      ..write(const LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(null)));
+  }
 
-  Future<void> linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {}
+  Future linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {
+    return _db.localAlbumEntity.update()
+      ..where((row) => row.id.equals(localAlbumId))
+      ..write(LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(remoteAlbumId)));
+  }
 }

@@ -15,6 +15,7 @@ class DriftAlbumApiRepository extends ApiRepository {
   DriftAlbumApiRepository(this._api);
 
   Future<RemoteAlbum> createDriftAlbum(String name, {required Iterable<String> assetIds, String? description}) async {
+    print("[API] create remote album '$name' with ${assetIds.length} assets");
     final responseDto = await checkNull(
       _api.createAlbum(CreateAlbumDto(albumName: name, description: description, assetIds: assetIds.toList())),
     );
