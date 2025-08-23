@@ -273,7 +273,7 @@
 
         {#if !!assetOwner}
           <div class="absolute bottom-0 end-1">
-            <span class="text-white">{assetOwner.name}</span>
+            <span class="text-white font-light">{assetOwner.name}</span>
           </div>
         {/if}
 

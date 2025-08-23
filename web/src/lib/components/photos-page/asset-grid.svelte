@@ -31,6 +31,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import {
+  AlbumUserRole,
     AssetVisibility,
     getAssetInfo,
     type AlbumResponseDto,
@@ -94,13 +95,8 @@
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
 
-  const isUser = (user: UserResponseDto | undefined): user is UserResponseDto => {
-    return !!user;
-  };
   const albumUsers = $derived(
-    album?.shared && album?.albumUsers.length
-      ? [album?.owner, ...(album?.albumUsers?.map(({ user }) => user) ?? [])].filter((element) => isUser(element))
-      : [],
+    album?.shared && album?.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor).length > 0 ? [album.owner, ...album.albumUsers.map(({ user }) => user)] : [],
   );
 
   let element: HTMLElement | undefined = $state();
