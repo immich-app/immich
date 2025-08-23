@@ -13,7 +13,7 @@ export function timeToSeconds(time: string) {
 
   const seconds = Duration.fromISOTime(time).as('seconds');
 
-  return isNaN(seconds) ? 0 : seconds;
+  return Number.isNaN(seconds) ? 0 : seconds;
 }
 export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
