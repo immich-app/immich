@@ -1945,453 +1945,6 @@ class LocalAssetEntityCompanion extends UpdateCompanion<LocalAssetEntityData> {
   }
 }
 
-class RemoteAlbumEntity extends Table
-    with TableInfo<RemoteAlbumEntity, RemoteAlbumEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  RemoteAlbumEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-    'description',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('\'\''),
-  );
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
-    'owner_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES user_entity (id) ON DELETE CASCADE',
-    ),
-  );
-  late final GeneratedColumn<String> thumbnailAssetId = GeneratedColumn<String>(
-    'thumbnail_asset_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES remote_asset_entity (id) ON DELETE SET NULL',
-    ),
-  );
-  late final GeneratedColumn<bool> isActivityEnabled = GeneratedColumn<bool>(
-    'is_activity_enabled',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_activity_enabled" IN (0, 1))',
-    ),
-    defaultValue: const CustomExpression('1'),
-  );
-  late final GeneratedColumn<int> order = GeneratedColumn<int>(
-    'order',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    name,
-    description,
-    createdAt,
-    updatedAt,
-    ownerId,
-    thumbnailAssetId,
-    isActivityEnabled,
-    order,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'remote_album_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  RemoteAlbumEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return RemoteAlbumEntityData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      ownerId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}owner_id'],
-      )!,
-      thumbnailAssetId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}thumbnail_asset_id'],
-      ),
-      isActivityEnabled: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_activity_enabled'],
-      )!,
-      order: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}order'],
-      )!,
-    );
-  }
-
-  @override
-  RemoteAlbumEntity createAlias(String alias) {
-    return RemoteAlbumEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class RemoteAlbumEntityData extends DataClass
-    implements Insertable<RemoteAlbumEntityData> {
-  final String id;
-  final String name;
-  final String description;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String ownerId;
-  final String? thumbnailAssetId;
-  final bool isActivityEnabled;
-  final int order;
-  const RemoteAlbumEntityData({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.ownerId,
-    this.thumbnailAssetId,
-    required this.isActivityEnabled,
-    required this.order,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['name'] = Variable<String>(name);
-    map['description'] = Variable<String>(description);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['owner_id'] = Variable<String>(ownerId);
-    if (!nullToAbsent || thumbnailAssetId != null) {
-      map['thumbnail_asset_id'] = Variable<String>(thumbnailAssetId);
-    }
-    map['is_activity_enabled'] = Variable<bool>(isActivityEnabled);
-    map['order'] = Variable<int>(order);
-    return map;
-  }
-
-  factory RemoteAlbumEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return RemoteAlbumEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      name: serializer.fromJson<String>(json['name']),
-      description: serializer.fromJson<String>(json['description']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      ownerId: serializer.fromJson<String>(json['ownerId']),
-      thumbnailAssetId: serializer.fromJson<String?>(json['thumbnailAssetId']),
-      isActivityEnabled: serializer.fromJson<bool>(json['isActivityEnabled']),
-      order: serializer.fromJson<int>(json['order']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'name': serializer.toJson<String>(name),
-      'description': serializer.toJson<String>(description),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'ownerId': serializer.toJson<String>(ownerId),
-      'thumbnailAssetId': serializer.toJson<String?>(thumbnailAssetId),
-      'isActivityEnabled': serializer.toJson<bool>(isActivityEnabled),
-      'order': serializer.toJson<int>(order),
-    };
-  }
-
-  RemoteAlbumEntityData copyWith({
-    String? id,
-    String? name,
-    String? description,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? ownerId,
-    Value<String?> thumbnailAssetId = const Value.absent(),
-    bool? isActivityEnabled,
-    int? order,
-  }) => RemoteAlbumEntityData(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    description: description ?? this.description,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    ownerId: ownerId ?? this.ownerId,
-    thumbnailAssetId: thumbnailAssetId.present
-        ? thumbnailAssetId.value
-        : this.thumbnailAssetId,
-    isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
-    order: order ?? this.order,
-  );
-  RemoteAlbumEntityData copyWithCompanion(RemoteAlbumEntityCompanion data) {
-    return RemoteAlbumEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      name: data.name.present ? data.name.value : this.name,
-      description: data.description.present
-          ? data.description.value
-          : this.description,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
-      thumbnailAssetId: data.thumbnailAssetId.present
-          ? data.thumbnailAssetId.value
-          : this.thumbnailAssetId,
-      isActivityEnabled: data.isActivityEnabled.present
-          ? data.isActivityEnabled.value
-          : this.isActivityEnabled,
-      order: data.order.present ? data.order.value : this.order,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('RemoteAlbumEntityData(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
-          ..write('thumbnailAssetId: $thumbnailAssetId, ')
-          ..write('isActivityEnabled: $isActivityEnabled, ')
-          ..write('order: $order')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    name,
-    description,
-    createdAt,
-    updatedAt,
-    ownerId,
-    thumbnailAssetId,
-    isActivityEnabled,
-    order,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RemoteAlbumEntityData &&
-          other.id == this.id &&
-          other.name == this.name &&
-          other.description == this.description &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.ownerId == this.ownerId &&
-          other.thumbnailAssetId == this.thumbnailAssetId &&
-          other.isActivityEnabled == this.isActivityEnabled &&
-          other.order == this.order);
-}
-
-class RemoteAlbumEntityCompanion
-    extends UpdateCompanion<RemoteAlbumEntityData> {
-  final Value<String> id;
-  final Value<String> name;
-  final Value<String> description;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<String> ownerId;
-  final Value<String?> thumbnailAssetId;
-  final Value<bool> isActivityEnabled;
-  final Value<int> order;
-  const RemoteAlbumEntityCompanion({
-    this.id = const Value.absent(),
-    this.name = const Value.absent(),
-    this.description = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.ownerId = const Value.absent(),
-    this.thumbnailAssetId = const Value.absent(),
-    this.isActivityEnabled = const Value.absent(),
-    this.order = const Value.absent(),
-  });
-  RemoteAlbumEntityCompanion.insert({
-    required String id,
-    required String name,
-    this.description = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    required String ownerId,
-    this.thumbnailAssetId = const Value.absent(),
-    this.isActivityEnabled = const Value.absent(),
-    required int order,
-  }) : id = Value(id),
-       name = Value(name),
-       ownerId = Value(ownerId),
-       order = Value(order);
-  static Insertable<RemoteAlbumEntityData> custom({
-    Expression<String>? id,
-    Expression<String>? name,
-    Expression<String>? description,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<String>? ownerId,
-    Expression<String>? thumbnailAssetId,
-    Expression<bool>? isActivityEnabled,
-    Expression<int>? order,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (name != null) 'name': name,
-      if (description != null) 'description': description,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (ownerId != null) 'owner_id': ownerId,
-      if (thumbnailAssetId != null) 'thumbnail_asset_id': thumbnailAssetId,
-      if (isActivityEnabled != null) 'is_activity_enabled': isActivityEnabled,
-      if (order != null) 'order': order,
-    });
-  }
-
-  RemoteAlbumEntityCompanion copyWith({
-    Value<String>? id,
-    Value<String>? name,
-    Value<String>? description,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<String>? ownerId,
-    Value<String?>? thumbnailAssetId,
-    Value<bool>? isActivityEnabled,
-    Value<int>? order,
-  }) {
-    return RemoteAlbumEntityCompanion(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      ownerId: ownerId ?? this.ownerId,
-      thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
-      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
-      order: order ?? this.order,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (description.present) {
-      map['description'] = Variable<String>(description.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (ownerId.present) {
-      map['owner_id'] = Variable<String>(ownerId.value);
-    }
-    if (thumbnailAssetId.present) {
-      map['thumbnail_asset_id'] = Variable<String>(thumbnailAssetId.value);
-    }
-    if (isActivityEnabled.present) {
-      map['is_activity_enabled'] = Variable<bool>(isActivityEnabled.value);
-    }
-    if (order.present) {
-      map['order'] = Variable<int>(order.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('RemoteAlbumEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('ownerId: $ownerId, ')
-          ..write('thumbnailAssetId: $thumbnailAssetId, ')
-          ..write('isActivityEnabled: $isActivityEnabled, ')
-          ..write('order: $order')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class LocalAlbumEntity extends Table
     with TableInfo<LocalAlbumEntity, LocalAlbumEntityData> {
   @override
@@ -2438,17 +1991,6 @@ class LocalAlbumEntity extends Table
     ),
     defaultValue: const CustomExpression('0'),
   );
-  late final GeneratedColumn<String> linkedRemoteAlbumId =
-      GeneratedColumn<String>(
-        'linked_remote_album_id',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-        defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES remote_album_entity (id) ON DELETE SET NULL',
-        ),
-      );
   late final GeneratedColumn<bool> marker_ = GeneratedColumn<bool>(
     'marker',
     aliasedName,
@@ -2466,7 +2008,6 @@ class LocalAlbumEntity extends Table
     updatedAt,
     backupSelection,
     isIosSharedAlbum,
-    linkedRemoteAlbumId,
     marker_,
   ];
   @override
@@ -2500,10 +2041,6 @@ class LocalAlbumEntity extends Table
         DriftSqlType.bool,
         data['${effectivePrefix}is_ios_shared_album'],
       )!,
-      linkedRemoteAlbumId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}linked_remote_album_id'],
-      ),
       marker_: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}marker'],
@@ -2529,7 +2066,6 @@ class LocalAlbumEntityData extends DataClass
   final DateTime updatedAt;
   final int backupSelection;
   final bool isIosSharedAlbum;
-  final String? linkedRemoteAlbumId;
   final bool? marker_;
   const LocalAlbumEntityData({
     required this.id,
@@ -2537,7 +2073,6 @@ class LocalAlbumEntityData extends DataClass
     required this.updatedAt,
     required this.backupSelection,
     required this.isIosSharedAlbum,
-    this.linkedRemoteAlbumId,
     this.marker_,
   });
   @override
@@ -2548,9 +2083,6 @@ class LocalAlbumEntityData extends DataClass
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['backup_selection'] = Variable<int>(backupSelection);
     map['is_ios_shared_album'] = Variable<bool>(isIosSharedAlbum);
-    if (!nullToAbsent || linkedRemoteAlbumId != null) {
-      map['linked_remote_album_id'] = Variable<String>(linkedRemoteAlbumId);
-    }
     if (!nullToAbsent || marker_ != null) {
       map['marker'] = Variable<bool>(marker_);
     }
@@ -2568,9 +2100,6 @@ class LocalAlbumEntityData extends DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       backupSelection: serializer.fromJson<int>(json['backupSelection']),
       isIosSharedAlbum: serializer.fromJson<bool>(json['isIosSharedAlbum']),
-      linkedRemoteAlbumId: serializer.fromJson<String?>(
-        json['linkedRemoteAlbumId'],
-      ),
       marker_: serializer.fromJson<bool?>(json['marker_']),
     );
   }
@@ -2583,7 +2112,6 @@ class LocalAlbumEntityData extends DataClass
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'backupSelection': serializer.toJson<int>(backupSelection),
       'isIosSharedAlbum': serializer.toJson<bool>(isIosSharedAlbum),
-      'linkedRemoteAlbumId': serializer.toJson<String?>(linkedRemoteAlbumId),
       'marker_': serializer.toJson<bool?>(marker_),
     };
   }
@@ -2594,7 +2122,6 @@ class LocalAlbumEntityData extends DataClass
     DateTime? updatedAt,
     int? backupSelection,
     bool? isIosSharedAlbum,
-    Value<String?> linkedRemoteAlbumId = const Value.absent(),
     Value<bool?> marker_ = const Value.absent(),
   }) => LocalAlbumEntityData(
     id: id ?? this.id,
@@ -2602,9 +2129,6 @@ class LocalAlbumEntityData extends DataClass
     updatedAt: updatedAt ?? this.updatedAt,
     backupSelection: backupSelection ?? this.backupSelection,
     isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
-    linkedRemoteAlbumId: linkedRemoteAlbumId.present
-        ? linkedRemoteAlbumId.value
-        : this.linkedRemoteAlbumId,
     marker_: marker_.present ? marker_.value : this.marker_,
   );
   LocalAlbumEntityData copyWithCompanion(LocalAlbumEntityCompanion data) {
@@ -2618,9 +2142,6 @@ class LocalAlbumEntityData extends DataClass
       isIosSharedAlbum: data.isIosSharedAlbum.present
           ? data.isIosSharedAlbum.value
           : this.isIosSharedAlbum,
-      linkedRemoteAlbumId: data.linkedRemoteAlbumId.present
-          ? data.linkedRemoteAlbumId.value
-          : this.linkedRemoteAlbumId,
       marker_: data.marker_.present ? data.marker_.value : this.marker_,
     );
   }
@@ -2633,7 +2154,6 @@ class LocalAlbumEntityData extends DataClass
           ..write('updatedAt: $updatedAt, ')
           ..write('backupSelection: $backupSelection, ')
           ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
-          ..write('linkedRemoteAlbumId: $linkedRemoteAlbumId, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();
@@ -2646,7 +2166,6 @@ class LocalAlbumEntityData extends DataClass
     updatedAt,
     backupSelection,
     isIosSharedAlbum,
-    linkedRemoteAlbumId,
     marker_,
   );
   @override
@@ -2658,7 +2177,6 @@ class LocalAlbumEntityData extends DataClass
           other.updatedAt == this.updatedAt &&
           other.backupSelection == this.backupSelection &&
           other.isIosSharedAlbum == this.isIosSharedAlbum &&
-          other.linkedRemoteAlbumId == this.linkedRemoteAlbumId &&
           other.marker_ == this.marker_);
 }
 
@@ -2668,7 +2186,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
   final Value<DateTime> updatedAt;
   final Value<int> backupSelection;
   final Value<bool> isIosSharedAlbum;
-  final Value<String?> linkedRemoteAlbumId;
   final Value<bool?> marker_;
   const LocalAlbumEntityCompanion({
     this.id = const Value.absent(),
@@ -2676,7 +2193,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
     this.updatedAt = const Value.absent(),
     this.backupSelection = const Value.absent(),
     this.isIosSharedAlbum = const Value.absent(),
-    this.linkedRemoteAlbumId = const Value.absent(),
     this.marker_ = const Value.absent(),
   });
   LocalAlbumEntityCompanion.insert({
@@ -2685,7 +2201,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
     this.updatedAt = const Value.absent(),
     required int backupSelection,
     this.isIosSharedAlbum = const Value.absent(),
-    this.linkedRemoteAlbumId = const Value.absent(),
     this.marker_ = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -2696,7 +2211,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
     Expression<DateTime>? updatedAt,
     Expression<int>? backupSelection,
     Expression<bool>? isIosSharedAlbum,
-    Expression<String>? linkedRemoteAlbumId,
     Expression<bool>? marker_,
   }) {
     return RawValuesInsertable({
@@ -2705,8 +2219,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (backupSelection != null) 'backup_selection': backupSelection,
       if (isIosSharedAlbum != null) 'is_ios_shared_album': isIosSharedAlbum,
-      if (linkedRemoteAlbumId != null)
-        'linked_remote_album_id': linkedRemoteAlbumId,
       if (marker_ != null) 'marker': marker_,
     });
   }
@@ -2717,7 +2229,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
     Value<DateTime>? updatedAt,
     Value<int>? backupSelection,
     Value<bool>? isIosSharedAlbum,
-    Value<String?>? linkedRemoteAlbumId,
     Value<bool?>? marker_,
   }) {
     return LocalAlbumEntityCompanion(
@@ -2726,7 +2237,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
       updatedAt: updatedAt ?? this.updatedAt,
       backupSelection: backupSelection ?? this.backupSelection,
       isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
-      linkedRemoteAlbumId: linkedRemoteAlbumId ?? this.linkedRemoteAlbumId,
       marker_: marker_ ?? this.marker_,
     );
   }
@@ -2749,11 +2259,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
     if (isIosSharedAlbum.present) {
       map['is_ios_shared_album'] = Variable<bool>(isIosSharedAlbum.value);
     }
-    if (linkedRemoteAlbumId.present) {
-      map['linked_remote_album_id'] = Variable<String>(
-        linkedRemoteAlbumId.value,
-      );
-    }
     if (marker_.present) {
       map['marker'] = Variable<bool>(marker_.value);
     }
@@ -2768,7 +2273,6 @@ class LocalAlbumEntityCompanion extends UpdateCompanion<LocalAlbumEntityData> {
           ..write('updatedAt: $updatedAt, ')
           ..write('backupSelection: $backupSelection, ')
           ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
-          ..write('linkedRemoteAlbumId: $linkedRemoteAlbumId, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();
@@ -4322,6 +3826,453 @@ class RemoteExifEntityCompanion extends UpdateCompanion<RemoteExifEntityData> {
           ..write('timeZone: $timeZone, ')
           ..write('rating: $rating, ')
           ..write('projectionType: $projectionType')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class RemoteAlbumEntity extends Table
+    with TableInfo<RemoteAlbumEntity, RemoteAlbumEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  RemoteAlbumEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('\'\''),
+  );
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+  );
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+  );
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES user_entity (id) ON DELETE CASCADE',
+    ),
+  );
+  late final GeneratedColumn<String> thumbnailAssetId = GeneratedColumn<String>(
+    'thumbnail_asset_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES remote_asset_entity (id) ON DELETE SET NULL',
+    ),
+  );
+  late final GeneratedColumn<bool> isActivityEnabled = GeneratedColumn<bool>(
+    'is_activity_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_activity_enabled" IN (0, 1))',
+    ),
+    defaultValue: const CustomExpression('1'),
+  );
+  late final GeneratedColumn<int> order = GeneratedColumn<int>(
+    'order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    description,
+    createdAt,
+    updatedAt,
+    ownerId,
+    thumbnailAssetId,
+    isActivityEnabled,
+    order,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'remote_album_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RemoteAlbumEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RemoteAlbumEntityData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      ownerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      thumbnailAssetId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}thumbnail_asset_id'],
+      ),
+      isActivityEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_activity_enabled'],
+      )!,
+      order: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order'],
+      )!,
+    );
+  }
+
+  @override
+  RemoteAlbumEntity createAlias(String alias) {
+    return RemoteAlbumEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class RemoteAlbumEntityData extends DataClass
+    implements Insertable<RemoteAlbumEntityData> {
+  final String id;
+  final String name;
+  final String description;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String ownerId;
+  final String? thumbnailAssetId;
+  final bool isActivityEnabled;
+  final int order;
+  const RemoteAlbumEntityData({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.ownerId,
+    this.thumbnailAssetId,
+    required this.isActivityEnabled,
+    required this.order,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['description'] = Variable<String>(description);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['owner_id'] = Variable<String>(ownerId);
+    if (!nullToAbsent || thumbnailAssetId != null) {
+      map['thumbnail_asset_id'] = Variable<String>(thumbnailAssetId);
+    }
+    map['is_activity_enabled'] = Variable<bool>(isActivityEnabled);
+    map['order'] = Variable<int>(order);
+    return map;
+  }
+
+  factory RemoteAlbumEntityData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RemoteAlbumEntityData(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String>(json['description']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      thumbnailAssetId: serializer.fromJson<String?>(json['thumbnailAssetId']),
+      isActivityEnabled: serializer.fromJson<bool>(json['isActivityEnabled']),
+      order: serializer.fromJson<int>(json['order']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String>(description),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'thumbnailAssetId': serializer.toJson<String?>(thumbnailAssetId),
+      'isActivityEnabled': serializer.toJson<bool>(isActivityEnabled),
+      'order': serializer.toJson<int>(order),
+    };
+  }
+
+  RemoteAlbumEntityData copyWith({
+    String? id,
+    String? name,
+    String? description,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? ownerId,
+    Value<String?> thumbnailAssetId = const Value.absent(),
+    bool? isActivityEnabled,
+    int? order,
+  }) => RemoteAlbumEntityData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    ownerId: ownerId ?? this.ownerId,
+    thumbnailAssetId: thumbnailAssetId.present
+        ? thumbnailAssetId.value
+        : this.thumbnailAssetId,
+    isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+    order: order ?? this.order,
+  );
+  RemoteAlbumEntityData copyWithCompanion(RemoteAlbumEntityCompanion data) {
+    return RemoteAlbumEntityData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      thumbnailAssetId: data.thumbnailAssetId.present
+          ? data.thumbnailAssetId.value
+          : this.thumbnailAssetId,
+      isActivityEnabled: data.isActivityEnabled.present
+          ? data.isActivityEnabled.value
+          : this.isActivityEnabled,
+      order: data.order.present ? data.order.value : this.order,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RemoteAlbumEntityData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('thumbnailAssetId: $thumbnailAssetId, ')
+          ..write('isActivityEnabled: $isActivityEnabled, ')
+          ..write('order: $order')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    description,
+    createdAt,
+    updatedAt,
+    ownerId,
+    thumbnailAssetId,
+    isActivityEnabled,
+    order,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RemoteAlbumEntityData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.ownerId == this.ownerId &&
+          other.thumbnailAssetId == this.thumbnailAssetId &&
+          other.isActivityEnabled == this.isActivityEnabled &&
+          other.order == this.order);
+}
+
+class RemoteAlbumEntityCompanion
+    extends UpdateCompanion<RemoteAlbumEntityData> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> description;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String> ownerId;
+  final Value<String?> thumbnailAssetId;
+  final Value<bool> isActivityEnabled;
+  final Value<int> order;
+  const RemoteAlbumEntityCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.thumbnailAssetId = const Value.absent(),
+    this.isActivityEnabled = const Value.absent(),
+    this.order = const Value.absent(),
+  });
+  RemoteAlbumEntityCompanion.insert({
+    required String id,
+    required String name,
+    this.description = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    required String ownerId,
+    this.thumbnailAssetId = const Value.absent(),
+    this.isActivityEnabled = const Value.absent(),
+    required int order,
+  }) : id = Value(id),
+       name = Value(name),
+       ownerId = Value(ownerId),
+       order = Value(order);
+  static Insertable<RemoteAlbumEntityData> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? ownerId,
+    Expression<String>? thumbnailAssetId,
+    Expression<bool>? isActivityEnabled,
+    Expression<int>? order,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (thumbnailAssetId != null) 'thumbnail_asset_id': thumbnailAssetId,
+      if (isActivityEnabled != null) 'is_activity_enabled': isActivityEnabled,
+      if (order != null) 'order': order,
+    });
+  }
+
+  RemoteAlbumEntityCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? description,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String>? ownerId,
+    Value<String?>? thumbnailAssetId,
+    Value<bool>? isActivityEnabled,
+    Value<int>? order,
+  }) {
+    return RemoteAlbumEntityCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      ownerId: ownerId ?? this.ownerId,
+      thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      order: order ?? this.order,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (thumbnailAssetId.present) {
+      map['thumbnail_asset_id'] = Variable<String>(thumbnailAssetId.value);
+    }
+    if (isActivityEnabled.present) {
+      map['is_activity_enabled'] = Variable<bool>(isActivityEnabled.value);
+    }
+    if (order.present) {
+      map['order'] = Variable<int>(order.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RemoteAlbumEntityCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('thumbnailAssetId: $thumbnailAssetId, ')
+          ..write('isActivityEnabled: $isActivityEnabled, ')
+          ..write('order: $order')
           ..write(')'))
         .toString();
   }
@@ -6421,13 +6372,220 @@ class AssetFaceEntityCompanion extends UpdateCompanion<AssetFaceEntityData> {
   }
 }
 
+class StoreEntity extends Table with TableInfo<StoreEntity, StoreEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  StoreEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<String> stringValue = GeneratedColumn<String>(
+    'string_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<int> intValue = GeneratedColumn<int>(
+    'int_value',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, stringValue, intValue];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'store_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StoreEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StoreEntityData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      stringValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}string_value'],
+      ),
+      intValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}int_value'],
+      ),
+    );
+  }
+
+  @override
+  StoreEntity createAlias(String alias) {
+    return StoreEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class StoreEntityData extends DataClass implements Insertable<StoreEntityData> {
+  final int id;
+  final String? stringValue;
+  final int? intValue;
+  const StoreEntityData({required this.id, this.stringValue, this.intValue});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || stringValue != null) {
+      map['string_value'] = Variable<String>(stringValue);
+    }
+    if (!nullToAbsent || intValue != null) {
+      map['int_value'] = Variable<int>(intValue);
+    }
+    return map;
+  }
+
+  factory StoreEntityData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StoreEntityData(
+      id: serializer.fromJson<int>(json['id']),
+      stringValue: serializer.fromJson<String?>(json['stringValue']),
+      intValue: serializer.fromJson<int?>(json['intValue']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'stringValue': serializer.toJson<String?>(stringValue),
+      'intValue': serializer.toJson<int?>(intValue),
+    };
+  }
+
+  StoreEntityData copyWith({
+    int? id,
+    Value<String?> stringValue = const Value.absent(),
+    Value<int?> intValue = const Value.absent(),
+  }) => StoreEntityData(
+    id: id ?? this.id,
+    stringValue: stringValue.present ? stringValue.value : this.stringValue,
+    intValue: intValue.present ? intValue.value : this.intValue,
+  );
+  StoreEntityData copyWithCompanion(StoreEntityCompanion data) {
+    return StoreEntityData(
+      id: data.id.present ? data.id.value : this.id,
+      stringValue: data.stringValue.present
+          ? data.stringValue.value
+          : this.stringValue,
+      intValue: data.intValue.present ? data.intValue.value : this.intValue,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StoreEntityData(')
+          ..write('id: $id, ')
+          ..write('stringValue: $stringValue, ')
+          ..write('intValue: $intValue')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, stringValue, intValue);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StoreEntityData &&
+          other.id == this.id &&
+          other.stringValue == this.stringValue &&
+          other.intValue == this.intValue);
+}
+
+class StoreEntityCompanion extends UpdateCompanion<StoreEntityData> {
+  final Value<int> id;
+  final Value<String?> stringValue;
+  final Value<int?> intValue;
+  const StoreEntityCompanion({
+    this.id = const Value.absent(),
+    this.stringValue = const Value.absent(),
+    this.intValue = const Value.absent(),
+  });
+  StoreEntityCompanion.insert({
+    required int id,
+    this.stringValue = const Value.absent(),
+    this.intValue = const Value.absent(),
+  }) : id = Value(id);
+  static Insertable<StoreEntityData> custom({
+    Expression<int>? id,
+    Expression<String>? stringValue,
+    Expression<int>? intValue,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (stringValue != null) 'string_value': stringValue,
+      if (intValue != null) 'int_value': intValue,
+    });
+  }
+
+  StoreEntityCompanion copyWith({
+    Value<int>? id,
+    Value<String?>? stringValue,
+    Value<int?>? intValue,
+  }) {
+    return StoreEntityCompanion(
+      id: id ?? this.id,
+      stringValue: stringValue ?? this.stringValue,
+      intValue: intValue ?? this.intValue,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (stringValue.present) {
+      map['string_value'] = Variable<String>(stringValue.value);
+    }
+    if (intValue.present) {
+      map['int_value'] = Variable<int>(intValue.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StoreEntityCompanion(')
+          ..write('id: $id, ')
+          ..write('stringValue: $stringValue, ')
+          ..write('intValue: $intValue')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class DatabaseAtV8 extends GeneratedDatabase {
   DatabaseAtV8(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
   late final RemoteAssetEntity remoteAssetEntity = RemoteAssetEntity(this);
   late final StackEntity stackEntity = StackEntity(this);
   late final LocalAssetEntity localAssetEntity = LocalAssetEntity(this);
-  late final RemoteAlbumEntity remoteAlbumEntity = RemoteAlbumEntity(this);
   late final LocalAlbumEntity localAlbumEntity = LocalAlbumEntity(this);
   late final LocalAlbumAssetEntity localAlbumAssetEntity =
       LocalAlbumAssetEntity(this);
@@ -6454,6 +6612,7 @@ class DatabaseAtV8 extends GeneratedDatabase {
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
   late final PartnerEntity partnerEntity = PartnerEntity(this);
   late final RemoteExifEntity remoteExifEntity = RemoteExifEntity(this);
+  late final RemoteAlbumEntity remoteAlbumEntity = RemoteAlbumEntity(this);
   late final RemoteAlbumAssetEntity remoteAlbumAssetEntity =
       RemoteAlbumAssetEntity(this);
   late final RemoteAlbumUserEntity remoteAlbumUserEntity =
@@ -6462,6 +6621,7 @@ class DatabaseAtV8 extends GeneratedDatabase {
   late final MemoryAssetEntity memoryAssetEntity = MemoryAssetEntity(this);
   late final PersonEntity personEntity = PersonEntity(this);
   late final AssetFaceEntity assetFaceEntity = AssetFaceEntity(this);
+  late final StoreEntity storeEntity = StoreEntity(this);
   late final Index idxLatLng = Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
@@ -6475,7 +6635,6 @@ class DatabaseAtV8 extends GeneratedDatabase {
     remoteAssetEntity,
     stackEntity,
     localAssetEntity,
-    remoteAlbumEntity,
     localAlbumEntity,
     localAlbumAssetEntity,
     idxLocalAssetChecksum,
@@ -6486,12 +6645,14 @@ class DatabaseAtV8 extends GeneratedDatabase {
     userMetadataEntity,
     partnerEntity,
     remoteExifEntity,
+    remoteAlbumEntity,
     remoteAlbumAssetEntity,
     remoteAlbumUserEntity,
     memoryEntity,
     memoryAssetEntity,
     personEntity,
     assetFaceEntity,
+    storeEntity,
     idxLatLng,
   ];
   @override

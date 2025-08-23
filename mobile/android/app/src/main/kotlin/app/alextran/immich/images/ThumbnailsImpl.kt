@@ -221,8 +221,8 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     return 1 shl max(
       0, floor(
         min(
-          log2(fullWidth / (2.0 * reqWidth)),
-          log2(fullHeight / (2.0 * reqHeight)),
+          log2(fullWidth / reqWidth.toDouble()),
+          log2(fullHeight / reqHeight.toDouble()),
         )
       ).toInt()
     )
