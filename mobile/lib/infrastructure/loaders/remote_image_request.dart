@@ -85,16 +85,15 @@ class RemoteImageRequest extends ImageRequest {
       await subscription.asFuture();
     } else {
       // Unknown content length - collect chunks dynamically
-      final chunks = <Uint8List>[];
+      final chunks = <List<int>>[];
       int totalLength = 0;
       final subscription = response.listen((List<int> chunk) {
         // this is important to break the response stream if the request is cancelled
         if (_isCancelled) {
           throw StateError('Cancelled request');
         }
-        final chunkBytes = Uint8List.fromList(chunk);
-        chunks.add(chunkBytes);
-        totalLength += chunkBytes.length;
+        chunks.add(chunk);
+        totalLength += chunk.length;
       }, cancelOnError: true);
       cacheManager?.putStreamedFile(url, response);
       await subscription.asFuture();
