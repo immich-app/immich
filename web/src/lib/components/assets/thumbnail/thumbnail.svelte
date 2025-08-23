@@ -17,7 +17,6 @@
   } from '@mdi/js';
 
   import { thumbhash } from '$lib/actions/thumbhash';
-  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
