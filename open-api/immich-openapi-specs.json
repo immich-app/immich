@@ -10728,6 +10728,12 @@
             "description": "base64 encoded sha1 hash",
             "type": "string"
           },
+          "createdAt": {
+            "description": "The UTC timestamp when the asset was originally uploaded to Immich.",
+            "example": "2024-01-15T20:30:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
           "deviceAssetId": {
             "type": "string"
           },
@@ -10863,6 +10869,7 @@
         },
         "required": [
           "checksum",
+          "createdAt",
           "deviceAssetId",
           "deviceId",
           "duration",
