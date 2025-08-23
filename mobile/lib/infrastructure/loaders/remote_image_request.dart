@@ -64,18 +64,50 @@ class RemoteImageRequest extends ImageRequest {
     if (_isCancelled) {
       return null;
     }
-    final bytes = Uint8List(response.contentLength);
+
+    // Handle unknown content length from reverse proxy
+    final contentLength = response.contentLength;
+    late Uint8List bytes;
     int offset = 0;
-    final subscription = response.listen((List<int> chunk) {
-      // this is important to break the response stream if the request is cancelled
-      if (_isCancelled) {
-        throw StateError('Cancelled request');
+
+    if (contentLength >= 0) {
+      // Known content length - use pre-allocated buffer
+      bytes = Uint8List(contentLength);
+      final subscription = response.listen((List<int> chunk) {
+        // this is important to break the response stream if the request is cancelled
+        if (_isCancelled) {
+          throw StateError('Cancelled request');
+        }
+        bytes.setAll(offset, chunk);
+        offset += chunk.length;
+      }, cancelOnError: true);
+      cacheManager?.putStreamedFile(url, response);
+      await subscription.asFuture();
+    } else {
+      // Unknown content length - collect chunks dynamically
+      final chunks = <Uint8List>[];
+      int totalLength = 0;
+      final subscription = response.listen((List<int> chunk) {
+        // this is important to break the response stream if the request is cancelled
+        if (_isCancelled) {
+          throw StateError('Cancelled request');
+        }
+        final chunkBytes = Uint8List.fromList(chunk);
+        chunks.add(chunkBytes);
+        totalLength += chunkBytes.length;
+      }, cancelOnError: true);
+      cacheManager?.putStreamedFile(url, response);
+      await subscription.asFuture();
+
+      // Combine all chunks into a single buffer
+      bytes = Uint8List(totalLength);
+      offset = 0;
+      for (final chunk in chunks) {
+        bytes.setAll(offset, chunk);
+        offset += chunk.length;
       }
-      bytes.setAll(offset, chunk);
-      offset += chunk.length;
-    }, cancelOnError: true);
-    cacheManager?.putStreamedFile(url, response);
-    await subscription.asFuture();
+    }
+
     return await ImmutableBuffer.fromUint8List(bytes);
   }
 
