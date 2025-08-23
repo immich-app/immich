@@ -96,7 +96,7 @@
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
 
   const albumUsers = $derived(
-    album?.shared && album?.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor).length > 0 ? [album.owner, ...album.albumUsers.map(({ user }) => user)] : [],
+    album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor) ? [album.owner, ...album.albumUsers.map(({ user }) => user)] : [],
   );
 
   let element: HTMLElement | undefined = $state();
