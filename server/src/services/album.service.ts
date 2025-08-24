@@ -191,8 +191,6 @@ export class AlbumService extends BaseService {
   async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
     const results: AlbumsAddAssetsResponseDto = {
       success: false,
-      albumSuccessCount: 0,
-      assetSuccessCount: 0,
       error: BulkIdErrorReason.DUPLICATE,
     };
 
@@ -222,6 +220,7 @@ export class AlbumService extends BaseService {
       }
       const album = await this.findOrFail(albumId, { withAssets: false });
       results.error = undefined;
+      results.success = true;
 
       for (const assetId of notPresentAssetIds) {
         albumAssetValues.push({ albumsId: albumId, assetsId: assetId });

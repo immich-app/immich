@@ -65,10 +65,6 @@ export class AlbumsAddAssetsDto {
 
 export class AlbumsAddAssetsResponseDto {
   success!: boolean;
-  @ApiProperty({ type: 'integer' })
-  albumSuccessCount!: number;
-  @ApiProperty({ type: 'integer' })
-  assetSuccessCount!: number;
   @ValidateEnum({ enum: BulkIdErrorReason, name: 'BulkIdErrorReason', optional: true })
   error?: BulkIdErrorReason;
 }
