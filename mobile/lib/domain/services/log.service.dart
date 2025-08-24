@@ -15,7 +15,7 @@ import 'package:logging/logging.dart';
 /// via [IStoreRepository]
 class LogService {
   final LogRepository _logRepository;
-  final IsarStoreRepository _storeRepository;
+  final IStoreRepository _storeRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -38,7 +38,7 @@ class LogService {
 
   static Future<LogService> init({
     required LogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
@@ -51,7 +51,7 @@ class LogService {
 
   static Future<LogService> create({
     required LogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     final instance = LogService._(logRepository, storeRepository, shouldBuffer);
@@ -92,7 +92,7 @@ class LogService {
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _storeRepository.insert(StoreKey.logLevel, level.index);
+    await _storeRepository.upsert(StoreKey.logLevel, level.index);
     Logger.root.level = level.toLevel();
   }
 
