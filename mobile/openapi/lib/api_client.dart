@@ -212,6 +212,10 @@ class ApiClient {
           return AlbumUserResponseDto.fromJson(value);
         case 'AlbumUserRole':
           return AlbumUserRoleTypeTransformer().decode(value);
+        case 'AlbumsAddAssetsDto':
+          return AlbumsAddAssetsDto.fromJson(value);
+        case 'AlbumsAddAssetsResponseDto':
+          return AlbumsAddAssetsResponseDto.fromJson(value);
         case 'AlbumsResponse':
           return AlbumsResponse.fromJson(value);
         case 'AlbumsUpdate':
@@ -280,6 +284,8 @@ class ApiClient {
           return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
+        case 'BulkIdErrorReason':
+          return BulkIdErrorReasonTypeTransformer().decode(value);
         case 'BulkIdResponseDto':
           return BulkIdResponseDto.fromJson(value);
         case 'BulkIdsDto':

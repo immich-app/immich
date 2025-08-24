@@ -83,6 +83,12 @@ android {
     }
   }
   namespace 'app.alextran.immich'
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
+  }
 }
 
 flutter {

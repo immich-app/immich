@@ -29,6 +29,8 @@
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
     android:largeHeap="true" android:enableOnBackInvokedCallback="false" android:allowBackup="false">
 
+    <profileable android:shell="true" />
+
     <service
       android:name="androidx.work.impl.foreground.SystemForegroundService"
       android:directBootAware="false"
