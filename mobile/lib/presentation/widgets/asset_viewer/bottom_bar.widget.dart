@@ -6,7 +6,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
@@ -30,6 +32,7 @@ class ViewerBottomBar extends ConsumerWidget {
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
 
     if (!showControls) {
       opacity = 0;
@@ -38,10 +41,16 @@ class ViewerBottomBar extends ConsumerWidget {
     final actions = <Widget>[
       const ShareActionButton(source: ActionSource.viewer),
       if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-      if (asset.hasRemote && isOwner) const ArchiveActionButton(source: ActionSource.viewer),
-      asset.isLocalOnly
-          ? const DeleteLocalActionButton(source: ActionSource.viewer)
-          : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+      if (asset.type == AssetType.image) const EditImageActionButton(),
+      if (isOwner) ...[
+        if (asset.hasRemote && isOwner && isArchived)
+          const UnArchiveActionButton(source: ActionSource.viewer)
+        else
+          const ArchiveActionButton(source: ActionSource.viewer),
+        asset.isLocalOnly
+            ? const DeleteLocalActionButton(source: ActionSource.viewer)
+            : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+      ],
     ];
 
     return IgnorePointer(

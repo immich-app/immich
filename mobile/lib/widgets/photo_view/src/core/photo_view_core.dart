@@ -192,7 +192,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
     final scaleState = getScaleStateFromNewScale(scale);
     if (scaleState == PhotoViewScaleState.zoomedOut) {
-      scaleStateController.scaleState = PhotoViewScaleState.originalSize;
+      scaleStateController.scaleState = PhotoViewScaleState.initial;
     } else if (scaleState == PhotoViewScaleState.zoomedIn) {
       animateRotation(controller.rotation, 0);
       if (_shouldAllowPanRotate()) {
@@ -421,6 +421,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             filterQuality: widget.filterQuality,
             width: scaleBoundaries.childSize.width * scale,
             fit: BoxFit.cover,
+            isAntiAlias: widget.filterQuality == FilterQuality.high,
           );
   }
 }

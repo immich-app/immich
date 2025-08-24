@@ -6,17 +6,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
@@ -25,6 +14,8 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -44,32 +35,25 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     }
 
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
+    final isOwner = asset is RemoteAsset && asset.ownerId == ref.watch(currentUserProvider)?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
+    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
 
-    final actions = <Widget>[
-      const ShareActionButton(source: ActionSource.viewer),
-      if (asset.hasRemote) ...[
-        const ShareLinkActionButton(source: ActionSource.viewer),
-        const ArchiveActionButton(source: ActionSource.viewer),
-        if (!asset.hasLocal) const DownloadActionButton(source: ActionSource.viewer),
-        isTrashEnable
-            ? const TrashActionButton(source: ActionSource.viewer)
-            : const DeletePermanentActionButton(source: ActionSource.viewer),
-        const DeleteActionButton(source: ActionSource.viewer),
-        const MoveToLockFolderActionButton(source: ActionSource.viewer),
-      ],
-      if (asset.storage == AssetState.local) ...[
-        const DeleteLocalActionButton(source: ActionSource.viewer),
-        const UploadActionButton(source: ActionSource.timeline),
-      ],
-      if (currentAlbum != null) RemoveFromAlbumActionButton(albumId: currentAlbum.id, source: ActionSource.viewer),
-    ];
+    final buttonContext = ActionButtonContext(
+      asset: asset,
+      isOwner: isOwner,
+      isArchived: isArchived,
+      isTrashEnabled: isTrashEnable,
+      isInLockedView: isInLockedView,
+      currentAlbum: currentAlbum,
+      source: ActionSource.viewer,
+    );
 
-    final lockedViewActions = <Widget>[];
+    final actions = ActionButtonBuilder.build(buttonContext);
 
     return BaseBottomSheet(
-      actions: isInLockedView ? lockedViewActions : actions,
+      actions: actions,
       slivers: const [_AssetDetailBottomSheet()],
       controller: controller,
       initialChildSize: initialChildSize,
