@@ -1,17 +1,24 @@
-FROM node:22.16.0-alpine3.20@sha256:2289fb1fba0f4633b08ec47b94a89c7e20b829fc5679f9b7b298eaa2f1ed8b7e AS web
+# production-builder-base image
+FROM ghcr.io/immich-app/base-server-dev:202508191104@sha256:0608857ef682099c458f0fb319afdcaf09462bbb5670b6dcd3642029f12eee1c AS prod-builder-base
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp
 
-WORKDIR /usr/src/open-api/typescript-sdk
-COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
-RUN npm ci
-COPY open-api/typescript-sdk/ ./
-RUN npm run build
+RUN npm install --global corepack@latest && \
+  corepack enable pnpm
+
+# web production build
+FROM prod-builder-base AS web-prod
 
 WORKDIR /usr/src/app
-COPY web/package*.json web/svelte.config.js ./
-RUN npm ci
-COPY web ./
-COPY i18n ../i18n
-RUN npm run build
+COPY ./package* ./pnpm* .pnpmfile.cjs ./
+COPY ./web ./web/
+COPY ./i18n ./i18n/
+COPY ./open-api ./open-api/
+RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
+  pnpm --filter @immich/sdk --filter immich-web build
+
+RUN ls -la
 
 FROM nginx
-COPY --from=web /usr/src/app/build /usr/share/nginx/html
+COPY --from=web-prod /usr/src/app/web/build /usr/share/nginx/html
