@@ -109,7 +109,6 @@
       minWidth: searchQuery.minWidth,
       maxWidth: searchQuery.maxWidth,
     },
-    exampleAssetId: searchQuery.exampleAssetId,
   });
 
   const resetForm = () => {
