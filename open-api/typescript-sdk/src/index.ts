@@ -6,11 +6,15 @@ export * from './fetch-errors.js';
 export interface InitOptions {
   baseUrl: string;
   apiKey: string;
+  headers?: Record<string, string>;
 }
 
-export const init = ({ baseUrl, apiKey }: InitOptions) => {
+export const init = ({ baseUrl, apiKey, headers }: InitOptions) => {
   setBaseUrl(baseUrl);
   setApiKey(apiKey);
+  if (headers) {
+    setHeaders(headers);
+  }
 };
 
 export const getBaseUrl = () => defaults.baseUrl;
@@ -22,6 +26,24 @@ export const setBaseUrl = (baseUrl: string) => {
 export const setApiKey = (apiKey: string) => {
   defaults.headers = defaults.headers || {};
   defaults.headers['x-api-key'] = apiKey;
+};
+
+export const setHeader = (key: string, value: string) => {
+  if (key.toLowerCase() === 'x-api-key') {
+    throw new Error('The API key header can only be set using setApiKey().');
+  }
+  defaults.headers = defaults.headers || {};
+  defaults.headers[key] = value;
+};
+
+export const setHeaders = (headers: Record<string, string>) => {
+  defaults.headers = defaults.headers || {};
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === 'x-api-key') {
+      throw new Error('The API key header can only be set using setApiKey().');
+    }
+    defaults.headers[key] = value;
+  }
 };
 
 export const getAssetOriginalPath = (id: string) => `/assets/${id}/original`;
