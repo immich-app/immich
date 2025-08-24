@@ -91,9 +91,8 @@ FROM prod-builder-base AS server-prod
 WORKDIR /usr/src/app
 COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./server ./server/
-# SHARP_IGNORE_GLOBAL_LIBVIPS because 'deploy' will always build sharp bindings from source
 RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
-  pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
 
 # web production build
 FROM prod-builder-base AS web-prod
