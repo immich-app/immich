@@ -88,14 +88,26 @@
     updateSlidingWindow();
   };
 
+  const scrollCompensation = (compensation: { heightDelta?: number; scrollTop?: number }) => {
+    const { heightDelta, scrollTop } = compensation;
+    if (heightDelta !== undefined) {
+      scrollBy(heightDelta);
+    } else if (scrollTop !== undefined) {
+      scrollTo(scrollTop);
+    }
+    timelineManager.clearScrollCompensation();
+  };
+
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
     // the following method may trigger any layouts, so need to
     // handle any scroll compensation that may have been set
     const height = monthGroup!.findAssetAbsolutePosition(assetId);
 
+    // this is in a while loop, since scrollCompensations invoke scrolls
+    // which may load months, triggering more scrollCompensations. Call
+    // this in a loop, until no more layouts occur.
     while (timelineManager.scrollCompensation.monthGroup) {
       scrollCompensation(timelineManager.scrollCompensation);
-      timelineManager.clearScrollCompensation();
     }
     return height;
   };
@@ -162,15 +174,6 @@
   // nodes to be recreated, causing bad perf, and also, disrupting focus of those elements.
   // Also note: don't throttle, debounce, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
-
-  const scrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
-    if (heightDelta !== undefined) {
-      scrollBy(heightDelta);
-    } else if (scrollTop !== undefined) {
-      scrollTo(scrollTop);
-    }
-  };
-  const onScrollCompensation = scrollCompensation;
 
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
@@ -274,7 +277,7 @@
               }
               onSelect?.(asset);
             }}
-            {onScrollCompensation}
+            onScrollCompensationMonthInDOM={scrollCompensation}
           />
         </div>
       {/if}

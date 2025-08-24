@@ -23,14 +23,14 @@
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
 
-    onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+    onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
 
     onHover: (dayGroup: DayGroup, asset: TimelineAsset) => void;
     onAssetOpen: (dayGroup: DayGroup, asset: TimelineAsset) => void;
     onAssetSelect: (dayGroup: DayGroup, asset: TimelineAsset) => void;
     onDayGroupSelect: (dayGroup: DayGroup, assets: TimelineAsset[]) => void;
 
-    // these should be replaced with reactive properties in timelinemanager
+    // these should be replaced with reactive properties in timeline-manager.svelte.ts
     isDayGroupSelected: (dayGroup: DayGroup) => boolean;
     isAssetSelected: (asset: TimelineAsset) => boolean;
     isAssetSelectionCandidate: (asset: TimelineAsset) => boolean;
@@ -43,7 +43,7 @@
     showArchiveIcon,
     monthGroup,
     timelineManager,
-    onScrollCompensation,
+    onScrollCompensationMonthInDOM,
 
     onHover,
     onAssetOpen,
@@ -70,8 +70,7 @@
 
   $effect.root(() => {
     if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
-      onScrollCompensation(timelineManager.scrollCompensation);
-      timelineManager.clearScrollCompensation();
+      onScrollCompensationMonthInDOM(timelineManager.scrollCompensation);
     }
   });
 </script>
