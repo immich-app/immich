@@ -77,12 +77,14 @@
     if (element) {
       element.scrollTo({ top });
     }
+    updateSlidingWindow();
   };
 
   const scrollBy = (y: number) => {
     if (element) {
       element.scrollBy(0, y);
     }
+    updateSlidingWindow();
   };
 
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
@@ -119,7 +121,6 @@
     }
 
     scrollTo(height);
-    updateSlidingWindow();
     return true;
   };
 
@@ -130,7 +131,6 @@
     }
     const height = getAssetHeight(asset.id, monthGroup);
     scrollTo(height);
-    updateSlidingWindow();
     return true;
   };
 
@@ -155,7 +155,11 @@
   });
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
-  // note: don't throttle, debounce, or otherwise do this function async - it causes flicker
+  // Yes, updateSlideWindow() is called by the onScroll event. However, if you also just scrolled
+  // by explicitly invoking element.scrollX functions, there may be a delay with enough time to
+  // set the intersecting property of the monthGroup to false, then true, which causes the DOM
+  // nodes to be recreated, causing bad perf, and also, disrupting focus of those elements.
+  // Also note: don't throttle, debounce, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
 
   const scrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
@@ -164,11 +168,6 @@
     } else if (scrollTop !== undefined) {
       scrollTo(scrollTop);
     }
-    // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
-    // the above calls. However, this delay is enough time to set the intersecting property
-    // of the monthGroup to false, then true, which causes the DOM nodes to be recreated,
-    // causing bad perf, and also, disrupting focus of those elements.
-    updateSlidingWindow();
   };
   const onScrollCompensation = scrollCompensation;
 
