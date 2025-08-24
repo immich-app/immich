@@ -12,6 +12,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { onMount, type Snippet } from 'svelte';
+  import type { UpdatePayload } from 'vite';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -181,12 +182,24 @@
 </script>
 
 <Hmr
-  onHmr={() => {
-    const asset = $page.url.searchParams.get('at');
-    if (asset) {
-      $gridScrollTarget = { at: asset };
+  onAfterUpdate={(payload: UpdatePayload) => {
+    // when hmr happens, skeleton is initialized to true by default
+    // normally, loading asset-grid is part of a navigation event, and the completion of
+    // that event triggers a scroll-to-asset, if necessary, when then clears the skeleton.
+    // this handler will run the navigation/scroll-to-asset handler when hmr is performed,
+    // preventing skeleton from showing after hmr
+    const finishHmr = () => {
+      const asset = $page.url.searchParams.get('at');
+      if (asset) {
+        $gridScrollTarget = { at: asset };
+      }
+      void completeNav();
+    };
+    const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('base-timeline-viewer.svelte'));
+    if (assetGridUpdate) {
+      // wait 500ms for the update to be fully swapped in
+      setTimeout(finishHmr, 500);
     }
-    void completeNav();
   }}
 />
 
