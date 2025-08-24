@@ -4,6 +4,7 @@ import { APIKeyController } from 'src/controllers/api-key.controller';
 import { AppController } from 'src/controllers/app.controller';
 import { AssetMediaController } from 'src/controllers/asset-media.controller';
 import { AssetController } from 'src/controllers/asset.controller';
+import { AuthAdminController } from 'src/controllers/auth-admin.controller';
 import { AuthController } from 'src/controllers/auth.controller';
 import { DownloadController } from 'src/controllers/download.controller';
 import { DuplicateController } from 'src/controllers/duplicate.controller';
@@ -40,6 +41,7 @@ export const controllers = [
   AssetController,
   AssetMediaController,
   AuthController,
+  AuthAdminController,
   DownloadController,
   DuplicateController,
   FaceController,

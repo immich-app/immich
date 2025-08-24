@@ -45,7 +45,7 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
-      maxWidth: 100.0,
+      maxWidth: 115.0,
       iconData: Icons.lock_outline_rounded,
       label: "move_to_locked_folder".t(context: context),
       onPressed: () => _onTap(context, ref),

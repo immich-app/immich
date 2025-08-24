@@ -60,7 +60,6 @@ const authFactory = ({
   if (session) {
     auth.session = {
       id: session.id,
-      isPendingSyncReset: false,
       hasElevatedPermission: false,
     };
   }

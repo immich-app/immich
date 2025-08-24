@@ -30,8 +30,8 @@
     eventManager.emit('auth.login', user);
   };
 
-  const onFirstLogin = async () => await goto(AppRoute.AUTH_CHANGE_PASSWORD);
-  const onOnboarding = async () => await goto(AppRoute.AUTH_ONBOARDING);
+  const onFirstLogin = () => goto(AppRoute.AUTH_CHANGE_PASSWORD);
+  const onOnboarding = () => goto(AppRoute.AUTH_ONBOARDING);
 
   onMount(async () => {
     if (!$featureFlags.oauth) {
@@ -54,6 +54,7 @@
         console.error('Error [login-form] [oauth.callback]', error);
         oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
         oauthLoading = false;
+        return;
       }
     }
 

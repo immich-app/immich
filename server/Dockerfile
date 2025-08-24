@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202507162011@sha256:85d4230c2208646bd6c528db41b2213d780b11b7a311397ca6a2aaba7cf697c8 AS dev
+FROM ghcr.io/immich-app/base-server-dev:202507291116@sha256:e38543bdd77a02ed156cd9175ed11e9c16dccf48c418d46ecda48ce684de456a AS dev
 
 WORKDIR /usr/src/app
 COPY ./server/package* ./server/
@@ -18,7 +18,7 @@ ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 FROM dev AS dev-container-server
 
 RUN rm -rf /usr/src/app
-RUN apt-get update && \
+RUN apt-get update --allow-releaseinfo-change && \
   apt-get install sudo inetutils-ping openjdk-11-jre-headless \
   vim nano \
   -y --no-install-recommends --fix-missing
@@ -69,8 +69,6 @@ RUN sudo apt-get update \
   && sudo apt-get update \
   && sudo apt-get install dcm -y
 
-COPY --chmod=777 ../.devcontainer/mobile/container-mobile-post-create.sh /immich-devcontainer/container-mobile-post-create.sh
-
 RUN dart --disable-analytics
 
 FROM dev AS prod
@@ -96,7 +94,7 @@ WORKDIR /usr/src/app/web
 RUN npm ci && npm run build
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:202507162011@sha256:636f3ddb6106628ef851d51c23f3fa2c6e4829390cc315b27b38c288c82b23a7
+FROM ghcr.io/immich-app/base-server-prod:202507291116@sha256:6e80f884c6e4f05cefe4b4fc4cc06a15bdb6ec9bd7b6e9eadf996a13b69494b6
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

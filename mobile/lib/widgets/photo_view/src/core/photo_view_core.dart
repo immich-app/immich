@@ -192,7 +192,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
     final scaleState = getScaleStateFromNewScale(scale);
     if (scaleState == PhotoViewScaleState.zoomedOut) {
-      scaleStateController.scaleState = PhotoViewScaleState.originalSize;
+      scaleStateController.scaleState = PhotoViewScaleState.initial;
     } else if (scaleState == PhotoViewScaleState.zoomedIn) {
       animateRotation(controller.rotation, 0);
       if (_shouldAllowPanRotate()) {

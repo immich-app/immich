@@ -101,7 +101,7 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
     return null;
   }
 
-  return val;
+  return Math.round(val);
 };
 
 const getLensModel = (exifTags: ImmichTags): string | null => {

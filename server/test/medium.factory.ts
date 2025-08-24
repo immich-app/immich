@@ -5,7 +5,15 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
-import { AlbumUserRole, AssetType, AssetVisibility, MemoryType, SourceType, SyncRequestType } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  SourceType,
+  SyncEntityType,
+  SyncRequestType,
+} from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -251,11 +259,16 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
 
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {
     const acks: Record<string, string> = {};
+    const syncAcks: string[] = [];
     for (const { type, ack } of response) {
+      if (type === SyncEntityType.SyncAckV1) {
+        syncAcks.push(ack);
+        continue;
+      }
       acks[type] = ack;
     }
 
-    await this.sut.setAcks(auth, { acks: Object.values(acks) });
+    await this.sut.setAcks(auth, { acks: [...Object.values(acks), ...syncAcks] });
   }
 }
 
@@ -468,8 +481,6 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
     name: person.name || 'Test Name',
     ownerId: person.ownerId || newUuid(),
     thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
-    updatedAt: person.updatedAt || newDate(),
-    updateId: person.updateId || newUuid(),
   };
   return {
     ...defaults,

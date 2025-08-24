@@ -149,12 +149,28 @@
     return height;
   };
 
+  const assetIsVisible = (assetTop: number): boolean => {
+    if (!element) {
+      return false;
+    }
+
+    const { clientHeight, scrollTop } = element;
+    return assetTop >= scrollTop && assetTop < scrollTop + clientHeight;
+  };
+
   const scrollToAssetId = async (assetId: string) => {
     const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
     if (!monthGroup) {
       return false;
     }
+
     const height = getAssetHeight(assetId, monthGroup);
+
+    // If the asset is already visible, then don't scroll.
+    if (assetIsVisible(height)) {
+      return true;
+    }
+
     scrollTo(height);
     updateSlidingWindow();
     return true;

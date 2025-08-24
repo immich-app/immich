@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobIdParamDto, JobStatusDto } from 'src/dtos/job.dto';
 import { Permission } from 'src/enum';
@@ -18,6 +18,7 @@ export class JobController {
 
   @Post()
   @Authenticated({ permission: Permission.JobCreate, admin: true })
+  @HttpCode(HttpStatus.NO_CONTENT)
   createJob(@Body() dto: JobCreateDto): Promise<void> {
     return this.service.create(dto);
   }
