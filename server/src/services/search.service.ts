@@ -125,7 +125,8 @@ export class SearchService extends BaseService {
         this.embeddingCache.set(key, embedding);
       }
     } else if (dto.queryAssetId) {
-      const assetEmbedding = (await this.searchRepository.getEmbedding(dto.queryAssetId))?.embedding;
+      const getEmbeddingResponse = await this.searchRepository.getEmbedding(dto.queryAssetId);
+      const assetEmbedding = getEmbeddingResponse?.embedding;
       if (!assetEmbedding) {
         throw new BadRequestException(`Asset ${dto.queryAssetId} has no embedding`);
       }
