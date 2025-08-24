@@ -29,9 +29,7 @@ export const setApiKey = (apiKey: string) => {
 };
 
 export const setHeader = (key: string, value: string) => {
-  if (key.toLowerCase() === 'x-api-key') {
-    throw new Error('The API key header can only be set using setApiKey().');
-  }
+  assertNoApiKey(key);
   defaults.headers = defaults.headers || {};
   defaults.headers[key] = value;
 };
@@ -39,10 +37,14 @@ export const setHeader = (key: string, value: string) => {
 export const setHeaders = (headers: Record<string, string>) => {
   defaults.headers = defaults.headers || {};
   for (const [key, value] of Object.entries(headers)) {
-    if (key.toLowerCase() === 'x-api-key') {
-      throw new Error('The API key header can only be set using setApiKey().');
-    }
+    assertNoApiKey(key);
     defaults.headers[key] = value;
+  }
+};
+
+const assertNoApiKey = (headerKey: string) => {
+  if (headerKey.toLowerCase() === 'x-api-key') {
+    throw new Error('The API key header can only be set using setApiKey().');
   }
 };
 
