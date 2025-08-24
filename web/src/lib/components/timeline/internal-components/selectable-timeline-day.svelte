@@ -25,7 +25,7 @@
 
     onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onSelect?: (isSingleSelect: boolean, asset: TimelineAsset) => void;
-    onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+    onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
   }
 
   let {
@@ -39,7 +39,7 @@
     timelineManager,
     onAssetOpen,
     onSelect,
-    onScrollCompensation,
+    onScrollCompensationMonthInDOM,
   }: Props = $props();
 
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
@@ -264,7 +264,7 @@
   {showArchiveIcon}
   {monthGroup}
   {timelineManager}
-  {onScrollCompensation}
+  {onScrollCompensationMonthInDOM}
   onHover={handleOnHover}
   onAssetOpen={handleOnAssetOpen}
   onAssetSelect={handleAssetSelect}
