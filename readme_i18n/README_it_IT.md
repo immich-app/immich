@@ -1,6 +1,6 @@
 <p align="center"> 
   <br/>
-  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
+  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="Licenza: AGPLv3"></a>
   <a href="https://discord.immich.app">
     <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
   </a>
@@ -9,12 +9,12 @@
 </p>
 
 <p align="center">
-<img src="/design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
+<img src="/design/immich-logo-stacked-light.svg" width="300" title="Accedi con url personalizzato">
 </p>
 <h3 align="center">Soluzione ad alte prestazioni per la gestione self-hosted di foto e video</h3>
 <br/>
 <a href="https://immich.app">
-<img src="/design/immich-screenshots.png" title="Main Screenshot">
+<img src="/design/immich-screenshots.png" title="Screenshot Principale">
 </a>
 <br/>
 
@@ -40,9 +40,9 @@
 ## Avvertenze
 
 - ⚠️ Il progetto è in fase di sviluppo **molto attivo**.  
-- ⚠️ Possono esserci bug o cambiamenti che rompono la compatibilità.
+- ⚠️ Possono esserci bug o cambiamenti radicali, che possono non essere retrocompatibili (breaking changes).
 - ⚠️ **Non usare l’app come unico modo per archiviare le tue foto e i tuoi video.**  
-- ⚠️ Segui sempre la regola del backup [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) per proteggere i tuoi ricordi!  
+- ⚠️ Segui sempre la regola di backup [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) per proteggere i tuoi ricordi e le foto a cui tieni!  
 
 > [!NOTE]  
 > La documentazione principale, comprese le guide all’installazione, si trova su https://immich.app/.  
@@ -54,7 +54,7 @@
 - [Installazione](https://immich.app/docs/install/requirements)  
 - [Roadmap](https://immich.app/roadmap)  
 - [Demo](#demo)  
-- [Funzionalità](#features)  
+- [Funzionalità](#funzionalità)  
 - [Traduzioni](https://immich.app/docs/developer/translations)  
 - [Contribuire](https://immich.app/docs/overview/support-the-project)  
 
