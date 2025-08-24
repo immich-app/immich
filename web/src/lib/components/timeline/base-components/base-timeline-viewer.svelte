@@ -32,7 +32,7 @@
     styleMarginRightOverride?: string;
     onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onSelect?: (asset: TimelineAsset) => void;
-    header?: Snippet<[handleScrollTop: (top: number) => void]>;
+    header?: Snippet<[scrollToFunction: (top: number) => void]>;
     children?: Snippet;
     empty?: Snippet;
     handleTimelineScroll?: () => void;
@@ -86,20 +86,12 @@
       element.scrollTo({ top });
     }
   };
-  const scrollTop = (top: number) => {
-    if (element) {
-      element.scrollTop = top;
-    }
-  };
+
   const scrollBy = (y: number) => {
     if (element) {
       element.scrollBy(0, y);
     }
   };
-  const scrollToTop = () => {
-    scrollTo(0);
-  };
-  const onScrollToTop = scrollToTop;
 
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
     // the following method may trigger any layouts, so need to
@@ -158,7 +150,7 @@
     }
     if (!scrolled) {
       // if the asset is not found, scroll to the top
-      scrollToTop();
+      scrollTo(0);
     }
     showSkeleton = false;
   };
@@ -207,7 +199,7 @@
   }}
 />
 
-{@render header?.(scrollTop)}
+{@render header?.(scrollTo)}
 
 <!-- Right margin MUST be equal to the width of scrubber -->
 <section
@@ -274,8 +266,12 @@
             {singleSelect}
             {monthGroup}
             {onAssetOpen}
-            {onSelect}
-            {onScrollToTop}
+            onSelect={(isSingleSelect: boolean, asset: TimelineAsset) => {
+              if (isSingleSelect) {
+                scrollTo(0);
+              }
+              onSelect?.(asset);
+            }}
             {onScrollCompensation}
           />
         </div>

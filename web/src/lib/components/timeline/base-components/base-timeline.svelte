@@ -133,13 +133,13 @@
     scrubberMonth,
     overallScrollPercent,
     scrubberMonthScrollPercent,
-    handleScrollTop,
+    scrollToFunction,
   }) => {
     if (!scrubberMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = timelineManager.getMaxScroll();
       const offset = maxScroll * overallScrollPercent;
-      handleScrollTop?.(offset);
+      scrollToFunction?.(offset);
     } else {
       const monthGroup = timelineManager.months.find(
         ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
@@ -147,7 +147,7 @@
       if (!monthGroup) {
         return;
       }
-      scrollToMonthGroupAndOffset(monthGroup, scrubberMonthScrollPercent, handleScrollTop);
+      scrollToMonthGroupAndOffset(monthGroup, scrubberMonthScrollPercent, scrollToFunction);
     }
   };
 
@@ -185,7 +185,7 @@
   {empty}
   {handleTimelineScroll}
 >
-  {#snippet header(handleScrollTop)}
+  {#snippet header(scrollTo)}
     {#if timelineManager.months.length > 0}
       <Scrubber
         {timelineManager}
@@ -196,7 +196,7 @@
         {scrubOverallPercent}
         {scrubberMonthPercent}
         {scrubberMonth}
-        onScrub={(args) => onScrub({ ...args, handleScrollTop })}
+        onScrub={(args) => onScrub({ ...args, scrollToFunction: scrollTo })}
         bind:scrubberWidth
       />
     {/if}
