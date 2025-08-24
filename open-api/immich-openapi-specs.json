@@ -5671,12 +5671,48 @@
             }
           },
           {
+            "name": "maxHeight",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxWidth",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
             "name": "minFileSize",
             "required": false,
             "in": "query",
             "schema": {
               "minimum": 0,
               "type": "integer"
+            }
+          },
+          {
+            "name": "minHeight",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "minWidth",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
             }
           },
           {
@@ -13210,6 +13246,22 @@
           "make": {
             "type": "string"
           },
+          "maxHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxWidth": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minWidth": {
+            "minimum": 1,
+            "type": "number"
+          },
           "model": {
             "nullable": true,
             "type": "string"
@@ -14302,6 +14354,22 @@
           "make": {
             "type": "string"
           },
+          "maxHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxWidth": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minWidth": {
+            "minimum": 1,
+            "type": "number"
+          },
           "model": {
             "nullable": true,
             "type": "string"
@@ -14505,6 +14573,22 @@
           },
           "make": {
             "type": "string"
+          },
+          "maxHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxWidth": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minHeight": {
+            "minimum": 1,
+            "type": "number"
+          },
+          "minWidth": {
+            "minimum": 1,
+            "type": "number"
           },
           "model": {
             "nullable": true,

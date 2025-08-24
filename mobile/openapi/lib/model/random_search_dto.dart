@@ -27,6 +27,10 @@ class RandomSearchDto {
     this.lensModel,
     this.libraryId,
     this.make,
+    this.maxHeight,
+    this.maxWidth,
+    this.minHeight,
+    this.minWidth,
     this.model,
     this.personIds = const [],
     this.rating,
@@ -128,6 +132,42 @@ class RandomSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? make;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? maxHeight;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? maxWidth;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? minHeight;
+
+  /// Minimum value: 1
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? minWidth;
 
   String? model;
 
@@ -269,6 +309,10 @@ class RandomSearchDto {
     other.lensModel == lensModel &&
     other.libraryId == libraryId &&
     other.make == make &&
+    other.maxHeight == maxHeight &&
+    other.maxWidth == maxWidth &&
+    other.minHeight == minHeight &&
+    other.minWidth == minWidth &&
     other.model == model &&
     _deepEquality.equals(other.personIds, personIds) &&
     other.rating == rating &&
@@ -305,6 +349,10 @@ class RandomSearchDto {
     (lensModel == null ? 0 : lensModel!.hashCode) +
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
+    (maxHeight == null ? 0 : maxHeight!.hashCode) +
+    (maxWidth == null ? 0 : maxWidth!.hashCode) +
+    (minHeight == null ? 0 : minHeight!.hashCode) +
+    (minWidth == null ? 0 : minWidth!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (personIds.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
@@ -325,7 +373,7 @@ class RandomSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, maxHeight=$maxHeight, maxWidth=$maxWidth, minHeight=$minHeight, minWidth=$minWidth, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -394,6 +442,26 @@ class RandomSearchDto {
       json[r'make'] = this.make;
     } else {
     //  json[r'make'] = null;
+    }
+    if (this.maxHeight != null) {
+      json[r'maxHeight'] = this.maxHeight;
+    } else {
+    //  json[r'maxHeight'] = null;
+    }
+    if (this.maxWidth != null) {
+      json[r'maxWidth'] = this.maxWidth;
+    } else {
+    //  json[r'maxWidth'] = null;
+    }
+    if (this.minHeight != null) {
+      json[r'minHeight'] = this.minHeight;
+    } else {
+    //  json[r'minHeight'] = null;
+    }
+    if (this.minWidth != null) {
+      json[r'minWidth'] = this.minWidth;
+    } else {
+    //  json[r'minWidth'] = null;
     }
     if (this.model != null) {
       json[r'model'] = this.model;
@@ -509,6 +577,10 @@ class RandomSearchDto {
         lensModel: mapValueOfType<String>(json, r'lensModel'),
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
+        maxHeight: num.parse('${json[r'maxHeight']}'),
+        maxWidth: num.parse('${json[r'maxWidth']}'),
+        minHeight: num.parse('${json[r'minHeight']}'),
+        minWidth: num.parse('${json[r'minWidth']}'),
         model: mapValueOfType<String>(json, r'model'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
