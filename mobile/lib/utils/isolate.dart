@@ -34,14 +34,15 @@ Cancelable<T?> runInIsolateGentle<T>({
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     DartPluginRegistrant.ensureInitialized();
 
-    final db = await Bootstrap.initIsar();
-    await Bootstrap.initDomain(db, shouldBufferLogs: false);
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false);
     final ref = ProviderContainer(
       overrides: [
         // TODO: Remove once isar is removed
-        dbProvider.overrideWithValue(db),
-        isarProvider.overrideWithValue(db),
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
         cancellationProvider.overrideWithValue(cancelledChecker),
+        driftProvider.overrideWith(driftOverride(drift)),
       ],
     );
 
@@ -51,18 +52,13 @@ Cancelable<T?> runInIsolateGentle<T>({
       HttpSSLOptions.apply(applyNative: false);
       return await computation(ref);
     } on CanceledError {
-      log.warning(
-        "Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}",
-      );
+      log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");
     } catch (error, stack) {
-      log.severe(
-        "Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}",
-        error,
-        stack,
-      );
+      log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
     } finally {
       try {
-        await LogService.I.flushBuffer();
+        await LogService.I.flush();
+        await logDb.close();
         await ref.read(driftProvider).close();
 
         // Close Isar safely

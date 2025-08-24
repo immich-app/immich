@@ -34,7 +34,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |    `/usr/src/app/upload`     | server                   | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |           `/data`            | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
 | `CPU_CORES`                         | Number of cores available to the Immich server                                            | auto-detected CPU core count | server                   |                    |
@@ -199,12 +199,11 @@ Additional machine learning parameters can be tuned from the admin UI.
 | `IMMICH_TELEMETRY_INCLUDE` | Collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`. Note: You can also specify `all` to enable all |         | server     | api, microservices |
 | `IMMICH_TELEMETRY_EXCLUDE` | Do not collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`                                          |         | server     | api, microservices |
 
-## Docker Secrets
+## Secrets
 
-The following variables support the use of [Docker secrets][docker-secrets] for additional security.
+The following variables support reading from files, either via [Systemd Credentials][systemd-creds] or [Docker secrets][docker-secrets] for additional security.
 
-To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
-the `_FILE` variable should be set to the path of a file containing the variable value.
+To use any of these, either set `CREDENTIALS_DIRECTORY` to a directory that contains files whose name is the “regular variable” name, and whose content is the secret. If using Docker Secrets, setting `CREDENTIALS_DIRECTORY=/run/secrets` will cause all secrets present to be used. Alternatively, replace the regular variable with the equivalent `_FILE` environment variable as below. The value of the `_FILE` variable should be set to the path of a file containing the variable value.
 
 | Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
 | :----------------- | :------------------------------------------ |
@@ -226,3 +225,4 @@ to use a Docker secret for the password in the Redis container.
 [docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
 [docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
 [ioredis]: https://ioredis.readthedocs.io/en/latest/README/#connect-to-redis
+[systemd-creds]: https://systemd.io/CREDENTIALS/

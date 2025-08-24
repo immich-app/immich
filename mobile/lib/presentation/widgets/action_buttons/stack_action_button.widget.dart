@@ -27,10 +27,7 @@ class StackActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).stack(user.id, source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'stack_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'stack_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(

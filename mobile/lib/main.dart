@@ -40,19 +40,20 @@ import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-  final db = await Bootstrap.initIsar();
-  await Bootstrap.initDomain(db);
+  final (isar, drift, logDb) = await Bootstrap.initDB();
+  await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
-  await migrateDatabaseIfNeeded(db);
+  await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
       overrides: [
-        dbProvider.overrideWithValue(db),
-        isarProvider.overrideWithValue(db),
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
+        driftProvider.overrideWith(driftOverride(drift)),
       ],
       child: const MainWidget(),
     ),
@@ -86,7 +87,6 @@ Future<void> initApp() async {
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint("FlutterError - Catch all: $error \n $stack");
     log.severe('PlatformDispatcher - Catch all', error, stack);
     return true;
   };
@@ -94,29 +94,22 @@ Future<void> initApp() async {
   initializeTimeZones();
 
   // Initialize the file downloader
-
   await FileDownloader().configure(
     // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-    globalConfig: (Config.holdingQueue, (6, 6, 3)),
+
+    // On Android, if files are larger than 256MB, run in foreground service
+    globalConfig: [(Config.holdingQueue, (6, 6, 3)), (Config.runInForegroundIfFileLargerThan, 256)],
   );
 
-  await FileDownloader().trackTasksInGroup(
-    kDownloadGroupLivePhoto,
-    markDownloadedComplete: false,
-  );
+  await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
 
   await FileDownloader().trackTasks();
 
-  LicenseRegistry.addLicense(
-    () async* {
-      for (final license in nonPubLicenses.entries) {
-        yield LicenseEntryWithLineBreaks(
-          [license.key],
-          license.value,
-        );
-      }
-    },
-  );
+  LicenseRegistry.addLicense(() async* {
+    for (final license in nonPubLicenses.entries) {
+      yield LicenseEntryWithLineBreaks([license.key], license.value);
+    }
+  });
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -160,9 +153,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     // Sets the navigation bar color
-    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-    );
+    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
     if (Platform.isAndroid) {
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
@@ -177,40 +168,29 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   void _configureFileDownloaderNotifications() {
     FileDownloader().configureNotificationForGroup(
       kDownloadGroupImage,
-      running: TaskNotification(
-        'downloading_media'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
-      complete: TaskNotification(
-        'download_finished'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
+      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
       progressBar: true,
     );
 
     FileDownloader().configureNotificationForGroup(
       kDownloadGroupVideo,
-      running: TaskNotification(
-        'downloading_media'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
-      complete: TaskNotification(
-        'download_finished'.tr(),
-        '${'file_name'.tr()}: {filename}',
-      ),
+      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
       progressBar: true,
     );
 
     FileDownloader().configureNotificationForGroup(
       kManualUploadGroup,
-      running: TaskNotification(
-        'uploading_media'.tr(),
-        '${'file_name'.tr()}: {displayName}',
-      ),
-      complete: TaskNotification(
-        'upload_finished'.tr(),
-        '${'file_name'.tr()}: {displayName}',
-      ),
+      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
+      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
+      progressBar: true,
+    );
+
+    FileDownloader().configureNotificationForGroup(
+      kBackupGroup,
+      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
+      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
       progressBar: true,
     );
   }
@@ -222,19 +202,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(
-        deepLink,
-        isColdStart,
-      );
+      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, isColdStart);
 
       return proposedRoute;
     }
 
     if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(
-        deepLink,
-        isColdStart,
-      );
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, isColdStart);
 
       return proposedRoute;
     }
@@ -275,9 +249,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     final immichTheme = ref.watch(immichThemeProvider);
 
     return ProviderScope(
-      overrides: [
-        localeProvider.overrideWithValue(context.locale),
-      ],
+      overrides: [localeProvider.overrideWithValue(context.locale)],
       child: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: true,
@@ -285,14 +257,8 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         themeMode: ref.watch(immichThemeModeProvider),
-        darkTheme: getThemeData(
-          colorScheme: immichTheme.dark,
-          locale: context.locale,
-        ),
-        theme: getThemeData(
-          colorScheme: immichTheme.light,
-          locale: context.locale,
-        ),
+        darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
+        theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
           navigatorObservers: () => [AppNavigationObserver(ref: ref), HeroController()],

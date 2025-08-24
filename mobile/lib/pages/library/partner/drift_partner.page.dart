@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/partner_user_avatar.widget.dart';
+import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/partner.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
@@ -22,10 +22,7 @@ class DriftPartnerPage extends HookConsumerWidget {
     addNewUsersHandler() async {
       final potentialPartners = potentialPartnersAsync.value;
       if (potentialPartners == null || potentialPartners.isEmpty) {
-        ImmichToast.show(
-          context: context,
-          msg: "partner_page_no_more_users".tr(),
-        );
+        ImmichToast.show(context: context, msg: "partner_page_no_more_users".tr());
         return;
       }
 
@@ -77,18 +74,13 @@ class DriftPartnerPage extends HookConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed: potentialPartnersAsync.whenOrNull(
-              data: (data) => addNewUsersHandler,
-            ),
+            onPressed: potentialPartnersAsync.whenOrNull(data: (data) => addNewUsersHandler),
             icon: const Icon(Icons.person_add),
             tooltip: "add_partner".tr(),
           ),
         ],
       ),
-      body: _SharedToPartnerList(
-        onAddPartner: addNewUsersHandler,
-        onDeletePartner: onDeleteUser,
-      ),
+      body: _SharedToPartnerList(onAddPartner: addNewUsersHandler, onDeletePartner: onDeleteUser),
     );
   }
 }
@@ -97,10 +89,7 @@ class _SharedToPartnerList extends ConsumerWidget {
   final VoidCallback onAddPartner;
   final Function(PartnerUserDto partner) onDeletePartner;
 
-  const _SharedToPartnerList({
-    required this.onAddPartner,
-    required this.onDeletePartner,
-  });
+  const _SharedToPartnerList({required this.onAddPartner, required this.onDeletePartner});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -116,10 +105,7 @@ class _SharedToPartnerList extends ConsumerWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: const Text(
-                    "partner_page_empty_message",
-                    style: TextStyle(fontSize: 14),
-                  ).tr(),
+                  child: const Text("partner_page_empty_message", style: TextStyle(fontSize: 14)).tr(),
                 ),
                 Align(
                   alignment: Alignment.center,
@@ -142,18 +128,13 @@ class _SharedToPartnerList extends ConsumerWidget {
               leading: PartnerUserAvatar(partner: partner),
               title: Text(partner.name),
               subtitle: Text(partner.email),
-              trailing: IconButton(
-                icon: const Icon(Icons.person_remove),
-                onPressed: () => onDeletePartner(partner),
-              ),
+              trailing: IconButton(icon: const Icon(Icons.person_remove), onPressed: () => onDeletePartner(partner)),
             );
           },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(
-        child: Text("Error loading partners: $error"),
-      ),
+      error: (error, stack) => Center(child: Text("Error loading partners: $error")),
     );
   }
 }

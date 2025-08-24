@@ -11,11 +11,7 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:openapi/api.dart';
 
 class AlbumThumbnailListTile extends StatelessWidget {
-  const AlbumThumbnailListTile({
-    super.key,
-    required this.album,
-    this.onTap,
-  });
+  const AlbumThumbnailListTile({super.key, required this.album, this.onTap});
 
   final Album album;
   final void Function()? onTap;
@@ -26,15 +22,11 @@ class AlbumThumbnailListTile extends StatelessWidget {
 
     buildEmptyThumbnail() {
       return Container(
-        decoration: BoxDecoration(
-          color: context.isDarkTheme ? Colors.grey[800] : Colors.grey[200],
-        ),
+        decoration: BoxDecoration(color: context.isDarkTheme ? Colors.grey[800] : Colors.grey[200]),
         child: SizedBox(
           height: cardSize,
           width: cardSize,
-          child: const Center(
-            child: Icon(Icons.no_photography),
-          ),
+          child: const Center(child: Icon(Icons.no_photography)),
         ),
       );
     }
@@ -45,10 +37,7 @@ class AlbumThumbnailListTile extends StatelessWidget {
         height: cardSize,
         fit: BoxFit.cover,
         fadeInDuration: const Duration(milliseconds: 200),
-        imageUrl: getAlbumThumbnailUrl(
-          album,
-          type: AssetMediaSize.thumbnail,
-        ),
+        imageUrl: getAlbumThumbnailUrl(album, type: AssetMediaSize.thumbnail),
         httpHeaders: ApiService.getRequestHeaders(),
         cacheKey: getAlbumThumbNailCacheKey(album, type: AssetMediaSize.thumbnail),
         errorWidget: (context, url, error) => const Icon(Icons.image_not_supported_outlined),
@@ -57,7 +46,8 @@ class AlbumThumbnailListTile extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap ??
+      onTap:
+          onTap ??
           () {
             context.pushRoute(AlbumViewerRoute(albumId: album.id));
           },
@@ -79,37 +69,18 @@ class AlbumThumbnailListTile extends StatelessWidget {
                     Text(
                       album.name,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'items_count'.t(
-                            context: context,
-                            args: {
-                              'count': album.assetCount,
-                            },
-                          ),
-                          style: const TextStyle(
-                            fontSize: 12,
-                          ),
+                          'items_count'.t(context: context, args: {'count': album.assetCount}),
+                          style: const TextStyle(fontSize: 12),
                         ),
                         if (album.shared) ...[
-                          const Text(
-                            ' • ',
-                            style: TextStyle(
-                              fontSize: 12,
-                            ),
-                          ),
-                          Text(
-                            'shared'.tr(),
-                            style: const TextStyle(
-                              fontSize: 12,
-                            ),
-                          ),
+                          const Text(' • ', style: TextStyle(fontSize: 12)),
+                          Text('shared'.tr(), style: const TextStyle(fontSize: 12)),
                         ],
                       ],
                     ),

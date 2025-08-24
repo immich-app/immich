@@ -3,6 +3,8 @@ import {
   AddUsersDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumsAddAssetsDto,
+  AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
@@ -13,7 +15,7 @@ import {
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto';
-import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
+import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
@@ -158,7 +160,7 @@ export class AlbumService extends BaseService {
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
     const album = await this.findOrFail(id, { withAssets: false });
-    await this.requireAccess({ auth, permission: Permission.AlbumAddAsset, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetCreate, ids: [id] });
 
     const results = await addAssets(
       auth,
@@ -186,8 +188,45 @@ export class AlbumService extends BaseService {
     return results;
   }
 
+  async addAssetsToAlbums(auth: AuthDto, dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
+    const results: AlbumsAddAssetsResponseDto = {
+      success: false,
+      albumSuccessCount: 0,
+      assetSuccessCount: 0,
+      error: BulkIdErrorReason.DUPLICATE,
+    };
+    const successfulAssetIds: Set<string> = new Set();
+    for (const albumId of dto.albumIds) {
+      try {
+        const albumResults = await this.addAssets(auth, albumId, { ids: dto.assetIds });
+
+        let success = false;
+        for (const res of albumResults) {
+          if (res.success) {
+            success = true;
+            results.success = true;
+            results.error = undefined;
+            successfulAssetIds.add(res.id);
+          } else if (results.error && res.error !== BulkIdErrorReason.DUPLICATE) {
+            results.error = BulkIdErrorReason.UNKNOWN;
+          }
+        }
+        if (success) {
+          results.albumSuccessCount++;
+        }
+      } catch {
+        if (results.error) {
+          results.error = BulkIdErrorReason.UNKNOWN;
+        }
+      }
+    }
+    results.assetSuccessCount = successfulAssetIds.size;
+
+    return results;
+  }
+
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.AlbumRemoveAsset, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AlbumAssetDelete, ids: [id] });
 
     const album = await this.findOrFail(id, { withAssets: false });
     const results = await removeAssets(

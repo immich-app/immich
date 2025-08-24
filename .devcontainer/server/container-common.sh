@@ -49,10 +49,11 @@ fix_permissions() {
 
     log "Fixing permissions for ${IMMICH_WORKSPACE}"
 
-    run_cmd sudo find "${IMMICH_WORKSPACE}/server/upload" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres/*" -not -path "${IMMICH_WORKSPACE}/server/upload/postgres" -exec chown node {} +
-
     # Change ownership for directories that exist
     for dir in "${IMMICH_WORKSPACE}/.vscode" \
+        "${IMMICH_WORKSPACE}/server/upload" \
+        "${IMMICH_WORKSPACE}/.pnpm-store" \
+        "${IMMICH_WORKSPACE}/.github/node_modules" \
         "${IMMICH_WORKSPACE}/cli/node_modules" \
         "${IMMICH_WORKSPACE}/e2e/node_modules" \
         "${IMMICH_WORKSPACE}/open-api/typescript-sdk/node_modules" \

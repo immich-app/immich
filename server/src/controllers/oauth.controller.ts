@@ -70,6 +70,7 @@ export class OAuthController {
 
   @Post('link')
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   linkOAuthAccount(
     @Req() request: Request,
     @Auth() auth: AuthDto,
@@ -79,8 +80,8 @@ export class OAuthController {
   }
 
   @Post('unlink')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.unlink(auth);
   }

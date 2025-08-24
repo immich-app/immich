@@ -62,6 +62,8 @@ export class SyncUserV1 {
   @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', nullable: true })
   avatarColor!: UserAvatarColor | null;
   deletedAt!: Date | null;
+  hasProfileImage!: boolean;
+  profileChangedAt!: Date;
 }
 
 @ExtraModel()
@@ -74,8 +76,6 @@ export class SyncAuthUserV1 extends SyncUserV1 {
   quotaSizeInBytes!: number | null;
   @ApiProperty({ type: 'integer' })
   quotaUsageInBytes!: number;
-  hasProfileImage!: boolean;
-  profileChangedAt!: Date;
 }
 
 @ExtraModel()
@@ -115,6 +115,7 @@ export class SyncAssetV1 {
   visibility!: AssetVisibility;
   livePhotoVideoId!: string | null;
   stackId!: string | null;
+  libraryId!: string | null;
 }
 
 @ExtraModel()
@@ -301,14 +302,16 @@ export class SyncAssetFaceDeleteV1 {
 @ExtraModel()
 export class SyncUserMetadataV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
   value!: UserMetadata[UserMetadataKey];
 }
 
 @ExtraModel()
 export class SyncUserMetadataDeleteV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
 }
 
 @ExtraModel()
@@ -336,9 +339,11 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
-  [SyncEntityType.AlbumAssetV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetCreateV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetUpdateV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
-  [SyncEntityType.AlbumAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifCreateV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifUpdateV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumToAssetV1]: SyncAlbumToAssetV1;
   [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;

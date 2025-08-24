@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
-import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -27,10 +26,7 @@ class SyncApiRepository {
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
-    final headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/jsonlines+json',
-    };
+    final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
     final headerParams = <String, String>{};
     await _api.applyToParams([], headerParams);
@@ -78,10 +74,7 @@ class SyncApiRepository {
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
-        throw ApiException(
-          response.statusCode,
-          'Failed to get sync stream: $errorBody',
-        );
+        throw ApiException(response.statusCode, 'Failed to get sync stream: $errorBody');
       }
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
@@ -113,7 +106,6 @@ class SyncApiRepository {
     }
     stopwatch.stop();
     _logger.info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
-    DLog.log("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
   List<SyncEvent> _parseLines(List<String> lines) {
@@ -155,9 +147,11 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
   SyncEntityType.albumUserBackfillV1: SyncAlbumUserV1.fromJson,
   SyncEntityType.albumUserDeleteV1: SyncAlbumUserDeleteV1.fromJson,
-  SyncEntityType.albumAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetCreateV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetUpdateV1: SyncAssetV1.fromJson,
   SyncEntityType.albumAssetBackfillV1: SyncAssetV1.fromJson,
-  SyncEntityType.albumAssetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumAssetExifCreateV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumAssetExifUpdateV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumAssetExifBackfillV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumToAssetV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetBackfillV1: SyncAlbumToAssetV1.fromJson,

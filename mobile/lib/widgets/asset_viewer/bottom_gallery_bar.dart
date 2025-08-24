@@ -72,10 +72,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
     void handleDelete() async {
       Future<bool> onDelete(bool force) async {
-        final isDeleted = await ref.read(assetProvider.notifier).deleteAssets(
-          {asset},
-          force: force,
-        );
+        final isDeleted = await ref.read(assetProvider.notifier).deleteAssets({asset}, force: force);
         if (isDeleted && isStackPrimaryAsset) {
           // Workaround for asset remaining in the gallery
           renderList.deleteAsset(asset);
@@ -101,12 +98,7 @@ class BottomGalleryBar extends ConsumerWidget {
         if (isDeleted) {
           // Can only trash assets stored in server. Local assets are always permanently removed for now
           if (context.mounted && asset.isRemote && isStackPrimaryAsset) {
-            ImmichToast.show(
-              durationInSecond: 1,
-              context: context,
-              msg: 'Asset trashed',
-              gravity: ToastGravity.BOTTOM,
-            );
+            ImmichToast.show(durationInSecond: 1, context: context, msg: 'Asset trashed', gravity: ToastGravity.BOTTOM);
           }
           removeAssetFromStack();
         }
@@ -149,19 +141,13 @@ class BottomGalleryBar extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ListTile(
-                    leading: const Icon(
-                      Icons.filter_none_outlined,
-                      size: 18,
-                    ),
+                    leading: const Icon(Icons.filter_none_outlined, size: 18),
                     onTap: () async {
                       await unStack();
                       ctx.pop();
                       context.maybePop();
                     },
-                    title: const Text(
-                      "viewer_unstack",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ).tr(),
+                    title: const Text("viewer_unstack", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
                   ),
                 ],
               ),
@@ -189,11 +175,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
       context.navigator.push(
         MaterialPageRoute(
-          builder: (context) => EditImagePage(
-            asset: asset,
-            image: image,
-            isEdited: false,
-          ),
+          builder: (context) => EditImagePage(asset: asset, image: image, isEdited: false),
         ),
       );
     }
@@ -221,9 +203,7 @@ class BottomGalleryBar extends ConsumerWidget {
         return;
       }
 
-      ref.read(downloadStateProvider.notifier).downloadAsset(
-            asset,
-          );
+      ref.read(downloadStateProvider.notifier).downloadAsset(asset);
     }
 
     handleRemoveFromAlbum() async {
@@ -258,12 +238,11 @@ class BottomGalleryBar extends ConsumerWidget {
     final List<Map<BottomNavigationBarItem, Function(int)>> albumActions = [
       {
         BottomNavigationBarItem(
-          icon: Icon(
-            Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
-          ),
+          icon: Icon(Platform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded),
           label: 'share'.tr(),
           tooltip: 'share'.tr(),
-        ): (_) => shareAsset(),
+        ): (_) =>
+            shareAsset(),
       },
       if (asset.isImage && !isInLockedView)
         {
@@ -271,7 +250,8 @@ class BottomGalleryBar extends ConsumerWidget {
             icon: const Icon(Icons.tune_outlined),
             label: 'edit'.tr(),
             tooltip: 'edit'.tr(),
-          ): (_) => handleEdit(),
+          ): (_) =>
+              handleEdit(),
         },
       if (isOwner && !isInLockedView)
         {
@@ -285,7 +265,8 @@ class BottomGalleryBar extends ConsumerWidget {
                   icon: const Icon(Icons.archive_outlined),
                   label: 'archive'.tr(),
                   tooltip: 'archive'.tr(),
-                ): (_) => handleArchive(),
+                ): (_) =>
+              handleArchive(),
         },
       if (isOwner && asset.stackCount > 0 && !isInLockedView)
         {
@@ -293,7 +274,8 @@ class BottomGalleryBar extends ConsumerWidget {
             icon: const Icon(Icons.burst_mode_outlined),
             label: 'stack'.tr(),
             tooltip: 'stack'.tr(),
-          ): (_) => showStackActionItems(),
+          ): (_) =>
+              showStackActionItems(),
         },
       if (isOwner && !isInAlbum)
         {
@@ -301,7 +283,8 @@ class BottomGalleryBar extends ConsumerWidget {
             icon: const Icon(Icons.delete_outline),
             label: 'delete'.tr(),
             tooltip: 'delete'.tr(),
-          ): (_) => handleDelete(),
+          ): (_) =>
+              handleDelete(),
         },
       if (!isOwner)
         {
@@ -309,7 +292,8 @@ class BottomGalleryBar extends ConsumerWidget {
             icon: const Icon(Icons.download_outlined),
             label: 'download'.tr(),
             tooltip: 'download'.tr(),
-          ): (_) => handleDownload(),
+          ): (_) =>
+              handleDownload(),
         },
       if (isInAlbum)
         {
@@ -317,7 +301,8 @@ class BottomGalleryBar extends ConsumerWidget {
             icon: const Icon(Icons.remove_circle_outline),
             label: 'remove_from_album'.tr(),
             tooltip: 'remove_from_album'.tr(),
-          ): (_) => handleRemoveFromAlbum(),
+          ): (_) =>
+              handleRemoveFromAlbum(),
         },
     ];
     return IgnorePointer(
@@ -344,16 +329,8 @@ class BottomGalleryBar extends ConsumerWidget {
                   backgroundColor: Colors.transparent,
                   unselectedIconTheme: const IconThemeData(color: Colors.white),
                   selectedIconTheme: const IconThemeData(color: Colors.white),
-                  unselectedLabelStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    height: 2.3,
-                  ),
-                  selectedLabelStyle: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    height: 2.3,
-                  ),
+                  unselectedLabelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, height: 2.3),
+                  selectedLabelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, height: 2.3),
                   unselectedFontSize: 14,
                   selectedFontSize: 14,
                   selectedItemColor: Colors.white,

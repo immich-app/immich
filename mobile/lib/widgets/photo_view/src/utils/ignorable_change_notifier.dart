@@ -58,11 +58,7 @@ class IgnorableChangeNotifier extends ChangeNotifier {
           }
         } catch (exception, stack) {
           FlutterError.reportError(
-            FlutterErrorDetails(
-              exception: exception,
-              stack: stack,
-              library: 'Photoview library',
-            ),
+            FlutterErrorDetails(exception: exception, stack: stack, library: 'Photoview library'),
           );
         }
       }

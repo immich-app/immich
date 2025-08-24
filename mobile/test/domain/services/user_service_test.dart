@@ -89,9 +89,7 @@ void main() {
       when(() => mockUserApiRepo.getMyUser()).thenAnswer((_) async => null);
 
       final result = await sut.refreshMyUser();
-      verifyNever(
-        () => mockStoreService.put(StoreKey.currentUser, UserStub.admin),
-      );
+      verifyNever(() => mockStoreService.put(StoreKey.currentUser, UserStub.admin));
       verifyNever(() => mockUserRepo.update(UserStub.admin));
       expect(result, isNull);
     });
@@ -100,13 +98,10 @@ void main() {
   group('createProfileImage', () {
     test('should return profile image path', () async {
       const profileImagePath = 'profile.jpg';
-      final updatedUser = UserStub.admin.copyWith(profileImagePath: profileImagePath);
+      final updatedUser = UserStub.admin;
 
       when(
-        () => mockUserApiRepo.createProfileImage(
-          name: profileImagePath,
-          data: Uint8List(0),
-        ),
+        () => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)),
       ).thenAnswer((_) async => profileImagePath);
       when(() => mockStoreService.put(StoreKey.currentUser, updatedUser)).thenAnswer((_) async => true);
       when(() => mockUserRepo.update(updatedUser)).thenAnswer((_) async => UserStub.admin);
@@ -120,19 +115,14 @@ void main() {
 
     test('should return null if profile image creation fails', () async {
       const profileImagePath = 'profile.jpg';
-      final updatedUser = UserStub.admin.copyWith(profileImagePath: profileImagePath);
+      final updatedUser = UserStub.admin;
 
       when(
-        () => mockUserApiRepo.createProfileImage(
-          name: profileImagePath,
-          data: Uint8List(0),
-        ),
+        () => mockUserApiRepo.createProfileImage(name: profileImagePath, data: Uint8List(0)),
       ).thenThrow(Exception('Failed to create profile image'));
 
       final result = await sut.createProfileImage(profileImagePath, Uint8List(0));
-      verifyNever(
-        () => mockStoreService.put(StoreKey.currentUser, updatedUser),
-      );
+      verifyNever(() => mockStoreService.put(StoreKey.currentUser, updatedUser));
       verifyNever(() => mockUserRepo.update(updatedUser));
       expect(result, isNull);
     });

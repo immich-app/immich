@@ -127,11 +127,7 @@ class ApiService implements Authentication {
     } on SocketException catch (_) {
       return false;
     } catch (error, stackTrace) {
-      _log.severe(
-        "Error while checking server availability",
-        error,
-        stackTrace,
-      );
+      _log.severe("Error while checking server availability", error, stackTrace);
       return false;
     }
     return true;
@@ -145,10 +141,7 @@ class ApiService implements Authentication {
       headers.addAll(getRequestHeaders());
 
       final res = await client
-          .get(
-            Uri.parse("$baseUrl/.well-known/immich"),
-            headers: headers,
-          )
+          .get(Uri.parse("$baseUrl/.well-known/immich"), headers: headers)
           .timeout(const Duration(seconds: 5));
 
       if (res.statusCode == 200) {
@@ -211,10 +204,7 @@ class ApiService implements Authentication {
   }
 
   @override
-  Future<void> applyToParams(
-    List<QueryParam> queryParams,
-    Map<String, String> headerParams,
-  ) {
+  Future<void> applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) {
     return Future<void>(() {
       var headers = ApiService.getRequestHeaders();
       headerParams.addAll(headers);

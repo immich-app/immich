@@ -19,29 +19,23 @@ class LockedPage extends HookConsumerWidget {
     final showOverlay = useState(false);
     final authProviderNotifier = ref.read(authProvider.notifier);
     // lock the page when it is destroyed
-    useEffect(
-      () {
-        return () {
-          authProviderNotifier.lockPinCode();
-        };
-      },
-      [],
-    );
+    useEffect(() {
+      return () {
+        authProviderNotifier.lockPinCode();
+      };
+    }, []);
 
-    useEffect(
-      () {
-        if (context.mounted) {
-          if (appLifeCycle == AppLifecycleState.resumed) {
-            showOverlay.value = false;
-          } else {
-            showOverlay.value = true;
-          }
+    useEffect(() {
+      if (context.mounted) {
+        if (appLifeCycle == AppLifecycleState.resumed) {
+          showOverlay.value = false;
+        } else {
+          showOverlay.value = true;
         }
+      }
 
-        return null;
-      },
-      [appLifeCycle],
-    );
+      return null;
+    }, [appLifeCycle]);
 
     return Scaffold(
       appBar: ref.watch(multiselectProvider) ? null : const LockPageAppBar(),
@@ -51,12 +45,7 @@ class LockedPage extends HookConsumerWidget {
               renderListProvider: lockedTimelineProvider,
               topWidget: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Center(
-                  child: Text(
-                    'no_locked_photos_message'.tr(),
-                    style: context.textTheme.labelLarge,
-                  ),
-                ),
+                child: Center(child: Text('no_locked_photos_message'.tr(), style: context.textTheme.labelLarge)),
               ),
               editEnabled: false,
               favoriteEnabled: false,
@@ -84,9 +73,7 @@ class LockPageAppBar extends ConsumerWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       automaticallyImplyLeading: false,
-      title: const Text(
-        'locked_folder',
-      ).tr(),
+      title: const Text('locked_folder').tr(),
     );
   }
 

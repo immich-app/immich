@@ -79,6 +79,9 @@ String parameterToString(dynamic value) {
   if (value is AudioCodec) {
     return AudioCodecTypeTransformer().encode(value).toString();
   }
+  if (value is BulkIdErrorReason) {
+    return BulkIdErrorReasonTypeTransformer().encode(value).toString();
+  }
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();
   }
@@ -150,6 +153,9 @@ String parameterToString(dynamic value) {
   }
   if (value is UserAvatarColor) {
     return UserAvatarColorTypeTransformer().encode(value).toString();
+  }
+  if (value is UserMetadataKey) {
+    return UserMetadataKeyTypeTransformer().encode(value).toString();
   }
   if (value is UserStatus) {
     return UserStatusTypeTransformer().encode(value).toString();

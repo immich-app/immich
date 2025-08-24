@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:path/path.dart' as path;
@@ -17,9 +18,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BetaSyncSettings extends HookConsumerWidget {
-  const BetaSyncSettings({
-    super.key,
-  });
+  const BetaSyncSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,17 +34,11 @@ class BetaSyncSettings extends HookConsumerWidget {
       final memoryCount = memoryService.getCount();
       final getLocalHashedCount = assetService.getLocalHashedCount();
 
-      return await Future.wait([
-        assetCounts,
-        localAlbumCounts,
-        remoteAlbumCounts,
-        memoryCount,
-        getLocalHashedCount,
-      ]);
+      return await Future.wait([assetCounts, localAlbumCounts, remoteAlbumCounts, memoryCount, getLocalHashedCount]);
     }
 
     Future<void> resetDatabase() async {
-// https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
+      // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
       final drift = ref.read(driftProvider);
       final database = drift.attachedDatabase;
       await database.exclusively(() async {
@@ -62,14 +55,10 @@ class BetaSyncSettings extends HookConsumerWidget {
           database.resolvedEngine.executor,
           drift_db.OpeningDetails(null, database.schemaVersion),
         );
-        await database.customStatement(
-          'PRAGMA user_version = ${database.schemaVersion}',
-        );
+        await database.customStatement('PRAGMA user_version = ${database.schemaVersion}');
 
         // Refresh all stream queries
-        database.notifyUpdates({
-          for (final table in database.allTables) drift_db.TableUpdate.onTable(table),
-        });
+        database.notifyUpdates({for (final table in database.allTables) drift_db.TableUpdate.onTable(table)});
       });
     }
 
@@ -83,28 +72,18 @@ class BetaSyncSettings extends HookConsumerWidget {
         if (!await dbFile.exists()) {
           if (context.mounted) {
             context.scaffoldMessenger.showSnackBar(
-              SnackBar(
-                content: Text("Database file not found".t(context: context)),
-              ),
+              SnackBar(content: Text("Database file not found".t(context: context))),
             );
           }
           return;
         }
 
         final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final exportFile = File(
-          path.join(
-            documentsDir.path,
-            'immich_export_$timestamp.sqlite',
-          ),
-        );
+        final exportFile = File(path.join(documentsDir.path, 'immich_export_$timestamp.sqlite'));
 
         await dbFile.copy(exportFile.path);
 
-        await Share.shareXFiles(
-          [XFile(exportFile.path)],
-          text: 'Immich Database Export',
-        );
+        await Share.shareXFiles([XFile(exportFile.path)], text: 'Immich Database Export');
 
         Future.delayed(const Duration(seconds: 30), () async {
           if (await exportFile.exists()) {
@@ -114,20 +93,20 @@ class BetaSyncSettings extends HookConsumerWidget {
 
         if (context.mounted) {
           context.scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text("Database exported successfully".t(context: context)),
-            ),
+            SnackBar(content: Text("Database exported successfully".t(context: context))),
           );
         }
       } catch (e) {
         if (context.mounted) {
           context.scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text("Failed to export database: $e".t(context: context)),
-            ),
+            SnackBar(content: Text("Failed to export database: $e".t(context: context))),
           );
         }
       }
+    }
+
+    Future<void> clearFileCache() async {
+      await ref.read(storageRepositoryProvider).clearCache();
     }
 
     return FutureBuilder<List<dynamic>>(
@@ -225,27 +204,17 @@ class BetaSyncSettings extends HookConsumerWidget {
                   ],
                 ),
               ),
-              const Divider(
-                height: 1,
-                indent: 16,
-                endIndent: 16,
-              ),
+              const Divider(height: 1, indent: 16, endIndent: 16),
               const SizedBox(height: 24),
               _SectionHeaderText(text: "jobs".t(context: context)),
               ListTile(
                 title: Text(
                   "sync_local".t(context: context),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
-                subtitle: Text(
-                  "tap_to_run_job".t(context: context),
-                ),
+                subtitle: Text("tap_to_run_job".t(context: context)),
                 leading: const Icon(Icons.sync),
-                trailing: _SyncStatusIcon(
-                  status: ref.watch(syncStatusProvider).localSyncStatus,
-                ),
+                trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).localSyncStatus),
                 onTap: () {
                   ref.read(backgroundSyncProvider).syncLocal(full: true);
                 },
@@ -253,17 +222,11 @@ class BetaSyncSettings extends HookConsumerWidget {
               ListTile(
                 title: Text(
                   "sync_remote".t(context: context),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
-                subtitle: Text(
-                  "tap_to_run_job".t(context: context),
-                ),
+                subtitle: Text("tap_to_run_job".t(context: context)),
                 leading: const Icon(Icons.cloud_sync),
-                trailing: _SyncStatusIcon(
-                  status: ref.watch(syncStatusProvider).remoteSyncStatus,
-                ),
+                trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).remoteSyncStatus),
                 onTap: () {
                   ref.read(backgroundSyncProvider).syncRemote();
                 },
@@ -271,64 +234,48 @@ class BetaSyncSettings extends HookConsumerWidget {
               ListTile(
                 title: Text(
                   "hash_asset".t(context: context),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
                 leading: const Icon(Icons.tag),
-                subtitle: Text(
-                  "tap_to_run_job".t(context: context),
-                ),
-                trailing: _SyncStatusIcon(
-                  status: ref.watch(syncStatusProvider).hashJobStatus,
-                ),
+                subtitle: Text("tap_to_run_job".t(context: context)),
+                trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).hashJobStatus),
                 onTap: () {
                   ref.read(backgroundSyncProvider).hashAssets();
                 },
               ),
-              const Divider(
-                height: 1,
-                indent: 16,
-                endIndent: 16,
-              ),
+              const Divider(height: 1, indent: 16, endIndent: 16),
               const SizedBox(height: 24),
               _SectionHeaderText(text: "actions".t(context: context)),
               ListTile(
                 title: Text(
+                  "clear_file_cache".t(context: context),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                leading: const Icon(Icons.playlist_remove_rounded),
+                onTap: clearFileCache,
+              ),
+              ListTile(
+                title: Text(
                   "export_database".t(context: context),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
-                subtitle: Text(
-                  "export_database_description".t(context: context),
-                ),
+                subtitle: Text("export_database_description".t(context: context)),
                 leading: const Icon(Icons.download),
                 onTap: exportDatabase,
               ),
               ListTile(
                 title: Text(
                   "reset_sqlite".t(context: context),
-                  style: TextStyle(
-                    color: context.colorScheme.error,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(color: context.colorScheme.error, fontWeight: FontWeight.w500),
                 ),
-                leading: Icon(
-                  Icons.settings_backup_restore_rounded,
-                  color: context.colorScheme.error,
-                ),
+                leading: Icon(Icons.settings_backup_restore_rounded, color: context.colorScheme.error),
                 onTap: () async {
                   showDialog(
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        title: Text(
-                          "reset_sqlite".t(context: context),
-                        ),
-                        content: Text(
-                          "reset_sqlite_confirmation".t(context: context),
-                        ),
+                        title: Text("reset_sqlite".t(context: context)),
+                        content: Text("reset_sqlite_confirmation".t(context: context)),
                         actions: [
                           TextButton(
                             onPressed: () => context.pop(),
@@ -339,18 +286,12 @@ class BetaSyncSettings extends HookConsumerWidget {
                               await resetDatabase();
                               context.pop();
                               context.scaffoldMessenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "reset_sqlite_success".t(context: context),
-                                  ),
-                                ),
+                                SnackBar(content: Text("reset_sqlite_success".t(context: context))),
                               );
                             },
                             child: Text(
                               "confirm".t(context: context),
-                              style: TextStyle(
-                                color: context.colorScheme.error,
-                              ),
+                              style: TextStyle(color: context.colorScheme.error),
                             ),
                           ),
                         ],
@@ -370,31 +311,15 @@ class BetaSyncSettings extends HookConsumerWidget {
 class _SyncStatusIcon extends StatelessWidget {
   final SyncStatus status;
 
-  const _SyncStatusIcon({
-    required this.status,
-  });
+  const _SyncStatusIcon({required this.status});
 
   @override
   Widget build(BuildContext context) {
     return switch (status) {
-      SyncStatus.idle => const Icon(
-          Icons.pause_circle_outline_rounded,
-        ),
-      SyncStatus.syncing => const SizedBox(
-          height: 24,
-          width: 24,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-          ),
-        ),
-      SyncStatus.success => const Icon(
-          Icons.check_circle_outline,
-          color: Colors.green,
-        ),
-      SyncStatus.error => Icon(
-          Icons.error_outline,
-          color: context.colorScheme.error,
-        ),
+      SyncStatus.idle => const Icon(Icons.pause_circle_outline_rounded),
+      SyncStatus.syncing => const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+      SyncStatus.success => const Icon(Icons.check_circle_outline, color: Colors.green),
+      SyncStatus.error => Icon(Icons.error_outline, color: context.colorScheme.error),
     };
   }
 }
@@ -402,9 +327,7 @@ class _SyncStatusIcon extends StatelessWidget {
 class _SectionHeaderText extends StatelessWidget {
   final String text;
 
-  const _SectionHeaderText({
-    required this.text,
-  });
+  const _SectionHeaderText({required this.text});
 
   @override
   Widget build(BuildContext context) {

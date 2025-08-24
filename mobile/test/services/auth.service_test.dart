@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,6 +21,8 @@ void main() {
   late MockApiService apiService;
   late MockNetworkService networkService;
   late MockBackgroundSyncManager backgroundSyncManager;
+  late MockUploadService uploadService;
+  late MockAppSettingService appSettingsService;
   late Isar db;
 
   setUp(() async {
@@ -28,6 +31,8 @@ void main() {
     apiService = MockApiService();
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
+    uploadService = MockUploadService();
+    appSettingsService = MockAppSettingService();
 
     sut = AuthService(
       authApiRepository,
@@ -35,6 +40,7 @@ void main() {
       apiService,
       networkService,
       backgroundSyncManager,
+      appSettingsService,
     );
 
     registerFallbackValue(Uri());
@@ -89,10 +95,7 @@ void main() {
 
       when(() => apiService.resolveAndSetEndpoint(testUrl)).thenThrow(Exception('Invalid URL'));
 
-      expect(
-        () async => await sut.validateServerUrl(testUrl),
-        throwsA(isA<Exception>()),
-      );
+      expect(() async => await sut.validateServerUrl(testUrl), throwsA(isA<Exception>()));
 
       verify(() => apiService.resolveAndSetEndpoint(testUrl)).called(1);
       verifyNever(() => apiService.setDeviceInfoHeader());
@@ -103,10 +106,7 @@ void main() {
 
       when(() => apiService.resolveAndSetEndpoint(testUrl)).thenThrow(Exception('Server is not reachable'));
 
-      expect(
-        () async => await sut.validateServerUrl(testUrl),
-        throwsA(isA<Exception>()),
-      );
+      expect(() async => await sut.validateServerUrl(testUrl), throwsA(isA<Exception>()));
 
       verify(() => apiService.resolveAndSetEndpoint(testUrl)).called(1);
       verifyNever(() => apiService.setDeviceInfoHeader());
@@ -118,7 +118,10 @@ void main() {
       when(() => authApiRepository.logout()).thenAnswer((_) async => {});
       when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData()).thenAnswer((_) => Future.value(null));
-
+      when(() => uploadService.cancelBackup()).thenAnswer((_) => Future.value(1));
+      when(
+        () => appSettingsService.setSetting(AppSettingsEnum.enableBackup, false),
+      ).thenAnswer((_) => Future.value(null));
       await sut.logout();
 
       verify(() => authApiRepository.logout()).called(1);
@@ -130,7 +133,10 @@ void main() {
       when(() => authApiRepository.logout()).thenThrow(Exception('Server error'));
       when(() => backgroundSyncManager.cancel()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData()).thenAnswer((_) => Future.value(null));
-
+      when(() => uploadService.cancelBackup()).thenAnswer((_) => Future.value(1));
+      when(
+        () => appSettingsService.setSetting(AppSettingsEnum.enableBackup, false),
+      ).thenAnswer((_) => Future.value(null));
       await sut.logout();
 
       verify(() => authApiRepository.logout()).called(1);
@@ -158,8 +164,9 @@ void main() {
       when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(true);
       when(() => authRepository.getPreferredWifiName()).thenReturn('TestWifi');
       when(() => authRepository.getLocalEndpoint()).thenReturn('http://local.endpoint');
-      when(() => apiService.resolveAndSetEndpoint('http://local.endpoint'))
-          .thenAnswer((_) async => 'http://local.endpoint');
+      when(
+        () => apiService.resolveAndSetEndpoint('http://local.endpoint'),
+      ).thenAnswer((_) async => 'http://local.endpoint');
 
       final result = await sut.setOpenApiServiceEndpoint();
 
@@ -174,12 +181,9 @@ void main() {
     test('Should set external endpoint if wifi name not matching', () async {
       when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(true);
       when(() => authRepository.getPreferredWifiName()).thenReturn('DifferentWifi');
-      when(() => authRepository.getExternalEndpointList()).thenReturn([
-        const AuxilaryEndpoint(
-          url: 'https://external.endpoint',
-          status: AuxCheckStatus.valid,
-        ),
-      ]);
+      when(
+        () => authRepository.getExternalEndpointList(),
+      ).thenReturn([const AuxilaryEndpoint(url: 'https://external.endpoint', status: AuxCheckStatus.valid)]);
       when(
         () => apiService.resolveAndSetEndpoint('https://external.endpoint'),
       ).thenAnswer((_) async => 'https://external.endpoint/api');
@@ -191,23 +195,15 @@ void main() {
       verify(() => networkService.getWifiName()).called(1);
       verify(() => authRepository.getPreferredWifiName()).called(1);
       verify(() => authRepository.getExternalEndpointList()).called(1);
-      verify(
-        () => apiService.resolveAndSetEndpoint('https://external.endpoint'),
-      ).called(1);
+      verify(() => apiService.resolveAndSetEndpoint('https://external.endpoint')).called(1);
     });
 
     test('Should set second external endpoint if the first throw any error', () async {
       when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(true);
       when(() => authRepository.getPreferredWifiName()).thenReturn('DifferentWifi');
       when(() => authRepository.getExternalEndpointList()).thenReturn([
-        const AuxilaryEndpoint(
-          url: 'https://external.endpoint',
-          status: AuxCheckStatus.valid,
-        ),
-        const AuxilaryEndpoint(
-          url: 'https://external.endpoint2',
-          status: AuxCheckStatus.valid,
-        ),
+        const AuxilaryEndpoint(url: 'https://external.endpoint', status: AuxCheckStatus.valid),
+        const AuxilaryEndpoint(url: 'https://external.endpoint2', status: AuxCheckStatus.valid),
       ]);
 
       when(
@@ -224,23 +220,15 @@ void main() {
       verify(() => networkService.getWifiName()).called(1);
       verify(() => authRepository.getPreferredWifiName()).called(1);
       verify(() => authRepository.getExternalEndpointList()).called(1);
-      verify(
-        () => apiService.resolveAndSetEndpoint('https://external.endpoint2'),
-      ).called(1);
+      verify(() => apiService.resolveAndSetEndpoint('https://external.endpoint2')).called(1);
     });
 
     test('Should set second external endpoint if the first throw ApiException', () async {
       when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(true);
       when(() => authRepository.getPreferredWifiName()).thenReturn('DifferentWifi');
       when(() => authRepository.getExternalEndpointList()).thenReturn([
-        const AuxilaryEndpoint(
-          url: 'https://external.endpoint',
-          status: AuxCheckStatus.valid,
-        ),
-        const AuxilaryEndpoint(
-          url: 'https://external.endpoint2',
-          status: AuxCheckStatus.valid,
-        ),
+        const AuxilaryEndpoint(url: 'https://external.endpoint', status: AuxCheckStatus.valid),
+        const AuxilaryEndpoint(url: 'https://external.endpoint2', status: AuxCheckStatus.valid),
       ]);
 
       when(
@@ -257,17 +245,16 @@ void main() {
       verify(() => networkService.getWifiName()).called(1);
       verify(() => authRepository.getPreferredWifiName()).called(1);
       verify(() => authRepository.getExternalEndpointList()).called(1);
-      verify(
-        () => apiService.resolveAndSetEndpoint('https://external.endpoint2'),
-      ).called(1);
+      verify(() => apiService.resolveAndSetEndpoint('https://external.endpoint2')).called(1);
     });
 
     test('Should handle error when setting local connection', () async {
       when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(true);
       when(() => authRepository.getPreferredWifiName()).thenReturn('TestWifi');
       when(() => authRepository.getLocalEndpoint()).thenReturn('http://local.endpoint');
-      when(() => apiService.resolveAndSetEndpoint('http://local.endpoint'))
-          .thenThrow(Exception('Local endpoint error'));
+      when(
+        () => apiService.resolveAndSetEndpoint('http://local.endpoint'),
+      ).thenThrow(Exception('Local endpoint error'));
 
       final result = await sut.setOpenApiServiceEndpoint();
 
@@ -282,12 +269,9 @@ void main() {
     test('Should handle error when setting external connection', () async {
       when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(true);
       when(() => authRepository.getPreferredWifiName()).thenReturn('DifferentWifi');
-      when(() => authRepository.getExternalEndpointList()).thenReturn([
-        const AuxilaryEndpoint(
-          url: 'https://external.endpoint',
-          status: AuxCheckStatus.valid,
-        ),
-      ]);
+      when(
+        () => authRepository.getExternalEndpointList(),
+      ).thenReturn([const AuxilaryEndpoint(url: 'https://external.endpoint', status: AuxCheckStatus.valid)]);
       when(
         () => apiService.resolveAndSetEndpoint('https://external.endpoint'),
       ).thenThrow(Exception('External endpoint error'));
@@ -299,9 +283,7 @@ void main() {
       verify(() => networkService.getWifiName()).called(1);
       verify(() => authRepository.getPreferredWifiName()).called(1);
       verify(() => authRepository.getExternalEndpointList()).called(1);
-      verify(
-        () => apiService.resolveAndSetEndpoint('https://external.endpoint'),
-      ).called(1);
+      verify(() => apiService.resolveAndSetEndpoint('https://external.endpoint')).called(1);
     });
   });
 }

@@ -86,6 +86,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
   Size? _imageSize;
   Object? _lastException;
   StackTrace? _lastStack;
+  bool _didLoadSynchronously = false;
 
   @override
   void dispose() {
@@ -109,9 +110,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
   // retrieve image from the provider
   void _resolveImage() {
-    final ImageStream newStream = widget.imageProvider.resolve(
-      const ImageConfiguration(),
-    );
+    final ImageStream newStream = widget.imageProvider.resolve(const ImageConfiguration());
     _updateSourceStream(newStream);
   }
 
@@ -125,19 +124,18 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
     void handleImageFrame(ImageInfo info, bool synchronousCall) {
       setupCB() {
-        _imageSize = Size(
-          info.image.width.toDouble(),
-          info.image.height.toDouble(),
-        );
+        _imageSize = Size(info.image.width.toDouble(), info.image.height.toDouble());
         _loading = false;
         _imageInfo = _imageInfo;
 
         _loadingProgress = null;
         _lastException = null;
         _lastStack = null;
+
+        _didLoadSynchronously = synchronousCall;
       }
 
-      synchronousCall ? setupCB() : setState(setupCB);
+      synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
     }
 
     void handleError(dynamic error, StackTrace? stackTrace) {
@@ -154,11 +152,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
       }());
     }
 
-    _imageStreamListener = ImageStreamListener(
-      handleImageFrame,
-      onChunk: handleImageChunk,
-      onError: handleError,
-    );
+    _imageStreamListener = ImageStreamListener(handleImageFrame, onChunk: handleImageChunk, onError: handleError);
 
     return _imageStreamListener!;
   }
@@ -227,20 +221,14 @@ class _ImageWrapperState extends State<ImageWrapper> {
       return widget.loadingBuilder!(context, _loadingProgress, widget.index);
     }
 
-    return PhotoViewDefaultLoading(
-      event: _loadingProgress,
-    );
+    return PhotoViewDefaultLoading(event: _loadingProgress);
   }
 
-  Widget _buildError(
-    BuildContext context,
-  ) {
+  Widget _buildError(BuildContext context) {
     if (widget.errorBuilder != null) {
       return widget.errorBuilder!(context, _lastException!, _lastStack);
     }
-    return PhotoViewDefaultError(
-      decoration: widget.backgroundDecoration,
-    );
+    return PhotoViewDefaultError(decoration: widget.backgroundDecoration);
   }
 }
 

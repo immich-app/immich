@@ -34,11 +34,7 @@ class MapBottomSheet extends HookConsumerWidget {
 
     void handleMapEvents(MapEvent event) async {
       if (event is MapCloseBottomSheet) {
-        sheetController.animateTo(
-          0.1,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.linearToEaseOut,
-        );
+        sheetController.animateTo(0.1, duration: const Duration(milliseconds: 200), curve: Curves.linearToEaseOut);
       }
     }
 
@@ -85,9 +81,7 @@ class MapBottomSheet extends HookConsumerWidget {
                 duration: const Duration(milliseconds: 150),
                 child: ElevatedButton(
                   onPressed: onZoomToLocation,
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
-                  ),
+                  style: ElevatedButton.styleFrom(shape: const CircleBorder()),
                   child: const Icon(Icons.my_location),
                 ),
               ),

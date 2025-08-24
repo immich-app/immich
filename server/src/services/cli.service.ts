@@ -86,12 +86,7 @@ export class CliService extends BaseService {
     }
 
     for (const asset of assets) {
-      paths.push(
-        asset.originalPath,
-        asset.sidecarPath,
-        asset.encodedVideoPath,
-        ...asset.files.map((file) => file.path),
-      );
+      paths.push(asset.path);
     }
 
     return paths.filter(Boolean) as string[];

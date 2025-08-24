@@ -7,10 +7,7 @@ import 'package:immich_mobile/widgets/search/thumbnail_with_info_container.dart'
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class SearchMapThumbnail extends StatelessWidget {
-  const SearchMapThumbnail({
-    super.key,
-    this.size = 60.0,
-  });
+  const SearchMapThumbnail({super.key, this.size = 60.0});
 
   final double size;
   final bool showTitle = true;
@@ -23,16 +20,7 @@ class SearchMapThumbnail extends StatelessWidget {
         context.pushRoute(MapRoute());
       },
       child: IgnorePointer(
-        child: MapThumbnail(
-          zoom: 2,
-          centre: const LatLng(
-            47,
-            5,
-          ),
-          height: size,
-          width: size,
-          showAttribution: false,
-        ),
+        child: MapThumbnail(zoom: 2, centre: const LatLng(47, 5), height: size, width: size, showAttribution: false),
       ),
     );
   }

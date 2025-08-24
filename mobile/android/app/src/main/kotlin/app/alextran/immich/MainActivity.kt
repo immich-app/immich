@@ -3,6 +3,8 @@ package app.alextran.immich
 import android.os.Build
 import android.os.ext.SdkExtensions
 import androidx.annotation.NonNull
+import app.alextran.immich.images.ThumbnailApi
+import app.alextran.immich.images.ThumbnailsImpl
 import app.alextran.immich.sync.NativeSyncApi
 import app.alextran.immich.sync.NativeSyncApiImpl26
 import app.alextran.immich.sync.NativeSyncApiImpl30
@@ -22,6 +24,7 @@ class MainActivity : FlutterFragmentActivity() {
       } else {
         NativeSyncApiImpl30(this)
       }
-    NativeSyncApi.setUp(flutterEngine.dartExecutor.binaryMessenger, nativeSyncApiImpl)
+      NativeSyncApi.setUp(flutterEngine.dartExecutor.binaryMessenger, nativeSyncApiImpl)
+      ThumbnailApi.setUp(flutterEngine.dartExecutor.binaryMessenger, ThumbnailsImpl(this))
   }
 }

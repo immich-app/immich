@@ -18,7 +18,9 @@ final localAlbumServiceProvider = Provider<LocalAlbumService>(
 );
 
 final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
-  (ref) => LocalAlbumService(ref.watch(localAlbumRepository)).getAll(),
+  (ref) => LocalAlbumService(ref.watch(localAlbumRepository))
+      .getAll(sortBy: {SortLocalAlbumsBy.newestAsset})
+      .then((albums) => albums.where((album) => album.assetCount > 0).toList()),
 );
 
 final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(
@@ -30,10 +32,7 @@ final remoteAlbumRepository = Provider<DriftRemoteAlbumRepository>(
 );
 
 final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
-  (ref) => RemoteAlbumService(
-    ref.watch(remoteAlbumRepository),
-    ref.watch(driftAlbumApiRepositoryProvider),
-  ),
+  (ref) => RemoteAlbumService(ref.watch(remoteAlbumRepository), ref.watch(driftAlbumApiRepositoryProvider)),
   dependencies: [remoteAlbumRepository],
 );
 

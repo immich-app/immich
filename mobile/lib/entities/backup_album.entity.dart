@@ -14,21 +14,9 @@ class BackupAlbum {
 
   Id get isarId => fastHash(id);
 
-  BackupAlbum copyWith({
-    String? id,
-    DateTime? lastBackup,
-    BackupSelection? selection,
-  }) {
-    return BackupAlbum(
-      id ?? this.id,
-      lastBackup ?? this.lastBackup,
-      selection ?? this.selection,
-    );
+  BackupAlbum copyWith({String? id, DateTime? lastBackup, BackupSelection? selection}) {
+    return BackupAlbum(id ?? this.id, lastBackup ?? this.lastBackup, selection ?? this.selection);
   }
 }
 
-enum BackupSelection {
-  none,
-  select,
-  exclude;
-}
+enum BackupSelection { none, select, exclude }

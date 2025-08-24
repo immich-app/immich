@@ -9,23 +9,24 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftLocalAssetRepository(this._db) : super(_db);
 
-  Stream<LocalAsset?> watchAsset(String id) {
+  SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
     final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
       leftOuterJoin(
         _db.remoteAssetEntity,
         _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
         useColumns: false,
       ),
-    ])
-      ..where(_db.localAssetEntity.id.equals(id));
+    ])..where(_db.localAssetEntity.id.equals(id));
 
     return query.map((row) {
       final asset = row.readTable(_db.localAssetEntity).toDto();
-      return asset.copyWith(
-        remoteId: row.read(_db.remoteAssetEntity.id),
-      );
-    }).watchSingleOrNull();
+      return asset.copyWith(remoteId: row.read(_db.remoteAssetEntity.id));
+    });
   }
+
+  Future<LocalAsset?> get(String id) => _assetSelectable(id).getSingleOrNull();
+
+  Stream<LocalAsset?> watch(String id) => _assetSelectable(id).watchSingleOrNull();
 
   Future<void> updateHashes(Iterable<LocalAsset> hashes) {
     if (hashes.isEmpty) {

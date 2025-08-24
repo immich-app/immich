@@ -20,6 +20,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -30,9 +31,10 @@ import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 13;
+const int targetVersion = 14;
 
-Future<void> migrateDatabaseIfNeeded(Isar db) async {
+Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
+  final hasVersion = Store.tryGet(StoreKey.version) != null;
   final int version = Store.get(StoreKey.version, targetVersion);
 
   if (version < 9) {
@@ -56,6 +58,12 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
 
   if (version < 13) {
     await Store.put(StoreKey.photoManagerCustomFilter, true);
+  }
+
+  // This means that the SQLite DB is just created and has no version
+  if (version < 14 || !hasVersion) {
+    await migrateStoreToSqlite(db, drift);
+    await Store.populateCache();
   }
 
   if (targetVersion >= 12) {
@@ -85,16 +93,14 @@ Future<void> _migrateTo(Isar db, int version) async {
 Future<void> _migrateDeviceAsset(Isar db) async {
   final ids = Platform.isAndroid
       ? (await db.androidDeviceAssets.where().findAll())
-          .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
-          .toList()
+            .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
+            .toList()
       : (await db.iOSDeviceAssets.where().findAll()).map((i) => _DeviceAsset(assetId: i.id, hash: i.hash)).toList();
 
   final PermissionState ps = await PhotoManager.requestPermissionExtend();
   if (!ps.hasAccess) {
     if (kDebugMode) {
-      debugPrint(
-        "[MIGRATION] Photo library permission not granted. Skipping device asset migration.",
-      );
+      debugPrint("[MIGRATION] Photo library permission not granted. Skipping device asset migration.");
     }
 
     return;
@@ -105,9 +111,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 
   if (paths.isEmpty) {
     localAssets = (await db.assets.where().anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId)).findAll())
-        .map(
-          (a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt),
-        )
+        .map((a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt))
         .toList();
   } else {
     final AssetPathEntity albumWithAll = paths.first;
@@ -129,34 +133,24 @@ Future<void> _migrateDeviceAsset(Isar db) async {
     compare: (a, b) => a.assetId.compareTo(b.assetId),
     both: (deviceAsset, asset) {
       toAdd.add(
-        DeviceAssetEntity(
-          assetId: deviceAsset.assetId,
-          hash: deviceAsset.hash!,
-          modifiedTime: asset.dateTime!,
-        ),
+        DeviceAssetEntity(assetId: deviceAsset.assetId, hash: deviceAsset.hash!, modifiedTime: asset.dateTime!),
       );
       return false;
     },
     onlyFirst: (deviceAsset) {
       if (kDebugMode) {
-        debugPrint(
-          '[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}',
-        );
+        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}');
       }
     },
     onlySecond: (asset) {
       if (kDebugMode) {
-        debugPrint(
-          '[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}',
-        );
+        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}');
       }
     },
   );
 
   if (kDebugMode) {
-    debugPrint(
-      "[MIGRATION] Total number of device assets migrated - ${toAdd.length}",
-    );
+    debugPrint("[MIGRATION] Total number of device assets migrated - ${toAdd.length}");
   }
 
   await db.writeTxn(() async {
@@ -171,24 +165,17 @@ Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
       for (final deviceAsset in isarDeviceAssets) {
         batch.update(
           drift.localAssetEntity,
-          LocalAssetEntityCompanion(
-            checksum: Value(base64.encode(deviceAsset.hash)),
-          ),
+          LocalAssetEntityCompanion(checksum: Value(base64.encode(deviceAsset.hash))),
           where: (t) => t.id.equals(deviceAsset.assetId),
         );
       }
     });
   } catch (error) {
-    debugPrint(
-      "[MIGRATION] Error while migrating device assets to SQLite: $error",
-    );
+    debugPrint("[MIGRATION] Error while migrating device assets to SQLite: $error");
   }
 }
 
-Future<void> migrateBackupAlbumsToSqlite(
-  Isar db,
-  Drift drift,
-) async {
+Future<void> migrateBackupAlbumsToSqlite(Isar db, Drift drift) async {
   try {
     final isarBackupAlbums = await db.backupAlbums.where().findAll();
     // Recents is a virtual album on Android, and we don't have it with the new sync
@@ -197,29 +184,23 @@ Future<void> migrateBackupAlbumsToSqlite(
       final recentAlbum = isarBackupAlbums.firstWhereOrNull((album) => album.id == 'isAll');
       if (recentAlbum != null) {
         await drift.localAlbumEntity.update().write(
-              const LocalAlbumEntityCompanion(
-                backupSelection: Value(BackupSelection.selected),
-              ),
-            );
+          const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.selected)),
+        );
         final excluded = isarBackupAlbums
-            .where(
-              (album) => album.selection == isar_backup_album.BackupSelection.exclude,
-            )
+            .where((album) => album.selection == isar_backup_album.BackupSelection.exclude)
             .map((album) => album.id)
             .toList();
         await drift.batch((batch) async {
           for (final id in excluded) {
             batch.update(
               drift.localAlbumEntity,
-              const LocalAlbumEntityCompanion(
-                backupSelection: Value(BackupSelection.excluded),
-              ),
+              const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.excluded)),
               where: (t) => t.id.equals(id),
             );
           }
         });
+        return;
       }
-      return;
     }
 
     await drift.batch((batch) {
@@ -227,22 +208,51 @@ Future<void> migrateBackupAlbumsToSqlite(
         batch.update(
           drift.localAlbumEntity,
           LocalAlbumEntityCompanion(
-            backupSelection: Value(
-              switch (album.selection) {
-                isar_backup_album.BackupSelection.none => BackupSelection.none,
-                isar_backup_album.BackupSelection.select => BackupSelection.selected,
-                isar_backup_album.BackupSelection.exclude => BackupSelection.excluded,
-              },
-            ),
+            backupSelection: Value(switch (album.selection) {
+              isar_backup_album.BackupSelection.none => BackupSelection.none,
+              isar_backup_album.BackupSelection.select => BackupSelection.selected,
+              isar_backup_album.BackupSelection.exclude => BackupSelection.excluded,
+            }),
           ),
           where: (t) => t.id.equals(album.id),
         );
       }
     });
   } catch (error) {
-    debugPrint(
-      "[MIGRATION] Error while migrating backup albums to SQLite: $error",
-    );
+    debugPrint("[MIGRATION] Error while migrating backup albums to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToSqlite(Isar db, Drift drift) async {
+  try {
+    final isarStoreValues = await db.storeValues.where().findAll();
+    await drift.batch((batch) {
+      for (final storeValue in isarStoreValues) {
+        final companion = StoreEntityCompanion(
+          id: Value(storeValue.id),
+          stringValue: Value(storeValue.strValue),
+          intValue: Value(storeValue.intValue),
+        );
+        batch.insert(drift.storeEntity, companion, onConflict: DoUpdate((_) => companion));
+      }
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
+  try {
+    final driftStoreValues = await drift.storeEntity
+        .select()
+        .map((entity) => StoreValue(entity.id, intValue: entity.intValue, strValue: entity.stringValue))
+        .get();
+
+    await db.writeTxn(() async {
+      await db.storeValues.putAll(driftStoreValues);
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to Isar: $error");
   }
 }
 
@@ -254,17 +264,15 @@ class _DeviceAsset {
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
 }
 
-Future<void> runNewSync(WidgetRef ref, {bool full = false}) async {
+Future<List<void>> runNewSync(WidgetRef ref, {bool full = false}) {
   ref.read(backupProvider.notifier).cancelBackup();
 
   final backgroundManager = ref.read(backgroundSyncProvider);
-  Future.wait([
-    backgroundManager.syncLocal(full: full).then(
-      (_) {
-        Logger("runNewSync").fine("Hashing assets after syncLocal");
-        backgroundManager.hashAssets();
-      },
-    ),
+  return Future.wait([
+    backgroundManager.syncLocal(full: full).then((_) {
+      Logger("runNewSync").fine("Hashing assets after syncLocal");
+      return backgroundManager.hashAssets();
+    }),
     backgroundManager.syncRemote(),
   ]);
 }

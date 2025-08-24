@@ -17,12 +17,9 @@ const DuplicatedAssetSchema = CollectionSchema(
   name: r'DuplicatedAsset',
   id: -2679334728174694496,
   properties: {
-    r'id': PropertySchema(
-      id: 0,
-      name: r'id',
-      type: IsarType.string,
-    )
+    r'id': PropertySchema(id: 0, name: r'id', type: IsarType.string),
   },
+
   estimateSize: _duplicatedAssetEstimateSize,
   serialize: _duplicatedAssetSerialize,
   deserialize: _duplicatedAssetDeserialize,
@@ -31,6 +28,7 @@ const DuplicatedAssetSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {},
+
   getId: _duplicatedAssetGetId,
   getLinks: _duplicatedAssetGetLinks,
   attach: _duplicatedAssetAttach,
@@ -62,9 +60,7 @@ DuplicatedAsset _duplicatedAssetDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = DuplicatedAsset(
-    reader.readString(offsets[0]),
-  );
+  final object = DuplicatedAsset(reader.readString(offsets[0]));
   return object;
 }
 
@@ -91,7 +87,10 @@ List<IsarLinkBase<dynamic>> _duplicatedAssetGetLinks(DuplicatedAsset object) {
 }
 
 void _duplicatedAssetAttach(
-    IsarCollection<dynamic> col, Id id, DuplicatedAsset object) {}
+  IsarCollection<dynamic> col,
+  Id id,
+  DuplicatedAsset object,
+) {}
 
 extension DuplicatedAssetQueryWhereSort
     on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QWhere> {
@@ -105,17 +104,16 @@ extension DuplicatedAssetQueryWhereSort
 extension DuplicatedAssetQueryWhere
     on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QWhereClause> {
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
-      isarIdEqualTo(Id isarId) {
+  isarIdEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: isarId, upper: isarId),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
+  isarIdNotEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -138,7 +136,7 @@ extension DuplicatedAssetQueryWhere
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
+  isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -147,7 +145,7 @@ extension DuplicatedAssetQueryWhere
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
-      isarIdLessThan(Id isarId, {bool include = false}) {
+  isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -156,19 +154,21 @@ extension DuplicatedAssetQueryWhere
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterWhereClause>
-      isarIdBetween(
+  isarIdBetween(
     Id lowerIsarId,
     Id upperIsarId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
-        includeLower: includeLower,
-        upper: upperIsarId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerIsarId,
+          includeLower: includeLower,
+          upper: upperIsarId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -176,53 +176,52 @@ extension DuplicatedAssetQueryWhere
 extension DuplicatedAssetQueryFilter
     on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QFilterCondition> {
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idLessThan(
+  idGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idBetween(
+  idLessThan(String value, {bool include = false, bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
+  idBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -230,140 +229,141 @@ extension DuplicatedAssetQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idContains(String value, {bool caseSensitive = true}) {
+  idContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idMatches(String pattern, {bool caseSensitive = true}) {
+  idMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'id',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idIsEmpty() {
+  idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      idIsNotEmpty() {
+  idIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      isarIdEqualTo(Id value) {
+  isarIdEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isarId', value: value),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      isarIdGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  isarIdGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  isarIdLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterFilterCondition>
-      isarIdBetween(
+  isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'isarId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -410,7 +410,7 @@ extension DuplicatedAssetQuerySortThenBy
   }
 
   QueryBuilder<DuplicatedAsset, DuplicatedAsset, QAfterSortBy>
-      thenByIsarIdDesc() {
+  thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
     });
@@ -419,8 +419,9 @@ extension DuplicatedAssetQuerySortThenBy
 
 extension DuplicatedAssetQueryWhereDistinct
     on QueryBuilder<DuplicatedAsset, DuplicatedAsset, QDistinct> {
-  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QDistinct> distinctById(
-      {bool caseSensitive = true}) {
+  QueryBuilder<DuplicatedAsset, DuplicatedAsset, QDistinct> distinctById({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });

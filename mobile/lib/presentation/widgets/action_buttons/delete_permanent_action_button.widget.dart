@@ -10,6 +10,9 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
+/// This delete action has the following behavior:
+/// - Delete permanently on the server
+/// - Prompt to delete the asset locally
 class DeletePermanentActionButton extends ConsumerWidget {
   final ActionSource source;
 
@@ -27,7 +30,7 @@ class DeletePermanentActionButton extends ConsumerWidget {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'delete_action_prompt'.t(
+    final successMessage = 'delete_permanently_action_prompt'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
@@ -47,7 +50,7 @@ class DeletePermanentActionButton extends ConsumerWidget {
     return BaseActionButton(
       maxWidth: 110.0,
       iconData: Icons.delete_forever,
-      label: "delete_dialog_title".t(context: context),
+      label: "delete_permanently".t(context: context),
       onPressed: () => _onTap(context, ref),
     );
   }

@@ -52,14 +52,7 @@ class LocationPicker extends HookConsumerWidget {
         SearchDropdown(
           dropdownMenuEntries: switch (countries) {
             AsyncError() => [],
-            AsyncData(:final value) => value
-                .map(
-                  (e) => DropdownMenuEntry(
-                    value: e,
-                    label: e,
-                  ),
-                )
-                .toList(),
+            AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
             _ => [],
           },
           label: const Text('country').tr(),
@@ -71,27 +64,14 @@ class LocationPicker extends HookConsumerWidget {
             selectedCountry.value = value.toString();
             stateTextController.value = TextEditingValue.empty;
             cityTextController.value = TextEditingValue.empty;
-            onSelected({
-              'country': selectedCountry.value,
-              'state': null,
-              'city': null,
-            });
+            onSelected({'country': selectedCountry.value, 'state': null, 'city': null});
           },
         ),
-        const SizedBox(
-          height: 16,
-        ),
+        const SizedBox(height: 16),
         SearchDropdown(
           dropdownMenuEntries: switch (states) {
             AsyncError() => [],
-            AsyncData(:final value) => value
-                .map(
-                  (e) => DropdownMenuEntry(
-                    value: e,
-                    label: e,
-                  ),
-                )
-                .toList(),
+            AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
             _ => [],
           },
           label: const Text('state').tr(),
@@ -102,38 +82,21 @@ class LocationPicker extends HookConsumerWidget {
             }
             selectedState.value = value.toString();
             cityTextController.value = TextEditingValue.empty;
-            onSelected({
-              'country': selectedCountry.value,
-              'state': selectedState.value,
-              'city': null,
-            });
+            onSelected({'country': selectedCountry.value, 'state': selectedState.value, 'city': null});
           },
         ),
-        const SizedBox(
-          height: 16,
-        ),
+        const SizedBox(height: 16),
         SearchDropdown(
           dropdownMenuEntries: switch (cities) {
             AsyncError() => [],
-            AsyncData(:final value) => value
-                .map(
-                  (e) => DropdownMenuEntry(
-                    value: e,
-                    label: e,
-                  ),
-                )
-                .toList(),
+            AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
             _ => [],
           },
           label: const Text('city').tr(),
           controller: cityTextController,
           onSelected: (value) {
             selectedCity.value = value.toString();
-            onSelected({
-              'country': selectedCountry.value,
-              'state': selectedState.value,
-              'city': selectedCity.value,
-            });
+            onSelected({'country': selectedCountry.value, 'state': selectedState.value, 'city': selectedCity.value});
           },
         ),
       ],

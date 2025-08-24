@@ -16,22 +16,10 @@ class DriftUserMetadataRepository extends DriftDatabaseRepository {
   }
 }
 
-extension on UserMetadataEntityData {
+extension UserMetadataDataExtension on UserMetadataEntityData {
   UserMetadata toDto() => switch (key) {
-        UserMetadataKey.onboarding => UserMetadata(
-            userId: userId,
-            key: key,
-            onboarding: Onboarding.fromMap(value),
-          ),
-        UserMetadataKey.preferences => UserMetadata(
-            userId: userId,
-            key: key,
-            preferences: Preferences.fromMap(value),
-          ),
-        UserMetadataKey.license => UserMetadata(
-            userId: userId,
-            key: key,
-            license: License.fromMap(value),
-          ),
-      };
+    UserMetadataKey.onboarding => UserMetadata(userId: userId, key: key, onboarding: Onboarding.fromMap(value)),
+    UserMetadataKey.preferences => UserMetadata(userId: userId, key: key, preferences: Preferences.fromMap(value)),
+    UserMetadataKey.license => UserMetadata(userId: userId, key: key, license: License.fromMap(value)),
+  };
 }

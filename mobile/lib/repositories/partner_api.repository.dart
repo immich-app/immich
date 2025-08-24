@@ -5,16 +5,9 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
-enum Direction {
-  sharedWithMe,
-  sharedByMe,
-}
+enum Direction { sharedWithMe, sharedByMe }
 
-final partnerApiRepositoryProvider = Provider(
-  (ref) => PartnerApiRepository(
-    ref.watch(apiServiceProvider).partnersApi,
-  ),
-);
+final partnerApiRepositoryProvider = Provider((ref) => PartnerApiRepository(ref.watch(apiServiceProvider).partnersApi));
 
 class PartnerApiRepository extends ApiRepository {
   final PartnersApi _api;
@@ -23,9 +16,7 @@ class PartnerApiRepository extends ApiRepository {
 
   Future<List<UserDto>> getAll(Direction direction) async {
     final response = await checkNull(
-      _api.getPartners(
-        direction == Direction.sharedByMe ? PartnerDirection.by : PartnerDirection.with_,
-      ),
+      _api.getPartners(direction == Direction.sharedByMe ? PartnerDirection.by : PartnerDirection.with_),
     );
     return response.map(UserConverter.fromPartnerDto).toList();
   }
@@ -38,12 +29,7 @@ class PartnerApiRepository extends ApiRepository {
   Future<void> delete(String id) => _api.removePartner(id);
 
   Future<UserDto> update(String id, {required bool inTimeline}) async {
-    final dto = await checkNull(
-      _api.updatePartner(
-        id,
-        UpdatePartnerDto(inTimeline: inTimeline),
-      ),
-    );
+    final dto = await checkNull(_api.updatePartner(id, UpdatePartnerDto(inTimeline: inTimeline)));
     return UserConverter.fromPartnerDto(dto);
   }
 }

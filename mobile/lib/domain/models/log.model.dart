@@ -1,16 +1,5 @@
 /// Log levels according to dart logging [Level]
-enum LogLevel {
-  all,
-  finest,
-  finer,
-  fine,
-  config,
-  info,
-  warning,
-  severe,
-  shout,
-  off,
-}
+enum LogLevel { all, finest, finer, fine, config, info, warning, severe, shout, off }
 
 class LogMessage {
   final String message;

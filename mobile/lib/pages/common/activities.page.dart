@@ -16,9 +16,7 @@ import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 
 @RoutePage()
 class ActivitiesPage extends HookConsumerWidget {
-  const ActivitiesPage({
-    super.key,
-  });
+  const ActivitiesPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,9 +58,7 @@ class ActivitiesPage extends HookConsumerWidget {
                   itemBuilder: (context, index) {
                     // Additional vertical gap after the last element
                     if (index == data.length) {
-                      return const SizedBox(
-                        height: 80,
-                      );
+                      return const SizedBox(height: 80);
                     }
 
                     final activity = data[index];
@@ -73,8 +69,9 @@ class ActivitiesPage extends HookConsumerWidget {
                       child: DismissibleActivity(
                         activity.id,
                         ActivityTile(activity),
-                        onDismiss:
-                            canDelete ? (activityId) async => await activityNotifier.removeActivity(activity.id) : null,
+                        onDismiss: canDelete
+                            ? (activityId) async => await activityNotifier.removeActivity(activity.id)
+                            : null,
                       ),
                     );
                   },

@@ -148,10 +148,7 @@ class BackUpState {
         collectionEquals(other.selectedBackupAlbums, selectedBackupAlbums) &&
         collectionEquals(other.excludedBackupAlbums, excludedBackupAlbums) &&
         collectionEquals(other.allUniqueAssets, allUniqueAssets) &&
-        collectionEquals(
-          other.selectedAlbumsBackupAssetsIds,
-          selectedAlbumsBackupAssetsIds,
-        ) &&
+        collectionEquals(other.selectedAlbumsBackupAssetsIds, selectedAlbumsBackupAssetsIds) &&
         other.currentUploadAsset == currentUploadAsset;
   }
 

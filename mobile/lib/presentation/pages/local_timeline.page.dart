@@ -17,18 +17,15 @@ class LocalTimelinePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
-        timelineServiceProvider.overrideWith(
-          (ref) {
-            final timelineService = ref.watch(timelineFactoryProvider).localAlbum(albumId: album.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          },
-        ),
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineService = ref.watch(timelineFactoryProvider).localAlbum(albumId: album.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
       ],
       child: Timeline(
         appBar: MesmerizingSliverAppBar(title: album.name),
         bottomSheet: const LocalAlbumBottomSheet(),
-        showStorageIndicator: true,
       ),
     );
   }

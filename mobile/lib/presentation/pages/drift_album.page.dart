@@ -35,13 +35,8 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
             pinned: true,
             actions: [
               IconButton(
-                icon: const Icon(
-                  Icons.add_rounded,
-                  size: 28,
-                ),
-                onPressed: () => context.pushRoute(
-                  const DriftCreateAlbumRoute(),
-                ),
+                icon: const Icon(Icons.add_rounded, size: 28),
+                onPressed: () => context.pushRoute(const DriftCreateAlbumRoute()),
               ),
             ],
             showUploadButton: false,
@@ -49,9 +44,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
           AlbumSelector(
             onAlbumSelected: (album) {
               ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
-              context.router.push(
-                RemoteAlbumRoute(album: album),
-              );
+              context.router.push(RemoteAlbumRoute(album: album));
             },
           ),
         ],
