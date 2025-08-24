@@ -225,7 +225,7 @@ export class AlbumService extends BaseService {
       for (const assetId of notPresentAssetIds) {
         albumAssetValues.push({ albumsId: albumId, assetsId: assetId });
       }
-      void this.albumRepository.update(albumId, {
+      await this.albumRepository.update(albumId, {
         id: albumId,
         updatedAt: new Date(),
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? notPresentAssetIds[0],
