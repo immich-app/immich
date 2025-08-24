@@ -19,28 +19,28 @@
 <br/>
 
 <p align="center">
-  <a href="readme_i18n/README_ca_ES.md">Català</a>
-  <a href="readme_i18n/README_es_ES.md">Español</a>
-  <a href="readme_i18n/README_fr_FR.md">Français</a>
-  <a href="readme_i18n/README_ja_JP.md">日本語</a>
-  <a href="readme_i18n/README_ko_KR.md">한국어</a>
-  <a href="readme_i18n/README_de_DE.md">Deutsch</a>
-  <a href="readme_i18n/README_nl_NL.md">Nederlands</a>
-  <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
-  <a href="readme_i18n/README_zh_CN.md">中文</a>
-  <a href="readme_i18n/README_uk_UA.md">Українська</a>
-  <a href="readme_i18n/README_ru_RU.md">Русский</a>
-  <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
-  <a href="readme_i18n/README_sv_SE.md">Svenska</a>
-  <a href="readme_i18n/README_ar_JO.md">العربية</a>
-  <a href="readme_i18n/README_vi_VN.md">Tiếng Việt</a>
-  <a href="readme_i18n/README_th_TH.md">ภาษาไทย</a>
+  <a href="../README.md">English</a>
+  <a href="README_ca_ES.md">Català</a>
+  <a href="README_es_ES.md">Español</a>
+  <a href="README_fr_FR.md">Français</a>
+  <a href="README_ja_JP.md">日本語</a>
+  <a href="README_ko_KR.md">한국어</a>
+  <a href="README_de_DE.md">Deutsch</a>
+  <a href="README_nl_NL.md">Nederlands</a>
+  <a href="README_tr_TR.md">Türkçe</a>
+  <a href="README_zh_CN.md">中文</a>
+  <a href="README_uk_UA.md">Українська</a>
+  <a href="README_ru_RU.md">Русский</a>
+  <a href="README_pt_BR.md">Português Brasileiro</a>
+  <a href="README_sv_SE.md">Svenska</a>
+  <a href="README_ar_JO.md">العربية</a>
+  <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
 ## Avvertenze
 
 - ⚠️ Il progetto è in fase di sviluppo **molto attivo**.  
-- ⚠️ Sono da aspettarsi bug e modifiche che rompono la compatibilità.  
+- ⚠️ Possono esserci bug o cambiamenti che rompono la compatibilità.
 - ⚠️ **Non usare l’app come unico modo per archiviare le tue foto e i tuoi video.**  
 - ⚠️ Segui sempre la regola del backup [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) per proteggere i tuoi ricordi!  
 
