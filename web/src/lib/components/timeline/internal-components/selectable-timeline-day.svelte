@@ -19,9 +19,8 @@
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
-    onSelect?: (asset: TimelineAsset) => void;
+    onSelect?: (isSingleSelect: boolean, asset: TimelineAsset) => void;
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
-    onScrollToTop: () => void;
   }
 
   let {
@@ -34,7 +33,6 @@
     timelineManager,
     onSelect,
     onScrollCompensation,
-    onScrollToTop,
   }: Props = $props();
 
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
@@ -146,10 +144,10 @@
     if (!asset) {
       return;
     }
-    onSelect?.(asset);
+    onSelect?.(singleSelect, asset);
 
     if (singleSelect) {
-      onScrollToTop();
+      // onScrollToTop();
 
       return;
     }

@@ -27,7 +27,7 @@ export type ScrubberListener = (args: {
   scrubberMonth: { year: number; month: number };
   overallScrollPercent: number;
   scrubberMonthScrollPercent: number;
-  handleScrollTop?: (top: number) => void;
+  scrollToFunction?: (top: number) => void;
 }) => void | Promise<void>;
 
 // used for AssetResponseDto.dateTimeOriginal, amongst others
