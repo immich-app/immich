@@ -4,14 +4,14 @@
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { ScrubberListener, TimelineYearMonth } from '$lib/utils/timeline-util';
+  import type { ScrubberListener } from '$lib/utils/timeline-util';
   import type { Snippet } from 'svelte';
   import Scrubber from './scrubber.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
     singleSelect?: boolean;
-    /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
+    /** `true` if this timeline responds to navigation events; if `true`, then look at the
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
@@ -56,69 +56,105 @@
   const handleTimelineScroll = () => {
     leadOut = false;
 
-    if (timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
-      // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
-      const maxScroll = timelineManager.getMaxScroll();
-      scrubOverallPercent = Math.min(1, timelineManager.visibleWindow.top / maxScroll);
-
-      scrubberMonth = undefined;
-      scrubberMonthPercent = 0;
-    } else {
-      let top = timelineManager.visibleWindow.top;
-      if (top < timelineManager.topSectionHeight) {
-        // in the lead-in area
-        scrubberMonth = undefined;
-        scrubberMonthPercent = 0;
-        const maxScroll = timelineManager.getMaxScroll();
-
-        scrubOverallPercent = Math.min(1, top / maxScroll);
-        return;
-      }
-
-      let maxScrollPercent = timelineManager.getMaxScrollPercent();
-      let found = false;
-
-      const monthsLength = timelineManager.months.length;
-      for (let i = -1; i < monthsLength + 1; i++) {
-        let monthGroup: TimelineYearMonth | undefined;
-        let monthGroupHeight = 0;
-        if (i === -1) {
-          // lead-in
-          monthGroupHeight = timelineManager.topSectionHeight;
-        } else if (i === monthsLength) {
-          // lead-out
-          monthGroupHeight = timelineManager.bottomSectionHeight;
-        } else {
-          monthGroup = timelineManager.months[i].yearMonth;
-          monthGroupHeight = timelineManager.months[i].height;
-        }
-
-        let next = top - monthGroupHeight * maxScrollPercent;
-        // instead of checking for < 0, add a little wiggle room for subpixel resolution
-        if (next < -1 && monthGroup) {
-          scrubberMonth = monthGroup;
-
-          // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
-          scrubberMonthPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
-
-          // compensate for lost precision/rounding errors advance to the next bucket, if present
-          if (scrubberMonthPercent > 0.9999 && i + 1 < monthsLength - 1) {
-            scrubberMonth = timelineManager.months[i + 1].yearMonth;
-            scrubberMonthPercent = 0;
-          }
-
-          found = true;
-          break;
-        }
-        top = next;
-      }
-      if (!found) {
-        leadOut = true;
-        scrubberMonth = undefined;
-        scrubberMonthPercent = 0;
-        scrubOverallPercent = 1;
-      }
+    // Handle small timeline edge case: scroll limited due to size of content
+    if (isSmallTimeline()) {
+      handleSmallTimelineScroll();
+      return;
     }
+
+    // Handle scrolling of the lead-in area
+    const top = timelineManager.visibleWindow.top;
+    if (top < timelineManager.topSectionHeight) {
+      handleLeadInScroll();
+      return;
+    }
+
+    // Handle normal month scrolling
+    handleMonthScroll();
+  };
+
+  const isSmallTimeline = () => {
+    return timelineManager.timelineHeight < timelineManager.viewportHeight * 2;
+  };
+
+  const resetScrubberMonth = () => {
+    scrubberMonth = undefined;
+    scrubberMonthPercent = 0;
+  };
+
+  const handleSmallTimelineScroll = () => {
+    const maxScroll = timelineManager.getMaxScroll();
+    scrubOverallPercent = Math.min(1, timelineManager.visibleWindow.top / maxScroll);
+    resetScrubberMonth();
+  };
+
+  const handleLeadInScroll = () => {
+    const maxScroll = timelineManager.getMaxScroll();
+    scrubOverallPercent = Math.min(1, timelineManager.visibleWindow.top / maxScroll);
+    resetScrubberMonth();
+  };
+
+  const handleMonthScroll = () => {
+    const monthsLength = timelineManager.months.length;
+    const maxScrollPercent = timelineManager.getMaxScrollPercent();
+    let top = timelineManager.visibleWindow.top;
+    let found = false;
+
+    for (let i = -1; i < monthsLength + 1; i++) {
+      const monthData = getMonthData(i);
+      const next = top - monthData.height * maxScrollPercent;
+
+      // Check if we're in this month (with subpixel tolerance)
+      if (next < -1 && monthData.monthGroup) {
+        scrubberMonth = monthData.monthGroup;
+
+        // Calculate month percentage
+        scrubberMonthPercent = Math.max(0, top / (monthData.height * maxScrollPercent));
+
+        // Handle rounding errors (and/or subpixel tolerance) -
+        // advance to next month if almost at end
+        if (scrubberMonthPercent > 0.9999 && i + 1 < monthsLength - 1) {
+          scrubberMonth = timelineManager.months[i + 1].yearMonth;
+          scrubberMonthPercent = 0;
+        }
+
+        found = true;
+        break;
+      }
+      top = next;
+    }
+
+    if (!found) {
+      leadOut = true;
+      scrubOverallPercent = 1;
+      resetScrubberMonth();
+    }
+  };
+
+  const getMonthData = (index: number) => {
+    const monthsLength = timelineManager.months.length;
+
+    if (index === -1) {
+      // lead-in
+      return {
+        height: timelineManager.topSectionHeight,
+        monthGroup: undefined,
+      };
+    }
+
+    if (index === monthsLength) {
+      // lead-out
+      return {
+        height: timelineManager.bottomSectionHeight,
+        monthGroup: undefined,
+      };
+    }
+
+    // normal month
+    return {
+      height: timelineManager.months[index].height,
+      monthGroup: timelineManager.months[index].yearMonth,
+    };
   };
 
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
