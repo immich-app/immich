@@ -159,26 +159,23 @@
 
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   // this function scrolls the timeline to the specified month group and offset, based on scrubber interaction
-  const onScrub: ScrubberListener = ({
-    scrubberMonth,
-    overallScrollPercent,
-    scrubberMonthScrollPercent,
-    scrollToFunction,
-  }) => {
+  const onScrub: ScrubberListener = (scrubberData) => {
+    const { scrubberMonth, overallScrollPercent, scrubberMonthScrollPercent, scrollToFunction } = scrubberData;
+
     if (!scrubberMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = timelineManager.getMaxScroll();
       const offset = maxScroll * overallScrollPercent;
       scrollToFunction?.(offset);
-    } else {
-      const monthGroup = timelineManager.months.find(
-        ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
-      );
-      if (!monthGroup) {
-        return;
-      }
-      scrollToMonthGroupAndOffset(monthGroup, scrubberMonthScrollPercent, scrollToFunction);
+      return;
     }
+    const monthGroup = timelineManager.months.find(
+      ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
+    );
+    if (!monthGroup) {
+      return;
+    }
+    scrollToMonthGroupAndOffset(monthGroup, scrubberMonthScrollPercent, scrollToFunction);
   };
 
   const scrollToMonthGroupAndOffset = (
