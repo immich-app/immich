@@ -27,7 +27,6 @@
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
     albumUsers?: UserResponseDto[];
-
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
     onSelectAssetCandidates: (asset: TimelineAsset | null) => void;

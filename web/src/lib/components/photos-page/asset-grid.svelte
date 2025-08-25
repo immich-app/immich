@@ -31,11 +31,11 @@
   import { navigate } from '$lib/utils/navigation';
   import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import {
-    AlbumUserRole,
     AssetVisibility,
     getAssetInfo,
     type AlbumResponseDto,
     type PersonResponseDto,
+    type UserResponseDto,
   } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
@@ -65,6 +65,7 @@
     showArchiveIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto | null;
+    albumUsers?: UserResponseDto[];
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: TimelineAsset) => void;
@@ -84,6 +85,7 @@
     showArchiveIcon = false,
     isShared = false,
     album = null,
+    albumUsers = [],
     person = null,
     isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
@@ -94,11 +96,11 @@
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
 
-  const albumUsers = $derived(
-    album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor)
-      ? [album.owner, ...album.albumUsers.map(({ user }) => user)]
-      : [],
-  );
+  // const albumUsers = $derived(
+  //   album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor)
+  //     ? [album.owner, ...album.albumUsers.map(({ user }) => user)]
+  //     : [],
+  // );
 
   let element: HTMLElement | undefined = $state();
 
