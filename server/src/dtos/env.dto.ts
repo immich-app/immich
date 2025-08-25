@@ -1,7 +1,7 @@
 import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
+import { IsEnum, IsInt, IsString, Matches, ValidateIf } from 'class-validator';
 import { DatabaseSslMode, ImmichEnvironment, LogLevel } from 'src/enum';
-import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
+import { IsIPRange, Optional, ValidateBoolean, FileExist } from 'src/validation';
 
 export class EnvDto {
   @IsInt()
@@ -195,4 +195,29 @@ export class EnvDto {
   @IsString()
   @Optional()
   REDIS_URL?: string;
+
+  @ValidateBoolean({ optional: false })
+  @Optional()
+  REDIS_TLS?: boolean;
+
+  @ValidateBoolean({ optional: false })
+  @Optional()
+  REDIS_TLS_INSECURE?: boolean;
+
+  @ValidateIf((o) => o.REDIS_TLS === true && o.REDIS_TLS_INSECURE === false)
+  @IsString()
+  @FileExist({ message: 'Redis TLS Cert must exist on the server' })
+  REDIS_TLS_CERT?: string;
+
+  @Optional()
+  @ValidateIf((o) => o.REDIS_TLS === true && o.REDIS_TLS_INSECURE === false)
+  @IsString()
+  @FileExist({ message: 'Redis TLS CA must exist on the server' })
+  REDIS_TLS_CA?: string;
+
+  @Optional()
+  @ValidateIf((o) => o.REDIS_TLS === true && o.REDIS_TLS_INSECURE === false)
+  @IsString()
+  @FileExist({ message: 'Redis TLS Key must exist on the server' })
+  REDIS_TLS_KEY?: string;
 }

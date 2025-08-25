@@ -35,6 +35,9 @@ const resetEnv = () => {
     'REDIS_PASSWORD',
     'REDIS_SOCKET',
     'REDIS_URL',
+    'REDIS_TLS',
+    'REDIS_TLS_INSECURE',
+    'REDIS_TLS_CERT',
 
     'NO_COLOR',
   ]) {

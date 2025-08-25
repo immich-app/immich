@@ -34,6 +34,8 @@ import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
 import sanitize from 'sanitize-filename';
 import { isIP, isIPRange } from 'validator';
+import {existsSync} from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class ParseMeUUIDPipe extends ParseUUIDPipe {
@@ -355,6 +357,28 @@ export function IsIPRange(options: IsIPRangeOptions, validationOptions?: Validat
         },
         defaultMessage: buildMessage(
           (eachPrefix) => eachPrefix + '$property must be an ip address, or ip address range',
+          validationOptions,
+        ),
+      },
+    },
+    validationOptions,
+  );
+}
+
+export function FileExist(validationOptions?: ValidationOptions) {
+  return ValidateBy(
+    {
+      name: 'fileExist',
+      validator: {
+        validate(value: any) {
+          if (typeof value !== 'string') {
+            return false;
+          }
+          const filePath = join(value);
+          return existsSync(filePath);
+        },
+        defaultMessage: buildMessage(
+          (eachPrefix) => `${eachPrefix}$property file does not exist`,
           validationOptions,
         ),
       },
