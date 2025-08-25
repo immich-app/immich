@@ -12,10 +12,13 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
@@ -23,6 +26,7 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
@@ -165,36 +169,6 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     await ref.read(localNotificationService).setup();
   }
 
-  void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotificationForGroup(
-      kDownloadGroupImage,
-      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
-      progressBar: true,
-    );
-
-    FileDownloader().configureNotificationForGroup(
-      kDownloadGroupVideo,
-      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
-      progressBar: true,
-    );
-
-    FileDownloader().configureNotificationForGroup(
-      kManualUploadGroup,
-      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
-      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
-      progressBar: true,
-    );
-
-    FileDownloader().configureNotificationForGroup(
-      kBackupGroup,
-      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
-      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
-      progressBar: true,
-    );
-  }
-
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
@@ -221,7 +195,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     super.didChangeDependencies();
     Intl.defaultLocale = context.locale.toLanguageTag();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _configureFileDownloaderNotifications();
+      configureFileDownloaderNotifications();
     });
   }
 
@@ -231,7 +205,15 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     initApp().then((_) => debugPrint("App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+      if (Store.isBetaTimelineEnabled) {
+        if (ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup)) {
+          ref.read(backgroundServiceProvider).disableService();
+          ref.read(backgroundUploadFgService).enable();
+        }
+      } else {
+        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+        ref.read(backgroundUploadFgService).disable();
+      }
     });
 
     ref.read(shareIntentUploadProvider.notifier).init();
