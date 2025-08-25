@@ -321,6 +321,14 @@ export class AlbumRepository {
       .execute();
   }
 
+  @Chunked({ chunkSize: 30_000 })
+  async addAssetIdsToAlbums(values: { albumsId: string; assetsId: string }[]): Promise<void> {
+    if (values.length === 0) {
+      return;
+    }
+    await this.db.insertInto('album_asset').values(values).execute();
+  }
+
   /**
    * Makes sure all thumbnails for albums are updated by:
    * - Removing thumbnails from albums without assets

@@ -165,6 +165,7 @@ class AlbumApiRepository extends ApiRepository {
       order: dto.order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: dto.assetCount,
       ownerName: dto.owner.name,
+      isShared: dto.albumUsers.length > 2,
     );
   }
 }

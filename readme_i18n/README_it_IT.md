@@ -1,22 +1,23 @@
 <p align="center"> 
-  <br/>  
-  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
+  <br/>
+  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="Licenza: AGPLv3"></a>
   <a href="https://discord.immich.app">
-    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
+    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord"/>
   </a>
-  <br/>  
-  <br/>   
+  <br/>
+  <br/>
 </p>
 
 <p align="center">
-<img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
+<img src="../design/immich-logo-stacked-light.svg" width="300" title="Accedi con url personalizzato">
 </p>
-<h3 align="center">Immich - Soluzione self-hosted ad alte prestazioni per backup di foto e video</h3>
+<h3 align="center">Soluzione ad alte prestazioni per la gestione self-hosted di foto e video</h3>
 <br/>
 <a href="https://immich.app">
-<img src="../design/immich-screenshots.png" title="Main Screenshot">
+<img src="../design/immich-screenshots.png" title="Screenshot Principale">
 </a>
 <br/>
+
 <p align="center">
   <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
@@ -36,64 +37,97 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Declino di responsabilità
+## Avvertenze
 
-- ⚠️ Il progetto è in una fase **molto intensa** di sviluppo.
-- ⚠️ Possibilità di bug e cambiamenti rilevanti.
-- ⚠️ **Non utilizzare l'app come unico salvataggio delle tue foto e dei tuoi video.**
-- ⚠️ Utilizza sempre una tecnica [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) di backup per le foto e i video a cui tieni!
+- ⚠️ Il progetto è in fase di sviluppo **molto attivo**.  
+- ⚠️ Possono esserci bug o cambiamenti radicali, che possono non essere retrocompatibili (breaking changes).
+- ⚠️ **Non usare l’app come unico modo per archiviare le tue foto e i tuoi video.**  
+- ⚠️ Segui sempre la regola di backup [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) per proteggere i tuoi ricordi e le foto a cui tieni!  
 
-## Contenuto
+> [!NOTE]  
+> La documentazione principale, comprese le guide all’installazione, si trova su https://immich.app/.  
 
-- [Documentazione Ufficiale](https://immich.app/docs)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
-- [Demo](#demo)
-- [Funzionalità](#features)
-- [Introduzione](https://immich.app/docs/overview/introduction)
-- [Installazione](https://immich.app/docs/install/requirements)
-- [Linee Guida per Contribuire](https://immich.app/docs/overview/support-the-project)
+## Link utili
 
-## Documentazione
-
-La documentazione ufficiale, inclusa la guida all'installazione, è disponibile qui: https://immich.app/.
+- [Documentazione](https://immich.app/docs)  
+- [Informazioni](https://immich.app/docs/overview/introduction)  
+- [Installazione](https://immich.app/docs/install/requirements)  
+- [Roadmap](https://immich.app/roadmap)  
+- [Demo](#demo)  
+- [Funzionalità](#funzionalità)  
+- [Traduzioni](https://immich.app/docs/developer/translations)  
+- [Contribuire](https://immich.app/docs/overview/support-the-project)  
 
 ## Demo
 
-Prova la demo del progetto https://demo.immich.app. Sull'app mobile, imposta `https://demo.immich.app` come `Server Endpoint URL`
+Accedi alla demo [qui](https://demo.immich.app).  
+Per l’app mobile puoi usare `https://demo.immich.app` come `Server Endpoint URL`.  
 
-```bash title="Demo Credential"
-Credenziali di accesso
-email: demo@immich.app
-password: demo
-```
+### Credenziali di accesso
 
-# Funzionalità
+| Email           | Password |
+| --------------- | -------- |
+| demo@immich.app | demo     |
 
-| Funzionalità                                   | Mobile | Web |
-| ---------------------------------------------- | ------ | --- |
-| Caricamento e visualizzazione di foto e video  |   Sì   | Sì  |
-| Backup automatico quando l'app è in esecuzione |   Sì   | N/D |
-| Selezione degli album per backup               |   Sì   | N/D |
-| Download foto e video sul dispositivo          |   Sì   | Sì  |
-| Supporto multi utente                          |   Sì   | Sì  |
-| Album e album condivisi                        |   Sì   | Sì  |
-| Barra di scorrimento con trascinamento         |   Sì   | Sì  |
-| Supporto formati raw                           |   Sì   | Sì  |
-| Visualizzazione metadata (EXIF, map)           |   Sì   | Sì  |
-| Ricerca per metadata, oggetti, volti e CLIP    |   Sì   | Sì  |
-| Funzioni di amministrazione degli utenti       |   No   | Sì  |
-| Backup in background                           |   Sì   | N/D |
-| Scroll virtuale                                |   Sì   | Sì  |
-| Supporto OAuth                                 |   Sì   | Sì  |
-| API Keys                                       |  N/D   | Sì  |
-| Backup e riproduzione di LivePhoto             |  iOS   | Sì  |
-| Archiviazione impostata dall'utente            |   Sì   | Sì  |
-| Condivisione pubblica                          |   No   | Sì  |
-| Archivio e Preferiti                           |   Sì   | Sì  |
-| Mappa globale                                  |   Sì   | Sì  |
-| Collaborazione con utenti                      |   Sì   | Sì  |
-| Riconoscimento facciale e categorizzazione     |   Sì   | Sì  |
-| Ricordi (x anni fa)                            |   Sì   | Sì  |
-| Supporto offline                               |   Sì   | No  |
-| Galleria sola lettura                          |   Sì   | Sì  |
-| Foto raggruppate                               |   Sì   | Sì  |
+## Funzionalità
+
+| Funzionalità                                | Mobile | Web |
+| :------------------------------------------ | ------ | --- |
+| Caricare e visualizzare foto e video        | Sì     | Sì  |
+| Backup automatico all’apertura dell’app     | Sì     | N/D |
+| Evita la duplicazione dei file              | Sì     | Sì  |
+| Backup selettivo di album                   | Sì     | N/D |
+| Scaricare foto e video sul dispositivo      | Sì     | Sì  |
+| Supporto multi-utente                       | Sì     | Sì  |
+| Album e album condivisi                     | Sì     | Sì  |
+| Barra di scorrimento trascinabile           | Sì     | Sì  |
+| Supporto ai formati RAW                     | Sì     | Sì  |
+| Visualizzazione metadati (EXIF, mappa)      | Sì     | Sì  |
+| Ricerca per metadati, oggetti, volti, CLIP  | Sì     | Sì  |
+| Funzioni amministrative (gestione utenti)   | No     | Sì  |
+| Backup in background                        | Sì     | N/D |
+| Scorrimento virtuale                        | Sì     | Sì  |
+| Supporto OAuth                              | Sì     | Sì  |
+| Chiavi API                                  | N/D    | Sì  |
+| Backup e riproduzione LivePhoto/MotionPhoto | Sì     | Sì  |
+| Supporto immagini a 360°                    | No     | Sì  |
+| Struttura di archiviazione personalizzata   | Sì     | Sì  |
+| Condivisione pubblica                       | Sì     | Sì  |
+| Archivio e preferiti                        | Sì     | Sì  |
+| Mappa globale                               | Sì     | Sì  |
+| Condivisione con partner                    | Sì     | Sì  |
+| Riconoscimento e raggruppamento facciale    | Sì     | Sì  |
+| Ricordi (anni fa)                           | Sì     | Sì  |
+| Supporto offline                            | Sì     | No  |
+| Galleria in sola lettura                    | Sì     | Sì  |
+| Foto impilate                               | Sì     | Sì  |
+| Tag                                         | No     | Sì  |
+| Vista per cartelle                          | Sì     | Sì  |
+
+## Traduzioni
+
+Scopri di più sulle traduzioni [qui](https://immich.app/docs/developer/translations).  
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Stato traduzioni" />
+</a>
+
+## Attività del repository
+
+![Attività](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Immagine analisi repobeats")
+
+## Cronologia delle stelle
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Grafico storico delle stelle" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>
+
+## Contributori
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>

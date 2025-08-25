@@ -74,7 +74,6 @@ isOnboarded: $isOnboarded,
   int get hashCode => isOnboarded.hashCode;
 }
 
-// TODO: wait to be overwritten
 class Preferences {
   final bool foldersEnabled;
   final bool memoriesEnabled;
@@ -133,17 +132,17 @@ class Preferences {
 
   factory Preferences.fromMap(Map<String, Object?> map) {
     return Preferences(
-      foldersEnabled: map["folders-Enabled"] as bool? ?? false,
-      memoriesEnabled: map["memories-Enabled"] as bool? ?? true,
-      peopleEnabled: map["people-Enabled"] as bool? ?? true,
-      ratingsEnabled: map["ratings-Enabled"] as bool? ?? false,
-      sharedLinksEnabled: map["sharedLinks-Enabled"] as bool? ?? true,
-      tagsEnabled: map["tags-Enabled"] as bool? ?? false,
+      foldersEnabled: (map["folders"] as Map<String, Object?>?)?["enabled"] as bool? ?? false,
+      memoriesEnabled: (map["memories"] as Map<String, Object?>?)?["enabled"] as bool? ?? true,
+      peopleEnabled: (map["people"] as Map<String, Object?>?)?["enabled"] as bool? ?? true,
+      ratingsEnabled: (map["ratings"] as Map<String, Object?>?)?["enabled"] as bool? ?? false,
+      sharedLinksEnabled: (map["sharedLinks"] as Map<String, Object?>?)?["enabled"] as bool? ?? true,
+      tagsEnabled: (map["tags"] as Map<String, Object?>?)?["enabled"] as bool? ?? false,
       userAvatarColor: AvatarColor.values.firstWhere(
-        (e) => e.value == map["avatar-Color"] as String?,
+        (e) => e.value == (map["avatar"] as Map<String, Object?>?)?["color"] as String?,
         orElse: () => AvatarColor.primary,
       ),
-      showSupportBadge: map["purchase-ShowSupportBadge"] as bool? ?? true,
+      showSupportBadge: (map["purchase"] as Map<String, Object?>?)?["showSupportBadge"] as bool? ?? true,
     );
   }
 
@@ -213,7 +212,7 @@ class License {
 
   factory License.fromMap(Map<String, Object?> map) {
     return License(
-      activatedAt: map["activatedAt"] as DateTime,
+      activatedAt: DateTime.parse(map["activatedAt"] as String),
       activationKey: map["activationKey"] as String,
       licenseKey: map["licenseKey"] as String,
     );

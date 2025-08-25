@@ -112,6 +112,7 @@ extension on AlbumResponseDto {
       order: order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
       assetCount: assetCount,
       ownerName: owner.name,
+      isShared: albumUsers.length > 2,
     );
   }
 }

@@ -277,7 +277,7 @@ with
         epoch
         from
           (
-            asset."localDateTime" - asset."fileCreatedAt" at time zone 'UTC'
+            asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'
           )
       )::real / 3600 as "localOffsetHours",
       "asset"."ownerId",

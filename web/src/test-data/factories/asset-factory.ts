@@ -6,6 +6,7 @@ import { Sync } from 'factory.ts';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   id: Sync.each(() => faker.string.uuid()),
+  createdAt: Sync.each(() => faker.date.past().toISOString()),
   deviceAssetId: Sync.each(() => faker.string.uuid()),
   ownerId: Sync.each(() => faker.string.uuid()),
   deviceId: '',

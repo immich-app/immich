@@ -37,6 +37,13 @@ export class SanitizedAssetResponseDto {
 }
 
 export class AssetResponseDto extends SanitizedAssetResponseDto {
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description: 'The UTC timestamp when the asset was originally uploaded to Immich.',
+    example: '2024-01-15T20:30:00.000Z',
+  })
+  createdAt!: Date;
   deviceAssetId!: string;
   deviceId!: string;
   ownerId!: string;
@@ -190,6 +197,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
 
   return {
     id: entity.id,
+    createdAt: entity.createdAt,
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,

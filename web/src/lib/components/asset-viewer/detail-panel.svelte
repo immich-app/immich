@@ -415,9 +415,9 @@
                 <p>
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
-                {@const { width, height } = getDimensions(asset.exifInfo)}
-                <p>{width} x {height}</p>
               {/if}
+              {@const { width, height } = getDimensions(asset.exifInfo)}
+              <p>{width} x {height}</p>
             {/if}
             {#if asset.exifInfo?.fileSizeInByte}
               <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>

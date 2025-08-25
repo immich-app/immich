@@ -18,7 +18,6 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
@@ -179,7 +178,7 @@ class LoginForm extends HookConsumerWidget {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            await runNewSync(ref);
+
             context.replaceRoute(const TabShellRoute());
             return;
           }
@@ -277,7 +276,6 @@ class LoginForm extends HookConsumerWidget {
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              await runNewSync(ref);
               context.replaceRoute(const TabShellRoute());
               return;
             }

@@ -1,5 +1,6 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { SemVer } from 'semver';
 import { DatabaseExtension, ExifOrientation, VectorIndex } from 'src/enum';
 
@@ -41,7 +42,10 @@ export const SALT_ROUNDS = 10;
 
 export const IWorker = 'IWorker';
 
-const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
+// eslint-disable-next-line unicorn/prefer-module
+const basePath = dirname(__filename);
+const packageFile = join(basePath, '..', 'package.json');
+const { version } = JSON.parse(readFileSync(packageFile, 'utf8'));
 export const serverVersion = new SemVer(version);
 
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });

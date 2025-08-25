@@ -26,7 +26,7 @@ class LocalAlbumThumbnail extends ConsumerWidget {
 
         return ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(16)),
-          child: Thumbnail(asset: data),
+          child: Thumbnail.fromAsset(asset: data),
         );
       },
       error: (error, stack) {

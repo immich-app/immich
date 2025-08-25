@@ -54,7 +54,7 @@
       <div
         class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors {isSelected
           ? 'bg-green-400/90'
-          : 'bg-red-300/90'}"
+          : 'bg-red-300/90'} text-black"
       >
         {isSelected ? $t('keep') : $t('to_trash')}
       </div>
