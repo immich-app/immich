@@ -292,7 +292,7 @@
         </div>
       {/if}
     {/each}
-    <!-- spacer for leadout -->
+    <!-- spacer for lead-out -->
     <div
       class="h-[60px]"
       style:position="absolute"
