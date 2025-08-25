@@ -44,4 +44,7 @@ export class LibraryTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @Column({ type: 'boolean', default: false })
+  excludeFromTranscodeJob!: boolean;
 }
