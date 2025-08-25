@@ -91,8 +91,12 @@ FROM prod-builder-base AS server-prod
 WORKDIR /usr/src/app
 COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./server ./server/
-RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
-  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile --prod deploy /output/server-pruned
+## Build server with sharp linked against system (global) libvips instead of vendored copy.
+## Using SHARP_IGNORE_GLOBAL_LIBVIPS previously caused arm64 (e.g. Raspberry Pi) illegal instruction
+## crashes due to the prebuilt vendored libvips targeting newer ARM features. Force global libvips
+## during build so the already-present distro libvips (built with conservative flags) is used.
+RUN SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
 
 # web production build
 FROM prod-builder-base AS web-prod
