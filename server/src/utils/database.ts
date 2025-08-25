@@ -212,17 +212,39 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDelet
   ).as('faces');
 }
 
-export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: string[]) {
+export function hasPeople<O>(
+  qb: SelectQueryBuilder<DB, 'asset', O>,
+  personIds: string[],
+  strictSearch: boolean = false,
+) {
+  if (!strictSearch) {
+    return qb.innerJoin(
+      (eb) =>
+        eb
+          .selectFrom('asset_face')
+          .select('assetId')
+          .where('personId', 'in', personIds)
+          .where('deletedAt', 'is', null)
+          .groupBy('assetId')
+          .having((eb) => eb.fn.count('personId').distinct(), '>=', personIds.length)
+          .as('has_people'),
+      (join) => join.onRef('has_people.assetId', '=', 'asset.id'),
+    );
+  }
+
   return qb.innerJoin(
-    (eb) =>
-      eb
+    (eb) => {
+      const sortedPersonIds = [...personIds].sort();
+      const arrayLiteral = `ARRAY[${sortedPersonIds.map((id) => `'${id}'::uuid`).join(', ')}]`;
+
+      return eb
         .selectFrom('asset_face')
         .select('assetId')
-        .where('personId', '=', anyUuid(personIds!))
         .where('deletedAt', 'is', null)
         .groupBy('assetId')
-        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
-        .as('has_people'),
+        .having(() => sql`ARRAY_AGG(DISTINCT "personId" ORDER BY "personId") = ${sql.raw(arrayLiteral)}`)
+        .as('has_people');
+    },
     (join) => join.onRef('has_people.assetId', '=', 'asset.id'),
   );
 }
@@ -310,7 +332,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(options.tagIds === null, (qb) =>
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetsId', '=', 'asset.id')))),
     )
-    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
+    .$if(!!options.personIds && options.personIds.length > 0, (qb) =>
+      hasPeople(qb, options.personIds!, options.strictPersonSearch),
+    )
     .$if(!!options.createdBefore, (qb) => qb.where('asset.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('asset.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('asset.updatedAt', '<=', options.updatedBefore!))
