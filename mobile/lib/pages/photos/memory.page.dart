@@ -80,7 +80,6 @@ class MemoryPage extends HookConsumerWidget {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
         PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
-
         controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
       } else {
         // Go to the next memory since we are at the end of our assets
@@ -157,7 +156,6 @@ class MemoryPage extends HookConsumerWidget {
       ref.read(hapticFeedbackProvider.notifier).selectionClick();
       currentAssetPage.value = otherIndex;
       updateProgressText();
-
       // Wait for page change animation to finish
       await Future.delayed(const Duration(milliseconds: 400));
       // And then precache the next asset
@@ -316,7 +314,7 @@ class MemoryPage extends HookConsumerWidget {
                       ],
                     ),
                   ),
-                  MemoryBottomInfo(memory: memories[mIndex]),
+                  MemoryBottomInfo(memory: memories[mIndex], currentAssetIndex: currentAssetPage.value),
                 ],
               );
             },
