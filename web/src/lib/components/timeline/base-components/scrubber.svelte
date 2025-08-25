@@ -4,7 +4,7 @@
   import type { ScrubberMonth } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
-  import { type ScrubberListener } from '$lib/utils/timeline-util';
+  import { type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';
   import { onMount } from 'svelte';
@@ -15,10 +15,10 @@
     timelineBottomOffset?: number;
     height?: number;
     timelineManager: TimelineManager;
-    scrubOverallPercent?: number;
-    scrubberMonthPercent?: number;
-    scrubberMonth?: { year: number; month: number };
-    leadOut?: boolean;
+    timelineScrollPercent?: number;
+    viewportTopMonthScrollPercent?: number;
+    viewportTopMonth?: TimelineYearMonth;
+    isInLeadOutSection?: boolean;
     scrubberWidth?: number;
     onScrub?: ScrubberListener;
     onScrubKeyDown?: (event: KeyboardEvent, element: HTMLElement) => void;
@@ -31,10 +31,10 @@
     timelineBottomOffset = 0,
     height = 0,
     timelineManager,
-    scrubOverallPercent = 0,
-    scrubberMonthPercent = 0,
-    scrubberMonth = undefined,
-    leadOut = false,
+    timelineScrollPercent = 0,
+    viewportTopMonthScrollPercent = 0,
+    viewportTopMonth = undefined,
+    isInLeadOutSection = false,
     onScrub = undefined,
     onScrubKeyDown = undefined,
     startScrub = undefined,
@@ -100,7 +100,7 @@
         offset += scrubberMonthPercent * relativeBottomOffset;
       }
       return offset;
-    } else if (leadOut) {
+    } else if (isInLeadOutSection) {
       let offset = relativeTopOffset;
       for (const segment of segments) {
         offset += segment.height;
@@ -111,7 +111,9 @@
       return scrubOverallPercent * (height - (PADDING_TOP + PADDING_BOTTOM));
     }
   };
-  let scrollY = $derived(toScrollFromMonthGroupPercentage(scrubberMonth, scrubberMonthPercent, scrubOverallPercent));
+  let scrollY = $derived(
+    toScrollFromMonthGroupPercentage(viewportTopMonth, viewportTopMonthScrollPercent, timelineScrollPercent),
+  );
   let timelineFullHeight = $derived(timelineManager.scrubberTimelineHeight + timelineTopOffset + timelineBottomOffset);
   let relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
   let relativeBottomOffset = $derived(toScrollY(timelineBottomOffset / timelineFullHeight));
