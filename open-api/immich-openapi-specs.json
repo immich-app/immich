@@ -9592,7 +9592,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.139.3",
+    "version": "1.139.4",
     "contact": {}
   },
   "tags": [],
@@ -10007,12 +10007,6 @@
       },
       "AlbumsAddAssetsResponseDto": {
         "properties": {
-          "albumSuccessCount": {
-            "type": "integer"
-          },
-          "assetSuccessCount": {
-            "type": "integer"
-          },
           "error": {
             "allOf": [
               {
@@ -10025,8 +10019,6 @@
           }
         },
         "required": [
-          "albumSuccessCount",
-          "assetSuccessCount",
           "success"
         ],
         "type": "object"

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.139.3
+ * 1.139.4
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -389,8 +389,6 @@ export type AlbumsAddAssetsDto = {
     assetIds: string[];
 };
 export type AlbumsAddAssetsResponseDto = {
-    albumSuccessCount: number;
-    assetSuccessCount: number;
     error?: BulkIdErrorReason;
     success: boolean;
 };
