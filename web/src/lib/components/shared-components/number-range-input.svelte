@@ -25,7 +25,8 @@
   }: Props = $props();
 
   const oninput = () => {
-    if (!value) {
+    // value can be 0
+    if (value === undefined) {
       return;
     }
 
