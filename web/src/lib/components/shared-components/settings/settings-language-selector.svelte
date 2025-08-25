@@ -1,9 +1,8 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation';
   import Combobox from '$lib/components/shared-components/combobox.svelte';
-  import { defaultLang, langs } from '$lib/constants';
   import { lang } from '$lib/stores/preferences.store';
-  import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
+  import { defaultLang, getClosestAvailableLocale, langCodes, langs } from '$lib/utils/i18n';
   import { locale as i18nLocale, t } from 'svelte-i18n';
 
   interface Props {
@@ -18,7 +17,7 @@
       if (b.label.startsWith('Development')) {
         return -1;
       }
-      return a.label.localeCompare(b.label);
+      return a.value.localeCompare(b.value);
     });
 
   const defaultLangOption = { label: defaultLang.name, value: defaultLang.code };

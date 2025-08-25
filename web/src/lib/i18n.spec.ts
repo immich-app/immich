@@ -1,5 +1,4 @@
-import { langs } from '$lib/constants';
-import { getClosestAvailableLocale } from '$lib/utils/i18n';
+import { getClosestAvailableLocale, langs } from '$lib/utils/i18n';
 import { readFileSync, readdirSync } from 'node:fs';
 
 describe('i18n', () => {

@@ -1,9 +1,10 @@
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
-import { defaultLang, langs, locales } from '$lib/constants';
+import { locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
 import { serverConfig } from '$lib/stores/server-config.store';
 import { handleError } from '$lib/utils/handle-error';
+import { defaultLang, langs } from '$lib/utils/i18n';
 import {
   AssetJobName,
   AssetMediaSize,
