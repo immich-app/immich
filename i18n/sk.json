@@ -500,7 +500,7 @@
   "assets": "Položky",
   "assets_added_count": "{count, plural, one {Pridaná # položka} few {Pridané # položky} other {Pridaných # položek}}",
   "assets_added_to_album_count": "Do albumu {count, plural, one {bola pridaná # položka} few {boli pridané # položky} other {bolo pridaných # položiek}}",
-  "assets_added_to_albums_count": "{assetTotal, plural, one {Pridaná # položka} few {Pridané # položky} other {Pridaných # položiek}} do {albumTotal} albumov",
+  "assets_added_to_albums_count": "{assetTotal, plural, one {Pridaná # položka} few {Pridané # položky} other {Pridaných # položiek}} do {albumTotal, plural, one {# albumu} other {# albumov}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {položku} other {položiek}} nie je možné pridať do albumu",
   "assets_cannot_be_added_to_albums": "{count, plural, one {položka} few {položky} other {položiek}} nie je možné pridať do žiadneho albumu",
   "assets_count": "{count, plural, one {# položka} few {# položky} other {# položiek}}",

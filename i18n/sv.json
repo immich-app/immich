@@ -500,7 +500,7 @@
   "assets": "Objekt",
   "assets_added_count": "La till {count, plural, one {# asset} other {# assets}}",
   "assets_added_to_album_count": "Lade till {count, plural, one {# asset} other {# assets}} i albumet",
-  "assets_added_to_albums_count": "Lade till {assetTotal, plural, one {# asset} other {# assets}} till {albumTotal} album",
+  "assets_added_to_albums_count": "Lade till {assetTotal, plural, one {# asset} other {# assets}} till {albumTotal, plural, one {# album} other {# albums}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Asset} other {Assets}} kan inte läggas till i albumet",
   "assets_cannot_be_added_to_albums": "{count, plural, one {Asset} other {Assets}} kan inte läggas till i något av albumen",
   "assets_count": "{count, plural, one {# objekt} other {# objekt}}",

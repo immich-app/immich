@@ -500,7 +500,7 @@
   "assets": "Üksused",
   "assets_added_count": "{count, plural, one {# üksus} other {# üksust}} lisatud",
   "assets_added_to_album_count": "{count, plural, one {# üksus} other {# üksust}} albumisse lisatud",
-  "assets_added_to_albums_count": "{assetTotal, plural, one {# üksus} other {# üksust}} lisatud {albumTotal} albumisse",
+  "assets_added_to_albums_count": "{assetTotal, plural, one {# üksus} other {# üksust}} lisatud {albumTotal, plural, one {# albumisse} other {# albumisse}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Üksust} other {Üksuseid}} ei saa albumisse lisada",
   "assets_cannot_be_added_to_albums": "{count, plural, one {Üksust} other {Üksuseid}} ei saa lisada ühtegi albumisse",
   "assets_count": "{count, plural, one {# üksus} other {# üksust}}",
