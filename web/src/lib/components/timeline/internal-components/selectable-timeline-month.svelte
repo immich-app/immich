@@ -6,13 +6,15 @@
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
 
-  import TimelineDay from '$lib/components/timeline/base-components/timeline-day.svelte';
+  import TimelineMonth from '$lib/components/timeline/base-components/timeline-month.svelte';
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
   import type { Snippet } from 'svelte';
 
   interface Props {
+    customThumbnailLayout?: Snippet<[TimelineAsset]>;
+
     isSelectionMode: boolean;
     singleSelect: boolean;
     withStacked: boolean;
@@ -21,21 +23,19 @@
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
 
-    customThumbnailLayout?: Snippet<[TimelineAsset]>;
-
     onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onSelect?: (isSingleSelect: boolean, asset: TimelineAsset) => void;
     onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
   }
 
   let {
+    customThumbnailLayout,
     isSelectionMode,
     singleSelect,
     withStacked,
     showArchiveIcon,
     monthGroup = $bindable(),
     assetInteraction,
-    customThumbnailLayout,
     timelineManager,
     onAssetOpen,
     onSelect,
@@ -257,7 +257,7 @@
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
-<TimelineDay
+<TimelineMonth
   {customThumbnailLayout}
   {singleSelect}
   {withStacked}

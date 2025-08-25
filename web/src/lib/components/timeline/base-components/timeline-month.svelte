@@ -19,6 +19,7 @@
 
   interface Props {
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
+
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;
@@ -28,7 +29,7 @@
     onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
 
     onHover: (dayGroup: DayGroup, asset: TimelineAsset) => void;
-    onAssetOpen: (dayGroup: DayGroup, asset: TimelineAsset) => void;
+    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset) => void;
     onAssetSelect: (dayGroup: DayGroup, asset: TimelineAsset) => void;
     onDayGroupSelect: (dayGroup: DayGroup, assets: TimelineAsset[]) => void;
 
@@ -152,7 +153,7 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            onClick={() => onAssetOpen(dayGroup, assetSnapshot(asset))}
+            onClick={() => onAssetOpen?.(dayGroup, assetSnapshot(asset))}
             onSelect={() => onAssetSelect(dayGroup, assetSnapshot(asset))}
             onMouseEvent={() => onHover(dayGroup, assetSnapshot(asset))}
             selected={isAssetSelected(asset)}
