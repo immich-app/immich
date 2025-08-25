@@ -23,7 +23,7 @@ export type TimelineDateTime = TimelineDate & {
   millisecond: number;
 };
 
-export type ScrubberListener = (args: {
+export type ScrubberListener = (scrubberData: {
   scrubberMonth: { year: number; month: number };
   overallScrollPercent: number;
   scrubberMonthScrollPercent: number;
