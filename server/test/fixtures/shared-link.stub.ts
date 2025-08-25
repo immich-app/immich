@@ -46,6 +46,7 @@ const assetInfo: ExifResponseDto = {
 
 const assetResponse: AssetResponseDto = {
   id: 'id_1',
+  createdAt: today,
   deviceAssetId: 'device_asset_id_1',
   ownerId: 'user_id_1',
   deviceId: 'device_id_1',

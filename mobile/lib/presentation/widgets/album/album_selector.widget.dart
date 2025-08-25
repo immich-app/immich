@@ -458,7 +458,7 @@ class _AlbumList extends ConsumerWidget {
             leading: album.thumbnailAssetId != null
                 ? ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(15)),
-                    child: SizedBox(width: 80, height: 80, child: Thumbnail(remoteId: album.thumbnailAssetId)),
+                    child: SizedBox(width: 80, height: 80, child: Thumbnail.remote(remoteId: album.thumbnailAssetId!)),
                   )
                 : SizedBox(
                     width: 80,
@@ -577,7 +577,7 @@ class _GridAlbumCard extends ConsumerWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: album.thumbnailAssetId != null
-                      ? Thumbnail(remoteId: album.thumbnailAssetId)
+                      ? Thumbnail.remote(remoteId: album.thumbnailAssetId!)
                       : Container(
                           color: context.colorScheme.surfaceContainerHighest,
                           child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
