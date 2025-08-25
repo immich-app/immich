@@ -4,7 +4,7 @@
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import Hmr from '$lib/components/timeline/base-components/hmr.svelte';
   import Skeleton from '$lib/components/timeline/base-components/skeleton.svelte';
-  import SelectableTimelineDay from '$lib/components/timeline/internal-components/selectable-timeline-day.svelte';
+  import SelectableTimelineMonth from '$lib/components/timeline/internal-components/selectable-timeline-month.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -263,7 +263,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <SelectableTimelineDay
+          <SelectableTimelineMonth
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}

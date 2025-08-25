@@ -6,7 +6,7 @@
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
 
-  import TimelineDay from '$lib/components/timeline/base-components/timeline-day.svelte';
+  import TimelineMonth from '$lib/components/timeline/base-components/timeline-month.svelte';
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
@@ -242,7 +242,7 @@
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
-<TimelineDay
+<TimelineMonth
   {singleSelect}
   {withStacked}
   {showArchiveIcon}
