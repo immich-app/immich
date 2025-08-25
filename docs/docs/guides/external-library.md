@@ -4,6 +4,8 @@ This guide walks you through adding an [External Library](/docs/features/librari
 This guide assumes you are running Immich in Docker and that the files you wish to access are stored
 in a directory on the same machine.
 
+**Note:** This currently (v1.135.3) works for the admin user, only. Albums created this way can be shared, but the "Expore" feature (Face recognition aka People, Places) can not be made available. 
+
 # Mount the directory into the containers.
 
 Edit `docker-compose.yml` to add one or more new mount points in the section `immich-server:` under `volumes:`.
