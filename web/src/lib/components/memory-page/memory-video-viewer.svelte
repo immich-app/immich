@@ -1,6 +1,7 @@
 <script lang="ts">
   import { assetViewerFadeDuration } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import { autoPlayVideo } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
   import { onMount } from 'svelte';
@@ -27,7 +28,7 @@
   <div class="h-full w-full bg-pink-9000" transition:fade={{ duration: assetViewerFadeDuration }}>
     <video
       bind:this={videoPlayer}
-      autoplay
+      autoplay={$autoPlayVideo}
       playsinline
       class="h-full w-full rounded-2xl object-contain transition-all"
       src={getAssetPlaybackUrl({ id: asset.id })}
