@@ -16,18 +16,22 @@
 
   let isShowChangeLocation = $state(false);
 
-  async function handleConfirmChangeLocation(gps: { lng: number; lat: number }) {
+  const onClose = async (point?: { lng: number; lat: number }) => {
     isShowChangeLocation = false;
+
+    if (!point) {
+      return;
+    }
 
     try {
       asset = await updateAsset({
         id: asset.id,
-        updateAssetDto: { latitude: gps.lat, longitude: gps.lng },
+        updateAssetDto: { latitude: point.lat, longitude: point.lng },
       });
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_location'));
     }
-  }
+  };
 </script>
 
 {#if asset.exifInfo?.country}
@@ -85,6 +89,6 @@
 
 {#if isShowChangeLocation}
   <Portal>
-    <ChangeLocation {asset} onConfirm={handleConfirmChangeLocation} onCancel={() => (isShowChangeLocation = false)} />
+    <ChangeLocation {asset} {onClose} />
   </Portal>
 {/if}

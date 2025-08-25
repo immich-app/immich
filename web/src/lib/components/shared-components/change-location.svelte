@@ -21,11 +21,11 @@
 
   interface Props {
     asset?: AssetResponseDto | undefined;
-    onCancel: () => void;
-    onConfirm: (point: Point) => void;
+    point?: Point;
+    onClose: (point?: Point) => void;
   }
 
-  let { asset = undefined, onCancel, onConfirm }: Props = $props();
+  let { asset = undefined, point: initialPoint, onClose }: Props = $props();
 
   let places: PlacesResponseDto[] = $state([]);
   let suggestedPlaces: PlacesResponseDto[] = $state([]);
@@ -38,13 +38,19 @@
 
   let previousLocation = get(lastChosenLocation);
 
-  let assetLat = $derived(asset?.exifInfo?.latitude ?? undefined);
-  let assetLng = $derived(asset?.exifInfo?.longitude ?? undefined);
+  let assetLat = $derived(initialPoint?.lat ?? asset?.exifInfo?.latitude ?? undefined);
+  let assetLng = $derived(initialPoint?.lng ?? asset?.exifInfo?.longitude ?? undefined);
 
   let mapLat = $derived(assetLat ?? previousLocation?.lat ?? undefined);
   let mapLng = $derived(assetLng ?? previousLocation?.lng ?? undefined);
 
   let zoom = $derived(mapLat !== undefined && mapLng !== undefined ? 12.5 : 1);
+
+  $effect(() => {
+    if (mapElement && initialPoint) {
+      mapElement.addClipMapMarker(initialPoint.lng, initialPoint.lat);
+    }
+  });
 
   $effect(() => {
     if (places) {
@@ -55,14 +61,14 @@
     }
   });
 
-  let point: Point | null = $state(null);
+  let point: Point | null = $state(initialPoint ?? null);
 
-  const handleConfirm = () => {
-    if (point) {
+  const handleConfirm = (confirmed?: boolean) => {
+    if (point && confirmed) {
       lastChosenLocation.set(point);
-      onConfirm(point);
+      onClose(point);
     } else {
-      onCancel();
+      onClose();
     }
   };
 
@@ -109,6 +115,11 @@
     point = { lng: longitude, lat: latitude };
     mapElement?.addClipMapMarker(longitude, latitude);
   };
+
+  const onUpdate = (lat: number, lng: number) => {
+    point = { lat, lng };
+    mapElement?.addClipMapMarker(lng, lat);
+  };
 </script>
 
 <ConfirmModal
@@ -116,7 +127,7 @@
   title={$t('change_location')}
   icon={mdiMapMarkerMultipleOutline}
   size="medium"
-  onClose={(confirmed) => (confirmed ? handleConfirm() : onCancel())}
+  onClose={handleConfirm}
 >
   {#snippet promptSnippet()}
     <div class="flex flex-col w-full h-full gap-2">
@@ -197,14 +208,7 @@
       </div>
 
       <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
-        <CoordinatesInput
-          lat={point ? point.lat : assetLat}
-          lng={point ? point.lng : assetLng}
-          onUpdate={(lat, lng) => {
-            point = { lat, lng };
-            mapElement?.addClipMapMarker(lng, lat);
-          }}
-        />
+        <CoordinatesInput lat={point ? point.lat : assetLat} lng={point ? point.lng : assetLng} {onUpdate} />
       </div>
     </div>
   {/snippet}
