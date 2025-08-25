@@ -12,6 +12,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
+
   const RemoteAssetRepository(this._db) : super(_db);
 
   /// For testing purposes
@@ -233,5 +234,14 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   Future<int> getCount() {
     return _db.managers.remoteAssetEntity.count();
+  }
+
+  Future<List<RemoteAsset>> getByChecksums(Iterable<String> checksums, {bool? isTrashed}) {
+    if (checksums.isEmpty) return Future.value([]);
+    final query = _db.remoteAssetEntity.select()..where((rae) => rae.checksum.isIn(checksums));
+    if (isTrashed != null) {
+      query.where((rae) => isTrashed ? rae.deletedAt.isNotNull() : rae.deletedAt.isNull());
+    }
+    return query.map((row) => row.toDto()).get();
   }
 }
