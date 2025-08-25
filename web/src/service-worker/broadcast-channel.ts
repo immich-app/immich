@@ -1,4 +1,4 @@
-import { cancelLoad, getCachedOrFetch } from './fetch-event';
+import { cancelRequest, handleRequest } from './request';
 
 export const installBroadcastChannelListener = () => {
   const broadcast = new BroadcastChannel('immich');
@@ -7,12 +7,12 @@ export const installBroadcastChannelListener = () => {
     if (!event.data) {
       return;
     }
-    const urlstring = event.data.url;
-    const url = new URL(urlstring, event.origin);
+    const urlString = event.data.url;
+    const url = new URL(urlString, event.origin);
     if (event.data.type === 'cancel') {
-      cancelLoad(url.toString());
+      cancelRequest(url);
     } else if (event.data.type === 'preload') {
-      getCachedOrFetch(url);
+      handleRequest(url);
     }
   };
 };
