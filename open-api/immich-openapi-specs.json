@@ -10007,12 +10007,6 @@
       },
       "AlbumsAddAssetsResponseDto": {
         "properties": {
-          "albumSuccessCount": {
-            "type": "integer"
-          },
-          "assetSuccessCount": {
-            "type": "integer"
-          },
           "error": {
             "allOf": [
               {
@@ -10025,8 +10019,6 @@
           }
         },
         "required": [
-          "albumSuccessCount",
-          "assetSuccessCount",
           "success"
         ],
         "type": "object"

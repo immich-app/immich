@@ -389,8 +389,6 @@ export type AlbumsAddAssetsDto = {
     assetIds: string[];
 };
 export type AlbumsAddAssetsResponseDto = {
-    albumSuccessCount: number;
-    assetSuccessCount: number;
     error?: BulkIdErrorReason;
     success: boolean;
 };
