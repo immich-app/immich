@@ -527,7 +527,7 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SidecarDiscovery,
+          name: JobName.SidecarCheck,
           data: {
             id: assetStub.external.id,
             source: 'upload',
@@ -573,7 +573,7 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SidecarDiscovery,
+          name: JobName.SidecarCheck,
           data: {
             id: assetStub.image.id,
             source: 'upload',
