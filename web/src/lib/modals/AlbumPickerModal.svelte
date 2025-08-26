@@ -207,13 +207,13 @@
           <span class="bg-gray-300 dark:bg-gray-500 rounded p-1">
             <Icon icon={mdiKeyboardReturn} size="1rem" />
           </span>
-          <Text size="small">to select</Text>
+          <Text size="tiny">{$t('to_select')}</Text>
         </div>
         <div class="flex gap-1 place-items-center">
           <span class="bg-gray-300 dark:bg-gray-500 rounded p-1">
-            <Text size="small">CTRL</Text>
+            <Text size="tiny">CTRL</Text>
           </span>
-          <Text size="small">to multi-select</Text>
+          <Text size="tiny">{$t('to_multi_select')}</Text>
         </div>
       </div>
     </div>
