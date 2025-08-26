@@ -29,6 +29,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { isAssetChecksumConstraint } from 'src/utils/database';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
@@ -545,47 +546,62 @@ export class MetadataService extends BaseService {
         });
       }
       const checksum = this.cryptoRepository.hashSha1(video);
+      const checksumQuery = { ownerId: asset.ownerId, libraryId: asset.libraryId ?? undefined, checksum };
 
-      let motionAsset = await this.assetRepository.getByChecksum({
-        ownerId: asset.ownerId,
-        libraryId: asset.libraryId ?? undefined,
-        checksum,
-      });
-      if (motionAsset) {
+      let motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
+      let isNewMotionAsset = false;
+
+      if (!motionAsset) {
+        try {
+          const motionAssetId = this.cryptoRepository.randomUUID();
+          motionAsset = await this.assetRepository.create({
+            id: motionAssetId,
+            libraryId: asset.libraryId,
+            type: AssetType.Video,
+            fileCreatedAt: dates.dateTimeOriginal,
+            fileModifiedAt: stats.mtime,
+            localDateTime: dates.localDateTime,
+            checksum,
+            ownerId: asset.ownerId,
+            originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+            originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
+            visibility: AssetVisibility.Hidden,
+            deviceAssetId: 'NONE',
+            deviceId: 'NONE',
+          });
+
+          isNewMotionAsset = true;
+
+          if (!asset.isExternal) {
+            await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
+          }
+        } catch (error) {
+          if (!isAssetChecksumConstraint(error)) {
+            throw error;
+          }
+
+          motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
+          if (!motionAsset) {
+            this.logger.warn(`Unable to find existing motion video asset for ${asset.id}: ${asset.originalPath}`);
+            return;
+          }
+        }
+      }
+
+      if (!isNewMotionAsset) {
         this.logger.debugFn(() => {
           const base64Checksum = checksum.toString('base64');
           return `Motion asset with checksum ${base64Checksum} already exists for asset ${asset.id}: ${asset.originalPath}`;
         });
+      }
 
-        // Hide the motion photo video asset if it's not already hidden to prepare for linking
-        if (motionAsset.visibility === AssetVisibility.Timeline) {
-          await this.assetRepository.update({
-            id: motionAsset.id,
-            visibility: AssetVisibility.Hidden,
-          });
-          this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
-        }
-      } else {
-        const motionAssetId = this.cryptoRepository.randomUUID();
-        motionAsset = await this.assetRepository.create({
-          id: motionAssetId,
-          libraryId: asset.libraryId,
-          type: AssetType.Video,
-          fileCreatedAt: dates.dateTimeOriginal,
-          fileModifiedAt: stats.mtime,
-          localDateTime: dates.localDateTime,
-          checksum,
-          ownerId: asset.ownerId,
-          originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
-          originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
+      // Hide the motion photo video asset if it's not already hidden to prepare for linking
+      if (motionAsset.visibility === AssetVisibility.Timeline) {
+        await this.assetRepository.update({
+          id: motionAsset.id,
           visibility: AssetVisibility.Hidden,
-          deviceAssetId: 'NONE',
-          deviceId: 'NONE',
         });
-
-        if (!asset.isExternal) {
-          await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
-        }
+        this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
       }
 
       if (asset.livePhotoVideoId !== motionAsset.id) {

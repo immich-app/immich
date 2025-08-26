@@ -14,7 +14,7 @@ import {
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
-import postgres, { Notice } from 'postgres';
+import postgres, { Notice, PostgresError } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
 import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
@@ -152,6 +152,10 @@ export function toJson<DB, TB extends keyof DB & string, T extends TB | Expressi
 }
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
+
+export const isAssetChecksumConstraint = (error: unknown) => {
+  return (error as PostgresError)?.constraint_name === 'UQ_assets_owner_checksum';
+};
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
