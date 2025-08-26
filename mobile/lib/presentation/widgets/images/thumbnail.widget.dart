@@ -207,7 +207,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
     final topLeft = renderObject.localToGlobal(Offset.zero);
     final bottomRight = renderObject.localToGlobal(Offset(renderObject.size.width, renderObject.size.height));
-    return topLeft.dy < MediaQuery.sizeOf(context).height && bottomRight.dy > 0;
+    return topLeft.dy < context.height && bottomRight.dy > 0;
   }
 
   @override
