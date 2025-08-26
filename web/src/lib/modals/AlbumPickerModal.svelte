@@ -74,9 +74,9 @@
   };
 
   const handleMultiSubmit = () => {
-    const albums = new Set(albumModalRows.filter((row) => row.multiSelected).map(({ album }) => album!));
-    if (albums.size > 0) {
-      onClose([...albums]);
+    const selectedAlbums = new Set(albums.filter(({ id }) => multiSelectedAlbumIds.includes(id)));
+    if (selectedAlbums.size > 0) {
+      onClose([...selectedAlbums]);
     } else {
       onClose();
     }
