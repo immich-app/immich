@@ -16,6 +16,29 @@ import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
+// Snapshot of required state for post-pop processing, avoiding ref usage after dispose
+class BackupAlbumSelectionSnapshot {
+  final String? userId;
+  final bool enableSyncUploadAlbum;
+  final bool isBackupEnabled;
+  final int initialTotalAssetCount;
+  final int currentTotalAssetCount;
+  final List<LocalAlbum> selectedAlbums;
+  final DriftBackupNotifier backupNotifier;
+  final AlbumInfoSyncNotifier albumInfoSyncNotifier;
+
+  const BackupAlbumSelectionSnapshot({
+    required this.userId,
+    required this.enableSyncUploadAlbum,
+    required this.isBackupEnabled,
+    required this.initialTotalAssetCount,
+    required this.currentTotalAssetCount,
+    required this.selectedAlbums,
+    required this.backupNotifier,
+    required this.albumInfoSyncNotifier,
+  });
+}
+
 @RoutePage()
 class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
   const DriftBackupAlbumSelectionPage({super.key});
@@ -46,49 +69,48 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
   }
 
-  Future<void> _handleUpload(String userId) async {
-    await ref.read(driftBackupProvider.notifier).getBackupStatus(userId);
+  Future<BackupAlbumSelectionSnapshot> _buildSnapshot() async {
+    final user = ref.read(currentUserProvider);
+    final backupNotifier = ref.read(driftBackupProvider.notifier);
+    final albumInfoSyncNotifier = ref.read(albumInfoSyncProvider.notifier);
+    final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+    final enableSyncUploadAlbum = _enableSyncUploadAlbum.value;
+    final allAlbums = ref.read(backupAlbumProvider);
+    // Refresh counts if we have a user
+    if (user != null) {
+      await backupNotifier.getBackupStatus(user.id);
+    }
     final currentTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
+    final selectedAlbums = allAlbums.where((a) => a.backupSelection == BackupSelection.selected).toList();
 
-    if (currentTotalAssetCount != _initialTotalAssetCount) {
-      final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
-
-      if (!isBackupEnabled) {
-        return;
-      }
-      final backupNotifier = ref.read(driftBackupProvider.notifier);
-
-      backupNotifier.cancel().then((_) {
-        backupNotifier.startBackup(userId);
-      });
-    }
+    return BackupAlbumSelectionSnapshot(
+      userId: user?.id,
+      enableSyncUploadAlbum: enableSyncUploadAlbum,
+      isBackupEnabled: isBackupEnabled,
+      initialTotalAssetCount: _initialTotalAssetCount,
+      currentTotalAssetCount: currentTotalAssetCount,
+      selectedAlbums: selectedAlbums,
+      backupNotifier: backupNotifier,
+      albumInfoSyncNotifier: albumInfoSyncNotifier,
+    );
   }
 
-  Future<void> _handleSyncUploadAlbums(String ownerId) async {
-    // Check and create linked remote albums for selected local albums
-    final selectedAlbums = ref
-        .read(backupAlbumProvider)
-        .where((album) => album.backupSelection == BackupSelection.selected)
-        .toList();
-
-    if (selectedAlbums.isEmpty) {
+  Future<void> _handlePagePopped(BackupAlbumSelectionSnapshot snap) async {
+    final userId = snap.userId;
+    if (userId == null) {
       return;
     }
 
-    await ref.read(albumInfoSyncProvider.notifier).manageLinkedAlbums(selectedAlbums, ownerId);
-  }
-
-  Future<void> handlePagePopped() async {
-    final currentUser = ref.read(currentUserProvider);
-    if (currentUser == null) {
-      return;
+    if (snap.enableSyncUploadAlbum && snap.selectedAlbums.isNotEmpty) {
+      await snap.albumInfoSyncNotifier.manageLinkedAlbums(snap.selectedAlbums, userId);
     }
 
-    if (_enableSyncUploadAlbum.value == true) {
-      await _handleSyncUploadAlbums(currentUser.id);
+    // Restart backup if total count changed and backup is enabled
+    final totalChanged = snap.currentTotalAssetCount != snap.initialTotalAssetCount;
+    if (totalChanged && snap.isBackupEnabled) {
+      await snap.backupNotifier.cancel();
+      await snap.backupNotifier.startBackup(userId);
     }
-
-    await _handleUpload(currentUser.id);
   }
 
   @override
@@ -118,7 +140,8 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
         // can be triggered multiple times, so we guard it with _hasPopped
         if (didPop && !_hasPopped) {
           _hasPopped = true;
-          await handlePagePopped();
+          final snapshot = await _buildSnapshot();
+          await _handlePagePopped(snapshot);
         }
       },
       child: Scaffold(
