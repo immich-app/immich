@@ -579,9 +579,13 @@ export class AutoStackService extends BaseService {
   onAppBootstrap() {
     this.logger.log('AutoStack: service initialized (listening for AssetMetadataExtracted)');
   }
-  // Listen on all workers to avoid missing the event if it's dispatched outside the microservices context
-  @OnEvent({ name: 'AssetMetadataExtracted' })
-  async onAssetMetadataExtracted({ assetId, userId }: ArgOf<'AssetMetadataExtracted'>) {
+  // Auto-stack candidate generation is now triggered after SmartSearch completion
+  // instead of immediately after metadata extraction to ensure all necessary
+  // data (embeddings, pHash, etc.) is available for stack detection
+
+  // Listen for SmartSearch completion to trigger auto-stack candidate generation
+  @OnEvent({ name: 'AssetSmartSearchProcessed' })
+  async onAssetSmartSearchProcessed({ assetId, userId }: ArgOf<'AssetSmartSearchProcessed'>) {
     try {
       const { server } = await this.getConfig({ withCache: true });
       if (!server.autoStack.enabled) {
@@ -591,7 +595,7 @@ export class AutoStackService extends BaseService {
       this.logger.debug(`AutoStack: queued asset candidate generation job asset=${assetId} user=${userId}`);
       this.inc('immich.auto_stack.jobs_queued', 1);
     } catch (error) {
-      this.logger.warn(`AutoStackService queue-on-event failed for asset ${assetId}: ${error}`);
+      this.logger.warn(`AutoStackService queue-on-smart-search failed for asset ${assetId}: ${error}`);
     }
   }
 

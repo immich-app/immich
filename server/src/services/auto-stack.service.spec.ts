@@ -1,3 +1,4 @@
+import { JobName } from 'src/enum';
 import { AutoStackService } from 'src/services/auto-stack.service';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -391,5 +392,36 @@ describe(AutoStackService.name, () => {
     const allIds = createdGroups.flat();
     expect(allIds).toContain('o1');
     expect(allIds).toContain('o2');
+  });
+
+  describe('onAssetSmartSearchProcessed', () => {
+    it('should queue auto-stack candidate generation when auto-stack is enabled', async () => {
+      await sut.onAssetSmartSearchProcessed({ assetId: 'asset-id', userId: 'user-id' });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: 'AutoStackCandidateGenerateForAsset',
+        data: { id: 'asset-id' },
+      });
+    });
+
+    it('should not queue when auto-stack is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: {
+          autoStack: {
+            enabled: false,
+          },
+        },
+      });
+
+      await sut.onAssetSmartSearchProcessed({ assetId: 'asset-id', userId: 'user-id' });
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors gracefully', async () => {
+      mocks.job.queue.mockRejectedValue(new Error('Queue error'));
+
+      await expect(sut.onAssetSmartSearchProcessed({ assetId: 'asset-id', userId: 'user-id' })).resolves.not.toThrow();
+    });
   });
 });
