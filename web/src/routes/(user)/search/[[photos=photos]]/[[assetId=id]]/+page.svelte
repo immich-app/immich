@@ -210,6 +210,10 @@
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),
+      minWidth: $t('min_width'),
+      maxWidth: $t('max_width'),
+      minHeight: $t('min_height'),
+      maxHeight: $t('max_height'),
     };
     return keyMap[key] || key;
   }
