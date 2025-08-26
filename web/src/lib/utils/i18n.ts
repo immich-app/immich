@@ -1,6 +1,6 @@
+import { LANGUAGES_LIST_IETF_BCP_47 } from '$lib/components/i18n/lang-ietf-bcp-47';
 import { LANGUAGES_LIST_ISO_639_1 } from '$lib/components/i18n/lang-iso-639-1';
 import { LANGUAGES_LIST_ISO_639_3 } from '$lib/components/i18n/lang-iso-639-3';
-import { LANGUAGES_LIST_WEBLATE_SPECIAL } from '$lib/components/i18n/lang-weblate-special';
 import { isRtlLang } from '$lib/components/i18n/langs-rtl';
 import { locale, t, waitLocale } from 'svelte-i18n';
 import { get, type Unsubscriber } from 'svelte/store';
@@ -10,14 +10,13 @@ interface Lang {
   code: string;
   loader: () => Promise<{ default: object }>;
   rtl?: boolean;
-  weblateCode?: string;
 }
 
 const allLangs = {
   ...LANGUAGES_LIST_ISO_639_1,
   ...LANGUAGES_LIST_ISO_639_3,
-  ...LANGUAGES_LIST_WEBLATE_SPECIAL,
-} as Record<string, { name: string; nativeName: string; weblateCode?: string }>;
+  ...LANGUAGES_LIST_IETF_BCP_47,
+} as Record<string, { name: string; nativeName: string }>;
 
 export async function getFormatter() {
   let unsubscribe: Unsubscriber | undefined;
@@ -48,7 +47,7 @@ const availableCodes = Object.keys(modules)
   .map((path) => path.match(/\/(\w+)\.json$/)?.[1])
   .filter((code): code is string => Boolean(code));
 
-const webplateLangs: Lang[] = availableCodes.map((code) => ({
+const weblateLangs: Lang[] = availableCodes.map((code) => ({
   name: allLangs[code].nativeName || code,
   code,
   loader: () => import(`$i18n/${code}.json`).catch(() => import(`$i18n/en.json`)),
@@ -58,7 +57,7 @@ const webplateLangs: Lang[] = availableCodes.map((code) => ({
 export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
 
 export const langs: Lang[] = [
-  ...webplateLangs,
+  ...weblateLangs,
   { name: 'Development (keys only)', code: 'dev', loader: () => Promise.resolve({ default: {} }) },
 ];
 
