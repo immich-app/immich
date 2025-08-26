@@ -9,7 +9,10 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/photos-page/actions/focus-actions';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import ChangeDate, {
+    type AbsoluteResult,
+    type RelativeResult,
+  } from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -32,8 +35,10 @@
   import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
+  import { mdiCalendarBlankOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
   import type { UpdatePayload } from 'vite';
   import Portal from '../shared-components/portal/portal.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
@@ -827,16 +832,19 @@
 
 {#if isShowSelectDate}
   <ChangeDate
-    title="Navigate to Time"
+    withDuration={false}
+    icon={mdiCalendarBlankOutline}
+    confirmText={$t('navigate')}
+    title={$t('navigate_to_time')}
     initialDate={DateTime.now()}
     timezoneInput={false}
-    onConfirm={async (dateString: string) => {
+    onConfirm={async (result: AbsoluteResult | RelativeResult) => {
       isShowSelectDate = false;
-      const asset = await timelineManager.getClosestAssetToDate(
-        (DateTime.fromISO(dateString) as DateTime<true>).toObject(),
-      );
-      if (asset) {
-        setFocusAsset(asset);
+      if (result.mode === 'absolute') {
+        const asset = await timelineManager.getClosestAssetToDate(result.dateTime.toObject());
+        if (asset) {
+          setFocusAsset(asset);
+        }
       }
     }}
     onCancel={() => (isShowSelectDate = false)}

@@ -143,3 +143,24 @@ export function findMonthGroupForDate(timelineManager: TimelineManager, targetYe
     }
   }
 }
+
+export function findClosestGroupForDate(timelineManager: TimelineManager, targetYearMonth: TimelineYearMonth) {
+  let closestMonth: MonthGroup | undefined;
+  let minDifference = Number.MAX_SAFE_INTEGER;
+
+  for (const month of timelineManager.months) {
+    const { year, month: monthNum } = month.yearMonth;
+
+    // Calculate the absolute difference in months
+    const yearDiff = Math.abs(year - targetYearMonth.year);
+    const monthDiff = Math.abs(monthNum - targetYearMonth.month);
+    const totalDiff = yearDiff * 12 + monthDiff;
+
+    if (totalDiff < minDifference) {
+      minDifference = totalDiff;
+      closestMonth = month;
+    }
+  }
+
+  return closestMonth;
+}

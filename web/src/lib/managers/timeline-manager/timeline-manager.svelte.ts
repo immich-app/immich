@@ -16,6 +16,7 @@ import {
   runAssetOperation,
 } from '$lib/managers/timeline-manager/internal/operations-support.svelte';
 import {
+  findClosestGroupForDate,
   findMonthGroupForAsset as findMonthGroupForAssetUtil,
   findMonthGroupForDate,
   getAssetWithOffset,
@@ -515,9 +516,13 @@ export class TimelineManager {
   }
 
   async getClosestAssetToDate(dateTime: TimelineDateTime) {
-    const monthGroup = findMonthGroupForDate(this, dateTime);
+    let monthGroup = findMonthGroupForDate(this, dateTime);
     if (!monthGroup) {
-      return;
+      // if exact match not found, find closest
+      monthGroup = findClosestGroupForDate(this, dateTime);
+      if (!monthGroup) {
+        return;
+      }
     }
     await this.loadMonthGroup(dateTime, { cancelable: false });
     const asset = monthGroup.findClosest(dateTime);
