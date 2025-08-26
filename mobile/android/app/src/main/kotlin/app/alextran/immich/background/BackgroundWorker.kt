@@ -15,10 +15,15 @@ import io.flutter.embedding.engine.dart.DartExecutor.DartCallback
 import io.flutter.embedding.engine.loader.FlutterLoader
 import io.flutter.view.FlutterCallbackInformation
 
-private const val TAG = "BackgroundUploadWorker"
+private const val TAG = "BackgroundWorker"
 
-class BackgroundUploadWorker(context: Context, params: WorkerParameters) :
-  ListenableWorker(context, params), BackgroundUploadBgHostApi {
+enum class BackgroundTaskType {
+  LOCAL_SYNC,
+  UPLOAD,
+}
+
+class BackgroundWorker(context: Context, params: WorkerParameters) :
+  ListenableWorker(context, params), BackgroundWorkerBgHostApi {
   private val ctx: Context = context.applicationContext
 
   /// The Flutter loader that loads the native Flutter library and resources.
@@ -32,7 +37,7 @@ class BackgroundUploadWorker(context: Context, params: WorkerParameters) :
   private var engine: FlutterEngine? = null
 
   // Used to call methods on the flutter side
-  private var flutterApi: BackgroundUploadFlutterApi? = null
+  private var flutterApi: BackgroundWorkerFlutterApi? = null
 
   /// Result returned when the background task completes. This is used to signal
   /// to the WorkManager that the task has finished, either successfully or with failure.
@@ -56,8 +61,8 @@ class BackgroundUploadWorker(context: Context, params: WorkerParameters) :
       // Retrieve the callback handle stored by the main Flutter app
       // This handle points to the Flutter function that should be executed in the background
       val callbackHandle =
-        ctx.getSharedPreferences(BackgroundUploadImpl.SHARED_PREF_NAME, Context.MODE_PRIVATE)
-          .getLong(BackgroundUploadImpl.SHARED_PREF_CALLBACK_HANDLE, 0L)
+        ctx.getSharedPreferences(BackgroundWorkerApiImpl.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+          .getLong(BackgroundWorkerApiImpl.SHARED_PREF_CALLBACK_HANDLE, 0L)
 
       if (callbackHandle == 0L) {
         // Without a valid callback handle, we cannot start the Flutter background execution
@@ -75,8 +80,8 @@ class BackgroundUploadWorker(context: Context, params: WorkerParameters) :
       // Register custom plugins
       MainActivity.registerPlugins(ctx, engine!!)
       flutterApi =
-        BackgroundUploadFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
-      BackgroundUploadBgHostApi.setUp(
+        BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
+      BackgroundWorkerBgHostApi.setUp(
         binaryMessenger = engine!!.dartExecutor.binaryMessenger,
         api = this
       )
@@ -95,11 +100,12 @@ class BackgroundUploadWorker(context: Context, params: WorkerParameters) :
    * This method acts as a bridge between the native iOS background task system and Flutter.
    */
   override fun onInitialized() {
-    flutterApi?.onAndroidBackgroundUpload {
-      it.fold(
-        onSuccess = { _ -> complete(Result.success()) },
-        onFailure = { _ -> onStopped() }
-      )
+    val taskTypeIndex = inputData.getInt(BackgroundWorkerApiImpl.WORKER_DATA_TASK_TYPE, 0)
+    val taskType = BackgroundTaskType.entries[taskTypeIndex]
+
+    when (taskType) {
+      BackgroundTaskType.LOCAL_SYNC -> flutterApi?.onLocalSync(null) { handleHostResult(it) }
+      BackgroundTaskType.UPLOAD -> flutterApi?.onAndroidUpload { handleHostResult(it) }
     }
   }
 
@@ -124,6 +130,17 @@ class BackgroundUploadWorker(context: Context, params: WorkerParameters) :
     Handler(Looper.getMainLooper()).postDelayed({
       complete(Result.failure())
     }, 5000)
+  }
+
+  private fun handleHostResult(result: kotlin.Result<Unit>) {
+    if (isComplete) {
+      return
+    }
+
+    result.fold(
+      onSuccess = { _ -> complete(Result.success()) },
+      onFailure = { _ -> onStopped() }
+    )
   }
 
   /**

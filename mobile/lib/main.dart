@@ -206,13 +206,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
       if (Store.isBetaTimelineEnabled) {
+        ref.read(driftBackgroundUploadFgService).enableSyncService();
         if (ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup)) {
           ref.read(backgroundServiceProvider).disableService();
-          ref.read(backgroundUploadFgService).enable();
+          ref.read(driftBackgroundUploadFgService).enableBackupService();
         }
       } else {
         ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-        ref.read(backgroundUploadFgService).disable();
+        ref.read(driftBackgroundUploadFgService).disableBackupService();
       }
     });
 

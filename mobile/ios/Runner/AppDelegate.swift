@@ -24,7 +24,7 @@ import UIKit
     BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
 
     BackgroundServicePlugin.registerBackgroundProcessing()
-    BackgroundUploadImpl.registerBackgroundProcessing()
+    BackgroundWorkerApiImpl.registerBackgroundProcessing()
 
     BackgroundServicePlugin.setPluginRegistrantCallback { registry in
       if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
@@ -54,6 +54,6 @@ import UIKit
   public static func registerPlugins(binaryMessenger: FlutterBinaryMessenger) {
     NativeSyncApiSetup.setUp(binaryMessenger: binaryMessenger, api: NativeSyncApiImpl())
     ThumbnailApiSetup.setUp(binaryMessenger: binaryMessenger, api: ThumbnailApiImpl())
-    BackgroundUploadFgHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: BackgroundUploadImpl())
+    BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: BackgroundWorkerApiImpl())
   }
 }

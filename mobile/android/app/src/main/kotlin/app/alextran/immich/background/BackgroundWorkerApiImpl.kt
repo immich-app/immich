@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.core.content.edit
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
@@ -13,29 +14,34 @@ import java.util.concurrent.TimeUnit
 
 private const val TAG = "BackgroundUploadImpl"
 
-class BackgroundUploadImpl(context: Context) : BackgroundUploadFgHostApi {
+class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
   private val ctx: Context = context.applicationContext
+  override fun enableSyncWorker() {
+    enqueueMediaObserver(ctx)
+    Log.i(TAG, "Scheduled media observer")
+  }
 
-  override fun enable(callbackHandle: Long) {
+  override fun enableBackupWorker(callbackHandle: Long) {
     updateBackupEnabled(ctx, true)
     updateCallbackHandle(ctx, callbackHandle)
-    enqueueMediaObserver(ctx)
     Log.i(TAG, "Scheduled background tasks")
   }
 
-  override fun disable() {
+  override fun disableBackupWorker() {
     updateBackupEnabled(ctx, false)
-    cancelTasks(ctx)
+    WorkManager.getInstance(ctx).cancelUniqueWork(BACKGROUND_WORKER_NAME)
     Log.i(TAG, "Cancelled background tasks")
   }
 
   companion object {
-    private const val BACKUP_WORKER_NAME = "immich/BackupWorkerV1"
+    private const val BACKGROUND_WORKER_NAME = "immich/BackgroundWorkerV1"
     private const val OBSERVER_WORKER_NAME = "immich/MediaObserverV1"
 
-    const val SHARED_PREF_NAME = "Immich::Backups"
-    private const val SHARED_PREF_BACKUP_ENABLED = "Backups::enabled"
-    const val SHARED_PREF_CALLBACK_HANDLE = "Backups::callbackHandle"
+    const val WORKER_DATA_TASK_TYPE = "taskType"
+
+    const val SHARED_PREF_NAME = "Immich::Background"
+    const val SHARED_PREF_BACKUP_ENABLED = "Background::enabled"
+    const val SHARED_PREF_CALLBACK_HANDLE = "Background::callbackHandle"
 
     private fun updateBackupEnabled(context: Context, enabled: Boolean) {
       context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE).edit {
@@ -55,8 +61,8 @@ class BackgroundUploadImpl(context: Context) : BackgroundUploadFgHostApi {
         .addContentUriTrigger(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true)
         .addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
         .addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
-        .setTriggerContentUpdateDelay(30, TimeUnit.SECONDS)
-        .setTriggerContentMaxDelay(2, TimeUnit.MINUTES)
+        .setTriggerContentUpdateDelay(5, TimeUnit.SECONDS)
+        .setTriggerContentMaxDelay(1, TimeUnit.MINUTES)
         .build()
 
       val work = OneTimeWorkRequest.Builder(MediaObserver::class.java)
@@ -68,23 +74,19 @@ class BackgroundUploadImpl(context: Context) : BackgroundUploadFgHostApi {
       Log.i(TAG, "Enqueued media observer worker with name: $OBSERVER_WORKER_NAME")
     }
 
-    fun enqueueBackupWorker(ctx: Context) {
+    fun enqueueBackgroundWorker(ctx: Context, taskType: BackgroundTaskType) {
       val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
 
-      val work = OneTimeWorkRequest.Builder(BackgroundUploadWorker::class.java)
+      val data = Data.Builder()
+      data.putInt(WORKER_DATA_TASK_TYPE, taskType.ordinal)
+      val work = OneTimeWorkRequest.Builder(BackgroundWorker::class.java)
         .setConstraints(constraints)
         .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-        .setInitialDelay(5, TimeUnit.SECONDS)
-        .build()
+        .setInputData(data.build()).build()
       WorkManager.getInstance(ctx)
-        .enqueueUniqueWork(BACKUP_WORKER_NAME, ExistingWorkPolicy.REPLACE, work)
+        .enqueueUniqueWork(BACKGROUND_WORKER_NAME, ExistingWorkPolicy.REPLACE, work)
 
-      Log.i(TAG, "Enqueued backup worker with name: $BACKUP_WORKER_NAME")
-    }
-
-    private fun cancelTasks(ctx: Context) {
-      WorkManager.getInstance(ctx).cancelUniqueWork(OBSERVER_WORKER_NAME)
-      WorkManager.getInstance(ctx).cancelUniqueWork(BACKUP_WORKER_NAME)
+      Log.i(TAG, "Enqueued background worker with name: $BACKGROUND_WORKER_NAME")
     }
   }
 }

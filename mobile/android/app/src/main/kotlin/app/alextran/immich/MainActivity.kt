@@ -3,9 +3,8 @@ package app.alextran.immich
 import android.content.Context
 import android.os.Build
 import android.os.ext.SdkExtensions
-import androidx.annotation.NonNull
-import app.alextran.immich.background.BackgroundUploadFgHostApi
-import app.alextran.immich.background.BackgroundUploadImpl
+import app.alextran.immich.background.BackgroundWorkerApiImpl
+import app.alextran.immich.background.BackgroundWorkerFgHostApi
 import app.alextran.immich.images.ThumbnailApi
 import app.alextran.immich.images.ThumbnailsImpl
 import app.alextran.immich.sync.NativeSyncApi
@@ -15,7 +14,7 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterFragmentActivity() {
-  override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+  override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
     registerPlugins(this, flutterEngine)
   }
@@ -34,7 +33,7 @@ class MainActivity : FlutterFragmentActivity() {
         }
       NativeSyncApi.setUp(messenger, nativeSyncApiImpl)
       ThumbnailApi.setUp(messenger, ThumbnailsImpl(ctx))
-      BackgroundUploadFgHostApi.setUp(messenger, BackgroundUploadImpl(ctx))
+      BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
     }
   }
 }

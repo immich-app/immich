@@ -158,7 +158,7 @@ class UploadService {
 
   // Enqueue All does not work from the background on Android yet. This method is a temporary workaround
   // that enqueues tasks one by one.
-  Future<void> startBackupBackground(String userId) async {
+  Future<void> startBackupSerial(String userId) async {
     await _storageRepository.clearCache();
 
     shouldAbortQueuingTasks = false;

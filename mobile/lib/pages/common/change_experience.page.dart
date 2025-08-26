@@ -77,7 +77,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
         ref.read(websocketProvider.notifier).startListeningToOldEvents();
         await migrateStoreToIsar(ref.read(isarProvider), ref.read(driftProvider));
         await ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-        await ref.read(backgroundUploadFgService).disable();
+        await ref.read(driftBackgroundUploadFgService).disableBackupService();
       }
 
       await IsarStoreRepository(ref.read(isarProvider)).upsert(StoreKey.betaTimeline, widget.switchingToBeta);
