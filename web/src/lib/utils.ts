@@ -1,9 +1,9 @@
-import { locales } from '$lib/constants';
+import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
-import { defaultLang, langs } from '$lib/utils/i18n';
+import { langs } from '$lib/utils/i18n';
 import {
   AssetMediaSize,
   AssetTypeEnum,

@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
-import { Theme } from '$lib/constants';
-import { defaultLang, getPreferredLocale } from '$lib/utils/i18n';
+import { defaultLang, Theme } from '$lib/constants';
+import { getPreferredLocale } from '$lib/utils/i18n-meta';
 import { persisted } from 'svelte-persisted-store';
 
 export interface ThemeSetting {
@@ -23,6 +23,9 @@ export const lang = persisted<string>('lang', preferredLocale || defaultLang.cod
     stringify: (object) => object ?? '',
   },
 });
+
+
+console.log(preferredLocale);
 
 export interface MapSettings {
   allowDarkMode: boolean;

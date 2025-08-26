@@ -238,6 +238,18 @@ export const locales = [
   { code: 'zu-ZA', name: 'Zulu (South Africa)' },
 ];
 
+export interface Lang {
+  name: string;
+  code: string;
+  loader: () => Promise<{ default: object; }>;
+  rtl?: boolean;
+}
+
+export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
+export const specialLang = [
+  { code: 'mfa', name: 'Malay (Pattani)' },
+];
+
 export enum ImmichProduct {
   Client = 'immich-client',
   Server = 'immich-server',
@@ -295,3 +307,4 @@ export enum BackupFileStatus {
 }
 
 export const assetViewerFadeDuration: number = 150;
+
