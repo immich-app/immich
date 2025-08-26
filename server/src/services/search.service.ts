@@ -18,7 +18,7 @@ import {
   SmartSearchDto,
   StatisticsSearchDto,
 } from 'src/dtos/search.dto';
-import { AssetOrder, AssetVisibility } from 'src/enum';
+import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -125,6 +125,7 @@ export class SearchService extends BaseService {
         this.embeddingCache.set(key, embedding);
       }
     } else if (dto.queryAssetId) {
+      await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.queryAssetId] });
       const getEmbeddingResponse = await this.searchRepository.getEmbedding(dto.queryAssetId);
       const assetEmbedding = getEmbeddingResponse?.embedding;
       if (!assetEmbedding) {
