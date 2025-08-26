@@ -71,6 +71,7 @@
   } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
   import {
+    mdiAccountEyeOutline,
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
@@ -104,6 +105,7 @@
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
+  let showAlbumUsers = $state(false);
 
   const assetInteraction = new AssetInteraction();
   const timelineInteraction = new AssetInteraction();
@@ -321,6 +323,11 @@
 
   let album = $derived(data.album);
   let albumId = $derived(album.id);
+  const albumUsers = $derived(
+    showAlbumUsers && album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor)
+      ? [album.owner, ...album.albumUsers.map(({ user }) => user)]
+      : [],
+  );
 
   $effect(() => {
     if (!album.isActivityEnabled && activityManager.commentCount === 0) {
@@ -445,6 +452,7 @@
       <AssetGrid
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
+        {albumUsers}
         {timelineManager}
         assetInteraction={currentAssetIntersection}
         {isShared}
@@ -614,6 +622,15 @@
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
             <CastButton />
+
+            <IconButton
+              variant="ghost"
+              shape="round"
+              color="secondary"
+              aria-label="view asset owners"
+              icon={mdiAccountEyeOutline}
+              onclick={() => (showAlbumUsers = !showAlbumUsers)}
+            />
 
             {#if isEditor}
               <IconButton
