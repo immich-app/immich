@@ -399,7 +399,7 @@ describe(AutoStackService.name, () => {
       await sut.onAssetSmartSearchProcessed({ assetId: 'asset-id', userId: 'user-id' });
 
       expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: 'AutoStackCandidateGenerateForAsset',
+        name: JobName.AutoStackCandidateGenerateForAsset,
         data: { id: 'asset-id' },
       });
     });
