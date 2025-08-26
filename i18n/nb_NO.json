@@ -500,7 +500,7 @@
   "assets": "Filer",
   "assets_added_count": "Lagt til {count, plural, one {# objekt} other {# objekter}}",
   "assets_added_to_album_count": "Lagt til {count, plural, one {# objekter} other {# objekt}} i album",
-  "assets_added_to_albums_count": "Lagt til {assetTotal, plural, one {# asset} other {# assets}} til {albumTotal} albumer",
+  "assets_added_to_albums_count": "Lagt til {assetTotal, plural, one {# asset} other {# assets}} til {albumTotal, plural, one {# album} other {# albums}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Objektet} other {Objektene}} kan ikke legges til i albumet",
   "assets_cannot_be_added_to_albums": "{count, plural, one {Asset} other {Assets}} kan ikke legges til i noen av albumene",
   "assets_count": "{count, plural, one {# fil} other {# filer}}",

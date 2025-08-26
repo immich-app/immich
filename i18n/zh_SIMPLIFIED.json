@@ -500,7 +500,7 @@
   "assets": "项目",
   "assets_added_count": "已添加{count, plural, one {#个项目} other {#个项目}}",
   "assets_added_to_album_count": "已添加{count, plural, one {#个项目} other {#个项目}}到相册",
-  "assets_added_to_albums_count": "已添加 {assetTotal, plural, one {# 个项目} other {# 个项目}}到 {albumTotal} 个相册",
+  "assets_added_to_albums_count": "已添加 {assetTotal, plural, one {# 个项目} other {# 个项目}}到 {albumTotal, plural, one {# 个相册} other {# 个相册}}",
   "assets_cannot_be_added_to_album_count": "无法添加 {count, plural, one {个项目} other {个项目}} 到相册中",
   "assets_cannot_be_added_to_albums": "无法添加 {count, plural, one {个项目} other {个项目}} 到相册",
   "assets_count": "{count, plural, one {#个项目} other {#个项目}}",

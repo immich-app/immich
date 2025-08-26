@@ -500,7 +500,7 @@
   "assets": "елементи",
   "assets_added_count": "Додано {count, plural, one {# ресурс} few {# ресурси} other {# ресурсів}}",
   "assets_added_to_album_count": "Додано {count, plural, one {# ресурс} few {# ресурси} other {# ресурсів}} до альбому",
-  "assets_added_to_albums_count": "Додано {assetTotal, plural, one {# актив} other {# активи}} до {albumTotal} альбомів",
+  "assets_added_to_albums_count": "Додано {assetTotal, plural, one {# актив} other {# активи}} до {albumTotal, plural, one {# альбом} other {# альбом}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Ресурс} other {Ресурси}} не можна додати до альбому",
   "assets_cannot_be_added_to_albums": "{count, plural, one {Актив} other {Активи}} не можна додати до жодного з альбомів",
   "assets_count": "{count, plural, one {# ресурс} few {# ресурси} other {# ресурсів}}",

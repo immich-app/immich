@@ -500,7 +500,7 @@
   "assets": "Zasoby",
   "assets_added_count": "Dodano {count, plural, one {# zasób} few {# zasoby} other {# zasobów}}",
   "assets_added_to_album_count": "Dodano {count, plural, one {# zasób} few {# zasoby} other {# zasobów}} do albumu",
-  "assets_added_to_albums_count": "Dodano {assetTotal, plural, one {# zasób} few {# zasoby} many {# zasobów} other {# zasobów}} do {albumTotal} albumów",
+  "assets_added_to_albums_count": "Dodano {assetTotal, plural, one {# zasób} few {# zasoby} other {# zasobów}} do {albumTotal, plural, one {# albumu} other {# albumów}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {sztuka Elementu} other {szt. Elementów}} nie może być dodana do albumu",
   "assets_cannot_be_added_to_albums": "{count, plural, one {Zasób nie może być dodany} other {Zasoby nie mogą być dodane}} do żadnego z albumów",
   "assets_count": "{count, plural, one {# zasób} few {# zasoby} other {# zasobów}}",
