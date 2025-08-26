@@ -241,14 +241,12 @@ export const locales = [
 export interface Lang {
   name: string;
   code: string;
-  loader: () => Promise<{ default: object; }>;
+  loader: () => Promise<{ default: object }>;
   rtl?: boolean;
 }
 
 export const defaultLang: Lang = { name: 'English', code: 'en', loader: () => import('$i18n/en.json') };
-export const specialLang = [
-  { code: 'mfa', name: 'Malay (Pattani)' },
-];
+export const specialLang = [{ code: 'mfa', name: 'Malay (Pattani)' }];
 
 export enum ImmichProduct {
   Client = 'immich-client',
@@ -307,4 +305,3 @@ export enum BackupFileStatus {
 }
 
 export const assetViewerFadeDuration: number = 150;
-
