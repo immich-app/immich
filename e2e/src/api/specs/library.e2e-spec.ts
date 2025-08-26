@@ -1006,7 +1006,7 @@ describe('/libraries', () => {
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
-      it('should switch from using file metadata to file.xmp metadata when asset refreshes', async () => {
+      it('should switch from using file metadata to file.ext.xmp metadata when asset refreshes', async () => {
         const library = await utils.createLibrary(admin.accessToken, {
           ownerId: admin.userId,
           importPaths: [`${testAssetDirInternal}/temp/xmp`],

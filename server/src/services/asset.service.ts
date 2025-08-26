@@ -247,11 +247,11 @@ export class AssetService extends BaseService {
       }
     }
 
-    const { fullsizeFile, previewFile, thumbnailFile } = getAssetFiles(asset.files ?? []);
+    const { fullsizeFile, previewFile, thumbnailFile, sidecarFile } = getAssetFiles(asset.files ?? []);
     const files = [thumbnailFile?.path, previewFile?.path, fullsizeFile?.path, asset.encodedVideoPath];
 
     if (deleteOnDisk) {
-      files.push(asset.sidecarPath, asset.originalPath);
+      files.push(sidecarFile?.path, asset.originalPath);
     }
 
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files } });

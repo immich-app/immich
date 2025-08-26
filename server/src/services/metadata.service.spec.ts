@@ -4,7 +4,16 @@ import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetType, AssetVisibility, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
+import {
+  AssetFileType,
+  AssetType,
+  AssetVisibility,
+  ExifOrientation,
+  ImmichWorker,
+  JobName,
+  JobStatus,
+  SourceType,
+} from 'src/enum';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { firstDateTime, MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -1500,9 +1509,10 @@ describe(MetadataService.name, () => {
         `${assetStub.sidecar.originalPath}.xmp`,
         constants.R_OK,
       );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecar.id,
-        sidecarPath: assetStub.sidecar.sidecarPath,
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
+        assetId: assetStub.sidecar.id,
+        path: assetStub.sidecar.files[1].path,
+        type: AssetFileType.Sidecar,
       });
     });
 
@@ -1514,12 +1524,13 @@ describe(MetadataService.name, () => {
       await expect(sut.handleSidecarSync({ id: assetStub.sidecarWithoutExt.id })).resolves.toBe(JobStatus.Success);
       expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(
         2,
-        assetStub.sidecarWithoutExt.sidecarPath,
+        assetStub.sidecarWithoutExt.files[1].path,
         constants.R_OK,
       );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecarWithoutExt.id,
-        sidecarPath: assetStub.sidecarWithoutExt.sidecarPath,
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
+        assetId: assetStub.sidecarWithoutExt.id,
+        path: assetStub.sidecarWithoutExt.files[1].path,
+        type: AssetFileType.Sidecar,
       });
     });
 
@@ -1529,15 +1540,15 @@ describe(MetadataService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
 
       await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(JobStatus.Success);
-      expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(1, assetStub.sidecar.sidecarPath, constants.R_OK);
+      expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(1, assetStub.sidecar.files[1].path, constants.R_OK);
       expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(
         2,
-        assetStub.sidecarWithoutExt.sidecarPath,
+        assetStub.sidecarWithoutExt.files[1].path,
         constants.R_OK,
       );
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.sidecar.id,
-        sidecarPath: assetStub.sidecar.sidecarPath,
+        sidecarPath: assetStub.sidecar.files[1].path,
       });
     });
 
@@ -1601,7 +1612,7 @@ describe(MetadataService.name, () => {
   });
 
   describe('handleSidecarWrite', () => {
-    it('should skip assets that do not exist anymore', async () => {
+    it('should skip assets that no longer exist', async () => {
       mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(void 0);
       await expect(sut.handleSidecarWrite({ id: 'asset-123' })).resolves.toBe(JobStatus.Failed);
       expect(mocks.metadata.writeTags).not.toHaveBeenCalled();

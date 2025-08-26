@@ -124,7 +124,6 @@ export type MapAsset = {
   originalPath: string;
   owner?: User | null;
   ownerId: string;
-  sidecarPath: string | null;
   stack?: Stack | null;
   stackId: string | null;
   tags?: Tag[];
