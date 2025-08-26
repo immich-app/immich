@@ -11,6 +11,7 @@
   import { AppRoute } from '$lib/constants';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
@@ -60,6 +61,7 @@
   };
 
   let duplicates = $state(data.duplicates);
+  const { isViewing: showAssetViewer } = assetViewingStore;
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -189,8 +191,20 @@
   const handlePrevious = async () => {
     await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
   };
+  const handlePreviousShortcut = async () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    await handlePrevious();
+  };
   const handleNext = async () => {
     await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
+  };
+  const handleNextShortcut = async () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    await handleNext();
   };
   const handleLast = async () => {
     await correctDuplicatesIndexAndGo(duplicates.length - 1);
@@ -203,8 +217,8 @@
 
 <svelte:document
   use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNext },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePreviousShortcut },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNextShortcut },
   ]}
 />
 
@@ -268,7 +282,7 @@
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
         />
         <div class="max-w-216 mx-auto mb-16">
-          <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
+          <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between items-center">
             <div class="flex text-xs text-black">
               <Button
                 size="small"
@@ -291,6 +305,7 @@
                 {$t('previous')}
               </Button>
             </div>
+            <p>{duplicatesIndex + 1}/{duplicates.length.toLocaleString($locale)}</p>
             <div class="flex text-xs text-black">
               <Button
                 size="small"

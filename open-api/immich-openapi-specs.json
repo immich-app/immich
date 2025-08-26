@@ -9592,7 +9592,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.138.1",
+    "version": "1.139.4",
     "contact": {}
   },
   "tags": [],
@@ -10007,12 +10007,6 @@
       },
       "AlbumsAddAssetsResponseDto": {
         "properties": {
-          "albumSuccessCount": {
-            "type": "integer"
-          },
-          "assetSuccessCount": {
-            "type": "integer"
-          },
           "error": {
             "allOf": [
               {
@@ -10025,8 +10019,6 @@
           }
         },
         "required": [
-          "albumSuccessCount",
-          "assetSuccessCount",
           "success"
         ],
         "type": "object"
@@ -10732,6 +10724,12 @@
             "description": "base64 encoded sha1 hash",
             "type": "string"
           },
+          "createdAt": {
+            "description": "The UTC timestamp when the asset was originally uploaded to Immich.",
+            "example": "2024-01-15T20:30:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
           "deviceAssetId": {
             "type": "string"
           },
@@ -10867,6 +10865,7 @@
         },
         "required": [
           "checksum",
+          "createdAt",
           "deviceAssetId",
           "deviceId",
           "duration",

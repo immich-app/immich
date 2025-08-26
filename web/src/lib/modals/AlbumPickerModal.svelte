@@ -133,7 +133,7 @@
         await onEnter();
         break;
       }
-      case 'm': {
+      case 'Control': {
         e.preventDefault();
         handleMultiSelect();
         break;

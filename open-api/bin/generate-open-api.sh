@@ -15,7 +15,7 @@ function dart {
   patch --no-backup-if-mismatch -u api.mustache <api.mustache.patch
 
   cd ../../
-  npx --yes @openapitools/openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./templates/mobile
+  pnpx @openapitools/openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./templates/mobile
 
   # Post generate patches
   patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./patch/api_client.dart.patch
@@ -27,12 +27,17 @@ function dart {
 }
 
 function typescript {
-  npx --yes oazapfts --optimistic --argumentStyle=object --useEnumType immich-openapi-specs.json typescript-sdk/src/fetch-client.ts
-  npm --prefix typescript-sdk ci && npm --prefix typescript-sdk run build
+  pnpx oazapfts --optimistic --argumentStyle=object --useEnumType immich-openapi-specs.json typescript-sdk/src/fetch-client.ts
+  pnpm --filter @immich/sdk install --frozen-lockfile
+  pnpm --filter @immich/sdk build
 }
 
 # requires server to be built
-npm run sync:open-api --prefix=../server
+(
+  cd ..
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich build
+  pnpm --filter immich sync:open-api
+)
 
 if [[ $1 == 'dart' ]]; then
   dart
