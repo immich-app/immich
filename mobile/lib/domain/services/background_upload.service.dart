@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
+import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:isar/isar.dart';
@@ -40,9 +41,10 @@ class BackgroundUploadBgService extends BackgroundUploadFlutterApi {
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundUploadBgHostApi _backgroundHostApi;
+  final Logger _logger = Logger('BackgroundUploadBgService');
+
   bool _isCancelled = false;
   bool _isCleanedUp = false;
-  final Logger _logger = Logger('BackgroundUploadBgService');
 
   BackgroundUploadBgService({required Isar isar, required Drift drift, required DriftLogger driftLogger})
     : _isar = isar,
@@ -62,7 +64,6 @@ class BackgroundUploadBgService extends BackgroundUploadFlutterApi {
 
   Future<void> init() async {
     await loadTranslations();
-
     HttpSSLOptions.apply(applyNative: false);
     await _ref.read(authServiceProvider).setOpenApiServiceEndpoint();
 
@@ -87,8 +88,50 @@ class BackgroundUploadBgService extends BackgroundUploadFlutterApi {
 
   @override
   Future<void> onAndroidBackgroundUpload() async {
-    _logger.info('Android background upload started');
+    _logger.info('Android background processing started');
+    final sw = Stopwatch()..start();
+
+    final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+    final remoteSyncFuture = _ref.read(backgroundSyncProvider).syncRemote();
+    await _ref.read(backgroundSyncProvider).syncLocal().then((_) async {
+      return _ref
+          .read(backgroundSyncProvider)
+          .hashAssets()
+          // Try to hash assets for 3 minutes, then break and continue with queueing assets for backup
+          // If backup is not enabled, hash assets for double the time
+          .timeout(
+            Duration(minutes: isEnableBackup ? 3 : 6),
+            onTimeout: () {
+              // Consume cancellation errors as we want to continue processing
+            },
+          );
+    });
+
+    try {
+      await remoteSyncFuture;
+    } catch (error, stack) {
+      Logger('BackgroundUploadBgService').warning('Error occurred during Android background processing', error, stack);
+      return;
+    }
+
+    if (isEnableBackup) {
+      final currentUser = _ref.read(currentUserProvider);
+      if (currentUser == null) {
+        return;
+      }
+
+      final activeTask = await _ref.read(uploadServiceProvider).getActiveTasks(currentUser.id);
+      if (activeTask.isNotEmpty) {
+        await _ref.read(uploadServiceProvider).resumeBackup();
+      } else {
+        await _ref.read(uploadServiceProvider).startBackupBackground(currentUser.id);
+      }
+    }
+
     await _cleanup();
+
+    sw.stop();
+    _logger.info("Android background processing completed in ${sw.elapsed.inSeconds}s");
   }
 
   /* We do the following on background processing
@@ -121,7 +164,7 @@ class BackgroundUploadBgService extends BackgroundUploadFlutterApi {
     try {
       await remoteSyncFuture;
     } catch (error, stack) {
-      Logger('BackgroundUploadBgService').warning('Error occurred during background processing', error, stack);
+      Logger('BackgroundUploadBgService').warning('Error occurred during iOS background processing', error, stack);
       return;
     }
 

@@ -18,6 +18,7 @@ class BackgroundUploadImpl: BackgroundUploadFgHostApi {
   func disable() throws {
     BackgroundUploadImpl.updateBackgroundUploadEnabled(false)
     BackgroundUploadImpl.cancelTasks()
+    print("BackgroundUploadImpl:disable Disabled background tasks")
   }
   
   public static let backgroundUploadEnabledKey = "immich:background:enabled"

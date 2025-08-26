@@ -91,7 +91,7 @@ class BackgroundUploadWorker: BackgroundUploadBgHostApi {
     guard let callback = FlutterCallbackCache.lookupCallbackInformation(callbackHandle) else {
       // The callback handle is invalid or the callback was not found
       complete(success: false)
-        return
+      return
     }
            
     // Start the Flutter engine with the specified callback as the entry point
@@ -171,7 +171,7 @@ class BackgroundUploadWorker: BackgroundUploadBgHostApi {
   private func handleHostResult(result: Result<Void, PigeonError>) {
     switch result {
       case .success(): self.complete(success: true)
-      case .failure(_): self.complete(success: false)
+      case .failure(_): self.cancel()
     }
   }
 
