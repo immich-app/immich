@@ -18,7 +18,7 @@ export async function getFormatter() {
 }
 
 function getDisplayName(code: string) {
-  const lang = specialLang.find(lang => lang.code === code);
+  const lang = specialLang.find((lang) => lang.code === code);
   if (lang) {
     return lang.name;
   }
@@ -43,5 +43,8 @@ function convertBCP47(code: string) {
 }
 
 function capitalize(string: string) {
-  return string.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  return string
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }
