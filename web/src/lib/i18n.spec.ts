@@ -1,5 +1,6 @@
-import { getClosestAvailableLocale, langs } from '$lib/utils/i18n';
 import { readFileSync, readdirSync } from 'node:fs';
+import { langs } from './utils/i18n';
+import { getClosestAvailableLocale } from './utils/i18n-meta';
 
 describe('i18n', () => {
   describe('loaders', () => {
@@ -7,7 +8,7 @@ describe('i18n', () => {
     for (const filename of languageFiles) {
       test(`${filename} should have a loader`, async () => {
         const code = filename.replaceAll('.json', '');
-        const item = langs.find((lang) => lang.weblateCode === code || lang.code === code);
+        const item = langs.find((lang) => lang.code === code);
         expect(item, `${filename} has no loader`).toBeDefined();
         if (!item) {
           return;
