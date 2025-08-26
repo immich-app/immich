@@ -14303,6 +14303,9 @@
           "query": {
             "type": "string"
           },
+          "queryAssetId": {
+            "type": "string"
+          },
           "rating": {
             "maximum": 5,
             "minimum": -1,
@@ -14370,9 +14373,6 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "query"
-        ],
         "type": "object"
       },
       "SourceType": {

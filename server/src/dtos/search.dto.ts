@@ -198,8 +198,12 @@ export class StatisticsSearchDto extends BaseSearchDto {
 
 export class SmartSearchDto extends BaseSearchWithResultsDto {
   @IsString()
-  @IsNotEmpty()
-  query!: string;
+  @Optional()
+  query?: string;
+
+  @IsString()
+  @Optional()
+  queryAssetId?: string;
 
   @IsString()
   @IsNotEmpty()

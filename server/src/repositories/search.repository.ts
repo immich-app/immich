@@ -294,6 +294,13 @@ export class SearchRepository {
   }
 
   @GenerateSql({
+    params: [DummyValue.UUID],
+  })
+  async getEmbedding(assetId: string) {
+    return this.db.selectFrom('smart_search').selectAll().where('assetId', '=', assetId).executeTakeFirst();
+  }
+
+  @GenerateSql({
     params: [
       {
         userIds: [DummyValue.UUID],
