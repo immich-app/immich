@@ -125,7 +125,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           return;
         }
 
-        if (synchronousCall && _providerImage == null) {
+        if ((synchronousCall && _providerImage == null) || !_isVisible()) {
           _fadeController.value = 1.0;
         } else if (_fadeController.isAnimating) {
           _fadeController.forward();
@@ -199,6 +199,15 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
   void _loadImage() {
     _loadFromImageProvider();
     _loadFromThumbhashProvider();
+  }
+
+  bool _isVisible() {
+    final renderObject = context.findRenderObject() as RenderBox?;
+    if (renderObject == null || !renderObject.attached) return false;
+
+    final topLeft = renderObject.localToGlobal(Offset.zero);
+    final bottomRight = renderObject.localToGlobal(Offset(renderObject.size.width, renderObject.size.height));
+    return topLeft.dy < MediaQuery.sizeOf(context).height && bottomRight.dy > 0;
   }
 
   @override
