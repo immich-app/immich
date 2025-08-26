@@ -26,4 +26,3 @@ export function getClosestAvailableLocale(locales: readonly string[], allLocales
 export function getPreferredLocale() {
   return getClosestAvailableLocale(navigator.languages, langCodes);
 }
-
