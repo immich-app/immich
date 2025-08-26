@@ -12,8 +12,7 @@ services:
       - ${UPLOAD_LOCATION:-upload2-devcontainer-volume}${UPLOAD_LOCATION:+/photos/upload}:/data/upload
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node-modules:/usr/src/app/server/node_modules
-      - server-dist:/usr/src/app/server/dist
+      - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
       - github-node_modules:/usr/src/app/.github/node_modules
       - cli-node_modules:/usr/src/app/cli/node_modules
@@ -25,6 +24,9 @@ services:
       - coverage:/usr/src/app/web/coverage
   immich-web:
     env_file: !reset []
+  init:
+    env_file: !reset []
+    command: sh -c 'for path in /data /data/upload /usr/src/app/.pnpm-store /usr/src/app/server/node_modules /usr/src/app/server/dist /usr/src/app/.github/node_modules /usr/src/app/cli/node_modules /usr/src/app/docs/node_modules /usr/src/app/e2e/node_modules /usr/src/app/open-api/typescript-sdk/node_modules /usr/src/app/web/.svelte-kit /usr/src/app/web/coverage /usr/src/app/node_modules /usr/src/app/web/node_modules; do [ -e "$$path" ] && chown -R ${UID:-1000}:${GID:-1000} "$$path" || true; done'
   immich-machine-learning:
     env_file: !reset []
   database:
