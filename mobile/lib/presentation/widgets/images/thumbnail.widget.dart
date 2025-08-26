@@ -94,7 +94,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           imageInfo.dispose();
           return;
         }
-
+        _fadeController.value = 1.0;
         setState(() {
           _providerImage = imageInfo.image;
         });
@@ -115,7 +115,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
     final imageStream = _imageStream = imageProvider.resolve(ImageConfiguration.empty);
     final imageStreamListener = _imageStreamListener = ImageStreamListener(
       (ImageInfo imageInfo, bool synchronousCall) {
-        _stopListeningToStream();
+        _stopListeningToThumbhashStream();
         if (!mounted) {
           imageInfo.dispose();
           return;
