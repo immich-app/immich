@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
@@ -32,6 +33,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
+import 'package:immich_mobile/utils/locale_utils.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
@@ -253,9 +255,9 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       child: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: true,
-        localizationsDelegates: context.localizationDelegates,
+        localizationsDelegates: [...context.localizationDelegates, const LocaleNamesLocalizationsDelegate()],
         supportedLocales: context.supportedLocales,
-        locale: context.locale,
+        locale: effectiveMaterialLocale(context),
         themeMode: ref.watch(immichThemeModeProvider),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
@@ -277,7 +279,8 @@ class MainWidget extends StatelessWidget {
       supportedLocales: locales.values.toList(),
       path: translationsPath,
       useFallbackTranslations: true,
-      fallbackLocale: locales.values.first,
+      useFallbackTranslationsForEmptyResources: true,
+      fallbackLocale: const Locale('en'),
       assetLoader: const CodegenLoader(),
       child: const ImmichApp(),
     );
