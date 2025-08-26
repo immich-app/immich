@@ -15,6 +15,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -190,11 +191,12 @@ class _AssetTileWidget extends ConsumerWidget {
 
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return RepaintBoundary(
       child: GestureDetector(
         onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
-        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
+        onLongPress: () => lockSelection || isReadonlyModeEnabled ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,

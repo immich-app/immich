@@ -10,6 +10,7 @@ import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -42,6 +43,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
     return SliverAnimatedOpacity(
@@ -57,7 +59,7 @@ class ImmichSliverAppBar extends ConsumerWidget {
         centerTitle: false,
         title: title ?? const _ImmichLogoWithText(),
         actions: [
-          if (isCasting)
+          if (isCasting && !isReadonlyModeEnabled)
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(
@@ -70,12 +72,13 @@ class ImmichSliverAppBar extends ConsumerWidget {
           const _SyncStatusIndicator(),
           if (actions != null)
             ...actions!.map((action) => Padding(padding: const EdgeInsets.only(right: 16), child: action)),
-          if (kDebugMode || kProfileMode)
+          if ((kDebugMode || kProfileMode) && !isReadonlyModeEnabled)
             IconButton(
               icon: const Icon(Icons.science_rounded),
               onPressed: () => context.pushRoute(const FeatInDevRoute()),
             ),
-          if (showUploadButton) const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),
+          if (showUploadButton && !isReadonlyModeEnabled)
+            const Padding(padding: EdgeInsets.only(right: 20), child: _BackupIndicator()),
           const Padding(padding: EdgeInsets.only(right: 20), child: _ProfileIndicator()),
         ],
       ),
@@ -137,8 +140,24 @@ class _ProfileIndicator extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     const widgetSize = 30.0;
 
+    void toggleReadonlyMode() {
+      final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+      ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
+
+      context.scaffoldMessenger.showSnackBar(
+        SnackBar(
+          duration: const Duration(seconds: 2),
+          content: Text(
+            (isReadonlyModeEnabled ? "readonly_mode_disabled" : "readonly_mode_enabled").tr(),
+            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+          ),
+        ),
+      );
+    }
+
     return InkWell(
       onTap: () => showDialog(context: context, useRootNavigator: false, builder: (ctx) => const ImmichAppBarDialog()),
+      onDoubleTap: () => toggleReadonlyMode(),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
