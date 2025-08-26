@@ -99,9 +99,10 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
     email = 'test@immich.cloud',
     quotaUsageInBytes = 0,
     quotaSizeInBytes = null,
+    appVersion = '1.0.0',
   } = authUser;
 
-  return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes };
+  return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes, appVersion };
 };
 
 const partnerFactory = (partner: Partial<Partner> = {}) => {
@@ -179,6 +180,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     quotaUsageInBytes = 0,
     status = UserStatus.Active,
     metadata = [],
+    appVersion = '1.0.0',
   } = user;
   return {
     id,
@@ -198,6 +200,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     quotaUsageInBytes,
     status,
     metadata,
+    appVersion,
   };
 };
 
