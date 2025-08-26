@@ -4,9 +4,9 @@ import 'package:immich_mobile/generated/codegen_loader.g.dart';
 
 final Map<String, String> unsupportedLocales = {
   'bi': 'Bislama',
-  'cv': 'Chuvash',
+  'cv': 'чӑваш', // Chuvash
   'fil': 'Filipino',
-  'kmr': 'Kurmanji (Northern Kurdish)',
+  'kmr': 'Kurdî (Kurmancî)', // Kurmanji (Northern Kurdish)
   'mfa': 'Malay (Pattani)',
 };
 
