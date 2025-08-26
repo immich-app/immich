@@ -123,6 +123,11 @@ class LogService {
     _flushTimer = null;
     final buffer = [..._msgBuffer];
     _msgBuffer.clear();
+
+    if (buffer.isEmpty) {
+      return;
+    }
+
     await _logRepository.insertAll(buffer);
   }
 }

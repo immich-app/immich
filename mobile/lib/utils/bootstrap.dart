@@ -1,6 +1,9 @@
 import 'dart:io';
 
+import 'package:background_downloader/background_downloader.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -21,6 +24,36 @@ import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.d
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+
+void configureFileDownloaderNotifications() {
+  FileDownloader().configureNotificationForGroup(
+    kDownloadGroupImage,
+    running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+    complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
+    progressBar: true,
+  );
+
+  FileDownloader().configureNotificationForGroup(
+    kDownloadGroupVideo,
+    running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
+    complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
+    progressBar: true,
+  );
+
+  FileDownloader().configureNotificationForGroup(
+    kManualUploadGroup,
+    running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
+    complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
+    progressBar: true,
+  );
+
+  FileDownloader().configureNotificationForGroup(
+    kBackupGroup,
+    running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
+    complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
+    progressBar: true,
+  );
+}
 
 abstract final class Bootstrap {
   static Future<(Isar isar, Drift drift, DriftLogger logDb)> initDB() async {

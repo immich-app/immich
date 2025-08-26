@@ -57,7 +57,7 @@ Cancelable<T?> runInIsolateGentle<T>({
       log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
     } finally {
       try {
-        await LogService.I.flush();
+        await LogService.I.dispose();
         await logDb.close();
         await ref.read(driftProvider).close();
 
@@ -72,8 +72,8 @@ Cancelable<T?> runInIsolateGentle<T>({
         }
 
         ref.dispose();
-      } catch (error) {
-        debugPrint("Error closing resources in isolate: $error");
+      } catch (error, stack) {
+        debugPrint("Error closing resources in isolate: $error, $stack");
       } finally {
         ref.dispose();
         // Delay to ensure all resources are released
