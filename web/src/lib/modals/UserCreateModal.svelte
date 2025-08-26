@@ -122,7 +122,7 @@
         </Field>
 
         <Field label={$t('admin.quota_size_gib')}>
-          <Input bind:value={quotaSize} type="number" placeholder={$t('unlimited')} min="0" />
+          <Input bind:value={quotaSize} type="number" placeholder={$t('unlimited')} min="0" step="1" />
           {#if quotaSizeWarning}
             <HelperText color="danger">{$t('errors.quota_higher_than_disk_size')}</HelperText>
           {/if}
