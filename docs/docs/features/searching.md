@@ -50,6 +50,12 @@ Some search examples:
 </TabItem>
 </Tabs>
 
+### Stacks in search results
+
+- In most grids, stacked items show as a single result (the primary asset) with a stack count. Open the item to browse the rest of the stack.
+- Some specialized views may list non-primary items when they match the query. If you don’t see an expected duplicate, open the primary to access all items in the stack.
+- Learn more: see [Stacks and AutoStack](/docs/features/stacks).
+
 ## Configuration
 
 Navigating to `Administration > Settings > Machine Learning Settings > Smart Search` will show the options available.
