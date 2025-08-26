@@ -113,6 +113,15 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         .getSingleOrNull();
   }
 
+  Future<RemoteAlbum?> getByName(String albumName, String ownerId) {
+    final query = _db.remoteAlbumEntity.select()
+      ..where((row) => row.name.equals(albumName) & row.ownerId.equals(ownerId))
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(1);
+
+    return query.map((row) => row.toDto(ownerName: '', isShared: false)).getSingleOrNull();
+  }
+
   Future<void> create(RemoteAlbum album, List<String> assetIds) async {
     await _db.transaction(() async {
       final entity = RemoteAlbumEntityCompanion(
