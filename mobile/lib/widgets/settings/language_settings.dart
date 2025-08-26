@@ -8,6 +8,13 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:flutter_localized_locales/flutter_localized_locales.dart';
+
+// Helpers
+String capitalize(String s) {
+  if (s.isEmpty) return s;
+  return s[0].toUpperCase() + s.substring(1);
+}
 
 class LanguageSettings extends HookConsumerWidget {
   const LanguageSettings({super.key});
@@ -30,6 +37,7 @@ class LanguageSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final localeEntries = useMemoized(() => locales.entries.toList(), const []);
+    final localeNames = LocaleNames.of(context);
     final currentLocale = context.locale;
     final filteredLocaleEntries = useState<List<MapEntry<String, Locale>>>(localeEntries);
     final selectedLocale = useState<Locale>(currentLocale);
@@ -47,9 +55,11 @@ class LanguageSettings extends HookConsumerWidget {
         if (searchTerm.isEmpty) {
           filteredLocaleEntries.value = localeEntries;
         } else {
-          filteredLocaleEntries.value = localeEntries
-              .where((entry) => entry.key.toLowerCase().contains(searchTerm.toLowerCase()))
-              .toList();
+          filteredLocaleEntries.value = localeEntries.where((entry) {
+            final code = entry.key;
+            final langName = localeNames?.nameOf(code) ?? unsupportedLocales[code] ?? code;
+            return langName.toLowerCase().contains(searchTerm.toLowerCase());
+          }).toList();
         }
       });
     }
@@ -86,13 +96,16 @@ class LanguageSettings extends HookConsumerWidget {
                     itemExtent: 64.0,
                     cacheExtent: 100,
                     itemBuilder: (context, index) {
-                      final countryName = filteredLocaleEntries.value[index].key;
+                      final localeKey = filteredLocaleEntries.value[index].key;
                       final localeValue = filteredLocaleEntries.value[index].value;
+                      final langName =
+                          localeNames?.nameOf(localeKey) ?? unsupportedLocales[localeKey] ?? localeKey.toString();
+
                       final bool isSelected = selectedLocale.value == localeValue;
 
                       return _LanguageItem(
                         key: ValueKey(localeValue.toString()),
-                        countryName: countryName,
+                        langName: capitalize(langName),
                         localeValue: localeValue,
                         isSelected: isSelected,
                         onTap: () {
@@ -223,13 +236,13 @@ class _LanguageApplyButton extends StatelessWidget {
 class _LanguageItem extends StatelessWidget {
   const _LanguageItem({
     super.key,
-    required this.countryName,
+    required this.langName,
     required this.localeValue,
     required this.isSelected,
     required this.onTap,
   });
 
-  final String countryName;
+  final String langName;
   final Locale localeValue;
   final bool isSelected;
   final VoidCallback onTap;
@@ -246,7 +259,7 @@ class _LanguageItem extends StatelessWidget {
         ),
         child: ListTile(
           title: Text(
-            countryName,
+            langName,
             style: context.textTheme.titleSmall?.copyWith(
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               color: isSelected ? context.colorScheme.primary : context.colorScheme.onSurfaceVariant,
