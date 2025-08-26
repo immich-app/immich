@@ -30,6 +30,7 @@ import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
+import { computePerceptualHash } from 'src/utils/phash';
 import { upsertTags } from 'src/utils/tag';
 
 /** look for a date from these tags (in order) */
@@ -285,6 +286,18 @@ export class MetadataService extends BaseService {
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
       autoStackId: this.getAutoStackId(exifTags),
     };
+
+    // Attempt to compute perceptual hash (pHash) early so it is persisted with the primary EXIF upsert.
+    if (asset.type === AssetType.Image && !exifData.pHash) {
+      try {
+        let computed: string | null = null;
+        computed = await computePerceptualHash(asset.originalPath);
+        this.logger.verbose(`Computed local pHash for asset ${asset.id}`);
+        exifData.pHash = computed.toLowerCase();
+      } catch (error: any) {
+        this.logger.verbose(`pHash pipeline error for asset ${asset.id}: ${error?.message || error}`);
+      }
+    }
 
     const promises: Promise<unknown>[] = [
       this.assetRepository.upsertExif(exifData),

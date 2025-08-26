@@ -171,6 +171,8 @@ export class ServerFeaturesDto {
   sidecar!: boolean;
   search!: boolean;
   email!: boolean;
+  @ApiProperty({ description: 'Automatic stack candidate generation enabled (experimental).' })
+  autoStack!: boolean;
 }
 
 export interface ReleaseNotification {
