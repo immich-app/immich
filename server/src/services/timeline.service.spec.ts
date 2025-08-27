@@ -36,10 +36,14 @@ describe(TimelineService.name, () => {
       );
 
       expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-id']));
-      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
-        timeBucket: 'bucket',
-        albumId: 'album-id',
-      });
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+        'bucket',
+        {
+          timeBucket: 'bucket',
+          albumId: 'album-id',
+        },
+        authStub.admin,
+      );
     });
 
     it('should return the assets for a archive time bucket if user has archive.read', async () => {
@@ -60,6 +64,7 @@ describe(TimelineService.name, () => {
           visibility: AssetVisibility.Archive,
           userIds: [authStub.admin.user.id],
         }),
+        authStub.admin,
       );
     });
 
@@ -76,12 +81,16 @@ describe(TimelineService.name, () => {
           withPartners: true,
         }),
       ).resolves.toEqual(json);
-      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
-        timeBucket: 'bucket',
-        visibility: AssetVisibility.Timeline,
-        withPartners: true,
-        userIds: [authStub.admin.user.id],
-      });
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+        'bucket',
+        {
+          timeBucket: 'bucket',
+          visibility: AssetVisibility.Timeline,
+          withPartners: true,
+          userIds: [authStub.admin.user.id],
+        },
+        authStub.admin,
+      );
     });
 
     it('should check permissions to read tag', async () => {
@@ -96,11 +105,15 @@ describe(TimelineService.name, () => {
           tagId: 'tag-123',
         }),
       ).resolves.toEqual(json);
-      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith('bucket', {
-        tagId: 'tag-123',
-        timeBucket: 'bucket',
-        userIds: [authStub.admin.user.id],
-      });
+      expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
+        'bucket',
+        {
+          tagId: 'tag-123',
+          timeBucket: 'bucket',
+          userIds: [authStub.admin.user.id],
+        },
+        authStub.admin,
+      );
     });
 
     it('should return the assets for a library time bucket if user has library.read', async () => {
@@ -119,6 +132,7 @@ describe(TimelineService.name, () => {
           timeBucket: 'bucket',
           userIds: [authStub.admin.user.id],
         }),
+        authStub.admin,
       );
     });
 
