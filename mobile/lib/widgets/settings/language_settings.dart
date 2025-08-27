@@ -57,7 +57,8 @@ class LanguageSettings extends HookConsumerWidget {
         } else {
           filteredLocaleEntries.value = localeEntries.where((entry) {
             final code = entry.key;
-            final langName = localeNames?.nameOf(code) ?? unsupportedLocales[code] ?? code;
+            final langName =
+                LocaleNamesLocalizationsDelegate.nativeLocaleNames[code] ?? unsupportedLocales[code] ?? code;
             return langName.toLowerCase().contains(searchTerm.toLowerCase());
           }).toList();
         }
@@ -99,7 +100,9 @@ class LanguageSettings extends HookConsumerWidget {
                       final localeKey = filteredLocaleEntries.value[index].key;
                       final localeValue = filteredLocaleEntries.value[index].value;
                       final langName =
-                          localeNames?.nameOf(localeKey) ?? unsupportedLocales[localeKey] ?? localeKey.toString();
+                          LocaleNamesLocalizationsDelegate.nativeLocaleNames[localeKey] ??
+                          unsupportedLocales[localeKey] ??
+                          localeKey.toString();
 
                       final bool isSelected = selectedLocale.value == localeValue;
 
