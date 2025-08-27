@@ -8,8 +8,18 @@ name: Close likely duplicates
 permissions: {}
 
 jobs:
+  should_run:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.should_run.outputs.run }}
+    steps:
+      - id: should_run
+        run: echo "run=${{ github.event_name == 'issues' || github.event.discussion.category.name == 'Feature Request' }}" >> $GITHUB_OUTPUT
+  
   get_body:
     runs-on: ubuntu-latest
+    needs: should_run
+    if: ${{ needs.should_run.outputs.should_run == 'true' }}
     env:
       EVENT: ${{ toJSON(github.event) }}
     outputs:
@@ -22,7 +32,8 @@ jobs:
 
   get_checkbox_json:
     runs-on: ubuntu-latest
-    needs: get_body
+    needs: [get_body, should_run]
+    if: ${{ needs.should_run.outputs.should_run == 'true' }}
     container:
       image: yshavit/mdq:0.8.0@sha256:c69224d34224a0043d9a3ee46679ba4a2a25afaac445f293d92afe13cd47fcea
     outputs:
@@ -37,8 +48,8 @@ jobs:
 
   close_and_comment:
     runs-on: ubuntu-latest
-    needs: get_checkbox_json
-    if: ${{ !fromJSON(needs.get_checkbox_json.outputs.json).items[0].list[0].checked }}
+    needs: [get_checkbox_json, should_run]
+    if: ${{ needs.should_run.outputs.should_run == 'true' && !fromJSON(needs.get_checkbox_json.outputs.json).items[0].list[0].checked }}
     permissions:
       issues: write
       discussions: write
