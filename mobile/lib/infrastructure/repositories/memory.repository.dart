@@ -30,6 +30,9 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
           ..orderBy([OrderingTerm.desc(_db.memoryEntity.memoryAt), OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
 
     final rows = await query.get();
+    if (rows.isEmpty) {
+      return const [];
+    }
 
     final Map<String, DriftMemory> memoriesMap = {};
 
@@ -46,7 +49,7 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
       }
     }
 
-    return memoriesMap.values.toList();
+    return memoriesMap.values.toList(growable: false);
   }
 
   Future<DriftMemory?> get(String memoryId) async {
