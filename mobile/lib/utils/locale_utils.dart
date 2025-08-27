@@ -8,7 +8,7 @@ bool isMaterialSupported(Locale locale) {
     GlobalWidgetsLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
   ];
-  return delegates.any((d) => d.isSupported(locale));
+  return delegates.every((d) => d.isSupported(locale));
 }
 
 Locale effectiveMaterialLocale(BuildContext context) {
