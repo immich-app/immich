@@ -198,7 +198,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
         tightMode: widget.tightMode,
         filterQuality: widget.filterQuality,
         disableGestures: widget.disableGestures,
-        disableScaleGestures: widget.disableScaleGestures,
+        disableScaleGestures: true,
         enablePanAlways: widget.enablePanAlways,
         child: _loading ? _buildLoading(context) : _buildError(context),
       );
