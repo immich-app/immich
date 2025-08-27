@@ -49,7 +49,9 @@ class DriftMemoryLane extends ConsumerWidget {
 
           context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
         },
-        children: memories.map((memory) => DriftMemoryCard(memory: memory)).toList(growable: false),
+        children: memories
+            .map((memory) => DriftMemoryCard(key: Key(memory.id), memory: memory))
+            .toList(growable: false),
       ),
     );
   }
