@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
@@ -202,6 +203,29 @@ class RemoteAlbumService {
     });
 
     return sorted.reversed.toList();
+  }
+
+  Future<void> syncLinkedAlbums(String userId, List<LocalAlbum> selectedAlbums) async {
+    await Future.wait(
+      selectedAlbums.map((localAlbum) async {
+        final linkedRemoteAlbumId = localAlbum.linkedRemoteAlbumId;
+        if (linkedRemoteAlbumId == null) {
+          return;
+        }
+
+        final remoteAlbum = await get(linkedRemoteAlbumId);
+        if (remoteAlbum == null) {
+          return;
+        }
+
+        // get assets that are uploaded but not in the remote album
+        final assetIds = await _repository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
+
+        if (assetIds.isNotEmpty) {
+          await addAssets(albumId: linkedRemoteAlbumId, assetIds: assetIds);
+        }
+      }),
+    );
   }
 }
 

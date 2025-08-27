@@ -30,4 +30,8 @@ class LocalAlbumService {
   Future<void> linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {
     return _repository.linkRemoteAlbum(localAlbumId, remoteAlbumId);
   }
+
+  Future<List<LocalAlbum>> getBackupAlbums() {
+    return _repository.getBackupAlbums();
+  }
 }

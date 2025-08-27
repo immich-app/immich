@@ -50,6 +50,13 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     return query.map((row) => row.readTable(_db.localAlbumEntity).toDto(assetCount: row.read(assetCount) ?? 0)).get();
   }
 
+  Future<List<LocalAlbum>> getBackupAlbums() async {
+    final query = _db.localAlbumEntity.select()
+      ..where((row) => row.backupSelection.equalsValue(BackupSelection.selected));
+
+    return query.map((row) => row.toDto()).get();
+  }
+
   Future<void> delete(String albumId) => transaction(() async {
     // Remove all assets that are only in this particular album
     // We cannot remove all assets in the album because they might be in other albums in iOS

@@ -25,7 +25,7 @@ class BackupAlbumSelectionSnapshot {
   final int currentTotalAssetCount;
   final List<LocalAlbum> selectedAlbums;
   final DriftBackupNotifier backupNotifier;
-  final AlbumInfoSyncNotifier albumInfoSyncNotifier;
+  final SyncLinkedAlbumNotifier syncLinkedAlbumNotifier;
 
   const BackupAlbumSelectionSnapshot({
     required this.userId,
@@ -35,7 +35,7 @@ class BackupAlbumSelectionSnapshot {
     required this.currentTotalAssetCount,
     required this.selectedAlbums,
     required this.backupNotifier,
-    required this.albumInfoSyncNotifier,
+    required this.syncLinkedAlbumNotifier,
   });
 }
 
@@ -72,7 +72,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
   Future<BackupAlbumSelectionSnapshot> _buildSnapshot() async {
     final user = ref.read(currentUserProvider);
     final backupNotifier = ref.read(driftBackupProvider.notifier);
-    final albumInfoSyncNotifier = ref.read(albumInfoSyncProvider.notifier);
+    final syncLinkedAlbumNotifier = ref.read(syncLinkedAlbumProvider.notifier);
     final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
     final enableSyncUploadAlbum = _enableSyncUploadAlbum.value;
     final allAlbums = ref.read(backupAlbumProvider);
@@ -91,7 +91,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       currentTotalAssetCount: currentTotalAssetCount,
       selectedAlbums: selectedAlbums,
       backupNotifier: backupNotifier,
-      albumInfoSyncNotifier: albumInfoSyncNotifier,
+      syncLinkedAlbumNotifier: syncLinkedAlbumNotifier,
     );
   }
 
@@ -102,7 +102,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     }
 
     if (snap.enableSyncUploadAlbum && snap.selectedAlbums.isNotEmpty) {
-      await snap.albumInfoSyncNotifier.manageLinkedAlbums(snap.selectedAlbums, userId);
+      await snap.syncLinkedAlbumNotifier.manageLinkedAlbums(snap.selectedAlbums, userId);
     }
 
     // Restart backup if total count changed and backup is enabled

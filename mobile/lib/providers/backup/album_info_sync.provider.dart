@@ -3,10 +3,11 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
-final albumInfoSyncProvider = NotifierProvider<AlbumInfoSyncNotifier, bool>(AlbumInfoSyncNotifier.new);
+final syncLinkedAlbumProvider = NotifierProvider<SyncLinkedAlbumNotifier, bool>(SyncLinkedAlbumNotifier.new);
 
-class AlbumInfoSyncNotifier extends Notifier<bool> {
+class SyncLinkedAlbumNotifier extends Notifier<bool> {
   late LocalAlbumService _localAlbumService;
   late RemoteAlbumService _remoteAlbumService;
 
@@ -15,6 +16,17 @@ class AlbumInfoSyncNotifier extends Notifier<bool> {
     _localAlbumService = ref.read(localAlbumServiceProvider);
     _remoteAlbumService = ref.read(remoteAlbumServiceProvider);
     return true;
+  }
+
+  Future<void> syncLinkedAlbums() async {
+    final user = ref.read(currentUserProvider);
+    if (user == null) {
+      return Future.value(null);
+    }
+
+    final selectedAlbums = await _localAlbumService.getBackupAlbums();
+
+    return _remoteAlbumService.syncLinkedAlbums(user.id, selectedAlbums);
   }
 
   Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) async {

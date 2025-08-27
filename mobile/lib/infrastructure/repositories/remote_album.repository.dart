@@ -330,6 +330,42 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   Future<int> getCount() {
     return _db.managers.remoteAlbumEntity.count();
   }
+
+  Future<List<String>> getLinkedAssetIds(String userId, String localAlbumId, String remoteAlbumId) async {
+    // Find remote asset ids that:
+    // 1. Belong to the provided local album (via local_album_asset_entity)
+    // 2. Have been uploaded (i.e. a matching remote asset exists for the same checksum & owner)
+    // 3. Are NOT already in the remote album (remote_album_asset_entity)
+    final query = _db.localAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..join([
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+          useColumns: false,
+        ),
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
+              _db.remoteAssetEntity.ownerId.equals(userId) &
+              _db.remoteAssetEntity.deletedAt.isNull(),
+          useColumns: false,
+        ),
+        // Left join remote album assets to exclude those already in the remote album
+        leftOuterJoin(
+          _db.remoteAlbumAssetEntity,
+          _db.remoteAlbumAssetEntity.assetId.equalsExp(_db.remoteAssetEntity.id) &
+              _db.remoteAlbumAssetEntity.albumId.equals(remoteAlbumId),
+          useColumns: false,
+        ),
+      ])
+      ..where(
+        _db.localAlbumAssetEntity.albumId.equals(localAlbumId) &
+            _db.remoteAlbumAssetEntity.assetId.isNull(), // only those not yet linked
+      );
+
+    return query.map((row) => row.read(_db.remoteAssetEntity.id)!).get();
+  }
 }
 
 extension on RemoteAlbumEntityData {
