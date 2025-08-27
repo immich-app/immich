@@ -38,37 +38,38 @@ class ViewerBottomBar extends ConsumerWidget {
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
 
     final pendingChecksums = ref.watch(pendingApprovalChecksumsProvider).value ?? const <String>{};
-    final isWaitingForApproval = asset.checksum != null && pendingChecksums.contains(asset.checksum);
+    final isWaitingForSyncApproval = asset.checksum != null && pendingChecksums.contains(asset.checksum);
     /****
      * 14/08/2025
      * 1. on user makes decision - asset don`t disappear (but sometimes works)
      * 2. toast showing not working - widget mounted == false
      * 3. buttons should have different design (stile+icon)
      * 4. pendingChecksums.length!=TimelineService.trashSyncReview(String userId).length after what?
-    *****/
-    debugPrint('asset.checksum: ${asset.checksum}, isWaitingForApproval: $isWaitingForApproval, pendingChecksums: ${pendingChecksums.length}');
+     *****/
+    debugPrint(
+      'asset.checksum: ${asset.checksum}, isWaitingForApproval: $isWaitingForSyncApproval, pendingChecksums: ${pendingChecksums.length}',
+    );
     if (!showControls) {
       opacity = 0;
     }
 
     final actions = <Widget>[
-      //todo check merge results!
-      if (isWaitingForApproval) ...[
+      if (isWaitingForSyncApproval) ...[
         const DenyMoveToTrashActionButton(source: ActionSource.viewer),
         const AllowMoveToTrashActionButton(source: ActionSource.viewer),
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
-      if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-      if (asset.type == AssetType.image) const EditImageActionButton(),
-      if (isOwner) ...[
-        if (asset.hasRemote && isOwner && isArchived)
-          const UnArchiveActionButton(source: ActionSource.viewer)
-        else
-          const ArchiveActionButton(source: ActionSource.viewer),
-        asset.isLocalOnly
-            ? const DeleteLocalActionButton(source: ActionSource.viewer)
-            : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
-      ],
+        if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+        if (asset.type == AssetType.image) const EditImageActionButton(),
+        if (isOwner) ...[
+          if (asset.hasRemote && isOwner && isArchived)
+            const UnArchiveActionButton(source: ActionSource.viewer)
+          else
+            const ArchiveActionButton(source: ActionSource.viewer),
+          asset.isLocalOnly
+              ? const DeleteLocalActionButton(source: ActionSource.viewer)
+              : const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+        ],
       ],
     ];
 

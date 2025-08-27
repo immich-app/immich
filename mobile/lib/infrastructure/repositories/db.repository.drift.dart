@@ -35,9 +35,11 @@ import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.da
     as i16;
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i17;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
     as i18;
-import 'package:drift/internal/modular.dart' as i19;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i19;
+import 'package:drift/internal/modular.dart' as i20;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -72,9 +74,11 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i16.$AssetFaceEntityTable assetFaceEntity = i16
       .$AssetFaceEntityTable(this);
   late final i17.$StoreEntityTable storeEntity = i17.$StoreEntityTable(this);
-  i18.MergedAssetDrift get mergedAssetDrift => i19.ReadDatabaseContainer(
+  late final i18.$TrashSyncEntityTable trashSyncEntity = i18
+      .$TrashSyncEntityTable(this);
+  i19.MergedAssetDrift get mergedAssetDrift => i20.ReadDatabaseContainer(
     this,
-  ).accessor<i18.MergedAssetDrift>(i18.MergedAssetDrift.new);
+  ).accessor<i19.MergedAssetDrift>(i19.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -102,7 +106,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
     personEntity,
     assetFaceEntity,
     storeEntity,
+    trashSyncEntity,
     i9.idxLatLng,
+    i18.idxTrashSyncChecksum,
   ];
   @override
   i0.StreamQueryUpdateRules
@@ -273,6 +279,13 @@ abstract class $Drift extends i0.GeneratedDatabase {
       ),
       result: [i0.TableUpdate('asset_face_entity', kind: i0.UpdateKind.update)],
     ),
+    i0.WritePropagation(
+      on: i0.TableUpdateQuery.onTableName(
+        'local_asset_entity',
+        limitUpdateKind: i0.UpdateKind.delete,
+      ),
+      result: [i0.TableUpdate('trash_sync_entity', kind: i0.UpdateKind.delete)],
+    ),
   ]);
   @override
   i0.DriftDatabaseOptions get options =>
@@ -319,4 +332,6 @@ class $DriftManager {
       i16.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
   i17.$$StoreEntityTableTableManager get storeEntity =>
       i17.$$StoreEntityTableTableManager(_db, _db.storeEntity);
+  i18.$$TrashSyncEntityTableTableManager get trashSyncEntity =>
+      i18.$$TrashSyncEntityTableTableManager(_db, _db.trashSyncEntity);
 }
