@@ -31,7 +31,7 @@ class _MapThemeOverrideState extends ConsumerState<MapThemeOverride> with Widget
   @override
   void initState() {
     super.initState();
-    _theme = widget.themeMode ?? ref.read(mapStateNotifierProvider.select((v) => v.themeMode));
+    _theme = widget.themeMode ?? ref.read(immichThemeModeProvider);
     setState(() {
       _isDarkTheme = checkDarkTheme();
     });
@@ -65,7 +65,7 @@ class _MapThemeOverrideState extends ConsumerState<MapThemeOverride> with Widget
 
   @override
   Widget build(BuildContext context) {
-    _theme = widget.themeMode ?? ref.watch(mapStateNotifierProvider.select((v) => v.themeMode));
+    _theme = widget.themeMode ?? ref.watch(immichThemeModeProvider);
     var appTheme = ref.watch(immichThemeProvider);
     final locale = ref.watch(localeProvider);
 
