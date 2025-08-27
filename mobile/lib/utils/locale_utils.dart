@@ -15,6 +15,6 @@ Locale effectiveMaterialLocale(BuildContext context) {
   final current = context.locale;
   if (isMaterialSupported(current)) return current;
 
-  final phoneLocale = WidgetsBinding.instance.platformDispatcher.locale;
-  return isMaterialSupported(phoneLocale) ? phoneLocale : const Locale('en');
+  final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
+  return isMaterialSupported(deviceLocale) ? deviceLocale : const Locale('en');
 }
