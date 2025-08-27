@@ -30,7 +30,26 @@ class UserAdminResponseDto {
     required this.status,
     required this.storageLabel,
     required this.updatedAt,
+    required this.mobileDevices,
   });
+
+  List<MobileDeviceDto> mobileDevices;
+
+}
+
+class MobileDeviceDto {
+  MobileDeviceDto({
+    required this.deviceType,
+    required this.deviceOS,
+    required this.appVersion,
+    required this.lastSeen,
+  });
+
+  String deviceType;
+  String deviceOS;
+  String appVersion;
+  DateTime lastSeen;
+}
 
   UserAvatarColor avatarColor;
 

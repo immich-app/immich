@@ -34,6 +34,7 @@ export interface LoginDetails {
   clientIp: string;
   deviceType: string;
   deviceOS: string;
+  appVersion?: string;
 }
 
 interface ClaimOptions<T> {
@@ -56,6 +57,23 @@ export type ValidateRequest = {
 
 @Injectable()
 export class AuthService extends BaseService {
+  /**
+   * Cleanup mobile sessions not seen for over a week
+   */
+  async cleanupStaleMobileSessions(): Promise<number> {
+    const deleted = await this.sessionRepository.cleanupMobileStaleSessions();
+    return deleted.length ?? 0;
+  }
+
+  async heartbeat(auth: AuthDto, appVersion: string): Promise<void> {
+    if (!auth.session) {
+      throw new BadRequestException('No active session');
+    }
+    await this.sessionRepository.update(auth.session.id, {
+      appVersion,
+      updatedAt: new Date(),
+    });
+  }
   async login(dto: LoginCredentialDto, details: LoginDetails) {
     const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {
@@ -529,6 +547,7 @@ export class AuthService extends BaseService {
       token: tokenHashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
+      appVersion: loginDetails.appVersion || '',
       userId: user.id,
     });
 

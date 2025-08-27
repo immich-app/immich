@@ -56,13 +56,21 @@ export const FileResponse = () =>
 
 export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
   const request = context.switchToHttp().getRequest<Request>();
-  const userAgent = UAParser(request.headers['user-agent']);
+  const userAgentString = request.headers['user-agent'] as string || '';
+  const userAgent = UAParser(userAgentString);
+
+  let appVersion = '';
+  const immichMatch = userAgentString.match(/^Immich_(Android|iOS)_(.+)$/);
+  if (immichMatch) {
+    appVersion = immichMatch[2];
+  }
 
   return {
     clientIp: request.ip ?? '',
     isSecure: request.secure,
     deviceType: userAgent.browser.name || userAgent.device.type || (request.headers.devicemodel as string) || '',
     deviceOS: userAgent.os.name || (request.headers.devicetype as string) || '',
+    appVersion,
   };
 });
 
@@ -86,7 +94,6 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler()];
-
     const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
     if (!options) {
       return true;
@@ -104,6 +111,24 @@ export class AuthGuard implements CanActivate {
       queryParams: request.query as Record<string, string>,
       metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
     });
+
+    if (request.user?.session) {
+      let appVersion = '';
+      const userAgent = request.headers['user-agent'] as string || '';
+      const immichMatch = userAgent.match(/^Immich_(Android|iOS)_(.+)$/);
+      if (immichMatch) {
+        appVersion = immichMatch[2];
+      }
+      if (request.headers['x-app-version']) {
+        appVersion = request.headers['x-app-version'] as string;
+      }
+      if (appVersion) {
+        await this.authService.heartbeat(request.user, appVersion);
+      } else {
+        // Always update lastSeen even if appVersion is missing
+        await this.authService.heartbeat(request.user, '');
+      }
+    }
 
     return true;
   }

@@ -23,7 +23,7 @@ export class UserAdminService extends BaseService {
       id: dto.id,
       withDeleted: dto.withDeleted,
     });
-    return users.map((user) => mapUserAdmin(user));
+    return users.map((user:any) => mapUserAdmin(user));
   }
 
   async create(dto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
