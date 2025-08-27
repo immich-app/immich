@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -14,6 +13,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
@@ -28,30 +28,30 @@ import 'package:path_provider/path_provider.dart';
 void configureFileDownloaderNotifications() {
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupImage,
-    running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-    complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
+    running: TaskNotification('downloading_media'.t(), '${'file_name'.t()}: {filename}'),
+    complete: TaskNotification('download_finished'.t(), '${'file_name'.t()}: {filename}'),
     progressBar: true,
   );
 
   FileDownloader().configureNotificationForGroup(
     kDownloadGroupVideo,
-    running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-    complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
+    running: TaskNotification('downloading_media'.t(), '${'file_name'.t()}: {filename}'),
+    complete: TaskNotification('download_finished'.t(), '${'file_name'.t()}: {filename}'),
     progressBar: true,
   );
 
   FileDownloader().configureNotificationForGroup(
     kManualUploadGroup,
-    running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
-    complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
-    progressBar: true,
+    running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
+    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_in_progress_notification'.t()),
+    groupNotificationId: kManualUploadGroup,
   );
 
   FileDownloader().configureNotificationForGroup(
     kBackupGroup,
-    running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
-    complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
-    progressBar: true,
+    running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
+    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_in_progress_notification'.t()),
+    groupNotificationId: kBackupGroup,
   );
 }
 
