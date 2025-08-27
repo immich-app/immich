@@ -31,11 +31,11 @@ class BackgroundWorkerFgService {
   // TODO: Move this call to native side once old timeline is removed
   Future<void> enableSyncService() => _foregroundHostApi.enableSyncWorker();
 
-  Future<void> enableBackupService() => _foregroundHostApi.enableBackupWorker(
+  Future<void> enableUploadService() => _foregroundHostApi.enableUploadWorker(
     PluginUtilities.getCallbackHandle(_backgroundSyncNativeEntrypoint)!.toRawHandle(),
   );
 
-  Future<void> disableBackupService() => _foregroundHostApi.disableBackupWorker();
+  Future<void> disableUploadService() => _foregroundHostApi.disableUploadWorker();
 }
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
@@ -92,7 +92,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     _logger.info('Local background syncing started');
     final sw = Stopwatch()..start();
 
-    await _syncAssets(hashTimeout: maxSeconds, syncRemote: false);
+    final timeout = maxSeconds != null ? Duration(seconds: maxSeconds) : null;
+    await _syncAssets(hashTimeout: timeout, syncRemote: false);
 
     sw.stop();
     _logger.info("Local sync completed in ${sw.elapsed.inSeconds}s");
@@ -109,8 +110,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     _logger.info('Android background processing started');
     final sw = Stopwatch()..start();
 
-    await _syncAssets(hashTimeout: _isBackupEnabled ? 3 : 6);
-    await _handleBulkBackup(processBulk: false);
+    await _syncAssets(hashTimeout: Duration(minutes: _isBackupEnabled ? 3 : 6));
+    await _handleBackup(processBulk: false);
 
     await _cleanup();
 
@@ -118,40 +119,23 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     _logger.info("Android background processing completed in ${sw.elapsed.inSeconds}s");
   }
 
-  /* We do the following on background processing
+  /* We do the following on background upload
    * - Sync local assets
-   * - Hash local assets 3 / 6 minutes
+   * - Hash local assets
    * - Sync remote assets
    * - Check and requeue upload tasks
+   * 
+   *  The native side will not send the maxSeconds value for processing tasks
    */
   @override
-  Future<void> onIosProcessing() async {
-    _logger.info('iOS background processing started');
+  Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
+    _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
     final sw = Stopwatch()..start();
 
-    await _syncAssets(hashTimeout: _isBackupEnabled ? 3 : 6);
-    await _handleBulkBackup();
+    final timeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
+    await _syncAssets(hashTimeout: timeout);
 
-    await _cleanup();
-
-    sw.stop();
-    _logger.info("iOS background processing completed in ${sw.elapsed.inSeconds}s");
-  }
-
-  /* We do the following on background refresh
-   * - Sync local assets
-   * - Hash local assets for 5 seconds
-   * - Sync remote assets
-   * - Check and requeue upload tasks
-   */
-  @override
-  Future<void> onIosRefresh(int? maxSeconds) async {
-    _logger.info('iOS background refresh started with maxSeconds: ${maxSeconds}s');
-    final sw = Stopwatch()..start();
-
-    await _syncAssets(hashTimeout: 5);
-
-    final backupFuture = _handleBulkBackup();
+    final backupFuture = _handleBackup();
     if (maxSeconds != null) {
       await backupFuture.timeout(Duration(seconds: maxSeconds - 1), onTimeout: () {});
     } else {
@@ -161,7 +145,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     await _cleanup();
 
     sw.stop();
-    _logger.info("iOS background refresh completed in ${sw.elapsed.inSeconds}s");
+    _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
   }
 
   @override
@@ -184,7 +168,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     _ref.dispose();
   }
 
-  Future<void> _handleBulkBackup({bool processBulk = true}) async {
+  Future<void> _handleBackup({bool processBulk = true}) async {
     if (!_isBackupEnabled) {
       return;
     }
@@ -206,7 +190,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _syncAssets({int? hashTimeout, bool syncRemote = true}) async {
+  Future<void> _syncAssets({Duration? hashTimeout, bool syncRemote = true}) async {
     final futures = <Future<void>>[];
 
     final localSyncFuture = _ref.read(backgroundSyncProvider).syncLocal().then((_) async {
@@ -217,7 +201,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       var hashFuture = _ref.read(backgroundSyncProvider).hashAssets();
       if (hashTimeout != null) {
         hashFuture = hashFuture.timeout(
-          Duration(seconds: hashTimeout),
+          hashTimeout,
           onTimeout: () {
             // Consume cancellation errors as we want to continue processing
           },

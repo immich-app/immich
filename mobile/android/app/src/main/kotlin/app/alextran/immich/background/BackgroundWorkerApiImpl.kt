@@ -21,16 +21,16 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     Log.i(TAG, "Scheduled media observer")
   }
 
-  override fun enableBackupWorker(callbackHandle: Long) {
-    updateBackupEnabled(ctx, true)
+  override fun enableUploadWorker(callbackHandle: Long) {
+    updateUploadEnabled(ctx, true)
     updateCallbackHandle(ctx, callbackHandle)
-    Log.i(TAG, "Scheduled background tasks")
+    Log.i(TAG, "Scheduled background upload tasks")
   }
 
-  override fun disableBackupWorker() {
-    updateBackupEnabled(ctx, false)
+  override fun disableUploadWorker() {
+    updateUploadEnabled(ctx, false)
     WorkManager.getInstance(ctx).cancelUniqueWork(BACKGROUND_WORKER_NAME)
-    Log.i(TAG, "Cancelled background tasks")
+    Log.i(TAG, "Cancelled background upload tasks")
   }
 
   companion object {
@@ -40,10 +40,10 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     const val WORKER_DATA_TASK_TYPE = "taskType"
 
     const val SHARED_PREF_NAME = "Immich::Background"
-    const val SHARED_PREF_BACKUP_ENABLED = "Background::enabled"
-    const val SHARED_PREF_CALLBACK_HANDLE = "Background::callbackHandle"
+    const val SHARED_PREF_BACKUP_ENABLED = "Background::backup::enabled"
+    const val SHARED_PREF_CALLBACK_HANDLE = "Background::backup::callbackHandle"
 
-    private fun updateBackupEnabled(context: Context, enabled: Boolean) {
+    private fun updateUploadEnabled(context: Context, enabled: Boolean) {
       context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE).edit {
         putBoolean(SHARED_PREF_BACKUP_ENABLED, enabled)
       }

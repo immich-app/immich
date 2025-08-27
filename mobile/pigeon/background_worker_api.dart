@@ -16,10 +16,10 @@ abstract class BackgroundWorkerFgHostApi {
   void enableSyncWorker();
 
   // Enables the background upload service with the given callback handle
-  void enableBackupWorker(int callbackHandle);
+  void enableUploadWorker(int callbackHandle);
 
   // Disables the background upload service
-  void disableBackupWorker();
+  void disableUploadWorker();
 }
 
 @HostApi()
@@ -35,13 +35,9 @@ abstract class BackgroundWorkerFlutterApi {
   @async
   void onLocalSync(int? maxSeconds);
 
-  // iOS Only: Called when the iOS background refresh is triggered
+  // iOS Only: Called when the iOS background upload is triggered
   @async
-  void onIosRefresh(int? maxSeconds);
-
-  // iOS Only: Called when the iOS background processing is triggered
-  @async
-  void onIosProcessing();
+  void onIosUpload(bool isRefresh, int? maxSeconds);
 
   // Android Only: Called when the Android background upload is triggered
   @async

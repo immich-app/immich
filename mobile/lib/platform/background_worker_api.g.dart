@@ -82,9 +82,9 @@ class BackgroundWorkerFgHostApi {
     }
   }
 
-  Future<void> enableBackupWorker(int callbackHandle) async {
+  Future<void> enableUploadWorker(int callbackHandle) async {
     final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableBackupWorker$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableUploadWorker$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -105,9 +105,9 @@ class BackgroundWorkerFgHostApi {
     }
   }
 
-  Future<void> disableBackupWorker() async {
+  Future<void> disableUploadWorker() async {
     final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disableBackupWorker$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disableUploadWorker$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -171,9 +171,7 @@ abstract class BackgroundWorkerFlutterApi {
 
   Future<void> onLocalSync(int? maxSeconds);
 
-  Future<void> onIosRefresh(int? maxSeconds);
-
-  Future<void> onIosProcessing();
+  Future<void> onIosUpload(bool isRefresh, int? maxSeconds);
 
   Future<void> onAndroidUpload();
 
@@ -216,7 +214,7 @@ abstract class BackgroundWorkerFlutterApi {
     }
     {
       final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosRefresh$messageChannelSuffix',
+        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosUpload$messageChannelSuffix',
         pigeonChannelCodec,
         binaryMessenger: binaryMessenger,
       );
@@ -226,35 +224,17 @@ abstract class BackgroundWorkerFlutterApi {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           assert(
             message != null,
-            'Argument for dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosRefresh was null.',
+            'Argument for dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosUpload was null.',
           );
           final List<Object?> args = (message as List<Object?>?)!;
-          final int? arg_maxSeconds = (args[0] as int?);
+          final bool? arg_isRefresh = (args[0] as bool?);
+          assert(
+            arg_isRefresh != null,
+            'Argument for dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosUpload was null, expected non-null bool.',
+          );
+          final int? arg_maxSeconds = (args[1] as int?);
           try {
-            await api.onIosRefresh(arg_maxSeconds);
-            return wrapResponse(empty: true);
-          } on PlatformException catch (e) {
-            return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
-          }
-        });
-      }
-    }
-    {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosProcessing$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
-      if (api == null) {
-        pigeonVar_channel.setMessageHandler(null);
-      } else {
-        pigeonVar_channel.setMessageHandler((Object? message) async {
-          try {
-            await api.onIosProcessing();
+            await api.onIosUpload(arg_isRefresh!, arg_maxSeconds);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);

@@ -209,11 +209,11 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         ref.read(driftBackgroundUploadFgService).enableSyncService();
         if (ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup)) {
           ref.read(backgroundServiceProvider).disableService();
-          ref.read(driftBackgroundUploadFgService).enableBackupService();
+          ref.read(driftBackgroundUploadFgService).enableUploadService();
         }
       } else {
         ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-        ref.read(driftBackgroundUploadFgService).disableBackupService();
+        ref.read(driftBackgroundUploadFgService).disableUploadService();
       }
     });
 

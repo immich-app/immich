@@ -43,12 +43,12 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
     await ref.read(backgroundSyncProvider).syncRemote();
     await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
-    await ref.read(driftBackgroundUploadFgService).enableBackupService();
+    await ref.read(driftBackgroundUploadFgService).enableUploadService();
     await ref.read(driftBackupProvider.notifier).startBackup(currentUser.id);
   }
 
   Future<void> stopBackup() async {
-    await ref.read(driftBackgroundUploadFgService).disableBackupService();
+    await ref.read(driftBackgroundUploadFgService).disableUploadService();
     await ref.read(driftBackupProvider.notifier).cancel();
   }
 

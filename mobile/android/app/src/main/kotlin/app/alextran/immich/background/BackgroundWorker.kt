@@ -97,7 +97,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   /**
    * Called by the Flutter side when it has finished initialization and is ready to receive commands.
    * Routes the appropriate task type (refresh or processing) to the corresponding Flutter method.
-   * This method acts as a bridge between the native iOS background task system and Flutter.
+   * This method acts as a bridge between the native Android background task system and Flutter.
    */
   override fun onInitialized() {
     val taskTypeIndex = inputData.getInt(BackgroundWorkerApiImpl.WORKER_DATA_TASK_TYPE, 0)
@@ -109,9 +109,11 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     }
   }
 
-  // Called when the system has to stop this worker because constraints are
-  // no longer met or the system needs resources for more important tasks
-  // This is also called when the worker has been explicitly cancelled or replaced
+  /**
+   * Called when the system has to stop this worker because constraints are
+   * no longer met or the system needs resources for more important tasks
+   * This is also called when the worker has been explicitly cancelled or replaced
+   */
   override fun onStopped() {
     Log.d(TAG, "About to stop BackupWorker")
 

@@ -6,9 +6,9 @@
 	<string>$(CUSTOM_GROUP_ID)</string>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>app.alextran.immich.background.localRefresh</string>
-		<string>app.alextran.immich.background.backgroundRefresh</string>
-		<string>app.alextran.immich.background.backgroundProcessing</string>
+		<string>app.alextran.immich.background.localSync</string>
+		<string>app.alextran.immich.background.refreshUpload</string>
+		<string>app.alextran.immich.background.processingUpload</string>
 		<string>app.alextran.immich.backgroundFetch</string>
 		<string>app.alextran.immich.backgroundProcessing</string>
 	</array>

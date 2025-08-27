@@ -1,7 +1,7 @@
 import BackgroundTasks
 import Flutter
 
-enum BackgroundTaskType { case localSync, refresh, processing }
+enum BackgroundTaskType { case localSync, refreshUpload, processingUpload }
 
 /*
  * DEBUG: Testing Background Tasks in Xcode
@@ -12,23 +12,23 @@ enum BackgroundTaskType { case localSync, refresh, processing }
 
  ## For local sync (short-running sync):
  
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.localRefresh"]
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.localSync"]
  
  ## For background refresh (short-running sync):
  
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.backgroundRefresh"]
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.refreshUpload"]
  
  ## For background processing (long-running upload):
  
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.backgroundProcessing"]
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.processingUpload"]
 
  * To simulate task expiration (useful for testing expiration handlers):
  
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.localRefresh"]
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.localSync"]
  
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.backgroundRefresh"]
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.refreshUpload"]
  
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.backgroundProcessing"]
+ e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.processingUpload"]
  
  * 3. Resume the application to see the background code execute
  * 
@@ -43,7 +43,7 @@ enum BackgroundTaskType { case localSync, refresh, processing }
 /// to run the backup job, and then finishes execution and calls back to its callback handler.
 /// This class manages a separate Flutter engine instance for background execution,
 /// independent of the main UI Flutter engine.
-class BackgroundUploadWorker: BackgroundWorkerBgHostApi {
+class BackgroundWorker: BackgroundWorkerBgHostApi {
   private let taskType: BackgroundTaskType
   /// The maximum number of seconds to run the task before timing out
   private let maxSeconds: Int?
@@ -63,12 +63,12 @@ class BackgroundUploadWorker: BackgroundWorkerBgHostApi {
   private var isComplete = false
   
   /**
-   * Initializes a new background upload worker with the specified task type and execution constraints.
+   * Initializes a new background worker with the specified task type and execution constraints.
    * Creates a new Flutter engine instance for background execution and sets up the necessary
    * communication channels between native iOS and Flutter code.
    *
    * - Parameters:
-   *   - taskType: The type of background task to execute (refresh or processing)
+   *   - taskType: The type of background task to execute (upload or sync task)
    *   - maxSeconds: Optional maximum execution time in seconds before the task is cancelled
    *   - completionHandler: Callback function invoked when the task completes, with success status
    */
@@ -76,7 +76,7 @@ class BackgroundUploadWorker: BackgroundWorkerBgHostApi {
     self.taskType = taskType
     self.maxSeconds = maxSeconds
     self.completionHandler = completionHandler
-    // Can be initialized only after the engine starts running
+    // Should be initialized only after the engine starts running
     self.flutterApi = nil
   }
   
@@ -139,16 +139,13 @@ class BackgroundUploadWorker: BackgroundWorkerBgHostApi {
    */
   func onInitialized() throws {
     switch self.taskType {
-    case .refresh:
-      flutterApi?.onIosRefresh(maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
-        self.handleHostResult(result: result)
-      })
-    case .processing:
-      flutterApi?.onIosProcessing(completion: { result in
+    case .refreshUpload, .processingUpload:
+      flutterApi?.onIosUpload(isRefresh: self.taskType == .refreshUpload,
+                              maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
         self.handleHostResult(result: result)
       })
     case .localSync:
-      flutterApi?.onLocalSync(maxSeconds: nil, completion: { result in
+      flutterApi?.onLocalSync(maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
         self.handleHostResult(result: result)
       })
     }

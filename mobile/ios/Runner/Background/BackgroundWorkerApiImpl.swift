@@ -6,61 +6,60 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     print("BackgroundUploadImpl:enableSyncWorker Local Sync worker scheduled")
   }
   
-  func enableBackupWorker(callbackHandle: Int64) throws {
-    BackgroundWorkerApiImpl.updateBackgroundUploadEnabled(true)
+  func enableUploadWorker(callbackHandle: Int64) throws {
+    BackgroundWorkerApiImpl.updateUploadEnabled(true)
     // Store the callback handle for later use when starting background Flutter isolates
-    BackgroundWorkerApiImpl.updateBackgroundUploadCallbackHandle(callbackHandle)
+    BackgroundWorkerApiImpl.updateUploadCallbackHandle(callbackHandle)
     
-    BackgroundWorkerApiImpl.scheduleBackgroundRefresh()
-    BackgroundWorkerApiImpl.scheduleBackgroundProcessing()
-    print("BackgroundUploadImpl:enableBackupWorker Scheduled background tasks")
+    BackgroundWorkerApiImpl.scheduleRefreshUpload()
+    BackgroundWorkerApiImpl.scheduleProcessingUpload()
+    print("BackgroundUploadImpl:enableUploadWorker Scheduled background upload tasks")
   }
   
-  func disableBackupWorker() throws {
-    BackgroundWorkerApiImpl.updateBackgroundUploadEnabled(false)
-    BackgroundWorkerApiImpl.cancelTasks()
-    print("BackgroundUploadImpl:disableBackupWorker Disabled background tasks")
+  func disableUploadWorker() throws {
+    BackgroundWorkerApiImpl.updateUploadEnabled(false)
+    BackgroundWorkerApiImpl.cancelUploadTasks()
+    print("BackgroundUploadImpl:disableUploadWorker Disabled background upload tasks")
   }
   
   public static let backgroundUploadEnabledKey = "immich:background:backup:enabled"
   public static let backgroundUploadCallbackHandleKey = "immich:background:backup:callbackHandle"
   
-  private static let localRefreshTaskID = "app.alextran.immich.background.localRefresh"
-  private static let backgroundRefreshTaskID = "app.alextran.immich.background.backgroundRefresh"
-  private static let backgroundProcessingTaskID = "app.alextran.immich.background.backgroundProcessing"
+  private static let localSyncTaskID = "app.alextran.immich.background.localSync"
+  private static let refreshUploadTaskID = "app.alextran.immich.background.refreshUpload"
+  private static let processingUploadTaskID = "app.alextran.immich.background.processingUpload"
 
-  private static func updateBackgroundUploadEnabled(_ isEnabled: Bool) {
+  private static func updateUploadEnabled(_ isEnabled: Bool) {
     return UserDefaults.standard.set(isEnabled, forKey: BackgroundWorkerApiImpl.backgroundUploadEnabledKey)
   }
 
-  private static func updateBackgroundUploadCallbackHandle(_ callbackHandle: Int64) {
+  private static func updateUploadCallbackHandle(_ callbackHandle: Int64) {
     return UserDefaults.standard.set(String(callbackHandle), forKey: BackgroundWorkerApiImpl.backgroundUploadCallbackHandleKey)
   }
 
-  // Cancels only the backup tasks but leaves the sync task in
-  private static func cancelTasks() {
-    BackgroundWorkerApiImpl.updateBackgroundUploadEnabled(false)
-    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundRefreshTaskID);
-    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: backgroundProcessingTaskID);
+  private static func cancelUploadTasks() {
+    BackgroundWorkerApiImpl.updateUploadEnabled(false)
+    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshUploadTaskID);
+    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: processingUploadTaskID);
   }
 
   public static func registerBackgroundProcessing() {
       BGTaskScheduler.shared.register(
-          forTaskWithIdentifier: backgroundProcessingTaskID, using: nil) { task in
+          forTaskWithIdentifier: processingUploadTaskID, using: nil) { task in
           if task is BGProcessingTask {
             handleBackgroundProcessing(task: task as! BGProcessingTask)
           }
       }
 
       BGTaskScheduler.shared.register(
-          forTaskWithIdentifier: backgroundRefreshTaskID, using: nil) { task in
+          forTaskWithIdentifier: refreshUploadTaskID, using: nil) { task in
           if task is BGAppRefreshTask {
-            handleBackgroundRefresh(task: task as! BGAppRefreshTask, taskType: .refresh)
+            handleBackgroundRefresh(task: task as! BGAppRefreshTask, taskType: .refreshUpload)
           }
       }
     
     BGTaskScheduler.shared.register(
-        forTaskWithIdentifier: localRefreshTaskID, using: nil) { task in
+        forTaskWithIdentifier: localSyncTaskID, using: nil) { task in
         if task is BGAppRefreshTask {
           handleBackgroundRefresh(task: task as! BGAppRefreshTask, taskType: .localSync)
         }
@@ -68,7 +67,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   }
   
   private static func scheduleLocalSync() {
-    let backgroundRefresh = BGAppRefreshTaskRequest(identifier: localRefreshTaskID)
+    let backgroundRefresh = BGAppRefreshTaskRequest(identifier: localSyncTaskID)
       backgroundRefresh.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60) // 5 mins
 
       do {
@@ -78,19 +77,19 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
       }
   }
   
-  private static func scheduleBackgroundRefresh() {
-    let backgroundRefresh = BGAppRefreshTaskRequest(identifier: backgroundRefreshTaskID)
+  private static func scheduleRefreshUpload() {
+    let backgroundRefresh = BGAppRefreshTaskRequest(identifier: refreshUploadTaskID)
       backgroundRefresh.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60) // 5 mins
 
       do {
           try BGTaskScheduler.shared.submit(backgroundRefresh)
       } catch {
-          print("Could not schedule the background refresh task \(error.localizedDescription)")
+          print("Could not schedule the refresh upload task \(error.localizedDescription)")
       }
   }
 
-  private static func scheduleBackgroundProcessing() {
-    let backgroundProcessing = BGProcessingTaskRequest(identifier: backgroundProcessingTaskID)
+  private static func scheduleProcessingUpload() {
+    let backgroundProcessing = BGProcessingTaskRequest(identifier: processingUploadTaskID)
     
     backgroundProcessing.requiresNetworkConnectivity = true
     backgroundProcessing.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15 mins
@@ -98,25 +97,25 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     do {
         try BGTaskScheduler.shared.submit(backgroundProcessing)
     } catch {
-        print("Could not schedule the background processing task \(error.localizedDescription)")
+        print("Could not schedule the processing upload task \(error.localizedDescription)")
     }
   }
   
   private static func handleBackgroundRefresh(task: BGAppRefreshTask, taskType: BackgroundTaskType) {
-    scheduleBackgroundRefresh()
+    scheduleRefreshUpload()
     // Restrict the refresh task to run only for a maximum of 20 seconds
-    runUploadWorker(task: task, taskType: taskType, maxSeconds: 20)
+    runBackgroundWorker(task: task, taskType: taskType, maxSeconds: 20)
   }
   
   private static func handleBackgroundProcessing(task: BGProcessingTask) {
-    scheduleBackgroundProcessing()
+    scheduleProcessingUpload()
     // There are no restrictions for processing tasks. Although, the OS could signal expiration at any time
-    runUploadWorker(task: task, taskType: .processing, maxSeconds: nil)
+    runBackgroundWorker(task: task, taskType: .processingUpload, maxSeconds: nil)
   }
   
   /**
-   * Executes the background upload worker within the context of a background task.
-   * This method creates a BackgroundUploadWorker, sets up task expiration handling,
+   * Executes the background worker within the context of a background task.
+   * This method creates a BackgroundWorker, sets up task expiration handling,
    * and manages the synchronization between the background task and the Flutter engine.
    *
    * - Parameters:
@@ -124,11 +123,11 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
    *   - taskType: The type of background operation to perform (refresh or processing)
    *   - maxSeconds: Optional timeout for the operation in seconds
    */
-  private static func runUploadWorker(task: BGTask, taskType: BackgroundTaskType, maxSeconds: Int?) {
+  private static func runBackgroundWorker(task: BGTask, taskType: BackgroundTaskType, maxSeconds: Int?) {
     let semaphore = DispatchSemaphore(value: 0)
     var isSuccess = true
     
-    let backgroundWorker = BackgroundUploadWorker(taskType: taskType, maxSeconds: maxSeconds) { success in
+    let backgroundWorker = BackgroundWorker(taskType: taskType, maxSeconds: maxSeconds) { success in
       isSuccess = success
       semaphore.signal()
     }
