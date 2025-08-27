@@ -272,9 +272,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
+    _zoomController = AnimationController(
+      duration: const Duration(seconds: 12),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
-    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
+    _crossFadeController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,
@@ -290,21 +298,6 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _crossFadeController, curve: Curves.easeInOutCubic));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        /// This is necesasry due to a Flutter issue where animations play too fast
-        /// on Android when remove/disable animations is enabled in accessibility settings.
-        /// Flutter issue: https://github.com/flutter/flutter/issues/164287
-        final reduceAnimationsAndroid = Platform.isAndroid && MediaQuery.of(context).disableAnimations;
-
-        final zoomDuration = reduceAnimationsAndroid ? 240 : 12;
-        final fadeDuration = reduceAnimationsAndroid ? 24000 : 1200;
-
-        _zoomController.duration = Duration(seconds: zoomDuration);
-        _crossFadeController.duration = Duration(milliseconds: fadeDuration);
-      }
-    });
 
     Future.delayed(Durations.medium1, () => _loadFirstAsset());
   }
