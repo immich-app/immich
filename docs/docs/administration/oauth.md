@@ -10,7 +10,7 @@ Unable to set `app.immich:///oauth-callback` as a valid redirect URI? See [Mobil
 
 Immich supports 3rd party authentication via [OpenID Connect][oidc] (OIDC), an identity layer built on top of OAuth2. OIDC is supported by most identity providers, including:
 
-- [Authentik](https://goauthentik.io/integrations/sources/oauth/#openid-connect)
+- [Authentik](https://integrations.goauthentik.io/media/immich/)
 - [Authelia](https://www.authelia.com/integration/openid-connect/immich/)
 - [Okta](https://www.okta.com/openid-connect/)
 - [Google](https://developers.google.com/identity/openid-connect/openid-connect)
@@ -88,7 +88,7 @@ The `.well-known/openid-configuration` part of the url is optional and will be a
 ## Auto Launch
 
 When Auto Launch is enabled, the login page will automatically redirect the user to the OAuth authorization url, to login with OAuth. To access the login screen again, use the browser's back button, or navigate directly to `/auth/login?autoLaunch=0`.
-Auto Launch can also be enabled on a per-request basis by navigating to `/auth/login?authLaunch=1`, this can be useful in situations where Immich is called from e.g. Nextcloud using the _External sites_ app and the _oidc_ app so as to enable users to directly interact with a logged-in instance of Immich.
+Auto Launch can also be enabled on a per-request basis by navigating to `/auth/login?autoLaunch=1`, this can be useful in situations where Immich is called from e.g. Nextcloud using the _External sites_ app and the _oidc_ app so as to enable users to directly interact with a logged-in instance of Immich.
 
 ## Mobile Redirect URI
 

@@ -48,7 +48,7 @@ class UserCircleAvatar extends ConsumerWidget {
                   borderRadius: const BorderRadius.all(Radius.circular(50)),
                   child: CachedNetworkImage(
                     fit: BoxFit.cover,
-                    cacheKey: user.profileChangedAt.toIso8601String(),
+                    cacheKey: '${user.id}-${user.profileChangedAt.toIso8601String()}',
                     width: size,
                     height: size,
                     placeholder: (_, __) => Image.memory(kTransparentImage),

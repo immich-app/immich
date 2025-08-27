@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, NotNull, Selectable, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
@@ -66,12 +66,6 @@ const withPerson = (eb: ExpressionBuilder<DB, 'asset_face'>) => {
   return jsonObjectFrom(
     eb.selectFrom('person').selectAll('person').whereRef('person.id', '=', 'asset_face.personId'),
   ).as('person');
-};
-
-const withAsset = (eb: ExpressionBuilder<DB, 'asset_face'>) => {
-  return jsonObjectFrom(eb.selectFrom('asset').selectAll('asset').whereRef('asset.id', '=', 'asset_face.assetId')).as(
-    'asset',
-  );
 };
 
 const withFaceSearch = (eb: ExpressionBuilder<DB, 'asset_face'>) => {
@@ -481,7 +475,12 @@ export class PersonRepository {
     return this.db
       .selectFrom('asset_face')
       .selectAll('asset_face')
-      .select(withAsset)
+      .select((eb) =>
+        jsonObjectFrom(eb.selectFrom('asset').selectAll('asset').whereRef('asset.id', '=', 'asset_face.assetId')).as(
+          'asset',
+        ),
+      )
+      .$narrowType<{ asset: NotNull }>()
       .select(withPerson)
       .where('asset_face.assetId', 'in', assetIds)
       .where('asset_face.personId', 'in', personIds)

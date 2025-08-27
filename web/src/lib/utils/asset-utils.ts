@@ -9,7 +9,7 @@ import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, withError } from '$lib/utils';
+import { downloadRequest, sleep, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -278,7 +278,12 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
   const queryParams = asQueryString(authManager.params);
 
-  for (const { filename, id } of assets) {
+  for (const [i, { filename, id }] of assets.entries()) {
+    if (i !== 0) {
+      // play nice with Safari
+      await sleep(500);
+    }
+
     try {
       notificationController.show({
         type: NotificationType.Info,

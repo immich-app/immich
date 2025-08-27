@@ -1,29 +1,29 @@
-dev:
+dev: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-down:
 	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
 
-dev-update:
+dev-update: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
-dev-scale:
+dev-scale: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --scale immich-server=3 --remove-orphans
 
-dev-docs:
+dev-docs: prepare-volumes
 	npm --prefix docs run start
 
 .PHONY: e2e
-e2e:
-	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+e2e: prepare-volumes
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --remove-orphans
 
-e2e-update:
+e2e-update: prepare-volumes
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 e2e-down:
 	docker compose -f ./e2e/docker-compose.yml down --remove-orphans
 
-prod:
+prod: 
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
 prod-down:
@@ -33,16 +33,16 @@ prod-scale:
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
 .PHONY: open-api
-open-api:
+open-api: prepare-volumes
 	cd ./open-api && bash ./bin/generate-open-api.sh
 
-open-api-dart:
+open-api-dart: prepare-volumes
 	cd ./open-api && bash ./bin/generate-open-api.sh dart
 
-open-api-typescript:
+open-api-typescript: prepare-volumes
 	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
-sql:
+sql: prepare-volumes
 	pnpm --filter immich run sync:sql
 
 attach-server:
@@ -50,6 +50,30 @@ attach-server:
 
 renovate:
   LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
+
+# Directories that need to be created for volumes or build output
+VOLUME_DIRS = \
+	./.pnpm-store \
+	./web/.svelte-kit \
+	./web/node_modules \
+	./web/coverage \
+	./e2e/node_modules \
+	./docs/node_modules \
+	./server/node_modules \
+	./server/dist \
+	./open-api/typescript-sdk/node_modules \
+	./.github/node_modules \
+	./node_modules \
+	./cli/node_modules
+
+# create empty directories and chown to current user
+prepare-volumes:
+	@for dir in $(VOLUME_DIRS); do \
+		mkdir -p $$dir; \
+	done
+	@if [ -n "$(VOLUME_DIRS)" ]; then \
+		chown -R $$(id -u):$$(id -g) $(VOLUME_DIRS); \
+	fi
 
 MODULES = e2e server web cli sdk docs .github
 

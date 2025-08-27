@@ -17,9 +17,14 @@ class AssetService {
        _localAssetRepository = localAssetRepository,
        _platform = const LocalPlatform();
 
+  Future<BaseAsset?> getAsset(BaseAsset asset) {
+    final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
+    return asset is LocalAsset ? _localAssetRepository.get(id) : _remoteAssetRepository.get(id);
+  }
+
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
-    return asset is LocalAsset ? _localAssetRepository.watchAsset(id) : _remoteAssetRepository.watchAsset(id);
+    return asset is LocalAsset ? _localAssetRepository.watch(id) : _remoteAssetRepository.watch(id);
   }
 
   Future<RemoteAsset?> getRemoteAsset(String id) {

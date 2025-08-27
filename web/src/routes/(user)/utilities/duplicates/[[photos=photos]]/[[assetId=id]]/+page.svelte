@@ -11,6 +11,7 @@
   import { AppRoute } from '$lib/constants';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
@@ -60,6 +61,7 @@
   };
 
   let duplicates = $state(data.duplicates);
+  const { isViewing: showAssetViewer } = assetViewingStore;
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -189,8 +191,20 @@
   const handlePrevious = async () => {
     await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
   };
+  const handlePreviousShortcut = async () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    await handlePrevious();
+  };
   const handleNext = async () => {
     await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
+  };
+  const handleNextShortcut = async () => {
+    if ($showAssetViewer) {
+      return;
+    }
+    await handleNext();
   };
   const handleLast = async () => {
     await correctDuplicatesIndexAndGo(duplicates.length - 1);
@@ -203,8 +217,8 @@
 
 <svelte:document
   use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePrevious },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNext },
+    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePreviousShortcut },
+    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNextShortcut },
   ]}
 />
 
