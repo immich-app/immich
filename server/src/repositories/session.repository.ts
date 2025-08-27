@@ -19,7 +19,7 @@ async cleanupMobileStaleSessions() {
     .deleteFrom('session')
     .where((eb) =>
       eb.and([
-        eb('updatedAt', '<=', DateTime.now().minus({ minutes: 1 }).toJSDate()),
+        eb('updatedAt', '<=', DateTime.now().minus({ days: 7 }).toJSDate()),
         eb('deviceOS', 'in', ['Android', 'iOS']),
       ])
     )
