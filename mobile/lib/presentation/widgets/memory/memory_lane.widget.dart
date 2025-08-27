@@ -8,7 +8,6 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class DriftMemoryLane extends ConsumerWidget {
@@ -16,11 +15,6 @@ class DriftMemoryLane extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memoriesEnabled = ref.watch(currentUserProvider.select((user) => user?.memoryEnabled ?? true));
-    if (!memoriesEnabled) {
-      return const SizedBox.shrink();
-    }
-
     final memoryLaneProvider = ref.watch(driftMemoryFutureProvider);
     final memories = memoryLaneProvider.value ?? const [];
     if (memories.isEmpty) {
