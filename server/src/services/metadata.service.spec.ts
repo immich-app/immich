@@ -27,13 +27,12 @@ const forSidecarJob = (
   asset: {
     id?: string;
     originalPath?: string;
-    sidecarPath?: string | null;
+    files: { id: string; type: AssetFileType; path: string }[];
   } = {},
 ) => {
   return {
     id: factory.uuid(),
     originalPath: '/path/to/IMG_123.jpg',
-    sidecarPath: null,
     ...asset,
   };
 };
@@ -57,13 +56,6 @@ const makeFaceTags = (face: Partial<{ Name: string }> = {}, orientation?: Immich
     ],
   },
 });
-
-function removeNonSidecarFiles(asset: any) {
-  return {
-    ...asset,
-    files: asset.files.filter((file: any) => file.type === AssetFileType.Sidecar),
-  };
-}
 
 describe(MetadataService.name, () => {
   let sut: MetadataService;

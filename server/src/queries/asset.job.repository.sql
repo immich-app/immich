@@ -27,6 +27,22 @@ select
     from
       (
         select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" = $1
+      ) as agg
+  ) as "files",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
           "tag"."value"
         from
           "tag"
@@ -34,7 +50,18 @@ select
         where
           "asset"."id" = "tag_asset"."assetsId"
       ) as agg
-  ) as "tags",
+  ) as "tags"
+from
+  "asset"
+where
+  "asset"."id" = $2::uuid
+limit
+  $3
+
+-- AssetJobRepository.getForSidecarCheckJob
+select
+  "id",
+  "originalPath",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -48,21 +75,8 @@ select
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
-          and "asset_file"."type" = $1
       ) as agg
   ) as "files"
-from
-  "asset"
-where
-  "asset"."id" = $2::uuid
-limit
-  $3
-
--- AssetJobRepository.getForSidecarCheckJob
-select
-  "id",
-  "sidecarPath",
-  "originalPath"
 from
   "asset"
 where
