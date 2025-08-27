@@ -141,7 +141,7 @@
 
 <div
   class="w-64 sm:w-72 md:w-80 max-w-full rounded-xl border-4 transition-colors font-semibold text-xs {isSelected
-    ? 'bg-subtle border-primary'
+    ? 'bg-primary border-primary'
     : 'bg-subtle border-subtle'}"
 >
   <div class="relative w-full">
@@ -205,7 +205,11 @@
     </button>
   </div>
 
-  <div class="grid place-items-center gap-y-2 py-2 text-xs transition-colors dark:text-white">
+  <div
+    class="grid place-items-center gap-y-2 py-2 text-xs transition-colors {isSelected
+      ? 'text-white dark:text-black'
+      : 'dark:text-white'}"
+  >
     <span class="break-all text-center">{asset.originalFileName}</span>
     <span>{getAssetResolution(asset)} - {getFileSize(asset)}</span>
     <span>
@@ -232,10 +236,10 @@
                   ? 'border-subtle/60'
                   : 'bg-amber-50 dark:bg-amber-900/30 border-amber-200/50 dark:border-amber-700/30')}
             >
-              <strong class={'text-center ' + (showAllMetadata ? '' : 'text-amber-800 dark:text-amber-200')}
+              <strong class={'text-center ' + (showAllMetadata ? '' : 'text-amber-800 dark:text-amber-300')}
                 >{metadataLabels[metadataKey]}:</strong
               >
-              <span class={'break-all text-center ' + (showAllMetadata ? '' : 'text-amber-900 dark:text-amber-100')}
+              <span class={'break-all text-center ' + (showAllMetadata ? '' : 'text-amber-900 dark:text-amber-200')}
                 >{formattedValue}</span
               >
             </div>
