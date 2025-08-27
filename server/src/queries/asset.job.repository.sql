@@ -43,6 +43,18 @@ where
 limit
   $2
 
+-- AssetJobRepository.getForSidecarCheckJob
+select
+  "id",
+  "sidecarPath",
+  "originalPath"
+from
+  "asset"
+where
+  "asset"."id" = $1::uuid
+limit
+  $2
+
 -- AssetJobRepository.streamForThumbnailJob
 select
   "asset"."id",

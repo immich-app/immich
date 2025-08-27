@@ -39,10 +39,8 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select((eb) => [
-        'id',
-        'sidecarPath',
-        'originalPath',
+      .select(['id', 'sidecarPath', 'originalPath'])
+      .select((eb) =>
         jsonArrayFrom(
           eb
             .selectFrom('tag')
@@ -50,7 +48,17 @@ export class AssetJobRepository {
             .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
             .whereRef('asset.id', '=', 'tag_asset.assetsId'),
         ).as('tags'),
-      ])
+      )
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForSidecarCheckJob(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', asUuid(id))
+      .select(['id', 'sidecarPath', 'originalPath'])
       .limit(1)
       .executeTakeFirst();
   }
