@@ -39,10 +39,9 @@ export class AssetJobRepository {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
-      .select((eb) => [
-        'id',
-        'sidecarPath',
-        'originalPath',
+      .select(['id', 'originalPath'])
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .select((eb) =>
         jsonArrayFrom(
           eb
             .selectFrom('tag')
@@ -50,7 +49,18 @@ export class AssetJobRepository {
             .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
             .whereRef('asset.id', '=', 'tag_asset.assetsId'),
         ).as('tags'),
-      ])
+      )
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForSidecarCheckJob(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.id', '=', asUuid(id))
+      .select(['id', 'originalPath'])
+      .select(withFiles)
       .limit(1)
       .executeTakeFirst();
   }
@@ -113,6 +123,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(columns.asset)
       .select(withFaces)
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .where('asset.id', '=', id)
       .executeTakeFirst();
   }
@@ -210,7 +221,6 @@ export class AssetJobRepository {
         'asset.libraryId',
         'asset.ownerId',
         'asset.livePhotoVideoId',
-        'asset.sidecarPath',
         'asset.encodedVideoPath',
         'asset.originalPath',
       ])
@@ -288,12 +298,19 @@ export class AssetJobRepository {
         'asset.checksum',
         'asset.originalPath',
         'asset.isExternal',
-        'asset.sidecarPath',
         'asset.originalFileName',
         'asset.livePhotoVideoId',
         'asset.fileCreatedAt',
         'asset_exif.timeZone',
         'asset_exif.fileSizeInByte',
+        (eb) =>
+          eb
+            .selectFrom('asset_file')
+            .select('asset_file.path')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Sidecar)
+            .limit(1)
+            .as('sidecarPath'),
       ])
       .where('asset.deletedAt', 'is', null);
   }
@@ -325,9 +342,18 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .select(['asset.id'])
       .$if(!force, (qb) =>
-        qb.where((eb) => eb.or([eb('asset.sidecarPath', '=', ''), eb('asset.sidecarPath', 'is', null)])),
+        qb.where((eb) =>
+          eb.not(
+            eb.exists(
+              eb
+                .selectFrom('asset_file')
+                .select('asset_file.id')
+                .whereRef('asset_file.assetId', '=', 'asset.id')
+                .where('asset_file.type', '=', AssetFileType.Sidecar),
+            ),
+          ),
+        ),
       )
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 

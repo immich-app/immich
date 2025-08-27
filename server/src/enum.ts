@@ -43,6 +43,7 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  Sidecar = 'sidecar',
 }
 
 export enum AlbumUserRole {
@@ -570,8 +571,7 @@ export enum JobName {
   SendMail = 'SendMail',
 
   SidecarQueueAll = 'SidecarQueueAll',
-  SidecarDiscovery = 'SidecarDiscovery',
-  SidecarSync = 'SidecarSync',
+  SidecarCheck = 'SidecarCheck',
   SidecarWrite = 'SidecarWrite',
 
   SmartSearchQueueAll = 'SmartSearchQueueAll',

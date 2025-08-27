@@ -238,11 +238,11 @@ describe(JobService.name, () => {
 
     const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
       {
-        item: { name: JobName.SidecarSync, data: { id: 'asset-1' } },
+        item: { name: JobName.SidecarCheck, data: { id: 'asset-1' } },
         jobs: [JobName.AssetExtractMetadata],
       },
       {
-        item: { name: JobName.SidecarDiscovery, data: { id: 'asset-1' } },
+        item: { name: JobName.SidecarCheck, data: { id: 'asset-1' } },
         jobs: [JobName.AssetExtractMetadata],
       },
       {
