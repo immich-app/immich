@@ -500,7 +500,7 @@
   "assets": "Assets",
   "assets_added_count": "Added {count, plural, one {# asset} other {# assets}}",
   "assets_added_to_album_count": "Added {count, plural, one {# asset} other {# assets}} to the album",
-  "assets_added_to_albums_count": "Added {assetTotal, plural, one {# asset} other {# assets}} to {albumTotal} albums",
+  "assets_added_to_albums_count": "Added {assetTotal, plural, one {# asset} other {# assets}} to {albumTotal, plural, one {# album} other {# albums}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Asset} other {Assets}} cannot be added to the album",
   "assets_cannot_be_added_to_albums": "{count, plural, one {Asset} other {Assets}} cannot be added to any of the albums",
   "assets_count": "{count, plural, one {# asset} other {# assets}}",

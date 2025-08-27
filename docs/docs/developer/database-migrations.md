@@ -5,7 +5,7 @@ After making any changes in the `server/src/schema`, a database migration need t
 1. Run the command
 
 ```bash
-npm run migrations:generate <migration-name>
+pnpm run migrations:generate <migration-name>
 ```
 
 2. Check if the migration file makes sense.

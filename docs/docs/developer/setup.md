@@ -54,20 +54,20 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 
 If you only want to do web development connected to an existing, remote backend, follow these steps:
 
-1. Build the Immich SDK - `cd open-api/typescript-sdk && npm i && npm run build && cd -`
+1. Build the Immich SDK - `cd open-api/typescript-sdk && pnpm i && pnpm run build && cd -`
 2. Enter the web directory - `cd web/`
-3. Install web dependencies - `npm i`
+3. Install web dependencies - `pnpm i`
 4. Start the web development server
 
 ```bash
-IMMICH_SERVER_URL=https://demo.immich.app/ npm run dev
+IMMICH_SERVER_URL=https://demo.immich.app/ pnpm run dev
 ```
 
 If you're using PowerShell on Windows you may need to set the env var separately like so:
 
 ```powershell
 $env:IMMICH_SERVER_URL = "https://demo.immich.app/"
-npm run dev
+pnpm run dev
 ```
 
 #### `@immich/ui`
@@ -75,12 +75,12 @@ npm run dev
 To see local changes to `@immich/ui` in Immich, do the following:
 
 1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`
-2. Build the `@immich/ui` project via `npm run build`
+2. Build the `@immich/ui` project via `pnpm run build`
 3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yaml` file (`../../ui:/usr/ui`)
 4. Uncomment the corresponding alias in the `web/vite.config.js` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui')`)
 5. Uncomment the import statement in `web/src/app.css` file `@import '/usr/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
 6. Start up the stack via `make dev`
-7. After making changes in `@immich/ui`, rebuild it (`npm run build`)
+7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)
 
 ### Mobile app
 

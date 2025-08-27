@@ -30,24 +30,25 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
         DiagnosticsProperty<String>('Id', key.id),
         DiagnosticsProperty<Size>('Size', key.size),
       ],
-    )..addOnLastListenerRemovedCallback(cancel);
+      onDispose: cancel,
+    );
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
-    return loadRequest(LocalImageRequest(localId: key.id, size: size, assetType: key.assetType), decode);
+    return loadRequest(LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType), decode);
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalThumbProvider) {
-      return id == other.id && size == other.size;
+      return id == other.id;
     }
     return false;
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode;
+  int get hashCode => id.hashCode;
 }
 
 class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
@@ -67,7 +68,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),

@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import path from 'node:path';
+import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AssetFace, AssetFile } from 'src/database';
@@ -331,7 +331,7 @@ export class MetadataService extends BaseService {
 
     const assets = this.assetJobRepository.streamForSidecar(force);
     for await (const asset of assets) {
-      jobs.push({ name: force ? JobName.SidecarSync : JobName.SidecarDiscovery, data: { id: asset.id } });
+      jobs.push({ name: JobName.SidecarCheck, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -342,14 +342,43 @@ export class MetadataService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.SidecarSync, queue: QueueName.Sidecar })
-  handleSidecarSync({ id }: JobOf<JobName.SidecarSync>): Promise<JobStatus> {
-    return this.processSidecar(id, true);
-  }
+  @OnJob({ name: JobName.SidecarCheck, queue: QueueName.Sidecar })
+  async handleSidecarCheck({ id }: JobOf<JobName.SidecarCheck>): Promise<JobStatus | undefined> {
+    const asset = await this.assetJobRepository.getForSidecarCheckJob(id);
+    if (!asset) {
+      return;
+    }
 
-  @OnJob({ name: JobName.SidecarDiscovery, queue: QueueName.Sidecar })
-  handleSidecarDiscovery({ id }: JobOf<JobName.SidecarDiscovery>): Promise<JobStatus> {
-    return this.processSidecar(id, false);
+    let sidecarPath = null;
+    for (const candidate of this.getSidecarCandidates(asset)) {
+      const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
+      if (!exists) {
+        continue;
+      }
+
+      sidecarPath = candidate;
+      break;
+    }
+
+    const existingSidecar = asset.files ? asset.files.find((file) => file.type === AssetFileType.Sidecar) : null;
+
+    const isChanged = sidecarPath !== existingSidecar?.path;
+
+    this.logger.debug(
+      `Sidecar check found old=${existingSidecar?.path}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
+    );
+
+    if (!isChanged) {
+      return JobStatus.Skipped;
+    }
+
+    if (sidecarPath === null) {
+      await this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar });
+    } else {
+      await this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath });
+    }
+
+    return JobStatus.Success;
   }
 
   @OnEvent({ name: 'AssetTag' })
@@ -397,6 +426,21 @@ export class MetadataService extends BaseService {
     }
 
     return JobStatus.Success;
+  }
+
+  private getSidecarCandidates({ files, originalPath }: { files: AssetFile[] | null; originalPath: string }) {
+    const candidates: string[] = [];
+
+    const assetPath = parse(originalPath);
+
+    candidates.push(
+      // IMG_123.jpg.xmp
+      `${originalPath}.xmp`,
+      // IMG_123.xmp
+      `${join(assetPath.dir, assetPath.name)}.xmp`,
+    );
+
+    return candidates;
   }
 
   private getImageDimensions(exifTags: ImmichTags): { width?: number; height?: number } {
@@ -586,7 +630,7 @@ export class MetadataService extends BaseService {
           checksum,
           ownerId: asset.ownerId,
           originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
-          originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
+          originalFileName: `${parse(asset.originalFileName).name}.mp4`,
           visibility: AssetVisibility.Hidden,
           deviceAssetId: 'NONE',
           deviceId: 'NONE',
@@ -897,81 +941,5 @@ export class MetadataService extends BaseService {
     }
 
     return tags;
-  }
-
-  private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
-    const asset = await this.assetJobRepository.getForMetadataExtraction(id);
-
-    if (!asset) {
-      return JobStatus.Failed;
-    }
-
-    if (isSync) {
-      // We are performing a sidecar sync
-      if (asset.files.length === 0) {
-        return JobStatus.Failed;
-      }
-    } else if (!asset.isExternal) {
-      // We are performing a sidecar discovery and not on an external library
-      if (asset.visibility === AssetVisibility.Hidden) {
-        // Skip hidden assets
-        return JobStatus.Skipped;
-      } else if (asset.files.length > 1) {
-        // Skip assets that already have a sidecar
-        return JobStatus.Skipped;
-      }
-    }
-
-    let currentSidecar: AssetFile | null;
-
-    if (asset.files.length === 0) {
-      currentSidecar = null;
-    } else if (asset.files.length === 1) {
-      currentSidecar = asset.files[0];
-    } else {
-      throw new Error(
-        `Multiple sidecar files found for asset ${asset.id}: ${asset.files.map((file) => file.path).join(', ')}`,
-      );
-    }
-
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-    const assetPath = path.parse(asset.originalPath);
-    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
-    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
-    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
-
-    const [sidecarPathWithExtExists, sidecarPathWithoutExtExists] = await Promise.all([
-      this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK),
-      this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
-    ]);
-
-    let sidecarPath = null;
-    if (sidecarPathWithExtExists) {
-      // Sidecars with the extension have precedence over those without
-      sidecarPath = sidecarPathWithExt;
-    } else if (sidecarPathWithoutExtExists) {
-      sidecarPath = sidecarPathWithoutExt;
-    }
-
-    if (asset.isExternal) {
-      if (sidecarPath !== currentSidecar?.path) {
-        await (sidecarPath
-          ? this.assetRepository.upsertFile({ assetId: asset.id, path: sidecarPath, type: AssetFileType.Sidecar })
-          : this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar }));
-      }
-
-      return JobStatus.Success;
-    }
-
-    if (sidecarPath) {
-      this.logger.debug(`Detected sidecar at '${sidecarPath}' for asset ${asset.id}: ${asset.originalPath}`);
-      await this.assetRepository.upsertFile({ assetId: asset.id, path: sidecarPath, type: AssetFileType.Sidecar });
-      return JobStatus.Success;
-    }
-
-    this.logger.debug(`No sidecar found for asset ${asset.id}: ${asset.originalPath}`);
-    await this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar });
-
-    return JobStatus.Success;
   }
 }

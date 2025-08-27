@@ -18,7 +18,7 @@ WORKDIR /tmp/create-dep-cache
 RUN pnpm fetch && rm -rf /tmp/create-dep-cache && chmod -R o+rw /buildcache
 WORKDIR /usr/src/app
 
-ENV PATH="${PATH}:/usr/src/app/server/bin" \
+ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
@@ -91,9 +91,8 @@ FROM prod-builder-base AS server-prod
 WORKDIR /usr/src/app
 COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./server ./server/
-# SHARP_IGNORE_GLOBAL_LIBVIPS because 'deploy' will always build sharp bindings from source
 RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
-  pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
 
 # web production build
 FROM prod-builder-base AS web-prod

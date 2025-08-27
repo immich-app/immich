@@ -197,6 +197,10 @@ export class PersonService extends BaseService {
         throw new BadRequestException('Invalid assetId for feature face');
       }
 
+      if (face.asset.isOffline) {
+        throw new BadRequestException('An offline asset cannot be used for feature face');
+      }
+
       faceId = face.id;
     }
 
