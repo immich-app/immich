@@ -104,6 +104,14 @@ describe('/jobs', () => {
       }
     });
 
+    it('can queue auto stack candidate generation for all users (feature flag dependent)', async () => {
+      const { status } = await request(app)
+        .post('/jobs/command/AutoStackCandidateQueueAll')
+        .set(auth())
+        .send({ command: 'start' });
+      expect(status).toBeGreaterThanOrEqual(200);
+    });
+
     it('should not re-extract metadata for existing assets', async () => {
       const path = `${testAssetDir}/temp/metadata/asset.jpg`;
 

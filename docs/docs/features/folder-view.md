@@ -15,3 +15,7 @@ You can then navigate to the view from the sidebar to explore the folders and fi
 <img src={require('./img/folder-access.webp').default} width="30%" title='Folder view access' />
 
 <img src={require('./img/folder-view-1.webp').default} width="100%" title='Folder view' />
+
+### Stacks
+
+In folder grids, stacked items typically show as a single thumbnail (the primary) with a stack count. Open the item to see all assets in the stack. Learn more in [Stacks and AutoStack](/docs/features/stacks).

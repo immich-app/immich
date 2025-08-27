@@ -47,6 +47,14 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
 
 @Injectable()
 export class StackRepository {
+  getByOwnerId(id: string) {
+    return this.db
+      .selectFrom('stack')
+      .selectAll('stack')
+      .where('stack.ownerId', '=', asUuid(id))
+      .orderBy('stack.createdAt', 'desc')
+      .execute();
+  }
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
@@ -103,13 +111,26 @@ export class StackRepository {
       const newRecord = await tx
         .insertInto('stack')
         .values({ ...entity, primaryAssetId: assetIds[0] })
+        .onConflict((oc) => oc.column('primaryAssetId').doNothing())
         .returning('id')
-        .executeTakeFirstOrThrow();
+        .executeTakeFirst();
+
+      // If conflict (already exists), fetch existing stack id by primary asset id
+      let stackId = newRecord?.id;
+      if (!stackId) {
+        const stackInfo = await tx
+          .selectFrom('stack')
+          .select('id')
+          .where('primaryAssetId', '=', assetIds[0])
+          .where('ownerId', '=', entity.ownerId)
+          .executeTakeFirstOrThrow();
+        stackId = stackInfo.id;
+      }
 
       await tx
         .updateTable('asset')
         .set({
-          stackId: newRecord.id,
+          stackId,
           updatedAt: new Date(),
         })
         .where('id', 'in', [...uniqueIds])
@@ -119,7 +140,7 @@ export class StackRepository {
         .selectFrom('stack')
         .selectAll('stack')
         .select(withAssets)
-        .where('id', '=', newRecord.id)
+        .where('id', '=', stackId)
         .executeTakeFirstOrThrow();
     });
   }
@@ -127,6 +148,16 @@ export class StackRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
     await this.db.deleteFrom('stack').where('id', '=', asUuid(id)).execute();
+  }
+
+  /** Clears all stacks and removes stackId from assets to respect FK constraints. */
+  async clearAll() {
+    await this.db
+      .updateTable('asset')
+      .set({ stackId: null, updatedAt: new Date() })
+      .where('stackId', 'is not', null)
+      .execute();
+    await this.db.deleteFrom('stack').execute();
   }
 
   async deleteAll(ids: string[]): Promise<void> {

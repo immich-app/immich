@@ -10053,6 +10053,9 @@
       },
       "AllJobStatusResponseDto": {
         "properties": {
+          "autoStack": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -10100,6 +10103,7 @@
           }
         },
         "required": [
+          "autoStack",
           "backgroundTask",
           "backupDatabase",
           "duplicateDetection",
@@ -10974,6 +10978,43 @@
         ],
         "type": "object"
       },
+      "AutoStackWeightsDto": {
+        "properties": {
+          "continuity": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "exposure": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "size": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "timeSpan": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "visual": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "continuity",
+          "exposure",
+          "size",
+          "timeSpan",
+          "visual"
+        ],
+        "type": "object"
+      },
       "AvatarUpdate": {
         "properties": {
           "color": {
@@ -11404,6 +11445,10 @@
       },
       "ExifResponseDto": {
         "properties": {
+          "autoStackSource": {
+            "default": null,
+            "type": "object"
+          },
           "city": {
             "default": null,
             "nullable": true,
@@ -11493,6 +11538,11 @@
             "type": "string"
           },
           "orientation": {
+            "default": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "pHash": {
             "default": null,
             "nullable": true,
             "type": "string"
@@ -11691,7 +11741,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "autoStack"
         ],
         "type": "string"
       },
@@ -13640,6 +13691,10 @@
       },
       "ServerFeaturesDto": {
         "properties": {
+          "autoStack": {
+            "description": "Automatic stack candidate generation enabled (experimental).",
+            "type": "boolean"
+          },
           "configFile": {
             "type": "boolean"
           },
@@ -13684,6 +13739,7 @@
           }
         },
         "required": [
+          "autoStack",
           "configFile",
           "duplicateDetection",
           "email",
@@ -15545,6 +15601,147 @@
         ],
         "type": "object"
       },
+      "SystemConfigAutoStackDto": {
+        "properties": {
+          "autoPromoteMinScore": {
+            "description": "Auto-promote when overall heuristic score >= this value (0 disables auto-promotion)",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "number"
+          },
+          "bestPrimaryHeuristic": {
+            "description": "Enable best-primary heuristic (pick sharpest/lowest ISO)",
+            "type": "boolean"
+          },
+          "cameraMatch": {
+            "description": "Require matching camera make+model if metadata present",
+            "type": "boolean"
+          },
+          "enabled": {
+            "description": "Enable automatic stack candidate generation",
+            "type": "boolean"
+          },
+          "maxGapSeconds": {
+            "description": "Maximum allowed gap (seconds) between adjacent assets within a group",
+            "maximum": 3600,
+            "minimum": 1,
+            "type": "number"
+          },
+          "maxMergeGapSeconds": {
+            "description": "Max temporal gap (s) to attempt merging adjacent groups",
+            "minimum": 0,
+            "type": "number"
+          },
+          "mergeScoreDelta": {
+            "description": "Minimum score improvement required to retain a merged group (0 = always merge)",
+            "minimum": 0,
+            "type": "number"
+          },
+          "minGroupSize": {
+            "description": "Minimum number of assets required to store a candidate",
+            "maximum": 50,
+            "minimum": 2,
+            "type": "number"
+          },
+          "outlierPruneEnabled": {
+            "description": "Enable outlier pruning that removes assets lowering visual cohesion",
+            "type": "boolean"
+          },
+          "outlierPruneIterative": {
+            "description": "Iteratively prune multiple outliers while improvement threshold met",
+            "type": "boolean"
+          },
+          "outlierPruneMinDelta": {
+            "description": "Minimum delta improvement (0-1) in avg visual similarity to prune an outlier",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "overlapMergeEnabled": {
+            "description": "Enable merging of overlapping groups (shared assets)",
+            "type": "boolean"
+          },
+          "pHashHammingThreshold": {
+            "description": "Maximum pHash Hamming distance (0-64) to treat assets as near-duplicates",
+            "maximum": 64,
+            "minimum": 0,
+            "type": "number"
+          },
+          "secondaryVisualMaxAdds": {
+            "description": "Maximum number of visually expanded assets to add per group",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number"
+          },
+          "secondaryVisualWindowSeconds": {
+            "description": "Secondary visual expansion window (seconds) to pull in near-duplicates",
+            "maximum": 1800,
+            "minimum": 0,
+            "type": "number"
+          },
+          "sessionMaxSpanSeconds": {
+            "description": "Maximum span (seconds) allowed for a single group before segmentation considered",
+            "maximum": 86400,
+            "minimum": 5,
+            "type": "number"
+          },
+          "sessionMinAvgAdjacency": {
+            "description": "Minimum average adjacent visual similarity (0-1) required to keep a long-span group intact",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "sessionMinSegmentSize": {
+            "description": "Minimum segment size when splitting a session",
+            "maximum": 50,
+            "minimum": 1,
+            "type": "number"
+          },
+          "visualBridgeThreshold": {
+            "description": "Visual bridge cosine threshold (0-1) to merge across a larger gap",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "visualGroupSimilarityThreshold": {
+            "description": "Cosine similarity threshold (0-1) for adding external assets to a group",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "visualPromoteThreshold": {
+            "description": "Cosine similarity threshold (0-1) to immediately promote when embeddings indicate strong cohesion",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "weights": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AutoStackWeightsDto"
+              }
+            ],
+            "description": "Scoring weights for { size, timeSpan, continuity, visual, exposure }"
+          },
+          "windowSeconds": {
+            "description": "Primary time window (seconds) around a new asset for temporal grouping scan",
+            "maximum": 3600,
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "autoPromoteMinScore",
+          "cameraMatch",
+          "enabled",
+          "maxGapSeconds",
+          "minGroupSize",
+          "visualPromoteThreshold",
+          "weights",
+          "windowSeconds"
+        ],
+        "type": "object"
+      },
       "SystemConfigBackupsDto": {
         "properties": {
           "database": {
@@ -15874,6 +16071,9 @@
       },
       "SystemConfigJobDto": {
         "properties": {
+          "autoStack": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -15909,6 +16109,7 @@
           }
         },
         "required": [
+          "autoStack",
           "backgroundTask",
           "faceDetection",
           "library",
@@ -16218,6 +16419,9 @@
       },
       "SystemConfigServerDto": {
         "properties": {
+          "autoStack": {
+            "$ref": "#/components/schemas/SystemConfigAutoStackDto"
+          },
           "externalDomain": {
             "format": "uri",
             "type": "string"
@@ -16230,6 +16434,7 @@
           }
         },
         "required": [
+          "autoStack",
           "externalDomain",
           "loginPageMessage",
           "publicUsers"
