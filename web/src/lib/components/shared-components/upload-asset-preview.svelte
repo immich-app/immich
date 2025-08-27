@@ -91,7 +91,7 @@
   </div>
 
   {#if uploadAsset.state === UploadState.STARTED}
-    <div class="text-black relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 dark:bg-immich-dark-gray">
+    <div class="text-black relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 dark:bg-gray-700">
       <div class="h-[15px] rounded-md bg-immich-primary transition-all" style={`width: ${uploadAsset.progress}%`}></div>
       <p class="absolute top-0 h-full w-full text-center text-immich-primary dark:text-immich-dark-primary text-[10px]">
         {#if uploadAsset.message}
