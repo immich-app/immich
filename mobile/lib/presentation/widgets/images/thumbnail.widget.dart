@@ -241,6 +241,11 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
       imageProvider.cancel();
     }
 
+    final thumbhashProvider = widget.thumbhashProvider;
+    if (thumbhashProvider is CancellableImageProvider) {
+      thumbhashProvider.cancel();
+    }
+
     _fadeController.removeStatusListener(_onAnimationStatusChanged);
     _fadeController.dispose();
     _stopListeningToStream();
