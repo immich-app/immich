@@ -27,7 +27,7 @@ import { BaseService } from 'src/services/base.service';
 import { UploadFile } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
-import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
+import { isAssetChecksumConstraint } from 'src/utils/database';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
@@ -318,7 +318,7 @@ export class AssetMediaService extends BaseService {
     });
 
     // handle duplicates with a success response
-    if (error.constraint_name === ASSET_CHECKSUM_CONSTRAINT) {
+    if (isAssetChecksumConstraint(error)) {
       const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
       if (!duplicateId) {
         this.logger.error(`Error locating duplicate for checksum constraint`);
