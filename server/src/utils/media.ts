@@ -403,7 +403,7 @@ export class ThumbnailConfig extends BaseConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
     return [
-      'fps=12:eof_action=pass:round=down',
+      'fps=12:start_time=0:eof_action=pass:round=down',
       'thumbnail=12',
       String.raw`select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20)`,
       'trim=end_frame=2',

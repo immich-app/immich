@@ -5,7 +5,10 @@
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
+  import ChangeDate, {
+    type AbsoluteResult,
+    type RelativeResult,
+  } from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -147,10 +150,12 @@
 
   let isShowChangeDate = $state(false);
 
-  async function handleConfirmChangeDate(dateTimeOriginal: string) {
+  async function handleConfirmChangeDate(result: AbsoluteResult | RelativeResult) {
     isShowChangeDate = false;
     try {
-      await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal } });
+      if (result.mode === 'absolute') {
+        await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal: result.date } });
+      }
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_date'));
     }
@@ -369,6 +374,7 @@
       <ChangeDate
         initialDate={dateTime}
         initialTimeZone={timeZone ?? ''}
+        withDuration={false}
         onConfirm={handleConfirmChangeDate}
         onCancel={() => (isShowChangeDate = false)}
       />
@@ -409,9 +415,9 @@
                 <p>
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
-                {@const { width, height } = getDimensions(asset.exifInfo)}
-                <p>{width} x {height}</p>
               {/if}
+              {@const { width, height } = getDimensions(asset.exifInfo)}
+              <p>{width} x {height}</p>
             {/if}
             {#if asset.exifInfo?.fileSizeInByte}
               <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>

@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.136.0+3000
+version: 1.139.4+3009
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
@@ -73,6 +73,7 @@ dependencies:
   wakelock_plus: ^1.2.10
   worker_manager: ^7.2.3
   scroll_date_picker: ^3.8.0
+  ffi: ^2.1.4
 
   native_video_player:
     git:
@@ -116,7 +117,7 @@ dev_dependencies:
   # Drift generator
   drift_dev: ^2.23.1
   # Type safe platform code
-  pigeon: ^25.3.1
+  pigeon: ^26.0.0
 
 flutter:
   uses-material-design: true

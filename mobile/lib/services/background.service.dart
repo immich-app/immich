@@ -330,10 +330,16 @@ class BackgroundService {
   }
 
   Future<bool> _onAssetsChanged() async {
-    final db = await Bootstrap.initIsar();
-    await Bootstrap.initDomain(db);
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb);
 
-    final ref = ProviderContainer(overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)]);
+    final ref = ProviderContainer(
+      overrides: [
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
+        driftProvider.overrideWith(driftOverride(drift)),
+      ],
+    );
 
     HttpSSLOptions.apply();
     ref.read(apiServiceProvider).setAccessToken(Store.get(StoreKey.accessToken));

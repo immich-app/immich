@@ -64,6 +64,11 @@ body:
         - label: Web
         - label: Mobile
 
+  - type: input
+    attributes:
+      label: Device make and model
+      placeholder: Samsung S25 Android 16
+
   - type: textarea
     validations:
       required: true

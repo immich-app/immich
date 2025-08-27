@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.136.0
+ * 1.139.4
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -317,6 +317,8 @@ export type TagResponseDto = {
 export type AssetResponseDto = {
     /** base64 encoded sha1 hash */
     checksum: string;
+    /** The UTC timestamp when the asset was originally uploaded to Immich. */
+    createdAt: string;
     deviceAssetId: string;
     deviceId: string;
     duplicateId?: string | null;
@@ -383,6 +385,14 @@ export type CreateAlbumDto = {
     albumUsers?: AlbumUserCreateDto[];
     assetIds?: string[];
     description?: string;
+};
+export type AlbumsAddAssetsDto = {
+    albumIds: string[];
+    assetIds: string[];
+};
+export type AlbumsAddAssetsResponseDto = {
+    error?: BulkIdErrorReason;
+    success: boolean;
 };
 export type AlbumStatisticsResponseDto = {
     notShared: number;
@@ -456,6 +466,7 @@ export type AssetMediaResponseDto = {
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
+    dateTimeRelative?: number;
     description?: string;
     duplicateId?: string | null;
     ids: string[];
@@ -463,6 +474,7 @@ export type AssetBulkUpdateDto = {
     latitude?: number;
     longitude?: number;
     rating?: number;
+    timeZone?: string;
     visibility?: AssetVisibility;
 };
 export type AssetBulkUploadCheckItem = {
@@ -1644,6 +1656,15 @@ export function deleteActivity({ id }: {
         method: "DELETE"
     }));
 }
+/**
+ * This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission.
+ */
+export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/auth/unlink-all", {
+        ...opts,
+        method: "POST"
+    }));
+}
 export function createNotification({ notificationCreateDto }: {
     notificationCreateDto: NotificationCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -1854,6 +1875,26 @@ export function createAlbum({ createAlbumDto }: {
     })));
 }
 /**
+ * This endpoint requires the `albumAsset.create` permission.
+ */
+export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
+    key?: string;
+    slug?: string;
+    albumsAddAssetsDto: AlbumsAddAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumsAddAssetsResponseDto;
+    }>(`/albums/assets${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: albumsAddAssetsDto
+    })));
+}
+/**
  * This endpoint requires the `album.statistics` permission.
  */
 export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {
@@ -2015,6 +2056,14 @@ export function createApiKey({ apiKeyCreateDto }: {
         method: "POST",
         body: apiKeyCreateDto
     })));
+}
+export function getMyApiKey(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ApiKeyResponseDto;
+    }>("/api-keys/me", {
+        ...opts
+    }));
 }
 /**
  * This endpoint requires the `apiKey.delete` permission.
@@ -2967,7 +3016,7 @@ export function linkOAuthAccount({ oAuthCallbackDto }: {
     oAuthCallbackDto: OAuthCallbackDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: UserAdminResponseDto;
     }>("/oauth/link", oazapfts.json({
         ...opts,
@@ -3158,7 +3207,7 @@ export function mergePerson({ id, mergePersonDto }: {
     mergePersonDto: MergePersonDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: BulkIdResponseDto[];
     }>(`/people/${encodeURIComponent(id)}/merge`, oazapfts.json({
         ...opts,
@@ -3552,6 +3601,9 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+/**
+ * This endpoint requires the `server.versionCheck` permission.
+ */
 export function getVersionCheck(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -4531,6 +4583,12 @@ export enum AssetTypeEnum {
     Audio = "AUDIO",
     Other = "OTHER"
 }
+export enum BulkIdErrorReason {
+    Duplicate = "duplicate",
+    NoPermission = "no_permission",
+    NotFound = "not_found",
+    Unknown = "unknown"
+}
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
@@ -4616,6 +4674,7 @@ export enum Permission {
     ServerApkLinks = "server.apkLinks",
     ServerStorage = "server.storage",
     ServerStatistics = "server.statistics",
+    ServerVersionCheck = "server.versionCheck",
     ServerLicenseRead = "serverLicense.read",
     ServerLicenseUpdate = "serverLicense.update",
     ServerLicenseDelete = "serverLicense.delete",
@@ -4663,7 +4722,8 @@ export enum Permission {
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
-    AdminUserDelete = "adminUser.delete"
+    AdminUserDelete = "adminUser.delete",
+    AdminAuthUnlinkAll = "adminAuth.unlinkAll"
 }
 export enum AssetMediaStatus {
     Created = "created",
@@ -4766,9 +4826,11 @@ export enum SyncEntityType {
     AlbumUserV1 = "AlbumUserV1",
     AlbumUserBackfillV1 = "AlbumUserBackfillV1",
     AlbumUserDeleteV1 = "AlbumUserDeleteV1",
-    AlbumAssetV1 = "AlbumAssetV1",
+    AlbumAssetCreateV1 = "AlbumAssetCreateV1",
+    AlbumAssetUpdateV1 = "AlbumAssetUpdateV1",
     AlbumAssetBackfillV1 = "AlbumAssetBackfillV1",
-    AlbumAssetExifV1 = "AlbumAssetExifV1",
+    AlbumAssetExifCreateV1 = "AlbumAssetExifCreateV1",
+    AlbumAssetExifUpdateV1 = "AlbumAssetExifUpdateV1",
     AlbumAssetExifBackfillV1 = "AlbumAssetExifBackfillV1",
     AlbumToAssetV1 = "AlbumToAssetV1",
     AlbumToAssetDeleteV1 = "AlbumToAssetDeleteV1",

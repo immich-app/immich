@@ -33,7 +33,7 @@ import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart'
     as i15;
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart'
     as i16;
-import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i17;
 import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
     as i18;
@@ -71,8 +71,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i15.$PersonEntityTable personEntity = i15.$PersonEntityTable(this);
   late final i16.$AssetFaceEntityTable assetFaceEntity = i16
       .$AssetFaceEntityTable(this);
-  late final i17.$TrashSyncEntityTable trashSyncEntity = i17
-      .$TrashSyncEntityTable(this);
+  late final i17.$StoreEntityTable storeEntity = i17.$StoreEntityTable(this);
   i18.MergedAssetDrift get mergedAssetDrift => i19.ReadDatabaseContainer(
     this,
   ).accessor<i18.MergedAssetDrift>(i18.MergedAssetDrift.new);
@@ -102,8 +101,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
     memoryAssetEntity,
     personEntity,
     assetFaceEntity,
-    trashSyncEntity,
-    i17.idxTrashSyncChecksum,
+    storeEntity,
+    i9.idxLatLng,
   ];
   @override
   i0.StreamQueryUpdateRules
@@ -274,13 +273,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
       ),
       result: [i0.TableUpdate('asset_face_entity', kind: i0.UpdateKind.update)],
     ),
-    i0.WritePropagation(
-      on: i0.TableUpdateQuery.onTableName(
-        'local_asset_entity',
-        limitUpdateKind: i0.UpdateKind.delete,
-      ),
-      result: [i0.TableUpdate('trash_sync_entity', kind: i0.UpdateKind.delete)],
-    ),
   ]);
   @override
   i0.DriftDatabaseOptions get options =>
@@ -325,6 +317,6 @@ class $DriftManager {
       i15.$$PersonEntityTableTableManager(_db, _db.personEntity);
   i16.$$AssetFaceEntityTableTableManager get assetFaceEntity =>
       i16.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
-  i17.$$TrashSyncEntityTableTableManager get trashSyncEntity =>
-      i17.$$TrashSyncEntityTableTableManager(_db, _db.trashSyncEntity);
+  i17.$$StoreEntityTableTableManager get storeEntity =>
+      i17.$$StoreEntityTableTableManager(_db, _db.storeEntity);
 }

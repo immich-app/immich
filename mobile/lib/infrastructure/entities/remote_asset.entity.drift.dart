@@ -628,7 +628,7 @@ typedef $$RemoteAssetEntityTableProcessedTableManager =
     >;
 i0.Index get idxRemoteAssetOwnerChecksum => i0.Index(
   'idx_remote_asset_owner_checksum',
-  'CREATE INDEX idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
 );
 
 class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
@@ -1641,5 +1641,5 @@ i0.Index get uQRemoteAssetsOwnerLibraryChecksum => i0.Index(
 );
 i0.Index get idxRemoteAssetChecksum => i0.Index(
   'idx_remote_asset_checksum',
-  'CREATE INDEX idx_remote_asset_checksum ON remote_asset_entity (checksum)',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
 );

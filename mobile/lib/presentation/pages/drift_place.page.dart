@@ -92,9 +92,8 @@ class _Map extends StatelessWidget {
               child: SizedBox(
                 height: 200,
                 width: context.width,
-                // TODO: migrate to DriftMapRoute after merging #19898
                 child: MapThumbnail(
-                  onTap: (_, __) => context.pushRoute(MapRoute(initialLocation: currentLocation)),
+                  onTap: (_, __) => context.pushRoute(DriftMapRoute(initialLocation: currentLocation)),
                   zoom: 8,
                   centre: currentLocation ?? const LatLng(21.44950, -157.91959),
                   showAttribution: false,
@@ -164,7 +163,11 @@ class _PlaceTile extends StatelessWidget {
       title: Text(place.$1, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
       leading: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
-        child: Thumbnail(size: const Size(80, 80), fit: BoxFit.cover, remoteId: place.$2),
+        child: SizedBox(
+          width: 80,
+          height: 80,
+          child: Thumbnail.remote(remoteId: place.$2, fit: BoxFit.cover),
+        ),
       ),
     );
   }

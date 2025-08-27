@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -13,8 +14,8 @@ import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 @RoutePage()
@@ -28,7 +29,7 @@ class ChangeExperiencePage extends ConsumerStatefulWidget {
 }
 
 class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
-  bool hasMigrated = false;
+  AsyncValue<bool> hasMigrated = const AsyncValue.loading();
 
   @override
   void initState() {
@@ -37,46 +38,60 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
   }
 
   Future<void> _handleMigration() async {
-    if (widget.switchingToBeta) {
-      final assetNotifier = ref.read(assetProvider.notifier);
-      if (assetNotifier.mounted) {
-        assetNotifier.dispose();
+    try {
+      if (widget.switchingToBeta) {
+        final assetNotifier = ref.read(assetProvider.notifier);
+        if (assetNotifier.mounted) {
+          assetNotifier.dispose();
+        }
+        final albumNotifier = ref.read(albumProvider.notifier);
+        if (albumNotifier.mounted) {
+          albumNotifier.dispose();
+        }
+
+        // Cancel uploads
+        await Store.put(StoreKey.backgroundBackup, false);
+        ref
+            .read(backupProvider.notifier)
+            .configureBackgroundBackup(enabled: false, onBatteryInfo: () {}, onError: (_) {});
+        ref.read(backupProvider.notifier).setAutoBackup(false);
+        ref.read(backupProvider.notifier).cancelBackup();
+        ref.read(manualUploadProvider.notifier).cancelBackup();
+        // Start listening to new websocket events
+        ref.read(websocketProvider.notifier).stopListenToOldEvents();
+        ref.read(websocketProvider.notifier).startListeningToBetaEvents();
+
+        final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+
+        if (permission.isGranted) {
+          await ref.read(backgroundSyncProvider).syncLocal(full: true);
+          await migrateDeviceAssetToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+          await migrateBackupAlbumsToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+          await migrateStoreToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+        }
+      } else {
+        await ref.read(backgroundSyncProvider).cancel();
+        ref.read(websocketProvider.notifier).stopListeningToBetaEvents();
+        ref.read(websocketProvider.notifier).startListeningToOldEvents();
+        await migrateStoreToIsar(ref.read(isarProvider), ref.read(driftProvider));
       }
-      final albumNotifier = ref.read(albumProvider.notifier);
-      if (albumNotifier.mounted) {
-        albumNotifier.dispose();
+
+      await IsarStoreRepository(ref.read(isarProvider)).upsert(StoreKey.betaTimeline, widget.switchingToBeta);
+      await DriftStoreRepository(ref.read(driftProvider)).upsert(StoreKey.betaTimeline, widget.switchingToBeta);
+
+      if (mounted) {
+        setState(() {
+          HapticFeedback.heavyImpact();
+          hasMigrated = const AsyncValue.data(true);
+        });
       }
-
-      // Cancel uploads
-      await Store.put(StoreKey.backgroundBackup, false);
-      ref
-          .read(backupProvider.notifier)
-          .configureBackgroundBackup(enabled: false, onBatteryInfo: () {}, onError: (_) {});
-      ref.read(backupProvider.notifier).setAutoBackup(false);
-      ref.read(backupProvider.notifier).cancelBackup();
-      ref.read(manualUploadProvider.notifier).cancelBackup();
-      // Start listening to new websocket events
-      ref.read(websocketProvider.notifier).stopListenToOldEvents();
-      ref.read(websocketProvider.notifier).startListeningToBetaEvents();
-
-      final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-
-      if (permission.isGranted) {
-        await ref.read(backgroundSyncProvider).syncLocal(full: true);
-        await migrateDeviceAssetToSqlite(ref.read(isarProvider), ref.read(driftProvider));
-        await migrateBackupAlbumsToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+    } catch (e, s) {
+      Logger("ChangeExperiencePage").severe("Error during migration", e, s);
+      if (mounted) {
+        setState(() {
+          hasMigrated = AsyncValue.error(e, s);
+        });
       }
-    } else {
-      await ref.read(backgroundSyncProvider).cancel();
-      ref.read(websocketProvider.notifier).stopListeningToBetaEvents();
-      ref.read(websocketProvider.notifier).startListeningToOldEvents();
-    }
-
-    if (mounted) {
-      setState(() {
-        HapticFeedback.heavyImpact();
-        hasMigrated = true;
-      });
     }
   }
 
@@ -89,44 +104,34 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
           children: [
             AnimatedSwitcher(
               duration: Durations.long4,
-              child: hasMigrated
-                  ? const Icon(Icons.check_circle_rounded, color: Colors.green, size: 48.0)
-                  : const SizedBox(width: 50.0, height: 50.0, child: CircularProgressIndicator()),
+              child: hasMigrated.when(
+                data: (data) => const Icon(Icons.check_circle_rounded, color: Colors.green, size: 48.0),
+                error: (error, stackTrace) => const Icon(Icons.error, color: Colors.red, size: 48.0),
+                loading: () => const SizedBox(width: 50.0, height: 50.0, child: CircularProgressIndicator()),
+              ),
             ),
             const SizedBox(height: 16.0),
-            Center(
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: 300.0,
-                    child: AnimatedSwitcher(
-                      duration: Durations.long4,
-                      child: hasMigrated
-                          ? Text(
-                              "Migration success!",
-                              style: context.textTheme.titleMedium,
-                              textAlign: TextAlign.center,
-                            )
-                          : Text(
-                              "Data migration in progress...\nPlease wait and don't close this page",
-                              style: context.textTheme.titleMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                    ),
+            SizedBox(
+              width: 300.0,
+              child: AnimatedSwitcher(
+                duration: Durations.long4,
+                child: hasMigrated.when(
+                  data: (data) => Text(
+                    "Migration success!\nPlease close and reopen the app to apply changes",
+                    style: context.textTheme.titleMedium,
+                    textAlign: TextAlign.center,
                   ),
-                  if (hasMigrated)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.replaceRoute(
-                            widget.switchingToBeta ? const TabShellRoute() : const TabControllerRoute(),
-                          );
-                        },
-                        child: const Text("Continue"),
-                      ),
-                    ),
-                ],
+                  error: (error, stackTrace) => Text(
+                    "Migration failed!\nError: $error",
+                    style: context.textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  loading: () => Text(
+                    "Data migration in progress...\nPlease wait and don't close this page",
+                    style: context.textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
             ),
           ],

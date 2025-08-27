@@ -75,7 +75,7 @@
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
-    mdiFolderDownloadOutline,
+    mdiDownload,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -403,6 +403,7 @@
   const handleShareLink = async () => {
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
     if (sharedLink) {
+      await refreshAlbum();
       await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
     }
   };
@@ -411,7 +412,7 @@
     const changed = await modalManager.show(AlbumUsersModal, { album });
 
     if (changed) {
-      album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+      await refreshAlbum();
     }
   };
 
@@ -664,7 +665,7 @@
                 color="secondary"
                 aria-label={$t('download')}
                 onclick={handleDownloadAlbum}
-                icon={mdiFolderDownloadOutline}
+                icon={mdiDownload}
               />
             {/if}
 

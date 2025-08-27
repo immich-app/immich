@@ -40,17 +40,21 @@ import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-  final db = await Bootstrap.initIsar();
-  await Bootstrap.initDomain(db);
+  final (isar, drift, logDb) = await Bootstrap.initDB();
+  await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
-  await migrateDatabaseIfNeeded(db);
+  await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
-      overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)],
+      overrides: [
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
+        driftProvider.overrideWith(driftOverride(drift)),
+      ],
       child: const MainWidget(),
     ),
   );
@@ -83,7 +87,6 @@ Future<void> initApp() async {
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint("FlutterError - Catch all: $error \n $stack");
     log.severe('PlatformDispatcher - Catch all', error, stack);
     return true;
   };
@@ -93,7 +96,9 @@ Future<void> initApp() async {
   // Initialize the file downloader
   await FileDownloader().configure(
     // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-    globalConfig: (Config.holdingQueue, (6, 6, 3)),
+
+    // On Android, if files are larger than 256MB, run in foreground service
+    globalConfig: [(Config.holdingQueue, (6, 6, 3)), (Config.runInForegroundIfFileLargerThan, 256)],
   );
 
   await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
@@ -177,6 +182,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
     FileDownloader().configureNotificationForGroup(
       kManualUploadGroup,
+      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
+      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
+      progressBar: true,
+    );
+
+    FileDownloader().configureNotificationForGroup(
+      kBackupGroup,
       running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
       complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
       progressBar: true,
