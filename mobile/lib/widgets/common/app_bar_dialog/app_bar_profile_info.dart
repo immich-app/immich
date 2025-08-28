@@ -20,6 +20,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final uploadProfileImageStatus = ref.watch(uploadProfileImageProvider).status;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
 
     buildUserProfileImage() {
@@ -94,11 +95,12 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
               clipBehavior: Clip.none,
               children: [
                 buildUserProfileImage(),
-                Positioned(
-                  bottom: -5,
-                  right: -8,
-                  child: Material(
-                    color: context.colorScheme.surfaceContainerHighest,
+                if (!isReadonlyModeEnabled)
+                  Positioned(
+                    bottom: -5,
+                    right: -8,
+                    child: Material(
+                      color: context.colorScheme.surfaceContainerHighest,
                     elevation: 3,
                     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50.0))),
                     child: Padding(
