@@ -120,7 +120,7 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _trashSyncService.handleRemoteChanges(
-          remoteSyncAssets.map((e) => (checksum: e.checksum, deletedAt: e.deletedAt)),
+          remoteSyncAssets.map<TrashSyncItem>((e) => (checksum: e.checksum, deletedAt: e.deletedAt)),
         );
         return _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
       case SyncEntityType.assetDeleteV1:

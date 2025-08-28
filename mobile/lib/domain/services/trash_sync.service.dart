@@ -6,6 +6,8 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 
+typedef TrashSyncItem = ({String checksum, DateTime? deletedAt});
+
 class TrashSyncService {
   final AppSettingsService _appSettingsService;
   final RemoteAssetRepository _remoteAssetRepository;
@@ -28,22 +30,27 @@ class TrashSyncService {
        _storageRepository = storageRepository,
        _platform = const LocalPlatform();
 
-  Future<void> handleRemoteChanges(Iterable<({String checksum, DateTime? deletedAt})> syncItems) async {
+  Future<void> handleRemoteChanges(Iterable<TrashSyncItem> syncItems) async {
     if (!_platform.isAndroid || !_appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
       return Future.value();
     }
-    final trashedAssetsChecksums = syncItems
-        .where((item) => item.deletedAt != null)
-        .map((syncItem) => syncItem.checksum);
-    await applyRemoteTrashToLocal(trashedAssetsChecksums);
-    final modifiedAssetsChecksums = syncItems
-        .where((item) => item.deletedAt == null)
-        .map((syncItem) => syncItem.checksum);
-    await applyRemoteRestoreToLocal(modifiedAssetsChecksums);
+    final trashedAssetsChecksums = <String>[];
+    final modifiedAssetsChecksums = <String>[];
+    for (var syncItem in syncItems) {
+      if (syncItem.deletedAt != null) {
+        trashedAssetsChecksums.add(syncItem.checksum);
+      } else {
+        modifiedAssetsChecksums.add(syncItem.checksum);
+      }
+    }
+    await _applyRemoteTrashToLocal(trashedAssetsChecksums);
+    await _applyRemoteRestoreToLocal(modifiedAssetsChecksums);
   }
 
-  Future<void> applyRemoteTrashToLocal(Iterable<String> trashedAssetsChecksums) async {
-    if (trashedAssetsChecksums.isNotEmpty) {
+  Future<void> _applyRemoteTrashToLocal(Iterable<String> trashedAssetsChecksums) async {
+    if (trashedAssetsChecksums.isEmpty) {
+      return Future.value();
+    } else {
       final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
       if (localAssetsToTrash.isNotEmpty) {
         final mediaUrls = await Future.wait(
@@ -57,8 +64,10 @@ class TrashSyncService {
     }
   }
 
-  Future<void> applyRemoteRestoreToLocal(Iterable<String> modifiedAssetsChecksums) async {
-    if (modifiedAssetsChecksums.isNotEmpty) {
+  Future<void> _applyRemoteRestoreToLocal(Iterable<String> modifiedAssetsChecksums) async {
+    if (modifiedAssetsChecksums.isEmpty) {
+      return Future.value();
+    } else {
       final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(
         modifiedAssetsChecksums,
         isTrashed: true,
