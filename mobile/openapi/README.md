@@ -97,16 +97,20 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | 
 *AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | checkBulkUpload
 *AssetsApi* | [**checkExistingAssets**](doc//AssetsApi.md#checkexistingassets) | **POST** /assets/exist | checkExistingAssets
+*AssetsApi* | [**deleteAssetMetadata**](doc//AssetsApi.md#deleteassetmetadata) | **DELETE** /assets/{id}/metadata/{key} | 
 *AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /assets | 
 *AssetsApi* | [**downloadAsset**](doc//AssetsApi.md#downloadasset) | **GET** /assets/{id}/original | 
 *AssetsApi* | [**getAllUserAssetsByDeviceId**](doc//AssetsApi.md#getalluserassetsbydeviceid) | **GET** /assets/device/{deviceId} | getAllUserAssetsByDeviceId
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | 
+*AssetsApi* | [**getAssetMetadata**](doc//AssetsApi.md#getassetmetadata) | **GET** /assets/{id}/metadata | 
+*AssetsApi* | [**getAssetMetadataByKey**](doc//AssetsApi.md#getassetmetadatabykey) | **GET** /assets/{id}/metadata/{key} | 
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
 *AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | replaceAsset
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | 
+*AssetsApi* | [**updateAssetMetadata**](doc//AssetsApi.md#updateassetmetadata) | **PUT** /assets/{id}/metadata | 
 *AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | 
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
@@ -328,6 +332,10 @@ Class | Method | HTTP request | Description
  - [AssetMediaResponseDto](doc//AssetMediaResponseDto.md)
  - [AssetMediaSize](doc//AssetMediaSize.md)
  - [AssetMediaStatus](doc//AssetMediaStatus.md)
+ - [AssetMetadataKey](doc//AssetMetadataKey.md)
+ - [AssetMetadataResponseDto](doc//AssetMetadataResponseDto.md)
+ - [AssetMetadataUpsertDto](doc//AssetMetadataUpsertDto.md)
+ - [AssetMetadataUpsertItemDto](doc//AssetMetadataUpsertItemDto.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
@@ -485,6 +493,8 @@ Class | Method | HTTP request | Description
  - [SyncAssetExifV1](doc//SyncAssetExifV1.md)
  - [SyncAssetFaceDeleteV1](doc//SyncAssetFaceDeleteV1.md)
  - [SyncAssetFaceV1](doc//SyncAssetFaceV1.md)
+ - [SyncAssetMetadataDeleteV1](doc//SyncAssetMetadataDeleteV1.md)
+ - [SyncAssetMetadataV1](doc//SyncAssetMetadataV1.md)
  - [SyncAssetV1](doc//SyncAssetV1.md)
  - [SyncAuthUserV1](doc//SyncAuthUserV1.md)
  - [SyncEntityType](doc//SyncEntityType.md)

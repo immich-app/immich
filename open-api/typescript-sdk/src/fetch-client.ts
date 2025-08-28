@@ -317,6 +317,8 @@ export type TagResponseDto = {
 export type AssetResponseDto = {
     /** base64 encoded sha1 hash */
     checksum: string;
+    /** The UTC timestamp when the asset was originally uploaded to Immich. */
+    createdAt: string;
     deviceAssetId: string;
     deviceId: string;
     duplicateId?: string | null;
@@ -445,6 +447,10 @@ export type AssetBulkDeleteDto = {
     force?: boolean;
     ids: string[];
 };
+export type AssetMetadataUpsertItemDto = {
+    key: AssetMetadataKey;
+    value: object;
+};
 export type AssetMediaCreateDto = {
     assetData: Blob;
     deviceAssetId: string;
@@ -455,6 +461,7 @@ export type AssetMediaCreateDto = {
     filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
+    metadata: AssetMetadataUpsertItemDto[];
     sidecarData?: Blob;
     visibility?: AssetVisibility;
 };
@@ -513,6 +520,14 @@ export type UpdateAssetDto = {
     longitude?: number;
     rating?: number;
     visibility?: AssetVisibility;
+};
+export type AssetMetadataResponseDto = {
+    key: AssetMetadataKey;
+    updatedAt: string;
+    value: object;
+};
+export type AssetMetadataUpsertDto = {
+    items: AssetMetadataUpsertItemDto[];
 };
 export type AssetMediaReplaceDto = {
     assetData: Blob;
@@ -2270,6 +2285,61 @@ export function updateAsset({ id, updateAssetDto }: {
         method: "PUT",
         body: updateAssetDto
     })));
+}
+/**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetMetadata({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/metadata`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `asset.update` permission.
+ */
+export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
+    id: string;
+    assetMetadataUpsertDto: AssetMetadataUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/metadata`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetMetadataUpsertDto
+    })));
+}
+/**
+ * This endpoint requires the `asset.update` permission.
+ */
+export function deleteAssetMetadata({ id, key }: {
+    id: string;
+    key: AssetMetadataKey;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetMetadataByKey({ id, key }: {
+    id: string;
+    key: AssetMetadataKey;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto;
+    }>(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
+        ...opts
+    }));
 }
 /**
  * This endpoint requires the `asset.download` permission.
@@ -4723,6 +4793,9 @@ export enum Permission {
     AdminUserDelete = "adminUser.delete",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
 }
+export enum AssetMetadataKey {
+    MobileApp = "mobile-app"
+}
 export enum AssetMediaStatus {
     Created = "created",
     Replaced = "replaced",
@@ -4809,6 +4882,8 @@ export enum SyncEntityType {
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    AssetMetadataV1 = "AssetMetadataV1",
+    AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
     PartnerV1 = "PartnerV1",
     PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
@@ -4856,6 +4931,7 @@ export enum SyncRequestType {
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    AssetMetadataV1 = "AssetMetadataV1",
     AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",

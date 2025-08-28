@@ -33,8 +33,7 @@ services:
       - ${UPLOAD_LOCATION}/photos/upload:/data/upload
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node-modules:/usr/src/app/server/node_modules
-      - server-dist:/usr/src/app/server/dist
+      - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
       - github-node_modules:/usr/src/app/.github/node_modules
       - cli-node_modules:/usr/src/app/cli/node_modules
@@ -97,8 +96,7 @@ services:
     volumes:
       - ..:/usr/src/app
       - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node-modules:/usr/src/app/server/node_modules
-      - server-dist:/usr/src/app/server/dist
+      - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
       - github-node_modules:/usr/src/app/.github/node_modules
       - cli-node_modules:/usr/src/app/cli/node_modules
@@ -187,15 +185,14 @@ services:
 
   init:
     container_name: init
-    image: busybox
+    image: busybox@sha256:ab33eacc8251e3807b85bb6dba570e4698c3998eca6f0fc2ccb60575a563ea74
     env_file:
       - .env
     user: 0:0
     command: sh -c 'for path in /usr/src/app/.pnpm-store /usr/src/app/server/node_modules /usr/src/app/server/dist /usr/src/app/.github/node_modules /usr/src/app/cli/node_modules /usr/src/app/docs/node_modules /usr/src/app/e2e/node_modules /usr/src/app/open-api/typescript-sdk/node_modules /usr/src/app/web/.svelte-kit /usr/src/app/web/coverage /usr/src/app/node_modules /usr/src/app/web/node_modules; do [ -e "$$path" ] && chown -R ${UID:-1000}:${GID:-1000} "$$path" || true; done'
     volumes:
       - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node-modules:/usr/src/app/server/node_modules
-      - server-dist:/usr/src/app/server/dist
+      - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
       - github-node_modules:/usr/src/app/.github/node_modules
       - cli-node_modules:/usr/src/app/cli/node_modules
@@ -210,8 +207,7 @@ volumes:
   prometheus-data:
   grafana-data:
   pnpm-store:
-  server-node-modules:
-  server-dist:
+  server-node_modules:
   web-node_modules:
   github-node_modules:
   cli-node_modules:
