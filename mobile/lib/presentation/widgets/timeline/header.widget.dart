@@ -57,7 +57,10 @@ class TimelineHeader extends HookConsumerWidget {
             if (isMonthHeader)
               Row(
                 children: [
-                  Text(_formatMonth(context, date), style: context.textTheme.labelLarge?.copyWith(fontSize: 24)),
+                  Text(
+                    toBeginningOfSentenceCase(_formatMonth(context, date)),
+                    style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
+                  ),
                   const Spacer(),
                   if (header != HeaderType.monthAndDay) _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
                 ],
@@ -65,7 +68,10 @@ class TimelineHeader extends HookConsumerWidget {
             if (isDayHeader)
               Row(
                 children: [
-                  Text(_formatDay(context, date), style: context.textTheme.labelLarge?.copyWith(fontSize: 15)),
+                  Text(
+                    toBeginningOfSentenceCase(_formatDay(context, date)),
+                    style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
+                  ),
                   const Spacer(),
                   _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
                 ],
