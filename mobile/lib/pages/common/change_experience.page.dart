@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -68,12 +69,15 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
           await migrateDeviceAssetToSqlite(ref.read(isarProvider), ref.read(driftProvider));
           await migrateBackupAlbumsToSqlite(ref.read(isarProvider), ref.read(driftProvider));
           await migrateStoreToSqlite(ref.read(isarProvider), ref.read(driftProvider));
+          await ref.read(backgroundServiceProvider).disableService();
         }
       } else {
         await ref.read(backgroundSyncProvider).cancel();
         ref.read(websocketProvider.notifier).stopListeningToBetaEvents();
         ref.read(websocketProvider.notifier).startListeningToOldEvents();
         await migrateStoreToIsar(ref.read(isarProvider), ref.read(driftProvider));
+        await ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+        await ref.read(driftBackgroundUploadFgService).disableUploadService();
       }
 
       await IsarStoreRepository(ref.read(isarProvider)).upsert(StoreKey.betaTimeline, widget.switchingToBeta);

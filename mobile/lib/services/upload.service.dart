@@ -78,8 +78,8 @@ class UploadService {
     _taskProgressController.close();
   }
 
-  void enqueueTasks(List<UploadTask> tasks) {
-    _uploadRepository.enqueueBackgroundAll(tasks);
+  Future<void> enqueueTasks(List<UploadTask> tasks) {
+    return _uploadRepository.enqueueBackgroundAll(tasks);
   }
 
   Future<List<Task>> getActiveTasks(String group) {
@@ -113,7 +113,7 @@ class UploadService {
     }
 
     if (tasks.isNotEmpty) {
-      enqueueTasks(tasks);
+      await enqueueTasks(tasks);
     }
   }
 
@@ -149,9 +149,33 @@ class UploadService {
 
       if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
         count += tasks.length;
-        enqueueTasks(tasks);
+        await enqueueTasks(tasks);
 
         onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
+      }
+    }
+  }
+
+  // Enqueue All does not work from the background on Android yet. This method is a temporary workaround
+  // that enqueues tasks one by one.
+  Future<void> startBackupSerial(String userId) async {
+    await _storageRepository.clearCache();
+
+    shouldAbortQueuingTasks = false;
+
+    final candidates = await _backupRepository.getCandidates(userId);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    for (final asset in candidates) {
+      if (shouldAbortQueuingTasks) {
+        break;
+      }
+
+      final task = await _getUploadTask(asset);
+      if (task != null) {
+        await _uploadRepository.enqueueBackground(task);
       }
     }
   }
