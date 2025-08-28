@@ -59,11 +59,7 @@ export const GetLoginDetails = createParamDecorator((data, context: ExecutionCon
   const userAgentString = (request.headers['user-agent'] as string) || '';
   const userAgent = UAParser(userAgentString);
 
-  let appVersion = '';
-  const immichMatch = userAgentString.match(/^Immich_(Android|iOS)_(.+)$/);
-  if (immichMatch) {
-    appVersion = immichMatch[2];
-  }
+  const appVersion = userAgentString.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '';
 
   return {
     clientIp: request.ip ?? '',
@@ -113,21 +109,11 @@ export class AuthGuard implements CanActivate {
     });
 
     if (request.user?.session) {
-      let appVersion = '';
       const userAgent = (request.headers['user-agent'] as string) || '';
-      const immichMatch = userAgent.match(/^Immich_(Android|iOS)_(.+)$/);
-      if (immichMatch) {
-        appVersion = immichMatch[2];
-      }
-      if (request.headers['x-app-version']) {
-        appVersion = request.headers['x-app-version'] as string;
-      }
-      if (appVersion) {
-        await this.authService.heartbeat(request.user, appVersion);
-      } else {
-        // Always update lastSeen even if appVersion is missing
-        await this.authService.heartbeat(request.user, '');
-      }
+      const appVersion =
+        (request.headers['x-app-version'] as string) ||
+        (userAgent.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '');
+      await this.authService.heartbeat(request.user, appVersion);
     }
 
     return true;
