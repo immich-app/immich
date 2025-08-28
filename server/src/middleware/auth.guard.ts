@@ -111,8 +111,7 @@ export class AuthGuard implements CanActivate {
     if (request.user?.session) {
       const userAgent = (request.headers['user-agent'] as string) || '';
       const appVersion =
-        (request.headers['x-app-version'] as string) ||
-        (userAgent.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '');
+        (request.headers['x-app-version'] as string) || (userAgent.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '');
       await this.authService.heartbeat(request.user, appVersion);
     }
 

@@ -369,7 +369,7 @@
             <div class="px-4 pb-7">
               <Stack gap={3}>
                 {#if user.mobileDevices && user.mobileDevices.length > 0}
-                  {#each user.mobileDevices as device}
+                  {#each user.mobileDevices as device (`${device.deviceType}-${device.deviceOS}-${device.lastSeen}`)}
                     <div
                       class="flex items-center gap-4 p-3 rounded-lg bg-gray-50 dark:bg-immich-dark-primary/10 shadow-sm"
                     >
@@ -385,7 +385,7 @@
                       <div class="flex flex-col flex-1">
                         <span class="font-medium text-base"
                           >{device.deviceType} <span class="mx-1">•</span>
-                          <span style="color: {device.appVersion < formattedServerVersion ? 'red' : 'inherit'}">
+                          <span style="color: {formattedServerVersion != null && device.appVersion < formattedServerVersion ? 'red' : 'inherit'}">
                             v{device.appVersion}
                           </span>
                         </span>
