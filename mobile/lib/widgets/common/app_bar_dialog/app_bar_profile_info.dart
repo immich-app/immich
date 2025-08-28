@@ -101,14 +101,14 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
                     right: -8,
                     child: Material(
                       color: context.colorScheme.surfaceContainerHighest,
-                    elevation: 3,
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50.0))),
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Icon(Icons.camera_alt_outlined, color: context.primaryColor, size: 14),
+                      elevation: 3,
+                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(50.0))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Icon(Icons.camera_alt_outlined, color: context.primaryColor, size: 14),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
