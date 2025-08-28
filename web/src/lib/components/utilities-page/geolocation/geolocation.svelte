@@ -39,7 +39,7 @@
 </script>
 
 <div
-  class="w-full aspect-square rounded-xl border-3 transition-colors font-semibold text-xs dark:bg-gray-900 bg-gray-200 border-gray-200 dark:border-gray-800"
+  class="w-full aspect-square rounded-xl border-3 transition-colors font-semibold text-xs dark:bg-black bg-gray-200 border-gray-200 dark:border-gray-800"
   bind:clientWidth={boxWidth}
   title={assetData}
 >

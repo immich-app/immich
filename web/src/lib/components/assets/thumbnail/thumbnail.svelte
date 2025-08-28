@@ -197,7 +197,7 @@
 <div
   class={[
     'focus-visible:outline-none flex overflow-hidden',
-    disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
+    disabled ? 'bg-gray-300' : 'bg-primary/30 dark:bg-primary/70',
   ]}
   style:width="{width}px"
   style:height="{height}px"
