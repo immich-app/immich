@@ -52,7 +52,7 @@
 </script>
 
 <div class="mt-2 mb-2 p-2 rounded-lg">
-  <div class="flex flex-wrap gap-2 items-end w-136">
+  <div class="flex flex-wrap gap-4 items-end w-136">
     <div class="flex-1 min-w-20">
       <label for="year-select" class="immich-form-label">
         {$t('year')}
@@ -61,7 +61,7 @@
         id="year-select"
         bind:value={selectedYear}
         onchange={filterAssetsByDate}
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+        class="text-sm w-full mt-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
       >
         <option value={undefined}>{$t('year')}</option>
         {#each yearOptions as year (year)}
@@ -79,7 +79,7 @@
         bind:value={selectedMonth}
         onchange={filterAssetsByDate}
         disabled={!selectedYear}
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
+        class="text-sm w-full mt-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:bg-gray-400"
       >
         <option value={undefined}>{$t('month')}</option>
         {#each monthOptions as month (month.value)}
@@ -97,7 +97,7 @@
         bind:value={selectedDay}
         onchange={filterAssetsByDate}
         disabled={!selectedYear || !selectedMonth}
-        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
+        class="text-sm w-full mt-1 px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:bg-gray-400"
       >
         <option value={undefined}>{$t('day')}</option>
         {#each dayOptions as day (day)}
@@ -107,7 +107,7 @@
     </div>
 
     <div class="flex">
-      <Button color="secondary" variant="ghost" onclick={clearFilters}>{$t('reset')}</Button>
+      <Button size="small" color="secondary" variant="ghost" onclick={clearFilters}>{$t('reset')}</Button>
     </div>
   </div>
 </div>

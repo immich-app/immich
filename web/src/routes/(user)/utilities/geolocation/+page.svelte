@@ -14,7 +14,13 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { searchAssets, updateAssets, type AssetResponseDto } from '@immich/sdk';
   import { Button, LoadingSpinner, modalManager, Text } from '@immich/ui';
-  import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectAll, mdiSelectRemove } from '@mdi/js';
+  import {
+    mdiMapMarkerMultipleOutline,
+    mdiMapMarkerOff,
+    mdiPencilOutline,
+    mdiSelectAll,
+    mdiSelectRemove,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -23,8 +29,7 @@
   }
 
   let { data }: Props = $props();
-  const partialDate = data.partialDate;
-
+  let partialDate = $state(data.partialDate);
   let isLoading = $state(false);
   let assets = $state<AssetResponseDto[]>([]);
   let shiftKeyIsDown = $state(false);
@@ -33,6 +38,14 @@
   let assetsToDisplay = $state(500);
   let takenRange = $state<{ takenAfter?: string; takenBefore?: string } | null>(null);
   let locationUpdated = $state(false);
+  let showOnlyAssetsWithoutLocation = $state(false);
+
+  // Filtered assets based on location filter
+  let filteredAssets = $derived(
+    showOnlyAssetsWithoutLocation
+      ? assets.filter((asset) => !asset.exifInfo?.latitude || !asset.exifInfo?.longitude)
+      : assets,
+  );
 
   void init();
 
@@ -70,6 +83,7 @@
   };
 
   const handleDateChange = async (selectedYear?: number, selectedMonth?: number, selectedDay?: number) => {
+    partialDate = selectedYear ? buildDateString(selectedYear, selectedMonth, selectedDay) : undefined;
     if (!selectedYear) {
       assets = [];
       return;
@@ -93,6 +107,10 @@
     assets = [];
     assetInteraction.clearMultiselect();
     await setQueryValue('date', '');
+  };
+
+  const toggleLocationFilter = () => {
+    showOnlyAssetsWithoutLocation = !showOnlyAssetsWithoutLocation;
   };
 
   const handleUpdate = async () => {
@@ -180,7 +198,7 @@
     }
   };
   const handleSelectAll = () => {
-    assetInteraction.selectAssets(assets.map((a) => toTimelineAsset(a)));
+    assetInteraction.selectAssets(filteredAssets.map((a) => toTimelineAsset(a)));
   };
   const handleDeselectAll = () => {
     cancelMultiselect(assetInteraction);
@@ -206,11 +224,19 @@
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
     <div class="flex gap-2 justify-end place-items-center">
-      <Text
-        class="rounded px-2 py-1 transition-all duration-300 ease-in-out {locationUpdated
-          ? 'bg-green-500/20 text-green-600 font-semibold scale-105 animate-pulse'
-          : ''}">{location.latitude.toFixed(3)},{location.longitude.toFixed(3)}</Text
-      >
+      {#if filteredAssets.length > 0}
+        <Text class="hidden md:block text-xs mr-4 text-dark/50">{$t('geolocation_instruction_location')}</Text>
+      {/if}
+      <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
+        <p class="text-xs text-gray-500 font-mono mr-5 ml-2 uppercase">{$t('selected_gps_coordinates')}</p>
+        <Text
+          title="latitude, longitude"
+          class="rounded-3xl font-mono text-sm text-primary px-2 py-1 transition-all duration-100 ease-in-out {locationUpdated
+            ? 'bg-primary/90 text-light font-semibold scale-105'
+            : ''}">{location.latitude.toFixed(3)}, {location.longitude.toFixed(3)}</Text
+        >
+      </div>
+
       <Button size="small" color="secondary" variant="ghost" leadingIcon={mdiPencilOutline} onclick={handlePickOnMap}
         >{$t('location_picker_choose_on_map')}</Button
       >
@@ -235,15 +261,26 @@
       />
     </div>
 
-    <Button
-      leadingIcon={assetInteraction.selectionActive ? mdiSelectRemove : mdiSelectAll}
-      size="small"
-      color="secondary"
-      variant="ghost"
-      onclick={assetInteraction.selectionActive ? handleDeselectAll : handleSelectAll}
-    >
-      {assetInteraction.selectionActive ? $t('unselect_all') : $t('select_all')}
-    </Button>
+    <div class="flex gap-2">
+      <Button
+        size="small"
+        leadingIcon={showOnlyAssetsWithoutLocation ? mdiMapMarkerMultipleOutline : mdiMapMarkerOff}
+        color={showOnlyAssetsWithoutLocation ? 'primary' : 'secondary'}
+        variant="ghost"
+        onclick={toggleLocationFilter}
+      >
+        {showOnlyAssetsWithoutLocation ? $t('show_all_assets') : $t('show_assets_without_location')}
+      </Button>
+      <Button
+        leadingIcon={assetInteraction.selectionActive ? mdiSelectRemove : mdiSelectAll}
+        size="small"
+        color="secondary"
+        variant="ghost"
+        onclick={assetInteraction.selectionActive ? handleDeselectAll : handleSelectAll}
+      >
+        {assetInteraction.selectionActive ? $t('unselect_all') : $t('select_all')}
+      </Button>
+    </div>
   </div>
 
   {#if isLoading}
@@ -252,9 +289,9 @@
     </div>
   {/if}
 
-  {#if assets && assets.length > 0}
-    <div class="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
-      {#each assets as asset (asset.id)}
+  {#if filteredAssets && filteredAssets.length > 0}
+    <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 mt-4">
+      {#each filteredAssets as asset (asset.id)}
         <Geolocation
           {asset}
           {assetInteraction}
@@ -265,14 +302,20 @@
             locationUpdated = true;
             setTimeout(() => {
               locationUpdated = false;
-            }, 1500);
+            }, 1000);
           }}
         />
       {/each}
     </div>
   {:else}
     <div class="w-full">
-      <EmptyPlaceholder text={$t('no_assets_to_show')} src={emptyUrl} />
+      {#if partialDate == null}
+        <EmptyPlaceholder text={$t('geolocation_instruction_no_date')} src={emptyUrl} />
+      {:else if showOnlyAssetsWithoutLocation && filteredAssets.length === 0 && assets.length > 0}
+        <EmptyPlaceholder text={$t('geolocation_instruction_all_have_location')} src={emptyUrl} />
+      {:else}
+        <EmptyPlaceholder text={$t('geolocation_instruction_no_photos')} src={emptyUrl} />
+      {/if}
     </div>
   {/if}
 </UserPageLayout>

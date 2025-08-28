@@ -39,7 +39,7 @@
 </script>
 
 <div
-  class="w-full aspect-square rounded-xl border-4 transition-colors font-semibold text-xs bg-gray-200 dark:bg-gray-800 border-gray-200 dark:border-gray-800"
+  class="w-full aspect-square rounded-xl border-3 transition-colors font-semibold text-xs dark:bg-gray-900 bg-gray-200 border-gray-200 dark:border-gray-800"
   bind:clientWidth={boxWidth}
   title={assetData}
 >
@@ -62,29 +62,43 @@
     />
 
     {#if hasGps}
-      <div class="absolute top-0 w-full py-1 text-xs bg-black/40 text-center text-white">{$t('use_this_location')}</div>
-      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-green-500">
+      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-success text-black">
         {$t('gps')}
       </div>
     {:else}
-      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-500">
+      <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-danger text-light">
         {$t('gps_missing')}
       </div>
     {/if}
   </div>
-  <div class="text-center mt-4 px-4 text-sm font-normal truncate" title={asset.originalFileName}>
+  <div class="text-center mt-4 px-4 text-sm font-semibold truncate" title={asset.originalFileName}>
     <a href={`${AppRoute.PHOTOS}/${asset.id}`} target="_blank" rel="noopener noreferrer">
       {asset.originalFileName}
     </a>
   </div>
-  <div class="text-start">
-    <p class="mt-4 px-4 text-xs font-normal truncate">
-      {new Date(asset.localDateTime).toLocaleString()}
+  <div class="text-center my-3">
+    <p class="px-4 text-xs font-normal truncate text-dark/75">
+      {new Date(asset.localDateTime).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })}
+    </p>
+    <p class="px-4 text-xs font-normal truncate text-dark/75">
+      {new Date(asset.localDateTime).toLocaleTimeString(undefined, {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'UTC',
+      })}
     </p>
     {#if hasGps}
-      <p class="mt-1 px-4 text-xs font-normal truncate">{asset.exifInfo?.country} - {asset.exifInfo?.city}</p>
-    {:else}
-      <p class="mt-1 px-4 text-xs font-normal truncate">&nbsp;</p>
+      <p class="text-primary mt-2 text-xs font-normal px-4 text-center truncate">
+        {asset.exifInfo?.country}
+      </p>
+      <p class="text-primary text-xs font-normal px-4 text-center truncate">
+        {asset.exifInfo?.city}
+      </p>
     {/if}
   </div>
 </div>
