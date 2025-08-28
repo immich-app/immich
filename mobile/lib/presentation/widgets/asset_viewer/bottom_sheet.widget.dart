@@ -11,7 +11,6 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/she
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -38,7 +37,6 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final isOwner = asset is RemoteAsset && asset.ownerId == ref.watch(currentUserProvider)?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
 
@@ -54,14 +52,8 @@ class AssetDetailBottomSheet extends ConsumerWidget {
 
     final actions = ActionButtonBuilder.build(buttonContext);
 
-    List<Widget> getSheetActions() {
-      if (isReadonlyModeEnabled) return [];
-
-      return actions;
-    }
-
     return BaseBottomSheet(
-      actions: getSheetActions(),
+      actions: actions,
       slivers: const [_AssetDetailBottomSheet()],
       controller: controller,
       initialChildSize: initialChildSize,
