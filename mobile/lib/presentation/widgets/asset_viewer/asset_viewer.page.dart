@@ -24,6 +24,7 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provi
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -308,7 +309,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       bottomSheetController.jumpTo((centre + distanceToOrigin) / ctx.height);
     }
 
-    if (distanceToOrigin > openThreshold && !showingBottomSheet) {
+    if (distanceToOrigin > openThreshold && !showingBottomSheet && !ref.read(readonlyModeProvider)) {
       _openBottomSheet(ctx);
     }
   }
