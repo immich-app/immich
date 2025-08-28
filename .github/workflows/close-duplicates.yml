@@ -42,6 +42,7 @@ jobs:
       - id: get_checkbox
         env:
           BODY: ${{ needs.get_body.outputs.body }}
+        # TODO: We should detect if the checkbox is missing entirely and also close_and_comment in that case.
         run: |
           JSON=$(echo "$BODY" | base64 -d | /mdq --output json '# I have searched | - [?] Yes')
           echo "json=$JSON" >> $GITHUB_OUTPUT
