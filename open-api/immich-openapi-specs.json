@@ -14571,6 +14571,7 @@
             "type": "string"
           },
           "queryAssetId": {
+            "format": "uuid",
             "type": "string"
           },
           "rating": {
