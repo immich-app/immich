@@ -77,12 +77,6 @@ from
 where
   "user"."isAdmin" = $1
   and "user"."deletedAt" is null
-select
-  *
-from
-  "session"
-where
-  "session"."userId" = $1
 
 -- UserRepository.getFileSamples
 select
@@ -272,18 +266,6 @@ from
   "user"
 order by
   "createdAt" desc
-select
-  *
-from
-  "session"
-where
-  "session"."userId" = $1
-select
-  *
-from
-  "session"
-where
-  "session"."userId" = $1
 
 -- UserRepository.getList (without deleted)
 select
@@ -324,18 +306,6 @@ where
   "user"."deletedAt" is null
 order by
   "createdAt" desc
-select
-  *
-from
-  "session"
-where
-  "session"."userId" = $1
-select
-  *
-from
-  "session"
-where
-  "session"."userId" = $1
 
 -- UserRepository.getUserStats
 select
