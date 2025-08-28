@@ -32,6 +32,7 @@
   let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
   let assetsToDisplay = $state(500);
   let takenRange = $state<{ takenAfter?: string; takenBefore?: string } | null>(null);
+  let locationUpdated = $state(false);
 
   void init();
 
@@ -205,7 +206,11 @@
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
     <div class="flex gap-2 justify-end place-items-center">
-      <Text>{location.latitude.toFixed(3)},{location.longitude.toFixed(3)}</Text>
+      <Text
+        class="rounded px-2 py-1 transition-all duration-300 ease-in-out {locationUpdated
+          ? 'bg-green-500/20 text-green-600 font-semibold scale-105 animate-pulse'
+          : ''}">{location.latitude.toFixed(3)},{location.longitude.toFixed(3)}</Text
+      >
       <Button size="small" color="secondary" variant="ghost" leadingIcon={mdiPencilOutline} onclick={handlePickOnMap}
         >{$t('location_picker_choose_on_map')}</Button
       >
@@ -255,7 +260,13 @@
           {assetInteraction}
           onSelectAsset={(asset) => handleSelectAssets(asset)}
           onMouseEvent={(asset) => assetMouseEventHandler(asset)}
-          onLocation={(selected) => (location = selected)}
+          onLocation={(selected) => {
+            location = selected;
+            locationUpdated = true;
+            setTimeout(() => {
+              locationUpdated = false;
+            }, 1500);
+          }}
         />
       {/each}
     </div>

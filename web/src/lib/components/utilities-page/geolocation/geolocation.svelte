@@ -62,6 +62,7 @@
     />
 
     {#if hasGps}
+      <div class="absolute top-0 w-full py-1 text-xs bg-black/40 text-center text-white">{$t('use_this_location')}</div>
       <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-green-500">
         {$t('gps')}
       </div>
