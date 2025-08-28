@@ -56,8 +56,9 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     final assetsToDelete = _platform.isIOS ? await _getUniqueAssetsInAlbum(albumId) : await getAssetIds(albumId);
     await _deleteAssets(assetsToDelete);
 
-    // All the other assets that are still associated will be unlinked automatically on-cascade
-    await _db.managers.localAlbumEntity.filter((a) => a.id.equals(albumId)).delete();
+    await _db.managers.localAlbumEntity
+        .filter((a) => a.id.equals(albumId) & a.backupSelection.equals(BackupSelection.none))
+        .delete();
   });
 
   Future<void> syncDeletes(String albumId, Iterable<String> assetIdsToKeep) async {
@@ -152,7 +153,10 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         await deleteSmt.go();
       }
 
-      await _db.localAlbumEntity.deleteWhere((f) => f.marker_.isNotNull());
+      // Only remove albums that are not explicitly selected or excluded from backups
+      await _db.localAlbumEntity.deleteWhere(
+        (f) => f.marker_.isNotNull() & f.backupSelection.equalsValue(BackupSelection.none),
+      );
     });
   }
 

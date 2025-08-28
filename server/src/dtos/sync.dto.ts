@@ -4,6 +4,7 @@ import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
+  AssetMetadataKey,
   AssetOrder,
   AssetType,
   AssetVisibility,
@@ -160,6 +161,21 @@ export class SyncAssetExifV1 {
   rating!: number | null;
   @ApiProperty({ type: 'number', format: 'double' })
   fps!: number | null;
+}
+
+@ExtraModel()
+export class SyncAssetMetadataV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+  value!: object;
+}
+
+@ExtraModel()
+export class SyncAssetMetadataDeleteV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
 }
 
 @ExtraModel()
@@ -328,6 +344,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
   [SyncEntityType.AssetV1]: SyncAssetV1;
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
+  [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
+  [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;

@@ -42,7 +42,6 @@ describe(MediaService.name, () => {
       mocks.assetJob.streamForThumbnailJob.mockReturnValue(makeStream([assetStub.image]));
 
       mocks.person.getAll.mockReturnValue(makeStream([personStub.newThumbnail]));
-      mocks.person.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 

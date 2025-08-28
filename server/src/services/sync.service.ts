@@ -74,6 +74,7 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.PeopleV1,
   SyncRequestType.AssetFacesV1,
   SyncRequestType.UserMetadataV1,
+  SyncRequestType.AssetMetadataV1,
 ];
 
 const throwSessionRequired = () => {
@@ -156,6 +157,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.AssetsV1]: () => this.syncAssetsV1(options, response, checkpointMap),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(options, response, checkpointMap),
       [SyncRequestType.PartnerAssetsV1]: () => this.syncPartnerAssetsV1(options, response, checkpointMap, session.id),
+      [SyncRequestType.AssetMetadataV1]: () => this.syncAssetMetadataV1(options, response, checkpointMap, auth),
       [SyncRequestType.PartnerAssetExifsV1]: () =>
         this.syncPartnerAssetExifsV1(options, response, checkpointMap, session.id),
       [SyncRequestType.AlbumsV1]: () => this.syncAlbumsV1(options, response, checkpointMap),
@@ -753,6 +755,33 @@ export class SyncService extends BaseService {
 
     const upsertType = SyncEntityType.UserMetadataV1;
     const upserts = this.syncRepository.userMetadata.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncAssetMetadataV1(
+    options: SyncQueryOptions,
+    response: Writable,
+    checkpointMap: CheckpointMap,
+    auth: AuthDto,
+  ) {
+    const deleteType = SyncEntityType.AssetMetadataDeleteV1;
+    const deletes = this.syncRepository.assetMetadata.getDeletes(
+      { ...options, ack: checkpointMap[deleteType] },
+      auth.user.id,
+    );
+
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.AssetMetadataV1;
+    const upserts = this.syncRepository.assetMetadata.getUpserts(
+      { ...options, ack: checkpointMap[upsertType] },
+      auth.user.id,
+    );
 
     for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
