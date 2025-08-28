@@ -16,7 +16,7 @@ export class MemoryService extends BaseService {
   async onMemoriesCreate() {
     const users = await this.userRepository.getList({ withDeleted: false });
     const usersIds = await Promise.all(
-      users.map((user:any) =>
+      users.map((user: any) =>
         getMyPartnerIds({
           userId: user.id,
           repository: this.partnerRepository,
@@ -38,7 +38,9 @@ export class MemoryService extends BaseService {
         }
 
         try {
-          await Promise.all(users.map((owner:any, i:any) => this.createOnThisDayMemories(owner.id, usersIds[i], target)));
+          await Promise.all(
+            users.map((owner: any, i: any) => this.createOnThisDayMemories(owner.id, usersIds[i], target)),
+          );
         } catch (error) {
           this.logger.error(`Failed to create memories for ${target.toISO()}: ${error}`);
         }

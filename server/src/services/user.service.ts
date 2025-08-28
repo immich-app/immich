@@ -31,7 +31,7 @@ export class UserService extends BaseService {
       users = authUser ? [authUser] : [];
     }
 
-    return users.map((user:any) => mapUser(user));
+    return users.map((user: any) => mapUser(user));
   }
 
   async getMe(auth: AuthDto): Promise<UserAdminResponseDto> {

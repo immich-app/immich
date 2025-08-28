@@ -167,7 +167,7 @@ export class StorageTemplateService extends BaseService {
     const users = await this.userRepository.getList();
 
     for await (const asset of assets) {
-      const user = users.find((user:any) => user.id === asset.ownerId);
+      const user = users.find((user: any) => user.id === asset.ownerId);
       const storageLabel = user?.storageLabel || null;
       const filename = asset.originalFileName || asset.id;
       await this.moveAsset(asset, { storageLabel, filename });

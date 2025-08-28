@@ -13,20 +13,19 @@ export type SessionSearchOptions = { updatedBefore: Date };
 
 @Injectable()
 export class SessionRepository {
-
-async cleanupMobileStaleSessions() {
-  const deleted = await this.db
-    .deleteFrom('session')
-    .where((eb) =>
-      eb.and([
-        eb('updatedAt', '<=', DateTime.now().minus({ days: 7 }).toJSDate()),
-        eb('deviceOS', 'in', ['Android', 'iOS']),
-      ])
-    )
-    .returning(['id', 'deviceOS', 'deviceType'])
-    .execute();
-  return deleted;
-}
+  async cleanupMobileStaleSessions() {
+    const deleted = await this.db
+      .deleteFrom('session')
+      .where((eb) =>
+        eb.and([
+          eb('updatedAt', '<=', DateTime.now().minus({ days: 7 }).toJSDate()),
+          eb('deviceOS', 'in', ['Android', 'iOS']),
+        ]),
+      )
+      .returning(['id', 'deviceOS', 'deviceType'])
+      .execute();
+    return deleted;
+  }
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   cleanup() {

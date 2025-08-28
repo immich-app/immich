@@ -56,7 +56,7 @@ export const FileResponse = () =>
 
 export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
   const request = context.switchToHttp().getRequest<Request>();
-  const userAgentString = request.headers['user-agent'] as string || '';
+  const userAgentString = (request.headers['user-agent'] as string) || '';
   const userAgent = UAParser(userAgentString);
 
   let appVersion = '';
@@ -114,7 +114,7 @@ export class AuthGuard implements CanActivate {
 
     if (request.user?.session) {
       let appVersion = '';
-      const userAgent = request.headers['user-agent'] as string || '';
+      const userAgent = (request.headers['user-agent'] as string) || '';
       const immichMatch = userAgent.match(/^Immich_(Android|iOS)_(.+)$/);
       if (immichMatch) {
         appVersion = immichMatch[2];
