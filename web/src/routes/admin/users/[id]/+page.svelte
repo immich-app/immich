@@ -385,7 +385,11 @@
                       <div class="flex flex-col flex-1">
                         <span class="font-medium text-base"
                           >{device.deviceType} <span class="mx-1">•</span>
-                          <span style="color: {formattedServerVersion != null && device.appVersion < formattedServerVersion ? 'red' : 'inherit'}">
+                          <span
+                            style="color: {formattedServerVersion != null && device.appVersion < formattedServerVersion
+                              ? 'red'
+                              : 'inherit'}"
+                          >
                             v{device.appVersion}
                           </span>
                         </span>
