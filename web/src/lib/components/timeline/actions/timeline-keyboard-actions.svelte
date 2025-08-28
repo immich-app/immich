@@ -128,9 +128,9 @@
     }
   };
 
-  let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
+  const isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
+  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
+  const idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
   let isShortcutModalOpen = false;
 
   const handleOpenShortcutModal = async () => {

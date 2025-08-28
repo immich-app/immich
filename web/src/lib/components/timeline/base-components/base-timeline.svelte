@@ -135,6 +135,8 @@
     // Tracks if we found the month intersecting the viewport top
     let foundIntersectingMonth = false;
 
+    // loop starts at -1, which represents lead-in
+    // loops ends at months.length + 1, representing lead-out
     for (let i = MONTH_LOOP_START; i < getMonthLoopEnd(monthsLength); i++) {
       const monthSection = getMonthSection(i);
       const nextRemainingDistance = remainingScrollDistance - monthSection.height * maxScrollPercent;

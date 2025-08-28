@@ -8,9 +8,9 @@
   let { onAfterUpdate }: Props = $props();
 
   onMount(() => {
-    if (import.meta && import.meta?.hot) {
-      import.meta.hot?.on('vite:afterUpdate', onAfterUpdate);
-      return () => import.meta.hot?.off('vite:afterUpdate', onAfterUpdate);
+    if (import.meta && import.meta.hot) {
+      import.meta.hot.on('vite:afterUpdate', onAfterUpdate);
+      return () => import.meta.hot && import.meta.hot.off('vite:afterUpdate', onAfterUpdate);
     }
   });
 </script>

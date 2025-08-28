@@ -32,7 +32,7 @@ export class DayGroup {
     this.monthGroup = monthGroup;
     this.day = day;
     this.groupTitle = groupTitle;
-    this.groupTitleFull = groupTitle;
+    this.groupTitleFull = groupTitleFull;
   }
 
   get top() {
