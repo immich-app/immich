@@ -6,6 +6,9 @@
     <string>$(CUSTOM_GROUP_ID)</string>
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
+      <string>app.alextran.immich.background.localSync</string>
+      <string>app.alextran.immich.background.refreshUpload</string>
+      <string>app.alextran.immich.background.processingUpload</string>
       <string>app.alextran.immich.backgroundFetch</string>
       <string>app.alextran.immich.backgroundProcessing</string>
     </array>
@@ -78,7 +81,7 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.139.4</string>
+    <string>1.139.3</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -105,7 +108,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>218</string>
+    <string>217</string>
     <key>FLTEnableImpeller</key>
     <true />
     <key>ITSAppUsesNonExemptEncryption</key>
@@ -134,6 +137,9 @@
     <string>We need to access the camera to let you take beautiful video using this app</string>
     <key>NSFaceIDUsageDescription</key>
     <string>We need to use FaceID to allow access to your locked folder</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>We need local network permission to connect to the local server using IP address and
+      allow the casting feature to work</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>We require this permission to access the local WiFi name for background upload mechanism</string>
     <key>NSLocationUsageDescription</key>
@@ -180,8 +186,5 @@
     <true />
     <key>io.flutter.embedded_views_preview</key>
     <true />
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>We need local network permission to connect to the local server using IP address and
-      allow the casting feature to work</string>
   </dict>
 </plist>
