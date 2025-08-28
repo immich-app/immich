@@ -67,16 +67,19 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         label: 'search'.tr(),
         icon: const Icon(Icons.search_rounded),
         selectedIcon: Icon(Icons.search, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
         label: 'albums'.tr(),
         icon: const Icon(Icons.photo_album_outlined),
         selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
         label: 'library'.tr(),
         icon: const Icon(Icons.space_dashboard_outlined),
         selectedIcon: Icon(Icons.space_dashboard_rounded, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
     ];
 
@@ -112,9 +115,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
                     ],
                   )
                 : child,
-            bottomNavigationBar: isReadonlyModeEnabled
-                ? null
-                : _BottomNavigationBar(tabsRouter: tabsRouter, destinations: navigationDestinations),
+            bottomNavigationBar: _BottomNavigationBar(tabsRouter: tabsRouter, destinations: navigationDestinations),
           ),
         );
       },
