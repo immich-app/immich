@@ -9,7 +9,7 @@ import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('API Keys')
 @Controller('api-keys')
-export class APIKeyController {
+export class ApiKeyController {
   constructor(private service: ApiKeyService) {}
 
   @Post()
@@ -22,6 +22,12 @@ export class APIKeyController {
   @Authenticated({ permission: Permission.ApiKeyRead })
   getApiKeys(@Auth() auth: AuthDto): Promise<APIKeyResponseDto[]> {
     return this.service.getAll(auth);
+  }
+
+  @Get('me')
+  @Authenticated({ permission: false })
+  async getMyApiKey(@Auth() auth: AuthDto): Promise<APIKeyResponseDto> {
+    return this.service.getMine(auth);
   }
 
   @Get(':id')
@@ -41,8 +47,8 @@ export class APIKeyController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.ApiKeyDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

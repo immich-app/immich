@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
   AddUsersDto,
   AlbumInfoDto,
   AlbumResponseDto,
+  AlbumsAddAssetsDto,
+  AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
@@ -62,6 +64,7 @@ export class AlbumController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.AlbumDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteAlbum(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
     return this.service.delete(auth, id);
   }
@@ -74,6 +77,12 @@ export class AlbumController {
     @Body() dto: BulkIdsDto,
   ): Promise<BulkIdResponseDto[]> {
     return this.service.addAssets(auth, id, dto);
+  }
+
+  @Put('assets')
+  @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
+  addAssetsToAlbums(@Auth() auth: AuthDto, @Body() dto: AlbumsAddAssetsDto): Promise<AlbumsAddAssetsResponseDto> {
+    return this.service.addAssetsToAlbums(auth, dto);
   }
 
   @Delete(':id/assets')
@@ -98,6 +107,7 @@ export class AlbumController {
 
   @Put(':id/user/:userId')
   @Authenticated({ permission: Permission.AlbumUserUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
   updateAlbumUser(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -109,11 +119,12 @@ export class AlbumController {
 
   @Delete(':id/user/:userId')
   @Authenticated({ permission: Permission.AlbumUserDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   removeUserFromAlbum(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-  ) {
+  ): Promise<void> {
     return this.service.removeUser(auth, id, userId);
   }
 }

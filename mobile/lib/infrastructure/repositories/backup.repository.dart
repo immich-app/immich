@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -113,6 +115,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     final query = _db.localAssetEntity.select()
       ..where(
         (lae) =>
+            lae.checksum.isNotNull() &
             existsQuery(
               _db.localAlbumAssetEntity.selectOnly()
                 ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -125,9 +128,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
               _db.remoteAssetEntity.selectOnly()
                 ..addColumns([_db.remoteAssetEntity.checksum])
                 ..where(
-                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) &
-                      _db.remoteAssetEntity.ownerId.equals(userId) &
-                      lae.checksum.isNotNull(),
+                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
                 ),
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),
@@ -135,5 +136,23 @@ class DriftBackupRepository extends DriftDatabaseRepository {
       ..orderBy([(localAsset) => OrderingTerm.desc(localAsset.createdAt)]);
 
     return query.map((localAsset) => localAsset.toDto()).get();
+  }
+
+  FutureOr<List<LocalAlbum>> getSourceAlbums(String localAssetId) {
+    final query = _db.localAlbumEntity.select()
+      ..where(
+        (lae) =>
+            existsQuery(
+              _db.localAlbumAssetEntity.selectOnly()
+                ..addColumns([_db.localAlbumAssetEntity.albumId])
+                ..where(
+                  _db.localAlbumAssetEntity.albumId.equalsExp(lae.id) &
+                      _db.localAlbumAssetEntity.assetId.equals(localAssetId),
+                ),
+            ) &
+            lae.backupSelection.equalsValue(BackupSelection.selected),
+      )
+      ..orderBy([(lae) => OrderingTerm.asc(lae.name)]);
+    return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 }

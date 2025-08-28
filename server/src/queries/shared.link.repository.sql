@@ -38,7 +38,11 @@ from
     select
       "album".*,
       coalesce(
-        json_agg("assets") filter (
+        json_agg(
+          "assets"
+          order by
+            "assets"."fileCreatedAt" asc
+        ) filter (
           where
             "assets"."id" is not null
         ),

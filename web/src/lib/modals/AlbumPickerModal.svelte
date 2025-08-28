@@ -6,8 +6,9 @@
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
-  import { type AlbumResponseDto, createAlbum, getAllAlbums } from '@immich/sdk';
-  import { Modal, ModalBody } from '@immich/ui';
+  import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
+  import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
+  import { mdiKeyboardReturn } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import AlbumListItem from '../components/asset-viewer/album-list-item.svelte';
@@ -21,7 +22,7 @@
 
   interface Props {
     shared: boolean;
-    onClose: (album?: AlbumResponseDto) => void;
+    onClose: (albums?: AlbumResponseDto[]) => void;
   }
 
   let { shared, onClose }: Props = $props();
@@ -32,13 +33,54 @@
     loading = false;
   });
 
+  const multiSelectedAlbumIds: string[] = $state([]);
+  const multiSelectActive = $derived(multiSelectedAlbumIds.length > 0);
+
   const rowConverter = new AlbumModalRowConverter(shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
-  const albumModalRows = $derived(rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex));
+  const albumModalRows = $derived(
+    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds),
+  );
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
   const onNewAlbum = async (name: string) => {
     const album = await createAlbum({ createAlbumDto: { albumName: name } });
-    onClose(album);
+    onClose([album]);
+  };
+
+  const handleAlbumClick = (album?: AlbumResponseDto) => {
+    if (multiSelectActive) {
+      handleMultiSelect(album);
+      return;
+    }
+    if (album) {
+      onClose([album]);
+      return;
+    }
+    onClose();
+  };
+
+  const handleMultiSelect = (album?: AlbumResponseDto) => {
+    const selectedAlbum = album ?? albumModalRows.find(({ selected }) => selected)?.album;
+
+    if (!selectedAlbum) {
+      return;
+    }
+
+    const index = multiSelectedAlbumIds.indexOf(selectedAlbum.id);
+    if (index === -1) {
+      multiSelectedAlbumIds.push(selectedAlbum.id);
+      return;
+    }
+    multiSelectedAlbumIds.splice(index, 1);
+  };
+
+  const handleMultiSubmit = () => {
+    const selectedAlbums = new Set(albums.filter(({ id }) => multiSelectedAlbumIds.includes(id)));
+    if (selectedAlbums.size > 0) {
+      onClose([...selectedAlbums]);
+    } else {
+      onClose();
+    }
   };
 
   const onEnter = async () => {
@@ -53,8 +95,12 @@
         break;
       }
       case AlbumModalRowType.ALBUM_ITEM: {
+        if (multiSelectActive) {
+          handleMultiSubmit();
+          break;
+        }
         if (item.album) {
-          onClose(item.album);
+          onClose([item.album]);
         }
         break;
       }
@@ -86,6 +132,11 @@
       case 'Enter': {
         e.preventDefault();
         await onEnter();
+        break;
+      }
+      case 'Control': {
+        e.preventDefault();
+        handleMultiSelect();
         break;
       }
       default: {
@@ -133,13 +184,38 @@
               <AlbumListItem
                 album={row.album}
                 selected={row.selected || false}
+                multiSelected={row.multiSelected}
                 searchQuery={search}
-                onAlbumClick={() => onClose(row.album)}
+                onAlbumClick={() => handleAlbumClick(row.album)}
+                onMultiSelect={() => handleMultiSelect(row.album)}
               />
             {/if}
           {/each}
         </div>
       {/if}
     </div>
+    {#if multiSelectActive}
+      <Button size="small" shape="round" fullWidth onclick={handleMultiSubmit}
+        >{$t('add_to_albums_count', { values: { count: multiSelectedAlbumIds.length } })}</Button
+      >
+    {/if}
   </ModalBody>
+  <ModalFooter>
+    <div class="flex justify-around w-full">
+      <div class="flex gap-4">
+        <div class="flex gap-1 place-items-center">
+          <span class="bg-gray-300 dark:bg-gray-500 rounded p-1">
+            <Icon icon={mdiKeyboardReturn} size="1rem" />
+          </span>
+          <Text size="tiny">{$t('to_select')}</Text>
+        </div>
+        <div class="flex gap-1 place-items-center">
+          <span class="bg-gray-300 dark:bg-gray-500 rounded p-1">
+            <Text size="tiny">CTRL</Text>
+          </span>
+          <Text size="tiny">{$t('to_multi_select')}</Text>
+        </div>
+      </div>
+    </div>
+  </ModalFooter>
 </Modal>

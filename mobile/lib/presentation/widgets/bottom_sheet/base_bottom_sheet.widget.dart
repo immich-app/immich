@@ -22,13 +22,13 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
     this.slivers,
     this.controller,
     this.initialChildSize = 0.35,
-    this.minChildSize = 0.15,
+    double? minChildSize,
     this.maxChildSize = 0.65,
     this.expand = true,
     this.shouldCloseOnMinExtent = true,
     this.resizeOnScroll = true,
     this.backgroundColor,
-  });
+  }) : minChildSize = minChildSize ?? 0.15;
 
   @override
   ConsumerState<BaseBottomSheet> createState() => _BaseDraggableScrollableSheetState();
@@ -69,34 +69,28 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
       shouldCloseOnMinExtent: widget.shouldCloseOnMinExtent,
       builder: (BuildContext context, ScrollController scrollController) {
         return Card(
-          color: widget.backgroundColor ?? context.colorScheme.surfaceContainerHigh,
-          borderOnForeground: false,
-          clipBehavior: Clip.antiAlias,
-          elevation: 6.0,
+          color: widget.backgroundColor ?? context.colorScheme.surfaceContainer,
+          elevation: 3.0,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
           margin: const EdgeInsets.symmetric(horizontal: 0),
           child: CustomScrollView(
             controller: scrollController,
             slivers: [
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    const _DragHandle(),
-                    const SizedBox(height: 14),
-                    if (widget.actions.isNotEmpty)
+              const SliverPersistentHeader(delegate: _DragHandleDelegate(), pinned: true),
+              if (widget.actions.isNotEmpty)
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
                       SizedBox(
                         height: 115,
                         child: ListView(shrinkWrap: true, scrollDirection: Axis.horizontal, children: widget.actions),
                       ),
-                    if (widget.actions.isNotEmpty) ...[
                       const Divider(indent: 16, endIndent: 16),
                       const SizedBox(height: 16),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              ...(widget.slivers ?? []),
+              if (widget.slivers != null) ...widget.slivers!,
             ],
           ),
         );
@@ -105,17 +99,42 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
   }
 }
 
+class _DragHandleDelegate extends SliverPersistentHeaderDelegate {
+  const _DragHandleDelegate();
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return const _DragHandle();
+  }
+
+  @override
+  bool shouldRebuild(_DragHandleDelegate oldDelegate) => false;
+
+  @override
+  double get minExtent => 50.0;
+
+  @override
+  double get maxExtent => 50.0;
+}
+
 class _DragHandle extends StatelessWidget {
   const _DragHandle();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 6,
-      width: 32,
-      decoration: BoxDecoration(
-        color: context.themeData.dividerColor.lighten(amount: 0.6),
-        borderRadius: const BorderRadius.all(Radius.circular(20)),
+    return SizedBox(
+      height: 50,
+      child: Center(
+        child: SizedBox(
+          width: 32,
+          height: 6,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
+              color: context.themeData.dividerColor.lighten(amount: 0.6),
+            ),
+          ),
+        ),
       ),
     );
   }

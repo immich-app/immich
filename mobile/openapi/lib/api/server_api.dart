@@ -477,7 +477,9 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server/version-check' operation and returns the [Response].
+  /// This endpoint requires the `server.versionCheck` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getVersionCheckWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/version-check';
@@ -503,6 +505,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint requires the `server.versionCheck` permission.
   Future<VersionCheckStateResponseDto?> getVersionCheck() async {
     final response = await getVersionCheckWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
