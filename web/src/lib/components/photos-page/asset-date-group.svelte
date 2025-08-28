@@ -1,6 +1,7 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -12,10 +13,10 @@
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
+  import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
+  import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { fly, scale } from 'svelte/transition';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
-  import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -27,11 +28,23 @@
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
+    customLayout?: Snippet<[TimelineAsset]>;
 
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
     onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+    onThumbnailClick?: (
+      asset: TimelineAsset,
+      timelineManager: TimelineManager,
+      dayGroup: DayGroup,
+      onClick: (
+        timelineManager: TimelineManager,
+        assets: TimelineAsset[],
+        groupTitle: string,
+        asset: TimelineAsset,
+      ) => void,
+    ) => void;
   }
 
   let {
@@ -42,10 +55,12 @@
     monthGroup = $bindable(),
     assetInteraction,
     timelineManager,
+    customLayout,
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
     onScrollCompensation,
+    onThumbnailClick,
   }: Props = $props();
 
   let isMouseOverGroup = $state(false);
@@ -55,7 +70,7 @@
     monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150,
   );
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const onClick = (
+  const _onClick = (
     timelineManager: TimelineManager,
     assets: TimelineAsset[],
     groupTitle: string,
@@ -202,7 +217,13 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            onClick={(asset) => onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset)}
+            onClick={(asset) => {
+              if (typeof onThumbnailClick === 'function') {
+                onThumbnailClick(asset, timelineManager, dayGroup, _onClick);
+              } else {
+                _onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+              }
+            }}
             onSelect={(asset) => assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
             onMouseEvent={() => assetMouseEventHandler(dayGroup.groupTitle, assetSnapshot(asset))}
             selected={assetInteraction.hasSelectedAsset(asset.id) ||
@@ -212,6 +233,9 @@
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
           />
+          {#if customLayout}
+            {@render customLayout(asset)}
+          {/if}
         </div>
         <!-- {/if} -->
       {/each}
