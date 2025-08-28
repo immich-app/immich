@@ -2,7 +2,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:path/path.dart';
 
 class ReadOnlyModeNotifier extends Notifier<bool> {
   late AppSettingsService _appSettingService;
@@ -17,7 +16,7 @@ class ReadOnlyModeNotifier extends Notifier<bool> {
   void setMode(bool value) {
     _appSettingService.setSetting(AppSettingsEnum.readonlyModeEnabled, value);
     state = value;
-    
+
     if (value) {
       ref.read(appRouterProvider).navigate(const MainTimelineRoute());
     }
