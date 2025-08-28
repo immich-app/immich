@@ -88,6 +88,12 @@ export type UserLicense = {
     activationKey: string;
     licenseKey: string;
 };
+export type MobileDeviceDto = {
+    appVersion: string;
+    deviceOS: string;
+    deviceType: string;
+    lastSeen: string;
+};
 export type UserAdminResponseDto = {
     avatarColor: UserAvatarColor;
     createdAt: string;
@@ -96,6 +102,7 @@ export type UserAdminResponseDto = {
     id: string;
     isAdmin: boolean;
     license: (UserLicense) | null;
+    mobileDevices: MobileDeviceDto[];
     name: string;
     oauthId: string;
     profileChangedAt: string;

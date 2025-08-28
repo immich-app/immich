@@ -20,6 +20,7 @@ class UserAdminResponseDto {
     required this.id,
     required this.isAdmin,
     required this.license,
+    this.mobileDevices = const [],
     required this.name,
     required this.oauthId,
     required this.profileChangedAt,
@@ -30,26 +31,7 @@ class UserAdminResponseDto {
     required this.status,
     required this.storageLabel,
     required this.updatedAt,
-    required this.mobileDevices,
   });
-
-  List<MobileDeviceDto> mobileDevices;
-
-}
-
-class MobileDeviceDto {
-  MobileDeviceDto({
-    required this.deviceType,
-    required this.deviceOS,
-    required this.appVersion,
-    required this.lastSeen,
-  });
-
-  String deviceType;
-  String deviceOS;
-  String appVersion;
-  DateTime lastSeen;
-}
 
   UserAvatarColor avatarColor;
 
@@ -64,6 +46,8 @@ class MobileDeviceDto {
   bool isAdmin;
 
   UserLicense? license;
+
+  List<MobileDeviceDto> mobileDevices;
 
   String name;
 
@@ -94,6 +78,7 @@ class MobileDeviceDto {
     other.id == id &&
     other.isAdmin == isAdmin &&
     other.license == license &&
+    _deepEquality.equals(other.mobileDevices, mobileDevices) &&
     other.name == name &&
     other.oauthId == oauthId &&
     other.profileChangedAt == profileChangedAt &&
@@ -115,6 +100,7 @@ class MobileDeviceDto {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (license == null ? 0 : license!.hashCode) +
+    (mobileDevices.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileChangedAt.hashCode) +
@@ -127,7 +113,7 @@ class MobileDeviceDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, mobileDevices=$mobileDevices, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -146,6 +132,7 @@ class MobileDeviceDto {
     } else {
     //  json[r'license'] = null;
     }
+      json[r'mobileDevices'] = this.mobileDevices;
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
@@ -187,6 +174,7 @@ class MobileDeviceDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         license: UserLicense.fromJson(json[r'license']),
+        mobileDevices: MobileDeviceDto.listFromJson(json[r'mobileDevices']),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
@@ -251,6 +239,7 @@ class MobileDeviceDto {
     'id',
     'isAdmin',
     'license',
+    'mobileDevices',
     'name',
     'oauthId',
     'profileChangedAt',
