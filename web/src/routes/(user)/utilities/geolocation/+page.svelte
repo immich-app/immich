@@ -29,7 +29,7 @@
   }
 
   let { data }: Props = $props();
-  let partialDate = $state(data.partialDate);
+  let partialDate = $state<string | null>(data.partialDate);
   let isLoading = $state(false);
   let assets = $state<AssetResponseDto[]>([]);
   let shiftKeyIsDown = $state(false);
@@ -83,7 +83,7 @@
   };
 
   const handleDateChange = async (selectedYear?: number, selectedMonth?: number, selectedDay?: number) => {
-    partialDate = selectedYear ? buildDateString(selectedYear, selectedMonth, selectedDay) : undefined;
+    partialDate = selectedYear ? buildDateString(selectedYear, selectedMonth, selectedDay) : null;
     if (!selectedYear) {
       assets = [];
       return;
