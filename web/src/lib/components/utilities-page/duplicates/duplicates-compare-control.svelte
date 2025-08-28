@@ -3,6 +3,7 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { MetadataPreference } from '$lib/stores/duplicates-metadata.store';
   import { handlePromiseError } from '$lib/utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
@@ -17,15 +18,114 @@
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
+    selectedMetadataFields: MetadataPreference;
+    showAllMetadata?: boolean;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
+  let { assets, onResolve, onStack, selectedMetadataFields, showAllMetadata = false }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+
+  type DifferingMetadataFields = {
+    [key in keyof MetadataPreference]?: boolean;
+  };
+
+  function normalizeForComparison(
+    key: keyof MetadataPreference,
+    value: string | number | boolean | null | undefined,
+  ): string | number | boolean | null | undefined {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    // Normalize date/time: compare at minute precision to ignore seconds (Such as bursts)
+    if (key === 'fileCreatedAt' || key === 'fileModifiedAt' || key === 'dateTimeOriginal' || key === 'modifyDate') {
+      const s = String(value);
+      const m = s.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})/);
+      return m ? m[1] : s;
+    }
+
+    // Numeric formatting parity with UI
+    if (key === 'fNumber' && typeof value === 'number') {
+      return Number(value.toFixed(1));
+    }
+    if ((key === 'latitude' || key === 'longitude') && typeof value === 'number') {
+      return Number(value.toFixed(4));
+    }
+    if (key === 'focalLength' && typeof value === 'number') {
+      return Number(value.toFixed(2));
+    }
+
+    return value;
+  }
+  let differingMetadataFields: DifferingMetadataFields = $derived(
+    (() => {
+      if (showAllMetadata) {
+        // If showAllMetadata is true, mark all selected fields as differing
+        const diffs: DifferingMetadataFields = {};
+        for (const key in selectedMetadataFields) {
+          if (selectedMetadataFields[key as keyof MetadataPreference]) {
+            diffs[key as keyof MetadataPreference] = true;
+          }
+        }
+        return diffs;
+      }
+
+      const diffs: DifferingMetadataFields = {};
+
+      for (const key in selectedMetadataFields) {
+        if (selectedMetadataFields[key as keyof MetadataPreference]) {
+          // Collect all unique values for the current metadata field with normalization
+          const uniqueValues = new SvelteSet<string | number | boolean | null | undefined>();
+
+          for (const asset of assets) {
+            let value: string | number | boolean | null | undefined;
+
+            // Handle top-level AssetResponseDto properties
+            switch (key as keyof MetadataPreference) {
+              case 'fileCreatedAt': {
+                value = asset.fileCreatedAt;
+                break;
+              }
+              case 'fileModifiedAt': {
+                value = asset.fileModifiedAt;
+                break;
+              }
+              case 'originalFileName': {
+                value = asset.originalFileName;
+                break;
+              }
+              case 'originalPath': {
+                value = asset.originalPath;
+                break;
+              }
+              default: {
+                // handled below for exif fields
+                break;
+              }
+            }
+            // Handle ExifResponseDto properties if not matched above
+            if (value === undefined && asset.exifInfo && key in asset.exifInfo) {
+              value = asset.exifInfo[key as keyof typeof asset.exifInfo];
+            }
+
+            if (value !== undefined) {
+              uniqueValues.add(normalizeForComparison(key as keyof MetadataPreference, value));
+            }
+          }
+
+          // If there's more than one unique value, this field differs
+          if (uniqueValues.size > 1) {
+            diffs[key as keyof MetadataPreference] = true;
+          }
+        }
+      }
+      return diffs;
+    })(),
+  );
 
   onMount(() => {
     const suggestedAsset = suggestDuplicate(assets);
@@ -164,13 +264,16 @@
     </div>
   </div>
 
-  <div class="flex flex-wrap gap-1 mb-4 place-items-center place-content-center px-4 pt-4">
+  <div class="flex flex-wrap gap-1 mb-4 place-items-start place-content-center px-4 pt-4">
     {#each assets as asset (asset.id)}
       <DuplicateAsset
         {asset}
         {onSelectAsset}
         isSelected={selectedAssetIds.has(asset.id)}
         onViewAsset={(asset) => setAsset(asset)}
+        {selectedMetadataFields}
+        {differingMetadataFields}
+        {showAllMetadata}
       />
     {/each}
   </div>

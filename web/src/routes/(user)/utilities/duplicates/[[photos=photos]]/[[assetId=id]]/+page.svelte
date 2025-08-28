@@ -10,8 +10,10 @@
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { AppRoute } from '$lib/constants';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
+  import MetadataSelectionModal from '$lib/modals/MetadataSelectionModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { metadataPreferenceStore, showAllMetadataStore } from '$lib/stores/duplicates-metadata.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
@@ -26,6 +28,7 @@
     mdiChevronRight,
     mdiInformationOutline,
     mdiKeyboard,
+    mdiListStatus,
     mdiPageFirst,
     mdiPageLast,
     mdiTrashCanOutline,
@@ -245,6 +248,15 @@
       >
         <Text class="hidden md:block">{$t('keep_all')}</Text>
       </Button>
+      <Button
+        leadingIcon={mdiListStatus}
+        onclick={() => modalManager.show(MetadataSelectionModal)}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('metadata_selection_modal.button')}</Text>
+      </Button>
       <IconButton
         shape="round"
         variant="ghost"
@@ -257,7 +269,7 @@
     </HStack>
   {/snippet}
 
-  <div class="">
+  <div>
     {#if duplicates && duplicates.length > 0}
       <div class="flex items-center mb-2">
         <div class="text-sm dark:text-white">
@@ -280,6 +292,8 @@
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
+          selectedMetadataFields={$metadataPreferenceStore}
+          showAllMetadata={$showAllMetadataStore}
         />
         <div class="max-w-216 mx-auto mb-16">
           <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between items-center">
