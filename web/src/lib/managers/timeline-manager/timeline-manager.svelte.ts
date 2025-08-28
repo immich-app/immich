@@ -419,14 +419,22 @@ export class TimelineManager {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
     }
+
     let { monthGroup } = findMonthGroupForAssetUtil(this, id) ?? {};
     if (monthGroup) {
       return monthGroup;
     }
-    const asset = toTimelineAsset(await getAssetInfo({ ...authManager.params, id }));
+
+    const response = await getAssetInfo({ ...authManager.params, id }).catch(() => null);
+    if (!response) {
+      return;
+    }
+
+    const asset = toTimelineAsset(response);
     if (!asset || this.isExcluded(asset)) {
       return;
     }
+
     monthGroup = await this.#loadMonthGroupAtTime(asset.localDateTime, { cancelable: false });
     if (monthGroup?.findAssetById({ id })) {
       return monthGroup;

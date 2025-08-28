@@ -12,8 +12,7 @@ services:
       - ${UPLOAD_LOCATION:-upload2-devcontainer-volume}${UPLOAD_LOCATION:+/photos/upload}:/data/upload
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node-modules:/usr/src/app/server/node_modules
-      - server-dist:/usr/src/app/server/dist
+      - server-node_modules:/usr/src/app/server/node_modules
       - web-node_modules:/usr/src/app/web/node_modules
       - github-node_modules:/usr/src/app/.github/node_modules
       - cli-node_modules:/usr/src/app/cli/node_modules
