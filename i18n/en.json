@@ -639,6 +639,8 @@
   "cannot_update_the_description": "Cannot update the description",
   "cast": "Cast",
   "cast_description": "Configure available cast destinations",
+  "cellular_data_for_photos": "Cellular data for photos",
+  "cellular_data_for_videos": "Cellular data for videos",
   "change_date": "Change date",
   "change_description": "Change description",
   "change_display_order": "Change display order",

@@ -3,6 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -93,7 +95,11 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const _BackupCard(),
                   const _RemainderCard(),
                   const Divider(),
+                  const SizedBox(height: 4),
+                  const _CellularBackupStatus(),
+                  const SizedBox(height: 4),
                   BackupToggleButton(onStart: () async => await startBackup(), onStop: () async => await stopBackup()),
+
                   TextButton.icon(
                     icon: const Icon(Icons.info_outline_rounded),
                     onPressed: () => context.pushRoute(const DriftUploadDetailRoute()),
@@ -102,6 +108,64 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                 ],
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CellularBackupStatus extends ConsumerWidget {
+  const _CellularBackupStatus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cellularReqForVideos = Store.watch(StoreKey.useCellularForUploadVideos);
+    final cellularReqForPhotos = Store.watch(StoreKey.useCellularForUploadPhotos);
+
+    return GestureDetector(
+      onTap: () => context.pushRoute(const DriftBackupOptionsRoute()),
+      child: Row(
+        children: [
+          StreamBuilder(
+            stream: cellularReqForVideos,
+            initialData: Store.tryGet(StoreKey.useCellularForUploadVideos) ?? false,
+            builder: (context, snapshot) {
+              return Expanded(
+                child: ListTile(
+                  visualDensity: VisualDensity.compact,
+                  leading: Icon(
+                    snapshot.data ?? false ? Icons.check_circle : Icons.cancel_outlined,
+                    size: 16,
+                    color: snapshot.data ?? false ? Colors.green : context.colorScheme.onSurfaceVariant,
+                  ),
+                  title: Text(
+                    "cellular_data_for_videos".t(context: context),
+                    style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              );
+            },
+          ),
+          StreamBuilder(
+            stream: cellularReqForPhotos,
+            initialData: Store.tryGet(StoreKey.useCellularForUploadPhotos) ?? false,
+            builder: (context, snapshot) {
+              return Expanded(
+                child: ListTile(
+                  visualDensity: VisualDensity.compact,
+                  leading: Icon(
+                    snapshot.data ?? false ? Icons.check_circle : Icons.cancel_outlined,
+                    size: 16,
+                    color: snapshot.data ?? false ? Colors.green : context.colorScheme.onSurfaceVariant,
+                  ),
+                  title: Text(
+                    "cellular_data_for_photos".t(context: context),
+                    style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

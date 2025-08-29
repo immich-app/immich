@@ -48,8 +48,8 @@ enum AppSettingsEnum<T> {
   photoManagerCustomFilter<bool>(StoreKey.photoManagerCustomFilter, null, true),
   betaTimeline<bool>(StoreKey.betaTimeline, null, false),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
-  useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
-  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
+  useCellularForUploadVideos<bool>(StoreKey.useCellularForUploadVideos, null, false),
+  useCellularForUploadPhotos<bool>(StoreKey.useCellularForUploadPhotos, null, false),
   readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

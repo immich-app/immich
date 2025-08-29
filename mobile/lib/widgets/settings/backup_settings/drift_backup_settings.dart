@@ -22,7 +22,7 @@ class _UseWifiForUploadVideosButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final valueStream = Store.watch(StoreKey.useWifiForUploadVideos);
+    final valueStream = Store.watch(StoreKey.useCellularForUploadVideos);
 
     return ListTile(
       title: Text(
@@ -32,7 +32,7 @@ class _UseWifiForUploadVideosButton extends ConsumerWidget {
       subtitle: Text("network_requirement_videos_upload".t(context: context), style: context.textTheme.labelLarge),
       trailing: StreamBuilder(
         stream: valueStream,
-        initialData: Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false,
+        initialData: Store.tryGet(StoreKey.useCellularForUploadVideos) ?? false,
         builder: (context, snapshot) {
           final value = snapshot.data ?? false;
           return Switch(
@@ -54,7 +54,7 @@ class _UseWifiForUploadPhotosButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final valueStream = Store.watch(StoreKey.useWifiForUploadPhotos);
+    final valueStream = Store.watch(StoreKey.useCellularForUploadPhotos);
 
     return ListTile(
       title: Text(
@@ -64,7 +64,7 @@ class _UseWifiForUploadPhotosButton extends ConsumerWidget {
       subtitle: Text("network_requirement_photos_upload".t(context: context), style: context.textTheme.labelLarge),
       trailing: StreamBuilder(
         stream: valueStream,
-        initialData: Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false,
+        initialData: Store.tryGet(StoreKey.useCellularForUploadPhotos) ?? false,
         builder: (context, snapshot) {
           final value = snapshot.data ?? false;
           return Switch(

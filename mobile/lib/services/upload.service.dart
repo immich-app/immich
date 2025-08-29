@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 final uploadServiceProvider = Provider((ref) {
@@ -57,6 +58,7 @@ class UploadService {
 
   Stream<TaskStatusUpdate> get taskStatusStream => _taskStatusController.stream;
   Stream<TaskProgressUpdate> get taskProgressStream => _taskProgressController.stream;
+  final Logger _log = Logger('UploadService');
 
   bool shouldAbortQueuingTasks = false;
 
@@ -127,11 +129,16 @@ class UploadService {
 
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
+      _log.info("No backup candidates found for user $userId");
       return;
     }
 
+    _log.info("Starting backup for ${candidates.length} candidates");
+    onEnqueueTasks(EnqueueStatus(enqueueCount: 0, totalCount: candidates.length));
+
     const batchSize = 100;
     int count = 0;
+    int skippedAssets = 0;
     for (int i = 0; i < candidates.length; i += batchSize) {
       if (shouldAbortQueuingTasks) {
         break;
@@ -144,16 +151,22 @@ class UploadService {
         final task = await _getUploadTask(asset);
         if (task != null) {
           tasks.add(task);
+        } else {
+          skippedAssets++;
+          _log.warning("Skipped asset ${asset.id} (${asset.name}) - unable to create upload task");
         }
       }
 
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        count += tasks.length;
-        await enqueueTasks(tasks);
+      count += tasks.length;
+      onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
 
-        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
+      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+        _log.info("Enqueuing ${tasks.length} upload tasks");
+        await enqueueTasks(tasks);
       }
     }
+
+    _log.info("Upload queueing completed: $count tasks enqueued, $skippedAssets assets skipped");
   }
 
   // Enqueue All does not work from the background on Android yet. This method is a temporary workaround
@@ -165,8 +178,13 @@ class UploadService {
 
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
+      debugPrint("No backup candidates found for serial backup");
       return;
     }
+
+    debugPrint("Starting serial backup for ${candidates.length} candidates");
+    int skippedAssets = 0;
+    int enqueuedTasks = 0;
 
     for (final asset in candidates) {
       if (shouldAbortQueuingTasks) {
@@ -176,8 +194,13 @@ class UploadService {
       final task = await _getUploadTask(asset);
       if (task != null) {
         await _uploadRepository.enqueueBackground(task);
+        enqueuedTasks++;
+      } else {
+        skippedAssets++;
       }
     }
+
+    debugPrint("Serial backup completed: $enqueuedTasks tasks enqueued, $skippedAssets assets skipped");
   }
 
   /// Cancel all ongoing uploads and reset the upload queue
@@ -245,6 +268,7 @@ class UploadService {
   Future<UploadTask?> _getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
+      _log.warning("Cannot get AssetEntity for asset ${asset.id} (${asset.name}) created on ${asset.createdAt}");
       return null;
     }
 
@@ -267,6 +291,9 @@ class UploadService {
     }
 
     if (file == null) {
+      _log.warning(
+        "Cannot get file for asset ${asset.id} (${asset.name}) created on ${asset.createdAt} - file may have been deleted or moved",
+      );
       return null;
     }
 
