@@ -214,12 +214,8 @@
     }
 
     try {
-      const parsed = parseMetadataSearchQuery(window.location.search.substring(1));
-      if ('query' in parsed) {
-        return parsed.query;
-      } else {
-        return parsed.originalFileName || parsed.description || '';
-      }
+      const parsed = parseMetadataSearchQuery(globalThis.location.search.slice(1));
+      return 'query' in parsed ? parsed.query : parsed.originalFileName || parsed.description || '';
     } catch {
       return '';
     }

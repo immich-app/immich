@@ -339,9 +339,7 @@ class SearchPage extends HookConsumerWidget {
         filter.value = filter.value.copyWith(order: sortOrder);
 
         sortTypeCurrentFilterWidget.value = Text(
-          sortOrder == AlbumAssetOrder.asc
-              ? 'search_ascending'.tr()
-              : 'search_descending'.tr(),
+          sortOrder == AlbumAssetOrder.asc ? 'search_ascending'.tr() : 'search_descending'.tr(),
           style: context.textTheme.labelLarge,
         );
       }

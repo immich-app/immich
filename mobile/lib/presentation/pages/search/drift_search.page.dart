@@ -345,8 +345,8 @@ class DriftSearchPage extends HookConsumerWidget {
 
         sortTypeCurrentFilterWidget.value = Text(
           sortOrder == AlbumAssetOrder.asc
-            ? 'search_ascending'.t(context: context)
-            : 'search_descending'.t(context: context),
+              ? 'search_ascending'.t(context: context)
+              : 'search_descending'.t(context: context),
           style: context.textTheme.labelLarge,
         );
       }
