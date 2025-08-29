@@ -34,7 +34,8 @@ type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
 const cacheControlHeaders: Record<CacheControl, string | null> = {
-  [CacheControl.PrivateWithCache]: 'private, max-age=86400, no-transform',
+  [CacheControl.PrivateWithCache]:
+    'private, max-age=86400, no-transform, stale-while-revalidate=2592000, stale-if-error=2592000',
   [CacheControl.PrivateWithoutCache]: 'private, no-cache, no-transform',
   [CacheControl.None]: null, // falsy value to prevent adding Cache-Control header
 };

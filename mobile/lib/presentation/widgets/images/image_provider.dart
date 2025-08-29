@@ -64,6 +64,11 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
         return;
       }
       yield image;
+    } catch (e) {
+      evict();
+      if (!isCancelled) {
+        _log.severe('Error loading image', e);
+      }
     } finally {
       this.request = null;
     }
