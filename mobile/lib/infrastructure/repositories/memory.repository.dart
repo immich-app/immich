@@ -15,8 +15,8 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
 
     final query =
         _db.select(_db.memoryEntity).join([
-            leftOuterJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
-            leftOuterJoin(
+            innerJoin(_db.memoryAssetEntity, _db.memoryAssetEntity.memoryId.equalsExp(_db.memoryEntity.id)),
+            innerJoin(
               _db.remoteAssetEntity,
               _db.remoteAssetEntity.id.equalsExp(_db.memoryAssetEntity.assetId) &
                   _db.remoteAssetEntity.deletedAt.isNull() &
