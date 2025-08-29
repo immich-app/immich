@@ -38,6 +38,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
+    AssetOrder,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -162,6 +163,10 @@
       ...terms,
     };
 
+    if (!('query' in searchDto) || !smartSearchEnabled) {
+      searchDto.order = terms.order === 'asc' ? AssetOrder.Asc : AssetOrder.Desc;
+    }
+
     try {
       const { albums, assets } =
         'query' in searchDto && smartSearchEnabled
@@ -191,6 +196,10 @@
     );
   }
 
+  function getHumanReadableSortOrder(order: string): string {
+    return order === 'asc' ? $t('oldest_first') : order === 'desc' ? $t('newest_first') : order;
+  }
+
   function getHumanReadableSearchKey(key: keyof SearchTerms): string {
     const keyMap: Partial<Record<keyof SearchTerms, string>> = {
       takenAfter: $t('start_date'),
@@ -210,6 +219,8 @@
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),
+      rating: $t('rating'),
+      order: $t('search_order'),
     };
     return keyMap[key] || key;
   }
@@ -313,7 +324,7 @@
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="absolute bg-light"></div>
         <div class="w-full flex-1 ps-4">
-          <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
+          <SearchBar grayTheme={false} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>
@@ -347,6 +358,8 @@
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}
+            {:else if searchKey === 'order' && typeof value === 'string'}
+              {getHumanReadableSortOrder(value)}
             {:else if value === null || value === ''}
               {$t('unknown')}
             {:else}
@@ -458,7 +471,7 @@
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
           <div class="absolute bg-light"></div>
           <div class="w-full flex-1 ps-4">
-            <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
+            <SearchBar grayTheme={false} searchQuery={terms} />
           </div>
         </ControlAppBar>
       </div>

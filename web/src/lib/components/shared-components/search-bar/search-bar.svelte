@@ -7,7 +7,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { getMetadataSearchQuery, parseMetadataSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -16,12 +16,16 @@
   import SearchHistoryBox from './search-history-box.svelte';
 
   interface Props {
-    value?: string;
     grayTheme: boolean;
     searchQuery?: MetadataSearchDto | SmartSearchDto;
   }
 
-  let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
+  let { grayTheme, searchQuery = {} }: Props = $props();
+  let value = $state<string>(initializeValue());
+
+  $effect(() => {
+    searchStore.currentSearchTerm = value;
+  });
 
   let showClearIcon = $derived(value.length > 0);
 
@@ -36,6 +40,7 @@
   const listboxId = generateId();
 
   onDestroy(() => {
+    searchStore.currentSearchTerm = '';
     searchStore.isSearchEnabled = false;
   });
 
@@ -44,6 +49,7 @@
 
     closeDropdown();
     searchStore.isSearchEnabled = false;
+    searchStore.currentSearchTerm = value;
     await goto(`${AppRoute.SEARCH}?${params}`);
   };
 
@@ -83,8 +89,6 @@
   };
 
   const onFilterClick = async () => {
-    value = '';
-
     if (close) {
       await close();
       close = undefined;
@@ -201,6 +205,23 @@
       case 'description': {
         return $t('description');
       }
+    }
+  }
+
+  function initializeValue(): string {
+    if (searchStore.currentSearchTerm && searchStore.currentSearchTerm.length > 0) {
+      return searchStore.currentSearchTerm;
+    }
+
+    try {
+      const parsed = parseMetadataSearchQuery(window.location.search.substring(1));
+      if ('query' in parsed) {
+        return parsed.query;
+      } else {
+        return parsed.originalFileName || parsed.description || '';
+      }
+    } catch {
+      return '';
     }
   }
 </script>

@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 
@@ -185,6 +186,7 @@ class SearchFilter {
 
   // Enum
   AssetType mediaType;
+  AlbumAssetOrder order;
 
   SearchFilter({
     this.context,
@@ -197,6 +199,7 @@ class SearchFilter {
     required this.date,
     required this.display,
     required this.mediaType,
+    required this.order,
   });
 
   bool get isEmpty {
@@ -214,7 +217,8 @@ class SearchFilter {
         display.isNotInAlbum == false &&
         display.isArchive == false &&
         display.isFavorite == false &&
-        mediaType == AssetType.other;
+        mediaType == AssetType.other &&
+        order == AlbumAssetOrder.desc;
   }
 
   SearchFilter copyWith({
@@ -228,6 +232,7 @@ class SearchFilter {
     SearchDateFilter? date,
     SearchDisplayFilters? display,
     AssetType? mediaType,
+    AlbumAssetOrder? order,
   }) {
     return SearchFilter(
       context: context ?? this.context,
@@ -240,12 +245,13 @@ class SearchFilter {
       date: date ?? this.date,
       display: display ?? this.display,
       mediaType: mediaType ?? this.mediaType,
+      order: order ?? this.order,
     );
   }
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType, order: $order)';
   }
 
   @override
@@ -261,7 +267,8 @@ class SearchFilter {
         other.camera == camera &&
         other.date == date &&
         other.display == display &&
-        other.mediaType == mediaType;
+        other.mediaType == mediaType &&
+        other.order == order;
   }
 
   @override
@@ -275,6 +282,7 @@ class SearchFilter {
         camera.hashCode ^
         date.hashCode ^
         display.hashCode ^
-        mediaType.hashCode;
+        mediaType.hashCode ^
+        order.hashCode;
   }
 }

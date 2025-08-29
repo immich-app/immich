@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -27,6 +28,7 @@ import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dar
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
+import 'package:immich_mobile/widgets/search/search_filter/sort_type_picker.dart';
 
 @RoutePage()
 class DriftSearchPage extends HookConsumerWidget {
@@ -48,6 +50,7 @@ class DriftSearchPage extends HookConsumerWidget {
         display: preFilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         mediaType: preFilter?.mediaType ?? AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
+        order: preFilter?.order ?? AlbumAssetOrder.desc,
       ),
     );
 
@@ -58,6 +61,7 @@ class DriftSearchPage extends HookConsumerWidget {
     final cameraCurrentFilterWidget = useState<Widget?>(null);
     final locationCurrentFilterWidget = useState<Widget?>(null);
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
+    final sortTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
     final isSearching = useState(false);
@@ -303,7 +307,6 @@ class DriftSearchPage extends HookConsumerWidget {
       search();
     }
 
-    // MEDIA PICKER
     showMediaTypePicker() {
       handleOnSelected(AssetType assetType) {
         filter.value = filter.value.copyWith(mediaType: assetType);
@@ -336,7 +339,36 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    // DISPLAY OPTION
+    showSortTypePicker() {
+      handleOnSelected(AlbumAssetOrder sortOrder) {
+        filter.value = filter.value.copyWith(order: sortOrder);
+
+        sortTypeCurrentFilterWidget.value = Text(
+          sortOrder == AlbumAssetOrder.asc
+            ? 'search_ascending'.t(context: context)
+            : 'search_descending'.t(context: context),
+          style: context.textTheme.labelLarge,
+        );
+      }
+
+      handleClear() {
+        filter.value = filter.value.copyWith(order: AlbumAssetOrder.desc);
+
+        sortTypeCurrentFilterWidget.value = null;
+        search();
+      }
+
+      showFilterBottomSheet(
+        context: context,
+        child: FilterBottomSheetScaffold(
+          title: 'search_order'.tr(context: context),
+          onSearch: search,
+          onClear: handleClear,
+          child: SortTypePicker(onSelect: handleOnSelected, filter: filter.value.order),
+        ),
+      );
+    }
+
     showDisplayOptionPicker() {
       handleOnSelect(Map<DisplayOption, bool> value) {
         final filterText = <String>[];
@@ -570,6 +602,14 @@ class DriftSearchPage extends HookConsumerWidget {
                       onTap: showMediaTypePicker,
                       label: 'search_filter_media_type'.t(context: context),
                       currentFilter: mediaTypeCurrentFilterWidget.value,
+                    ),
+                    SearchFilterChip(
+                      key: const Key('sort_type_chip'),
+                      icon: Icons.sort_rounded,
+                      onTap: showSortTypePicker,
+                      label: 'search_order'.t(context: context),
+                      currentFilter: sortTypeCurrentFilterWidget.value,
+                      disabled: textSearchType.value == TextSearchType.context,
                     ),
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,

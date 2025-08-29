@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -114,6 +115,7 @@ class PlaceTile extends StatelessWidget {
             date: SearchDateFilter(),
             display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
             mediaType: AssetType.other,
+            order: AlbumAssetOrder.desc,
           ),
         ),
       );

@@ -1,6 +1,7 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
 import 'package:immich_mobile/infrastructure/repositories/api.repository.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:openapi/api.dart';
 
 class SearchApiRepository extends ApiRepository {
@@ -56,6 +57,7 @@ class SearchApiRepository extends ApiRepository {
         type: type,
         page: page,
         size: 1000,
+        order: filter.order == AlbumAssetOrder.asc ? AssetOrder.asc : AssetOrder.desc,
       ),
     );
   }
