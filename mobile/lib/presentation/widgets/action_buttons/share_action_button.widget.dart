@@ -56,13 +56,6 @@ class ShareActionButton extends ConsumerWidget {
               gravity: ToastGravity.BOTTOM,
               toastType: ToastType.error,
             );
-          } else if (result.count > 0) {
-            ImmichToast.show(
-              context: context,
-              msg: 'share_action_prompt'.t(context: context, args: {'count': result.count.toString()}),
-              gravity: ToastGravity.BOTTOM,
-              toastType: ToastType.success,
-            );
           }
 
           buildContext.pop();
