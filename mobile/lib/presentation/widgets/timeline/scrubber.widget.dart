@@ -194,7 +194,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       _snapToSegment(nearestMonthSegment);
       final label = nearestMonthSegment.scrollLabel;
       if (_lastLabel != label) {
-        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
         _lastLabel = label;
       }
     }
