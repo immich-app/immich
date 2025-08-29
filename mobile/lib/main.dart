@@ -15,6 +15,7 @@ import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
@@ -167,6 +168,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
     await ref.read(localNotificationService).setup();
+    await NetworkRepository.init();
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {

@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'dart:ffi';
-import 'dart:io';
 import 'dart:ui' as ui;
 
+import 'package:cronet_http/cronet_http.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ffi/ffi.dart';
+import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:logging/logging.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 
 part 'local_image_request.dart';
 part 'thumbhash_image_request.dart';
