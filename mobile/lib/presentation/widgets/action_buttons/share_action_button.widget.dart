@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -10,7 +11,23 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/widgets/common/share_dialog.dart';
+
+class _SharePreparingDialog extends StatelessWidget {
+  const _SharePreparingDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CircularProgressIndicator(),
+          Container(margin: const EdgeInsets.only(top: 12), child: const Text('share_dialog_preparing').tr()),
+        ],
+      ),
+    );
+  }
+}
 
 class ShareActionButton extends ConsumerWidget {
   final ActionSource source;
@@ -51,7 +68,8 @@ class ShareActionButton extends ConsumerWidget {
           buildContext.pop();
         });
 
-        return const ShareDialog();
+        // show a loading spinner with a "Preparing" message
+        return const _SharePreparingDialog();
       },
       barrierDismissible: false,
       useRootNavigator: false,
