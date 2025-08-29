@@ -8,13 +8,7 @@
     disabled?: boolean;
   }
 
-  let { order = $bindable(), disabled = false }: Props = $props();
-
-  $effect(() => {
-    if (order === undefined) {
-      order = AssetOrder.Desc;
-    }
-  });
+  let { order = $bindable(AssetOrder.Desc), disabled = false }: Props = $props();
 </script>
 
 <div id="sort-selection">

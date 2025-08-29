@@ -7,7 +7,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMetadataSearchQuery, parseMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { encodeSearchQuery, decodeSearchQuery } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -45,7 +45,7 @@
   });
 
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
-    const params = getMetadataSearchQuery(payload);
+    const params = encodeSearchQuery(payload);
 
     closeDropdown();
     searchStore.isSearchEnabled = false;
@@ -214,7 +214,7 @@
     }
 
     try {
-      const parsed = parseMetadataSearchQuery(globalThis.location.search.slice(1));
+      const parsed = decodeSearchQuery(globalThis.location.search.slice(1));
       return 'query' in parsed ? parsed.query : parsed.originalFileName || parsed.description || '';
     } catch {
       return '';

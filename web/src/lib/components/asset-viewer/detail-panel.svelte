@@ -20,7 +20,7 @@
   import { delay, isFlipped } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { encodeSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import {
@@ -435,7 +435,7 @@
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
             <p>
               <a
-                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({
+                href="{AppRoute.SEARCH}?{encodeSearchQuery({
                   ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
                   ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
                 })}"
@@ -452,7 +452,7 @@
             <div class="flex gap-2 text-sm">
               <p>
                 <a
-                  href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
+                  href="{AppRoute.SEARCH}?{encodeSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
                   class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
                 >
