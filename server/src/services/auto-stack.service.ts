@@ -579,9 +579,6 @@ export class AutoStackService extends BaseService {
   onAppBootstrap() {
     this.logger.log('AutoStack: service initialized (listening for AssetMetadataExtracted)');
   }
-  // Auto-stack candidate generation is now triggered after SmartSearch completion
-  // instead of immediately after metadata extraction to ensure all necessary
-  // data (embeddings, pHash, etc.) is available for stack detection
 
   // Listen for SmartSearch completion to trigger auto-stack candidate generation
   @OnEvent({ name: 'AssetSmartSearchProcessed' })
