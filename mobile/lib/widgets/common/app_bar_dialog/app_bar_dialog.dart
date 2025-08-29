@@ -35,7 +35,6 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
-    final outOfSyncCount = ref.watch(outOfSyncCountProvider).maybeWhen(data: (count) => count, orElse: () => 0);
     useEffect(() {
       ref.read(backupProvider.notifier).updateDiskInfo();
       ref.read(currentUserProvider.notifier).refresh();
@@ -59,19 +58,22 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing}) {
+    buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing, Color? btnColor}) {
       return ListTile(
         dense: true,
         visualDensity: VisualDensity.standard,
         contentPadding: const EdgeInsets.only(left: 30, right: 30),
         minLeadingWidth: 40,
-        leading: SizedBox(child: Icon(icon, color: theme.textTheme.labelLarge?.color?.withAlpha(250), size: 20)),
+        leading: SizedBox(
+          child: Icon(icon, color: btnColor ?? theme.textTheme.labelLarge?.color?.withAlpha(250), size: 20),
+        ),
         title: Text(
           text,
-          style: theme.textTheme.labelLarge?.copyWith(color: theme.textTheme.labelLarge?.color?.withAlpha(250)),
+          style: theme.textTheme.labelLarge?.copyWith(color: btnColor ?? theme.textTheme.labelLarge?.color?.withAlpha(250)),
         ).tr(),
         onTap: onTap,
         trailing: trailing,
+        iconColor: btnColor,
       );
     }
 
@@ -79,11 +81,27 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
     }
 
-    buildOutOfSyncButton() => buildActionButton(
-      Icons.sync,
-      'review_out_of_sync_changes'.t(context: context, args: {'count': outOfSyncCount}),
-      () => context.pushRoute(const DriftTrashSyncReviewRoute()),
-    );
+    Widget buildOutOfSyncButton() {
+      return Consumer(
+        builder: (context, ref, _) {
+          final count = ref.watch(outOfSyncCountProvider).value ?? 0;
+          if (count == 0) {
+            return const SizedBox.shrink();
+          }
+          final btnColor = const Color.fromARGB(255, 243, 188, 106);
+          return buildActionButton(
+            Icons.warning_amber_rounded,
+            'review_out_of_sync_changes'.t(),
+            () => context.pushRoute(const DriftTrashSyncReviewRoute()),
+            trailing: Text(
+              '($count)',
+              style: theme.textTheme.labelLarge?.copyWith(color: btnColor),
+            ),
+            btnColor: btnColor,
+          );
+        },
+      );
+    }
 
     buildAppLogButton() {
       return buildActionButton(
@@ -246,7 +264,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 const AppBarProfileInfoBox(),
                 buildStorageInformation(),
                 const AppBarServerInfo(),
-                if (outOfSyncCount > 0) buildOutOfSyncButton(),
+                buildOutOfSyncButton(),
                 buildAppLogButton(),
                 buildSettingButton(),
                 buildSignOutButton(),

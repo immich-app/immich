@@ -1640,7 +1640,7 @@
   "retry_upload": "Retry upload",
   "review_duplicates": "Review duplicates",
   "review_large_files": "Review large files",
-  "review_out_of_sync_changes": "Review out-of-sync changes ({count})",
+  "review_out_of_sync_changes": "Review out-of-sync changes",
   "role": "Role",
   "role_editor": "Editor",
   "role_viewer": "Viewer",

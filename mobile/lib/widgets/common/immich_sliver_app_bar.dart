@@ -10,6 +10,7 @@ import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -136,7 +137,7 @@ class _ProfileIndicator extends ConsumerWidget {
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
     const widgetSize = 30.0;
-
+    final outOfSyncCount = ref.watch(outOfSyncCountProvider).maybeWhen(data: (count) => count, orElse: () => 0);
     return InkWell(
       onTap: () => showDialog(context: context, useRootNavigator: false, builder: (ctx) => const ImmichAppBarDialog()),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
@@ -148,7 +149,8 @@ class _ProfileIndicator extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
         isLabelVisible:
-            serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
+        serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable) ||
+            outOfSyncCount > 0,
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)
