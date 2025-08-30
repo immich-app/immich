@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 interface ExifDuration {
@@ -71,6 +73,8 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
   AndroidMake?: string;
   AndroidModel?: string;
+
+  MIMEEncoding?: string;
 }
 
 @Injectable()
@@ -84,6 +88,7 @@ export class MetadataRepository {
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
+    geolocation: true,
     // Enable exiftool LFS to parse metadata for files larger than 2GB.
     readArgs: ['-api', 'largefilesupport=1'],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
@@ -101,11 +106,39 @@ export class MetadataRepository {
     await this.exiftool.end();
   }
 
-  readTags(path: string): Promise<ImmichTags> {
-    return this.exiftool.read(path).catch((error) => {
-      this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
+  async readTags(filePath: string): Promise<ImmichTags> {
+    try {
+      const tags = (await this.exiftool.read(filePath)) as ImmichTags;
+
+      // exiftool 13.25+ may skip XMP payload parsing for UTF-16LE XMP
+      // (https://github.com/exiftool/exiftool/issues/348)
+      const needsUtf8Normalization = tags.FileType === 'XMP' && tags.MIMEEncoding === 'utf-16le';
+
+      if (!needsUtf8Normalization) {
+        return tags;
+      }
+
+      try {
+        // Create a temporary UTF-8 copy
+        const xmpContent = await fs.readFile(filePath, 'utf-16le');
+        const tmpDir = await fs.mkdtemp('immich-metadata-');
+        const tmpFile = path.join(tmpDir, path.basename(filePath));
+        await fs.writeFile(tmpFile, xmpContent, 'utf8');
+
+        // Try parsing the converted XMP file using exiftool
+        try {
+          return (await this.exiftool.read(tmpFile)) as ImmichTags;
+        } finally {
+          await fs.rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+        }
+      } catch (fallbackError) {
+        this.logger.warn(`UTF-8 normalization failed (${filePath}): ${fallbackError}`);
+        return tags;
+      }
+    } catch (error) {
+      this.logger.warn(`Error reading exif data (${filePath}): ${error}`, (error as Error).stack);
       return {};
-    }) as Promise<ImmichTags>;
+    }
   }
 
   extractBinaryTag(path: string, tagName: string): Promise<Buffer> {
