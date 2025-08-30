@@ -17,15 +17,15 @@ class DriftBackupOptionsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool hasPopped = false;
-    final previousWifiReqForVideos = Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false;
-    final previousWifiReqForPhotos = Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false;
+    final previousWifiReqForVideos = Store.tryGet(StoreKey.useCellularForUploadVideos) ?? false;
+    final previousWifiReqForPhotos = Store.tryGet(StoreKey.useCellularForUploadPhotos) ?? false;
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
         // There is an issue with Flutter where the pop event
         // can be triggered multiple times, so we guard it with _hasPopped
 
-        final currentWifiReqForVideos = Store.tryGet(StoreKey.useWifiForUploadVideos) ?? false;
-        final currentWifiReqForPhotos = Store.tryGet(StoreKey.useWifiForUploadPhotos) ?? false;
+        final currentWifiReqForVideos = Store.tryGet(StoreKey.useCellularForUploadVideos) ?? false;
+        final currentWifiReqForPhotos = Store.tryGet(StoreKey.useCellularForUploadPhotos) ?? false;
 
         if (currentWifiReqForVideos == previousWifiReqForVideos &&
             currentWifiReqForPhotos == previousWifiReqForPhotos) {
