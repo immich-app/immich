@@ -33,6 +33,7 @@ dependencies:
   flutter_displaymode: ^0.6.0
   flutter_hooks: ^0.21.2
   flutter_local_notifications: ^17.2.1+2
+  flutter_localized_locales: ^2.0.5
   flutter_secure_storage: ^9.2.4
   flutter_svg: ^2.0.17
   flutter_udid: ^3.0.0
