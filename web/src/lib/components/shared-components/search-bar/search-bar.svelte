@@ -7,7 +7,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { encodeSearchQuery, decodeSearchQuery } from '$lib/utils/metadata-search';
+  import { encodeSearchQuery, isSmartSearchDto } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -21,12 +21,8 @@
   }
 
   let { grayTheme, searchQuery = {} }: Props = $props();
-  let value = $state<string>(initializeValue());
 
-  $effect(() => {
-    searchStore.currentSearchTerm = value;
-  });
-
+  let value = $state(initializeValue());
   let showClearIcon = $derived(value.length > 0);
 
   let input = $state<HTMLInputElement>();
@@ -40,7 +36,6 @@
   const listboxId = generateId();
 
   onDestroy(() => {
-    searchStore.currentSearchTerm = '';
     searchStore.isSearchEnabled = false;
   });
 
@@ -49,7 +44,6 @@
 
     closeDropdown();
     searchStore.isSearchEnabled = false;
-    searchStore.currentSearchTerm = value;
     await goto(`${AppRoute.SEARCH}?${params}`);
   };
 
@@ -209,16 +203,11 @@
   }
 
   function initializeValue(): string {
-    if (searchStore.currentSearchTerm && searchStore.currentSearchTerm.length > 0) {
-      return searchStore.currentSearchTerm;
+    if (isSmartSearchDto(searchQuery)) {
+      return searchQuery.query;
     }
 
-    try {
-      const parsed = decodeSearchQuery(globalThis.location.search.slice(1));
-      return 'query' in parsed ? parsed.query : parsed.originalFileName || parsed.description || '';
-    } catch {
-      return '';
-    }
+    return searchQuery.originalFileName || searchQuery.description || '';
   }
 </script>
 

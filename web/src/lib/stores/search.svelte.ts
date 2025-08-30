@@ -1,7 +1,6 @@
 import { eventManager } from '$lib/managers/event-manager.svelte';
 
 class SearchStore {
-  currentSearchTerm = $state<string>('');
   savedSearchTerms = $state<string[]>([]);
   isSearchEnabled = $state(false);
 
@@ -10,7 +9,6 @@ class SearchStore {
   }
 
   clearCache() {
-    this.currentSearchTerm = '';
     this.savedSearchTerms = [];
     this.isSearchEnabled = false;
   }
