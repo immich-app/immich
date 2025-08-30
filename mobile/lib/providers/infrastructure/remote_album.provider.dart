@@ -39,6 +39,14 @@ class RemoteAlbumState {
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   late RemoteAlbumService _remoteAlbumService;
   final _logger = Logger('RemoteAlbumNotifier');
+
+  // values used for filtering and sorting when a refresh occurs
+  String? _lastUserId;
+  String? _lastQuery;
+  QuickFilterMode? _lastFilterMode;
+  RemoteAlbumSortMode? _lastSortMode;
+  bool? _lastSortIsReverse;
+
   @override
   RemoteAlbumState build() {
     _remoteAlbumService = ref.read(remoteAlbumServiceProvider);
@@ -56,14 +64,34 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     }
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh({bool keepFilters = false}) async {
     await _getAll();
+
+    // Restore previous search and filters when pulling to refresh
+    if (keepFilters) {
+      if (_lastQuery != null && _lastFilterMode != null) {
+        searchAlbums(_lastQuery!, _lastUserId, _lastFilterMode!);
+      }
+
+      if (_lastSortMode != null && _lastSortIsReverse != null) {
+        await sortFilteredAlbums(_lastSortMode!, isReverse: _lastSortIsReverse!);
+      }
+    } else {
+      _lastQuery = null;
+      _lastUserId = null;
+      _lastFilterMode = null;
+      _lastSortMode = null;
+      _lastSortIsReverse = null;
+    }
   }
 
   void searchAlbums(String query, String? userId, [QuickFilterMode filterMode = QuickFilterMode.all]) {
     final filtered = _remoteAlbumService.searchAlbums(state.albums, query, userId, filterMode);
-
     state = state.copyWith(filteredAlbums: filtered);
+
+    _lastQuery = query;
+    _lastUserId = userId;
+    _lastFilterMode = filterMode;
   }
 
   void clearSearch() {
@@ -73,6 +101,9 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   Future<void> sortFilteredAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) async {
     final sortedAlbums = await _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
+
+    _lastSortMode = sortMode;
+    _lastSortIsReverse = isReverse;
   }
 
   Future<RemoteAlbum?> createAlbum({

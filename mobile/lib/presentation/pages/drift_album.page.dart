@@ -19,7 +19,7 @@ class DriftAlbumsPage extends ConsumerStatefulWidget {
 
 class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
   Future<void> onRefresh() async {
-    await ref.read(remoteAlbumProvider.notifier).refresh();
+    await ref.read(remoteAlbumProvider.notifier).refresh(keepFilters: true);
   }
 
   @override
