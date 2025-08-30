@@ -84,11 +84,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final filtered = _remoteAlbumService.searchAlbums(state.albums, query, userId, filterMode);
     state = state.copyWith(filteredAlbums: filtered);
 
-    _lastFilterState = AlbumFilterState(
-      userId: userId,
-      query: query,
-      filterMode: filterMode,
-    );
+    _lastFilterState = AlbumFilterState(userId: userId, query: query, filterMode: filterMode);
   }
 
   void clearSearch() {
@@ -99,10 +95,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final sortedAlbums = await _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
 
-    _lastSortState = AlbumSortState(
-      sortMode: sortMode,
-      isReverse: isReverse,
-    );
+    _lastSortState = AlbumSortState(sortMode: sortMode, isReverse: isReverse);
   }
 
   Future<RemoteAlbum?> createAlbum({

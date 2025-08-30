@@ -6,19 +6,12 @@ class AlbumFilterState {
   String query;
   QuickFilterMode filterMode;
 
-  AlbumFilterState({
-    this.userId,
-    required this.query,
-    required this.filterMode,
-  });
+  AlbumFilterState({this.userId, required this.query, required this.filterMode});
 }
 
 class AlbumSortState {
   RemoteAlbumSortMode sortMode;
   bool isReverse;
 
-  AlbumSortState({
-    required this.sortMode,
-    this.isReverse = false,
-  });
+  AlbumSortState({required this.sortMode, this.isReverse = false});
 }
