@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
 /// for quick navigation of the BoxScrollView.
@@ -74,6 +75,7 @@ List<_Segment> _buildSegments({required List<Segment> layoutSegments, required d
 }
 
 class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixin {
+  String? _lastLabel;
   double _thumbTopOffset = 0.0;
   bool _isDragging = false;
   List<_Segment> _segments = [];
@@ -172,6 +174,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       _isDragging = true;
       _labelAnimationController.forward();
       _fadeOutTimer?.cancel();
+      _lastLabel = null;
     });
   }
 
@@ -189,6 +192,11 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
 
     if (nearestMonthSegment != null) {
       _snapToSegment(nearestMonthSegment);
+      final label = nearestMonthSegment.scrollLabel;
+      if (_lastLabel != label) {
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
+        _lastLabel = label;
+      }
     }
   }
 
