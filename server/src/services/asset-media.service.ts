@@ -36,6 +36,7 @@ interface UploadRequest {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
   file: UploadFile;
+  originalExtension: string | null;
 }
 
 export interface AssetMediaRedirectResponse {
@@ -89,15 +90,15 @@ export class AssetMediaService extends BaseService {
     throw new BadRequestException(`Unsupported file type ${filename}`);
   }
 
-  getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
+  getUploadFilename({ auth, fieldName, file, originalExtension }: UploadRequest): string {
     requireUploadAccess(auth);
 
-    const originalExtension = extname(file.originalName);
+    const extension = originalExtension ?? extname(file.originalName);
 
     const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExtension,
+      [UploadFieldName.ASSET_DATA]: extension,
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExtension,
+      [UploadFieldName.PROFILE_DATA]: extension,
     };
 
     return sanitize(`${file.uuid}${lookup[fieldName]}`);
