@@ -256,8 +256,8 @@ importers:
         specifier: ^60.0.0
         version: 60.0.0(eslint@9.33.0(jiti@2.5.1))
       exiftool-vendored:
-        specifier: ^28.3.1
-        version: 28.8.0
+        specifier: ^30.4.0
+        version: 30.4.0
       globals:
         specifier: ^16.0.0
         version: 16.3.0
@@ -428,8 +428,8 @@ importers:
         specifier: 4.3.0
         version: 4.3.0
       exiftool-vendored:
-        specifier: ^28.8.0
-        version: 28.8.0
+        specifier: ^30.4.0
+        version: 30.4.0
       express:
         specifier: ^5.1.0
         version: 5.1.0
@@ -1628,10 +1628,6 @@ packages:
 
   '@babel/runtime-corejs3@7.27.6':
     resolution: {integrity: sha512-vDVrlmRAY8z9Ul/HxT+8ceAru95LQgkSKiXkSYZvqtbkPSfhZJgpRp45Cldbh1GJ1kxzQkI70AqyrTI58KpaWQ==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/runtime@7.27.6':
-    resolution: {integrity: sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.28.3':
@@ -5350,9 +5346,9 @@ packages:
     resolution: {integrity: sha512-lGe34o6EHj9y3Kts9R4ZYs/Gr+6N7MCaMlIFA3F1R2O5/m7K06AxfSeO5530PEERE6/WyEg3lsuyw4GHlPZHog==}
     engines: {node: ^4.5.0 || >= 5.9}
 
-  batch-cluster@13.0.0:
-    resolution: {integrity: sha512-EreW0Vi8TwovhYUHBXXRA5tthuU2ynGsZFlboyMJHCCUXYa2AjgwnE3ubBOJs2xJLcuXFJbi6c/8pH5+FVj8Og==}
-    engines: {node: '>=14'}
+  batch-cluster@15.0.1:
+    resolution: {integrity: sha512-eUmh0ld1AUPKTEmdzwGF9QTSexXAyt9rA1F5zDfW1wUi3okA3Tal4NLdCeFI6aiKpBenQhR6NmK9bW9tBHTGPQ==}
+    engines: {node: '>=20'}
 
   batch@0.6.1:
     resolution: {integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw==}
@@ -6612,6 +6608,7 @@ packages:
   eslint-p@0.25.0:
     resolution: {integrity: sha512-e7oYgXN/tgtoaR3tZ0R2dKyPJtf5J41hYKsgpsBtwpi0t2Cxjf3l8G2QwrXCDwQTFVXW1hmD55hAqQZxiId1XA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: ESLint has built-in support for multithread linting now. This package is no longer needed.
     hasBin: true
 
   eslint-plugin-compat@6.0.2:
@@ -6789,16 +6786,18 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
-  exiftool-vendored.exe@13.0.0:
-    resolution: {integrity: sha512-4zAMuFGgxZkOoyQIzZMHv1HlvgyJK3AkNqjAgm8A8V0UmOZO7yv3pH49cDV1OduzFJqgs6yQ6eG4OGydhKtxlg==}
+  exiftool-vendored.exe@13.34.0:
+    resolution: {integrity: sha512-wncOhdEZuNFxv1hBu6/iqLEx9TmvepSs29LWG8TmS9XQBcZDbJVVXtlSkfAQ5PN5Mc10qG6JUlgWTJfmcT0v5A==}
     os: [win32]
 
-  exiftool-vendored.pl@13.0.1:
-    resolution: {integrity: sha512-+BRRzjselpWudKR0ltAW5SUt9T82D+gzQN8DdOQUgnSVWWp7oLCeTGBRptbQz+436Ihn/mPzmo/xnf0cv/Qw1A==}
+  exiftool-vendored.pl@13.34.0:
+    resolution: {integrity: sha512-xzgPIqHyf7+zV/mWNQpdxEJx8mkh5oa+nXWCB8va5yvtyAqotDsXXqeg/ChU8LTu3KtbSYEV1nC2IVwe2Ep9zw==}
     os: ['!win32']
+    hasBin: true
 
-  exiftool-vendored@28.8.0:
-    resolution: {integrity: sha512-R7tirJLr9fWuH9JS/KFFLB+O7jNGKuPXGxREc6YybYangEudGb+X8ERsYXk9AifMiAWh/2agNfbgkbcQcF+MxA==}
+  exiftool-vendored@30.4.0:
+    resolution: {integrity: sha512-DQo+4KudDXVa47TmhMqk0m3wS8ZR+hjx2/jL24Fp1kyN2wqfPCm4Q/XwGPhhrep8Ib0fo8kgLFSyr8J9foygnQ==}
+    engines: {node: '>=20.0.0'}
 
   expect-type@1.2.1:
     resolution: {integrity: sha512-/kP8CAwxzLVEeFrMm4kMmy4CCDlpipyA7MYLVrdJIkV0fYF0UaigQHRsxHiuY/GEea+bh4KSv3TIlgr+2UL6bw==}
@@ -12857,8 +12856,6 @@ snapshots:
     dependencies:
       core-js-pure: 3.43.0
 
-  '@babel/runtime@7.27.6': {}
-
   '@babel/runtime@7.28.3': {}
 
   '@babel/template@7.27.2':
@@ -16284,7 +16281,7 @@ snapshots:
   '@testing-library/dom@10.4.0':
     dependencies:
       '@babel/code-frame': 7.27.1
-      '@babel/runtime': 7.27.6
+      '@babel/runtime': 7.28.3
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       chalk: 4.1.2
@@ -16731,7 +16728,7 @@ snapshots:
   '@types/react-router@5.1.20':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 19.1.8
+      '@types/react': 19.1.10
 
   '@types/react@19.1.10':
     dependencies:
@@ -17618,7 +17615,7 @@ snapshots:
 
   base64id@2.0.0: {}
 
-  batch-cluster@13.0.0: {}
+  batch-cluster@15.0.1: {}
 
   batch@0.6.1: {}
 
@@ -19367,21 +19364,21 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.0.0:
+  exiftool-vendored.exe@13.34.0:
     optional: true
 
-  exiftool-vendored.pl@13.0.1: {}
+  exiftool-vendored.pl@13.34.0: {}
 
-  exiftool-vendored@28.8.0:
+  exiftool-vendored@30.4.0:
     dependencies:
       '@photostructure/tz-lookup': 11.2.0
       '@types/luxon': 3.7.1
-      batch-cluster: 13.0.0
-      exiftool-vendored.pl: 13.0.1
+      batch-cluster: 15.0.1
+      exiftool-vendored.pl: 13.34.0
       he: 1.2.0
       luxon: 3.7.1
     optionalDependencies:
-      exiftool-vendored.exe: 13.0.0
+      exiftool-vendored.exe: 13.34.0
 
   expect-type@1.2.1: {}
 
