@@ -5,45 +5,55 @@
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
-  import { navigate } from '$lib/utils/navigation';
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
   import { flip } from 'svelte/animate';
   import { fly, scale } from 'svelte/transition';
 
+  import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
+
   let { isUploading } = uploadAssetsStore;
 
   interface Props {
-    isSelectionMode: boolean;
     singleSelect: boolean;
     withStacked: boolean;
     showArchiveIcon: boolean;
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
-    assetInteraction: AssetInteraction;
 
-    onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
-    onSelectAssets: (asset: TimelineAsset) => void;
-    onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
-    onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+    onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+
+    onHover: (dayGroup: DayGroup, asset: TimelineAsset) => void;
+    onAssetOpen: (dayGroup: DayGroup, asset: TimelineAsset) => void;
+    onAssetSelect: (dayGroup: DayGroup, asset: TimelineAsset) => void;
+    onDayGroupSelect: (dayGroup: DayGroup, assets: TimelineAsset[]) => void;
+
+    // these should be replaced with reactive properties in timeline-manager.svelte.ts
+    isDayGroupSelected: (dayGroup: DayGroup) => boolean;
+    isAssetSelected: (asset: TimelineAsset) => boolean;
+    isAssetSelectionCandidate: (asset: TimelineAsset) => boolean;
+    isAssetDisabled: (asset: TimelineAsset) => boolean;
   }
 
   let {
-    isSelectionMode,
     singleSelect,
     withStacked,
     showArchiveIcon,
-    monthGroup = $bindable(),
-    assetInteraction,
+    monthGroup,
     timelineManager,
-    onSelect,
-    onSelectAssets,
-    onSelectAssetCandidates,
-    onScrollCompensation,
+    onScrollCompensationMonthInDOM,
+
+    onHover,
+    onAssetOpen,
+    onAssetSelect,
+    onDayGroupSelect,
+
+    isDayGroupSelected,
+    isAssetSelected,
+    isAssetSelectionCandidate,
+    isAssetDisabled,
   }: Props = $props();
 
   let isMouseOverGroup = $state(false);
@@ -53,65 +63,14 @@
     monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150,
   );
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const onClick = (
-    timelineManager: TimelineManager,
-    assets: TimelineAsset[],
-    groupTitle: string,
-    asset: TimelineAsset,
-  ) => {
-    if (isSelectionMode || assetInteraction.selectionActive) {
-      assetSelectHandler(timelineManager, asset, assets, groupTitle);
-      return;
-    }
-    void navigate({ targetRoute: 'current', assetId: asset.id });
-  };
 
-  const handleSelectGroup = (title: string, assets: TimelineAsset[]) => onSelect({ title, assets });
-
-  const assetSelectHandler = (
-    timelineManager: TimelineManager,
-    asset: TimelineAsset,
-    assetsInDayGroup: TimelineAsset[],
-    groupTitle: string,
-  ) => {
-    onSelectAssets(asset);
-
-    // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = assetsInDayGroup.filter((asset) =>
-      assetInteraction.hasSelectedAsset(asset.id),
-    ).length;
-
-    // if all assets are selected in a group, add the group to selected group
-    if (selectedAssetsInGroupCount == assetsInDayGroup.length) {
-      assetInteraction.addGroupToMultiselectGroup(groupTitle);
-    } else {
-      assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
-    }
-
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
-  };
-
-  const assetMouseEventHandler = (groupTitle: string, asset: TimelineAsset | null) => {
-    // Show multi select icon on hover on date group
-    hoveredDayGroup = groupTitle;
-
-    if (assetInteraction.selectionActive) {
-      onSelectAssetCandidates(asset);
-    }
-  };
-
-  function filterIntersecting<R extends { intersecting: boolean }>(intersectable: R[]) {
-    return intersectable.filter((int) => int.intersecting);
+  function filterIntersecting<R extends { intersecting: boolean }>(intersectables: R[]) {
+    return intersectables.filter((intersectable) => intersectable.intersecting);
   }
 
   $effect.root(() => {
     if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
-      onScrollCompensation(timelineManager.scrollCompensation);
-      timelineManager.clearScrollCompensation();
+      onScrollCompensationMonthInDOM(timelineManager.scrollCompensation);
     }
   });
 </script>
@@ -130,11 +89,11 @@
     style:transform={`translate3d(${absoluteWidth}px,${dayGroup.top}px,0)`}
     onmouseenter={() => {
       isMouseOverGroup = true;
-      assetMouseEventHandler(dayGroup.groupTitle, null);
+      hoveredDayGroup = dayGroup.groupTitle;
     }}
     onmouseleave={() => {
       isMouseOverGroup = false;
-      assetMouseEventHandler(dayGroup.groupTitle, null);
+      hoveredDayGroup = null;
     }}
   >
     <!-- Date group title -->
@@ -142,14 +101,14 @@
       class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
       style:width={dayGroup.width + 'px'}
     >
-      {#if !singleSelect && ((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dayGroup.groupTitle))}
+      {#if !singleSelect && ((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || isDayGroupSelected(dayGroup))}
         <div
           transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
           class="inline-block pe-2 hover:cursor-pointer"
-          onclick={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
-          onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
+          onclick={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
+          onkeydown={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
         >
-          {#if assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
+          {#if isDayGroupSelected(dayGroup)}
             <Icon path={mdiCheckCircle} size="24" class="text-primary" />
           {:else}
             <Icon path={mdiCircleOutline} size="24" color="#757575" />
@@ -173,7 +132,6 @@
         {@const position = viewerAsset.position!}
         {@const asset = viewerAsset.asset!}
 
-        <!-- {#if viewerAsset.intersecting} -->
         <!-- note: don't remove data-asset-id - its used by web e2e tests -->
         <div
           data-asset-id={asset.id}
@@ -190,18 +148,16 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            onClick={(asset) => onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset)}
-            onSelect={(asset) => assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
-            onMouseEvent={() => assetMouseEventHandler(dayGroup.groupTitle, assetSnapshot(asset))}
-            selected={assetInteraction.hasSelectedAsset(asset.id) ||
-              dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
-            selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            disabled={dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
+            onClick={() => onAssetOpen(dayGroup, assetSnapshot(asset))}
+            onSelect={() => onAssetSelect(dayGroup, assetSnapshot(asset))}
+            onMouseEvent={() => onHover(dayGroup, assetSnapshot(asset))}
+            selected={isAssetSelected(asset)}
+            selectionCandidate={isAssetSelectionCandidate(asset)}
+            disabled={isAssetDisabled(asset)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
           />
         </div>
-        <!-- {/if} -->
       {/each}
     </div>
   </section>
