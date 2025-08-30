@@ -44,7 +44,7 @@
   let mapLat = $derived(assetLat ?? previousLocation?.lat ?? undefined);
   let mapLng = $derived(assetLng ?? previousLocation?.lng ?? undefined);
 
-  let zoom = $derived(mapLat !== undefined && mapLng !== undefined ? 12.5 : 1);
+  let zoom = $derived(mapLat && mapLng ? 12.5 : 1);
 
   $effect(() => {
     if (mapElement && initialPoint) {
