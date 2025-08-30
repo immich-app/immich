@@ -38,9 +38,21 @@ abstract class RemoteCacheManager extends CacheManager {
     final file = await store.fileSystem.createFile(path);
     final sink = file.openWrite();
     try {
-      await source.pipe(sink);
+      await source.listen(sink.add, cancelOnError: true).asFuture();
     } catch (e) {
+      try {
+        await sink.close();
+        await file.delete();
+      } catch (e) {
+        _log.severe('Failed to delete incomplete cache file: $e');
+      }
+      return;
+    }
+
+    try {
+      await sink.flush();
       await sink.close();
+    } catch (e) {
       try {
         await file.delete();
       } catch (e) {

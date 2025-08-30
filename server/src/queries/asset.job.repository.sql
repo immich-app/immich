@@ -468,9 +468,8 @@ where
   "asset"."visibility" != $1
   and "asset"."deletedAt" is null
   and "job_status"."previewAt" is not null
-  and "job_status"."facesRecognizedAt" is null
 order by
-  "asset"."createdAt" desc
+  "asset"."fileCreatedAt" desc
 
 -- AssetJobRepository.streamForMigrationJob
 select

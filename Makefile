@@ -1,29 +1,29 @@
-dev:
+dev: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-down:
 	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
 
-dev-update:
+dev-update: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
-dev-scale:
+dev-scale: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --scale immich-server=3 --remove-orphans
 
-dev-docs:
+dev-docs: prepare-volumes
 	npm --prefix docs run start
 
 .PHONY: e2e
-e2e:
-	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
+e2e: prepare-volumes
+	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --remove-orphans
 
-e2e-update:
+e2e-update: prepare-volumes
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 e2e-down:
 	docker compose -f ./e2e/docker-compose.yml down --remove-orphans
 
-prod:
+prod: 
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
 prod-down:
@@ -33,16 +33,16 @@ prod-scale:
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
 .PHONY: open-api
-open-api:
+open-api: prepare-volumes
 	cd ./open-api && bash ./bin/generate-open-api.sh
 
-open-api-dart:
+open-api-dart: prepare-volumes
 	cd ./open-api && bash ./bin/generate-open-api.sh dart
 
-open-api-typescript:
+open-api-typescript: prepare-volumes
 	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
-sql:
+sql: prepare-volumes
 	pnpm --filter immich run sync:sql
 
 attach-server:
@@ -50,6 +50,47 @@ attach-server:
 
 renovate:
   LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
+
+# Directories that need to be created for volumes or build output
+VOLUME_DIRS = \
+	./.pnpm-store \
+	./web/.svelte-kit \
+	./web/node_modules \
+	./web/coverage \
+	./e2e/node_modules \
+	./docs/node_modules \
+	./server/node_modules \
+	./open-api/typescript-sdk/node_modules \
+	./.github/node_modules \
+	./node_modules \
+	./cli/node_modules
+
+# Include .env file if it exists
+-include docker/.env
+
+# Helper function to chown, on error suggest remediation and exit
+define safe_chown
+	if chown $(2) $(or $(UID),1000):$(or $(GID),1000) "$(1)" 2>/dev/null; then \
+		true; \
+	else \
+		echo "Permission denied when changing owner of volumes and upload location. Try running 'sudo make prepare-volumes' first."; \
+		exit 1; \
+	fi;
+endef
+# create empty directories and chown
+prepare-volumes:
+	@$(foreach dir,$(VOLUME_DIRS),mkdir -p $(dir);)
+	@$(foreach dir,$(VOLUME_DIRS),$(call safe_chown,$(dir),-R))
+ifneq ($(UPLOAD_LOCATION),)
+ifeq ($(filter /%,$(UPLOAD_LOCATION)),)
+	@mkdir -p "docker/$(UPLOAD_LOCATION)"
+	@$(call safe_chown,docker/$(UPLOAD_LOCATION),)
+else
+	@mkdir -p "$(UPLOAD_LOCATION)"
+	@$(call safe_chown,$(UPLOAD_LOCATION),)
+endif
+endif
+
 
 MODULES = e2e server web cli sdk docs .github
 
@@ -126,8 +167,9 @@ clean:
 	find . -name ".svelte-kit" -type d -prune -exec rm -rf '{}' +
 	find . -name "coverage" -type d -prune -exec rm -rf '{}' +
 	find . -name ".pnpm-store" -type d -prune -exec rm -rf '{}' +
-	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml rm -v -f || true
-	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml rm -v -f || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml down -v --remove-orphans || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml down -v --remove-orphans || true
+
 
 setup-server-dev: install-server
 setup-web-dev: install-sdk build-sdk install-web

@@ -123,6 +123,10 @@ export class LibraryService extends BaseService {
       {
         usePolling: false,
         ignoreInitial: true,
+        awaitWriteFinish: {
+          stabilityThreshold: 5000,
+          pollInterval: 1000,
+        },
       },
       {
         onReady: () => _resolve(),
