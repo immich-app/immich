@@ -142,6 +142,7 @@ export type UserAdmin = User & {
   quotaUsageInBytes: number;
   status: UserStatus;
   metadata: UserMetadataItem[];
+  sessions?: Session[];
 };
 
 export type StorageAsset = {
@@ -238,6 +239,7 @@ export type Session = {
   expiresAt: Date | null;
   deviceOS: string;
   deviceType: string;
+  appVersion: string;
   pinExpiresAt: Date | null;
   isPendingSyncReset: boolean;
 };

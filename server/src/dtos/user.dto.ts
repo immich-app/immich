@@ -6,6 +6,20 @@ import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
 import { Optional, PinCode, ValidateBoolean, ValidateEnum, ValidateUUID, toEmail, toSanitized } from 'src/validation';
 
+export class MobileDeviceDto {
+  @ApiProperty()
+  deviceType!: string;
+
+  @ApiProperty()
+  deviceOS!: string;
+
+  @ApiProperty()
+  appVersion!: string;
+
+  @ApiProperty()
+  lastSeen!: Date;
+}
+
 export class UserUpdateMeDto {
   @Optional()
   @IsEmail({ require_tld: false })
@@ -152,6 +166,8 @@ export class UserAdminDeleteDto {
 }
 
 export class UserAdminResponseDto extends UserResponseDto {
+  @ApiProperty({ type: () => [MobileDeviceDto] })
+  mobileDevices!: MobileDeviceDto[];
   storageLabel!: string | null;
   shouldChangePassword!: boolean;
   isAdmin!: boolean;
@@ -173,6 +189,15 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
   const license = metadata.find(
     (item): item is UserMetadataItem<UserMetadataKey.License> => item.key === UserMetadataKey.License,
   )?.value;
+  const mobileDevices = (entity.sessions || [])
+    .filter((s) => s.appVersion && s.appVersion !== '')
+    .map((s) => ({
+      deviceType: s.deviceType,
+      deviceOS: s.deviceOS,
+      appVersion: s.appVersion,
+      lastSeen: s.updatedAt,
+    }));
+
   return {
     ...mapUser(entity),
     storageLabel: entity.storageLabel,
@@ -186,5 +211,6 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
     license: license ? { ...license, activatedAt: new Date(license?.activatedAt) } : null,
+    mobileDevices,
   };
 }

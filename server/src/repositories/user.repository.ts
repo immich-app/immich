@@ -66,14 +66,22 @@ export class UserRepository {
   }
 
   @GenerateSql()
-  getAdmin() {
-    return this.db
+  async getAdmin() {
+    const user = await this.db
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
       .where('user.isAdmin', '=', true)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
+    if (user) {
+      (user as any).sessions = await this.db
+        .selectFrom('session')
+        .selectAll()
+        .where('session.userId', '=', user.id)
+        .execute();
+    }
+    return user as any;
   }
 
   @GenerateSql()
@@ -160,8 +168,8 @@ export class UserRepository {
     { name: 'with deleted', params: [{ withDeleted: true }] },
     { name: 'without deleted', params: [{ withDeleted: false }] },
   )
-  getList({ id, withDeleted }: UserListFilter = {}) {
-    return this.db
+  async getList({ id, withDeleted }: UserListFilter = {}) {
+    const users = await this.db
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
@@ -169,6 +177,14 @@ export class UserRepository {
       .$if(!!id, (eb) => eb.where('user.id', '=', id!))
       .orderBy('createdAt', 'desc')
       .execute();
+    for (const user of users) {
+      (user as any).sessions = await this.db
+        .selectFrom('session')
+        .selectAll()
+        .where('session.userId', '=', user.id)
+        .execute();
+    }
+    return users as any;
   }
 
   async create(dto: Insertable<UserTable>) {

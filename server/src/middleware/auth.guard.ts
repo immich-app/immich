@@ -56,13 +56,17 @@ export const FileResponse = () =>
 
 export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
   const request = context.switchToHttp().getRequest<Request>();
-  const userAgent = UAParser(request.headers['user-agent']);
+  const userAgentString = (request.headers['user-agent'] as string) || '';
+  const userAgent = UAParser(userAgentString);
+
+  const appVersion = userAgentString.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '';
 
   return {
     clientIp: request.ip ?? '',
     isSecure: request.secure,
     deviceType: userAgent.browser.name || userAgent.device.type || (request.headers.devicemodel as string) || '',
     deviceOS: userAgent.os.name || (request.headers.devicetype as string) || '',
+    appVersion,
   };
 });
 
@@ -86,7 +90,6 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler()];
-
     const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
     if (!options) {
       return true;
@@ -104,6 +107,13 @@ export class AuthGuard implements CanActivate {
       queryParams: request.query as Record<string, string>,
       metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
     });
+
+    if (request.user?.session) {
+      const userAgent = (request.headers['user-agent'] as string) || '';
+      const appVersion =
+        (request.headers['x-app-version'] as string) || (userAgent.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '');
+      await this.authService.heartbeat(request.user, appVersion);
+    }
 
     return true;
   }
