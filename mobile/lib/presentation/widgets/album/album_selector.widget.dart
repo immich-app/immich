@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -15,7 +14,6 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -111,12 +109,9 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   }
 
   Future<void> sortAlbums() async {
-    final sorted = await ref.read(remoteAlbumProvider.notifier).sortAlbums(
-          albums,
-          sort.mode,
-          isReverse: sort.isReverse,
-        );
-
+    final sorted = await ref
+        .read(remoteAlbumProvider.notifier)
+        .sortAlbums(albums, sort.mode, isReverse: sort.isReverse);
 
     setState(() {
       albums = sorted;
@@ -133,12 +128,9 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       return;
     }
 
-    final filteredAlbums = ref.read(remoteAlbumProvider.notifier).searchAlbums(
-          ref.read(remoteAlbumProvider).albums,
-          filter.query!,
-          filter.userId,
-          filter.mode,
-        );
+    final filteredAlbums = ref
+        .read(remoteAlbumProvider.notifier)
+        .searchAlbums(ref.read(remoteAlbumProvider).albums, filter.query!, filter.userId, filter.mode);
 
     setState(() {
       albums = filteredAlbums;
@@ -157,7 +149,10 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     final userId = ref.watch(currentUserProvider)?.id;
 
     // refilter and sort when albums change
-    ref.listen(remoteAlbumProvider.select((state) => state.albums), (_,_) => filterAlbums());
+    ref.listen(remoteAlbumProvider.select((state) => state.albums), (_, _) async {
+      filterAlbums();
+      await sortAlbums();
+    });
 
     return MultiSliver(
       children: [
@@ -211,7 +206,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
         isSorting = true;
       });
     }
-    
+
     await widget.onSortChanged.call(AlbumSort(mode: albumSortOption, isReverse: albumSortIsReverse));
 
     setState(() {
