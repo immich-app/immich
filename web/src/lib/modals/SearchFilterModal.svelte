@@ -64,8 +64,16 @@
     return validQueryTypes.has(storedQueryType) ? storedQueryType : QueryType.SMART;
   }
 
+  let query = '';
+  if ('query' in searchQuery && searchQuery.query) {
+    query = searchQuery.query;
+  }
+  if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
+    query = searchQuery.originalFileName;
+  }
+
   let filter: SearchFilter = $state({
-    query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
+    query,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds:

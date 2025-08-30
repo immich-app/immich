@@ -14570,6 +14570,10 @@
           "query": {
             "type": "string"
           },
+          "queryAssetId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "rating": {
             "maximum": 5,
             "minimum": -1,
@@ -14637,9 +14641,6 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "query"
-        ],
         "type": "object"
       },
       "SourceType": {

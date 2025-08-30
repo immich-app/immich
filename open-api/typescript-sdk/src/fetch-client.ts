@@ -1014,7 +1014,8 @@ export type SmartSearchDto = {
     model?: string | null;
     page?: number;
     personIds?: string[];
-    query: string;
+    query?: string;
+    queryAssetId?: string;
     rating?: number;
     size?: number;
     state?: string | null;
