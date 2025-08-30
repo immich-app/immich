@@ -324,6 +324,7 @@ protocol NativeSyncApi {
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashPaths(paths: [String]) throws -> [FlutterStandardTypedData?]
+  func getCloudIdForAssetIds(assetIds: [String]) throws -> [String: String?]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -475,6 +476,21 @@ class NativeSyncApiSetup {
       }
     } else {
       hashPathsChannel.setMessageHandler(nil)
+    }
+    let getCloudIdForAssetIdsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getCloudIdForAssetIdsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let assetIdsArg = args[0] as! [String]
+        do {
+          let result = try api.getCloudIdForAssetIds(assetIds: assetIdsArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getCloudIdForAssetIdsChannel.setMessageHandler(nil)
     }
   }
 }

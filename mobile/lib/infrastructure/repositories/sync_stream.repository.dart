@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
@@ -15,13 +16,14 @@ import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey;
-import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole, UserMetadataKey;
+import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey, AssetMetadataKey;
+import 'package:openapi/api.dart' hide AssetVisibility, AlbumUserRole, UserMetadataKey, AssetMetadataKey;
 
 class SyncStreamRepository extends DriftDatabaseRepository {
   final Logger _logger = Logger('DriftSyncStreamRepository');
@@ -174,6 +176,44 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsExifV1 - $debugLabel', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAssetsMetadataV1(Iterable<SyncAssetMetadataDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final metadata in data) {
+          batch.deleteWhere(
+            _db.remoteAssetMetadataEntity,
+            (row) => row.assetId.equals(metadata.assetId) & row.key.equals(metadata.key.value),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deleteAssetsMetadataV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAssetsMetadataV1(Iterable<SyncAssetMetadataV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final metadata in data) {
+          final companion = RemoteAssetMetadataEntityCompanion(
+            key: Value(metadata.key.toRemoteAssetMetadataKey()),
+            value: Value(jsonDecode(metadata.value as String)),
+          );
+
+          batch.insert(
+            _db.remoteAssetMetadataEntity,
+            companion.copyWith(assetId: Value(metadata.assetId)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updateAssetsMetadataV1', error, stack);
       rethrow;
     }
   }
@@ -572,4 +612,11 @@ extension on String {
       return null;
     }
   }
+}
+
+extension on api.AssetMetadataKey {
+  RemoteAssetMetadataKey toRemoteAssetMetadataKey() => switch (this) {
+    api.AssetMetadataKey.mobileApp => RemoteAssetMetadataKey.mobileApp,
+    _ => throw Exception('Unknown AssetMetadataKey value: $this'),
+  };
 }
