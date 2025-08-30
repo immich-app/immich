@@ -14,6 +14,7 @@
     date: SearchDateFilter;
     display: SearchDisplayFilters;
     mediaType: MediaType;
+    order?: AssetOrder;
     rating?: number;
   };
 </script>
@@ -30,10 +31,11 @@
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/search-ratings-section.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
+  import SearchSortSection from '$lib/components/shared-components/search-bar/search-sort-section.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
-  import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
+  import { AssetOrder, AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiTune } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -99,6 +101,14 @@
           ? MediaType.Video
           : MediaType.All,
     rating: searchQuery.rating,
+    order:
+      'order' in searchQuery
+        ? searchQuery.order === 'asc'
+          ? AssetOrder.Asc
+          : searchQuery.order === 'desc'
+            ? AssetOrder.Desc
+            : undefined
+        : AssetOrder.Desc,
   });
 
   const resetForm = () => {
@@ -117,6 +127,7 @@
       },
       mediaType: MediaType.All,
       rating: undefined,
+      order: undefined,
     };
   };
 
@@ -149,6 +160,11 @@
       type,
       rating: filter.rating,
     };
+
+    if (filter.queryType !== 'smart') {
+      (payload as MetadataSearchDto).order =
+        filter.order === 'asc' ? AssetOrder.Asc : filter.order === 'desc' ? AssetOrder.Desc : undefined;
+    }
 
     onClose(payload);
   };
@@ -201,9 +217,12 @@
           <!-- MEDIA TYPE -->
           <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
-          <!-- DISPLAY OPTIONS -->
-          <SearchDisplaySection bind:filters={filter.display} />
+          <!-- SORT ORDER -->
+          <SearchSortSection bind:order={filter.order} disabled={filter.queryType === 'smart'} />
         </div>
+
+        <!-- DISPLAY OPTIONS -->
+        <SearchDisplaySection bind:filters={filter.display} />
       </div>
     </form>
   </ModalBody>
