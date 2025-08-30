@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
+import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -41,11 +42,8 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   final _logger = Logger('RemoteAlbumNotifier');
 
   // values used for filtering and sorting when a refresh occurs
-  String? _lastUserId;
-  String? _lastQuery;
-  QuickFilterMode? _lastFilterMode;
-  RemoteAlbumSortMode? _lastSortMode;
-  bool? _lastSortIsReverse;
+  AlbumSortState? _lastSortState;
+  AlbumFilterState? _lastFilterState;
 
   @override
   RemoteAlbumState build() {
@@ -69,19 +67,16 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
 
     // Restore previous search and filters when pulling to refresh
     if (keepFilters) {
-      if (_lastQuery != null && _lastFilterMode != null) {
-        searchAlbums(_lastQuery!, _lastUserId, _lastFilterMode!);
+      if (_lastFilterState != null) {
+        searchAlbums(_lastFilterState!.query, _lastFilterState!.userId, _lastFilterState!.filterMode);
       }
 
-      if (_lastSortMode != null && _lastSortIsReverse != null) {
-        await sortFilteredAlbums(_lastSortMode!, isReverse: _lastSortIsReverse!);
+      if (_lastSortState != null) {
+        await sortFilteredAlbums(_lastSortState!.sortMode, isReverse: _lastSortState!.isReverse);
       }
     } else {
-      _lastQuery = null;
-      _lastUserId = null;
-      _lastFilterMode = null;
-      _lastSortMode = null;
-      _lastSortIsReverse = null;
+      _lastFilterState = null;
+      _lastSortState = null;
     }
   }
 
@@ -89,9 +84,11 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final filtered = _remoteAlbumService.searchAlbums(state.albums, query, userId, filterMode);
     state = state.copyWith(filteredAlbums: filtered);
 
-    _lastQuery = query;
-    _lastUserId = userId;
-    _lastFilterMode = filterMode;
+    _lastFilterState = AlbumFilterState(
+      userId: userId,
+      query: query,
+      filterMode: filterMode,
+    );
   }
 
   void clearSearch() {
@@ -102,8 +99,10 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final sortedAlbums = await _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
     state = state.copyWith(filteredAlbums: sortedAlbums);
 
-    _lastSortMode = sortMode;
-    _lastSortIsReverse = isReverse;
+    _lastSortState = AlbumSortState(
+      sortMode: sortMode,
+      isReverse: isReverse,
+    );
   }
 
   Future<RemoteAlbum?> createAlbum({
