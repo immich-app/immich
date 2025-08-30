@@ -66,7 +66,7 @@ class DeepLinkService {
     return DeepLink([
       // we need something to segue back to if the app was cold started
       // TODO: use MainTimelineRoute this when beta is default
-      if (isColdStart) (Store.isBetaTimelineEnabled) ? const MainTimelineRoute() : const PhotosRoute(),
+      if (isColdStart) (Store.isBetaTimelineEnabled) ? const TabShellRoute() : const PhotosRoute(),
       route,
     ]);
   }
