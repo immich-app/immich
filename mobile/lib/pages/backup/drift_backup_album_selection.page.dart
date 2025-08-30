@@ -7,12 +7,37 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/backup/album_info_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
+
+// Snapshot of required state for post-pop processing, avoiding ref usage after dispose
+class BackupAlbumSelectionSnapshot {
+  final String? userId;
+  final bool enableSyncUploadAlbum;
+  final bool isBackupEnabled;
+  final int initialTotalAssetCount;
+  final int currentTotalAssetCount;
+  final List<LocalAlbum> selectedAlbums;
+  final DriftBackupNotifier backupNotifier;
+  final SyncLinkedAlbumNotifier syncLinkedAlbumNotifier;
+
+  const BackupAlbumSelectionSnapshot({
+    required this.userId,
+    required this.enableSyncUploadAlbum,
+    required this.isBackupEnabled,
+    required this.initialTotalAssetCount,
+    required this.currentTotalAssetCount,
+    required this.selectedAlbums,
+    required this.backupNotifier,
+    required this.syncLinkedAlbumNotifier,
+  });
+}
 
 @RoutePage()
 class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
@@ -44,6 +69,50 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     _initialTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
   }
 
+  Future<BackupAlbumSelectionSnapshot> _buildSnapshot() async {
+    final user = ref.read(currentUserProvider);
+    final backupNotifier = ref.read(driftBackupProvider.notifier);
+    final syncLinkedAlbumNotifier = ref.read(syncLinkedAlbumProvider.notifier);
+    final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+    final enableSyncUploadAlbum = _enableSyncUploadAlbum.value;
+    final allAlbums = ref.read(backupAlbumProvider);
+    // Refresh counts if we have a user
+    if (user != null) {
+      await backupNotifier.getBackupStatus(user.id);
+    }
+    final currentTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
+    final selectedAlbums = allAlbums.where((a) => a.backupSelection == BackupSelection.selected).toList();
+
+    return BackupAlbumSelectionSnapshot(
+      userId: user?.id,
+      enableSyncUploadAlbum: enableSyncUploadAlbum,
+      isBackupEnabled: isBackupEnabled,
+      initialTotalAssetCount: _initialTotalAssetCount,
+      currentTotalAssetCount: currentTotalAssetCount,
+      selectedAlbums: selectedAlbums,
+      backupNotifier: backupNotifier,
+      syncLinkedAlbumNotifier: syncLinkedAlbumNotifier,
+    );
+  }
+
+  Future<void> _handlePagePopped(BackupAlbumSelectionSnapshot snap) async {
+    final userId = snap.userId;
+    if (userId == null) {
+      return;
+    }
+
+    if (snap.enableSyncUploadAlbum && snap.selectedAlbums.isNotEmpty) {
+      await snap.syncLinkedAlbumNotifier.manageLinkedAlbums(snap.selectedAlbums, userId);
+    }
+
+    // Restart backup if total count changed and backup is enabled
+    final totalChanged = snap.currentTotalAssetCount != snap.initialTotalAssetCount;
+    if (totalChanged && snap.isBackupEnabled) {
+      await snap.backupNotifier.cancel();
+      await snap.backupNotifier.startBackup(userId);
+    }
+  }
+
   @override
   void dispose() {
     _enableSyncUploadAlbum.dispose();
@@ -65,42 +134,14 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     final selectedBackupAlbums = albums.where((album) => album.backupSelection == BackupSelection.selected).toList();
     final excludedBackupAlbums = albums.where((album) => album.backupSelection == BackupSelection.excluded).toList();
 
-    // handleSyncAlbumToggle(bool isEnable) async {
-    //   if (isEnable) {
-    //     await ref.read(albumProvider.notifier).refreshRemoteAlbums();
-    //     for (final album in selectedBackupAlbums) {
-    //       await ref.read(albumProvider.notifier).createSyncAlbum(album.name);
-    //     }
-    //   }
-    // }
-
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
         // There is an issue with Flutter where the pop event
         // can be triggered multiple times, so we guard it with _hasPopped
         if (didPop && !_hasPopped) {
           _hasPopped = true;
-
-          final currentUser = ref.read(currentUserProvider);
-          if (currentUser == null) {
-            return;
-          }
-
-          await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
-          final currentTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
-
-          if (currentTotalAssetCount != _initialTotalAssetCount) {
-            final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
-
-            if (!isBackupEnabled) {
-              return;
-            }
-            final backupNotifier = ref.read(driftBackupProvider.notifier);
-
-            backupNotifier.cancel().then((_) {
-              backupNotifier.startBackup(currentUser.id);
-            });
-          }
+          final snapshot = await _buildSnapshot();
+          await _handlePagePopped(snapshot);
         }
       },
       child: Scaffold(
@@ -165,15 +206,20 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                     ),
                   ),
 
-                  // SettingsSwitchListTile(
-                  //   valueNotifier: _enableSyncUploadAlbum,
-                  //   title: "sync_albums".t(context: context),
-                  //   subtitle: "sync_upload_album_setting_subtitle".t(context: context),
-                  //   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  //   titleStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
-                  //   subtitleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.primary),
-                  //   onChanged: handleSyncAlbumToggle,
-                  // ),
+                  SettingsSwitchListTile(
+                    valueNotifier: _enableSyncUploadAlbum,
+                    title: "sync_albums".t(context: context),
+                    subtitle: "sync_upload_album_setting_subtitle".t(context: context),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    titleStyle: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                    subtitleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.primary),
+                    onChanged: (value) {
+                      ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.syncAlbums, value);
+                      setState(() {
+                        _enableSyncUploadAlbum.value = value;
+                      });
+                    },
+                  ),
                   ListTile(
                     title: Text(
                       "albums_on_device_count".t(context: context, args: {'count': albumCount.toString()}),

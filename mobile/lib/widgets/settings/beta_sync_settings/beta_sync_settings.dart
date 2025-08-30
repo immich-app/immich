@@ -109,11 +109,69 @@ class BetaSyncSettings extends HookConsumerWidget {
       await ref.read(storageRepositoryProvider).clearCache();
     }
 
+    Future<void> resetSqliteDb(BuildContext context, Future<void> Function() resetDatabase) {
+      return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("reset_sqlite".t(context: context)),
+            content: Text("reset_sqlite_confirmation".t(context: context)),
+            actions: [
+              TextButton(
+                onPressed: () => context.pop(),
+                child: Text("cancel".t(context: context)),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await resetDatabase();
+                  context.pop();
+                  context.scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text("reset_sqlite_success".t(context: context))),
+                  );
+                },
+                child: Text(
+                  "confirm".t(context: context),
+                  style: TextStyle(color: context.colorScheme.error),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     return FutureBuilder<List<dynamic>>(
       future: loadCounts(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const CircularProgressIndicator();
+        }
+
+        if (snapshot.hasError) {
+          return ListView(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text(
+                    "Error occur, reset the local database by tapping the button below",
+                    style: context.textTheme.bodyLarge,
+                  ),
+                ),
+              ),
+
+              ListTile(
+                title: Text(
+                  "reset_sqlite".t(context: context),
+                  style: TextStyle(color: context.colorScheme.error, fontWeight: FontWeight.w500),
+                ),
+                leading: Icon(Icons.settings_backup_restore_rounded, color: context.colorScheme.error),
+                onTap: () async {
+                  await resetSqliteDb(context, resetDatabase);
+                },
+              ),
+            ],
+          );
         }
 
         final assetCounts = snapshot.data![0]! as (int, int);
@@ -270,34 +328,7 @@ class BetaSyncSettings extends HookConsumerWidget {
                 ),
                 leading: Icon(Icons.settings_backup_restore_rounded, color: context.colorScheme.error),
                 onTap: () async {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: Text("reset_sqlite".t(context: context)),
-                        content: Text("reset_sqlite_confirmation".t(context: context)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => context.pop(),
-                            child: Text("cancel".t(context: context)),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              await resetDatabase();
-                              context.pop();
-                              context.scaffoldMessenger.showSnackBar(
-                                SnackBar(content: Text("reset_sqlite_success".t(context: context))),
-                              );
-                            },
-                            child: Text(
-                              "confirm".t(context: context),
-                              style: TextStyle(color: context.colorScheme.error),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
+                  await resetSqliteDb(context, resetDatabase);
                 },
               ),
             ],

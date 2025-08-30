@@ -5,15 +5,71 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/backup/album_info_sync.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
-class DriftBackupSettings extends StatelessWidget {
+class DriftBackupSettings extends ConsumerWidget {
   const DriftBackupSettings({super.key});
 
   @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSyncAlbumEnable = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+
+    return SettingsSubPageScaffold(
+      settings: [
+        const _UseWifiForUploadVideosButton(),
+        const _UseWifiForUploadPhotosButton(),
+        if (isSyncAlbumEnable) const _AlbumSyncActionButton(),
+      ],
+    );
+  }
+}
+
+class _AlbumSyncActionButton extends ConsumerStatefulWidget {
+  const _AlbumSyncActionButton();
+
+  @override
+  ConsumerState<_AlbumSyncActionButton> createState() => _AlbumSyncActionButtonState();
+}
+
+class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> {
+  bool isAlbumSyncInProgress = false;
+
+  @override
   Widget build(BuildContext context) {
-    return const SettingsSubPageScaffold(settings: [_UseWifiForUploadVideosButton(), _UseWifiForUploadPhotosButton()]);
+    syncAlbums() async {
+      setState(() {
+        isAlbumSyncInProgress = true;
+      });
+      try {
+        ref.read(syncLinkedAlbumProvider.notifier).syncLinkedAlbums();
+      } catch (_) {
+      } finally {
+        Future.delayed(const Duration(seconds: 1), () {
+          setState(() {
+            isAlbumSyncInProgress = false;
+          });
+        });
+      }
+    }
+
+    return ListTile(
+      onTap: syncAlbums,
+      title: Text(
+        "sync_albums".t(context: context),
+        style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor),
+      ),
+      subtitle: Text("sync_albums_manual_subtitle".t(context: context), style: context.textTheme.labelLarge),
+      trailing: isAlbumSyncInProgress
+          ? const SizedBox(width: 48, height: 48, child: CircularProgressIndicator.adaptive())
+          : IconButton(
+              onPressed: syncAlbums,
+              icon: const Icon(Icons.sync_rounded),
+              color: context.primaryColor,
+              splashRadius: 24,
+            ),
+    );
   }
 }
 
