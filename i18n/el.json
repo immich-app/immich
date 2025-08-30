@@ -500,7 +500,7 @@
   "assets": "Αντικείμενα",
   "assets_added_count": "Προστέθηκε {count, plural, one {# αρχείο} other {# αρχεία}}",
   "assets_added_to_album_count": "Προστέθηκε {count, plural, one {# αρχείο} other {# αρχεία}} στο άλμπουμ",
-  "assets_added_to_albums_count": "Προστέθηκε {assetTotal, plural, one {# στοιχείο} other {# στοιχεία}} στα {albumTotal} άλμπουμ",
+  "assets_added_to_albums_count": "Προστέθηκαν {assetTotal, plural, one {# αρχείο} other {# αρχεία}} σε {albumTotal, plural, one {# άλμπουμ} other {# άλμπουμ}}",
   "assets_cannot_be_added_to_album_count": "{count, plural, one {Στοιχείο} other {Στοιχεία}} δεν μπορούν να προστεθούν στο άλμπουμ",
   "assets_cannot_be_added_to_albums": "Δεν μπορεί να προστεθεί κανένα {count, plural, one {στοιχείο} other {στοιχεία}} σε κανένα από τα άλμπουμ",
   "assets_count": "{count, plural, one {# αρχείο} other {# αρχεία}}",
