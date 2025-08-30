@@ -278,13 +278,7 @@ class UploadService {
       livePhotoVideoId: '',
     ).toJson();
 
-    bool requiresWiFi = true;
-
-    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
-      requiresWiFi = false;
-    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
-      requiresWiFi = false;
-    }
+    final requiresWiFi = _shouldRequireWiFi(asset);
 
     return buildUploadTask(
       file,
@@ -311,6 +305,8 @@ class UploadService {
 
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
+    final requiresWiFi = _shouldRequireWiFi(asset);
+
     return buildUploadTask(
       file,
       originalFileName: asset.name,
@@ -319,7 +315,20 @@ class UploadService {
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately
       isFavorite: asset.isFavorite,
+      requiresWiFi: requiresWiFi,
     );
+  }
+
+  bool _shouldRequireWiFi(LocalAsset asset) {
+    bool requiresWiFi = true;
+
+    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
+      requiresWiFi = false;
+    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
+      requiresWiFi = false;
+    }
+
+    return requiresWiFi;
   }
 
   Future<UploadTask> buildUploadTask(
