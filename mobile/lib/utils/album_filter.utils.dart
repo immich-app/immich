@@ -9,11 +9,7 @@ class AlbumFilter {
   AlbumFilter({required this.mode, this.userId, this.query});
 
   AlbumFilter copyWith({String? userId, String? query, QuickFilterMode? mode}) {
-    return AlbumFilter(
-      userId: userId ?? this.userId,
-      query: query ?? this.query,
-      mode: mode ?? this.mode,
-    );
+    return AlbumFilter(userId: userId ?? this.userId, query: query ?? this.query, mode: mode ?? this.mode);
   }
 }
 
@@ -24,9 +20,6 @@ class AlbumSort {
   AlbumSort({required this.mode, this.isReverse = false});
 
   AlbumSort copyWith({RemoteAlbumSortMode? mode, bool? isReverse}) {
-    return AlbumSort(
-      mode: mode ?? this.mode,
-      isReverse: isReverse ?? this.isReverse,
-    );
+    return AlbumSort(mode: mode ?? this.mode, isReverse: isReverse ?? this.isReverse);
   }
 }
