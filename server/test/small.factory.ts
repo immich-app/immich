@@ -180,6 +180,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     quotaUsageInBytes = 0,
     status = UserStatus.Active,
     metadata = [],
+    sessions = [],
   } = user;
   return {
     id,
@@ -199,6 +200,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     quotaUsageInBytes,
     status,
     metadata,
+    sessions,
   };
 };
 

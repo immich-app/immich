@@ -142,7 +142,7 @@ export type UserAdmin = User & {
   quotaUsageInBytes: number;
   status: UserStatus;
   metadata: UserMetadataItem[];
-  sessions?: Session[];
+  sessions: Session[];
 };
 
 export type StorageAsset = {
