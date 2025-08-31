@@ -86,7 +86,14 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     Widget navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         destinations: navigationDestinations
-            .map((e) => NavigationRailDestination(icon: e.icon, label: Text(e.label), selectedIcon: e.selectedIcon))
+            .map(
+              (e) => NavigationRailDestination(
+                icon: e.icon,
+                label: Text(e.label),
+                selectedIcon: e.selectedIcon,
+                disabled: !e.enabled,
+              ),
+            )
             .toList(),
         onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
         selectedIndex: tabsRouter.activeIndex,
