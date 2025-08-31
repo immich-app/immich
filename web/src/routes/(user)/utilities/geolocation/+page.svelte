@@ -228,8 +228,8 @@
         <Text class="hidden md:block text-xs mr-4 text-dark/50">{$t('geolocation_instruction_location')}</Text>
       {/if}
       <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
-        <Text class="hidden md:inline-block">
-          <p class="text-xs text-gray-500 font-mono mr-5 ml-2 uppercase">{$t('selected_gps_coordinates')}</p>
+        <Text class="hidden md:inline-block text-xs text-gray-500 font-mono mr-5 ml-2 uppercase">
+          {$t('selected_gps_coordinates')}
         </Text>
         <Text
           title="latitude, longitude"
