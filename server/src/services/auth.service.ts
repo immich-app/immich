@@ -61,10 +61,13 @@ export class AuthService extends BaseService {
     if (!auth.session) {
       throw new BadRequestException('No active session');
     }
-    await this.sessionRepository.update(auth.session.id, {
-      appVersion,
+    const updateData: { appVersion?: string; updatedAt: Date } = {
       updatedAt: new Date(),
-    });
+    };
+    if (appVersion) {
+      updateData.appVersion = appVersion;
+    }
+    await this.sessionRepository.update(auth.session.id, updateData);
   }
   async login(dto: LoginCredentialDto, details: LoginDetails) {
     const config = await this.getConfig({ withCache: false });
