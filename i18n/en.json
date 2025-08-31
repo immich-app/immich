@@ -1735,7 +1735,7 @@
   "select_user_for_sharing_page_err_album": "Failed to create album",
   "selected": "Selected",
   "selected_count": "{count, plural, other {# selected}}",
-  "selected_gps_coordinates": "selected gps coordinates",
+  "selected_gps_coordinates": "Selected GPS Coordinates",
   "send_message": "Send message",
   "send_welcome_email": "Send welcome email",
   "server_endpoint": "Server Endpoint",
