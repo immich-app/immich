@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -9,6 +10,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -184,7 +186,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
   }
 }
 
-class _SheetTile extends StatelessWidget {
+class _SheetTile extends ConsumerWidget {
   final String title;
   final Widget? leading;
   final Widget? trailing;
@@ -203,8 +205,18 @@ class _SheetTile extends StatelessWidget {
     this.onTap,
   });
 
+  void copyTitle(BuildContext context, WidgetRef ref) {
+    Clipboard.setData(ClipboardData(text: title));
+    ImmichToast.show(
+      context: context,
+      msg: 'copied_to_clipboard'.t(context: context),
+      toastType: ToastType.info,
+    );
+    ref.read(hapticFeedbackProvider.notifier).selectionClick();
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final Widget titleWidget;
     if (leading == null) {
       titleWidget = LimitedBox(
@@ -234,7 +246,7 @@ class _SheetTile extends StatelessWidget {
     return ListTile(
       dense: true,
       visualDensity: VisualDensity.compact,
-      title: titleWidget,
+      title: GestureDetector(onLongPress: () => copyTitle(context, ref), child: titleWidget),
       titleAlignment: ListTileTitleAlignment.center,
       leading: leading,
       trailing: trailing,
