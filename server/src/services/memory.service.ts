@@ -38,9 +38,7 @@ export class MemoryService extends BaseService {
         }
 
         try {
-          await Promise.all(
-            users.map((owner: any, i: any) => this.createOnThisDayMemories(owner.id, usersIds[i], target)),
-          );
+          await Promise.all(users.map((owner, i) => this.createOnThisDayMemories(owner.id, usersIds[i], target)));
         } catch (error) {
           this.logger.error(`Failed to create memories for ${target.toISO()}: ${error}`);
         }
