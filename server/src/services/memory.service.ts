@@ -16,7 +16,7 @@ export class MemoryService extends BaseService {
   async onMemoriesCreate() {
     const users = await this.userRepository.getList({ withDeleted: false });
     const usersIds = await Promise.all(
-      users.map((user: any) =>
+      users.map((user) =>
         getMyPartnerIds({
           userId: user.id,
           repository: this.partnerRepository,

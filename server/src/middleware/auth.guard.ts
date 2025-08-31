@@ -54,18 +54,21 @@ export const FileResponse = () =>
     content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
   });
 
+const getAppVersionFromUA = (ua: string) =>
+  ua.match(/^Immich_(?:Android|iOS)_(?<appVersion>.+)$/)?.groups?.appVersion ?? '';
+
 export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
   const request = context.switchToHttp().getRequest<Request>();
-  const userAgentString = (request.headers['user-agent'] as string) || '';
+  const userAgentString = request.get('user-agent') || '';
   const userAgent = UAParser(userAgentString);
 
-  const appVersion = userAgentString.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '';
+  const appVersion = getAppVersionFromUA(userAgentString);
 
   return {
     clientIp: request.ip ?? '',
     isSecure: request.secure,
-    deviceType: userAgent.browser.name || userAgent.device.type || (request.headers.devicemodel as string) || '',
-    deviceOS: userAgent.os.name || (request.headers.devicetype as string) || '',
+    deviceType: userAgent.browser.name || userAgent.device.type || request.get('devicemodel') || '',
+    deviceOS: userAgent.os.name || request.get('devicetype') || '',
     appVersion,
   };
 });
@@ -109,9 +112,8 @@ export class AuthGuard implements CanActivate {
     });
 
     if (request.user?.session) {
-      const userAgent = (request.headers['user-agent'] as string) || '';
-      const appVersion =
-        (request.headers['x-app-version'] as string) || (userAgent.match(/^Immich_(Android|iOS)_(.+)$/)?.[2] ?? '');
+      const userAgent = request.get('user-agent') || '';
+      const appVersion = request.get('x-app-version') || getAppVersionFromUA(userAgent);
       await this.authService.heartbeat(request.user, appVersion);
     }
 

@@ -31,11 +31,10 @@ export class UserService extends BaseService {
       users = authUser ? [authUser] : [];
     }
 
-    return users.map((user: any) => mapUser(user));
+    return users.map((user) => mapUser(user));
   }
 
   async getMe(auth: AuthDto): Promise<UserAdminResponseDto> {
-    await this.sessionRepository.cleanupMobileStaleSessions();
     const user = await this.userRepository.get(auth.user.id, {});
     if (!user) {
       throw new BadRequestException('User not found');

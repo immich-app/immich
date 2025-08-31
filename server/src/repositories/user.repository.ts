@@ -40,6 +40,10 @@ const withMetadata = (eb: ExpressionBuilder<DB, 'user'>) => {
   ).as('metadata');
 };
 
+const withSessions = (eb: ExpressionBuilder<DB, 'user'>) => {
+  return jsonArrayFrom(eb.selectFrom('session').selectAll().whereRef('session.userId', '=', 'user.id')).as('sessions');
+};
+
 @Injectable()
 export class UserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -67,21 +71,14 @@ export class UserRepository {
 
   @GenerateSql()
   async getAdmin() {
-    const user = await this.db
+    return this.db
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
+      .select(withSessions)
       .where('user.isAdmin', '=', true)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
-    if (user) {
-      (user as any).sessions = await this.db
-        .selectFrom('session')
-        .selectAll()
-        .where('session.userId', '=', user.id)
-        .execute();
-    }
-    return user as any;
   }
 
   @GenerateSql()
@@ -169,22 +166,15 @@ export class UserRepository {
     { name: 'without deleted', params: [{ withDeleted: false }] },
   )
   async getList({ id, withDeleted }: UserListFilter = {}) {
-    const users = await this.db
+    return this.db
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
+      .select(withSessions)
       .$if(!withDeleted, (eb) => eb.where('user.deletedAt', 'is', null))
       .$if(!!id, (eb) => eb.where('user.id', '=', id!))
       .orderBy('createdAt', 'desc')
       .execute();
-    for (const user of users) {
-      (user as any).sessions = await this.db
-        .selectFrom('session')
-        .selectAll()
-        .where('session.userId', '=', user.id)
-        .execute();
-    }
-    return users as any;
   }
 
   async create(dto: Insertable<UserTable>) {

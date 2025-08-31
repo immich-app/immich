@@ -190,12 +190,12 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     (item): item is UserMetadataItem<UserMetadataKey.License> => item.key === UserMetadataKey.License,
   )?.value;
   const mobileDevices = (entity.sessions || [])
-    .filter((s) => s.appVersion && s.appVersion !== '')
-    .map((s) => ({
-      deviceType: s.deviceType,
-      deviceOS: s.deviceOS,
-      appVersion: s.appVersion,
-      lastSeen: s.updatedAt,
+    .filter(({ appVersion }) => appVersion)
+    .map(({ deviceType, deviceOS, appVersion, updatedAt }) => ({
+      deviceType,
+      deviceOS,
+      appVersion,
+      lastSeen: updatedAt,
     }));
 
   return {

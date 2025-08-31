@@ -8,7 +8,7 @@ import { BaseService } from 'src/services/base.service';
 export class CliService extends BaseService {
   async listUsers(): Promise<UserAdminResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: true });
-    return users.map((user: any) => mapUserAdmin(user));
+    return users.map((user) => mapUserAdmin(user));
   }
 
   async resetAdminPassword(ask: (admin: UserAdminResponseDto) => Promise<string | undefined>) {

@@ -57,14 +57,6 @@ export type ValidateRequest = {
 
 @Injectable()
 export class AuthService extends BaseService {
-  /**
-   * Cleanup mobile sessions not seen for over a week
-   */
-  async cleanupStaleMobileSessions(): Promise<number> {
-    const deleted = await this.sessionRepository.cleanupMobileStaleSessions();
-    return deleted.length ?? 0;
-  }
-
   async heartbeat(auth: AuthDto, appVersion: string): Promise<void> {
     if (!auth.session) {
       throw new BadRequestException('No active session');
