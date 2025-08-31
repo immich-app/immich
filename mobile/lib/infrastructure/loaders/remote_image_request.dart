@@ -41,12 +41,16 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final req = http.AbortableRequest('get', Uri.parse(uri), abortTrigger: abortTrigger.future);
+    final req = http.AbortableRequest('GET', Uri.parse(uri), abortTrigger: abortTrigger.future);
     req.headers.addAll(headers);
     final res = await _client.send(req);
     if (_isCancelled) {
       _onCancelled();
       return null;
+    }
+
+    if (res.statusCode != 200) {
+      throw Exception('Failed to download $uri: ${res.statusCode}');
     }
 
     final stream = res.stream.map((chunk) {
