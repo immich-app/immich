@@ -71,7 +71,20 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
@@ -261,7 +274,20 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 order by
@@ -299,7 +325,20 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
