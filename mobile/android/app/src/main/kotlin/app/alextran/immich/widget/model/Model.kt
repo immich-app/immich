@@ -49,6 +49,20 @@ enum class WidgetConfigState {
   LOADING, SUCCESS, LOG_IN, NO_CONNECTION
 }
 
+enum class WidgetImageFilter {
+  NONE, BLACK_WHITE;
+  
+  companion object {
+    fun fromString(value: String?): WidgetImageFilter {
+      return try {
+        valueOf(value ?: NONE.name)
+      } catch (e: IllegalArgumentException) {
+        NONE
+      }
+    }
+  }
+}
+
 data class WidgetEntry (
   val image: Bitmap,
   val subtitle: String?,
@@ -70,6 +84,7 @@ val kSelectedAlbum = stringPreferencesKey("albumID")
 val kSelectedAlbumName = stringPreferencesKey("albumName")
 val kShowAlbumName = booleanPreferencesKey("showAlbumName")
 val kDeeplinkURL = stringPreferencesKey("deeplink")
+val kImageFilter = stringPreferencesKey("imageFiler")
 
 const val kWorkerWidgetType = "widgetType"
 const val kWorkerWidgetID = "widgetId"

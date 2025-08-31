@@ -122,6 +122,13 @@ class ImageDownloadWorker(
         WidgetType.MEMORIES -> fetchMemory(serverConfig)
       }
 
+      // if needed apply our filter
+      val filter = WidgetImageFilter.fromString(widgetConfig[kImageFilter])
+      val filteredImage = when (filter) {
+        WidgetImageFilter.BLACK_WHITE -> applyBlackWhiteFilter(entry.image)
+        WidgetImageFilter.NONE -> entry.image
+      }
+
       // clear current image if it exists
       if (!currentImgUUID.isNullOrEmpty()) {
         deleteImage(currentImgUUID)
@@ -129,7 +136,7 @@ class ImageDownloadWorker(
 
       // save a new image
       val imgUUID = UUID.randomUUID().toString()
-      saveImage(entry.image, imgUUID)
+      saveImage(filteredImage, imgUUID)
 
       // trigger the update routine with new image uuid
       updateWidget(glanceId, imgUUID, entry.subtitle, entry.deeplink)
