@@ -84,7 +84,7 @@ val kSelectedAlbum = stringPreferencesKey("albumID")
 val kSelectedAlbumName = stringPreferencesKey("albumName")
 val kShowAlbumName = booleanPreferencesKey("showAlbumName")
 val kDeeplinkURL = stringPreferencesKey("deeplink")
-val kImageFilter = stringPreferencesKey("imageFiler")
+val kImageFilter = stringPreferencesKey("imageFilter")
 
 const val kWorkerWidgetType = "widgetType"
 const val kWorkerWidgetID = "widgetId"
