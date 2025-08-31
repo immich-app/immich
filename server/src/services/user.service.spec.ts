@@ -24,7 +24,6 @@ describe(UserService.name, () => {
     mocks.user.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? undefined),
     );
-    mocks.session.cleanupMobileStaleSessions.mockResolvedValue([]);
   });
 
   describe('getAll', () => {
