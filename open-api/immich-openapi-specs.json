@@ -1855,7 +1855,7 @@
     },
     "/assets/bulk-upload-check": {
       "post": {
-        "description": "Checks if assets exist by checksums",
+        "description": "Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1894,7 +1894,8 @@
         "summary": "checkBulkUpload",
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.upload"
       }
     },
     "/assets/device/{deviceId}": {
