@@ -383,15 +383,17 @@
                         {/if}
                       </span>
                       <div class="flex flex-col flex-1">
-                        <span class="font-medium text-base"
-                          >{device.deviceType} <span class="mx-1">•</span>
-                          <span
-                            style="color: {formattedServerVersion != null && device.appVersion < formattedServerVersion
-                              ? 'red'
-                              : 'inherit'}"
-                          >
-                            v{device.appVersion}
-                          </span>
+                        <span class="font-medium text-base">
+                          {device.deviceType} <span class="mx-1">•</span>
+                          {#if formattedServerVersion != null && device.appVersion < formattedServerVersion}
+                            <span style="color: red">v{device.appVersion}</span>
+                          {:else if formattedServerVersion != null && device.appVersion > formattedServerVersion}
+                            <span style="color: green">v{device.appVersion}</span>
+                            <br />
+                            <span class="text-green-600 text-xs">(App version is newer than server)</span>
+                          {:else}
+                            <span style="color: inherit">v{device.appVersion}</span>
+                          {/if}
                         </span>
                         <span class="text-xs text-gray-500"
                           >Last seen: {new Date(device.lastSeen).toLocaleString()}</span
