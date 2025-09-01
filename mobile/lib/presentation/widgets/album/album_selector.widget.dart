@@ -41,7 +41,8 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   bool isGrid = false;
   final searchController = TextEditingController();
   final searchFocusNode = FocusNode();
-  List<RemoteAlbum> albums = [];
+  List<RemoteAlbum> sortedAlbums = [];
+  List<RemoteAlbum> shownAlbums = [];
 
   AlbumFilter filter = AlbumFilter(query: "", mode: QuickFilterMode.all);
   AlbumSort sort = AlbumSort(mode: RemoteAlbumSortMode.lastModified, isReverse: true);
@@ -66,9 +67,9 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     });
   }
 
-  void onSearch(String searchTerm, QuickFilterMode sortMode) {
+  void onSearch(String searchTerm, QuickFilterMode filterMode) {
     final userId = ref.watch(currentUserProvider)?.id;
-    filter = filter.copyWith(query: searchTerm, userId: userId, mode: sortMode);
+    filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
 
     filterAlbums();
   }
@@ -111,29 +112,32 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   Future<void> sortAlbums() async {
     final sorted = await ref
         .read(remoteAlbumProvider.notifier)
-        .sortAlbums(albums, sort.mode, isReverse: sort.isReverse);
+        .sortAlbums(ref.read(remoteAlbumProvider).albums, sort.mode, isReverse: sort.isReverse);
 
     setState(() {
-      albums = sorted;
+      sortedAlbums = sorted;
     });
+
+    // we need to re-filter the albums after sorting
+    // so shownAlbums gets updated
+    filterAlbums();
   }
 
   Future<void> filterAlbums() async {
     if (filter.query == null) {
       setState(() {
-        albums = ref.read(remoteAlbumProvider).albums;
+        shownAlbums = sortedAlbums;
       });
 
-      sortAlbums();
       return;
     }
 
     final filteredAlbums = ref
         .read(remoteAlbumProvider.notifier)
-        .searchAlbums(ref.read(remoteAlbumProvider).albums, filter.query!, filter.userId, filter.mode);
+        .searchAlbums(sortedAlbums, filter.query!, filter.userId, filter.mode);
 
     setState(() {
-      albums = filteredAlbums;
+      shownAlbums = filteredAlbums;
     });
   }
 
@@ -150,7 +154,6 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
     // refilter and sort when albums change
     ref.listen(remoteAlbumProvider.select((state) => state.albums), (_, _) async {
-      filterAlbums();
       await sortAlbums();
     });
 
@@ -171,8 +174,8 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
         ),
         _QuickSortAndViewMode(isGrid: isGrid, onToggleViewMode: toggleViewMode, onSortChanged: changeSort),
         isGrid
-            ? _AlbumGrid(albums: albums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
-            : _AlbumList(albums: albums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
+            ? _AlbumGrid(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
+            : _AlbumList(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
       ],
     );
   }
