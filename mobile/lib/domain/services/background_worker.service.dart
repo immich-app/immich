@@ -43,7 +43,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
-  final Logger _logger = Logger('BackgroundUploadBgService');
+  final Logger _logger = Logger('BackgroundWorkerBgService');
 
   bool _isCleanedUp = false;
 
@@ -85,7 +85,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       await _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
 
-      // Notify the host that the background upload service has been initialized and is ready to use
+      // Notify the host that the background worker service has been initialized and is ready to use
       _backgroundHostApi.onInitialized();
     } catch (error, stack) {
       _logger.severe("Failed to initialize background worker", error, stack);
@@ -170,7 +170,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   @override
   Future<void> cancel() async {
-    _logger.warning("Background upload cancelled");
+    _logger.warning("Background worker cancelled");
     try {
       await _cleanup();
     } catch (error, stack) {
