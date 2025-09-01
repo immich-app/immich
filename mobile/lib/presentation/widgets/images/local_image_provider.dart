@@ -35,7 +35,8 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
-    return loadRequest(LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType), decode);
+    final request = this.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
+    return loadRequest(request, decode);
   }
 
   @override
@@ -87,7 +88,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     }
 
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
-    final request = LocalImageRequest(
+    final request = this.request = LocalImageRequest(
       localId: key.id,
       size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
       assetType: key.assetType,
