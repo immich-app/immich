@@ -3,14 +3,19 @@ import 'dart:io';
 import 'package:cronet_http/cronet_http.dart';
 import 'package:cupertino_http/cupertino_http.dart';
 import 'package:http/http.dart' as http;
+import 'package:immich_mobile/utils/user_agent.dart';
 import 'package:path_provider/path_provider.dart';
 
 class NetworkRepository {
   static late Directory _cachePath;
+  static late String _userAgent;
   static final _clients = <String, http.Client>{};
 
-  static Future<void> init() async {
-    _cachePath = await getTemporaryDirectory();
+  static Future<void> init() {
+    return (
+      getTemporaryDirectory().then((cachePath) => _cachePath = cachePath),
+      getUserAgentString().then((userAgent) => _userAgent = userAgent),
+    ).wait;
   }
 
   static void reset() {
@@ -38,7 +43,12 @@ class NetworkRepository {
     final directory = Directory('${_cachePath.path}/$directoryName');
     directory.createSync(recursive: true);
     if (Platform.isAndroid) {
-      final engine = CronetEngine.build(cacheMode: cacheMode, cacheMaxSize: diskCapacity, storagePath: directory.path);
+      final engine = CronetEngine.build(
+        cacheMode: cacheMode,
+        cacheMaxSize: diskCapacity,
+        storagePath: directory.path,
+        userAgent: _userAgent,
+      );
       return _clients[directoryName] = CronetClient.fromCronetEngine(engine, closeEngine: true);
     }
 
@@ -48,7 +58,8 @@ class NetworkRepository {
         diskCapacity: diskCapacity,
         memoryCapacity: memoryCapacity,
         directory: directory.uri,
-      );
+      )
+      ..httpAdditionalHeaders = {'User-Agent': _userAgent};
     return _clients[directoryName] = CupertinoClient.fromSessionConfiguration(config);
   }
 }
