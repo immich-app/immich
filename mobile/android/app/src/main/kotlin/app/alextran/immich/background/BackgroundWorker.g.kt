@@ -62,7 +62,7 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerFgHostApi {
   fun enableSyncWorker()
-  fun enableUploadWorker(callbackHandle: Long)
+  fun enableUploadWorker()
   fun disableUploadWorker()
 
   companion object {
@@ -93,11 +93,9 @@ interface BackgroundWorkerFgHostApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableUploadWorker$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val callbackHandleArg = args[0] as Long
+          channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
-              api.enableUploadWorker(callbackHandleArg)
+              api.enableUploadWorker()
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)
@@ -130,6 +128,7 @@ interface BackgroundWorkerFgHostApi {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerBgHostApi {
   fun onInitialized()
+  fun close()
 
   companion object {
     /** The codec used by BackgroundWorkerBgHostApi. */
@@ -146,6 +145,22 @@ interface BackgroundWorkerBgHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.onInitialized()
+              listOf(null)
+            } catch (exception: Throwable) {
+              BackgroundWorkerPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.close$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.close()
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)

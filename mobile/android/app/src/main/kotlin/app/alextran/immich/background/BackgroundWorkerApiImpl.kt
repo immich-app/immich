@@ -21,9 +21,8 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     Log.i(TAG, "Scheduled media observer")
   }
 
-  override fun enableUploadWorker(callbackHandle: Long) {
+  override fun enableUploadWorker() {
     updateUploadEnabled(ctx, true)
-    updateCallbackHandle(ctx, callbackHandle)
     Log.i(TAG, "Scheduled background upload tasks")
   }
 
@@ -41,17 +40,10 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
 
     const val SHARED_PREF_NAME = "Immich::Background"
     const val SHARED_PREF_BACKUP_ENABLED = "Background::backup::enabled"
-    const val SHARED_PREF_CALLBACK_HANDLE = "Background::backup::callbackHandle"
 
     private fun updateUploadEnabled(context: Context, enabled: Boolean) {
       context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE).edit {
         putBoolean(SHARED_PREF_BACKUP_ENABLED, enabled)
-      }
-    }
-
-    private fun updateCallbackHandle(context: Context, callbackHandle: Long) {
-      context.getSharedPreferences(SHARED_PREF_NAME, Context.MODE_PRIVATE).edit {
-        putLong(SHARED_PREF_CALLBACK_HANDLE, callbackHandle)
       }
     }
 

@@ -6,10 +6,8 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     print("BackgroundUploadImpl:enableSyncWorker Local Sync worker scheduled")
   }
   
-  func enableUploadWorker(callbackHandle: Int64) throws {
+  func enableUploadWorker() throws {
     BackgroundWorkerApiImpl.updateUploadEnabled(true)
-    // Store the callback handle for later use when starting background Flutter isolates
-    BackgroundWorkerApiImpl.updateUploadCallbackHandle(callbackHandle)
     
     BackgroundWorkerApiImpl.scheduleRefreshUpload()
     BackgroundWorkerApiImpl.scheduleProcessingUpload()
@@ -23,7 +21,6 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   }
   
   public static let backgroundUploadEnabledKey = "immich:background:backup:enabled"
-  public static let backgroundUploadCallbackHandleKey = "immich:background:backup:callbackHandle"
   
   private static let localSyncTaskID = "app.alextran.immich.background.localSync"
   private static let refreshUploadTaskID = "app.alextran.immich.background.refreshUpload"
@@ -31,10 +28,6 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
 
   private static func updateUploadEnabled(_ isEnabled: Bool) {
     return UserDefaults.standard.set(isEnabled, forKey: BackgroundWorkerApiImpl.backgroundUploadEnabledKey)
-  }
-
-  private static func updateUploadCallbackHandle(_ callbackHandle: Int64) {
-    return UserDefaults.standard.set(String(callbackHandle), forKey: BackgroundWorkerApiImpl.backgroundUploadCallbackHandleKey)
   }
 
   private static func cancelUploadTasks() {
@@ -134,7 +127,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
 
     task.expirationHandler = {
       DispatchQueue.main.async {
-        backgroundWorker.cancel()
+        backgroundWorker.close()
       }
       isSuccess = false
       

@@ -11,9 +11,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.embedding.engine.dart.DartExecutor.DartCallback
+import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
-import io.flutter.view.FlutterCallbackInformation
 
 private const val TAG = "BackgroundWorker"
 
@@ -58,25 +57,6 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
 
-      // Retrieve the callback handle stored by the main Flutter app
-      // This handle points to the Flutter function that should be executed in the background
-      val callbackHandle =
-        ctx.getSharedPreferences(BackgroundWorkerApiImpl.SHARED_PREF_NAME, Context.MODE_PRIVATE)
-          .getLong(BackgroundWorkerApiImpl.SHARED_PREF_CALLBACK_HANDLE, 0L)
-
-      if (callbackHandle == 0L) {
-        // Without a valid callback handle, we cannot start the Flutter background execution
-        complete(Result.failure())
-        return@ensureInitializationCompleteAsync
-      }
-
-      // Start the Flutter engine with the specified callback as the entry point
-      val callback = FlutterCallbackInformation.lookupCallbackInformation(callbackHandle)
-      if (callback == null) {
-        complete(Result.failure())
-        return@ensureInitializationCompleteAsync
-      }
-
       // Register custom plugins
       MainActivity.registerPlugins(ctx, engine!!)
       flutterApi =
@@ -86,8 +66,12 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
         api = this
       )
 
-      engine!!.dartExecutor.executeDartCallback(
-        DartCallback(ctx.assets, loader.findAppBundlePath(), callback)
+      engine!!.dartExecutor.executeDartEntrypoint(
+        DartExecutor.DartEntrypoint(
+          loader.findAppBundlePath(),
+          "package:immich_mobile/domain/services/background_worker.service.dart",
+          "backgroundSyncNativeEntrypoint"
+        )
       )
     }
 
@@ -109,14 +93,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     }
   }
 
-  /**
-   * Called when the system has to stop this worker because constraints are
-   * no longer met or the system needs resources for more important tasks
-   * This is also called when the worker has been explicitly cancelled or replaced
-   */
-  override fun onStopped() {
-    Log.d(TAG, "About to stop BackupWorker")
-
+  override fun close() {
     if (isComplete) {
       return
     }
@@ -132,6 +109,16 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     Handler(Looper.getMainLooper()).postDelayed({
       complete(Result.failure())
     }, 5000)
+  }
+
+  /**
+   * Called when the system has to stop this worker because constraints are
+   * no longer met or the system needs resources for more important tasks
+   * This is also called when the worker has been explicitly cancelled or replaced
+   */
+  override fun onStopped() {
+    Log.d(TAG, "About to stop BackupWorker")
+    close()
   }
 
   private fun handleHostResult(result: kotlin.Result<Unit>) {

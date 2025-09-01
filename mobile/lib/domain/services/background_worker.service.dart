@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -31,9 +32,7 @@ class BackgroundWorkerFgService {
   // TODO: Move this call to native side once old timeline is removed
   Future<void> enableSyncService() => _foregroundHostApi.enableSyncWorker();
 
-  Future<void> enableUploadService() => _foregroundHostApi.enableUploadWorker(
-    PluginUtilities.getCallbackHandle(_backgroundSyncNativeEntrypoint)!.toRawHandle(),
-  );
+  Future<void> enableUploadService() => _foregroundHostApi.enableUploadWorker();
 
   Future<void> disableUploadService() => _foregroundHostApi.disableUploadWorker();
 }
@@ -66,37 +65,50 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   bool get _isBackupEnabled => _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
   Future<void> init() async {
-    await loadTranslations();
-    HttpSSLOptions.apply(applyNative: false);
-    await _ref.read(authServiceProvider).setOpenApiServiceEndpoint();
+    try {
+      await loadTranslations();
+      HttpSSLOptions.apply(applyNative: false);
+      await _ref.read(authServiceProvider).setOpenApiServiceEndpoint();
 
-    // Initialize the file downloader
-    await FileDownloader().configure(
-      globalConfig: [
-        // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-        (Config.holdingQueue, (6, 6, 3)),
-        // On Android, if files are larger than 256MB, run in foreground service
-        (Config.runInForegroundIfFileLargerThan, 256),
-      ],
-    );
-    await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
-    await FileDownloader().trackTasks();
-    configureFileDownloaderNotifications();
+      // Initialize the file downloader
+      await FileDownloader().configure(
+        globalConfig: [
+          // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
+          (Config.holdingQueue, (6, 6, 3)),
+          // On Android, if files are larger than 256MB, run in foreground service
+          (Config.runInForegroundIfFileLargerThan, 256),
+        ],
+      );
+      await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
+      await FileDownloader().trackTasks();
+      configureFileDownloaderNotifications();
 
-    // Notify the host that the background upload service has been initialized and is ready to use
-    await _backgroundHostApi.onInitialized();
+      await _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
+
+      // Notify the host that the background upload service has been initialized and is ready to use
+      _backgroundHostApi.onInitialized();
+    } catch (error, stack) {
+      _logger.severe("Failed to initialize background worker", error, stack);
+      _backgroundHostApi.close();
+    }
   }
 
   @override
   Future<void> onLocalSync(int? maxSeconds) async {
-    _logger.info('Local background syncing started');
-    final sw = Stopwatch()..start();
+    try {
+      _logger.info('Local background syncing started');
+      final sw = Stopwatch()..start();
 
-    final timeout = maxSeconds != null ? Duration(seconds: maxSeconds) : null;
-    await _syncAssets(hashTimeout: timeout, syncRemote: false);
+      final timeout = maxSeconds != null ? Duration(seconds: maxSeconds) : null;
+      await _syncAssets(hashTimeout: timeout, syncRemote: false);
 
-    sw.stop();
-    _logger.info("Local sync completed in ${sw.elapsed.inSeconds}s");
+      sw.stop();
+      _logger.info("Local sync completed in ${sw.elapsed.inSeconds}s");
+    } catch (error, stack) {
+      _logger.severe("Failed to complete local sync", error, stack);
+    } finally {
+      await _cleanup();
+    }
   }
 
   /* We do the following on Android upload
@@ -107,16 +119,20 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
    */
   @override
   Future<void> onAndroidUpload() async {
-    _logger.info('Android background processing started');
-    final sw = Stopwatch()..start();
+    try {
+      _logger.info('Android background processing started');
+      final sw = Stopwatch()..start();
 
-    await _syncAssets(hashTimeout: Duration(minutes: _isBackupEnabled ? 3 : 6));
-    await _handleBackup(processBulk: false);
+      await _syncAssets(hashTimeout: Duration(minutes: _isBackupEnabled ? 3 : 6));
+      await _handleBackup(processBulk: false);
 
-    await _cleanup();
-
-    sw.stop();
-    _logger.info("Android background processing completed in ${sw.elapsed.inSeconds}s");
+      sw.stop();
+      _logger.info("Android background processing completed in ${sw.elapsed.inSeconds}s");
+    } catch (error, stack) {
+      _logger.severe("Failed to complete Android background processing", error, stack);
+    } finally {
+      await _cleanup();
+    }
   }
 
   /* We do the following on background upload
@@ -129,29 +145,37 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
    */
   @override
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
-    _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
-    final sw = Stopwatch()..start();
+    try {
+      _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
+      final sw = Stopwatch()..start();
 
-    final timeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
-    await _syncAssets(hashTimeout: timeout);
+      final timeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
+      await _syncAssets(hashTimeout: timeout);
 
-    final backupFuture = _handleBackup();
-    if (maxSeconds != null) {
-      await backupFuture.timeout(Duration(seconds: maxSeconds - 1), onTimeout: () {});
-    } else {
-      await backupFuture;
+      final backupFuture = _handleBackup();
+      if (maxSeconds != null) {
+        await backupFuture.timeout(Duration(seconds: maxSeconds - 1), onTimeout: () {});
+      } else {
+        await backupFuture;
+      }
+
+      sw.stop();
+      _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
+    } catch (error, stack) {
+      _logger.severe("Failed to complete iOS background upload", error, stack);
+    } finally {
+      await _cleanup();
     }
-
-    await _cleanup();
-
-    sw.stop();
-    _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
   }
 
   @override
   Future<void> cancel() async {
     _logger.warning("Background upload cancelled");
-    await _cleanup();
+    try {
+      await _cleanup();
+    } catch (error, stack) {
+      debugPrint('Failed to cleanup background worker: $error with stack: $stack');
+    }
   }
 
   Future<void> _cleanup() async {
@@ -159,13 +183,21 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       return;
     }
 
-    _isCleanedUp = true;
-    await _ref.read(backgroundSyncProvider).cancel();
-    await _ref.read(backgroundSyncProvider).cancelLocal();
-    await _isar.close();
-    await _drift.close();
-    await _driftLogger.close();
-    _ref.dispose();
+    try {
+      _isCleanedUp = true;
+      _logger.info("Cleaning up background worker");
+      await _ref.read(backgroundSyncProvider).cancel();
+      await _ref.read(backgroundSyncProvider).cancelLocal();
+      if (_isar.isOpen) {
+        await _isar.close();
+      }
+      await _drift.close();
+      await _driftLogger.close();
+      _ref.dispose();
+      debugPrint("Background worker cleaned up");
+    } catch (error, stack) {
+      debugPrint('Failed to cleanup background worker: $error with stack: $stack');
+    }
   }
 
   Future<void> _handleBackup({bool processBulk = true}) async {
@@ -221,8 +253,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 }
 
+/// Native entry invoked from the background worker. If renaming or moving this to a different
+/// library, make sure to update the entry points and URI in native workers as well
 @pragma('vm:entry-point')
-Future<void> _backgroundSyncNativeEntrypoint() async {
+Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
