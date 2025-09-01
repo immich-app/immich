@@ -44,19 +44,17 @@ class ViewerBottomBar extends ConsumerWidget {
     /****
      * 14/08/2025
      * 1. on user makes decision - asset don`t disappear (but sometimes works)
-     * 2. toast showing not working - widget mounted == false
-     * 3. buttons should have different design (stile+icon)
-     * 4. pendingChecksums.length!=TimelineService.trashSyncReview(String userId).length after what?
+     * 2. should buttons have a different design (stile+icon) ?
+     * 3. pendingChecksums.length!=TimelineService.trashSyncReview(String userId).length after what?
      *****/
-    debugPrint(
-      'asset.checksum: ${asset.checksum}, isWaitingForApproval: $isWaitingForSyncApproval, pendingChecksums: ${pendingChecksums.length}',
-    );
+
     if (!showControls) {
       opacity = 0;
     }
 
     final actions = <Widget>[
       if (isWaitingForSyncApproval) ...[
+        const Text('Sync moving to trash:'),
         const DenyMoveToTrashActionButton(source: ActionSource.viewer),
         const AllowMoveToTrashActionButton(source: ActionSource.viewer),
       ] else ...[
