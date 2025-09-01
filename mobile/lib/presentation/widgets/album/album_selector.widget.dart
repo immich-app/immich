@@ -44,7 +44,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   List<RemoteAlbum> albums = [];
 
   AlbumFilter filter = AlbumFilter(query: "", mode: QuickFilterMode.all);
-  AlbumSort sort = AlbumSort(mode: RemoteAlbumSortMode.lastModified);
+  AlbumSort sort = AlbumSort(mode: RemoteAlbumSortMode.lastModified, isReverse: true);
 
   @override
   void initState() {
