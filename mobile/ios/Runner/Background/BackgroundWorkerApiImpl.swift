@@ -95,9 +95,22 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   }
   
   private static func handleBackgroundRefresh(task: BGAppRefreshTask, taskType: BackgroundTaskType) {
-    scheduleRefreshUpload()
-    // Restrict the refresh task to run only for a maximum of 20 seconds
-    runBackgroundWorker(task: task, taskType: taskType, maxSeconds: 20)
+    let maxSeconds: Int?
+    
+    switch taskType {
+    case .localSync:
+      maxSeconds = 15
+      scheduleLocalSync()
+    case .refreshUpload:
+      maxSeconds = 20
+      scheduleRefreshUpload()
+    case .processingUpload:
+      print("Unexpected background refresh task encountered")
+      return;
+    }
+
+    // Restrict the refresh task to run only for a maximum of (maxSeconds) seconds
+    runBackgroundWorker(task: task, taskType: taskType, maxSeconds: maxSeconds)
   }
   
   private static func handleBackgroundProcessing(task: BGProcessingTask) {
