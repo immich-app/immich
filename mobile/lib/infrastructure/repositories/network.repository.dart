@@ -7,9 +7,18 @@ import 'package:path_provider/path_provider.dart';
 
 class NetworkRepository {
   static late Directory _cachePath;
+  static final _clients = <String, http.Client>{};
 
   static Future<void> init() async {
     _cachePath = await getTemporaryDirectory();
+  }
+
+  static void reset() {
+    Future.microtask(init);
+    for (final client in _clients.values) {
+      client.close();
+    }
+    _clients.clear();
   }
 
   const NetworkRepository();
@@ -21,11 +30,16 @@ class NetworkRepository {
     required int maxConnections,
     required CacheMode cacheMode,
   }) {
+    final cachedClient = _clients[directoryName];
+    if (cachedClient != null) {
+      return cachedClient;
+    }
+
     final directory = Directory('${_cachePath.path}/$directoryName');
     directory.createSync(recursive: true);
     if (Platform.isAndroid) {
       final engine = CronetEngine.build(cacheMode: cacheMode, cacheMaxSize: diskCapacity, storagePath: directory.path);
-      return CronetClient.fromCronetEngine(engine, closeEngine: true);
+      return _clients[directoryName] = CronetClient.fromCronetEngine(engine, closeEngine: true);
     }
 
     final config = URLSessionConfiguration.defaultSessionConfiguration()
@@ -35,6 +49,6 @@ class NetworkRepository {
         memoryCapacity: memoryCapacity,
         directory: directory.uri,
       );
-    return CupertinoClient.fromSessionConfiguration(config);
+    return _clients[directoryName] = CupertinoClient.fromSessionConfiguration(config);
   }
 }

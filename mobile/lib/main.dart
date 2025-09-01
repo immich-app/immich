@@ -240,6 +240,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   }
 
   @override
+  void reassemble() {
+    if (kDebugMode) {
+      NetworkRepository.reset();
+    }
+    super.reassemble();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
     final immichTheme = ref.watch(immichThemeProvider);
