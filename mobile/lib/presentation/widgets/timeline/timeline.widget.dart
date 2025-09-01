@@ -19,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -256,6 +257,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
@@ -342,9 +344,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 ),
               },
               child: TimelineDragRegion(
-                onStart: _setDragStartIndex,
+                onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
                 onAssetEnter: _handleDragAssetEnter,
-                onEnd: _stopDrag,
+                onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
                 onScroll: _dragScroll,
                 onScrollStart: () {
                   // Minimize the bottom sheet when drag selection starts

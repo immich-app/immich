@@ -7,14 +7,14 @@ import { get } from 'svelte/store';
  * Convert time like `01:02:03.456` to seconds.
  */
 export function timeToSeconds(time: string) {
-  const parts = time.split(':');
-  parts[2] = parts[2].split('.').slice(0, 2).join('.');
+  if (!time || time === '0') {
+    return 0;
+  }
 
-  const [hours, minutes, seconds] = parts.map(Number);
+  const seconds = Duration.fromISOTime(time).as('seconds');
 
-  return Duration.fromObject({ hours, minutes, seconds }).as('seconds');
+  return Number.isNaN(seconds) ? 0 : seconds;
 }
-
 export function parseUtcDate(date: string) {
   return DateTime.fromISO(date, { zone: 'UTC' }).toUTC();
 }
@@ -85,3 +85,33 @@ export const getAlbumDateRange = (album: { startDate?: string; endDate?: string 
  */
 export const asLocalTimeISO = (date: DateTime<true>) =>
   (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();
+
+/**
+ * Creates a date range for filtering assets based on year, month, and day parameters
+ */
+export const buildDateRangeFromYearMonthAndDay = (year: number, month?: number, day?: number) => {
+  const baseDate = DateTime.fromObject({
+    year,
+    month: month || 1,
+    day: day || 1,
+  });
+
+  let from: DateTime;
+  let to: DateTime;
+
+  if (day) {
+    from = baseDate.startOf('day');
+    to = baseDate.plus({ days: 1 }).startOf('day');
+  } else if (month) {
+    from = baseDate.startOf('month');
+    to = baseDate.plus({ months: 1 }).startOf('month');
+  } else {
+    from = baseDate.startOf('year');
+    to = baseDate.plus({ years: 1 }).startOf('year');
+  }
+
+  return {
+    from: from.toISO() || undefined,
+    to: to.toISO() || undefined,
+  };
+};

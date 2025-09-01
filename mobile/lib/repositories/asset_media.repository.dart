@@ -104,15 +104,18 @@ class AssetMediaRepository {
       return 0;
     }
 
-    final result = await Share.shareXFiles(downloadedXFiles);
-
-    for (var file in downloadedXFiles) {
-      try {
-        await File(file.path).delete();
-      } catch (e) {
-        _log.warning("Failed to delete temporary file: ${file.path}", e);
+    // we dont want to await the share result since the
+    // "preparing" dialog will not disappear unti
+    Share.shareXFiles(downloadedXFiles).then((result) async {
+      for (var file in downloadedXFiles) {
+        try {
+          await File(file.path).delete();
+        } catch (e) {
+          _log.warning("Failed to delete temporary file: ${file.path}", e);
+        }
       }
-    }
-    return result.status == ShareResultStatus.success ? downloadedXFiles.length : 0;
+    });
+
+    return downloadedXFiles.length;
   }
 }
