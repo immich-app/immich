@@ -43,7 +43,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: processingUploadTaskID);
   }
 
-  public static func registerBackgroundProcessing() {
+  public static func registerBackgroundWorkers() {
       BGTaskScheduler.shared.register(
           forTaskWithIdentifier: processingUploadTaskID, using: nil) { task in
           if task is BGProcessingTask {
