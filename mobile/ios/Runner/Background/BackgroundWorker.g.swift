@@ -74,7 +74,7 @@ class BackgroundWorkerPigeonCodec: FlutterStandardMessageCodec, @unchecked Senda
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerFgHostApi {
   func enableSyncWorker() throws
-  func enableUploadWorker(callbackHandle: Int64) throws
+  func enableUploadWorker() throws
   func disableUploadWorker() throws
 }
 
@@ -99,11 +99,9 @@ class BackgroundWorkerFgHostApiSetup {
     }
     let enableUploadWorkerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableUploadWorker\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      enableUploadWorkerChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let callbackHandleArg = args[0] as! Int64
+      enableUploadWorkerChannel.setMessageHandler { _, reply in
         do {
-          try api.enableUploadWorker(callbackHandle: callbackHandleArg)
+          try api.enableUploadWorker()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
@@ -130,6 +128,7 @@ class BackgroundWorkerFgHostApiSetup {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerBgHostApi {
   func onInitialized() throws
+  func close() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -150,6 +149,19 @@ class BackgroundWorkerBgHostApiSetup {
       }
     } else {
       onInitializedChannel.setMessageHandler(nil)
+    }
+    let closeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.close\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      closeChannel.setMessageHandler { _, reply in
+        do {
+          try api.close()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      closeChannel.setMessageHandler(nil)
     }
   }
 }
