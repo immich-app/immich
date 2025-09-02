@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
@@ -211,6 +211,14 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   @Type(() => Number)
   @Optional()
   page?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(2)
+  @Type(() => Number)
+  @Optional()
+  @ApiProperty({ type: 'number', required: false, description: 'Maximum distance threshold for filtering results (0-2, lower is more similar)' })
+  maxDistance?: number;
 }
 
 export class SearchPlacesDto {

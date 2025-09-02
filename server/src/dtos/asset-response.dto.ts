@@ -93,6 +93,11 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
 
   @PropertyLifecycle({ deprecatedAt: 'v1.113.0' })
   resized?: boolean;
+
+  @ApiProperty({ type: 'number', required: false })
+  distance?: number;
+  @ApiProperty({ type: 'number', required: false })
+  similarity?: number;
 }
 
 export type MapAsset = {
@@ -228,5 +233,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     hasMetadata: true,
     duplicateId: entity.duplicateId,
     resized: true,
+    distance: (entity as any).distance,
+    similarity: (entity as any).similarity,
   };
 }

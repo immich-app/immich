@@ -999,6 +999,7 @@ export type SmartSearchDto = {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
+    maxDistance?: number;
     createdAfter?: string;
     createdBefore?: string;
     deviceId?: string;

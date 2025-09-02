@@ -127,7 +127,9 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
-  SearchTagOptions;
+  SearchTagOptions & {
+    maxDistance?: number;
+  };
 
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 
@@ -282,14 +284,39 @@ export class SearchRepository {
 
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
-      const items = await searchAssetBuilder(trx, options)
+      
+      let query = searchAssetBuilder(trx, options)
         .selectAll('asset')
+        .select(sql<number>`smart_search.embedding <=> ${options.embedding}`.as('distance'))
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
-        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`);
+      
+      // Apply distance filter if maxDistance is specified
+      if (options.maxDistance !== undefined && options.maxDistance >= 0) {
+        query = query.where(sql`smart_search.embedding <=> ${options.embedding}`, '<=', options.maxDistance);
+      }
+      
+      const items = await query
         .limit(pagination.size + 1)
         .offset((pagination.page - 1) * pagination.size)
         .execute();
-      return paginationHelper(items, pagination.size);
+      
+      // Map items to include distance and similarity in the asset response
+      const itemsWithDistance = items.map((item: any) => {
+        // Extract distance value from the result
+        const distance = item.distance;
+        // Remove distance from the raw result to avoid TypeScript issues
+        const { distance: _, ...assetData } = item;
+        
+        // Return asset with distance and similarity properties
+        return {
+          ...assetData,
+          distance,
+          similarity: distance !== undefined ? 1 - distance : undefined
+        };
+      });
+      
+      return paginationHelper(itemsWithDistance, pagination.size);
     });
   }
 

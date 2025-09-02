@@ -68,7 +68,7 @@
 
   const assetInteraction = new AssetInteraction();
 
-  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
+  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'maxDistance'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
