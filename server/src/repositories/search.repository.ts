@@ -77,6 +77,10 @@ export interface SearchExifOptions {
   state?: string | null;
   description?: string | null;
   rating?: number | null;
+  minHeight?: number | null;
+  maxHeight?: number | null;
+  minWidth?: number | null;
+  maxWidth?: number | null;
 }
 
 export interface SearchEmbeddingOptions {
