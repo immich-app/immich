@@ -348,7 +348,7 @@ class UploadService {
     final deviceId = Store.get(StoreKey.deviceId);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
     final stats = await file.stat();
-    final fileCreatedAt = stats.changed;
+    final fileCreatedAt = stats.modified;
     final fileModifiedAt = stats.modified;
     final fieldsMap = {
       'filename': originalFileName ?? filename,
