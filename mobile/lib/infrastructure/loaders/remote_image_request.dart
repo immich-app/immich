@@ -2,7 +2,7 @@ part of 'image_request.dart';
 
 class RemoteImageRequest extends ImageRequest {
   static final _client = const NetworkRepository().getHttpClient(
-    directoryName: 'thumbnails',
+    'thumbnails',
     diskCapacity: kThumbnailDiskCacheSize,
     memoryCapacity: 0,
     maxConnections: 16,
