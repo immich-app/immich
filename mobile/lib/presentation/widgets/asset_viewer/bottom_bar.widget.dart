@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -54,7 +55,7 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final actions = <Widget>[
       if (isWaitingForSyncApproval) ...[
-        const Text('Sync moving to trash:'),
+        const Text("move_local_asset_to_trash").tr(),
         const DenyMoveToTrashActionButton(source: ActionSource.viewer),
         const AllowMoveToTrashActionButton(source: ActionSource.viewer),
       ] else ...[

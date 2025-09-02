@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/trash_sync.model.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -10,7 +11,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
   const DriftTrashSyncRepository(this._db) : super(_db);
 
-  Future<void> insertIfNotExists(Iterable<({String localAssetId, String checksum})> itemsToReview) async {
+  Future<void> insertIfNotExists(Iterable<ReviewItem> itemsToReview) async {
     if (itemsToReview.isEmpty) {
       return Future.value();
     }

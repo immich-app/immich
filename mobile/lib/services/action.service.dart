@@ -242,10 +242,6 @@ class ActionService {
   }
 
   Future<bool> resolveRemoteTrash(Iterable<String> remoteChecksums, {required bool allow}) async {
-    await _trashSyncService.resolveRemoteTrash(remoteChecksums, allow: allow);
-    if (allow) {
-      return await _trashSyncService.applyRemoteTrash(remoteChecksums, true);
-    }
-    return true;
+    return await _trashSyncService.resolveRemoteTrash(remoteChecksums, allow: allow);
   }
 }

@@ -9,14 +9,7 @@ import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
 
 typedef TrashSyncItem = ({String checksum, DateTime? deletedAt});
-
-///
-///     When a photo is moved to the trash on the server it should pop up a notification asking the user
-///     to review out-of-sync changes. It should then allow you to sync all photo trash events or review
-///     which photo trash events to sync by showing the photos in a UI similar to the main timeline where
-///     you can select which photos to trash
-///
-///
+typedef ReviewItem = ({String localAssetId, String checksum});
 
 class TrashSyncService {
   final AppSettingsService _appSettingsService;
@@ -26,7 +19,7 @@ class TrashSyncService {
   final StorageRepository _storageRepository;
   final DriftTrashSyncRepository _trashSyncRepository;
   final Platform _platform;
-  final Logger _logger = Logger('TrashService');
+  final Logger _logger = Logger('TrashSyncService');
 
   TrashSyncService({
     required AppSettingsService appSettingsService,
@@ -43,10 +36,27 @@ class TrashSyncService {
        _trashSyncRepository = trashSyncRepository,
        _platform = const LocalPlatform();
 
-  Future<void> handleRemoteChanges(Iterable<TrashSyncItem> syncItems) async {
-    if (!_platform.isAndroid || !_appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
-      return Future.value();
+  bool get isServiceEnabled => isAutoSyncMode || isReviewMode;
+
+  bool get isAutoSyncMode =>
+      _platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid);
+
+  bool get isReviewMode =>
+      _platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
+
+  Stream<int> watchPendingApprovalCount() => _trashSyncRepository.watchPendingApprovalCount();
+
+  Stream<Set<String>> watchPendingApprovalChecksums() => _trashSyncRepository.watchPendingApprovalChecksums();
+
+  Future<bool> resolveRemoteTrash(Iterable<String> remoteChecksums, {required bool allow}) async {
+    await _trashSyncRepository.updateApproves(remoteChecksums, allow);
+    if (allow) {
+      return await _applyRemoteTrash(remoteChecksums, true);
     }
+    return true;
+  }
+
+  Future<void> handleRemoteChanges(Iterable<TrashSyncItem> syncItems) async {
     final trashedAssetsChecksums = <String>[];
     final modifiedAssetsChecksums = <String>[];
     for (var syncItem in syncItems) {
@@ -56,130 +66,61 @@ class TrashSyncService {
         modifiedAssetsChecksums.add(syncItem.checksum);
       }
     }
-    await _applyRemoteTrashToLocal(trashedAssetsChecksums);
-    await _applyRemoteRestoreToLocal(modifiedAssetsChecksums);
+    await _applyRemoteTrash(trashedAssetsChecksums, isAutoSyncMode);
+    await _applyRemoteRestore(modifiedAssetsChecksums);
   }
 
-  Future<void> _applyRemoteTrashToLocal(Iterable<String> trashedAssetsChecksums) async {
+  Future<bool> _applyRemoteTrash(Iterable<String> trashedAssetsChecksums, bool allowToTrash) async {
     if (trashedAssetsChecksums.isEmpty) {
-      return Future.value();
+      return Future.value(false);
+    }
+    final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
+    if (localAssetsToTrash.isEmpty) {
+      return false;
+    }
+    if (allowToTrash) {
+      return await _applyRemoteTrashToLocal(localAssetsToTrash);
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
-      if (localAssetsToTrash.isNotEmpty) {
-        final mediaUrls = await Future.wait(
-          localAssetsToTrash.map(
-            (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
-          ),
-        );
-        _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-        await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-      }
+      await _applyRemoteTrashToReview(localAssetsToTrash);
+      return true;
     }
   }
 
-  Future<void> _applyRemoteRestoreToLocal(Iterable<String> modifiedAssetsChecksums) async {
-    if (modifiedAssetsChecksums.isEmpty) {
-      return Future.value();
-    } else {
-      final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(
-        modifiedAssetsChecksums,
-        isTrashed: true,
+  Future<bool> _applyRemoteTrashToLocal(List<LocalAsset> localAssetsToTrash) async {
+    final mediaUrls = await Future.wait(
+      localAssetsToTrash.map(
+        (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
+      ),
+    );
+    _logger.info("Moving assets to trash: ${mediaUrls.join(", ")}");
+    if (mediaUrls.isEmpty) {
+      return false;
+    }
+    return await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+  }
+
+  Future<void> _applyRemoteTrashToReview(List<LocalAsset> localAssetsToTrash) async {
+    final itemsToReview = localAssetsToTrash
+        .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
+        .where((la) => la.checksum.isNotEmpty);
+    _logger.info("Apply remote trash action to review for: $itemsToReview");
+    return _trashSyncRepository.insertIfNotExists(itemsToReview);
+  }
+
+  Future<void> _applyRemoteRestore(Iterable<String> modifiedAssetsChecksums) async {
+    final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(modifiedAssetsChecksums, isTrashed: true);
+    if (remoteAssetsToRestore.where((e) => e.checksum != null).isEmpty) {
+      return;
+    }
+    if (isAutoSyncMode) {
+      _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
+      await Future.wait(
+        remoteAssetsToRestore.map((asset) => _localFilesManager.restoreFromTrash(asset.name, asset.type.index)),
       );
-      if (remoteAssetsToRestore.isNotEmpty) {
-        _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
-        await Future.wait(
-          remoteAssetsToRestore.map((asset) => _localFilesManager.restoreFromTrash(asset.name, asset.type.index)),
-        );
-      }
+    } else {
+      final checksums = remoteAssetsToRestore.map((e) => e.checksum).nonNulls;
+      _logger.info("Clear unapproved trash sync for: $checksums");
+      await _trashSyncRepository.deleteUnapproved(checksums);
     }
   }
-
-  Future<void> resolveRemoteTrash(Iterable<String> checksums, {required bool allow}) async {
-    await _trashSyncRepository.updateApproves(checksums, allow);
-  }
-
-  Stream<int> watchPendingApprovalCount() => _trashSyncRepository.watchPendingApprovalCount();
-
-  // Stream<bool> watchIsApprovalPending(String checksum) => _trashSyncRepository.watchIsApprovalPending(checksum);
-
-  Stream<Set<String>> watchPendingApprovalChecksums() => _trashSyncRepository.watchPendingApprovalChecksums();
-
-  bool get isServiceEnabled => isAutoSyncMode || isReviewMode;
-
-  bool get isAutoSyncMode =>
-      _platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid);
-
-  bool get isReviewMode =>
-      _platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
 }
-
-//code for resolve from v2 branch
-// Future<void> handleRemoteChanges(Iterable<({String checksum, DateTime? deletedAt})> syncItems) async {
-//   final trashedAssetsChecksums = syncItems
-//       .where((item) => item.deletedAt != null)
-//       .map((syncItem) => syncItem.checksum);
-//   if (trashedAssetsChecksums.isNotEmpty) {
-//     applyRemoteTrash(trashedAssetsChecksums, isAutoSyncMode);
-//   }
-//   final modifiedAssetsChecksums = syncItems
-//       .where((item) => item.deletedAt == null)
-//       .map((syncItem) => syncItem.checksum);
-//   if (modifiedAssetsChecksums.isNotEmpty) {
-//     await applyRemoteRestore(modifiedAssetsChecksums);
-//   }
-// }
-//
-// Future<bool> applyRemoteTrash(Iterable<String> trashedAssetsChecksums, bool allowToTrash) async {
-//   final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
-//   if (localAssetsToTrash.isEmpty) {
-//     return false;
-//   }
-//   if (allowToTrash) {
-//     return await applyRemoteTrashToLocal(localAssetsToTrash);
-//   } else {
-//     await applyRemoteTrashToReview(localAssetsToTrash);
-//   }
-//   return true;
-// }
-//
-// Future<bool> applyRemoteTrashToLocal(List<LocalAsset> localAssetsToTrash) async {
-//   final mediaUrls = await Future.wait(
-//     localAssetsToTrash.map(
-//           (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
-//     ),
-//   );
-//   _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-//   return await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-// }
-//
-// Future<void> applyRemoteTrashToReview(List<LocalAsset> localAssetsToTrash) async {
-//   final itemsToReview = localAssetsToTrash.map((la) => (localAssetId: la.id, checksum: la.checksum ?? ''));
-//   return _trashSyncRepository.insertIfNotExists(itemsToReview);
-// }
-//
-// Future<void> applyRemoteRestore(Iterable<String> modifiedAssetsChecksums) async {
-//   final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(modifiedAssetsChecksums, isTrashed: true);
-//   if (isAutoSyncMode) {
-//     await applyRemoteRestoreToLocal(remoteAssetsToRestore);
-//   } else {
-//     await applyRemoteRestoreToReview(remoteAssetsToRestore);
-//   }
-// }
-//
-// Future<void> applyRemoteRestoreToLocal(List<RemoteAsset> remoteAssetsToRestore) async {
-//   if (remoteAssetsToRestore.isEmpty) {
-//     return Future.value();
-//   }
-//   _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
-//   await Future.wait(
-//     remoteAssetsToRestore.map((asset) => _localFilesManager.restoreFromTrash(asset.name, asset.type.index)),
-//   );
-// }
-//
-// Future<void> applyRemoteRestoreToReview(List<RemoteAsset> remoteAssetsToRestore) async {
-//   final remoteChecksumsToRestore = remoteAssetsToRestore.map((e) => e.checksum).nonNulls;
-//   if (remoteChecksumsToRestore.isEmpty) {
-//     return Future.value();
-//   }
-//   return _trashSyncRepository.deleteUnapproved(remoteAssetsToRestore.map((e) => e.checksum).nonNulls);
-// }

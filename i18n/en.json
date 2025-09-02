@@ -1339,6 +1339,7 @@
   "monthly_title_text_date_format": "MMMM y",
   "more": "More",
   "move": "Move",
+  "move_local_asset_to_trash": "Move the local copy to trash?",
   "move_off_locked_folder": "Move out of locked folder",
   "move_to_lock_folder_action_prompt": "{count} added to the locked folder",
   "move_to_locked_folder": "Move to locked folder",
