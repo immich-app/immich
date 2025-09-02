@@ -940,6 +940,67 @@
         "description": "This endpoint requires the `album.create` permission."
       }
     },
+    "/albums/assets": {
+      "put": {
+        "operationId": "addAssetsToAlbums",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumsAddAssetsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumsAddAssetsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Albums"
+        ],
+        "x-immich-permission": "albumAsset.create",
+        "description": "This endpoint requires the `albumAsset.create` permission."
+      }
+    },
     "/albums/statistics": {
       "get": {
         "operationId": "getAlbumStatistics",
@@ -1488,6 +1549,38 @@
         "description": "This endpoint requires the `apiKey.create` permission."
       }
     },
+    "/api-keys/me": {
+      "get": {
+        "operationId": "getMyApiKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIKeyResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "API Keys"
+        ]
+      }
+    },
     "/api-keys/{id}": {
       "delete": {
         "operationId": "deleteApiKey",
@@ -1762,7 +1855,7 @@
     },
     "/assets/bulk-upload-check": {
       "post": {
-        "description": "Checks if assets exist by checksums",
+        "description": "Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1801,7 +1894,8 @@
         "summary": "checkBulkUpload",
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.upload"
       }
     },
     "/assets/device/{deviceId}": {
@@ -2150,6 +2244,203 @@
         ],
         "x-immich-permission": "asset.update",
         "description": "This endpoint requires the `asset.update` permission."
+      }
+    },
+    "/assets/{id}/metadata": {
+      "get": {
+        "operationId": "getAssetMetadata",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
+      },
+      "put": {
+        "operationId": "updateAssetMetadata",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMetadataUpsertDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.update",
+        "description": "This endpoint requires the `asset.update` permission."
+      }
+    },
+    "/assets/{id}/metadata/{key}": {
+      "delete": {
+        "operationId": "deleteAssetMetadata",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/AssetMetadataKey"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.update",
+        "description": "This endpoint requires the `asset.update` permission."
+      },
+      "get": {
+        "operationId": "getAssetMetadataByKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "$ref": "#/components/schemas/AssetMetadataKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
       }
     },
     "/assets/{id}/original": {
@@ -9499,7 +9790,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.138.0",
+    "version": "1.140.1",
     "contact": {}
   },
   "tags": [],
@@ -9888,6 +10179,47 @@
           "viewer"
         ],
         "type": "string"
+      },
+      "AlbumsAddAssetsDto": {
+        "properties": {
+          "albumIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "albumIds",
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "AlbumsAddAssetsResponseDto": {
+        "properties": {
+          "error": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BulkIdErrorReason"
+              }
+            ]
+          },
+          "success": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "success"
+        ],
+        "type": "object"
       },
       "AlbumsResponse": {
         "properties": {
@@ -10481,6 +10813,12 @@
             "format": "uuid",
             "type": "string"
           },
+          "metadata": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataUpsertItemDto"
+            },
+            "type": "array"
+          },
           "sidecarData": {
             "format": "binary",
             "type": "string"
@@ -10498,7 +10836,8 @@
           "deviceAssetId",
           "deviceId",
           "fileCreatedAt",
-          "fileModifiedAt"
+          "fileModifiedAt",
+          "metadata"
         ],
         "type": "object"
       },
@@ -10573,6 +10912,69 @@
         ],
         "type": "string"
       },
+      "AssetMetadataKey": {
+        "enum": [
+          "mobile-app"
+        ],
+        "type": "string"
+      },
+      "AssetMetadataResponseDto": {
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "updatedAt",
+          "value"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataUpsertDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataUpsertItemDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "AssetMetadataUpsertItemDto": {
+        "properties": {
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
       "AssetOrder": {
         "enum": [
           "asc",
@@ -10584,6 +10986,12 @@
         "properties": {
           "checksum": {
             "description": "base64 encoded sha1 hash",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "The UTC timestamp when the asset was originally uploaded to Immich.",
+            "example": "2024-01-15T20:30:00.000Z",
+            "format": "date-time",
             "type": "string"
           },
           "deviceAssetId": {
@@ -10721,6 +11129,7 @@
         },
         "required": [
           "checksum",
+          "createdAt",
           "deviceAssetId",
           "deviceId",
           "duration",
@@ -10844,6 +11253,15 @@
           }
         },
         "type": "object"
+      },
+      "BulkIdErrorReason": {
+        "enum": [
+          "duplicate",
+          "no_permission",
+          "not_found",
+          "unknown"
+        ],
+        "type": "string"
       },
       "BulkIdResponseDto": {
         "properties": {
@@ -14794,6 +15212,48 @@
         ],
         "type": "object"
       },
+      "SyncAssetMetadataDeleteV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          }
+        },
+        "required": [
+          "assetId",
+          "key"
+        ],
+        "type": "object"
+      },
+      "SyncAssetMetadataV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "key": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMetadataKey"
+              }
+            ]
+          },
+          "value": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "assetId",
+          "key",
+          "value"
+        ],
+        "type": "object"
+      },
       "SyncAssetV1": {
         "properties": {
           "checksum": {
@@ -14964,6 +15424,8 @@
           "AssetV1",
           "AssetDeleteV1",
           "AssetExifV1",
+          "AssetMetadataV1",
+          "AssetMetadataDeleteV1",
           "PartnerV1",
           "PartnerDeleteV1",
           "PartnerAssetV1",
@@ -15223,6 +15685,7 @@
           "AlbumAssetExifsV1",
           "AssetsV1",
           "AssetExifsV1",
+          "AssetMetadataV1",
           "AuthUsersV1",
           "MemoriesV1",
           "MemoryToAssetsV1",

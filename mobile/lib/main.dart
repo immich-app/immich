@@ -12,11 +12,13 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
@@ -24,6 +26,7 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
@@ -41,18 +44,21 @@ import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-  final db = await Bootstrap.initIsar();
-  final logDb = DriftLogger();
-  await Bootstrap.initDomain(db, logDb);
+  final (isar, drift, logDb) = await Bootstrap.initDB();
+  await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
-  await migrateDatabaseIfNeeded(db);
+  await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
-      overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)],
+      overrides: [
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
+        driftProvider.overrideWith(driftOverride(drift)),
+      ],
       child: const MainWidget(),
     ),
   );
@@ -94,7 +100,9 @@ Future<void> initApp() async {
   // Initialize the file downloader
   await FileDownloader().configure(
     // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-    globalConfig: (Config.holdingQueue, (6, 6, 3)),
+
+    // On Android, if files are larger than 256MB, run in foreground service
+    globalConfig: [(Config.holdingQueue, (6, 6, 3)), (Config.runInForegroundIfFileLargerThan, 256)],
   );
 
   await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
@@ -161,29 +169,6 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     await ref.read(localNotificationService).setup();
   }
 
-  void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotificationForGroup(
-      kDownloadGroupImage,
-      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
-      progressBar: true,
-    );
-
-    FileDownloader().configureNotificationForGroup(
-      kDownloadGroupVideo,
-      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
-      progressBar: true,
-    );
-
-    FileDownloader().configureNotificationForGroup(
-      kManualUploadGroup,
-      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
-      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
-      progressBar: true,
-    );
-  }
-
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
@@ -191,13 +176,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, isColdStart);
+      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
 
       return proposedRoute;
     }
 
     if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, isColdStart);
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, ref, isColdStart);
 
       return proposedRoute;
     }
@@ -210,7 +195,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     super.didChangeDependencies();
     Intl.defaultLocale = context.locale.toLanguageTag();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _configureFileDownloaderNotifications();
+      configureFileDownloaderNotifications();
     });
   }
 
@@ -220,7 +205,16 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     initApp().then((_) => debugPrint("App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+      if (Store.isBetaTimelineEnabled) {
+        ref.read(driftBackgroundUploadFgService).enableSyncService();
+        if (ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup)) {
+          ref.read(backgroundServiceProvider).disableService();
+          ref.read(driftBackgroundUploadFgService).enableUploadService();
+        }
+      } else {
+        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+        ref.read(driftBackgroundUploadFgService).disableUploadService();
+      }
     });
 
     ref.read(shareIntentUploadProvider.notifier).init();

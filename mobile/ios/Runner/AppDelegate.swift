@@ -19,12 +19,12 @@ import UIKit
     }
 
     GeneratedPluginRegistrant.register(with: self)
-    BackgroundServicePlugin.registerBackgroundProcessing()
-
-    BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
-    
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
-    NativeSyncApiSetup.setUp(binaryMessenger: controller.binaryMessenger, api: NativeSyncApiImpl())
+    AppDelegate.registerPlugins(binaryMessenger: controller.binaryMessenger)
+    BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
+
+    BackgroundServicePlugin.registerBackgroundProcessing()
+    BackgroundWorkerApiImpl.registerBackgroundProcessing()
 
     BackgroundServicePlugin.setPluginRegistrantCallback { registry in
       if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
@@ -49,5 +49,11 @@ import UIKit
     }
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+  
+  public static func registerPlugins(binaryMessenger: FlutterBinaryMessenger) {
+    NativeSyncApiSetup.setUp(binaryMessenger: binaryMessenger, api: NativeSyncApiImpl())
+    ThumbnailApiSetup.setUp(binaryMessenger: binaryMessenger, api: ThumbnailApiImpl())
+    BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: BackgroundWorkerApiImpl())
   }
 }

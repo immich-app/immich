@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -35,15 +34,15 @@ Cancelable<T?> runInIsolateGentle<T>({
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     DartPluginRegistrant.ensureInitialized();
 
-    final db = await Bootstrap.initIsar();
-    final logDb = DriftLogger();
-    await Bootstrap.initDomain(db, logDb, shouldBufferLogs: false);
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false);
     final ref = ProviderContainer(
       overrides: [
         // TODO: Remove once isar is removed
-        dbProvider.overrideWithValue(db),
-        isarProvider.overrideWithValue(db),
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
         cancellationProvider.overrideWithValue(cancelledChecker),
+        driftProvider.overrideWith(driftOverride(drift)),
       ],
     );
 
@@ -58,7 +57,7 @@ Cancelable<T?> runInIsolateGentle<T>({
       log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
     } finally {
       try {
-        await LogService.I.flush();
+        await LogService.I.dispose();
         await logDb.close();
         await ref.read(driftProvider).close();
 
@@ -73,8 +72,8 @@ Cancelable<T?> runInIsolateGentle<T>({
         }
 
         ref.dispose();
-      } catch (error) {
-        debugPrint("Error closing resources in isolate: $error");
+      } catch (error, stack) {
+        debugPrint("Error closing resources in isolate: $error, $stack");
       } finally {
         ref.dispose();
         // Delay to ensure all resources are released

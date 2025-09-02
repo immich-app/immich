@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import { IsEmail, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 import { User, UserAdmin } from 'src/database';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
@@ -91,7 +91,7 @@ export class UserAdminCreateDto {
   storageLabel?: string | null;
 
   @Optional({ nullable: true })
-  @IsNumber()
+  @IsInt()
   @Min(0)
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
@@ -137,7 +137,7 @@ export class UserAdminUpdateDto {
   shouldChangePassword?: boolean;
 
   @Optional({ nullable: true })
-  @IsNumber()
+  @IsInt()
   @Min(0)
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
