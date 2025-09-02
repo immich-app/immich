@@ -5,6 +5,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
@@ -14,7 +15,6 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -23,6 +23,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -41,7 +42,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
-  final Logger _logger = Logger('BackgroundWorkerBgService');
+  final Logger _logger = Logger('BackgroundUploadBgService');
+  late final IsolateLockManager _lockManager;
 
   bool _isCleanedUp = false;
 
@@ -57,6 +59,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         driftProvider.overrideWith(driftOverride(drift)),
       ],
     );
+    _lockManager = IsolateLockManager(onCloseRequest: _cleanup);
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
@@ -81,10 +84,23 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await FileDownloader().trackTasks();
       configureFileDownloaderNotifications();
 
-      await _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
+      // Notify the host that the background upload service has been initialized and is ready to use
+      debugPrint("Acquiring background worker lock");
+      if (await _lockManager.acquireLock().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          _lockManager.cancel();
+          return false;
+        },
+      )) {
+        _logger.info("Acquired background worker lock");
+        await _backgroundHostApi.onInitialized();
+        return;
+      }
 
-      // Notify the host that the background worker service has been initialized and is ready to use
-      _backgroundHostApi.onInitialized();
+      _logger.warning("Failed to acquire background worker lock");
+      await _cleanup();
+      await _backgroundHostApi.close();
     } catch (error, stack) {
       _logger.severe("Failed to initialize background worker", error, stack);
       _backgroundHostApi.close();
@@ -160,7 +176,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await _drift.close();
       await _driftLogger.close();
       _ref.dispose();
-      debugPrint("Background worker cleaned up");
+      _lockManager.releaseLock();
+      _logger.info("Background worker resources cleaned up");
     } catch (error, stack) {
       debugPrint('Failed to cleanup background worker: $error with stack: $stack');
     }
@@ -223,6 +240,7 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
+  workerManager.init(dynamicSpawning: true);
   final (isar, drift, logDB) = await Bootstrap.initDB();
   await Bootstrap.initDomain(isar, drift, logDB, shouldBufferLogs: false);
   await BackgroundWorkerBgService(isar: isar, drift: drift, driftLogger: logDB).init();
