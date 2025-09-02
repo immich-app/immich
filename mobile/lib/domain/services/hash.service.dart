@@ -75,12 +75,6 @@ class HashService {
         continue;
       }
 
-      final fileExists = await file.exists();
-      if (!fileExists) {
-        _log.warning("File does not exist for asset ${asset.id}: ${asset.name}");
-        continue;
-      }
-
       bytesProcessed += await file.length();
       toHash.add(_AssetToPath(asset: asset, path: file.path));
 
