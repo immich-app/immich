@@ -1,3 +1,4 @@
+import { applyExternalTieBreaker, selectDefaultByCurrentHeuristic } from '$lib/utils/duplicate-selection';
 import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 import { sortBy } from 'lodash-es';
@@ -27,4 +28,27 @@ export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto |
 
   // Return the last asset in the list
   return duplicateAssets.pop();
+};
+
+export const suggestDuplicateWithPrefs = (
+  assets: AssetResponseDto[],
+  preferExternal: boolean,
+): AssetResponseDto | undefined => {
+  const base = suggestDuplicate(assets) ?? selectDefaultByCurrentHeuristic(assets);
+  return applyExternalTieBreaker(assets, base, preferExternal);
+};
+
+export const buildKeepSelectionForGroup = (
+  group: AssetResponseDto[],
+  preferExternal: boolean,
+): { id: string; action: 'keep' | 'trash' }[] => {
+  const keep = suggestDuplicateWithPrefs(group, preferExternal) ?? group[0];
+  return group.map((a) => ({ id: a.id, action: a.id === keep.id ? 'keep' : 'trash' }));
+};
+
+export const buildKeepSelectionForAll = (
+  groups: AssetResponseDto[][],
+  preferExternal: boolean,
+): { id: string; action: 'keep' | 'trash' }[] => {
+  return groups.flatMap((g) => buildKeepSelectionForGroup(g, preferExternal));
 };

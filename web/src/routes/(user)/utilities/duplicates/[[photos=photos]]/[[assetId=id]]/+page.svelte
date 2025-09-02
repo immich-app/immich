@@ -15,11 +15,14 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+  import { suggestDuplicateWithPrefs } from '$lib/utils/duplicate-utils';
+  import { preferExternalOnTie } from '$lib/stores/duplicate-preferences';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -43,6 +46,7 @@
     general: ExplainedShortcut[];
     actions: ExplainedShortcut[];
   }
+
   interface ExplainedShortcut {
     key: string[];
     action: string;
@@ -129,7 +133,10 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
+    const idsToKeep = duplicates
+      .map((group) => suggestDuplicateWithPrefs(group.assets, $preferExternalOnTie))
+      .map((asset) => asset?.id);
+
     const idsToDelete = duplicates.flatMap((group, i) =>
       group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
     );
@@ -225,6 +232,10 @@
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
+      <div class="hidden md:flex items-center me-3">
+        <SettingSwitch title="Prefer external" bind:checked={$preferExternalOnTie} />
+      </div>
+
       <Button
         leadingIcon={mdiTrashCanOutline}
         onclick={() => handleDeduplicateAll()}
