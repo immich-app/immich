@@ -4,11 +4,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class SyncApiRepository {
+  static final _client = const NetworkRepository().getHttpClient('api');
   final Logger _logger = Logger('SyncApiRepository');
   final ApiService _api;
   SyncApiRepository(this._api);
@@ -20,10 +22,8 @@ class SyncApiRepository {
   Future<void> streamChanges(
     Function(List<SyncEvent>, Function() abort) onData, {
     int batchSize = kSyncEventBatchSize,
-    http.Client? httpClient,
   }) async {
     final stopwatch = Stopwatch()..start();
-    final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
     final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
@@ -70,7 +70,7 @@ class SyncApiRepository {
     }
 
     try {
-      final response = await client.send(request);
+      final response = await _client.send(request);
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
@@ -102,7 +102,7 @@ class SyncApiRepository {
       _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
-      client.close();
+      _client.close();
     }
     stopwatch.stop();
     _logger.info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
