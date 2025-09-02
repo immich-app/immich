@@ -15,7 +15,7 @@ jobs:
     steps:
       - id: should_run
         run: echo "run=${{ github.event_name == 'issues' || github.event.discussion.category.name == 'Feature Request' }}" >> $GITHUB_OUTPUT
-  
+
   get_body:
     runs-on: ubuntu-latest
     needs: should_run
