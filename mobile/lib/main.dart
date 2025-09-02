@@ -121,6 +121,8 @@ Future<void> initApp() async {
       yield LicenseEntryWithLineBreaks([license.key], license.value);
     }
   });
+
+  await NetworkRepository.init();
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
@@ -174,7 +176,6 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
     await ref.read(localNotificationService).setup();
-    await NetworkRepository.init();
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
