@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -23,7 +24,6 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -83,6 +83,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
       await FileDownloader().trackTasks();
       configureFileDownloaderNotifications();
+      await _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
 
       // Notify the host that the background upload service has been initialized and is ready to use
       debugPrint("Acquiring background worker lock");
@@ -240,7 +241,6 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  workerManager.init(dynamicSpawning: true);
   final (isar, drift, logDB) = await Bootstrap.initDB();
   await Bootstrap.initDomain(isar, drift, logDB, shouldBufferLogs: false);
   await BackgroundWorkerBgService(isar: isar, drift: drift, driftLogger: logDB).init();

@@ -30,13 +30,16 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final lockManager = ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
 
     lockManager.requestHolderToClose();
-    lockManager.acquireLock().whenComplete(
-      () => ref
-          .read(authProvider.notifier)
-          .setOpenApiServiceEndpoint()
-          .then(logConnectionInfo)
-          .whenComplete(() => resumeSession()),
-    );
+    lockManager
+        .acquireLock()
+        .timeout(const Duration(seconds: 5))
+        .whenComplete(
+          () => ref
+              .read(authProvider.notifier)
+              .setOpenApiServiceEndpoint()
+              .then(logConnectionInfo)
+              .whenComplete(() => resumeSession()),
+        );
   }
 
   void logConnectionInfo(String? endpoint) {
