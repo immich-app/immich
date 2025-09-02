@@ -121,8 +121,6 @@ Future<void> initApp() async {
       yield LicenseEntryWithLineBreaks([license.key], license.value);
     }
   });
-
-  await NetworkRepository.init();
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
