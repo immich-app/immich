@@ -28,12 +28,12 @@ class NetworkRepository {
 
   const NetworkRepository();
 
-  http.Client getHttpClient({
-    required String directoryName,
-    required int diskCapacity,
-    required int memoryCapacity,
-    required int maxConnections,
-    required CacheMode cacheMode,
+  http.Client getHttpClient(
+    String directoryName, {
+    int diskCapacity = 100 << 20,
+    int memoryCapacity = 10 << 20,
+    int maxConnections = 6,
+    CacheMode cacheMode = CacheMode.disk,
   }) {
     final cachedClient = _clients[directoryName];
     if (cachedClient != null) {
