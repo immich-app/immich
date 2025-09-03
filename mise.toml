@@ -3,3 +3,8 @@ node = "22.18.0"
 flutter = "3.32.8"
 pnpm = "10.14.0"
 dart = "3.8.2"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.31.4"
+bin = "dcm"
+postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
