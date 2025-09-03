@@ -1,8 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -70,21 +68,5 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<int> getHashedCount() {
     return _db.managers.localAssetEntity.filter((e) => e.checksum.isNull().not()).count();
-  }
-
-  Future<List<LocalAlbum>> getAlbumsForAsset(String assetId) async {
-    final query =
-        _db.localAlbumEntity.select().join([
-            innerJoin(
-              _db.localAlbumAssetEntity,
-              _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
-              useColumns: false,
-            ),
-          ])
-          ..where(_db.localAlbumAssetEntity.assetId.equals(assetId))
-          ..orderBy([OrderingTerm(expression: _db.localAlbumEntity.name)]);
-
-    final rows = await query.get();
-    return rows.map((row) => row.readTable(_db.localAlbumEntity).toDto()).toList();
   }
 }

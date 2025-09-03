@@ -336,19 +336,17 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     // 1. Belong to the provided local album (via local_album_asset_entity)
     // 2. Have been uploaded (i.e. a matching remote asset exists for the same checksum & owner)
     // 3. Are NOT already in the remote album (remote_album_asset_entity)
-    final query = _db.localAlbumAssetEntity.selectOnly()
+    final query = _db.remoteAssetEntity.selectOnly()
       ..addColumns([_db.remoteAssetEntity.id])
       ..join([
         innerJoin(
           _db.localAssetEntity,
-          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
           useColumns: false,
         ),
         innerJoin(
-          _db.remoteAssetEntity,
-          _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
-              _db.remoteAssetEntity.ownerId.equals(userId) &
-              _db.remoteAssetEntity.deletedAt.isNull(),
+          _db.localAlbumAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
           useColumns: false,
         ),
         // Left join remote album assets to exclude those already in the remote album
@@ -360,7 +358,9 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         ),
       ])
       ..where(
-        _db.localAlbumAssetEntity.albumId.equals(localAlbumId) &
+        _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.deletedAt.isNull() &
+            _db.localAlbumAssetEntity.albumId.equals(localAlbumId) &
             _db.remoteAlbumAssetEntity.assetId.isNull(), // only those not yet linked
       );
 
