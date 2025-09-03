@@ -289,6 +289,8 @@ class UploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      assetCreatedAt: asset.createdAt,
+      assetUpdatedAt: asset.updatedAt,
     );
   }
 
@@ -316,6 +318,8 @@ class UploadService {
       priority: 0, // Highest priority to get upload immediately
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      assetCreatedAt: asset.createdAt,
+      assetUpdatedAt: asset.updatedAt,
     );
   }
 
@@ -341,15 +345,26 @@ class UploadService {
     int? priority,
     bool? isFavorite,
     bool requiresWiFi = true,
+    required DateTime assetCreatedAt,
+    required DateTime assetUpdatedAt,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
-    final stats = await file.stat();
-    final fileCreatedAt = stats.changed;
-    final fileModifiedAt = stats.modified;
+
+    DateTime fileCreatedAt;
+    DateTime fileModifiedAt;
+    if (Platform.isIOS) {
+      fileCreatedAt = assetCreatedAt;
+      fileModifiedAt = assetUpdatedAt;
+    } else {
+      final stats = await file.stat();
+      fileCreatedAt = stats.changed;
+      fileModifiedAt = stats.modified;
+    }
+    
     final fieldsMap = {
       'filename': originalFileName ?? filename,
       'deviceAssetId': deviceAssetId ?? '',
