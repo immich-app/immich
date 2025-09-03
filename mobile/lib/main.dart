@@ -176,13 +176,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, isColdStart);
+      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
 
       return proposedRoute;
     }
 
     if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, isColdStart);
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, ref, isColdStart);
 
       return proposedRoute;
     }
@@ -206,14 +206,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
       if (Store.isBetaTimelineEnabled) {
+        ref.read(backgroundServiceProvider).disableService();
         ref.read(driftBackgroundUploadFgService).enableSyncService();
         if (ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup)) {
-          ref.read(backgroundServiceProvider).disableService();
           ref.read(driftBackgroundUploadFgService).enableUploadService();
         }
       } else {
-        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
         ref.read(driftBackgroundUploadFgService).disableUploadService();
+        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
       }
     });
 

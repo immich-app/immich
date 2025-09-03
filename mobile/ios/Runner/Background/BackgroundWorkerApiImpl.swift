@@ -6,10 +6,8 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     print("BackgroundUploadImpl:enableSyncWorker Local Sync worker scheduled")
   }
   
-  func enableUploadWorker(callbackHandle: Int64) throws {
+  func enableUploadWorker() throws {
     BackgroundWorkerApiImpl.updateUploadEnabled(true)
-    // Store the callback handle for later use when starting background Flutter isolates
-    BackgroundWorkerApiImpl.updateUploadCallbackHandle(callbackHandle)
     
     BackgroundWorkerApiImpl.scheduleRefreshUpload()
     BackgroundWorkerApiImpl.scheduleProcessingUpload()
@@ -23,7 +21,6 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   }
   
   public static let backgroundUploadEnabledKey = "immich:background:backup:enabled"
-  public static let backgroundUploadCallbackHandleKey = "immich:background:backup:callbackHandle"
   
   private static let localSyncTaskID = "app.alextran.immich.background.localSync"
   private static let refreshUploadTaskID = "app.alextran.immich.background.refreshUpload"
@@ -33,17 +30,13 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     return UserDefaults.standard.set(isEnabled, forKey: BackgroundWorkerApiImpl.backgroundUploadEnabledKey)
   }
 
-  private static func updateUploadCallbackHandle(_ callbackHandle: Int64) {
-    return UserDefaults.standard.set(String(callbackHandle), forKey: BackgroundWorkerApiImpl.backgroundUploadCallbackHandleKey)
-  }
-
   private static func cancelUploadTasks() {
     BackgroundWorkerApiImpl.updateUploadEnabled(false)
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshUploadTaskID);
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: processingUploadTaskID);
   }
 
-  public static func registerBackgroundProcessing() {
+  public static func registerBackgroundWorkers() {
       BGTaskScheduler.shared.register(
           forTaskWithIdentifier: processingUploadTaskID, using: nil) { task in
           if task is BGProcessingTask {
@@ -102,9 +95,22 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   }
   
   private static func handleBackgroundRefresh(task: BGAppRefreshTask, taskType: BackgroundTaskType) {
-    scheduleRefreshUpload()
-    // Restrict the refresh task to run only for a maximum of 20 seconds
-    runBackgroundWorker(task: task, taskType: taskType, maxSeconds: 20)
+    let maxSeconds: Int?
+    
+    switch taskType {
+    case .localSync:
+      maxSeconds = 15
+      scheduleLocalSync()
+    case .refreshUpload:
+      maxSeconds = 20
+      scheduleRefreshUpload()
+    case .processingUpload:
+      print("Unexpected background refresh task encountered")
+      return;
+    }
+
+    // Restrict the refresh task to run only for a maximum of (maxSeconds) seconds
+    runBackgroundWorker(task: task, taskType: taskType, maxSeconds: maxSeconds)
   }
   
   private static func handleBackgroundProcessing(task: BGProcessingTask) {
@@ -134,7 +140,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
 
     task.expirationHandler = {
       DispatchQueue.main.async {
-        backgroundWorker.cancel()
+        backgroundWorker.close()
       }
       isSuccess = false
       

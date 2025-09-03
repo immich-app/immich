@@ -15,8 +15,7 @@ import 'package:pigeon/pigeon.dart';
 abstract class BackgroundWorkerFgHostApi {
   void enableSyncWorker();
 
-  // Enables the background upload service with the given callback handle
-  void enableUploadWorker(int callbackHandle);
+  void enableUploadWorker();
 
   // Disables the background upload service
   void disableUploadWorker();
@@ -27,6 +26,8 @@ abstract class BackgroundWorkerBgHostApi {
   // Called from the background flutter engine when it has bootstrapped and established the
   // required platform channels to notify the native side to start the background upload
   void onInitialized();
+
+  void close();
 }
 
 @FlutterApi()
