@@ -72,6 +72,7 @@ class HashService {
 
       final file = await _storageRepository.getFileForAsset(asset.id);
       if (file == null) {
+        _log.warning("Cannot get file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}");
         continue;
       }
 
