@@ -13,12 +13,9 @@ import 'package:pigeon/pigeon.dart';
 )
 @HostApi()
 abstract class BackgroundWorkerFgHostApi {
-  void enableSyncWorker();
+  void enable();
 
-  void enableUploadWorker();
-
-  // Disables the background upload service
-  void disableUploadWorker();
+  void disable();
 }
 
 @HostApi()
@@ -32,10 +29,6 @@ abstract class BackgroundWorkerBgHostApi {
 
 @FlutterApi()
 abstract class BackgroundWorkerFlutterApi {
-  // Android & iOS: Called when the local sync is triggered
-  @async
-  void onLocalSync(int? maxSeconds);
-
   // iOS Only: Called when the iOS background upload is triggered
   @async
   void onIosUpload(bool isRefresh, int? maxSeconds);

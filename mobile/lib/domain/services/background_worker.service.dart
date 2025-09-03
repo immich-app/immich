@@ -30,11 +30,9 @@ class BackgroundWorkerFgService {
   const BackgroundWorkerFgService(this._foregroundHostApi);
 
   // TODO: Move this call to native side once old timeline is removed
-  Future<void> enableSyncService() => _foregroundHostApi.enableSyncWorker();
+  Future<void> enable() => _foregroundHostApi.enable();
 
-  Future<void> enableUploadService() => _foregroundHostApi.enableUploadWorker();
-
-  Future<void> disableUploadService() => _foregroundHostApi.disableUploadWorker();
+  Future<void> disable() => _foregroundHostApi.disable();
 }
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
@@ -94,30 +92,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   @override
-  Future<void> onLocalSync(int? maxSeconds) async {
-    try {
-      _logger.info('Local background syncing started');
-      final sw = Stopwatch()..start();
-
-      final timeout = maxSeconds != null ? Duration(seconds: maxSeconds) : null;
-      await _syncAssets(hashTimeout: timeout, syncRemote: false);
-
-      sw.stop();
-      _logger.info("Local sync completed in ${sw.elapsed.inSeconds}s");
-    } catch (error, stack) {
-      _logger.severe("Failed to complete local sync", error, stack);
-    } finally {
-      await _cleanup();
-    }
-  }
-
-  /* We do the following on Android upload
-   * - Sync local assets
-   * - Hash local assets 3 / 6 minutes
-   * - Sync remote assets
-   * - Check and requeue upload tasks
-   */
-  @override
   Future<void> onAndroidUpload() async {
     try {
       _logger.info('Android background processing started');
@@ -135,14 +109,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  /* We do the following on background upload
-   * - Sync local assets
-   * - Hash local assets
-   * - Sync remote assets
-   * - Check and requeue upload tasks
-   * 
-   *  The native side will not send the maxSeconds value for processing tasks
-   */
   @override
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
     try {
@@ -222,7 +188,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _syncAssets({Duration? hashTimeout, bool syncRemote = true}) async {
+  Future<void> _syncAssets({Duration? hashTimeout}) async {
     final futures = <Future<void>>[];
 
     final localSyncFuture = _ref.read(backgroundSyncProvider).syncLocal().then((_) async {
@@ -244,10 +210,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     });
 
     futures.add(localSyncFuture);
-    if (syncRemote) {
-      final remoteSyncFuture = _ref.read(backgroundSyncProvider).syncRemote();
-      futures.add(remoteSyncFuture);
-    }
+    futures.add(_ref.read(backgroundSyncProvider).syncRemote());
 
     await Future.wait(futures);
   }
