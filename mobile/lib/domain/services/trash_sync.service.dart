@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -74,9 +75,9 @@ class TrashSyncService {
       );
       if (remoteAssetsToRestore.isNotEmpty) {
         _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
-        await Future.wait(
-          remoteAssetsToRestore.map((asset) => _localFilesManager.restoreFromTrash(asset.name, asset.type.index)),
-        );
+        for (RemoteAsset asset in remoteAssetsToRestore) {
+          await _localFilesManager.restoreFromTrash(asset.name, asset.type.index);
+        }
       }
     }
   }
