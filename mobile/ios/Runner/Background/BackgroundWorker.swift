@@ -1,7 +1,7 @@
 import BackgroundTasks
 import Flutter
 
-enum BackgroundTaskType { case localSync, refreshUpload, processingUpload }
+enum BackgroundTaskType { case refresh, processing }
 
 /*
  * DEBUG: Testing Background Tasks in Xcode
@@ -9,10 +9,6 @@ enum BackgroundTaskType { case localSync, refreshUpload, processingUpload }
  * To test background task functionality during development:
  * 1. Pause the application in Xcode debugger
  * 2. In the debugger console, enter one of the following commands:
-
- ## For local sync (short-running sync):
- 
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.localSync"]
  
  ## For background refresh (short-running sync):
  
@@ -23,8 +19,6 @@ enum BackgroundTaskType { case localSync, refreshUpload, processingUpload }
  e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.processingUpload"]
 
  * To simulate task expiration (useful for testing expiration handlers):
- 
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.localSync"]
  
  e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.refreshUpload"]
  
@@ -120,17 +114,9 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * This method acts as a bridge between the native iOS background task system and Flutter.
    */
   func onInitialized() throws {
-    switch self.taskType {
-    case .refreshUpload, .processingUpload:
-      flutterApi?.onIosUpload(isRefresh: self.taskType == .refreshUpload,
-                              maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
-        self.handleHostResult(result: result)
-      })
-    case .localSync:
-      flutterApi?.onLocalSync(maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
-        self.handleHostResult(result: result)
-      })
-    }
+    flutterApi?.onIosUpload(isRefresh: self.taskType == .refresh, maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
+      self.handleHostResult(result: result)
+    })
   }
 
   /**
@@ -177,6 +163,10 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * - Parameter success: Indicates whether the background task completed successfully
    */
   private func complete(success: Bool) {
+    if(isComplete) {
+      return
+    }
+    
     isComplete = true
     engine.destroyContext()
     completionHandler(success)
