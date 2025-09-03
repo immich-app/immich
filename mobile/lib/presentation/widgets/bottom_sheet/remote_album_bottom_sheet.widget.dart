@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -66,12 +67,12 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
       if (addedCount != selectedAssets.length) {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {"album": album.name}),
+          msg: 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name}),
         );
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {"album": album.name}),
+          msg: 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name}),
         );
       }
 
