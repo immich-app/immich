@@ -38,7 +38,7 @@ class UserDto {
   final String email;
   final String name;
   final bool isAdmin;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   final AvatarColor avatarColor;
 
@@ -60,8 +60,8 @@ class UserDto {
     required this.id,
     required this.email,
     required this.name,
-    required this.isAdmin,
-    required this.updatedAt,
+    this.isAdmin = false,
+    this.updatedAt,
     required this.profileChangedAt,
     this.avatarColor = AvatarColor.primary,
     this.memoryEnabled = true,
@@ -128,7 +128,7 @@ profileChangedAt: $profileChangedAt
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        other.updatedAt.isAtSameMomentAs(updatedAt) &&
+        (updatedAt != null && other.updatedAt != null && other.updatedAt!.isAtSameMomentAs(updatedAt!)) &&
         other.avatarColor == avatarColor &&
         other.email == email &&
         other.name == name &&

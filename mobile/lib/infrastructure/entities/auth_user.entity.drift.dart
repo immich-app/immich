@@ -17,7 +17,7 @@ typedef $$AuthUserEntityTableCreateCompanionBuilder =
       i0.Value<bool> hasProfileImage,
       i0.Value<DateTime> profileChangedAt,
       required i2.AvatarColor avatarColor,
-      i0.Value<int?> quotaSizeInBytes,
+      i0.Value<int> quotaSizeInBytes,
       i0.Value<int> quotaUsageInBytes,
       i0.Value<String?> pinCode,
     });
@@ -30,7 +30,7 @@ typedef $$AuthUserEntityTableUpdateCompanionBuilder =
       i0.Value<bool> hasProfileImage,
       i0.Value<DateTime> profileChangedAt,
       i0.Value<i2.AvatarColor> avatarColor,
-      i0.Value<int?> quotaSizeInBytes,
+      i0.Value<int> quotaSizeInBytes,
       i0.Value<int> quotaUsageInBytes,
       i0.Value<String?> pinCode,
     });
@@ -251,7 +251,7 @@ class $$AuthUserEntityTableTableManager
                 i0.Value<bool> hasProfileImage = const i0.Value.absent(),
                 i0.Value<DateTime> profileChangedAt = const i0.Value.absent(),
                 i0.Value<i2.AvatarColor> avatarColor = const i0.Value.absent(),
-                i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
+                i0.Value<int> quotaSizeInBytes = const i0.Value.absent(),
                 i0.Value<int> quotaUsageInBytes = const i0.Value.absent(),
                 i0.Value<String?> pinCode = const i0.Value.absent(),
               }) => i1.AuthUserEntityCompanion(
@@ -275,7 +275,7 @@ class $$AuthUserEntityTableTableManager
                 i0.Value<bool> hasProfileImage = const i0.Value.absent(),
                 i0.Value<DateTime> profileChangedAt = const i0.Value.absent(),
                 required i2.AvatarColor avatarColor,
-                i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
+                i0.Value<int> quotaSizeInBytes = const i0.Value.absent(),
                 i0.Value<int> quotaUsageInBytes = const i0.Value.absent(),
                 i0.Value<String?> pinCode = const i0.Value.absent(),
               }) => i1.AuthUserEntityCompanion.insert(
@@ -417,9 +417,10 @@ class $AuthUserEntityTable extends i3.AuthUserEntity
   late final i0.GeneratedColumn<int> quotaSizeInBytes = i0.GeneratedColumn<int>(
     'quota_size_in_bytes',
     aliasedName,
-    true,
+    false,
     type: i0.DriftSqlType.int,
     requiredDuringInsert: false,
+    defaultValue: const i4.Constant(0),
   );
   static const i0.VerificationMeta _quotaUsageInBytesMeta =
       const i0.VerificationMeta('quotaUsageInBytes');
@@ -580,7 +581,7 @@ class $AuthUserEntityTable extends i3.AuthUserEntity
       quotaSizeInBytes: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
         data['${effectivePrefix}quota_size_in_bytes'],
-      ),
+      )!,
       quotaUsageInBytes: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.int,
         data['${effectivePrefix}quota_usage_in_bytes'],
@@ -614,7 +615,7 @@ class AuthUserEntityData extends i0.DataClass
   final bool hasProfileImage;
   final DateTime profileChangedAt;
   final i2.AvatarColor avatarColor;
-  final int? quotaSizeInBytes;
+  final int quotaSizeInBytes;
   final int quotaUsageInBytes;
   final String? pinCode;
   const AuthUserEntityData({
@@ -625,7 +626,7 @@ class AuthUserEntityData extends i0.DataClass
     required this.hasProfileImage,
     required this.profileChangedAt,
     required this.avatarColor,
-    this.quotaSizeInBytes,
+    required this.quotaSizeInBytes,
     required this.quotaUsageInBytes,
     this.pinCode,
   });
@@ -643,9 +644,7 @@ class AuthUserEntityData extends i0.DataClass
         i1.$AuthUserEntityTable.$converteravatarColor.toSql(avatarColor),
       );
     }
-    if (!nullToAbsent || quotaSizeInBytes != null) {
-      map['quota_size_in_bytes'] = i0.Variable<int>(quotaSizeInBytes);
-    }
+    map['quota_size_in_bytes'] = i0.Variable<int>(quotaSizeInBytes);
     map['quota_usage_in_bytes'] = i0.Variable<int>(quotaUsageInBytes);
     if (!nullToAbsent || pinCode != null) {
       map['pin_code'] = i0.Variable<String>(pinCode);
@@ -668,7 +667,7 @@ class AuthUserEntityData extends i0.DataClass
       avatarColor: i1.$AuthUserEntityTable.$converteravatarColor.fromJson(
         serializer.fromJson<int>(json['avatarColor']),
       ),
-      quotaSizeInBytes: serializer.fromJson<int?>(json['quotaSizeInBytes']),
+      quotaSizeInBytes: serializer.fromJson<int>(json['quotaSizeInBytes']),
       quotaUsageInBytes: serializer.fromJson<int>(json['quotaUsageInBytes']),
       pinCode: serializer.fromJson<String?>(json['pinCode']),
     );
@@ -686,7 +685,7 @@ class AuthUserEntityData extends i0.DataClass
       'avatarColor': serializer.toJson<int>(
         i1.$AuthUserEntityTable.$converteravatarColor.toJson(avatarColor),
       ),
-      'quotaSizeInBytes': serializer.toJson<int?>(quotaSizeInBytes),
+      'quotaSizeInBytes': serializer.toJson<int>(quotaSizeInBytes),
       'quotaUsageInBytes': serializer.toJson<int>(quotaUsageInBytes),
       'pinCode': serializer.toJson<String?>(pinCode),
     };
@@ -700,7 +699,7 @@ class AuthUserEntityData extends i0.DataClass
     bool? hasProfileImage,
     DateTime? profileChangedAt,
     i2.AvatarColor? avatarColor,
-    i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
+    int? quotaSizeInBytes,
     int? quotaUsageInBytes,
     i0.Value<String?> pinCode = const i0.Value.absent(),
   }) => i1.AuthUserEntityData(
@@ -711,9 +710,7 @@ class AuthUserEntityData extends i0.DataClass
     hasProfileImage: hasProfileImage ?? this.hasProfileImage,
     profileChangedAt: profileChangedAt ?? this.profileChangedAt,
     avatarColor: avatarColor ?? this.avatarColor,
-    quotaSizeInBytes: quotaSizeInBytes.present
-        ? quotaSizeInBytes.value
-        : this.quotaSizeInBytes,
+    quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
     quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
     pinCode: pinCode.present ? pinCode.value : this.pinCode,
   );
@@ -797,7 +794,7 @@ class AuthUserEntityCompanion
   final i0.Value<bool> hasProfileImage;
   final i0.Value<DateTime> profileChangedAt;
   final i0.Value<i2.AvatarColor> avatarColor;
-  final i0.Value<int?> quotaSizeInBytes;
+  final i0.Value<int> quotaSizeInBytes;
   final i0.Value<int> quotaUsageInBytes;
   final i0.Value<String?> pinCode;
   const AuthUserEntityCompanion({
@@ -861,7 +858,7 @@ class AuthUserEntityCompanion
     i0.Value<bool>? hasProfileImage,
     i0.Value<DateTime>? profileChangedAt,
     i0.Value<i2.AvatarColor>? avatarColor,
-    i0.Value<int?>? quotaSizeInBytes,
+    i0.Value<int>? quotaSizeInBytes,
     i0.Value<int>? quotaUsageInBytes,
     i0.Value<String?>? pinCode,
   }) {

@@ -16,7 +16,7 @@ class AuthUserEntity extends Table with DriftDefaultsMixin {
   IntColumn get avatarColor => intEnum<AvatarColor>()();
 
   // Quota
-  IntColumn get quotaSizeInBytes => integer().nullable()();
+  IntColumn get quotaSizeInBytes => integer().withDefault(const Constant(0))();
   IntColumn get quotaUsageInBytes => integer().withDefault(const Constant(0))();
 
   // Locked Folder

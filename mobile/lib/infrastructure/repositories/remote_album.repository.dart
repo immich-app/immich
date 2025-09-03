@@ -193,14 +193,13 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             id: user.id,
             email: user.email,
             name: user.name,
-            isAdmin: user.isAdmin,
-            updatedAt: user.updatedAt,
             memoryEnabled: true,
             inTimeline: false,
             isPartnerSharedBy: false,
             isPartnerSharedWith: false,
             profileChangedAt: user.profileChangedAt,
             hasProfileImage: user.hasProfileImage,
+            avatarColor: user.avatarColor,
           ),
         )
         .get();

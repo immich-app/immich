@@ -44,7 +44,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
             isAdmin: Value(user.isAdmin),
             pinCode: Value(user.pinCode),
-            quotaSizeInBytes: Value(user.quotaSizeInBytes),
+            quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
             quotaUsageInBytes: Value(user.quotaUsageInBytes),
           );
 
@@ -79,6 +79,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             email: Value(user.email),
             hasProfileImage: Value(user.hasProfileImage),
             profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
           );
 
           batch.insert(_db.userEntity, companion.copyWith(id: Value(user.id)), onConflict: DoUpdate((_) => companion));

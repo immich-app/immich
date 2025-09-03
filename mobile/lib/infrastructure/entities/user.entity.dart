@@ -43,7 +43,7 @@ class User {
 
   static User fromDto(UserDto dto) => User(
     id: dto.id,
-    updatedAt: dto.updatedAt,
+    updatedAt: dto.updatedAt ?? DateTime(2025),
     email: dto.email,
     name: dto.name,
     isAdmin: dto.isAdmin,
@@ -80,13 +80,12 @@ class UserEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
   TextColumn get name => text()();
-  BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
   TextColumn get email => text()();
 
+  // Profile image
   BoolColumn get hasProfileImage => boolean().withDefault(const Constant(false))();
   DateTimeColumn get profileChangedAt => dateTime().withDefault(currentDateAndTime)();
-
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  IntColumn get avatarColor => intEnum<AvatarColor>().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};
