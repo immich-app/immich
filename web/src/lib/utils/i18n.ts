@@ -1,5 +1,5 @@
 import { isRtlLang } from '$lib/components/i18n/langs-rtl';
-import { specialLang } from '$lib/constants';
+import { nonIntlLang } from '$lib/constants';
 import { availableLocales } from '$lib/utils/i18n-meta';
 import { locale, t, waitLocale } from 'svelte-i18n';
 import { get, type Unsubscriber } from 'svelte/store';
@@ -18,7 +18,7 @@ export async function getFormatter() {
 }
 
 function getDisplayName(code: string) {
-  const lang = specialLang.find((lang) => lang.code === code);
+  const lang = nonIntlLang.find((lang) => lang.code === code);
   if (lang) {
     return lang.name;
   }
