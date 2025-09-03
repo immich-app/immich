@@ -35,7 +35,7 @@ class RemoteAlbumBottomSheet extends ConsumerStatefulWidget {
 
 class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet> {
   late DraggableScrollableController sheetController;
-  
+
   @override
   void initState() {
     super.initState();
