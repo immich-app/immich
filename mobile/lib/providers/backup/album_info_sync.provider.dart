@@ -29,8 +29,8 @@ class SyncLinkedAlbumNotifier extends Notifier<bool> {
     return _remoteAlbumService.syncLinkedAlbums(user.id, selectedAlbums);
   }
 
-  Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) async {
-    Future.wait(localAlbums.map((album) => _processLocalAlbum(album, ownerId)));
+  Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) {
+    return Future.wait(localAlbums.map((album) => _processLocalAlbum(album, ownerId)));
   }
 
   /// Processes a single local album to ensure proper linking with remote albums
