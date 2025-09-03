@@ -7,7 +7,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/album_info_sync.provider.dart';
+import 'package:immich_mobile/domain/services/album_info_sync.service.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -24,7 +24,7 @@ class BackupAlbumSelectionSnapshot {
   final int currentTotalAssetCount;
   final List<LocalAlbum> selectedAlbums;
   final DriftBackupNotifier backupNotifier;
-  final SyncLinkedAlbumNotifier syncLinkedAlbumNotifier;
+  final SyncLinkedAlbumService syncLinkedAlbumService;
 
   const BackupAlbumSelectionSnapshot({
     required this.userId,
@@ -34,7 +34,7 @@ class BackupAlbumSelectionSnapshot {
     required this.currentTotalAssetCount,
     required this.selectedAlbums,
     required this.backupNotifier,
-    required this.syncLinkedAlbumNotifier,
+    required this.syncLinkedAlbumService,
   });
 }
 
@@ -71,7 +71,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
   Future<BackupAlbumSelectionSnapshot> _buildSnapshot() async {
     final user = ref.read(currentUserProvider);
     final backupNotifier = ref.read(driftBackupProvider.notifier);
-    final syncLinkedAlbumNotifier = ref.read(syncLinkedAlbumProvider.notifier);
+    final syncLinkedAlbumService = ref.read(syncLinkedAlbumServiceProvider);
     final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
     final enableSyncUploadAlbum = _enableSyncUploadAlbum.value;
     final allAlbums = ref.read(backupAlbumProvider);
@@ -90,7 +90,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       currentTotalAssetCount: currentTotalAssetCount,
       selectedAlbums: selectedAlbums,
       backupNotifier: backupNotifier,
-      syncLinkedAlbumNotifier: syncLinkedAlbumNotifier,
+      syncLinkedAlbumService: syncLinkedAlbumService,
     );
   }
 
@@ -101,7 +101,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     }
 
     if (snap.enableSyncUploadAlbum && snap.selectedAlbums.isNotEmpty) {
-      await snap.syncLinkedAlbumNotifier.manageLinkedAlbums(snap.selectedAlbums, userId);
+      await snap.syncLinkedAlbumService.manageLinkedAlbums(snap.selectedAlbums, userId);
     }
 
     // Restart backup if total count changed and backup is enabled

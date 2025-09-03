@@ -85,7 +85,6 @@ class RemoteAlbumService {
 
   Future<RemoteAlbum> createAlbum({required String title, required List<String> assetIds, String? description}) async {
     final album = await _albumApiRepository.createDriftAlbum(title, description: description, assetIds: assetIds);
-
     await _repository.create(album, assetIds);
 
     return album;

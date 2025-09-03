@@ -6,7 +6,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/album_info_sync.provider.dart';
+import 'package:immich_mobile/domain/services/album_info_sync.service.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -44,7 +44,11 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
     });
 
     try {
-      await ref.read(syncLinkedAlbumProvider.notifier).syncLinkedAlbums();
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser == null) {
+        return;
+      }
+      await ref.read(syncLinkedAlbumServiceProvider).syncLinkedAlbums(currentUser.id);
     } catch (_) {
     } finally {
       Future.delayed(const Duration(seconds: 1), () {
@@ -65,7 +69,7 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
         .where((album) => album.backupSelection == BackupSelection.selected)
         .toList();
 
-    await ref.read(syncLinkedAlbumProvider.notifier).manageLinkedAlbums(selectedBackupAlbums, currentUser.id);
+    await ref.read(syncLinkedAlbumServiceProvider).manageLinkedAlbums(selectedBackupAlbums, currentUser.id);
   }
 
   @override
