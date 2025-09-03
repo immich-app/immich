@@ -138,7 +138,7 @@ jobs:
     name: Unit Test CLI (Windows)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_cli == 'true' }}
-    runs-on: windows-latest
+    runs-on: windows-2025
     permissions:
       contents: read
     defaults:
