@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
@@ -235,6 +236,16 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
   @override
   void dispose() {
+    final imageProvider = widget.imageProvider;
+    if (imageProvider is CancellableImageProvider) {
+      imageProvider.cancel();
+    }
+
+    final thumbhashProvider = widget.thumbhashProvider;
+    if (thumbhashProvider is CancellableImageProvider) {
+      thumbhashProvider.cancel();
+    }
+
     _fadeController.removeStatusListener(_onAnimationStatusChanged);
     _fadeController.dispose();
     _stopListeningToStream();

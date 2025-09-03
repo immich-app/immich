@@ -54,6 +54,7 @@ export class SyncRepository {
   asset: AssetSync;
   assetExif: AssetExifSync;
   assetFace: AssetFaceSync;
+  assetMetadata: AssetMetadataSync;
   authUser: AuthUserSync;
   memory: MemorySync;
   memoryToAsset: MemoryToAssetSync;
@@ -75,6 +76,7 @@ export class SyncRepository {
     this.asset = new AssetSync(this.db);
     this.assetExif = new AssetExifSync(this.db);
     this.assetFace = new AssetFaceSync(this.db);
+    this.assetMetadata = new AssetMetadataSync(this.db);
     this.authUser = new AuthUserSync(this.db);
     this.memory = new MemorySync(this.db);
     this.memoryToAsset = new MemoryToAssetSync(this.db);
@@ -682,6 +684,26 @@ class UserMetadataSync extends BaseSync {
     return this.upsertQuery('user_metadata', options)
       .select(['userId', 'key', 'value', 'updateId'])
       .where('userId', '=', options.userId)
+      .stream();
+  }
+}
+
+class AssetMetadataSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  getDeletes(options: SyncQueryOptions, userId: string) {
+    return this.auditQuery('asset_metadata_audit', options)
+      .select(['asset_metadata_audit.id', 'assetId', 'key'])
+      .leftJoin('asset', 'asset.id', 'asset_metadata_audit.assetId')
+      .where('asset.ownerId', '=', userId)
+      .stream();
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })
+  getUpserts(options: SyncQueryOptions, userId: string) {
+    return this.upsertQuery('asset_metadata', options)
+      .select(['assetId', 'key', 'value', 'asset_metadata.updateId'])
+      .innerJoin('asset', 'asset.id', 'asset_metadata.assetId')
+      .where('asset.ownerId', '=', userId)
       .stream();
   }
 }
