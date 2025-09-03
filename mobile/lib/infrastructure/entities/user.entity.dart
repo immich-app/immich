@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
