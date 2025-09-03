@@ -35,6 +35,7 @@ class HashService {
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
   Future<void> hashAssets() async {
+    _log.info("Starting hashing of assets");
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
     final localAlbums = await _localAlbumRepository.getAll(
