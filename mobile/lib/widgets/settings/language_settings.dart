@@ -8,7 +8,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
-import 'package:flutter_localized_locales/flutter_localized_locales.dart';
+import 'package:immich_mobile/generated/locale_names.g.dart';
 
 // Helpers
 String capitalize(String s) {
@@ -36,8 +36,7 @@ class LanguageSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final localeEntries = useMemoized(() => locales.entries.toList(), const []);
-    final localeNames = LocaleNames.of(context);
+    final localeEntries = locales.entries.toList();
     final currentLocale = context.locale;
     final filteredLocaleEntries = useState<List<MapEntry<String, Locale>>>(localeEntries);
     final selectedLocale = useState<Locale>(currentLocale);
@@ -56,10 +55,7 @@ class LanguageSettings extends HookConsumerWidget {
           filteredLocaleEntries.value = localeEntries;
         } else {
           filteredLocaleEntries.value = localeEntries.where((entry) {
-            final code = entry.key;
-            final langName =
-                LocaleNamesLocalizationsDelegate.nativeLocaleNames[code] ?? unsupportedLocales[code] ?? code;
-            return langName.toLowerCase().contains(searchTerm.toLowerCase());
+            return localeNames[entry.key]?.toLowerCase().contains(searchTerm.toLowerCase()) ?? false;
           }).toList();
         }
       });
@@ -99,10 +95,7 @@ class LanguageSettings extends HookConsumerWidget {
                     itemBuilder: (context, index) {
                       final localeKey = filteredLocaleEntries.value[index].key;
                       final localeValue = filteredLocaleEntries.value[index].value;
-                      final langName =
-                          LocaleNamesLocalizationsDelegate.nativeLocaleNames[localeKey] ??
-                          unsupportedLocales[localeKey] ??
-                          localeKey.toString();
+                      final langName = localeNames[localeKey] ?? '';
 
                       final bool isSelected = selectedLocale.value == localeValue;
 

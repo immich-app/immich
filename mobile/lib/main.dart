@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
-import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
@@ -255,7 +254,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       child: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: true,
-        localizationsDelegates: [...context.localizationDelegates, const LocaleNamesLocalizationsDelegate()],
+        localizationsDelegates: [...context.localizationDelegates],
         supportedLocales: context.supportedLocales,
         locale: effectiveMaterialLocale(context),
         themeMode: ref.watch(immichThemeModeProvider),
