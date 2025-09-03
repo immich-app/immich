@@ -62,7 +62,7 @@ class ViewerBottomBar extends ConsumerWidget {
         duration: Durations.short2,
         child: AnimatedSwitcher(
           duration: Durations.short4,
-          child: isSheetOpen || isReadonlyModeEnabled
+          child: isSheetOpen
               ? const SizedBox.shrink()
               : Theme(
                   data: context.themeData.copyWith(
@@ -79,7 +79,11 @@ class ViewerBottomBar extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        if (!isInLockedView) Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                        if (!isInLockedView)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: isReadonlyModeEnabled ? [] : actions,
+                          ),
                       ],
                     ),
                   ),
