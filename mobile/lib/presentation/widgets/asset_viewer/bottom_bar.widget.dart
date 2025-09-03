@@ -72,18 +72,14 @@ class ViewerBottomBar extends ConsumerWidget {
                     ),
                   ),
                   child: Container(
-                    height: context.padding.bottom + (asset.isVideo ? 160 : 90),
                     color: Colors.black.withAlpha(125),
-                    padding: EdgeInsets.only(bottom: context.padding.bottom),
+                    padding: EdgeInsets.only(bottom: context.padding.bottom, top: 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        if (!isInLockedView)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: isReadonlyModeEnabled ? [] : actions,
-                          ),
+                        if (!isInLockedView && !isReadonlyModeEnabled)
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
                     ),
                   ),
