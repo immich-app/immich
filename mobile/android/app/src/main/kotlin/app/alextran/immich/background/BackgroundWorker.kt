@@ -16,11 +16,6 @@ import io.flutter.embedding.engine.loader.FlutterLoader
 
 private const val TAG = "BackgroundWorker"
 
-enum class BackgroundTaskType {
-  LOCAL_SYNC,
-  UPLOAD,
-}
-
 class BackgroundWorker(context: Context, params: WorkerParameters) :
   ListenableWorker(context, params), BackgroundWorkerBgHostApi {
   private val ctx: Context = context.applicationContext
@@ -84,13 +79,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    * This method acts as a bridge between the native Android background task system and Flutter.
    */
   override fun onInitialized() {
-    val taskTypeIndex = inputData.getInt(BackgroundWorkerApiImpl.WORKER_DATA_TASK_TYPE, 0)
-    val taskType = BackgroundTaskType.entries[taskTypeIndex]
-
-    when (taskType) {
-      BackgroundTaskType.LOCAL_SYNC -> flutterApi?.onLocalSync(null) { handleHostResult(it) }
-      BackgroundTaskType.UPLOAD -> flutterApi?.onAndroidUpload { handleHostResult(it) }
-    }
+    flutterApi?.onAndroidUpload { handleHostResult(it) }
   }
 
   override fun close() {

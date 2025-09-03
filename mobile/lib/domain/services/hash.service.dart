@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -35,6 +36,7 @@ class HashService {
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
   Future<void> hashAssets() async {
+    _log.info("Starting hashing of assets");
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
     final localAlbums = await _localAlbumRepository.getAll(
@@ -49,7 +51,7 @@ class HashService {
 
       final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
       if (assetsToHash.isNotEmpty) {
-        await _hashAssets(assetsToHash);
+        await _hashAssets(album, assetsToHash);
       }
     }
 
@@ -60,7 +62,7 @@ class HashService {
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB
   /// with hash for those that were successfully hashed. Hashes are looked up in a table
   /// [LocalAssetHashEntity] by local id. Only missing entries are newly hashed and added to the DB.
-  Future<void> _hashAssets(List<LocalAsset> assetsToHash) async {
+  Future<void> _hashAssets(LocalAlbum album, List<LocalAsset> assetsToHash) async {
     int bytesProcessed = 0;
     final toHash = <_AssetToPath>[];
 
@@ -72,6 +74,9 @@ class HashService {
 
       final file = await _storageRepository.getFileForAsset(asset.id);
       if (file == null) {
+        _log.warning(
+          "Cannot get file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt} from album: ${album.name}",
+        );
         continue;
       }
 
@@ -79,17 +84,17 @@ class HashService {
       toHash.add(_AssetToPath(asset: asset, path: file.path));
 
       if (toHash.length >= batchFileLimit || bytesProcessed >= batchSizeLimit) {
-        await _processBatch(toHash);
+        await _processBatch(album, toHash);
         toHash.clear();
         bytesProcessed = 0;
       }
     }
 
-    await _processBatch(toHash);
+    await _processBatch(album, toHash);
   }
 
   /// Processes a batch of assets.
-  Future<void> _processBatch(List<_AssetToPath> toHash) async {
+  Future<void> _processBatch(LocalAlbum album, List<_AssetToPath> toHash) async {
     if (toHash.isEmpty) {
       return;
     }
@@ -114,7 +119,9 @@ class HashService {
       if (hash?.length == 20) {
         hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
       } else {
-        _log.warning("Failed to hash file for ${asset.id}: ${asset.name} created at ${asset.createdAt}");
+        _log.warning(
+          "Failed to hash file for ${asset.id}: ${asset.name} created at ${asset.createdAt} from album: ${album.name}",
+        );
       }
     }
 

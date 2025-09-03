@@ -1,190 +1,189 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-  <dict>
-    <key>AppGroupId</key>
-    <string>$(CUSTOM_GROUP_ID)</string>
-    <key>BGTaskSchedulerPermittedIdentifiers</key>
-    <array>
-      <string>app.alextran.immich.background.localSync</string>
-      <string>app.alextran.immich.background.refreshUpload</string>
-      <string>app.alextran.immich.background.processingUpload</string>
-      <string>app.alextran.immich.backgroundFetch</string>
-      <string>app.alextran.immich.backgroundProcessing</string>
-    </array>
-    <key>CADisableMinimumFrameDurationOnPhone</key>
-    <true />
-    <key>CFBundleDevelopmentRegion</key>
-    <string>$(DEVELOPMENT_LANGUAGE)</string>
-    <key>CFBundleDisplayName</key>
-    <string>${PRODUCT_NAME}</string>
-    <key>CFBundleDocumentTypes</key>
-    <array>
-      <dict>
-        <key>CFBundleTypeName</key>
-        <string>ShareHandler</string>
-        <key>LSHandlerRank</key>
-        <string>Alternate</string>
-        <key>LSItemContentTypes</key>
-        <array>
-          <string>public.file-url</string>
-          <string>public.image</string>
-          <string>public.text</string>
-          <string>public.movie</string>
-          <string>public.url</string>
-          <string>public.data</string>
-        </array>
-      </dict>
-    </array>
-    <key>CFBundleExecutable</key>
-    <string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleLocalizations</key>
-    <array>
-      <string>en</string>
-      <string>ar</string>
-      <string>ca</string>
-      <string>cs</string>
-      <string>da</string>
-      <string>de</string>
-      <string>es</string>
-      <string>fi</string>
-      <string>fr</string>
-      <string>he</string>
-      <string>hi</string>
-      <string>hu</string>
-      <string>it</string>
-      <string>ja</string>
-      <string>ko</string>
-      <string>lv</string>
-      <string>mn</string>
-      <string>nb</string>
-      <string>nl</string>
-      <string>pl</string>
-      <string>pt</string>
-      <string>ro</string>
-      <string>ru</string>
-      <string>sk</string>
-      <string>sl</string>
-      <string>sr</string>
-      <string>sv</string>
-      <string>th</string>
-      <string>uk</string>
-      <string>vi</string>
-      <string>zh</string>
-    </array>
-    <key>CFBundleName</key>
-    <string>immich_mobile</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.140.0</string>
-    <key>CFBundleSignature</key>
-    <string>????</string>
-    <key>CFBundleURLTypes</key>
-    <array>
-      <dict>
-        <key>CFBundleTypeRole</key>
-        <string>Editor</string>
-        <key>CFBundleURLName</key>
-        <string>Share Extension</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>ShareMedia-$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-        </array>
-      </dict>
-      <dict>
-        <key>CFBundleTypeRole</key>
-        <string>Editor</string>
-        <key>CFBundleURLName</key>
-        <string>Deep Link</string>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>immich</string>
-        </array>
-      </dict>
-    </array>
-    <key>CFBundleVersion</key>
-    <string>219</string>
-    <key>FLTEnableImpeller</key>
-    <true />
-    <key>ITSAppUsesNonExemptEncryption</key>
-    <false />
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-      <string>https</string>
-    </array>
-    <key>LSRequiresIPhoneOS</key>
-    <true />
-    <key>LSSupportsOpeningDocumentsInPlace</key>
-    <string>No</string>
-    <key>MGLMapboxMetricsEnabledSettingShownInApp</key>
-    <true />
-    <key>NSAppTransportSecurity</key>
-    <dict>
-      <key>NSAllowsArbitraryLoads</key>
-      <true />
-    </dict>
-    <key>NSBonjourServices</key>
-    <array>
-      <string>_googlecast._tcp</string>
-      <string>_CC1AD845._googlecast._tcp</string>
-    </array>
-    <key>NSCameraUsageDescription</key>
-    <string>We need to access the camera to let you take beautiful video using this app</string>
-    <key>NSFaceIDUsageDescription</key>
-    <string>We need to use FaceID to allow access to your locked folder</string>
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>We need local network permission to connect to the local server using IP address and
+<dict>
+	<key>AppGroupId</key>
+	<string>$(CUSTOM_GROUP_ID)</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>app.alextran.immich.background.refreshUpload</string>
+		<string>app.alextran.immich.background.processingUpload</string>
+		<string>app.alextran.immich.backgroundFetch</string>
+		<string>app.alextran.immich.backgroundProcessing</string>
+	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>${PRODUCT_NAME}</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>ShareHandler</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.file-url</string>
+				<string>public.image</string>
+				<string>public.text</string>
+				<string>public.movie</string>
+				<string>public.url</string>
+				<string>public.data</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ar</string>
+		<string>ca</string>
+		<string>cs</string>
+		<string>da</string>
+		<string>de</string>
+		<string>es</string>
+		<string>fi</string>
+		<string>fr</string>
+		<string>he</string>
+		<string>hi</string>
+		<string>hu</string>
+		<string>it</string>
+		<string>ja</string>
+		<string>ko</string>
+		<string>lv</string>
+		<string>mn</string>
+		<string>nb</string>
+		<string>nl</string>
+		<string>pl</string>
+		<string>pt</string>
+		<string>ro</string>
+		<string>ru</string>
+		<string>sk</string>
+		<string>sl</string>
+		<string>sr</string>
+		<string>sv</string>
+		<string>th</string>
+		<string>uk</string>
+		<string>vi</string>
+		<string>zh</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>immich_mobile</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.140.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Share Extension</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ShareMedia-$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>Deep Link</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>immich</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>219</string>
+	<key>FLTEnableImpeller</key>
+	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<string>No</string>
+	<key>MGLMapboxMetricsEnabledSettingShownInApp</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_googlecast._tcp</string>
+		<string>_CC1AD845._googlecast._tcp</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>We need to access the camera to let you take beautiful video using this app</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>We need to use FaceID to allow access to your locked folder</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>We need local network permission to connect to the local server using IP address and
       allow the casting feature to work</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>We require this permission to access the local WiFi name for background upload mechanism</string>
-    <key>NSLocationUsageDescription</key>
-    <string>We require this permission to access the local WiFi name</string>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We require this permission to access the local WiFi name</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>We need to access the microphone to let you take beautiful video using this app</string>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>We need to manage backup your photos album</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>We need to manage backup your photos album</string>
-    <key>NSUserActivityTypes</key>
-    <array>
-      <string>INSendMessageIntent</string>
-    </array>
-    <key>UIApplicationSupportsIndirectInputEvents</key>
-    <true />
-    <key>UIBackgroundModes</key>
-    <array>
-      <string>fetch</string>
-      <string>processing</string>
-    </array>
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
-    <key>UIMainStoryboardFile</key>
-    <string>Main</string>
-    <key>UIStatusBarHidden</key>
-    <false />
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-      <string>UIInterfaceOrientationPortrait</string>
-      <string>UIInterfaceOrientationLandscapeLeft</string>
-      <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-      <string>UIInterfaceOrientationPortrait</string>
-      <string>UIInterfaceOrientationPortraitUpsideDown</string>
-      <string>UIInterfaceOrientationLandscapeLeft</string>
-      <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UIViewControllerBasedStatusBarAppearance</key>
-    <true />
-    <key>io.flutter.embedded_views_preview</key>
-    <true />
-  </dict>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We require this permission to access the local WiFi name for background upload mechanism</string>
+	<key>NSLocationUsageDescription</key>
+	<string>We require this permission to access the local WiFi name</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We require this permission to access the local WiFi name</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need to access the microphone to let you take beautiful video using this app</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need to manage backup your photos album</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need to manage backup your photos album</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>INSendMessageIntent</string>
+	</array>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UIStatusBarHidden</key>
+	<false/>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>io.flutter.embedded_views_preview</key>
+	<true/>
+</dict>
 </plist>

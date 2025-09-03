@@ -1,77 +1,40 @@
 import BackgroundTasks
 
 class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
-  func enableSyncWorker() throws {
-    BackgroundWorkerApiImpl.scheduleLocalSync()
-    print("BackgroundUploadImpl:enableSyncWorker Local Sync worker scheduled")
-  }
-  
-  func enableUploadWorker() throws {
-    BackgroundWorkerApiImpl.updateUploadEnabled(true)
-    
-    BackgroundWorkerApiImpl.scheduleRefreshUpload()
-    BackgroundWorkerApiImpl.scheduleProcessingUpload()
-    print("BackgroundUploadImpl:enableUploadWorker Scheduled background upload tasks")
-  }
-  
-  func disableUploadWorker() throws {
-    BackgroundWorkerApiImpl.updateUploadEnabled(false)
-    BackgroundWorkerApiImpl.cancelUploadTasks()
-    print("BackgroundUploadImpl:disableUploadWorker Disabled background upload tasks")
-  }
-  
-  public static let backgroundUploadEnabledKey = "immich:background:backup:enabled"
-  
-  private static let localSyncTaskID = "app.alextran.immich.background.localSync"
-  private static let refreshUploadTaskID = "app.alextran.immich.background.refreshUpload"
-  private static let processingUploadTaskID = "app.alextran.immich.background.processingUpload"
 
-  private static func updateUploadEnabled(_ isEnabled: Bool) {
-    return UserDefaults.standard.set(isEnabled, forKey: BackgroundWorkerApiImpl.backgroundUploadEnabledKey)
+  func enable() throws {
+    BackgroundWorkerApiImpl.scheduleRefreshWorker()
+    BackgroundWorkerApiImpl.scheduleProcessingWorker()
+    print("BackgroundUploadImpl:enbale Background worker scheduled")
   }
-
-  private static func cancelUploadTasks() {
-    BackgroundWorkerApiImpl.updateUploadEnabled(false)
-    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshUploadTaskID);
-    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: processingUploadTaskID);
+  
+  func disable() throws {
+    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
+    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);
+    print("BackgroundUploadImpl:disableUploadWorker Disabled background workers")
   }
+  
+  private static let refreshTaskID = "app.alextran.immich.background.refreshUpload"
+  private static let processingTaskID = "app.alextran.immich.background.processingUpload"
 
   public static func registerBackgroundWorkers() {
       BGTaskScheduler.shared.register(
-          forTaskWithIdentifier: processingUploadTaskID, using: nil) { task in
+          forTaskWithIdentifier: processingTaskID, using: nil) { task in
           if task is BGProcessingTask {
             handleBackgroundProcessing(task: task as! BGProcessingTask)
           }
       }
 
       BGTaskScheduler.shared.register(
-          forTaskWithIdentifier: refreshUploadTaskID, using: nil) { task in
+          forTaskWithIdentifier: refreshTaskID, using: nil) { task in
           if task is BGAppRefreshTask {
-            handleBackgroundRefresh(task: task as! BGAppRefreshTask, taskType: .refreshUpload)
+            handleBackgroundRefresh(task: task as! BGAppRefreshTask)
           }
       }
-    
-    BGTaskScheduler.shared.register(
-        forTaskWithIdentifier: localSyncTaskID, using: nil) { task in
-        if task is BGAppRefreshTask {
-          handleBackgroundRefresh(task: task as! BGAppRefreshTask, taskType: .localSync)
-        }
-    }
   }
   
-  private static func scheduleLocalSync() {
-    let backgroundRefresh = BGAppRefreshTaskRequest(identifier: localSyncTaskID)
-      backgroundRefresh.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60) // 5 mins
-
-      do {
-          try BGTaskScheduler.shared.submit(backgroundRefresh)
-      } catch {
-          print("Could not schedule the local sync task \(error.localizedDescription)")
-      }
-  }
-  
-  private static func scheduleRefreshUpload() {
-    let backgroundRefresh = BGAppRefreshTaskRequest(identifier: refreshUploadTaskID)
+  private static func scheduleRefreshWorker() {
+    let backgroundRefresh = BGAppRefreshTaskRequest(identifier: refreshTaskID)
       backgroundRefresh.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60) // 5 mins
 
       do {
@@ -81,8 +44,8 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
       }
   }
 
-  private static func scheduleProcessingUpload() {
-    let backgroundProcessing = BGProcessingTaskRequest(identifier: processingUploadTaskID)
+  private static func scheduleProcessingWorker() {
+    let backgroundProcessing = BGProcessingTaskRequest(identifier: processingTaskID)
     
     backgroundProcessing.requiresNetworkConnectivity = true
     backgroundProcessing.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15 mins
@@ -94,29 +57,16 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     }
   }
   
-  private static func handleBackgroundRefresh(task: BGAppRefreshTask, taskType: BackgroundTaskType) {
-    let maxSeconds: Int?
-    
-    switch taskType {
-    case .localSync:
-      maxSeconds = 15
-      scheduleLocalSync()
-    case .refreshUpload:
-      maxSeconds = 20
-      scheduleRefreshUpload()
-    case .processingUpload:
-      print("Unexpected background refresh task encountered")
-      return;
-    }
-
+  private static func handleBackgroundRefresh(task: BGAppRefreshTask) {
+    scheduleRefreshWorker()
     // Restrict the refresh task to run only for a maximum of (maxSeconds) seconds
-    runBackgroundWorker(task: task, taskType: taskType, maxSeconds: maxSeconds)
+    runBackgroundWorker(task: task, taskType: .refresh, maxSeconds: 20)
   }
   
   private static func handleBackgroundProcessing(task: BGProcessingTask) {
-    scheduleProcessingUpload()
+    scheduleProcessingWorker()
     // There are no restrictions for processing tasks. Although, the OS could signal expiration at any time
-    runBackgroundWorker(task: task, taskType: .processingUpload, maxSeconds: nil)
+    runBackgroundWorker(task: task, taskType: .processing, maxSeconds: nil)
   }
   
   /**
