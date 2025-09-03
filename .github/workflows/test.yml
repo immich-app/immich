@@ -569,7 +569,8 @@ jobs:
       - name: Build the app
         run: pnpm --filter immich build
       - name: Run API generation
-        run: make open-api
+        run: ./bin/generate-open-api.sh
+        working-directory: open-api
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files

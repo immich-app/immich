@@ -36,6 +36,8 @@
       close: $t('close'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
+      confirm: $t('confirm'),
+      cancel: $t('cancel'),
     });
   });
 

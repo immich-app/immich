@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart' as beta_asset_service;
 import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
@@ -16,7 +18,6 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/memory.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 final deepLinkServiceProvider = Provider(
   (ref) => DeepLinkService(
@@ -66,19 +67,19 @@ class DeepLinkService {
     return DeepLink([
       // we need something to segue back to if the app was cold started
       // TODO: use MainTimelineRoute this when beta is default
-      if (isColdStart) (Store.isBetaTimelineEnabled) ? const MainTimelineRoute() : const PhotosRoute(),
+      if (isColdStart) (Store.isBetaTimelineEnabled) ? const TabShellRoute() : const PhotosRoute(),
       route,
     ]);
   }
 
-  Future<DeepLink> handleScheme(PlatformDeepLink link, bool isColdStart) async {
+  Future<DeepLink> handleScheme(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
     // get everything after the scheme, since Uri cannot parse path
     final intent = link.uri.host;
     final queryParams = link.uri.queryParameters;
 
     PageRouteInfo<dynamic>? deepLinkRoute = switch (intent) {
       "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
-      "asset" => await _buildAssetDeepLink(queryParams['id'] ?? ''),
+      "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
       _ => null,
     };
@@ -95,7 +96,7 @@ class DeepLinkService {
     return _handleColdStart(deepLinkRoute, isColdStart);
   }
 
-  Future<DeepLink> handleMyImmichApp(PlatformDeepLink link, bool isColdStart) async {
+  Future<DeepLink> handleMyImmichApp(PlatformDeepLink link, WidgetRef ref, bool isColdStart) async {
     final path = link.uri.path;
 
     const uuidRegex = r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
@@ -105,7 +106,7 @@ class DeepLinkService {
     PageRouteInfo<dynamic>? deepLinkRoute;
     if (assetRegex.hasMatch(path)) {
       final assetId = assetRegex.firstMatch(path)?.group(1) ?? '';
-      deepLinkRoute = await _buildAssetDeepLink(assetId);
+      deepLinkRoute = await _buildAssetDeepLink(assetId, ref);
     } else if (albumRegex.hasMatch(path)) {
       final albumId = albumRegex.firstMatch(path)?.group(1) ?? '';
       deepLinkRoute = await _buildAlbumDeepLink(albumId);
@@ -141,13 +142,14 @@ class DeepLinkService {
     }
   }
 
-  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId) async {
+  Future<PageRouteInfo?> _buildAssetDeepLink(String assetId, WidgetRef ref) async {
     if (Store.isBetaTimelineEnabled) {
       final asset = await _betaAssetService.getRemoteAsset(assetId);
       if (asset == null) {
         return null;
       }
 
+      AssetViewer.setAsset(ref, asset);
       return AssetViewerRoute(initialIndex: 0, timelineService: _betaTimelineFactory.fromAssets([asset]));
     } else {
       // TODO: Remove this when beta is default
