@@ -53,8 +53,8 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
         .addContentUriTrigger(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true)
         .addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
         .addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
-        .setTriggerContentUpdateDelay(5, TimeUnit.SECONDS)
-        .setTriggerContentMaxDelay(1, TimeUnit.MINUTES)
+        .setTriggerContentUpdateDelay(30, TimeUnit.SECONDS)
+        .setTriggerContentMaxDelay(3, TimeUnit.MINUTES)
         .build()
 
       val work = OneTimeWorkRequest.Builder(MediaObserver::class.java)
