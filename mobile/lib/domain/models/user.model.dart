@@ -128,7 +128,8 @@ profileChangedAt: $profileChangedAt
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        (updatedAt != null && other.updatedAt != null && other.updatedAt!.isAtSameMomentAs(updatedAt!)) &&
+        ((updatedAt == null && other.updatedAt == null) ||
+            (updatedAt != null && other.updatedAt != null && other.updatedAt!.isAtSameMomentAs(updatedAt!))) &&
         other.avatarColor == avatarColor &&
         other.email == email &&
         other.name == name &&
