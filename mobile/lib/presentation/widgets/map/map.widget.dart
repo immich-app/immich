@@ -47,10 +47,12 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   MapLibreMapController? mapController;
   final _reloadMutex = AsyncMutex();
   final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
+  final ValueNotifier<double> bottomSheetOffset = ValueNotifier(0.25);
 
   @override
   void dispose() {
     _debouncer.dispose();
+    bottomSheetOffset.dispose();
     super.dispose();
   }
 
@@ -157,8 +159,8 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     return Stack(
       children: [
         _Map(initialLocation: widget.initialLocation, onMapCreated: onMapCreated, onMapReady: onMapReady),
-        _MyLocationButton(onZoomToLocation: onZoomToLocation),
-        const MapBottomSheet(),
+        _DynamicBottomSheet(bottomSheetOffset: bottomSheetOffset),
+        _DynamicMyLocationButton(onZoomToLocation: onZoomToLocation, bottomSheetOffset: bottomSheetOffset),
       ],
     );
   }
@@ -191,21 +193,53 @@ class _Map extends StatelessWidget {
   }
 }
 
-class _MyLocationButton extends StatelessWidget {
-  const _MyLocationButton({required this.onZoomToLocation});
+class _DynamicBottomSheet extends StatefulWidget {
+  final ValueNotifier<double> bottomSheetOffset;
+
+  const _DynamicBottomSheet({required this.bottomSheetOffset});
+
+  @override
+  State<_DynamicBottomSheet> createState() => _DynamicBottomSheetState();
+}
+
+class _DynamicBottomSheetState extends State<_DynamicBottomSheet> {
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<DraggableScrollableNotification>(
+      onNotification: (notification) {
+        widget.bottomSheetOffset.value = notification.extent;
+        return true;
+      },
+      child: const MapBottomSheet(),
+    );
+  }
+}
+
+class _DynamicMyLocationButton extends StatelessWidget {
+  const _DynamicMyLocationButton({required this.onZoomToLocation, required this.bottomSheetOffset});
 
   final VoidCallback onZoomToLocation;
+  final ValueNotifier<double> bottomSheetOffset;
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      right: 0,
-      bottom: context.padding.bottom + 16,
-      child: ElevatedButton(
-        onPressed: onZoomToLocation,
-        style: ElevatedButton.styleFrom(shape: const CircleBorder()),
-        child: const Icon(Icons.my_location),
-      ),
+    return ValueListenableBuilder<double>(
+      valueListenable: bottomSheetOffset,
+      builder: (context, offset, child) {
+        return Positioned(
+          right: 16,
+          bottom: context.height * (offset - 0.02) + context.padding.bottom,
+          child: AnimatedOpacity(
+            opacity: offset < 0.8 ? 1 : 0,
+            duration: const Duration(milliseconds: 150),
+            child: ElevatedButton(
+              onPressed: onZoomToLocation,
+              style: ElevatedButton.styleFrom(shape: const CircleBorder()),
+              child: const Icon(Icons.my_location),
+            ),
+          ),
+        );
+      },
     );
   }
 }
