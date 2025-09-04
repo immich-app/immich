@@ -46,6 +46,23 @@ class ThumbnailApiImpl: ThumbnailApi {
     assetCache.countLimit = 10000
     return assetCache
   }()
+  private static let activitySemaphore = DispatchSemaphore(value: 1)
+  private static let willResignActiveObserver = NotificationCenter.default.addObserver(
+    forName: UIApplication.willResignActiveNotification,
+    object: nil,
+    queue: .main
+  ) { _ in
+    processingQueue.suspend()
+    activitySemaphore.wait()
+  }
+  private static let didBecomeActiveObserver = NotificationCenter.default.addObserver(
+    forName: UIApplication.didBecomeActiveNotification,
+    object: nil,
+    queue: .main
+  ) { _ in
+    processingQueue.resume()
+    activitySemaphore.signal()
+  }
   
   func getThumbhash(thumbhash: String, completion: @escaping (Result<[String : Int64], any Error>) -> Void) {
     Self.processingQueue.async {
@@ -53,6 +70,7 @@ class ThumbnailApiImpl: ThumbnailApi {
       else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
 
       let (width, height, pointer) = thumbHashToRGBA(hash: data)
+      self.waitForActiveState()
       completion(.success(["pointer": Int64(Int(bitPattern: pointer.baseAddress)), "width": Int64(width), "height": Int64(height)]))
     }
   }
@@ -142,6 +160,7 @@ class ThumbnailApiImpl: ThumbnailApi {
         return completion(Self.cancelledResult)
       }
       
+      self.waitForActiveState()
       completion(.success(["pointer": Int64(Int(bitPattern: pointer)), "width": Int64(cgImage.width), "height": Int64(cgImage.height)]))
       Self.removeRequest(requestId: requestId)
     }
@@ -183,5 +202,10 @@ class ThumbnailApiImpl: ThumbnailApi {
     else { return nil }
     assetQueue.async { assetCache.setObject(asset, forKey: assetId as NSString) }
     return asset
+  }
+  
+  func waitForActiveState() {
+    Self.activitySemaphore.wait()
+    Self.activitySemaphore.signal()
   }
 }
