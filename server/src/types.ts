@@ -275,6 +275,9 @@ export interface QueueStatus {
 }
 
 export type JobItem =
+  // Audit
+  | { name: JobName.AuditTableCleanup; data?: IBaseJob }
+
   // Backups
   | { name: JobName.DatabaseBackup; data?: IBaseJob }
 
