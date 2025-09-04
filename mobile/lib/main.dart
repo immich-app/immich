@@ -257,9 +257,18 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       child: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: true,
-        localizationsDelegates: [...context.localizationDelegates],
+        localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
-        locale: effectiveMaterialLocale(context),
+        locale: context.locale, //effectiveMaterialLocale(context),
+        builder: (context, child) {
+          return Localizations.override(
+            context: context,
+            locale: isMaterialSupported(context.locale)
+                ? context.locale
+                : const Locale('en'), // fallback for Material widgets
+            child: child,
+          );
+        },
         themeMode: ref.watch(immichThemeModeProvider),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
