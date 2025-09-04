@@ -582,8 +582,6 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: ./mobile/.nvmrc
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Generate translation file
         run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart && node scripts/generate_locale_names.js ../i18n
         working-directory: ./mobile
