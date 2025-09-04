@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
@@ -81,6 +82,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       }
     } else {
       _ref.read(backupProvider.notifier).cancelBackup();
+      final lockManager = _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
+
+      lockManager.requestHolderToClose();
+      debugPrint("Requested lock holder to close on resume");
+      await lockManager.acquireLock();
+      debugPrint("Lock acquired for background sync on resume");
 
       final backgroundManager = _ref.read(backgroundSyncProvider);
       // Ensure proper cleanup before starting new background tasks
@@ -130,7 +137,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     // do not stop/clean up anything on inactivity: issued on every orientation change
   }
 
-  void handleAppPause() {
+  Future<void> handleAppPause() async {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
 
@@ -140,6 +147,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
+      } else {
+        final backgroundManager = _ref.read(backgroundSyncProvider);
+        await backgroundManager.cancel();
+        await backgroundManager.cancelLocal();
+        _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort)).releaseLock();
+        debugPrint("Lock released on app pause");
       }
 
       _ref.read(websocketProvider.notifier).disconnect();
@@ -173,6 +186,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
 
     if (Store.isBetaTimelineEnabled) {
+      _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort)).releaseLock();
       return;
     }
 
