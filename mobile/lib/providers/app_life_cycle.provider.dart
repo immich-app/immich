@@ -105,6 +105,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         ]).then((_) async {
           final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
+          final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+
           if (isEnableBackup) {
             final currentUser = _ref.read(currentUserProvider);
             if (currentUser == null) {
@@ -112,6 +114,10 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             }
 
             await _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
+          }
+
+          if (isAlbumLinkedSyncEnable) {
+            await backgroundManager.syncLinkedAlbum();
           }
         });
       } catch (e, stackTrace) {
