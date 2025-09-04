@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import {
   Activity,
   ApiKey,
@@ -17,14 +16,15 @@ import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetStatus, AssetType, AssetVisibility, MemoryType, Permission, UserMetadataKey, UserStatus } from 'src/enum';
 import { OnThisDayData, UserMetadataItem } from 'src/types';
+import { v4, v7 } from 'uuid';
 
-export const newUuid = () => randomUUID() as string;
+export const newUuid = () => v4();
 export const newUuids = () =>
   Array.from({ length: 100 })
     .fill(0)
     .map(() => newUuid());
 export const newDate = () => new Date();
-export const newUuidV7 = () => 'uuid-v7';
+export const newUuidV7 = () => v7();
 export const newSha1 = () => Buffer.from('this is a fake hash');
 export const newEmbedding = () => {
   const embedding = Array.from({ length: 512 })

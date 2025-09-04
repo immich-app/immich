@@ -10,14 +10,14 @@ dev-update: prepare-volumes
 dev-scale: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --scale immich-server=3 --remove-orphans
 
-dev-docs: prepare-volumes
+dev-docs:
 	npm --prefix docs run start
 
 .PHONY: e2e
-e2e: prepare-volumes
+e2e:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --remove-orphans
 
-e2e-update: prepare-volumes
+e2e-update:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 e2e-down:
@@ -60,20 +60,41 @@ VOLUME_DIRS = \
 	./e2e/node_modules \
 	./docs/node_modules \
 	./server/node_modules \
-	./server/dist \
 	./open-api/typescript-sdk/node_modules \
 	./.github/node_modules \
 	./node_modules \
 	./cli/node_modules
 
-# create empty directories and chown to current user
+# Include .env file if it exists
+-include docker/.env
+
+# Helper function to chown, on error suggest remediation and exit
+define safe_chown
+	if chown $(2) $(or $(UID),1000):$(or $(GID),1000) "$(1)" 2>/dev/null; then \
+		true; \
+	else \
+	  	STATUS=$$?; echo "Exit code: $$STATUS $(1)"; \
+		echo "$$STATUS $(1)"; \
+		echo "Permission denied when changing owner of volumes and upload location. Try running 'sudo make prepare-volumes' first."; \
+		exit 1; \
+	fi;
+endef
+# create empty directories and chown
 prepare-volumes:
-	@for dir in $(VOLUME_DIRS); do \
-		mkdir -p $$dir; \
-	done
-	@if [ -n "$(VOLUME_DIRS)" ]; then \
-		chown -R $$(id -u):$$(id -g) $(VOLUME_DIRS); \
-	fi
+	@$(foreach dir,$(VOLUME_DIRS),mkdir -p $(dir);)
+	@$(foreach dir,$(VOLUME_DIRS),$(call safe_chown,$(dir),-R))
+ifneq ($(UPLOAD_LOCATION),)
+ifeq ($(filter /%,$(UPLOAD_LOCATION)),)
+	@mkdir -p "docker/$(UPLOAD_LOCATION)/photos/upload"
+	@$(call safe_chown,docker/$(UPLOAD_LOCATION),)
+	@$(call safe_chown,docker/$(UPLOAD_LOCATION)/photos,-R)
+else
+	@mkdir -p "$(UPLOAD_LOCATION)/photos/upload"
+	@$(call safe_chown,$(UPLOAD_LOCATION),)
+	@$(call safe_chown,$(UPLOAD_LOCATION)/photos,-R)
+endif
+endif
+
 
 MODULES = e2e server web cli sdk docs .github
 
@@ -150,8 +171,9 @@ clean:
 	find . -name ".svelte-kit" -type d -prune -exec rm -rf '{}' +
 	find . -name "coverage" -type d -prune -exec rm -rf '{}' +
 	find . -name ".pnpm-store" -type d -prune -exec rm -rf '{}' +
-	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml rm -v -f || true
-	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml rm -v -f || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./docker/docker-compose.dev.yml down -v --remove-orphans || true
+	command -v docker >/dev/null 2>&1 && docker compose -f ./e2e/docker-compose.yml down -v --remove-orphans || true
+
 
 setup-server-dev: install-server
 setup-web-dev: install-sdk build-sdk install-web

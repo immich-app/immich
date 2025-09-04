@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.139.4
+ * 1.140.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -4922,7 +4922,8 @@ export enum SyncEntityType {
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
-    SyncResetV1 = "SyncResetV1"
+    SyncResetV1 = "SyncResetV1",
+    SyncCompleteV1 = "SyncCompleteV1"
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
