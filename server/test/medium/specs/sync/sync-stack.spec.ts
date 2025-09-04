@@ -25,7 +25,6 @@ describe(SyncEntityType.StackV1, () => {
     const { stack } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.StacksV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.stringContaining('StackV1'),
@@ -38,10 +37,11 @@ describe(SyncEntityType.StackV1, () => {
         },
         type: 'StackV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.StacksV1]);
   });
 
   it('should detect and sync a deleted stack', async () => {
@@ -53,17 +53,17 @@ describe(SyncEntityType.StackV1, () => {
     await stackRepo.delete(stack.id);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.StacksV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.stringContaining('StackDeleteV1'),
         data: { stackId: stack.id },
         type: 'StackDeleteV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.StacksV1]);
   });
 
   it('should sync a stack and then an update to that same stack', async () => {
@@ -74,22 +74,29 @@ describe(SyncEntityType.StackV1, () => {
     const { stack } = await ctx.newStack({ ownerId: user.id }, [asset1.id, asset2.id]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.StacksV1]);
-    expect(response).toHaveLength(1);
+    expect(response).toEqual([
+      expect.objectContaining({ type: SyncEntityType.StackV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
     await ctx.syncAckAll(auth, response);
 
     await stackRepo.update(stack.id, { primaryAssetId: asset2.id });
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.StacksV1]);
-    expect(newResponse).toHaveLength(1);
+    expect(newResponse).toEqual([
+      expect.objectContaining({ type: SyncEntityType.StackV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
     expect(newResponse).toEqual([
       {
         ack: expect.stringContaining('StackV1'),
         data: expect.objectContaining({ id: stack.id, primaryAssetId: asset2.id }),
         type: 'StackV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.StacksV1]);
   });
 
   it('should not sync a stack or stack delete for an unrelated user', async () => {
@@ -100,8 +107,8 @@ describe(SyncEntityType.StackV1, () => {
     const { asset: asset2 } = await ctx.newAsset({ ownerId: user2.id });
     const { stack } = await ctx.newStack({ ownerId: user2.id }, [asset1.id, asset2.id]);
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.StacksV1]);
     await stackRepo.delete(stack.id);
-    await expect(ctx.syncStream(auth, [SyncRequestType.StacksV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.StacksV1]);
   });
 });

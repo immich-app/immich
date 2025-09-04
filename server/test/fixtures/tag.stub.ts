@@ -1,5 +1,6 @@
 import { Tag } from 'src/database';
 import { TagResponseDto } from 'src/dtos/tag.dto';
+import { newUuidV7 } from 'test/small.factory';
 
 const parent = Object.freeze<Tag>({
   id: 'tag-parent',
@@ -37,7 +38,10 @@ const color = {
   parentId: null,
 };
 
-const upsert = { userId: 'tag-user', updateId: 'uuid-v7' };
+const upsert = {
+  userId: 'tag-user',
+  updateId: newUuidV7(),
+};
 
 export const tagStub = {
   tag,

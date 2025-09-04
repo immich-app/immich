@@ -1,6 +1,9 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  AssetMetadataKey,
   AssetOrder,
   AssetType,
   DatabaseSslMode,
@@ -272,6 +275,9 @@ export interface QueueStatus {
 }
 
 export type JobItem =
+  // Audit
+  | { name: JobName.AuditTableCleanup; data?: IBaseJob }
+
   // Backups
   | { name: JobName.DatabaseBackup; data?: IBaseJob }
 
@@ -407,6 +413,16 @@ export interface UploadFile {
   size: number;
 }
 
+export type UploadRequest = {
+  auth: AuthDto | null;
+  fieldName: UploadFieldName;
+  file: UploadFile;
+  body: {
+    filename?: string;
+    [key: string]: unknown;
+  };
+};
+
 export interface UploadFiles {
   assetData: ImmichFile[];
   sidecarData: ImmichFile[];
@@ -465,11 +481,6 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.MemoriesState]: MemoriesState;
 }
 
-export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
-  key: T;
-  value: UserMetadata[T];
-};
-
 export interface UserPreferences {
   albums: {
     defaultAssetOrder: AssetOrder;
@@ -514,8 +525,22 @@ export interface UserPreferences {
   };
 }
 
+export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
+  key: T;
+  value: UserMetadata[T];
+};
+
 export interface UserMetadata extends Record<UserMetadataKey, Record<string, any>> {
   [UserMetadataKey.Preferences]: DeepPartial<UserPreferences>;
   [UserMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: string };
   [UserMetadataKey.Onboarding]: { isOnboarded: boolean };
+}
+
+export type AssetMetadataItem<T extends keyof AssetMetadata = AssetMetadataKey> = {
+  key: T;
+  value: AssetMetadata[T];
+};
+
+export interface AssetMetadata extends Record<AssetMetadataKey, Record<string, any>> {
+  [AssetMetadataKey.MobileApp]: { iCloudId: string };
 }

@@ -14,13 +14,12 @@ final driftMemoryServiceProvider = Provider<DriftMemoryService>(
   (ref) => DriftMemoryService(ref.watch(driftMemoryRepositoryProvider)),
 );
 
-final driftMemoryFutureProvider = FutureProvider.autoDispose<List<DriftMemory>>((ref) async {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) {
-    return [];
+final driftMemoryFutureProvider = FutureProvider.autoDispose<List<DriftMemory>>((ref) {
+  final (userId, enabled) = ref.watch(currentUserProvider.select((user) => (user?.id, user?.memoryEnabled ?? true)));
+  if (userId == null || !enabled) {
+    return const [];
   }
 
   final service = ref.watch(driftMemoryServiceProvider);
-
-  return service.getMemoryLane(user.id);
+  return service.getMemoryLane(userId);
 });

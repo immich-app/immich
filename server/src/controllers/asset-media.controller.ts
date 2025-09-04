@@ -188,7 +188,7 @@ export class AssetMediaController {
    * Checks if assets exist by checksums
    */
   @Post('bulk-upload-check')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpload })
   @ApiOperation({
     summary: 'checkBulkUpload',
     description: 'Checks if assets exist by checksums',

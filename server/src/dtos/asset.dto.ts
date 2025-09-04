@@ -1,21 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDateString,
   IsInt,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
+  IsObject,
   IsPositive,
   IsString,
   IsTimeZone,
   Max,
   Min,
   ValidateIf,
+  ValidateNested,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetType, AssetVisibility } from 'src/enum';
+import { AssetMetadataKey, AssetType, AssetVisibility } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
+import { AssetMetadata, AssetMetadataItem } from 'src/types';
 import { IsNotSiblingOf, Optional, ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
@@ -133,6 +137,53 @@ export class AssetStatsResponseDto {
 
   @ApiProperty({ type: 'integer' })
   total!: number;
+}
+
+export class AssetMetadataRouteParams {
+  @ValidateUUID()
+  id!: string;
+
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+}
+
+export class AssetMetadataUpsertDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetMetadataUpsertItemDto)
+  items!: AssetMetadataUpsertItemDto[];
+}
+
+export class AssetMetadataUpsertItemDto implements AssetMetadataItem {
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+
+  @IsObject()
+  @ValidateNested()
+  @Type((options) => {
+    switch (options?.object.key) {
+      case AssetMetadataKey.MobileApp: {
+        return AssetMetadataMobileAppDto;
+      }
+      default: {
+        return Object;
+      }
+    }
+  })
+  value!: AssetMetadata[AssetMetadataKey];
+}
+
+export class AssetMetadataMobileAppDto {
+  @IsString()
+  @Optional()
+  iCloudId?: string;
+}
+
+export class AssetMetadataResponseDto {
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+  value!: object;
+  updatedAt!: Date;
 }
 
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {

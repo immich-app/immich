@@ -54,6 +54,8 @@ class User {
     avatarColor: dto.avatarColor,
     memoryEnabled: dto.memoryEnabled,
     inTimeline: dto.inTimeline,
+    quotaUsageInBytes: dto.quotaUsageInBytes,
+    quotaSizeInBytes: dto.quotaSizeInBytes,
   );
 
   UserDto toDto() => UserDto(

@@ -7,9 +7,10 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
-class TimelineHeader extends StatelessWidget {
+class TimelineHeader extends HookConsumerWidget {
   final Bucket bucket;
   final HeaderType header;
   final double height;
@@ -36,13 +37,12 @@ class TimelineHeader extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (bucket is! TimeBucket || header == HeaderType.none) {
       return const SizedBox.shrink();
     }
 
     final date = (bucket as TimeBucket).date;
-
     final isMonthHeader = header == HeaderType.month || header == HeaderType.monthAndDay;
     final isDayHeader = header == HeaderType.day || header == HeaderType.monthAndDay;
 
@@ -57,7 +57,10 @@ class TimelineHeader extends StatelessWidget {
             if (isMonthHeader)
               Row(
                 children: [
-                  Text(_formatMonth(context, date), style: context.textTheme.labelLarge?.copyWith(fontSize: 24)),
+                  Text(
+                    toBeginningOfSentenceCase(_formatMonth(context, date)),
+                    style: context.textTheme.labelLarge?.copyWith(fontSize: 24),
+                  ),
                   const Spacer(),
                   if (header != HeaderType.monthAndDay) _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
                 ],
@@ -65,7 +68,10 @@ class TimelineHeader extends StatelessWidget {
             if (isDayHeader)
               Row(
                 children: [
-                  Text(_formatDay(context, date), style: context.textTheme.labelLarge?.copyWith(fontSize: 15)),
+                  Text(
+                    toBeginningOfSentenceCase(_formatDay(context, date)),
+                    style: context.textTheme.labelLarge?.copyWith(fontSize: 15),
+                  ),
                   const Spacer(),
                   _BulkSelectIconButton(bucket: bucket, assetOffset: assetOffset),
                 ],
@@ -92,16 +98,19 @@ class _BulkSelectIconButton extends ConsumerWidget {
       bucketAssets = <BaseAsset>[];
     }
 
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isAllSelected = ref.watch(bucketSelectionProvider(bucketAssets));
 
-    return IconButton(
-      onPressed: () {
-        ref.read(multiSelectProvider.notifier).toggleBucketSelection(assetOffset, bucket.assetCount);
-        ref.read(hapticFeedbackProvider.notifier).heavyImpact();
-      },
-      icon: isAllSelected
-          ? Icon(Icons.check_circle_rounded, size: 26, color: context.primaryColor)
-          : Icon(Icons.check_circle_outline_rounded, size: 26, color: context.colorScheme.onSurfaceSecondary),
-    );
+    return isReadonlyModeEnabled
+        ? const SizedBox.shrink()
+        : IconButton(
+            onPressed: () {
+              ref.read(multiSelectProvider.notifier).toggleBucketSelection(assetOffset, bucket.assetCount);
+              ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+            },
+            icon: isAllSelected
+                ? Icon(Icons.check_circle_rounded, size: 26, color: context.primaryColor)
+                : Icon(Icons.check_circle_outline_rounded, size: 26, color: context.colorScheme.onSurfaceSecondary),
+          );
   }
 }

@@ -334,8 +334,8 @@ class ActionNotifier extends Notifier<void> {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      final count = await _service.shareAssets(ids);
-      return ActionResult(count: count, success: true);
+      await _service.shareAssets(ids);
+      return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());

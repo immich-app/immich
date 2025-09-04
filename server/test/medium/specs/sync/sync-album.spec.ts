@@ -24,7 +24,6 @@ describe(SyncRequestType.AlbumsV1, () => {
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -35,10 +34,11 @@ describe(SyncRequestType.AlbumsV1, () => {
         }),
         type: SyncEntityType.AlbumV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
   });
 
   it('should detect and sync a new album', async () => {
@@ -46,7 +46,6 @@ describe(SyncRequestType.AlbumsV1, () => {
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -55,10 +54,11 @@ describe(SyncRequestType.AlbumsV1, () => {
         }),
         type: SyncEntityType.AlbumV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
   });
 
   it('should detect and sync an album delete', async () => {
@@ -67,7 +67,6 @@ describe(SyncRequestType.AlbumsV1, () => {
     const { album } = await ctx.newAlbum({ ownerId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -76,12 +75,12 @@ describe(SyncRequestType.AlbumsV1, () => {
         }),
         type: SyncEntityType.AlbumV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await albumRepo.delete(album.id);
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-    expect(newResponse).toHaveLength(1);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
@@ -90,10 +89,11 @@ describe(SyncRequestType.AlbumsV1, () => {
         },
         type: SyncEntityType.AlbumDeleteV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
   });
 
   describe('shared albums', () => {
@@ -104,17 +104,17 @@ describe(SyncRequestType.AlbumsV1, () => {
       await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
       const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-      expect(response).toHaveLength(1);
       expect(response).toEqual([
         {
           ack: expect.any(String),
           data: expect.objectContaining({ id: album.id }),
           type: SyncEntityType.AlbumV1,
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]);
 
       await ctx.syncAckAll(auth, response);
-      await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+      await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
     });
 
     it('should detect and sync an album share (share before sync)', async () => {
@@ -124,17 +124,17 @@ describe(SyncRequestType.AlbumsV1, () => {
       await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
       const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-      expect(response).toHaveLength(1);
       expect(response).toEqual([
         {
           ack: expect.any(String),
           data: expect.objectContaining({ id: album.id }),
           type: SyncEntityType.AlbumV1,
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]);
 
       await ctx.syncAckAll(auth, response);
-      await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+      await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
     });
 
     it('should detect and sync an album share (share after sync)', async () => {
@@ -150,23 +150,24 @@ describe(SyncRequestType.AlbumsV1, () => {
           data: expect.objectContaining({ id: userAlbum.id }),
           type: SyncEntityType.AlbumV1,
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]);
 
       await ctx.syncAckAll(auth, response);
       await ctx.newAlbumUser({ userId: auth.user.id, albumId: user2Album.id, role: AlbumUserRole.Editor });
 
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-      expect(newResponse).toHaveLength(1);
       expect(newResponse).toEqual([
         {
           ack: expect.any(String),
           data: expect.objectContaining({ id: user2Album.id }),
           type: SyncEntityType.AlbumV1,
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]);
 
       await ctx.syncAckAll(auth, newResponse);
-      await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+      await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
     });
 
     it('should detect and sync an album delete`', async () => {
@@ -177,24 +178,27 @@ describe(SyncRequestType.AlbumsV1, () => {
       await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
       const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-      expect(response).toHaveLength(1);
+      expect(response).toEqual([
+        expect.objectContaining({ type: SyncEntityType.AlbumV1 }),
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+      ]);
 
       await ctx.syncAckAll(auth, response);
-      await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+      await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
 
       await albumRepo.delete(album.id);
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-      expect(newResponse).toHaveLength(1);
       expect(newResponse).toEqual([
         {
           ack: expect.any(String),
           data: { albumId: album.id },
           type: SyncEntityType.AlbumDeleteV1,
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]);
 
       await ctx.syncAckAll(auth, newResponse);
-      await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+      await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
     });
 
     it('should detect and sync an album unshare as an album delete', async () => {
@@ -205,10 +209,13 @@ describe(SyncRequestType.AlbumsV1, () => {
       await ctx.newAlbumUser({ albumId: album.id, userId: auth.user.id, role: AlbumUserRole.Editor });
 
       const response = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
-      expect(response).toHaveLength(1);
+      expect(response).toEqual([
+        expect.objectContaining({ type: SyncEntityType.AlbumV1 }),
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+      ]);
 
       await ctx.syncAckAll(auth, response);
-      await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+      await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
 
       await albumUserRepo.delete({ albumsId: album.id, usersId: auth.user.id });
       const newResponse = await ctx.syncStream(auth, [SyncRequestType.AlbumsV1]);
@@ -218,10 +225,11 @@ describe(SyncRequestType.AlbumsV1, () => {
           data: { albumId: album.id },
           type: SyncEntityType.AlbumDeleteV1,
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]);
 
       await ctx.syncAckAll(auth, newResponse);
-      await expect(ctx.syncStream(auth, [SyncRequestType.AlbumsV1])).resolves.toEqual([]);
+      await ctx.assertSyncIsComplete(auth, [SyncRequestType.AlbumsV1]);
     });
   });
 });

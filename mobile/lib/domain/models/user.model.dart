@@ -75,6 +75,8 @@ profileChangedAt: $profileChangedAt
     bool? isPartnerSharedWith,
     bool? hasProfileImage,
     DateTime? profileChangedAt,
+    int? quotaSizeInBytes,
+    int? quotaUsageInBytes,
   }) => UserDto(
     id: id ?? this.id,
     email: email ?? this.email,
@@ -88,6 +90,8 @@ profileChangedAt: $profileChangedAt
     isPartnerSharedWith: isPartnerSharedWith ?? this.isPartnerSharedWith,
     hasProfileImage: hasProfileImage ?? this.hasProfileImage,
     profileChangedAt: profileChangedAt ?? this.profileChangedAt,
+    quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
+    quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
   );
 
   @override
@@ -105,7 +109,9 @@ profileChangedAt: $profileChangedAt
         other.memoryEnabled == memoryEnabled &&
         other.inTimeline == inTimeline &&
         other.hasProfileImage == hasProfileImage &&
-        other.profileChangedAt.isAtSameMomentAs(profileChangedAt);
+        other.profileChangedAt.isAtSameMomentAs(profileChangedAt) &&
+        other.quotaSizeInBytes == quotaSizeInBytes &&
+        other.quotaUsageInBytes == quotaUsageInBytes;
   }
 
   @override
@@ -121,7 +127,9 @@ profileChangedAt: $profileChangedAt
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
       hasProfileImage.hashCode ^
-      profileChangedAt.hashCode;
+      profileChangedAt.hashCode ^
+      quotaSizeInBytes.hashCode ^
+      quotaUsageInBytes.hashCode;
 }
 
 class PartnerUserDto {

@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202508191104@sha256:0608857ef682099c458f0fb319afdcaf09462bbb5670b6dcd3642029f12eee1c AS dev
+FROM ghcr.io/immich-app/base-server-dev:202509021104@sha256:47d38c94775332000a93fbbeca1c796687b2d2919e3c75b6e26ab8a65d1864f3 AS dev
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
@@ -77,7 +77,7 @@ RUN apt-get update \
 RUN dart --disable-analytics
 
 # production-builder-base image
-FROM ghcr.io/immich-app/base-server-dev:202508191104@sha256:0608857ef682099c458f0fb319afdcaf09462bbb5670b6dcd3642029f12eee1c AS prod-builder-base
+FROM ghcr.io/immich-app/base-server-dev:202509021104@sha256:47d38c94775332000a93fbbeca1c796687b2d2919e3c75b6e26ab8a65d1864f3 AS prod-builder-base
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp
@@ -115,7 +115,7 @@ RUN pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && 
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
 # prod base image
-FROM ghcr.io/immich-app/base-server-prod:202508191104@sha256:4cce4119f5555fce5e383b681e4feea31956ceadb94cafcbcbbae2c7b94a1b62
+FROM ghcr.io/immich-app/base-server-prod:202509021104@sha256:84f3727cff75c623f79236cdd9a2b72c84f7665057f474851016f702c67157af
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

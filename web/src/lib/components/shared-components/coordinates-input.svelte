@@ -20,6 +20,10 @@
     }
   };
 
+  const onKeyDown = (event: KeyboardEvent) => {
+    event.stopPropagation();
+  };
+
   const onPaste = (event: ClipboardEvent) => {
     const pastedText = event.clipboardData?.getData('text/plain');
     if (!pastedText) {
@@ -42,10 +46,10 @@
 
 <div>
   <label class="immich-form-label" for="latitude-input-{id}">{$t('latitude')}</label>
-  <NumberRangeInput id="latitude-input-{id}" min={-90} max={90} {onInput} {onPaste} bind:value={lat} />
+  <NumberRangeInput id="latitude-input-{id}" min={-90} max={90} {onKeyDown} {onInput} {onPaste} bind:value={lat} />
 </div>
 
 <div>
   <label class="immich-form-label" for="longitude-input-{id}">{$t('longitude')}</label>
-  <NumberRangeInput id="longitude-input-{id}" min={-180} max={180} {onInput} {onPaste} bind:value={lng} />
+  <NumberRangeInput id="longitude-input-{id}" min={-180} max={180} {onKeyDown} {onInput} {onPaste} bind:value={lng} />
 </div>

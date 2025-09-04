@@ -24,6 +24,7 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provi
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
@@ -58,6 +59,18 @@ class AssetViewer extends ConsumerStatefulWidget {
 
   @override
   ConsumerState createState() => _AssetViewerState();
+
+  static void setAsset(WidgetRef ref, BaseAsset asset) {
+    // Always holds the current asset from the timeline
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    // The currentAssetNotifier actually holds the current asset that is displayed
+    // which could be stack children as well
+    ref.read(currentAssetNotifier.notifier).setAsset(asset);
+    if (asset.isVideo || asset.isMotionPhoto) {
+      ref.read(videoPlaybackValueProvider.notifier).reset();
+      ref.read(videoPlayerControlsProvider.notifier).pause();
+    }
+  }
 }
 
 const double _kBottomSheetMinimumExtent = 0.4;
@@ -98,13 +111,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   @override
   void initState() {
     super.initState();
+    assert(ref.read(currentAssetNotifier) != null, "Current asset should not be null when opening the AssetViewer");
     pageController = PageController(initialPage: widget.initialIndex);
     platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _onAssetChanged(widget.initialIndex);
-    });
+    WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
     reloadSubscription = EventStream.shared.listen(_onEvent);
     heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
   }
@@ -142,26 +154,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return provider.resolve(ImageConfiguration.empty)..addListener(_dummyListener);
   }
 
-  void _onAssetChanged(int index) async {
-    // Validate index bounds and try to get asset, loading buffer if needed
+  void _precacheAssets(int index) {
     final timelineService = ref.read(timelineServiceProvider);
-    final asset = await timelineService.getAssetAsync(index);
-
-    if (asset == null) {
-      return;
-    }
-
-    // Always holds the current asset from the timeline
-    ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // The currentAssetNotifier actually holds the current asset that is displayed
-    // which could be stack children as well
-    ref.read(currentAssetNotifier.notifier).setAsset(asset);
-    if (asset.isVideo || asset.isMotionPhoto) {
-      ref.read(videoPlaybackValueProvider.notifier).reset();
-      ref.read(videoPlayerControlsProvider.notifier).pause();
-    }
-
-    unawaited(ref.read(timelineServiceProvider).preCacheAssets(index));
+    unawaited(timelineService.preCacheAssets(index));
     _cancelTimers();
     // This will trigger the pre-caching of adjacent assets ensuring
     // that they are ready when the user navigates to them.
@@ -180,12 +175,29 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _nextPreCacheStream = nextAsset != null ? _precacheImage(nextAsset) : null;
     });
     _delayedOperations.add(timer);
-
-    _handleCasting(asset);
   }
 
-  void _handleCasting(BaseAsset asset) {
+  void _onAssetInit(Duration _) {
+    _precacheAssets(widget.initialIndex);
+    _handleCasting();
+  }
+
+  void _onAssetChanged(int index) async {
+    final timelineService = ref.read(timelineServiceProvider);
+    final asset = await timelineService.getAssetAsync(index);
+    if (asset == null) {
+      return;
+    }
+
+    AssetViewer.setAsset(ref, asset);
+    _precacheAssets(index);
+    _handleCasting();
+  }
+
+  void _handleCasting() {
     if (!ref.read(castProvider).isCasting) return;
+    final asset = ref.read(currentAssetNotifier);
+    if (asset == null) return;
 
     // hide any casting snackbars if they exist
     context.scaffoldMessenger.hideCurrentSnackBar();
@@ -308,7 +320,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       bottomSheetController.jumpTo((centre + distanceToOrigin) / ctx.height);
     }
 
-    if (distanceToOrigin > openThreshold && !showingBottomSheet) {
+    if (distanceToOrigin > openThreshold && !showingBottomSheet && !ref.read(readonlyModeProvider)) {
       _openBottomSheet(ctx);
     }
   }
@@ -596,7 +608,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       if (asset == null) return;
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _handleCasting(asset);
+        _handleCasting();
       });
     });
 

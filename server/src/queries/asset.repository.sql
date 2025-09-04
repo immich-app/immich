@@ -19,6 +19,33 @@ returning
   "dateTimeOriginal",
   "timeZone"
 
+-- AssetRepository.getMetadata
+select
+  "key",
+  "value",
+  "updatedAt"
+from
+  "asset_metadata"
+where
+  "assetId" = $1
+
+-- AssetRepository.getMetadataByKey
+select
+  "key",
+  "value",
+  "updatedAt"
+from
+  "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+
+-- AssetRepository.deleteMetadataByKey
+delete from "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (

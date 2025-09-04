@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
 import { AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
@@ -63,6 +64,12 @@ export class AssetMediaCreateDto extends AssetMediaBase {
 
   @ValidateUUID({ optional: true })
   livePhotoVideoId?: string;
+
+  @Optional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AssetMetadataUpsertItemDto)
+  metadata!: AssetMetadataUpsertItemDto[];
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   [UploadFieldName.SIDECAR_DATA]?: any;

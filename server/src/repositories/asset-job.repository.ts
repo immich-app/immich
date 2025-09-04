@@ -334,9 +334,9 @@ export class AssetJobRepository {
   @GenerateSql({ params: [], stream: true })
   streamForDetectFacesJob(force?: boolean) {
     return this.assetsWithPreviews()
-      .$if(!force, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
       .select(['asset.id'])
-      .orderBy('asset.createdAt', 'desc')
+      .orderBy('asset.fileCreatedAt', 'desc')
       .stream();
   }
 

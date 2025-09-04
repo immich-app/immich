@@ -50,11 +50,10 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
   Stream<ImageInfo> loadRequest(ImageRequest request, ImageDecoderCallback decode) async* {
     if (isCancelled) {
+      this.request = null;
       evict();
       return;
     }
-
-    this.request = request;
 
     try {
       final image = await request.load(decode);

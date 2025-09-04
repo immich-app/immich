@@ -27,8 +27,12 @@ class UploadRepository {
     );
   }
 
-  void enqueueBackgroundAll(List<UploadTask> tasks) {
-    FileDownloader().enqueueAll(tasks);
+  Future<void> enqueueBackground(UploadTask task) {
+    return FileDownloader().enqueue(task);
+  }
+
+  Future<void> enqueueBackgroundAll(List<UploadTask> tasks) {
+    return FileDownloader().enqueueAll(tasks);
   }
 
   Future<void> deleteDatabaseRecords(String group) {

@@ -42,6 +42,7 @@ describe(JobService.name, () => {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.AuditTableCleanup },
         { name: JobName.AuditLogCleanup },
         { name: JobName.MemoryGenerate },
         { name: JobName.UserSyncUsage },
