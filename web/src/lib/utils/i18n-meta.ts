@@ -2,7 +2,7 @@ const modules = import.meta.glob('$i18n/*.json');
 
 export const availableLocales = Object.keys(modules)
   .map((path) => path.match(/\/(\w+)\.json$/)?.[1])
-  .filter((code): code is string => Boolean(code));
+  .filter(Boolean) as string[];
 
 export function convertBCP47(code: string) {
   return code.replace('_', '-');
