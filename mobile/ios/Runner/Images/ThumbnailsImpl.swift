@@ -70,6 +70,7 @@ class ThumbnailApiImpl: ThumbnailApi {
       else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
 
       let (width, height, pointer) = thumbHashToRGBA(hash: data)
+      self.waitForActiveState()
       completion(.success(["pointer": Int64(Int(bitPattern: pointer.baseAddress)), "width": Int64(width), "height": Int64(height)]))
     }
   }
