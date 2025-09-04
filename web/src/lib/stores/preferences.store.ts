@@ -24,8 +24,6 @@ export const lang = persisted<string>('lang', preferredLocale || defaultLang.cod
   },
 });
 
-console.log(preferredLocale);
-
 export interface MapSettings {
   allowDarkMode: boolean;
   includeArchived: boolean;
