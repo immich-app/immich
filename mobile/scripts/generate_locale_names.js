@@ -34,7 +34,7 @@ const Map<String, String> localeNames = {
 `;
 
 for (const [code, name] of Object.entries(mapping)) {
-  dartContent += `  '${code}': '${name.replace("'", "\\'")}',\n`;
+  dartContent += `  '${code}': '${name.replace(/'/g, "\\'")}',\n`;
 }
 
 dartContent += '};\n';
