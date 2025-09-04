@@ -34,11 +34,12 @@ const Map<String, String> localeNames = {
 `;
 
 for (const [code, name] of Object.entries(mapping)) {
-  dartContent += `  '${code}': '${name.replace(/'/g, "\\'")}',\n`;
+  const escapedName = name
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'");
+
+  dartContent += `  '${code}': '${escapedName}',\n`;
 }
-
-dartContent += '};\n';
-
 // Write Dart file
 fs.writeFileSync('lib/generated/locale_names.g.dart', dartContent);
 
