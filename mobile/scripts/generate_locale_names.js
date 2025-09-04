@@ -40,7 +40,9 @@ for (const [code, name] of Object.entries(mapping)) {
 
   dartContent += `  '${code}': '${escapedName}',\n`;
 }
-// Write Dart file
+
+dartContent += '};\n';
+
 fs.writeFileSync('lib/generated/locale_names.g.dart', dartContent);
 
 // Helper functions
