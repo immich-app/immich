@@ -123,6 +123,14 @@ offset
   $8
 commit
 
+-- SearchRepository.getEmbedding
+select
+  *
+from
+  "smart_search"
+where
+  "assetId" = $1
+
 -- SearchRepository.searchFaces
 begin
 set
