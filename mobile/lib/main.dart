@@ -41,7 +41,6 @@ import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
-import 'package:immich_mobile/utils/locale_utils.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -258,17 +257,8 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         title: 'Immich',
         debugShowCheckedModeBanner: true,
         localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale, //effectiveMaterialLocale(context),
-        builder: (context, child) {
-          return Localizations.override(
-            context: context,
-            locale: isMaterialSupported(context.locale)
-                ? context.locale
-                : const Locale('en'), // fallback for Material widgets
-            child: child,
-          );
-        },
+        supportedLocales: materialSupportedLanguages,
+        locale: context.locale,
         themeMode: ref.watch(immichThemeModeProvider),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
