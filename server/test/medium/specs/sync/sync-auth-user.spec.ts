@@ -84,4 +84,23 @@ describe(SyncEntityType.AuthUserV1, () => {
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
+
+  it('should only sync the auth user', async () => {
+    const { auth, user, ctx } = await setup(await getKyselyDB());
+
+    await ctx.newUser();
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          id: user.id,
+          isAdmin: false,
+        }),
+        type: 'AuthUserV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
 });
