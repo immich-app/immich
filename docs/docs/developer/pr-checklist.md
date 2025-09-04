@@ -8,11 +8,11 @@ When contributing code through a pull request, please check the following:
 
 ## Web Checks
 
-- [ ] `pnpm run lint` (linting via ESLint)
-- [ ] `pnpm run format` (formatting via Prettier)
-- [ ] `pnpm run check:svelte` (Type checking via SvelteKit)
-- [ ] `pnpm run check:typescript` (check typescript)
-- [ ] `pnpm test` (unit tests)
+- [ ] `mise run web:lint` (linting via ESLint)
+- [ ] `mise run web:format` (formatting via Prettier)
+- [ ] `mise run web:check` (check typescript)
+- [ ] `mise run web:check-svelte` (Type checking via SvelteKit)
+- [ ] `mise run web:test` (unit tests)
 
 ## Documentation
 
@@ -25,17 +25,18 @@ Run all web checks with `pnpm run check:all`
 
 ## Server Checks
 
-- [ ] `pnpm run lint` (linting via ESLint)
-- [ ] `pnpm run format` (formatting via Prettier)
-- [ ] `pnpm run check` (Type checking via `tsc`)
-- [ ] `pnpm test` (unit tests)
+- [ ] `mise run server:lint` (linting via ESLint)
+- [ ] `mise run server:format` (formatting via Prettier)
+- [ ] `mise run server:check` (type checking via `tsc`)
+- [ ] `mise run server:test` (unit tests)
+- [ ] `mise run server:test-medium` (medium tests)
 
 :::tip AIO
 Run all server checks with `pnpm run check:all`
 :::
 
 :::info Auto Fix
-You can use `pnpm run __:fix` to potentially correct some issues automatically for `pnpm run format` and `lint`.
+You can use `mise run server:lint-fix` and `mise run server:format-fix` to potentially correct some issues automatically.
 :::
 
 ## Mobile Checks

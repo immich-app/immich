@@ -28,15 +28,11 @@ jobs:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: true
 
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
 
       - name: Fix formatting
-        run: make install-all && make format-all
+        run: mise run server:format-fix && mise run web:format-fix && mise run docs:format-fix
 
       - name: Commit and push
         uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4

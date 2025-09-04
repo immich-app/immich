@@ -20,20 +20,15 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
 
-      # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './open-api/typescript-sdk/.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: mise run sdk:install
+
       - name: Build
-        run: pnpm build
+        run: mise run sdk:build
+
       - name: Publish
         run: pnpm publish
         env:

@@ -4,17 +4,6 @@
   "description": "",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "test": "vitest --run",
-    "test:watch": "vitest",
-    "test:web": "npx playwright test",
-    "start:web": "npx playwright test --ui",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
-    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
-    "lint:fix": "npm run lint -- --fix",
-    "check": "tsc --noEmit"
-  },
   "keywords": [],
   "author": "",
   "license": "GNU Affero General Public License version 3",
@@ -52,8 +41,5 @@
     "typescript-eslint": "^8.28.0",
     "utimes": "^5.2.1",
     "vitest": "^3.0.0"
-  },
-  "volta": {
-    "node": "22.18.0"
   }
 }

@@ -11,9 +11,6 @@
       "default": "./build/index.js"
     }
   },
-  "scripts": {
-    "build": "tsc"
-  },
   "license": "GNU Affero General Public License version 3",
   "dependencies": {
     "@oazapfts/runtime": "^1.0.2"
@@ -26,8 +23,5 @@
     "type": "git",
     "url": "git+https://github.com/immich-app/immich.git",
     "directory": "open-api/typescript-sdk"
-  },
-  "volta": {
-    "node": "22.18.0"
   }
 }
