@@ -21,8 +21,7 @@ describe(SyncEntityType.SyncResetV1, () => {
   it('should work', async () => {
     const { auth, ctx } = await setup();
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.AssetsV1]);
-    expect(response).toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV1]);
   });
 
   it('should detect a pending sync reset', async () => {
@@ -41,7 +40,10 @@ describe(SyncEntityType.SyncResetV1, () => {
 
     await ctx.newAsset({ ownerId: user.id });
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
+    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
 
     await ctx.get(SessionRepository).update(auth.session!.id, {
       isPendingSyncReset: true,
@@ -62,9 +64,8 @@ describe(SyncEntityType.SyncResetV1, () => {
     });
 
     await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV1], true)).resolves.toEqual([
-      expect.objectContaining({
-        type: SyncEntityType.AssetV1,
-      }),
+      expect.objectContaining({ type: SyncEntityType.AssetV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
 
@@ -86,9 +87,8 @@ describe(SyncEntityType.SyncResetV1, () => {
 
     const postResetResponse = await ctx.syncStream(auth, [SyncRequestType.AssetsV1]);
     expect(postResetResponse).toEqual([
-      expect.objectContaining({
-        type: SyncEntityType.AssetV1,
-      }),
+      expect.objectContaining({ type: SyncEntityType.AssetV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
 });
