@@ -24,7 +24,7 @@ import UIKit
     BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
 
     BackgroundServicePlugin.registerBackgroundProcessing()
-    BackgroundWorkerApiImpl.registerBackgroundProcessing()
+    BackgroundWorkerApiImpl.registerBackgroundWorkers()
 
     BackgroundServicePlugin.setPluginRegistrantCallback { registry in
       if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {

@@ -1,5 +1,7 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetMetadataKey,
   AssetOrder,
@@ -273,6 +275,9 @@ export interface QueueStatus {
 }
 
 export type JobItem =
+  // Audit
+  | { name: JobName.AuditTableCleanup; data?: IBaseJob }
+
   // Backups
   | { name: JobName.DatabaseBackup; data?: IBaseJob }
 
@@ -407,6 +412,16 @@ export interface UploadFile {
   originalName: string;
   size: number;
 }
+
+export type UploadRequest = {
+  auth: AuthDto | null;
+  fieldName: UploadFieldName;
+  file: UploadFile;
+  body: {
+    filename?: string;
+    [key: string]: unknown;
+  };
+};
 
 export interface UploadFiles {
   assetData: ImmichFile[];
