@@ -8,13 +8,14 @@ Locale _parseLocale(String code) {
   final parts = code.split('_');
   if (parts.length == 1) {
     return Locale(parts[0]);
-  } else if (parts.length == 2) {
+  }
+  if (parts.length == 2) {
     if (parts[1].length == 2) {
       return Locale(parts[0], parts[1]);
-    } else {
-      return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
     }
-  } else if (parts.length == 3) {
+    return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1]);
+  }
+  if (parts.length == 3) {
     return Locale.fromSubtags(languageCode: parts[0], scriptCode: parts[1], countryCode: parts[2]);
   }
   throw ArgumentError('Invalid locale code: $code');
