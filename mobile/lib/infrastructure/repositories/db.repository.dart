@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
@@ -43,6 +44,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 
 @DriftDatabase(
   tables: [
+    AuthUserEntity,
     UserEntity,
     UserMetadataEntity,
     PartnerEntity,
@@ -68,7 +70,7 @@ class Drift extends $Drift implements IDatabaseRepository {
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -122,6 +124,11 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from7To8: (m, v8) async {
             await m.create(v8.storeEntity);
+          },
+          from8To9: (m, v9) async {
+            await m.createTable(v9.authUserEntity);
+            await m.addColumn(v9.userEntity, v9.userEntity.avatarColor);
+            await m.alterTable(TableMigration(v9.userEntity));
           },
         ),
       );

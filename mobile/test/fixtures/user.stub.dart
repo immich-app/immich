@@ -1,5 +1,4 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 
 abstract final class UserStub {
   const UserStub._();

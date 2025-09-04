@@ -37,6 +37,7 @@ class SyncApiRepository {
     request.body = jsonEncode(
       SyncStreamDto(
         types: [
+          SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
           SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
@@ -130,6 +131,7 @@ class SyncApiRepository {
 }
 
 const _kResponseMap = <SyncEntityType, Function(Object)>{
+  SyncEntityType.authUserV1: SyncAuthUserV1.fromJson,
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,

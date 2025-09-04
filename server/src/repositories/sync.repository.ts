@@ -412,6 +412,7 @@ class AuthUserSync extends BaseSync {
     return this.upsertQuery('user', options)
       .select(columns.syncUser)
       .select(['isAdmin', 'pinCode', 'oauthId', 'storageLabel', 'quotaSizeInBytes', 'quotaUsageInBytes'])
+      .where('id', '=', options.userId)
       .stream();
   }
 }
