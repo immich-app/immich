@@ -1,8 +1,5 @@
 {
-  "scripts": {
-    "format": "prettier --check .",
-    "format:fix": "prettier --write ."
-  },
+  "name": "github",
   "devDependencies": {
     "prettier": "^3.5.3"
   }

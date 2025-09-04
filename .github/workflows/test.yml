@@ -72,27 +72,21 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Run package manager install
-        run: pnpm install
+        run: mise run server:install
       - name: Run linter
-        run: pnpm lint
+        run: mise run server:lint
         if: ${{ !cancelled() }}
       - name: Run formatter
-        run: pnpm format
+        run: mise run server:format
         if: ${{ !cancelled() }}
       - name: Run tsc
-        run: pnpm check
+        run: mise run server:check
         if: ${{ !cancelled() }}
       - name: Run small tests & coverage
-        run: pnpm test
+        run: mise run server:test
         if: ${{ !cancelled() }}
   cli-unit-tests:
     name: Unit Test CLI
@@ -109,30 +103,23 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './cli/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Setup typescript-sdk
-        run: pnpm install && pnpm run build
-        working-directory: ./open-api/typescript-sdk
+        run: mise run sdk:install && mise run sdk:build
       - name: Install deps
-        run: pnpm install
+        run: mise run cli:install
       - name: Run linter
-        run: pnpm lint
+        run: mise run cli:lint
         if: ${{ !cancelled() }}
       - name: Run formatter
-        run: pnpm format
+        run: mise run cli:format
         if: ${{ !cancelled() }}
       - name: Run tsc
-        run: pnpm check
+        run: mise run cli:check
         if: ${{ !cancelled() }}
       - name: Run unit tests & coverage
-        run: pnpm test
+        run: mise run cli:test
         if: ${{ !cancelled() }}
   cli-unit-tests-win:
     name: Unit Test CLI (Windows)
@@ -149,25 +136,18 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './cli/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+        run: mise run sdk:install && mise run sdk:build
       - name: Install deps
-        run: pnpm install --frozen-lockfile
+        run: mise run cli:install
       # Skip linter & formatter in Windows test.
       - name: Run tsc
-        run: pnpm check
+        run: mise run cli:check
         if: ${{ !cancelled() }}
       - name: Run unit tests & coverage
-        run: pnpm test
+        run: mise run cli:test
         if: ${{ !cancelled() }}
   web-lint:
     name: Lint Web
@@ -176,35 +156,25 @@ jobs:
     runs-on: mich
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ./web
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './web/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
-      - name: Run pnpm install
-        run: pnpm rebuild && pnpm install --frozen-lockfile
+        run: mise run sdk:install && mise run sdk:build
+      - name: Run install
+        run: mise run web:install
       - name: Run linter
-        run: pnpm lint:p
+        run: mise run web:lint-p
         if: ${{ !cancelled() }}
       - name: Run formatter
-        run: pnpm format
+        run: mise run web:format
         if: ${{ !cancelled() }}
       - name: Run svelte checks
-        run: pnpm check:svelte
+        run: mise run web:check-svelte
         if: ${{ !cancelled() }}
   web-unit-tests:
     name: Test Web
@@ -213,32 +183,22 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ./web
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './web/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+        run: mise run sdk:install && mise run sdk:build
       - name: Run npm install
-        run: pnpm install --frozen-lockfile
+        run: mise run web:install
       - name: Run tsc
-        run: pnpm check:typescript
+        run: mise run web:check
         if: ${{ !cancelled() }}
       - name: Run unit tests & coverage
-        run: pnpm test
+        run: mise run web:test
         if: ${{ !cancelled() }}
   i18n-tests:
     name: Test i18n
@@ -252,18 +212,12 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './web/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Install dependencies
-        run: pnpm --filter=immich-web install --frozen-lockfile
+        run: mise run web:install
       - name: Format
-        run: pnpm --filter=immich-web format:i18n
+        run: mise run i18n:format-fix
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
@@ -293,29 +247,22 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './e2e/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+        run: mise run sdk:install && mise run sdk:build
         if: ${{ !cancelled() }}
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: mise run e2e:install
         if: ${{ !cancelled() }}
       - name: Run linter
-        run: pnpm lint
+        run: mise run e2e:lint
         if: ${{ !cancelled() }}
       - name: Run formatter
-        run: pnpm format
+        run: mise run e2e:format
         if: ${{ !cancelled() }}
       - name: Run tsc
-        run: pnpm check
+        run: mise run e2e:check
         if: ${{ !cancelled() }}
   server-medium-tests:
     name: Medium Tests (Server)
@@ -324,26 +271,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ./server
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run pnpm install
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      - name: Run install
+        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true mise run server:install
       - name: Run medium tests
-        run: pnpm test:medium
+        run: mise run server:test-medium
         if: ${{ !cancelled() }}
   e2e-tests-server-cli:
     name: End-to-End Tests (Server & CLI)
@@ -352,9 +290,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ./e2e
     strategy:
       matrix:
         runner: [ubuntu-latest, ubuntu-24.04-arm]
@@ -364,34 +299,25 @@ jobs:
         with:
           persist-credentials: false
           submodules: 'recursive'
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './e2e/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+        run: mise run sdk:install && mise run sdk:build
         if: ${{ !cancelled() }}
       - name: Run setup web
-        run: pnpm install --frozen-lockfile && pnpm exec svelte-kit sync
-        working-directory: ./web
+        run: mise run web:install && mise run web:svelte-kit-sync
         if: ${{ !cancelled() }}
       - name: Run setup cli
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./cli
+        run: mise run cli:install && mise run cli:build
         if: ${{ !cancelled() }}
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: mise run e2e:install
         if: ${{ !cancelled() }}
       - name: Docker build
-        run: docker compose build
+        run: docker compose -f e2e/docker-compose.yml build
         if: ${{ !cancelled() }}
       - name: Run e2e tests (api & cli)
-        run: pnpm test
+        run: mise run e2e:test
         if: ${{ !cancelled() }}
   e2e-tests-web:
     name: End-to-End Tests (Web)
@@ -400,9 +326,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
-    defaults:
-      run:
-        working-directory: ./e2e
     strategy:
       matrix:
         runner: [ubuntu-latest, ubuntu-24.04-arm]
@@ -412,29 +335,26 @@ jobs:
         with:
           persist-credentials: false
           submodules: 'recursive'
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './e2e/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Run setup typescript-sdk
-        run: pnpm install --frozen-lockfile && pnpm build
-        working-directory: ./open-api/typescript-sdk
+        run: mise run sdk:install && mise run sdk:build
         if: ${{ !cancelled() }}
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Run setup web
+        run: mise run web:install && mise run web:svelte-kit-sync
+        if: ${{ !cancelled() }}
+      - name: Run setup cli
+        run: mise run cli:install && mise run cli:build
         if: ${{ !cancelled() }}
       - name: Install Playwright Browsers
         run: npx playwright install chromium --only-shell
+        working-directory: e2e
         if: ${{ !cancelled() }}
       - name: Docker build
-        run: docker compose build
+        run: docker compose -f e2e/docker-compose.yml build
         if: ${{ !cancelled() }}
       - name: Run e2e tests (web)
-        run: npx playwright test
+        run: mise run e2e:test-web
         if: ${{ !cancelled() }}
   success-check-e2e:
     name: End-to-End Tests Success
@@ -519,18 +439,12 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './.github/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run pnpm install
-        run: pnpm install --frozen-lockfile
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      - name: Run install
+        run: mise run github:install
       - name: Run formatter
-        run: pnpm format
+        run: mise run github:format
         if: ${{ !cancelled() }}
   shellcheck:
     name: ShellCheck
@@ -556,18 +470,12 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Install server dependencies
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
+        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true mise run server:install
       - name: Build the app
-        run: pnpm --filter immich build
+        run: mise run server:build
       - name: Run API generation
         run: ./bin/generate-open-api.sh
         working-directory: open-api
@@ -611,25 +519,19 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
       - name: Install server dependencies
         run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
       - name: Build the app
-        run: pnpm build
+        run: mise run server:build
       - name: Run existing migrations
-        run: pnpm migrations:run
+        run: mise run server:migrations run
       - name: Test npm run schema:reset command works
-        run: pnpm schema:reset
+        run: mise run server:schema-reset
       - name: Generate new migrations
         continue-on-error: true
-        run: pnpm migrations:generate src/TestMigration
+        run: mise run server:migrations generate src/TestMigration
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
@@ -646,7 +548,7 @@ jobs:
           cat ./src/*-TestMigration.ts
           exit 1
       - name: Run SQL generation
-        run: pnpm sync:sql
+        run: mise run server:sql
         env:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
       - name: Find file changes

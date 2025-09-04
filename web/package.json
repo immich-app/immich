@@ -3,28 +3,6 @@
   "version": "1.140.1",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
-  "scripts": {
-    "dev": "vite dev --host 0.0.0.0 --port 3000",
-    "build": "vite build",
-    "build:stats": "BUILD_STATS=true vite build",
-    "package": "svelte-kit package",
-    "preview": "vite preview",
-    "check:svelte": "svelte-check --no-tsconfig --fail-on-warnings --compiler-warnings 'reactive_declaration_non_reactive_property:ignore' --ignore src/lib/components/photos-page/asset-grid.svelte",
-    "check:typescript": "tsc --noEmit",
-    "check:watch": "npm run check:svelte -- --watch",
-    "check:code": "npm run format && npm run lint:p && npm run check:svelte && npm run check:typescript",
-    "check:all": "npm run check:code && npm run test:cov",
-    "lint": "eslint . --max-warnings 0",
-    "lint:p": "eslint-p . --max-warnings 0 --concurrency=4",
-    "lint:fix": "npm run lint -- --fix",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write . && npm run format:i18n",
-    "format:i18n": "pnpx sort-json ../i18n/*.json",
-    "test": "vitest --run",
-    "test:cov": "vitest --coverage",
-    "test:watch": "vitest dev",
-    "prepare": "svelte-kit sync"
-  },
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
@@ -107,8 +85,5 @@
     "typescript-eslint": "^8.28.0",
     "vite": "^7.1.2",
     "vitest": "^3.0.0"
-  },
-  "volta": {
-    "node": "22.18.0"
   }
 }

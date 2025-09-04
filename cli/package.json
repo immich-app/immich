@@ -42,17 +42,6 @@
     "vitest-fetch-mock": "^0.4.0",
     "yaml": "^2.3.1"
   },
-  "scripts": {
-    "build": "vite build",
-    "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
-    "lint:fix": "npm run lint -- --fix",
-    "prepack": "npm run build",
-    "test": "vitest",
-    "test:cov": "vitest --coverage",
-    "format": "prettier --check .",
-    "format:fix": "prettier --write .",
-    "check": "tsc --noEmit"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/immich-app/immich.git",
@@ -67,8 +56,5 @@
     "fastq": "^1.17.1",
     "lodash-es": "^4.17.21",
     "micromatch": "^4.0.8"
-  },
-  "volta": {
-    "node": "22.18.0"
   }
 }
