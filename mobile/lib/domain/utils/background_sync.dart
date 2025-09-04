@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -154,6 +155,11 @@ class BackgroundSyncManager {
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
     });
+  }
+
+  Future<void> syncLinkedAlbum() {
+    final task = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
+    return task.future;
   }
 }
 

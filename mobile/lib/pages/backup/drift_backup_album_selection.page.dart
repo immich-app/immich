@@ -27,10 +27,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
   String _searchQuery = '';
   bool _isSearchMode = false;
   int _initialTotalAssetCount = 0;
-  final bool _hasPopped = false;
   late ValueNotifier<bool> _enableSyncUploadAlbum;
   late TextEditingController _searchController;
   late FocusNode _searchFocusNode;
+  Future? _handleLinkedAlbumFuture;
 
   @override
   void initState() {
@@ -58,7 +58,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
         .toList();
 
     if (enableSyncUploadAlbum && selectedAlbums.isNotEmpty) {
-      await ref.read(syncLinkedAlbumServiceProvider).manageLinkedAlbums(selectedAlbums, user.id);
+      setState(() {
+        _handleLinkedAlbumFuture = ref.read(syncLinkedAlbumServiceProvider).manageLinkedAlbums(selectedAlbums, user.id);
+      });
+      await _handleLinkedAlbumFuture;
     }
 
     // Restart backup if total count changed and backup is enabled
@@ -97,7 +100,6 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
-          print("Pop invoked without actual pop");
           await _handlePagePopped();
           Navigator.of(context).pop();
         }
@@ -138,92 +140,123 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
           ],
           elevation: 0,
         ),
-        body: CustomScrollView(
-          physics: const ClampingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                    child: Text(
-                      "backup_album_selection_page_selection_info",
-                      style: context.textTheme.titleSmall,
-                    ).t(context: context),
-                  ),
+        body: Stack(
+          children: [
+            CustomScrollView(
+              physics: const ClampingScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        child: Text(
+                          "backup_album_selection_page_selection_info",
+                          style: context.textTheme.titleSmall,
+                        ).t(context: context),
+                      ),
 
-                  // Selected Album Chips
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Wrap(
-                      children: [
-                        _SelectedAlbumNameChips(selectedBackupAlbums: selectedBackupAlbums),
-                        _ExcludedAlbumNameChips(excludedBackupAlbums: excludedBackupAlbums),
-                      ],
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(
-                      "albums_on_device_count".t(context: context, args: {'count': albumCount.toString()}),
-                      style: context.textTheme.titleSmall,
-                    ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        "backup_album_selection_page_albums_tap",
-                        style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
-                      ).t(context: context),
-                    ),
-                    trailing: IconButton(
-                      splashRadius: 16,
-                      icon: Icon(Icons.info, size: 20, color: context.primaryColor),
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                              elevation: 5,
-                              title: Text(
-                                'backup_album_selection_page_selection_info',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: context.primaryColor,
-                                ),
-                              ).t(context: context),
-                              content: SingleChildScrollView(
-                                child: ListBody(
-                                  children: [
-                                    const Text(
-                                      'backup_album_selection_page_assets_scatter',
-                                      style: TextStyle(fontSize: 14),
-                                    ).t(context: context),
-                                  ],
-                                ),
-                              ),
+                      // Selected Album Chips
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Wrap(
+                          children: [
+                            _SelectedAlbumNameChips(selectedBackupAlbums: selectedBackupAlbums),
+                            _ExcludedAlbumNameChips(excludedBackupAlbums: excludedBackupAlbums),
+                          ],
+                        ),
+                      ),
+                      ListTile(
+                        title: Text(
+                          "albums_on_device_count".t(context: context, args: {'count': albumCount.toString()}),
+                          style: context.textTheme.titleSmall,
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            "backup_album_selection_page_albums_tap",
+                            style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
+                          ).t(context: context),
+                        ),
+                        trailing: IconButton(
+                          splashRadius: 16,
+                          icon: Icon(Icons.info, size: 20, color: context.primaryColor),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                  elevation: 5,
+                                  title: Text(
+                                    'backup_album_selection_page_selection_info',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: context.primaryColor,
+                                    ),
+                                  ).t(context: context),
+                                  content: SingleChildScrollView(
+                                    child: ListBody(
+                                      children: [
+                                        const Text(
+                                          'backup_album_selection_page_assets_scatter',
+                                          style: TextStyle(fontSize: 14),
+                                        ).t(context: context),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    ),
-                  ),
+                        ),
+                      ),
 
-                  if (Platform.isAndroid)
-                    _SelectAllButton(filteredAlbums: filteredAlbums, selectedBackupAlbums: selectedBackupAlbums),
-                ],
+                      if (Platform.isAndroid)
+                        _SelectAllButton(filteredAlbums: filteredAlbums, selectedBackupAlbums: selectedBackupAlbums),
+                    ],
+                  ),
+                ),
+                SliverLayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.crossAxisExtent > 600) {
+                      return _AlbumSelectionGrid(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
+                    } else {
+                      return _AlbumSelectionList(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
+                    }
+                  },
+                ),
+              ],
+            ),
+            if (_handleLinkedAlbumFuture != null)
+              FutureBuilder(
+                future: _handleLinkedAlbumFuture,
+                builder: (context, snapshot) {
+                  return SizedBox(
+                    height: double.infinity,
+                    width: double.infinity,
+                    child: Container(
+                      color: context.scaffoldBackgroundColor.withValues(alpha: 0.8),
+                      child: Center(
+                        child: Column(
+                          spacing: 16,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            const CircularProgressIndicator(strokeWidth: 4),
+                            Text("Creating linked albums...", style: context.textTheme.labelLarge),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
-            ),
-            SliverLayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.crossAxisExtent > 600) {
-                  return _AlbumSelectionGrid(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
-                } else {
-                  return _AlbumSelectionList(filteredAlbums: filteredAlbums, searchQuery: _searchQuery);
-                }
-              },
-            ),
           ],
         ),
       ),

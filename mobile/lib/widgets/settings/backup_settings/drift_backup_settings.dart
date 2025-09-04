@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -44,11 +45,8 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
     });
 
     try {
-      final currentUser = ref.read(currentUserProvider);
-      if (currentUser == null) {
-        return;
-      }
-      await ref.read(syncLinkedAlbumServiceProvider).syncLinkedAlbums(currentUser.id);
+      await ref.read(backgroundSyncProvider).syncLinkedAlbum();
+      await ref.read(backgroundSyncProvider).syncRemote();
     } catch (_) {
     } finally {
       Future.delayed(const Duration(seconds: 1), () {
