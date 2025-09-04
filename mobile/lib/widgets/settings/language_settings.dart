@@ -8,13 +8,6 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
-import 'package:immich_mobile/generated/locale_names.g.dart';
-
-// Helpers
-String capitalize(String s) {
-  if (s.isEmpty) return s;
-  return s[0].toUpperCase() + s.substring(1);
-}
 
 class LanguageSettings extends HookConsumerWidget {
   const LanguageSettings({super.key});
@@ -54,9 +47,9 @@ class LanguageSettings extends HookConsumerWidget {
         if (searchTerm.isEmpty) {
           filteredLocaleEntries.value = localeEntries;
         } else {
-          filteredLocaleEntries.value = localeEntries.where((entry) {
-            return localeNames[entry.key]?.toLowerCase().contains(searchTerm.toLowerCase()) ?? false;
-          }).toList();
+          filteredLocaleEntries.value = localeEntries
+              .where((entry) => entry.key.toLowerCase().contains(searchTerm.toLowerCase()))
+              .toList();
         }
       });
     }
@@ -93,15 +86,14 @@ class LanguageSettings extends HookConsumerWidget {
                     itemExtent: 64.0,
                     cacheExtent: 100,
                     itemBuilder: (context, index) {
-                      final localeKey = filteredLocaleEntries.value[index].key;
+                      final localeName = filteredLocaleEntries.value[index].key;
                       final localeValue = filteredLocaleEntries.value[index].value;
-                      final langName = localeNames[localeKey] ?? '';
 
                       final bool isSelected = selectedLocale.value == localeValue;
 
                       return _LanguageItem(
-                        key: ValueKey(localeValue.toString()),
-                        langName: capitalize(langName),
+                        key: ValueKey(localeName.toString()),
+                        langName: localeName,
                         localeValue: localeValue,
                         isSelected: isSelected,
                         onTap: () {

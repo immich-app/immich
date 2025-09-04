@@ -1,6 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:easy_localization/easy_localization.dart';
 
 bool isMaterialSupported(Locale locale) {
   final delegates = [
@@ -9,12 +9,4 @@ bool isMaterialSupported(Locale locale) {
     GlobalCupertinoLocalizations.delegate,
   ];
   return delegates.every((d) => d.isSupported(locale));
-}
-
-Locale effectiveMaterialLocale(BuildContext context) {
-  final current = context.locale;
-  if (isMaterialSupported(current)) return current;
-
-  final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
-  return isMaterialSupported(deviceLocale) ? deviceLocale : const Locale('en');
 }
