@@ -1,4 +1,5 @@
-import { applyExternalTieBreaker, selectDefaultByCurrentHeuristic } from '$lib/utils/duplicate-selection';
+import type { TiePreference } from '$lib/stores/duplicate-preferences';
+import { applyLibraryTieBreaker, selectDefaultByCurrentHeuristic } from '$lib/utils/duplicate-selection';
 import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 import { sortBy } from 'lodash-es';
@@ -14,11 +15,9 @@ import { sortBy } from 'lodash-es';
  * @returns The best asset to keep
  */
 export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  let duplicateAssets = sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte ?? 0);
-
-  // Update the list to only include assets with the largest file size
+  let duplicateAssets = sortBy(assets, (a) => a.exifInfo?.fileSizeInByte ?? 0);
   duplicateAssets = duplicateAssets.filter(
-    (asset) => asset.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
+    (a) => a.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
   );
 
   // If there are multiple assets with the same file size, sort the list by the count of exif data
@@ -32,23 +31,23 @@ export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto |
 
 export const suggestDuplicateWithPrefs = (
   assets: AssetResponseDto[],
-  preferExternal: boolean,
+  preference: TiePreference,
 ): AssetResponseDto | undefined => {
   const base = suggestDuplicate(assets) ?? selectDefaultByCurrentHeuristic(assets);
-  return applyExternalTieBreaker(assets, base, preferExternal);
+  return applyLibraryTieBreaker(assets, base, preference);
 };
 
 export const buildKeepSelectionForGroup = (
   group: AssetResponseDto[],
-  preferExternal: boolean,
+  preference: TiePreference,
 ): { id: string; action: 'keep' | 'trash' }[] => {
-  const keep = suggestDuplicateWithPrefs(group, preferExternal) ?? group[0];
+  const keep = suggestDuplicateWithPrefs(group, preference) ?? group[0];
   return group.map((a) => ({ id: a.id, action: a.id === keep.id ? 'keep' : 'trash' }));
 };
 
 export const buildKeepSelectionForAll = (
   groups: AssetResponseDto[][],
-  preferExternal: boolean,
+  preference: TiePreference,
 ): { id: string; action: 'keep' | 'trash' }[] => {
-  return groups.flatMap((g) => buildKeepSelectionForGroup(g, preferExternal));
+  return groups.flatMap((g) => buildKeepSelectionForGroup(g, preference));
 };

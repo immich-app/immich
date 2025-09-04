@@ -12,8 +12,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import { preferExternalOnTie } from '$lib/stores/duplicate-preferences';
-
+  import { duplicateTiePreference } from '$lib/stores/duplicate-preferences';
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -28,7 +27,7 @@
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   const autoSelect = () => {
-    const suggested = suggestDuplicateWithPrefs(assets, $preferExternalOnTie) ?? assets[0];
+    const suggested = suggestDuplicateWithPrefs(assets, $duplicateTiePreference) ?? assets[0];
     selectedAssetIds = new SvelteSet([suggested.id]);
   };
 

@@ -1,10 +1,23 @@
 import { writable } from 'svelte/store';
 
-const key = 'preferExternalOnTie';
-const initial = typeof localStorage !== 'undefined' ? localStorage.getItem(key) === 'true' : false;
+export type TiePreference = 'default' | 'external' | 'internal';
 
-export const preferExternalOnTie = writable<boolean>(initial);
+const KEY = 'duplicateTiePreference';
+const LEGACY_KEY = 'preferExternalOnTie';
 
-preferExternalOnTie.subscribe((v) => {
-  if (typeof localStorage !== 'undefined') localStorage.setItem(key, String(v));
+function getInitial(): TiePreference {
+  if (typeof localStorage === 'undefined') return 'default';
+  const saved = localStorage.getItem(KEY) as TiePreference | null;
+  if (saved === 'default' || saved === 'external' || saved === 'internal') return saved;
+  const legacy = localStorage.getItem(LEGACY_KEY);
+  if (legacy === 'true') return 'external';
+  return 'default';
+}
+
+export const duplicateTiePreference = writable<TiePreference>(getInitial());
+
+duplicateTiePreference.subscribe((v) => {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(KEY, v);
+  }
 });
