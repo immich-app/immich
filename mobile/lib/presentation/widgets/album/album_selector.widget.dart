@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -39,8 +40,12 @@ class AlbumSelector extends ConsumerStatefulWidget {
 class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   bool isGrid = false;
   final searchController = TextEditingController();
-  QuickFilterMode filterMode = QuickFilterMode.all;
   final searchFocusNode = FocusNode();
+  List<RemoteAlbum> sortedAlbums = [];
+  List<RemoteAlbum> shownAlbums = [];
+
+  AlbumFilter filter = AlbumFilter(query: "", mode: QuickFilterMode.all);
+  AlbumSort sort = AlbumSort(mode: RemoteAlbumSortMode.lastModified, isReverse: true);
 
   @override
   void initState() {
@@ -52,7 +57,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     });
 
     searchController.addListener(() {
-      onSearch(searchController.text, filterMode);
+      onSearch(searchController.text, filter.mode);
     });
 
     searchFocusNode.addListener(() {
@@ -62,9 +67,11 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     });
   }
 
-  void onSearch(String searchTerm, QuickFilterMode sortMode) {
+  void onSearch(String searchTerm, QuickFilterMode filterMode) {
     final userId = ref.watch(currentUserProvider)?.id;
-    ref.read(remoteAlbumProvider.notifier).searchAlbums(searchTerm, userId, sortMode);
+    filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
+
+    filterAlbums();
   }
 
   Future<void> onRefresh() async {
@@ -77,17 +84,60 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     });
   }
 
-  void changeFilter(QuickFilterMode sortMode) {
+  void changeFilter(QuickFilterMode mode) {
     setState(() {
-      filterMode = sortMode;
+      filter = filter.copyWith(mode: mode);
     });
+
+    filterAlbums();
+  }
+
+  Future<void> changeSort(AlbumSort sort) async {
+    setState(() {
+      this.sort = sort;
+    });
+
+    await sortAlbums();
   }
 
   void clearSearch() {
     setState(() {
-      filterMode = QuickFilterMode.all;
+      filter = filter.copyWith(mode: QuickFilterMode.all, query: null);
       searchController.clear();
-      ref.read(remoteAlbumProvider.notifier).clearSearch();
+    });
+
+    filterAlbums();
+  }
+
+  Future<void> sortAlbums() async {
+    final sorted = await ref
+        .read(remoteAlbumProvider.notifier)
+        .sortAlbums(ref.read(remoteAlbumProvider).albums, sort.mode, isReverse: sort.isReverse);
+
+    setState(() {
+      sortedAlbums = sorted;
+    });
+
+    // we need to re-filter the albums after sorting
+    // so shownAlbums gets updated
+    filterAlbums();
+  }
+
+  Future<void> filterAlbums() async {
+    if (filter.query == null) {
+      setState(() {
+        shownAlbums = sortedAlbums;
+      });
+
+      return;
+    }
+
+    final filteredAlbums = ref
+        .read(remoteAlbumProvider.notifier)
+        .searchAlbums(sortedAlbums, filter.query!, filter.userId, filter.mode);
+
+    setState(() {
+      shownAlbums = filteredAlbums;
     });
   }
 
@@ -100,9 +150,12 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
   @override
   Widget build(BuildContext context) {
-    final albums = ref.watch(remoteAlbumProvider.select((s) => s.filteredAlbums));
-
     final userId = ref.watch(currentUserProvider)?.id;
+
+    // refilter and sort when albums change
+    ref.listen(remoteAlbumProvider.select((state) => state.albums), (_, _) async {
+      await sortAlbums();
+    });
 
     return MultiSliver(
       children: [
@@ -110,26 +163,28 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
           searchController: searchController,
           searchFocusNode: searchFocusNode,
           onSearch: onSearch,
-          filterMode: filterMode,
+          filterMode: filter.mode,
           onClearSearch: clearSearch,
         ),
         _QuickFilterButtonRow(
-          filterMode: filterMode,
+          filterMode: filter.mode,
           onChangeFilter: changeFilter,
           onSearch: onSearch,
           searchController: searchController,
         ),
-        _QuickSortAndViewMode(isGrid: isGrid, onToggleViewMode: toggleViewMode),
+        _QuickSortAndViewMode(isGrid: isGrid, onToggleViewMode: toggleViewMode, onSortChanged: changeSort),
         isGrid
-            ? _AlbumGrid(albums: albums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
-            : _AlbumList(albums: albums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
+            ? _AlbumGrid(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
+            : _AlbumList(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
       ],
     );
   }
 }
 
 class _SortButton extends ConsumerStatefulWidget {
-  const _SortButton();
+  const _SortButton(this.onSortChanged);
+
+  final Future<void> Function(AlbumSort) onSortChanged;
 
   @override
   ConsumerState<_SortButton> createState() => _SortButtonState();
@@ -148,14 +203,14 @@ class _SortButtonState extends ConsumerState<_SortButton> {
         albumSortIsReverse = !albumSortIsReverse;
         isSorting = true;
       });
-      await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     } else {
       setState(() {
         albumSortOption = sortMode;
         isSorting = true;
       });
-      await ref.read(remoteAlbumProvider.notifier).sortFilteredAlbums(sortMode, isReverse: albumSortIsReverse);
     }
+
+    await widget.onSortChanged.call(AlbumSort(mode: albumSortOption, isReverse: albumSortIsReverse));
 
     setState(() {
       isSorting = false;
@@ -394,10 +449,11 @@ class _QuickFilterButton extends StatelessWidget {
 }
 
 class _QuickSortAndViewMode extends StatelessWidget {
-  const _QuickSortAndViewMode({required this.isGrid, required this.onToggleViewMode});
+  const _QuickSortAndViewMode({required this.isGrid, required this.onToggleViewMode, required this.onSortChanged});
 
   final bool isGrid;
   final VoidCallback onToggleViewMode;
+  final Future<void> Function(AlbumSort) onSortChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -407,7 +463,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const _SortButton(),
+            _SortButton(onSortChanged),
             IconButton(
               icon: Icon(isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined, size: 24),
               onPressed: onToggleViewMode,
