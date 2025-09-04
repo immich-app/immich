@@ -124,7 +124,7 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.create(v8.storeEntity);
           },
           from8To9: (m, v9) async {
-            // await m.addColumn(v9.localAlbumEntity, v9.localAlbumEntity.linkedRemoteAlbumId);
+            await m.addColumn(v9.localAlbumEntity, v9.localAlbumEntity.linkedRemoteAlbumId);
           },
         ),
       );
