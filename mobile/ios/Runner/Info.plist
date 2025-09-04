@@ -45,16 +45,22 @@
 	<array>
 		<string>en</string>
 		<string>ar</string>
+		<string>bg</string>
 		<string>ca</string>
 		<string>cs</string>
 		<string>da</string>
 		<string>de</string>
+		<string>el</string>
 		<string>es</string>
+		<string>et</string>
 		<string>fi</string>
 		<string>fr</string>
+		<string>gl</string>
 		<string>he</string>
 		<string>hi</string>
+		<string>hr</string>
 		<string>hu</string>
+		<string>id</string>
 		<string>it</string>
 		<string>ja</string>
 		<string>ko</string>
@@ -71,6 +77,7 @@
 		<string>sr</string>
 		<string>sv</string>
 		<string>th</string>
+		<string>tr</string>
 		<string>uk</string>
 		<string>vi</string>
 		<string>zh</string>
