@@ -103,7 +103,7 @@
     "sanitize-filename": "^1.6.3",
     "sanitize-html": "^2.14.0",
     "semver": "^7.6.2",
-    "sharp": "^0.34.2",
+    "sharp": "^0.34.3",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",
     "tailwindcss-preset-email": "^1.4.0",
@@ -176,6 +176,6 @@
     "node": "22.18.0"
   },
   "overrides": {
-    "sharp": "^0.34.2"
+    "sharp": "^0.34.3"
   }
 }

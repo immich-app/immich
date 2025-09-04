@@ -121,7 +121,6 @@ class PhotoViewCore extends StatefulWidget {
 
 class PhotoViewCoreState extends State<PhotoViewCore>
     with TickerProviderStateMixin, PhotoViewControllerDelegate, HitCornersDetector {
-  Offset? _normalizedPosition;
   double? _scaleBefore;
   double? _rotationBefore;
 
@@ -154,7 +153,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   void onScaleStart(ScaleStartDetails details) {
     _rotationBefore = controller.rotation;
     _scaleBefore = scale;
-    _normalizedPosition = details.focalPoint - controller.position;
     _scaleAnimationController.stop();
     _positionAnimationController.stop();
     _rotationAnimationController.stop();
@@ -166,8 +164,14 @@ class PhotoViewCoreState extends State<PhotoViewCore>
   };
 
   void onScaleUpdate(ScaleUpdateDetails details) {
+    final centeredFocalPoint = Offset(
+      details.focalPoint.dx - scaleBoundaries.outerSize.width / 2,
+      details.focalPoint.dy - scaleBoundaries.outerSize.height / 2,
+    );
     final double newScale = _scaleBefore! * details.scale;
-    Offset delta = details.focalPoint - _normalizedPosition!;
+    final double scaleDelta = newScale / scale;
+    final Offset newPosition =
+        (controller.position + details.focalPointDelta) * scaleDelta - centeredFocalPoint * (scaleDelta - 1);
 
     updateScaleStateFromNewScale(newScale);
 
@@ -176,7 +180,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
     updateMultiple(
       scale: newScale,
-      position: panEnabled ? delta : clampPosition(position: delta * details.scale),
+      position: panEnabled ? newPosition : clampPosition(position: newPosition),
       rotation: rotationEnabled ? _rotationBefore! + details.rotation : null,
       rotationFocusPoint: rotationEnabled ? details.focalPoint : null,
     );

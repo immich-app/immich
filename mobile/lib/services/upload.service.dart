@@ -282,6 +282,8 @@ class UploadService {
 
     return buildUploadTask(
       file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
       metadata: metadata,
@@ -309,6 +311,8 @@ class UploadService {
 
     return buildUploadTask(
       file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
       originalFileName: asset.name,
       deviceAssetId: asset.id,
       fields: fields,
@@ -334,6 +338,8 @@ class UploadService {
   Future<UploadTask> buildUploadTask(
     File file, {
     required String group,
+    required DateTime createdAt,
+    required DateTime modifiedAt,
     Map<String, String>? fields,
     String? originalFileName,
     String? deviceAssetId,
@@ -347,15 +353,12 @@ class UploadService {
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
-    final stats = await file.stat();
-    final fileCreatedAt = stats.changed;
-    final fileModifiedAt = stats.modified;
     final fieldsMap = {
       'filename': originalFileName ?? filename,
       'deviceAssetId': deviceAssetId ?? '',
       'deviceId': deviceId,
-      'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
-      'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
+      'fileCreatedAt': createdAt.toUtc().toIso8601String(),
+      'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,
