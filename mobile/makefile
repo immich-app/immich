@@ -36,7 +36,7 @@ migration:
 
 translation:
 	npm --prefix ../i18n run format:fix
-	node ./scripts/generate_locale_names.js ../i18n
+	node scripts/generate_locale_names.js ../i18n
 	dart run easy_localization:generate -S ../i18n
 	dart run bin/generate_keys.dart
 	dart format lib/generated/codegen_loader.g.dart
