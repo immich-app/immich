@@ -6612,6 +6612,7 @@ packages:
   eslint-p@0.25.0:
     resolution: {integrity: sha512-e7oYgXN/tgtoaR3tZ0R2dKyPJtf5J41hYKsgpsBtwpi0t2Cxjf3l8G2QwrXCDwQTFVXW1hmD55hAqQZxiId1XA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: ESLint has built-in support for multithread linting now. This package is no longer needed.
     hasBin: true
 
   eslint-plugin-compat@6.0.2:
@@ -16731,7 +16732,7 @@ snapshots:
   '@types/react-router@5.1.20':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 19.1.8
+      '@types/react': 19.1.10
 
   '@types/react@19.1.10':
     dependencies:
