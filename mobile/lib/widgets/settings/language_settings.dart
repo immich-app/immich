@@ -29,7 +29,7 @@ class LanguageSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final localeEntries = locales.entries.toList();
+    final localeEntries = useMemoized(() => locales.entries.toList(), const []);
     final currentLocale = context.locale;
     final filteredLocaleEntries = useState<List<MapEntry<String, Locale>>>(localeEntries);
     final selectedLocale = useState<Locale>(currentLocale);
@@ -86,14 +86,14 @@ class LanguageSettings extends HookConsumerWidget {
                     itemExtent: 64.0,
                     cacheExtent: 100,
                     itemBuilder: (context, index) {
-                      final localeName = filteredLocaleEntries.value[index].key;
+                      final localeNativeName = filteredLocaleEntries.value[index].key;
                       final localeValue = filteredLocaleEntries.value[index].value;
 
                       final bool isSelected = selectedLocale.value == localeValue;
 
                       return _LanguageItem(
-                        key: ValueKey(localeName.toString()),
-                        langName: localeName,
+                        key: ValueKey(localeValue.toString()),
+                        langName: localeNativeName,
                         localeValue: localeValue,
                         isSelected: isSelected,
                         onTap: () {
