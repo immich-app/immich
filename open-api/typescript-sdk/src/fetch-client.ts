@@ -1014,7 +1014,8 @@ export type SmartSearchDto = {
     model?: string | null;
     page?: number;
     personIds?: string[];
-    query: string;
+    query?: string;
+    queryAssetId?: string;
     rating?: number;
     size?: number;
     state?: string | null;
@@ -4921,7 +4922,8 @@ export enum SyncEntityType {
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
-    SyncResetV1 = "SyncResetV1"
+    SyncResetV1 = "SyncResetV1",
+    SyncCompleteV1 = "SyncCompleteV1"
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",

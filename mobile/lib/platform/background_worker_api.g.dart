@@ -59,9 +59,9 @@ class BackgroundWorkerFgHostApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> enableSyncWorker() async {
+  Future<void> enable() async {
     final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableSyncWorker$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -82,32 +82,9 @@ class BackgroundWorkerFgHostApi {
     }
   }
 
-  Future<void> enableUploadWorker(int callbackHandle) async {
+  Future<void> disable() async {
     final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableUploadWorker$pigeonVar_messageChannelSuffix';
-    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-      pigeonVar_channelName,
-      pigeonChannelCodec,
-      binaryMessenger: pigeonVar_binaryMessenger,
-    );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[callbackHandle]);
-    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
-    if (pigeonVar_replyList == null) {
-      throw _createConnectionError(pigeonVar_channelName);
-    } else if (pigeonVar_replyList.length > 1) {
-      throw PlatformException(
-        code: pigeonVar_replyList[0]! as String,
-        message: pigeonVar_replyList[1] as String?,
-        details: pigeonVar_replyList[2],
-      );
-    } else {
-      return;
-    }
-  }
-
-  Future<void> disableUploadWorker() async {
-    final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disableUploadWorker$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disable$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -164,12 +141,33 @@ class BackgroundWorkerBgHostApi {
       return;
     }
   }
+
+  Future<void> close() async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.close$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
+    }
+  }
 }
 
 abstract class BackgroundWorkerFlutterApi {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
-
-  Future<void> onLocalSync(int? maxSeconds);
 
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds);
 
@@ -183,35 +181,6 @@ abstract class BackgroundWorkerFlutterApi {
     String messageChannelSuffix = '',
   }) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
-    {
-      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onLocalSync$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
-      if (api == null) {
-        pigeonVar_channel.setMessageHandler(null);
-      } else {
-        pigeonVar_channel.setMessageHandler((Object? message) async {
-          assert(
-            message != null,
-            'Argument for dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onLocalSync was null.',
-          );
-          final List<Object?> args = (message as List<Object?>?)!;
-          final int? arg_maxSeconds = (args[0] as int?);
-          try {
-            await api.onLocalSync(arg_maxSeconds);
-            return wrapResponse(empty: true);
-          } on PlatformException catch (e) {
-            return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
-          }
-        });
-      }
-    }
     {
       final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosUpload$messageChannelSuffix',

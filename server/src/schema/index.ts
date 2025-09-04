@@ -166,6 +166,7 @@ export interface DB {
   api_key: ApiKeyTable;
 
   asset: AssetTable;
+  asset_audit: AssetAuditTable;
   asset_exif: AssetExifTable;
   asset_face: AssetFaceTable;
   asset_face_audit: AssetFaceAuditTable;
@@ -173,7 +174,6 @@ export interface DB {
   asset_metadata: AssetMetadataTable;
   asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
-  asset_audit: AssetAuditTable;
 
   audit: AuditTable;
 

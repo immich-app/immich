@@ -18,7 +18,7 @@ class AssetsApi {
 
   /// checkBulkUpload
   ///
-  /// Checks if assets exist by checksums
+  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -52,7 +52,7 @@ class AssetsApi {
 
   /// checkBulkUpload
   ///
-  /// Checks if assets exist by checksums
+  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
   ///
   /// Parameters:
   ///

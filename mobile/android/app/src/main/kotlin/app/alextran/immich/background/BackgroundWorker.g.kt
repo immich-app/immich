@@ -61,9 +61,8 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerFgHostApi {
-  fun enableSyncWorker()
-  fun enableUploadWorker(callbackHandle: Long)
-  fun disableUploadWorker()
+  fun enable()
+  fun disable()
 
   companion object {
     /** The codec used by BackgroundWorkerFgHostApi. */
@@ -75,11 +74,11 @@ interface BackgroundWorkerFgHostApi {
     fun setUp(binaryMessenger: BinaryMessenger, api: BackgroundWorkerFgHostApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableSyncWorker$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
-              api.enableSyncWorker()
+              api.enable()
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)
@@ -91,29 +90,11 @@ interface BackgroundWorkerFgHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableUploadWorker$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val callbackHandleArg = args[0] as Long
-            val wrapped: List<Any?> = try {
-              api.enableUploadWorker(callbackHandleArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              BackgroundWorkerPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disableUploadWorker$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disable$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
-              api.disableUploadWorker()
+              api.disable()
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)
@@ -130,6 +111,7 @@ interface BackgroundWorkerFgHostApi {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerBgHostApi {
   fun onInitialized()
+  fun close()
 
   companion object {
     /** The codec used by BackgroundWorkerBgHostApi. */
@@ -156,6 +138,22 @@ interface BackgroundWorkerBgHostApi {
           channel.setMessageHandler(null)
         }
       }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.close$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.close()
+              listOf(null)
+            } catch (exception: Throwable) {
+              BackgroundWorkerPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
     }
   }
 }
@@ -165,23 +163,6 @@ class BackgroundWorkerFlutterApi(private val binaryMessenger: BinaryMessenger, p
     /** The codec used by BackgroundWorkerFlutterApi. */
     val codec: MessageCodec<Any?> by lazy {
       BackgroundWorkerPigeonCodec()
-    }
-  }
-  fun onLocalSync(maxSecondsArg: Long?, callback: (Result<Unit>) -> Unit)
-{
-    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    val channelName = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onLocalSync$separatedMessageChannelSuffix"
-    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-    channel.send(listOf(maxSecondsArg)) {
-      if (it is List<*>) {
-        if (it.size > 1) {
-          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
-        } else {
-          callback(Result.success(Unit))
-        }
-      } else {
-        callback(Result.failure(BackgroundWorkerPigeonUtils.createConnectionError(channelName)))
-      } 
     }
   }
   fun onIosUpload(isRefreshArg: Boolean, maxSecondsArg: Long?, callback: (Result<Unit>) -> Unit)
