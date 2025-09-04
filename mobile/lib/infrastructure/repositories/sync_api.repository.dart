@@ -18,7 +18,8 @@ class SyncApiRepository {
   }
 
   Future<void> streamChanges(
-    Function(List<SyncEvent>, Function() abort) onData, {
+    Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onData, {
+    Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
   }) async {
@@ -69,6 +70,8 @@ class SyncApiRepository {
       shouldAbort = true;
     }
 
+    final reset = onReset ?? () {};
+
     try {
       final response = await client.send(request);
 
@@ -91,12 +94,12 @@ class SyncApiRepository {
           continue;
         }
 
-        await onData(_parseLines(lines), abort);
+        await onData(_parseLines(lines), abort, reset);
         lines.clear();
       }
 
       if (lines.isNotEmpty && !shouldAbort) {
-        await onData(_parseLines(lines), abort);
+        await onData(_parseLines(lines), abort, reset);
       }
     } catch (error, stack) {
       _logger.severe("Error processing stream", error, stack);
@@ -173,6 +176,7 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
+  SyncEntityType.syncCompleteV1: _SyncEmptyDto.fromJson,
 };
 
 class _SyncEmptyDto {
