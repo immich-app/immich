@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
@@ -24,6 +25,7 @@ class BackgroundSyncManager {
   Cancelable<void>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
+  Cancelable<void>? _linkedAlbumSyncTask;
   Cancelable<void>? _hashTask;
 
   BackgroundSyncManager({
@@ -39,19 +41,29 @@ class BackgroundSyncManager {
   });
 
   Future<void> cancel() async {
+    debugPrint("Cancelling all background sync tasks");
     final futures = <Future>[];
 
     if (_syncTask != null) {
+      debugPrint("Cancelling remote sync task");
       futures.add(_syncTask!.future);
     }
     _syncTask?.cancel();
     _syncTask = null;
 
     if (_syncWebsocketTask != null) {
+      debugPrint("Cancelling websocket sync task");
       futures.add(_syncWebsocketTask!.future);
     }
     _syncWebsocketTask?.cancel();
     _syncWebsocketTask = null;
+
+    if (_linkedAlbumSyncTask != null) {
+      debugPrint("Cancelling linked album sync task");
+      futures.add(_linkedAlbumSyncTask!.future);
+    }
+    _linkedAlbumSyncTask?.cancel();
+    _linkedAlbumSyncTask = null;
 
     try {
       await Future.wait(futures);
@@ -61,6 +73,7 @@ class BackgroundSyncManager {
   }
 
   Future<void> cancelLocal() async {
+    debugPrint("Cancelling local sync and hashing tasks");
     final futures = <Future>[];
 
     if (_hashTask != null) {
@@ -70,6 +83,7 @@ class BackgroundSyncManager {
     _hashTask = null;
 
     if (_deviceAlbumSyncTask != null) {
+      debugPrint("Cancelling local sync task");
       futures.add(_deviceAlbumSyncTask!.future);
     }
     _deviceAlbumSyncTask?.cancel();
@@ -84,6 +98,7 @@ class BackgroundSyncManager {
 
   // No need to cancel the task, as it can also be run when the user logs out
   Future<void> syncLocal({bool full = false}) {
+    debugPrint("Starting syncLocal, full: $full");
     if (_deviceAlbumSyncTask != null) {
       return _deviceAlbumSyncTask!.future;
     }
@@ -109,6 +124,7 @@ class BackgroundSyncManager {
 
   // No need to cancel the task, as it can also be run when the user logs out
   Future<void> hashAssets() {
+    debugPrint("Starting hashAssets");
     if (_hashTask != null) {
       return _hashTask!.future;
     }
@@ -129,6 +145,7 @@ class BackgroundSyncManager {
   }
 
   Future<void> syncRemote() {
+    debugPrint("Starting syncRemote");
     if (_syncTask != null) {
       return _syncTask!.future;
     }
@@ -158,8 +175,15 @@ class BackgroundSyncManager {
   }
 
   Future<void> syncLinkedAlbum() {
-    final task = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
-    return task.future;
+    debugPrint("Starting syncLinkedAlbum");
+    if (_linkedAlbumSyncTask != null) {
+      return _linkedAlbumSyncTask!.future;
+    }
+
+    _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
+    return _linkedAlbumSyncTask!.whenComplete(() {
+      _linkedAlbumSyncTask = null;
+    });
   }
 }
 
