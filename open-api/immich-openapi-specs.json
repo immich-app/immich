@@ -12552,6 +12552,9 @@
             "nullable": true,
             "type": "string"
           },
+          "strictPersonSearch": {
+            "type": "boolean"
+          },
           "tagIds": {
             "items": {
               "format": "uuid",
@@ -13485,6 +13488,9 @@
           "state": {
             "nullable": true,
             "type": "string"
+          },
+          "strictPersonSearch": {
+            "type": "boolean"
           },
           "tagIds": {
             "items": {
@@ -14589,6 +14595,9 @@
             "nullable": true,
             "type": "string"
           },
+          "strictPersonSearch": {
+            "type": "boolean"
+          },
           "tagIds": {
             "items": {
               "format": "uuid",
@@ -14777,6 +14786,9 @@
           "state": {
             "nullable": true,
             "type": "string"
+          },
+          "strictPersonSearch": {
+            "type": "boolean"
           },
           "tagIds": {
             "items": {
