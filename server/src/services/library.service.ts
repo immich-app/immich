@@ -123,6 +123,10 @@ export class LibraryService extends BaseService {
       {
         usePolling: false,
         ignoreInitial: true,
+        awaitWriteFinish: {
+          stabilityThreshold: 5000,
+          pollInterval: 1000,
+        },
       },
       {
         onReady: () => _resolve(),
@@ -410,7 +414,7 @@ export class LibraryService extends BaseService {
     // We queue a sidecar discovery which, in turn, queues metadata extraction
     await this.jobRepository.queueAll(
       assetIds.map((assetId) => ({
-        name: JobName.SidecarDiscovery,
+        name: JobName.SidecarCheck,
         data: { id: assetId, source: 'upload' },
       })),
     );

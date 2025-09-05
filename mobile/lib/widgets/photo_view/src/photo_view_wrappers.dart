@@ -86,6 +86,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
   Size? _imageSize;
   Object? _lastException;
   StackTrace? _lastStack;
+  bool _didLoadSynchronously = false;
 
   @override
   void dispose() {
@@ -130,9 +131,11 @@ class _ImageWrapperState extends State<ImageWrapper> {
         _loadingProgress = null;
         _lastException = null;
         _lastStack = null;
+
+        _didLoadSynchronously = synchronousCall;
       }
 
-      synchronousCall ? setupCB() : setState(setupCB);
+      synchronousCall && !_didLoadSynchronously ? setupCB() : setState(setupCB);
     }
 
     void handleError(dynamic error, StackTrace? stackTrace) {
@@ -169,12 +172,36 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return _buildLoading(context);
-    }
-
-    if (_lastException != null) {
-      return _buildError(context);
+    if (_loading || _lastException != null) {
+      return CustomChildWrapper(
+        childSize: null,
+        backgroundDecoration: widget.backgroundDecoration,
+        heroAttributes: widget.heroAttributes,
+        scaleStateChangedCallback: widget.scaleStateChangedCallback,
+        enableRotation: widget.enableRotation,
+        controller: widget.controller,
+        scaleStateController: widget.scaleStateController,
+        maxScale: widget.maxScale,
+        minScale: widget.minScale,
+        initialScale: widget.initialScale,
+        basePosition: widget.basePosition,
+        scaleStateCycle: widget.scaleStateCycle,
+        onTapUp: widget.onTapUp,
+        onTapDown: widget.onTapDown,
+        onDragStart: widget.onDragStart,
+        onDragEnd: widget.onDragEnd,
+        onDragUpdate: widget.onDragUpdate,
+        onScaleEnd: widget.onScaleEnd,
+        onLongPressStart: widget.onLongPressStart,
+        outerSize: widget.outerSize,
+        gestureDetectorBehavior: widget.gestureDetectorBehavior,
+        tightMode: widget.tightMode,
+        filterQuality: widget.filterQuality,
+        disableGestures: widget.disableGestures,
+        disableScaleGestures: true,
+        enablePanAlways: widget.enablePanAlways,
+        child: _loading ? _buildLoading(context) : _buildError(context),
+      );
     }
 
     final scaleBoundaries = ScaleBoundaries(

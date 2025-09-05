@@ -9,12 +9,14 @@ import {
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
+  AssetMetadataResponseDto,
+  AssetMetadataUpsertDto,
   AssetStatsDto,
   UpdateAssetDto,
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { AssetMetadataKey, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
@@ -93,7 +95,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
@@ -113,22 +115,48 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    if (
-      description !== undefined ||
-      dateTimeOriginal !== undefined ||
-      latitude !== undefined ||
-      longitude !== undefined
-    ) {
+    const staticValuesChanged =
+      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
+
+    if (staticValuesChanged) {
       await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
-      await this.jobRepository.queueAll(
-        ids.map((id) => ({
-          name: JobName.SidecarWrite,
-          data: { id, description, dateTimeOriginal, latitude, longitude },
-        })),
-      );
+    }
+
+    const assets =
+      (dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined
+        ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone)
+        : null;
+
+    const dateTimesWithTimezone =
+      assets?.map((asset) => {
+        const isoString = asset.dateTimeOriginal?.toISOString();
+        let dateTime = isoString ? DateTime.fromISO(isoString) : null;
+
+        if (dateTime && asset.timeZone) {
+          dateTime = dateTime.setZone(asset.timeZone);
+        }
+
+        return {
+          assetId: asset.assetId,
+          dateTimeOriginal: dateTime?.toISO() ?? null,
+        };
+      }) ?? null;
+
+    if (staticValuesChanged || dateTimesWithTimezone) {
+      const entries: JobItem[] = (dateTimesWithTimezone ?? ids).map((entry: any) => ({
+        name: JobName.SidecarWrite,
+        data: {
+          id: entry.assetId ?? entry,
+          description,
+          dateTimeOriginal: entry.dateTimeOriginal ?? dateTimeOriginal,
+          latitude,
+          longitude,
+        },
+      }));
+      await this.jobRepository.queueAll(entries);
     }
 
     if (
@@ -247,6 +275,31 @@ export class AssetService extends BaseService {
     });
   }
 
+  async getMetadata(auth: AuthDto, id: string): Promise<AssetMetadataResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
+    return this.assetRepository.getMetadata(id);
+  }
+
+  async upsertMetadata(auth: AuthDto, id: string, dto: AssetMetadataUpsertDto): Promise<AssetMetadataResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+    return this.assetRepository.upsertMetadata(id, dto.items);
+  }
+
+  async getMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<AssetMetadataResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
+
+    const item = await this.assetRepository.getMetadataByKey(id, key);
+    if (!item) {
+      throw new BadRequestException(`Metadata with key "${key}" not found for asset with id "${id}"`);
+    }
+    return item;
+  }
+
+  async deleteMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+    return this.assetRepository.deleteMetadataByKey(id, key);
+  }
+
   async run(auth: AuthDto, dto: AssetJobsDto) {
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds });
 
@@ -287,7 +340,7 @@ export class AssetService extends BaseService {
     return asset;
   }
 
-  private async updateMetadata(dto: ISidecarWriteJob) {
+  private async updateExif(dto: ISidecarWriteJob) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
     const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {

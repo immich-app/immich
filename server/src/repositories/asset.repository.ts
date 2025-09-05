@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, NotNull, Selectable, UpdateResult, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { AssetMetadataItem } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -169,6 +170,21 @@ export class AssetRepository {
     await this.db.updateTable('asset_exif').set(options).where('assetId', 'in', ids).execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
+  @Chunked()
+  async updateDateTimeOriginal(
+    ids: string[],
+    delta?: number,
+    timeZone?: string,
+  ): Promise<{ assetId: string; dateTimeOriginal: Date | null; timeZone: string | null }[]> {
+    return await this.db
+      .updateTable('asset_exif')
+      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`, timeZone })
+      .where('assetId', 'in', ids)
+      .returning(['assetId', 'dateTimeOriginal', 'timeZone'])
+      .execute();
+  }
+
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;
@@ -193,6 +209,43 @@ export class AssetRepository {
         ),
       )
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getMetadata(assetId: string) {
+    return this.db
+      .selectFrom('asset_metadata')
+      .select(['key', 'value', 'updatedAt'])
+      .where('assetId', '=', assetId)
+      .execute();
+  }
+
+  upsertMetadata(id: string, items: AssetMetadataItem[]) {
+    return this.db
+      .insertInto('asset_metadata')
+      .values(items.map((item) => ({ assetId: id, ...item })))
+      .onConflict((oc) =>
+        oc
+          .columns(['assetId', 'key'])
+          .doUpdateSet((eb) => ({ key: eb.ref('excluded.key'), value: eb.ref('excluded.value') })),
+      )
+      .returning(['key', 'value', 'updatedAt'])
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getMetadataByKey(assetId: string, key: AssetMetadataKey) {
+    return this.db
+      .selectFrom('asset_metadata')
+      .select(['key', 'value', 'updatedAt'])
+      .where('assetId', '=', assetId)
+      .where('key', '=', key)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async deleteMetadataByKey(id: string, key: AssetMetadataKey) {
+    await this.db.deleteFrom('asset_metadata').where('assetId', '=', id).where('key', '=', key).execute();
   }
 
   create(asset: Insertable<AssetTable>) {
@@ -551,7 +604,7 @@ export class AssetRepository {
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
             'asset.livePhotoVideoId',
-            sql`extract(epoch from (asset."localDateTime" - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
+            sql`extract(epoch from (asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
               'localOffsetHours',
             ),
             'asset.ownerId',

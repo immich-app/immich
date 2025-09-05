@@ -34,14 +34,15 @@ Cancelable<T?> runInIsolateGentle<T>({
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     DartPluginRegistrant.ensureInitialized();
 
-    final db = await Bootstrap.initIsar();
-    await Bootstrap.initDomain(db, shouldBufferLogs: false);
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false);
     final ref = ProviderContainer(
       overrides: [
         // TODO: Remove once isar is removed
-        dbProvider.overrideWithValue(db),
-        isarProvider.overrideWithValue(db),
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
         cancellationProvider.overrideWithValue(cancelledChecker),
+        driftProvider.overrideWith(driftOverride(drift)),
       ],
     );
 
@@ -56,7 +57,8 @@ Cancelable<T?> runInIsolateGentle<T>({
       log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
     } finally {
       try {
-        await LogService.I.flushBuffer();
+        await LogService.I.dispose();
+        await logDb.close();
         await ref.read(driftProvider).close();
 
         // Close Isar safely
@@ -70,8 +72,8 @@ Cancelable<T?> runInIsolateGentle<T>({
         }
 
         ref.dispose();
-      } catch (error) {
-        debugPrint("Error closing resources in isolate: $error");
+      } catch (error, stack) {
+        debugPrint("Error closing resources in isolate: $error, $stack");
       } finally {
         ref.dispose();
         // Delay to ensure all resources are released

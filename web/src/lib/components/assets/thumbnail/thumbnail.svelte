@@ -197,7 +197,7 @@
 <div
   class={[
     'focus-visible:outline-none flex overflow-hidden',
-    disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
+    disabled ? 'bg-gray-300' : 'bg-primary/30 dark:bg-primary/70',
   ]}
   style:width="{width}px"
   style:height="{height}px"
@@ -230,15 +230,6 @@
     ]}
     data-outline
   ></div>
-  {#if (!loaded || thumbError) && asset.thumbhash}
-    <canvas
-      use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-1"
-      style:width="{width}px"
-      style:height="{height}px"
-      out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-    ></canvas>
-  {/if}
 
   <div
     class={['group absolute -top-[0px] -bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
@@ -330,7 +321,7 @@
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.isVideo}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -340,7 +331,7 @@
           />
         </div>
       {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -352,7 +343,21 @@
           />
         </div>
       {/if}
+
+      {#if (!loaded || thumbError) && asset.thumbhash}
+        <canvas
+          use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+          data-testid="thumbhash"
+          class="absolute top-0 object-cover"
+          style:width="{width}px"
+          style:height="{height}px"
+          class:rounded-xl={selected}
+          draggable="false"
+          out:fade={{ duration: THUMBHASH_FADE_DURATION }}
+        ></canvas>
+      {/if}
     </div>
+
     {#if selectionCandidate}
       <div
         class="absolute top-0 h-full w-full bg-immich-primary opacity-40"

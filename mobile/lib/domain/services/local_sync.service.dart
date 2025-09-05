@@ -6,7 +6,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
-import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
@@ -30,19 +30,17 @@ class LocalSyncService {
     try {
       if (full || await _nativeSyncApi.shouldFullSync()) {
         _log.fine("Full sync request from ${full ? "user" : "native"}");
-        DLog.log("Full sync request from ${full ? "user" : "native"}");
         return await fullSync();
       }
 
       final delta = await _nativeSyncApi.getMediaChanges();
       if (!delta.hasChanges) {
         _log.fine("No media changes detected. Skipping sync");
-        DLog.log("No media changes detected. Skipping sync");
         return;
       }
 
-      DLog.log("Delta updated: ${delta.updates.length}");
-      DLog.log("Delta deleted: ${delta.deletes.length}");
+      _log.fine("Delta updated: ${delta.updates.length}");
+      _log.fine("Delta deleted: ${delta.deletes.length}");
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       await _localAlbumRepository.updateAll(deviceAlbums.toLocalAlbums());
@@ -83,7 +81,6 @@ class LocalSyncService {
     } finally {
       stopwatch.stop();
       _log.info("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
-      DLog.log("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
     }
   }
 
@@ -106,7 +103,6 @@ class LocalSyncService {
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
-      DLog.log("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
     } catch (e, s) {
       _log.severe("Error performing full device sync", e, s);
     }
@@ -150,7 +146,6 @@ class LocalSyncService {
       // Faster path - only new assets added
       if (await checkAddition(dbAlbum, deviceAlbum)) {
         _log.fine("Fast synced device album ${dbAlbum.name}");
-        DLog.log("Fast synced device album ${dbAlbum.name}");
         return true;
       }
 
@@ -291,7 +286,7 @@ extension on Iterable<PlatformAlbum> {
       (e) => LocalAlbum(
         id: e.id,
         name: e.name,
-        updatedAt: e.updatedAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
+        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt) ?? DateTime.now(),
         assetCount: e.assetCount,
       ),
     ).toList();
@@ -306,8 +301,8 @@ extension on Iterable<PlatformAsset> {
         name: e.name,
         checksum: null,
         type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
-        createdAt: e.createdAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.createdAt! * 1000),
-        updatedAt: e.updatedAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
+        createdAt: tryFromSecondsSinceEpoch(e.createdAt) ?? DateTime.now(),
+        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt) ?? DateTime.now(),
         width: e.width,
         height: e.height,
         durationInSeconds: e.durationInSeconds,

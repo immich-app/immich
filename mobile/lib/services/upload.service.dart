@@ -78,8 +78,8 @@ class UploadService {
     _taskProgressController.close();
   }
 
-  void enqueueTasks(List<UploadTask> tasks) {
-    _uploadRepository.enqueueBackgroundAll(tasks);
+  Future<void> enqueueTasks(List<UploadTask> tasks) {
+    return _uploadRepository.enqueueBackgroundAll(tasks);
   }
 
   Future<List<Task>> getActiveTasks(String group) {
@@ -113,7 +113,7 @@ class UploadService {
     }
 
     if (tasks.isNotEmpty) {
-      enqueueTasks(tasks);
+      await enqueueTasks(tasks);
     }
   }
 
@@ -149,9 +149,33 @@ class UploadService {
 
       if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
         count += tasks.length;
-        enqueueTasks(tasks);
+        await enqueueTasks(tasks);
 
         onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
+      }
+    }
+  }
+
+  // Enqueue All does not work from the background on Android yet. This method is a temporary workaround
+  // that enqueues tasks one by one.
+  Future<void> startBackupSerial(String userId) async {
+    await _storageRepository.clearCache();
+
+    shouldAbortQueuingTasks = false;
+
+    final candidates = await _backupRepository.getCandidates(userId);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    for (final asset in candidates) {
+      if (shouldAbortQueuingTasks) {
+        break;
+      }
+
+      final task = await _getUploadTask(asset);
+      if (task != null) {
+        await _uploadRepository.enqueueBackground(task);
       }
     }
   }
@@ -254,16 +278,12 @@ class UploadService {
       livePhotoVideoId: '',
     ).toJson();
 
-    bool requiresWiFi = true;
-
-    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
-      requiresWiFi = false;
-    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
-      requiresWiFi = false;
-    }
+    final requiresWiFi = _shouldRequireWiFi(asset);
 
     return buildUploadTask(
       file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
       metadata: metadata,
@@ -287,20 +307,39 @@ class UploadService {
 
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
+    final requiresWiFi = _shouldRequireWiFi(asset);
+
     return buildUploadTask(
       file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
       originalFileName: asset.name,
       deviceAssetId: asset.id,
       fields: fields,
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately
       isFavorite: asset.isFavorite,
+      requiresWiFi: requiresWiFi,
     );
+  }
+
+  bool _shouldRequireWiFi(LocalAsset asset) {
+    bool requiresWiFi = true;
+
+    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
+      requiresWiFi = false;
+    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
+      requiresWiFi = false;
+    }
+
+    return requiresWiFi;
   }
 
   Future<UploadTask> buildUploadTask(
     File file, {
     required String group,
+    required DateTime createdAt,
+    required DateTime modifiedAt,
     Map<String, String>? fields,
     String? originalFileName,
     String? deviceAssetId,
@@ -314,15 +353,12 @@ class UploadService {
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
-    final stats = await file.stat();
-    final fileCreatedAt = stats.changed;
-    final fileModifiedAt = stats.modified;
     final fieldsMap = {
       'filename': originalFileName ?? filename,
       'deviceAssetId': deviceAssetId ?? '',
       'deviceId': deviceId,
-      'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
-      'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
+      'fileCreatedAt': createdAt.toUtc().toIso8601String(),
+      'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,

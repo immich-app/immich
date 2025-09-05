@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -52,6 +55,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
   @override
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final navigationDestinations = [
       NavigationDestination(
@@ -63,23 +67,33 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         label: 'search'.tr(),
         icon: const Icon(Icons.search_rounded),
         selectedIcon: Icon(Icons.search, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
         label: 'albums'.tr(),
         icon: const Icon(Icons.photo_album_outlined),
         selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
         label: 'library'.tr(),
         icon: const Icon(Icons.space_dashboard_outlined),
         selectedIcon: Icon(Icons.space_dashboard_rounded, color: context.primaryColor),
+        enabled: !isReadonlyModeEnabled,
       ),
     ];
 
     Widget navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         destinations: navigationDestinations
-            .map((e) => NavigationRailDestination(icon: e.icon, label: Text(e.label), selectedIcon: e.selectedIcon))
+            .map(
+              (e) => NavigationRailDestination(
+                icon: e.icon,
+                label: Text(e.label),
+                selectedIcon: e.selectedIcon,
+                disabled: !e.enabled,
+              ),
+            )
             .toList(),
         onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
         selectedIndex: tabsRouter.activeIndex,
@@ -132,30 +146,59 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
     ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
+  if (index == 3) {
+    ref.invalidate(localAlbumProvider);
+  }
+
   ref.read(hapticFeedbackProvider.notifier).selectionClick();
   router.setActiveIndex(index);
   ref.read(tabProvider.notifier).state = TabEnum.values[index];
 }
 
-class _BottomNavigationBar extends ConsumerWidget {
+class _BottomNavigationBar extends ConsumerStatefulWidget {
   const _BottomNavigationBar({required this.tabsRouter, required this.destinations});
 
   final List<Widget> destinations;
   final TabsRouter tabsRouter;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isScreenLandscape = context.orientation == Orientation.landscape;
-    final isMultiselectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+  ConsumerState createState() => _BottomNavigationBarState();
+}
 
-    if (isScreenLandscape || isMultiselectEnabled) {
+class _BottomNavigationBarState extends ConsumerState<_BottomNavigationBar> {
+  bool hideNavigationBar = false;
+  StreamSubscription? _eventSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventSubscription = EventStream.shared.listen<MultiSelectToggleEvent>(_onEvent);
+  }
+
+  void _onEvent(MultiSelectToggleEvent event) {
+    setState(() {
+      hideNavigationBar = event.isEnabled;
+    });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isScreenLandscape = context.orientation == Orientation.landscape;
+
+    if (isScreenLandscape || hideNavigationBar) {
       return const SizedBox.shrink();
     }
 
     return NavigationBar(
-      selectedIndex: tabsRouter.activeIndex,
-      onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
-      destinations: destinations,
+      selectedIndex: widget.tabsRouter.activeIndex,
+      onDestinationSelected: (index) => _onNavigationSelected(widget.tabsRouter, index, ref),
+      destinations: widget.destinations,
     );
   }
 }

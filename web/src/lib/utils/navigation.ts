@@ -23,8 +23,8 @@ export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWit
 export const isAssetViewerRoute = (target?: NavigationTarget | null) =>
   !!(target?.route.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
 
-export function getAssetInfoFromParam({ assetId, key }: { assetId?: string; key?: string }) {
-  return assetId ? getAssetInfo({ id: assetId, key }) : undefined;
+export function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string; key?: string; slug?: string }) {
+  return assetId ? getAssetInfo({ id: assetId, slug, key }) : undefined;
 }
 
 function currentUrlWithoutAsset() {
@@ -144,4 +144,17 @@ export const clearQueryParam = async (queryParam: string, url: URL) => {
     url.searchParams.delete(queryParam);
     await goto(url, { keepFocus: true });
   }
+};
+
+export const getQueryValue = (queryKey: string) => {
+  const url = globalThis.location.href;
+  const urlObject = new URL(url);
+  return urlObject.searchParams.get(queryKey);
+};
+
+export const setQueryValue = async (queryKey: string, queryValue: string) => {
+  const url = globalThis.location.href;
+  const urlObject = new URL(url);
+  urlObject.searchParams.set(queryKey, queryValue);
+  await goto(urlObject, { keepFocus: true });
 };

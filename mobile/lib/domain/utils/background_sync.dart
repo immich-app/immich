@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -37,7 +38,7 @@ class BackgroundSyncManager {
     this.onHashingError,
   });
 
-  Future<void> cancel() {
+  Future<void> cancel() async {
     final futures = <Future>[];
 
     if (_syncTask != null) {
@@ -52,7 +53,33 @@ class BackgroundSyncManager {
     _syncWebsocketTask?.cancel();
     _syncWebsocketTask = null;
 
-    return Future.wait(futures);
+    try {
+      await Future.wait(futures);
+    } on CanceledError {
+      // Ignore cancellation errors
+    }
+  }
+
+  Future<void> cancelLocal() async {
+    final futures = <Future>[];
+
+    if (_hashTask != null) {
+      futures.add(_hashTask!.future);
+    }
+    _hashTask?.cancel();
+    _hashTask = null;
+
+    if (_deviceAlbumSyncTask != null) {
+      futures.add(_deviceAlbumSyncTask!.future);
+    }
+    _deviceAlbumSyncTask?.cancel();
+    _deviceAlbumSyncTask = null;
+
+    try {
+      await Future.wait(futures);
+    } on CanceledError {
+      // Ignore cancellation errors
+    }
   }
 
   // No need to cancel the task, as it can also be run when the user logs out
@@ -128,6 +155,11 @@ class BackgroundSyncManager {
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
     });
+  }
+
+  Future<void> syncLinkedAlbum() {
+    final task = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
+    return task.future;
   }
 }
 

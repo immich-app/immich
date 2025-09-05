@@ -304,7 +304,7 @@ describe('/users', () => {
       const { status } = await request(app)
         .delete(`/users/me/license`)
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(200);
+      expect(status).toBe(204);
     });
   });
 });

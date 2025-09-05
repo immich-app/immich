@@ -19,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -31,20 +32,22 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
-    this.showStorageIndicator = false,
+    this.showStorageIndicator,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
     this.bottomSheet = const GeneralBottomSheet(),
     this.groupBy,
+    this.withScrubber = true,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
-  final bool showStorageIndicator;
+  final bool? showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withStack;
   final GroupAssetsBy? groupBy;
+  final bool withScrubber;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +72,7 @@ class Timeline extends StatelessWidget {
             topSliverWidgetHeight: topSliverWidgetHeight,
             appBar: appBar,
             bottomSheet: bottomSheet,
+            withScrubber: withScrubber,
           ),
         ),
       ),
@@ -77,12 +81,19 @@ class Timeline extends StatelessWidget {
 }
 
 class _SliverTimeline extends ConsumerStatefulWidget {
-  const _SliverTimeline({this.topSliverWidget, this.topSliverWidgetHeight, this.appBar, this.bottomSheet});
+  const _SliverTimeline({
+    this.topSliverWidget,
+    this.topSliverWidgetHeight,
+    this.appBar,
+    this.bottomSheet,
+    this.withScrubber = true,
+  });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
   final Widget? appBar;
   final Widget? bottomSheet;
+  final bool withScrubber;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -107,14 +118,12 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.initState();
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
-      setState(() {
-        _perRow = currentTilesPerRow;
-        _scaleFactor = 7.0 - _perRow;
-        _baseScaleFactor = _scaleFactor;
-      });
-    });
+    final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);
+    _perRow = currentTilesPerRow;
+    _scaleFactor = 7.0 - _perRow;
+    _baseScaleFactor = _scaleFactor;
+
+    ref.listenManual(multiSelectProvider.select((s) => s.isEnabled), _onMultiSelectionToggled);
   }
 
   void _onEvent(Event event) {
@@ -128,6 +137,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       default:
         break;
     }
+  }
+
+  void _onMultiSelectionToggled(_, bool isEnabled) {
+    EventStream.shared.emit(MultiSelectToggleEvent(isEnabled));
   }
 
   @override
@@ -244,6 +257,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
@@ -262,6 +276,45 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
           const scrubberBottomPadding = 100.0;
           final bottomPadding = context.padding.bottom + (widget.appBar == null ? 0 : scrubberBottomPadding);
+
+          final grid = CustomScrollView(
+            primary: true,
+            physics: _scrollPhysics,
+            cacheExtent: maxHeight * 2,
+            slivers: [
+              if (isSelectionMode) const SelectionSliverAppBar() else if (widget.appBar != null) widget.appBar!,
+              if (widget.topSliverWidget != null) widget.topSliverWidget!,
+              _SliverSegmentedList(
+                segments: segments,
+                delegate: SliverChildBuilderDelegate(
+                  (ctx, index) {
+                    if (index >= childCount) return null;
+                    final segment = segments.findByIndex(index);
+                    return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+                  },
+                  childCount: childCount,
+                  addAutomaticKeepAlives: false,
+                  // We add repaint boundary around tiles, so skip the auto boundaries
+                  addRepaintBoundaries: false,
+                ),
+              ),
+              const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
+            ],
+          );
+
+          final Widget timeline;
+          if (widget.withScrubber) {
+            timeline = Scrubber(
+              layoutSegments: segments,
+              timelineHeight: maxHeight,
+              topPadding: topPadding,
+              bottomPadding: bottomPadding,
+              monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+              child: grid,
+            );
+          } else {
+            timeline = grid;
+          }
 
           return PrimaryScrollController(
             controller: _scrollController,
@@ -291,9 +344,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 ),
               },
               child: TimelineDragRegion(
-                onStart: _setDragStartIndex,
+                onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
                 onAssetEnter: _handleDragAssetEnter,
-                onEnd: _stopDrag,
+                onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
                 onScroll: _dragScroll,
                 onScrollStart: () {
                   // Minimize the bottom sheet when drag selection starts
@@ -301,40 +354,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 },
                 child: Stack(
                   children: [
-                    Scrubber(
-                      layoutSegments: segments,
-                      timelineHeight: maxHeight,
-                      topPadding: topPadding,
-                      bottomPadding: bottomPadding,
-                      monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
-                      child: CustomScrollView(
-                        primary: true,
-                        physics: _scrollPhysics,
-                        cacheExtent: maxHeight * 2,
-                        slivers: [
-                          if (isSelectionMode)
-                            const SelectionSliverAppBar()
-                          else if (widget.appBar != null)
-                            widget.appBar!,
-                          if (widget.topSliverWidget != null) widget.topSliverWidget!,
-                          _SliverSegmentedList(
-                            segments: segments,
-                            delegate: SliverChildBuilderDelegate(
-                              (ctx, index) {
-                                if (index >= childCount) return null;
-                                final segment = segments.findByIndex(index);
-                                return segment?.builder(ctx, index) ?? const SizedBox.shrink();
-                              },
-                              childCount: childCount,
-                              addAutomaticKeepAlives: false,
-                              // We add repaint boundary around tiles, so skip the auto boundaries
-                              addRepaintBoundaries: false,
-                            ),
-                          ),
-                          const SliverPadding(padding: EdgeInsets.only(bottom: scrubberBottomPadding)),
-                        ],
-                      ),
-                    ),
+                    timeline,
                     if (!isSelectionMode && isMultiSelectEnabled) ...[
                       const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
                       if (widget.bottomSheet != null) widget.bottomSheet!,

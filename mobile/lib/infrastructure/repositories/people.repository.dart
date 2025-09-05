@@ -24,7 +24,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
             leftOuterJoin(_db.assetFaceEntity, _db.assetFaceEntity.personId.equalsExp(_db.personEntity.id)),
           ])
           ..where(_db.personEntity.isHidden.equals(false))
-          ..groupBy([_db.personEntity.id])
+          ..groupBy([_db.personEntity.id], having: _db.assetFaceEntity.id.count().isBiggerOrEqualValue(3))
           ..orderBy([
             OrderingTerm(expression: _db.personEntity.name.equals('').not(), mode: OrderingMode.desc),
             OrderingTerm(expression: _db.assetFaceEntity.id.count(), mode: OrderingMode.desc),

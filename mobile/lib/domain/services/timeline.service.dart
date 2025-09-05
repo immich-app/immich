@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
@@ -57,6 +58,8 @@ class TimelineFactory {
       TimelineService(_timelineRepository.person(userId, personId, groupBy));
 
   TimelineService fromAssets(List<BaseAsset> assets) => TimelineService(_timelineRepository.fromAssets(assets));
+
+  TimelineService map(LatLngBounds bounds) => TimelineService(_timelineRepository.map(bounds, groupBy));
 }
 
 class TimelineService {
@@ -162,6 +165,36 @@ class TimelineService {
       throw RangeError(
         'TimelineService::getAsset Index $index not in buffer range [$_bufferOffset, ${_bufferOffset + _buffer.length})',
       );
+    }
+    return _buffer.elementAt(index - _bufferOffset);
+  }
+
+  /// Gets an asset at the given index, automatically loading the buffer if needed.
+  /// This is an async version that can handle out-of-range indices by loading the appropriate buffer.
+  Future<BaseAsset?> getAssetAsync(int index) async {
+    if (index < 0 || index >= _totalAssets) {
+      return null;
+    }
+
+    if (hasRange(index, 1)) {
+      return _buffer.elementAt(index - _bufferOffset);
+    }
+
+    // Load the buffer containing the requested index
+    try {
+      final assets = await loadAssets(index, 1);
+      return assets.isNotEmpty ? assets.first : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Safely gets an asset at the given index without throwing a RangeError.
+  /// Returns null if the index is out of bounds or not currently in the buffer.
+  /// For automatic buffer loading, use getAssetAsync instead.
+  BaseAsset? getAssetSafe(int index) {
+    if (index < 0 || index >= _totalAssets || !hasRange(index, 1)) {
+      return null;
     }
     return _buffer.elementAt(index - _bufferOffset);
   }

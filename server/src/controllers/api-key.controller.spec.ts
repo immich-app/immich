@@ -1,16 +1,16 @@
-import { APIKeyController } from 'src/controllers/api-key.controller';
+import { ApiKeyController } from 'src/controllers/api-key.controller';
 import { Permission } from 'src/enum';
 import { ApiKeyService } from 'src/services/api-key.service';
 import request from 'supertest';
 import { factory } from 'test/small.factory';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
-describe(APIKeyController.name, () => {
+describe(ApiKeyController.name, () => {
   let ctx: ControllerContext;
   const service = mockBaseService(ApiKeyService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(APIKeyController, [{ provide: ApiKeyService, useValue: service }]);
+    ctx = await controllerSetup(ApiKeyController, [{ provide: ApiKeyService, useValue: service }]);
     return () => ctx.close();
   });
 
@@ -29,6 +29,13 @@ describe(APIKeyController.name, () => {
   describe('GET /api-keys', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get('/api-keys');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /api-keys/me', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get(`/api-keys/me`);
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });

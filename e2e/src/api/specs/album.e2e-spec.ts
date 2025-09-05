@@ -683,7 +683,7 @@ describe('/albums', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ role: AlbumUserRole.Editor });
 
-      expect(status).toBe(200);
+      expect(status).toBe(204);
 
       // Get album to verify the role change
       const { body } = await request(app)

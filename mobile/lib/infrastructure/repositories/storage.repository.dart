@@ -16,6 +16,13 @@ class StorageRepository {
       file = await entity?.originFile;
       if (file == null) {
         log.warning("Cannot get file for asset $assetId");
+        return null;
+      }
+
+      final exists = await file.exists();
+      if (!exists) {
+        log.warning("File for asset $assetId does not exist");
+        return null;
       }
     } catch (error, stackTrace) {
       log.warning("Error getting file for asset $assetId", error, stackTrace);
@@ -34,6 +41,13 @@ class StorageRepository {
         log.warning(
           "Cannot get motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
         );
+        return null;
+      }
+
+      final exists = await file.exists();
+      if (!exists) {
+        log.warning("Motion file for asset ${asset.id} does not exist");
+        return null;
       }
     } catch (error, stackTrace) {
       log.warning(

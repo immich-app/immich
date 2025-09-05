@@ -12,6 +12,7 @@ dependencies = [
     "gunicorn>=21.1.0",
     "huggingface-hub>=0.20.1,<1.0",
     "insightface>=0.7.3,<1.0",
+    "numpy<2",
     "opencv-python-headless>=4.7.0.72,<5.0",
     "orjson>=3.9.5",
     "pillow>=9.5.0,<11.0",
