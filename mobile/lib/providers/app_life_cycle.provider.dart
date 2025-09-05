@@ -38,6 +38,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Completer<void>? _resumeOperation;
   Completer<void>? _pauseOperation;
 
+  final _log = Logger("AppLifeCycleNotifier");
+
   AppLifeCycleNotifier(this._ref) : super(AppLifeCycleEnum.active);
 
   AppLifeCycleEnum getAppState() {
@@ -49,14 +51,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     // Prevent overlapping resume operations
     if (_resumeOperation != null && !_resumeOperation!.isCompleted) {
-      debugPrint("Resume operation already in progress, waiting...");
       await _resumeOperation!.future;
       return;
     }
 
     // Cancel any ongoing pause operation
     if (_pauseOperation != null && !_pauseOperation!.isCompleted) {
-      debugPrint("Cancelling ongoing pause operation for resume");
       _pauseOperation!.complete();
     }
 
@@ -65,7 +65,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     try {
       await _performResume();
     } catch (e, stackTrace) {
-      Logger("AppLifeCycleNotifier").severe("Error during app resume", e, stackTrace);
+      _log.severe("Error during app resume", e, stackTrace);
     } finally {
       if (!_resumeOperation!.isCompleted) {
         _resumeOperation!.complete();
@@ -147,29 +147,26 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       await lockManager.acquireLock().timeout(
         const Duration(seconds: 10),
         onTimeout: () {
-          Logger("AppLifeCycleNotifier").warning("Lock acquisition timed out, proceeding without lock");
+          _log.warning("Lock acquisition timed out, proceeding without lock");
           throw TimeoutException("Lock acquisition timed out", const Duration(seconds: 10));
         },
       );
       debugPrint("Lock acquired for background sync on resume");
     } catch (e) {
-      Logger("AppLifeCycleNotifier").warning("Failed to acquire lock: $e");
-      return; // Exit early if we can't get the lock
+      _log.warning("Failed to acquire lock: $e");
+      return;
     }
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
-    // Ensure proper cleanup before starting new background tasks
     try {
       // Run operations sequentially with state checks and error handling for each
       if (_shouldContinueOperation()) {
         try {
           await backgroundManager.syncLocal();
-          Logger("AppLifeCycleNotifier").fine("Completed syncLocal");
         } catch (e, stackTrace) {
-          Logger("AppLifeCycleNotifier").warning("Failed syncLocal: $e", e, stackTrace);
-          // Continue with other operations even if one fails
+          _log.warning("Failed syncLocal: $e", e, stackTrace);
         }
       }
 
@@ -177,9 +174,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       if (_shouldContinueOperation()) {
         try {
           await backgroundManager.hashAssets();
-          Logger("AppLifeCycleNotifier").fine("Completed hashAssets");
         } catch (e, stackTrace) {
-          Logger("AppLifeCycleNotifier").warning("Failed hashAssets: $e", e, stackTrace);
+          _log.warning("Failed hashAssets: $e", e, stackTrace);
         }
       }
 
@@ -187,17 +183,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       if (_shouldContinueOperation()) {
         try {
           await backgroundManager.syncRemote();
-          Logger("AppLifeCycleNotifier").fine("Completed syncRemote");
         } catch (e, stackTrace) {
-          Logger("AppLifeCycleNotifier").warning("Failed syncRemote: $e", e, stackTrace);
+          _log.warning("Failed syncRemote: $e", e, stackTrace);
         }
 
         if (isAlbumLinkedSyncEnable && _shouldContinueOperation()) {
           try {
             await backgroundManager.syncLinkedAlbum();
-            Logger("AppLifeCycleNotifier").fine("Completed syncLinkedAlbum");
           } catch (e, stackTrace) {
-            Logger("AppLifeCycleNotifier").warning("Failed syncLinkedAlbum: $e", e, stackTrace);
+            _log.warning("Failed syncLinkedAlbum: $e", e, stackTrace);
           }
         }
       }
@@ -211,22 +205,22 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           if (currentUser != null) {
             try {
               await _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-              Logger("AppLifeCycleNotifier").fine("Completed backup resume");
+              _log.fine("Completed backup resume");
             } catch (e, stackTrace) {
-              Logger("AppLifeCycleNotifier").warning("Failed backup resume: $e", e, stackTrace);
+              _log.warning("Failed backup resume: $e", e, stackTrace);
             }
           }
         }
       }
     } catch (e, stackTrace) {
-      Logger("AppLifeCycleNotifier").severe("Error during background sync", e, stackTrace);
+      _log.severe("Error during background sync", e, stackTrace);
     } finally {
       // Ensure lock is released even if operations fail
       try {
         lockManager.releaseLock();
         debugPrint("Lock released after background sync operations");
       } catch (lockError) {
-        Logger("AppLifeCycleNotifier").warning("Failed to release lock after error: $lockError");
+        _log.warning("Failed to release lock after error: $lockError");
       }
     }
   }
@@ -248,14 +242,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     // Prevent overlapping pause operations
     if (_pauseOperation != null && !_pauseOperation!.isCompleted) {
-      debugPrint("Pause operation already in progress, waiting...");
       await _pauseOperation!.future;
       return;
     }
 
     // Cancel any ongoing resume operation
     if (_resumeOperation != null && !_resumeOperation!.isCompleted) {
-      debugPrint("Cancelling ongoing resume operation for pause");
       _resumeOperation!.complete();
     }
 
@@ -264,7 +256,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     try {
       await _performPause();
     } catch (e, stackTrace) {
-      Logger("AppLifeCycleNotifier").severe("Error during app pause", e, stackTrace);
+      _log.severe("Error during app pause", e, stackTrace);
     } finally {
       if (!_pauseOperation!.isCompleted) {
         _pauseOperation!.complete();
@@ -282,7 +274,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         }
       } else {
         final backgroundManager = _ref.read(backgroundSyncProvider);
-        debugPrint("Starting background task cancellation on pause");
 
         // Cancel operations with extended timeout to allow database transactions to complete
         try {
@@ -290,34 +281,27 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             backgroundManager.cancel().timeout(const Duration(seconds: 10)),
             backgroundManager.cancelLocal().timeout(const Duration(seconds: 10)),
           ]).timeout(const Duration(seconds: 15));
-          debugPrint("Completed background task cancellation");
 
           // Give additional time for isolates to clean up database connections
-          debugPrint("Waiting for isolate cleanup");
           await Future.delayed(const Duration(milliseconds: 1000));
         } catch (e) {
-          Logger("AppLifeCycleNotifier").warning("Timeout during background cancellation: $e");
-          // Even if cancellation times out, continue with cleanup
+          _log.warning("Timeout during background cancellation: $e");
         }
 
         // Always release the lock, even if cancellation failed
         try {
           _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort)).releaseLock();
-          debugPrint("Lock released on app pause");
         } catch (e) {
-          Logger("AppLifeCycleNotifier").warning("Failed to release lock on pause: $e");
+          _log.warning("Failed to release lock on pause: $e");
         }
       }
 
-      debugPrint("Disconnecting websocket on pause");
       _ref.read(websocketProvider.notifier).disconnect();
     }
 
     try {
       LogService.I.flush();
-    } catch (e) {
-      // Ignore flush errors during pause
-    }
+    } catch (_) {}
   }
 
   Future<void> handleAppDetached() async {
@@ -326,9 +310,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     // Flush logs before closing database
     try {
       LogService.I.flush();
-    } catch (e) {
-      // Ignore flush errors during shutdown
-    }
+    } catch (_) {}
 
     // Close Isar database safely
     try {
@@ -336,9 +318,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       if (isar != null && isar.isOpen) {
         await isar.close();
       }
-    } catch (e) {
-      // Ignore close errors during shutdown
-    }
+    } catch (_) {}
 
     if (Store.isBetaTimelineEnabled) {
       _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort)).releaseLock();
@@ -348,9 +328,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     // no guarantee this is called at all
     try {
       _ref.read(manualUploadProvider.notifier).cancelBackup();
-    } catch (e) {
-      // Ignore errors during shutdown
-    }
+    } catch (_) {}
   }
 
   void handleAppHidden() {
