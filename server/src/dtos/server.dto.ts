@@ -148,6 +148,10 @@ export class ServerConfigDto {
   trashDays!: number;
   @ApiProperty({ type: 'integer' })
   userDeleteDelay!: number;
+  @ApiProperty({ type: 'integer' })
+  sessionDeleteDelayBrowser!: number;
+  @ApiProperty({ type: 'integer' })
+  sessionDeleteDelayMobile!: number;
   isInitialized!: boolean;
   isOnboarded!: boolean;
   externalDomain!: string;
