@@ -44,7 +44,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> delete(List<String> ids) {
+  Future<void> delete(Iterable<String> ids) {
     if (ids.isEmpty) {
       return Future.value();
     }
@@ -71,8 +71,11 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<List<LocalAsset>> getByChecksums(Iterable<String> checksums) {
-    if (checksums.isEmpty) return Future.value([]);
-    final query = _db.localAssetEntity.select()..where((lae) => lae.checksum.isIn(checksums));
+    if (checksums.isEmpty) {
+      return Future.value([]);
+    }
+    final query = _db.localAssetEntity.select()
+      ..where((lae) => lae.checksum.isIn(checksums));
     return query.map((row) => row.toDto()).get();
   }
 }

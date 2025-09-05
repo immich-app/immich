@@ -35,8 +35,8 @@ class TrashSyncService {
     if (!_platform.isAndroid || !_appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
       return Future.value();
     }
-    final trashedAssetsChecksums = <String>[];
-    final modifiedAssetsChecksums = <String>[];
+    final trashedAssetsChecksums = <String>{};
+    final modifiedAssetsChecksums = <String>{};
     for (var syncItem in syncItems) {
       if (syncItem.deletedAt != null) {
         trashedAssetsChecksums.add(syncItem.checksum);
@@ -52,15 +52,20 @@ class TrashSyncService {
     if (trashedAssetsChecksums.isEmpty) {
       return Future.value();
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
-      if (localAssetsToTrash.isNotEmpty) {
+      final candidatesToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
+      if (candidatesToTrash.isNotEmpty) {
+        final groupedByChecksum = <String, LocalAsset>{};
+        for (final localAsset in candidatesToTrash) {
+          groupedByChecksum[localAsset.checksum!] = localAsset;
+        }
         final mediaUrls = await Future.wait(
-          localAssetsToTrash.map(
+          groupedByChecksum.values.map(
             (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
           ),
         );
         _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
         await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+        await _localAssetRepository.delete(candidatesToTrash.map((asset) => asset.id));
       }
     }
   }
