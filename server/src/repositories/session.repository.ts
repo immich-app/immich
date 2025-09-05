@@ -25,7 +25,7 @@ export class SessionRepository {
             eb('deviceOS', 'in', mobileOsList),
             eb('updatedAt', '<=', DateTime.now().minus({ days: sessionDeleteDelayMobile }).toJSDate()),
           ]),
-          // Browser sessions 
+          // Browser sessions
           eb.and([
             eb('deviceOS', 'not in', mobileOsList),
             eb('updatedAt', '<=', DateTime.now().minus({ days: sessionDeleteDelayBrowser }).toJSDate()),
