@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
@@ -85,9 +84,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (isAuthenticated) {
       // switch endpoint if needed
       final endpoint = await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
-      if (kDebugMode) {
-        debugPrint("Using server URL: $endpoint");
-      }
+      _log.info("Using server URL: $endpoint");
 
       if (!Store.isBetaTimelineEnabled) {
         final permission = _ref.watch(galleryPermissionNotifier);
@@ -113,10 +110,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           break;
       }
     } else {
-      // Establish websocket connection first before any sync operations
-      debugPrint("Connecting websocket on resume");
       _ref.read(websocketProvider.notifier).connect();
-
       await _handleBetaTimelineResume();
     }
 
@@ -136,11 +130,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     final lockManager = _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
 
     // Give isolates time to complete any ongoing database transactions
-    debugPrint("Waiting for isolates to complete before acquiring lock");
     await Future.delayed(const Duration(milliseconds: 500));
 
     lockManager.requestHolderToClose();
-    debugPrint("Requested lock holder to close on resume");
 
     // Add timeout to prevent deadlock on lock acquisition
     try {
@@ -151,7 +143,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           throw TimeoutException("Lock acquisition timed out", const Duration(seconds: 10));
         },
       );
-      debugPrint("Lock acquired for background sync on resume");
     } catch (e) {
       _log.warning("Failed to acquire lock: $e");
       return;
@@ -218,7 +209,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       // Ensure lock is released even if operations fail
       try {
         lockManager.releaseLock();
-        debugPrint("Lock released after background sync operations");
+        _log.fine("Lock released after background sync operations");
       } catch (lockError) {
         _log.warning("Failed to release lock after error: $lockError");
       }
