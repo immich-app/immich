@@ -12663,6 +12663,30 @@
         },
         "type": "object"
       },
+      "MobileDeviceDto": {
+        "properties": {
+          "appVersion": {
+            "type": "string"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "lastSeen": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "appVersion",
+          "deviceOS",
+          "deviceType",
+          "lastSeen"
+        ],
+        "type": "object"
+      },
       "NotificationCreateDto": {
         "properties": {
           "data": {
@@ -17445,6 +17469,12 @@
             ],
             "nullable": true
           },
+          "mobileDevices": {
+            "items": {
+              "$ref": "#/components/schemas/MobileDeviceDto"
+            },
+            "type": "array"
+          },
           "name": {
             "type": "string"
           },
@@ -17495,6 +17525,7 @@
           "id",
           "isAdmin",
           "license",
+          "mobileDevices",
           "name",
           "oauthId",
           "profileChangedAt",
