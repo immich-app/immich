@@ -141,6 +141,7 @@ export class MediaRepository {
       failOn: options.processInvalidImages ? 'none' : 'error',
       limitInputPixels: false,
       raw: options.raw,
+      unlimited: true,
     })
       .pipelineColorspace(options.colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16')
       .withIccProfile(options.colorspace);
