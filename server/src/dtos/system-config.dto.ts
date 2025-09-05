@@ -616,6 +616,18 @@ class SystemConfigUserDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   deleteDelay!: number;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  sessionDeleteDelayBrowser!: number;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  sessionDeleteDelayMobile!: number;
 }
 
 export class SystemConfigDto implements SystemConfig {

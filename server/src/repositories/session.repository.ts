@@ -15,12 +15,22 @@ export type SessionSearchOptions = { updatedBefore: Date };
 export class SessionRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  cleanup() {
+  cleanup(sessionDeleteDelayBrowser: number, sessionDeleteDelayMobile: number) {
+    const mobileOsList = ['Android', 'iOS'];
     return this.db
       .deleteFrom('session')
       .where((eb) =>
         eb.or([
-          eb('updatedAt', '<=', DateTime.now().minus({ days: 90 }).toJSDate()),
+          eb.and([
+            eb('deviceOS', 'in', mobileOsList),
+            eb('updatedAt', '<=', DateTime.now().minus({ days: sessionDeleteDelayMobile }).toJSDate()),
+          ]),
+          // Browser sessions 
+          eb.and([
+            eb('deviceOS', 'not in', mobileOsList),
+            eb('updatedAt', '<=', DateTime.now().minus({ days: sessionDeleteDelayBrowser }).toJSDate()),
+          ]),
+          // Expired sessions
           eb.and([eb('expiresAt', 'is not', null), eb('expiresAt', '<=', DateTime.now().toJSDate())]),
         ]),
       )
