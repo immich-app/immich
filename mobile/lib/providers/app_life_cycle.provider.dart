@@ -33,7 +33,7 @@ enum AppLifeCycleEnum { active, inactive, paused, resumed, detached, hidden }
 class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   final Ref _ref;
   bool _wasPaused = false;
-  
+
   // Add operation coordination
   Completer<void>? _resumeOperation;
   Completer<void>? _pauseOperation;
@@ -116,7 +116,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       // Establish websocket connection first before any sync operations
       debugPrint("Connecting websocket on resume");
       _ref.read(websocketProvider.notifier).connect();
-      
+
       await _handleBetaTimelineResume();
     }
 
@@ -135,9 +135,13 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     _ref.read(backupProvider.notifier).cancelBackup();
     final lockManager = _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
 
+    // Give isolates time to complete any ongoing database transactions
+    debugPrint("Waiting for isolates to complete before acquiring lock");
+    await Future.delayed(const Duration(milliseconds: 500));
+
     lockManager.requestHolderToClose();
     debugPrint("Requested lock holder to close on resume");
-    
+
     // Add timeout to prevent deadlock on lock acquisition
     try {
       await lockManager.acquireLock().timeout(
@@ -158,29 +162,46 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     // Ensure proper cleanup before starting new background tasks
     try {
-      // Run operations sequentially with state checks
+      // Run operations sequentially with state checks and error handling for each
       if (_shouldContinueOperation()) {
-        await backgroundManager.syncLocal();
-        Logger("AppLifeCycleNotifier").fine("Completed syncLocal");
-      }
-      
-      // Check if app is still active before hashing
-      if (_shouldContinueOperation()) {
-        await backgroundManager.hashAssets();
-        Logger("AppLifeCycleNotifier").fine("Completed hashAssets");
-      }
-      
-      // Check if app is still active before remote sync
-      if (_shouldContinueOperation()) {
-        await backgroundManager.syncRemote();
-        Logger("AppLifeCycleNotifier").fine("Completed syncRemote");
-        
-        if (isAlbumLinkedSyncEnable && _shouldContinueOperation()) {
-          await backgroundManager.syncLinkedAlbum();
-          Logger("AppLifeCycleNotifier").fine("Completed syncLinkedAlbum");
+        try {
+          await backgroundManager.syncLocal();
+          Logger("AppLifeCycleNotifier").fine("Completed syncLocal");
+        } catch (e, stackTrace) {
+          Logger("AppLifeCycleNotifier").warning("Failed syncLocal: $e", e, stackTrace);
+          // Continue with other operations even if one fails
         }
       }
-      
+
+      // Check if app is still active before hashing
+      if (_shouldContinueOperation()) {
+        try {
+          await backgroundManager.hashAssets();
+          Logger("AppLifeCycleNotifier").fine("Completed hashAssets");
+        } catch (e, stackTrace) {
+          Logger("AppLifeCycleNotifier").warning("Failed hashAssets: $e", e, stackTrace);
+        }
+      }
+
+      // Check if app is still active before remote sync
+      if (_shouldContinueOperation()) {
+        try {
+          await backgroundManager.syncRemote();
+          Logger("AppLifeCycleNotifier").fine("Completed syncRemote");
+        } catch (e, stackTrace) {
+          Logger("AppLifeCycleNotifier").warning("Failed syncRemote: $e", e, stackTrace);
+        }
+
+        if (isAlbumLinkedSyncEnable && _shouldContinueOperation()) {
+          try {
+            await backgroundManager.syncLinkedAlbum();
+            Logger("AppLifeCycleNotifier").fine("Completed syncLinkedAlbum");
+          } catch (e, stackTrace) {
+            Logger("AppLifeCycleNotifier").warning("Failed syncLinkedAlbum: $e", e, stackTrace);
+          }
+        }
+      }
+
       // Handle backup resume only if still active
       if (_shouldContinueOperation()) {
         final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
@@ -188,16 +209,22 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         if (isEnableBackup) {
           final currentUser = _ref.read(currentUserProvider);
           if (currentUser != null) {
-            await _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-            Logger("AppLifeCycleNotifier").fine("Completed backup resume");
+            try {
+              await _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
+              Logger("AppLifeCycleNotifier").fine("Completed backup resume");
+            } catch (e, stackTrace) {
+              Logger("AppLifeCycleNotifier").warning("Failed backup resume: $e", e, stackTrace);
+            }
           }
         }
       }
     } catch (e, stackTrace) {
       Logger("AppLifeCycleNotifier").severe("Error during background sync", e, stackTrace);
+    } finally {
       // Ensure lock is released even if operations fail
       try {
         lockManager.releaseLock();
+        debugPrint("Lock released after background sync operations");
       } catch (lockError) {
         Logger("AppLifeCycleNotifier").warning("Failed to release lock after error: $lockError");
       }
@@ -206,8 +233,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   // Helper method to check if operations should continue
   bool _shouldContinueOperation() {
-    return [AppLifeCycleEnum.resumed, AppLifeCycleEnum.active].contains(state) && 
-           (_resumeOperation?.isCompleted == false || _resumeOperation == null);
+    return [AppLifeCycleEnum.resumed, AppLifeCycleEnum.active].contains(state) &&
+        (_resumeOperation?.isCompleted == false || _resumeOperation == null);
   }
 
   void handleAppInactivity() {
@@ -256,18 +283,23 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       } else {
         final backgroundManager = _ref.read(backgroundSyncProvider);
         debugPrint("Starting background task cancellation on pause");
-        
-        // Cancel operations with timeout to prevent hanging
+
+        // Cancel operations with extended timeout to allow database transactions to complete
         try {
           await Future.wait([
-            backgroundManager.cancel().timeout(const Duration(seconds: 5)),
-            backgroundManager.cancelLocal().timeout(const Duration(seconds: 5)),
-          ]).timeout(const Duration(seconds: 10));
+            backgroundManager.cancel().timeout(const Duration(seconds: 10)),
+            backgroundManager.cancelLocal().timeout(const Duration(seconds: 10)),
+          ]).timeout(const Duration(seconds: 15));
           debugPrint("Completed background task cancellation");
+
+          // Give additional time for isolates to clean up database connections
+          debugPrint("Waiting for isolate cleanup");
+          await Future.delayed(const Duration(milliseconds: 1000));
         } catch (e) {
           Logger("AppLifeCycleNotifier").warning("Timeout during background cancellation: $e");
+          // Even if cancellation times out, continue with cleanup
         }
-        
+
         // Always release the lock, even if cancellation failed
         try {
           _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort)).releaseLock();
