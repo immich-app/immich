@@ -41,25 +41,21 @@ class BackgroundSyncManager {
   });
 
   Future<void> cancel() async {
-    debugPrint("Cancelling all background sync tasks");
     final futures = <Future>[];
 
     if (_syncTask != null) {
-      debugPrint("Cancelling remote sync task");
       futures.add(_syncTask!.future);
     }
     _syncTask?.cancel();
     _syncTask = null;
 
     if (_syncWebsocketTask != null) {
-      debugPrint("Cancelling websocket sync task");
       futures.add(_syncWebsocketTask!.future);
     }
     _syncWebsocketTask?.cancel();
     _syncWebsocketTask = null;
 
     if (_linkedAlbumSyncTask != null) {
-      debugPrint("Cancelling linked album sync task");
       futures.add(_linkedAlbumSyncTask!.future);
     }
     _linkedAlbumSyncTask?.cancel();
@@ -73,7 +69,6 @@ class BackgroundSyncManager {
   }
 
   Future<void> cancelLocal() async {
-    debugPrint("Cancelling local sync and hashing tasks");
     final futures = <Future>[];
 
     if (_hashTask != null) {
@@ -83,7 +78,6 @@ class BackgroundSyncManager {
     _hashTask = null;
 
     if (_deviceAlbumSyncTask != null) {
-      debugPrint("Cancelling local sync task");
       futures.add(_deviceAlbumSyncTask!.future);
     }
     _deviceAlbumSyncTask?.cancel();
@@ -98,7 +92,6 @@ class BackgroundSyncManager {
 
   // No need to cancel the task, as it can also be run when the user logs out
   Future<void> syncLocal({bool full = false}) {
-    debugPrint("Starting syncLocal, full: $full");
     if (_deviceAlbumSyncTask != null) {
       return _deviceAlbumSyncTask!.future;
     }
@@ -124,7 +117,6 @@ class BackgroundSyncManager {
 
   // No need to cancel the task, as it can also be run when the user logs out
   Future<void> hashAssets() {
-    debugPrint("Starting hashAssets");
     if (_hashTask != null) {
       return _hashTask!.future;
     }
@@ -145,7 +137,6 @@ class BackgroundSyncManager {
   }
 
   Future<void> syncRemote() {
-    debugPrint("Starting syncRemote");
     if (_syncTask != null) {
       return _syncTask!.future;
     }
@@ -175,7 +166,6 @@ class BackgroundSyncManager {
   }
 
   Future<void> syncLinkedAlbum() {
-    debugPrint("Starting syncLinkedAlbum");
     if (_linkedAlbumSyncTask != null) {
       return _linkedAlbumSyncTask!.future;
     }
