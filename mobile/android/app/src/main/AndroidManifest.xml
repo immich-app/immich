@@ -13,11 +13,11 @@
   <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
+  <!-- <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> -->
   <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+  <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
   <!-- Foreground service permission -->
