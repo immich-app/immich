@@ -72,27 +72,12 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run package manager install
-        run: pnpm install
-      - name: Run linter
-        run: pnpm lint
-        if: ${{ !cancelled() }}
-      - name: Run formatter
-        run: pnpm format
-        if: ${{ !cancelled() }}
-      - name: Run tsc
-        run: pnpm check
-        if: ${{ !cancelled() }}
-      - name: Run small tests & coverage
-        run: pnpm test
+      # - name: Setup Mise
+      #   uses: immich-app/devtools/actions/use-mise@697a75e2c3186d3c037c2c159855cf2d566542ba # use-mise-action-0.0.1
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      - name: Run small checks
+        run: mise run server:checks-small
         if: ${{ !cancelled() }}
   cli-unit-tests:
     name: Unit Test CLI
@@ -332,18 +317,12 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
-      - name: Setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-      - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
-      - name: Run pnpm install
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
-      - name: Run medium tests
-        run: pnpm test:medium
+      # - name: Setup Mise
+      #   uses: immich-app/devtools/actions/use-mise@697a75e2c3186d3c037c2c159855cf2d566542ba # use-mise-action-0.0.1
+      - name: Setup mise
+        uses: jdx/mise-action@5ac50f778e26fac95da98d50503682459e86d566 # v3.2.0
+      - name: Run medium checks
+        run: mise run server:checks-medium
         if: ${{ !cancelled() }}
   e2e-tests-server-cli:
     name: End-to-End Tests (Server & CLI)

@@ -16,13 +16,13 @@ size = 8821083
 url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.31.4/dcm-linux-x64-release.zip"
 
 [tools.node]
-version = "22.18.0"
+version = "22.19.0"
 backend = "core:node"
 
 [tools.node.platforms.linux-x64]
-checksum = "sha256:a2e703725d8683be86bb5da967bf8272f4518bdaf10f21389e2b2c9eaeae8c8a"
-size = 54824343
-url = "https://nodejs.org/dist/v22.18.0/node-v22.18.0-linux-x64.tar.gz"
+checksum = "sha256:d36e56998220085782c0ca965f9d51b7726335aed2f5fc7321c6c0ad233aa96d"
+size = 54907188
+url = "https://nodejs.org/dist/v22.19.0/node-v22.19.0-linux-x64.tar.gz"
 
 [tools.pnpm]
 version = "10.14.0"
