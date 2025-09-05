@@ -2,6 +2,10 @@ package app.alextran.immich.widget
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import java.io.File
 
 fun loadScaledBitmap(file: File, reqWidth: Int, reqHeight: Int): Bitmap? {
@@ -30,4 +34,25 @@ fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeig
   }
 
   return inSampleSize
+}
+
+fun applyBlackWhiteFilter(src: Bitmap): Bitmap {
+
+    val config = src.config ?: Bitmap.Config.ARGB_8888
+    val outputBitmap = Bitmap.createBitmap(src.width, src.height, config)
+    outputBitmap.setHasAlpha(src.hasAlpha())
+    
+    val canvas = Canvas(outputBitmap)
+
+    val paint = Paint().apply {
+        isFilterBitmap = true
+        val colorMatrix = ColorMatrix().apply {
+            setSaturation(0f)
+        }
+        colorFilter = ColorMatrixColorFilter(colorMatrix)
+    }
+    
+    canvas.drawBitmap(src, 0f, 0f, paint)
+
+    return outputBitmap
 }
