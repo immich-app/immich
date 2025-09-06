@@ -1,0 +1,90 @@
+name: Merge translations
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find translation PR
+        id: find_pr
+        run: |
+          gh pr list --repo immich-app/immich --author weblate --json number | jq '
+            if length == 1 then
+            .[0].number
+            else
+            error("Expected exactly 1 entry, got \(length)")
+            end
+          ' | read PR_NUMBER
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
+          gh pr view $PR_NUMBER --repo immich-app/immich --json 'mergeable' | jq -e '.mergeable == "MERGEABLE"' || (echo "PR is not mergeable" && exit 1)
+
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Lock weblate
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/lock/ -d lock=true
+
+      - name: Commit translations
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/repository/ -d operation=commit
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/repository/ -d operation=push
+
+      - name: Merge PR
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
+        run: |
+          gh pr review $PR_NUMBER --repo immich-app/immich --approve --body "Merging translations PR"
+          gh pr merge $PR_NUMBER --repo immich-app/immich --auto --squash
+
+      - name: Wait for PR to merge
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
+        run: |
+          for i in {1..10}; do
+            if gh pr view $PR_NUMBER --repo immich-app/immich --json merged | jq -e '.merged == true'; then
+              echo "PR merged"
+              exit 0
+            else
+              echo "PR not merged yet, waiting..."
+              sleep 6
+            fi
+          done
+          echo "PR did not merge in time"
+          # TODO: The approving review is still there, might need to dismiss it through the API?
+          gh pr merge $PR_NUMBER --repo immich-app/immich --disable-auto
+          exit 1
+
+      - name: Comment on failure
+        if: failure()
+        env:
+          PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
+        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2
+        with:
+          issue: ${{ steps.find_pr.outputs.PR_NUMBER }}
+          message-id: 'merge-failure'
+          message: 'PR merge attempt timed out'
+
+      - name: Unlock weblate
+        if: always() # TODO: Should we leave it locked on failure for safety?
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/lock/ -d lock=false
