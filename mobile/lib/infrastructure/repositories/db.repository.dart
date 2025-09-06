@@ -68,7 +68,7 @@ class Drift extends $Drift implements IDatabaseRepository {
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -122,6 +122,9 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from7To8: (m, v8) async {
             await m.create(v8.storeEntity);
+          },
+          from8To9: (m, v9) async {
+            await m.addColumn(v9.localAlbumEntity, v9.localAlbumEntity.linkedRemoteAlbumId);
           },
         ),
       );

@@ -14,6 +14,8 @@
 
   import { flip } from 'svelte/animate';
   import { fly, scale } from 'svelte/transition';
+  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
+  import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -108,6 +110,16 @@
     return intersectable.filter((int) => int.intersecting);
   }
 
+  const getDayGroupFullDate = (dayGroup: DayGroup): string => {
+    const { month, year } = dayGroup.monthGroup.yearMonth;
+    const date = fromTimelinePlainDate({
+      year,
+      month,
+      day: dayGroup.day,
+    });
+    return getDateLocaleString(date);
+  };
+
   $effect.root(() => {
     if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
       onScrollCompensation(timelineManager.scrollCompensation);
@@ -157,7 +169,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize" title={dayGroup.groupTitle}>
+      <span class="w-full truncate first-letter:capitalize" title={getDayGroupFullDate(dayGroup)}>
         {dayGroup.groupTitle}
       </span>
     </div>

@@ -5,7 +5,7 @@ export function isSmartSearchDto(
   dto: SmartSearchDto | MetadataSearchDto,
   featureFlagEnabled = true,
 ): dto is SmartSearchDto {
-  return 'query' in dto && featureFlagEnabled;
+  return ('query' in dto || 'queryAssetId' in dto) && featureFlagEnabled;
 }
 
 export function encodeSearchQuery(search: SmartSearchDto | MetadataSearchDto) {

@@ -462,7 +462,8 @@ export const utils = {
   updateLibrary: (accessToken: string, id: string, dto: UpdateLibraryDto) =>
     updateLibrary({ id, updateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 
-  createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
+  createPartner: (accessToken: string, id: string) =>
+    createPartner({ partnerCreateDto: { sharedWithId: id } }, { headers: asBearerAuth(accessToken) }),
 
   updateMyPreferences: (accessToken: string, userPreferencesUpdateDto: UserPreferencesUpdateDto) =>
     updateMyPreferences({ userPreferencesUpdateDto }, { headers: asBearerAuth(accessToken) }),

@@ -28,7 +28,6 @@ describe(SyncEntityType.UserV1, () => {
     }
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UsersV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -43,10 +42,11 @@ describe(SyncEntityType.UserV1, () => {
         },
         type: 'UserV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.UsersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.UsersV1]);
   });
 
   it('should detect and sync a soft deleted user', async () => {
@@ -56,7 +56,6 @@ describe(SyncEntityType.UserV1, () => {
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UsersV1]);
 
-    expect(response).toHaveLength(2);
     expect(response).toEqual(
       expect.arrayContaining([
         {
@@ -69,11 +68,12 @@ describe(SyncEntityType.UserV1, () => {
           data: expect.objectContaining({ id: deleted.id }),
           type: 'UserV1',
         },
+        expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
       ]),
     );
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.UsersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.UsersV1]);
   });
 
   it('should detect and sync a deleted user', async () => {
@@ -85,7 +85,6 @@ describe(SyncEntityType.UserV1, () => {
     await userRepo.delete({ id: user.id }, true);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UsersV1]);
-    expect(response).toHaveLength(2);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -99,10 +98,11 @@ describe(SyncEntityType.UserV1, () => {
         data: expect.objectContaining({ id: authUser.id }),
         type: 'UserV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.UsersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.UsersV1]);
   });
 
   it('should sync a user and then an update to that same user', async () => {
@@ -111,13 +111,13 @@ describe(SyncEntityType.UserV1, () => {
     const userRepo = ctx.get(UserRepository);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.UsersV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({ id: user.id }),
         type: 'UserV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -125,13 +125,13 @@ describe(SyncEntityType.UserV1, () => {
     const updated = await userRepo.update(auth.user.id, { name: 'new name' });
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.UsersV1]);
-    expect(newResponse).toHaveLength(1);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({ id: user.id, name: updated.name }),
         type: 'UserV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
 });

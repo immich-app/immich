@@ -1,11 +1,12 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/utils/database.utils.dart';
 import 'package:platform/platform.dart';
 
 enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount, newestAsset }
@@ -47,6 +48,13 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     }
 
     return query.map((row) => row.readTable(_db.localAlbumEntity).toDto(assetCount: row.read(assetCount) ?? 0)).get();
+  }
+
+  Future<List<LocalAlbum>> getBackupAlbums() async {
+    final query = _db.localAlbumEntity.select()
+      ..where((row) => row.backupSelection.equalsValue(BackupSelection.selected));
+
+    return query.map((row) => row.toDto()).get();
   }
 
   Future<void> delete(String albumId) => transaction(() async {
@@ -334,5 +342,17 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
 
   Future<int> getCount() {
     return _db.managers.localAlbumEntity.count();
+  }
+
+  Future unlinkRemoteAlbum(String id) async {
+    return _db.localAlbumEntity.update()
+      ..where((row) => row.id.equals(id))
+      ..write(const LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(null)));
+  }
+
+  Future linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {
+    return _db.localAlbumEntity.update()
+      ..where((row) => row.id.equals(localAlbumId))
+      ..write(LocalAlbumEntityCompanion(linkedRemoteAlbumId: Value(remoteAlbumId)));
   }
 }

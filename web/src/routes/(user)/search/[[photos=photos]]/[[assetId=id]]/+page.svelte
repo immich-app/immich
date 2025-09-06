@@ -220,6 +220,7 @@
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),
+      queryAssetId: $t('query_asset_id'),
       rating: $t('rating'),
       order: $t('search_order'),
     };

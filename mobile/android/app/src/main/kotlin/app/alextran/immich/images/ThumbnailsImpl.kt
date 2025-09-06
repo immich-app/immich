@@ -202,8 +202,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
       val source = ImageDecoder.createSource(resolver, uri)
       signal.throwIfCanceled()
       ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-        val sampleSize =
-          getSampleSize(info.size.width, info.size.height, targetWidth, targetHeight)
+        val sampleSize = max(1, min(info.size.width / targetWidth, info.size.height / targetHeight))
         decoder.setTargetSampleSize(sampleSize)
         decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
         decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
@@ -215,16 +214,5 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
       signal.setOnCancelListener { Glide.with(ctx).clear(ref) }
       ref.get()
     }
-  }
-
-  private fun getSampleSize(fullWidth: Int, fullHeight: Int, reqWidth: Int, reqHeight: Int): Int {
-    return 1 shl max(
-      0, floor(
-        min(
-          log2(fullWidth / reqWidth.toDouble()),
-          log2(fullHeight / reqHeight.toDouble()),
-        )
-      ).toInt()
-    )
   }
 }
