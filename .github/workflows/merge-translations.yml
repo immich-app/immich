@@ -90,7 +90,6 @@ jobs:
           message: 'PR merge attempt timed out'
 
       - name: Unlock weblate
-        if: always() # TODO: Should we leave it locked on failure for safety?
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
