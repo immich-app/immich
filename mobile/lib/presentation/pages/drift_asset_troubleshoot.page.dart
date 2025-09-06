@@ -100,23 +100,25 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     final asset = widget.asset;
     properties.addAll([
       _PropertyItem(label: 'Name', value: asset.name),
-      if (asset.checksum != null) _PropertyItem(label: 'Checksum', value: asset.checksum!),
+      _PropertyItem(label: 'Checksum', value: asset.checksum),
       _PropertyItem(label: 'Type', value: asset.type.toString()),
       _PropertyItem(label: 'Created At', value: asset.createdAt.toString()),
       _PropertyItem(label: 'Updated At', value: asset.updatedAt.toString()),
-      if (asset.width != null) _PropertyItem(label: 'Width', value: asset.width!.toString()),
-      if (asset.height != null) _PropertyItem(label: 'Height', value: asset.height!.toString()),
-      if (asset.durationInSeconds != null)
-        _PropertyItem(label: 'Duration', value: '${asset.durationInSeconds} seconds'),
+      _PropertyItem(label: 'Width', value: asset.width?.toString()),
+      _PropertyItem(label: 'Height', value: asset.height?.toString()),
+      _PropertyItem(
+        label: 'Duration',
+        value: asset.durationInSeconds != null ? '${asset.durationInSeconds} seconds' : 'N/A',
+      ),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
-      if (asset.livePhotoVideoId != null) _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId!),
+      _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
     ]);
   }
 
   Future<void> _addLocalAssetProperties(LocalAsset asset) async {
     properties.insertAll(0, [
       _PropertyItem(label: 'Local ID', value: asset.id),
-      if (asset.remoteId != null) _PropertyItem(label: 'Remote ID', value: asset.remoteId!),
+      _PropertyItem(label: 'Remote ID', value: asset.remoteId),
     ]);
 
     properties.insert(4, _PropertyItem(label: 'Orientation', value: asset.orientation.toString()));
@@ -127,14 +129,14 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
   void _addRemoteAssetProperties(RemoteAsset asset) {
     properties.insertAll(0, [
       _PropertyItem(label: 'Remote ID', value: asset.id),
-      if (asset.localId != null) _PropertyItem(label: 'Local ID', value: asset.localId!),
+      _PropertyItem(label: 'Local ID', value: asset.localId),
       _PropertyItem(label: 'Owner ID', value: asset.ownerId),
     ]);
 
     final additionalProps = <_PropertyItem>[
-      if (asset.thumbHash != null) _PropertyItem(label: 'Thumb Hash', value: asset.thumbHash!),
+      _PropertyItem(label: 'Thumb Hash', value: asset.thumbHash),
       _PropertyItem(label: 'Visibility', value: asset.visibility.toString()),
-      if (asset.stackId != null) _PropertyItem(label: 'Stack ID', value: asset.stackId!),
+      _PropertyItem(label: 'Stack ID', value: asset.stackId),
     ];
 
     properties.insertAll(4, additionalProps);
@@ -281,9 +283,9 @@ class _PropertySectionCard extends StatelessWidget {
 
 class _PropertyItem extends StatelessWidget {
   final String label;
-  final String value;
+  final String? value;
 
-  const _PropertyItem({required this.label, required this.value});
+  const _PropertyItem({required this.label, this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -297,7 +299,7 @@ class _PropertyItem extends StatelessWidget {
             child: Text('$label:', style: const TextStyle(fontWeight: FontWeight.w500)),
           ),
           Expanded(
-            child: Text(value, style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+            child: Text(value ?? 'N/A', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
           ),
         ],
       ),
