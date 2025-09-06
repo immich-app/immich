@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
 @RoutePage()
@@ -92,7 +93,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     if (asset is LocalAsset) {
       await _addLocalAssetProperties(asset);
     } else if (asset is RemoteAsset) {
-      _addRemoteAssetProperties(asset);
+      await _addRemoteAssetProperties(asset);
     }
   }
 
@@ -108,7 +109,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       _PropertyItem(label: 'Height', value: asset.height?.toString()),
       _PropertyItem(
         label: 'Duration',
-        value: asset.durationInSeconds != null ? '${asset.durationInSeconds} seconds' : 'N/A',
+        value: asset.durationInSeconds != null ? '${asset.durationInSeconds} seconds' : null,
       ),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
       _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
@@ -126,7 +127,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     properties.add(_PropertyItem(label: 'Album', value: albums.map((a) => a.name).join(', ')));
   }
 
-  void _addRemoteAssetProperties(RemoteAsset asset) {
+  Future<void> _addRemoteAssetProperties(RemoteAsset asset) async {
     properties.insertAll(0, [
       _PropertyItem(label: 'Remote ID', value: asset.id),
       _PropertyItem(label: 'Local ID', value: asset.localId),
@@ -140,6 +141,42 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     ];
 
     properties.insertAll(4, additionalProps);
+
+    final exif = await ref.read(assetServiceProvider).getExif(asset);
+    if (exif != null) {
+      _addExifProperties(exif);
+    } else {
+      properties.add(const _PropertyItem(label: 'EXIF', value: null));
+    }
+  }
+
+  void _addExifProperties(ExifInfo exif) {
+    properties.addAll([
+      _PropertyItem(
+        label: 'File Size',
+        value: exif.fileSize != null ? '${(exif.fileSize! / 1024 / 1024).toStringAsFixed(2)} MB' : null,
+      ),
+      _PropertyItem(label: 'Description', value: exif.description),
+      _PropertyItem(label: 'EXIF Width', value: exif.width?.toString()),
+      _PropertyItem(label: 'EXIF Height', value: exif.height?.toString()),
+      _PropertyItem(label: 'Date Taken', value: exif.dateTimeOriginal?.toString()),
+      _PropertyItem(label: 'Time Zone', value: exif.timeZone),
+      _PropertyItem(label: 'Camera Make', value: exif.make),
+      _PropertyItem(label: 'Camera Model', value: exif.model),
+      _PropertyItem(label: 'Lens', value: exif.lens),
+      _PropertyItem(label: 'F-Number', value: exif.f != null ? 'f/${exif.fNumber}' : null),
+      _PropertyItem(label: 'Focal Length', value: exif.mm != null ? '${exif.focalLength}mm' : null),
+      _PropertyItem(label: 'ISO', value: exif.iso?.toString()),
+      _PropertyItem(label: 'Exposure Time', value: exif.exposureTime.isNotEmpty ? exif.exposureTime : null),
+      _PropertyItem(
+        label: 'GPS Coordinates',
+        value: exif.hasCoordinates ? '${exif.latitude}, ${exif.longitude}' : null,
+      ),
+      _PropertyItem(
+        label: 'Location',
+        value: [exif.city, exif.state, exif.country].where((e) => e != null && e.isNotEmpty).join(', '),
+      ),
+    ]);
   }
 
   String _getAssetTypeTitle(BaseAsset asset) {
