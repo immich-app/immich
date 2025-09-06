@@ -44,7 +44,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> delete(List<String> ids) {
+  Future<void> delete(Iterable<String> ids) {
     if (ids.isEmpty) {
       return Future.value();
     }
@@ -68,5 +68,14 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<int> getHashedCount() {
     return _db.managers.localAssetEntity.filter((e) => e.checksum.isNull().not()).count();
+  }
+
+  Future<List<LocalAsset>> getByChecksums(Iterable<String> checksums) {
+    if (checksums.isEmpty) {
+      return Future.value([]);
+    }
+    final query = _db.localAssetEntity.select()
+      ..where((lae) => lae.checksum.isIn(checksums));
+    return query.map((row) => row.toDto()).get();
   }
 }
