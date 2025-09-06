@@ -9,6 +9,8 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
+  static let engineGroup = FlutterEngineGroup.init(name: "immich:engines", project: nil)
+  
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?

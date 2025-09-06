@@ -48,7 +48,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
   /// This is a separate instance from the main Flutter engine that handles the UI.
   /// It operates in its own isolate and doesn't share memory with the main engine.
   /// Must be properly started, registered, and torn down during background execution.
-  private let engine = FlutterEngine(name: "BackgroundImmich")
+  private var engine: FlutterEngine?
   
   /// Used to call methods on the flutter side
   private var flutterApi: BackgroundWorkerFlutterApi?
@@ -80,24 +80,20 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * starts the engine, and sets up a timeout timer if specified.
    */
   func run() {
-    // Start the Flutter engine with the specified callback as the entry point
-    let isRunning = engine.run(
-      withEntrypoint: "backgroundSyncNativeEntrypoint",
-      libraryURI: "package:immich_mobile/domain/services/background_worker.service.dart"
-    )
+    // Start and verify that the Flutter engine started successfully
+    engine = AppDelegate.engineGroup.makeEngine(withEntrypoint: "backgroundSyncNativeEntrypoint", libraryURI: "package:immich_mobile/domain/services/background_worker.service.dart")
     
-    // Verify that the Flutter engine started successfully
-    if !isRunning {
+    if engine == nil {
       complete(success: false)
       return
     }
     
     // Register plugins in the new engine
-    GeneratedPluginRegistrant.register(with: engine)
+    GeneratedPluginRegistrant.register(with: engine!)
     // Register custom plugins
-    AppDelegate.registerPlugins(binaryMessenger: engine.binaryMessenger)
-    flutterApi = BackgroundWorkerFlutterApi(binaryMessenger: engine.binaryMessenger)
-    BackgroundWorkerBgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: self)
+    AppDelegate.registerPlugins(binaryMessenger: engine!.binaryMessenger)
+    flutterApi = BackgroundWorkerFlutterApi(binaryMessenger: engine!.binaryMessenger)
+    BackgroundWorkerBgHostApiSetup.setUp(binaryMessenger: engine!.binaryMessenger, api: self)
     
     // Set up a timeout timer if maxSeconds was specified to prevent runaway background tasks
     if maxSeconds != nil {
@@ -169,7 +165,8 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     }
     
     isComplete = true
-    engine.destroyContext()
+    engine?.destroyContext()
+    engine = nil
     completionHandler(success)
   }
 }
