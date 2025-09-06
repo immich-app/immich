@@ -21,7 +21,7 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    user: '${UID:-1000}:${GID:-1000}'
+    user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
       dockerfile: server/Dockerfile
@@ -82,7 +82,7 @@ services:
     image: immich-web-dev:latest
     # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
     # user: 0:0
-    user: '${UID:-1000}:${GID:-1000}'
+    user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
       dockerfile: server/Dockerfile
@@ -189,7 +189,7 @@ services:
     env_file:
       - .env
     user: 0:0
-    command: sh -c 'find /data -maxdepth 1 -type d -exec chown ${UID:-1000}:${GID:-1000} {} + 2>/dev/null || true; for path in /usr/src/app/.pnpm-store /usr/src/app/server/node_modules /usr/src/app/server/dist /usr/src/app/.github/node_modules /usr/src/app/cli/node_modules /usr/src/app/docs/node_modules /usr/src/app/e2e/node_modules /usr/src/app/open-api/typescript-sdk/node_modules /usr/src/app/web/.svelte-kit /usr/src/app/web/coverage /usr/src/app/node_modules /usr/src/app/web/node_modules; do [ -e "$$path" ] && chown -R ${UID:-1000}:${GID:-1000} "$$path" || true; done'
+    command: sh -c 'find /data -maxdepth 1 -type d -exec chown ${UID:-0}:${GID:-0} {} + 2>/dev/null || true; for path in /usr/src/app/.pnpm-store /usr/src/app/server/node_modules /usr/src/app/server/dist /usr/src/app/.github/node_modules /usr/src/app/cli/node_modules /usr/src/app/docs/node_modules /usr/src/app/e2e/node_modules /usr/src/app/open-api/typescript-sdk/node_modules /usr/src/app/web/.svelte-kit /usr/src/app/web/coverage /usr/src/app/node_modules /usr/src/app/web/node_modules; do [ -e "$$path" ] && chown -R ${UID:-0}:${GID:-0} "$$path" || true; done'
     volumes:
       - pnpm-store:/usr/src/app/.pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
