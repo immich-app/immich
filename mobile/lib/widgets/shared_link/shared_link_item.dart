@@ -77,7 +77,9 @@ class SharedLinkItem extends ConsumerWidget {
         return;
       }
 
-      Clipboard.setData(ClipboardData(text: "${serverUrl}share/${sharedLink.key}")).then((_) {
+      final fullPath = sharedLink.slug != null ? 's/${sharedLink.slug}' : 'share/${sharedLink.key}';
+
+      Clipboard.setData(ClipboardData(text: "${serverUrl}$fullPath")).then((_) {
         context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
