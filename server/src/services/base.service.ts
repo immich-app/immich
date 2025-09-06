@@ -162,6 +162,7 @@ export class BaseService {
       personRepository,
       storageRepository,
       systemMetadataRepository,
+      this.logger,
     );
   }
 
