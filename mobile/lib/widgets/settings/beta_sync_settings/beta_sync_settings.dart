@@ -252,14 +252,21 @@ class BetaSyncSettings extends HookConsumerWidget {
                     ),
                     Expanded(
                       child: Consumer(
+                        key: const ValueKey("hashed_assets_count_tile"),
                         builder: (context, ref, _) {
-                          final localHashedCount = ref
-                              .watch(localHashedCountProvider)
-                              .maybeWhen(data: (v) => v, orElse: () => 0);
-                          return EntitiyCountTile(
-                            label: "hashed_assets".t(context: context),
-                            count: localHashedCount,
-                            icon: Icons.tag,
+                          final assetService = ref.watch(assetServiceProvider);
+
+                          return StreamBuilder<int>(
+                            stream: assetService.watchLocalHashedCount(),
+                            initialData: 0,
+                            builder: (context, snapshot) {
+                              final localHashedCount = snapshot.data ?? 0;
+                              return EntitiyCountTile(
+                                label: "hashed_assets".t(context: context),
+                                count: localHashedCount,
+                                icon: Icons.tag,
+                              );
+                            },
                           );
                         },
                       ),
