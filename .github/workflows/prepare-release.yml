@@ -24,6 +24,15 @@ concurrency:
 permissions: {}
 
 jobs:
+  merge_translations:
+    uses: ./.github/workflows/merge-translations.yml
+    permissions:
+      pull-requests: write
+    secrets:
+      PUSH_O_MATIC_APP_ID: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+      PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+      WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+
   bump_version:
     runs-on: ubuntu-latest
     outputs:
