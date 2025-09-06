@@ -34,6 +34,8 @@ let instance: StorageCore | null;
 let mediaLocation: string | undefined;
 
 export class StorageCore {
+  private logger = LoggingRepository.create(StorageCore.name);
+
   private constructor(
     private assetRepository: AssetRepository,
     private configRepository: ConfigRepository,
@@ -42,7 +44,6 @@ export class StorageCore {
     private personRepository: PersonRepository,
     private storageRepository: StorageRepository,
     private systemMetadataRepository: SystemMetadataRepository,
-    private logger: LoggingRepository,
   ) {}
 
   static create(
@@ -53,7 +54,6 @@ export class StorageCore {
     personRepository: PersonRepository,
     storageRepository: StorageRepository,
     systemMetadataRepository: SystemMetadataRepository,
-    logger: LoggingRepository,
   ) {
     if (!instance) {
       instance = new StorageCore(
@@ -64,7 +64,6 @@ export class StorageCore {
         personRepository,
         storageRepository,
         systemMetadataRepository,
-        logger,
       );
     }
 
