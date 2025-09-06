@@ -37,7 +37,6 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.pull_request_review.pull_request.number }}
         run: |
-          # TODO: Is github-actions[bot] the correct user here?
           # Then check for APPROVED by the bot, if absent fail
           gh pr view $PR_NUMBER --json reviews | jq -e '.reviews | map(select(.author.login == "github-actions[bot]" and .state == "APPROVED")) | length > 0' \
             || (echo "The push-o-matic bot has not approved this PR yet" && exit 1)
