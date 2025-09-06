@@ -8,6 +8,9 @@ import ChangeDate from './change-date.svelte';
 describe('ChangeDate component', () => {
   const initialDate = DateTime.fromISO('2024-01-01');
   const initialTimeZone = 'Europe/Berlin';
+  const targetDate = DateTime.fromISO('2024-01-01').setZone('UTC+1', {
+    keepLocalTime: true,
+  });
   const currentInterval = {
     start: DateTime.fromISO('2000-02-01T14:00:00+01:00'),
     end: DateTime.fromISO('2001-02-01T14:00:00+01:00'),
@@ -43,7 +46,11 @@ describe('ChangeDate component', () => {
 
     await fireEvent.click(getConfirmButton());
 
-    expect(onConfirm).toHaveBeenCalledWith({ mode: 'absolute', date: '2024-01-01T00:00:00.000+01:00' });
+    expect(onConfirm).toHaveBeenCalledWith({
+      mode: 'absolute',
+      date: '2024-01-01T00:00:00.000+01:00',
+      dateTime: targetDate,
+    });
   });
 
   test('calls onCancel on cancel', async () => {
@@ -58,7 +65,9 @@ describe('ChangeDate component', () => {
 
   describe('when date is in daylight saving time', () => {
     const dstDate = DateTime.fromISO('2024-07-01');
-
+    const targetDate = DateTime.fromISO('2024-07-01').setZone('UTC+2', {
+      keepLocalTime: true,
+    });
     test('should render correct timezone with offset', () => {
       render(ChangeDate, { initialDate: dstDate, initialTimeZone, onCancel, onConfirm });
 
@@ -72,7 +81,11 @@ describe('ChangeDate component', () => {
 
       await fireEvent.click(getConfirmButton());
 
-      expect(onConfirm).toHaveBeenCalledWith({ mode: 'absolute', date: '2024-07-01T00:00:00.000+02:00' });
+      expect(onConfirm).toHaveBeenCalledWith({
+        mode: 'absolute',
+        date: '2024-07-01T00:00:00.000+02:00',
+        dateTime: targetDate,
+      });
     });
   });
 

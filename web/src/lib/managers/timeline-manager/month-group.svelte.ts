@@ -4,6 +4,7 @@ import { CancellableTask } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
 import {
   formatGroupTitle,
+  formatGroupTitleFull,
   formatMonthGroupTitle,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
@@ -217,7 +218,8 @@ export class MonthGroup {
       addContext.setDayGroup(dayGroup, localDateTime);
     } else {
       const groupTitle = formatGroupTitle(fromTimelinePlainDate(localDateTime));
-      dayGroup = new DayGroup(this, this.dayGroups.length, localDateTime.day, groupTitle);
+      const groupTitleFull = formatGroupTitleFull(fromTimelinePlainDate(localDateTime));
+      dayGroup = new DayGroup(this, this.dayGroups.length, localDateTime.day, groupTitle, groupTitleFull);
       this.dayGroups.push(dayGroup);
       addContext.setDayGroup(dayGroup, localDateTime);
       addContext.newDayGroups.add(dayGroup);
