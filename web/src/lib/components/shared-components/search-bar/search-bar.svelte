@@ -22,7 +22,7 @@
 
   let { grayTheme, searchQuery = {} }: Props = $props();
 
-  let value = $state(initializeValue());
+  let value = $state(initializeValue() ?? '');
   let showClearIcon = $derived(value.length > 0);
 
   let input = $state<HTMLInputElement>();
@@ -202,12 +202,12 @@
     }
   }
 
-  function initializeValue(): string {
+  function initializeValue(): string | undefined {
     if (isSmartSearchDto(searchQuery)) {
-      return searchQuery.query;
+      return searchQuery.query || searchQuery.queryAssetId;
     }
 
-    return searchQuery.originalFileName || searchQuery.description || '';
+    return searchQuery.originalFileName || searchQuery.description;
   }
 </script>
 
