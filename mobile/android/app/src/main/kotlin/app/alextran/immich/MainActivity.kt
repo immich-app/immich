@@ -14,6 +14,10 @@ import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 
 class MainActivity : FlutterFragmentActivity() {
+  override fun provideFlutterEngine(context: Context): FlutterEngine? {
+    return ImmichApp.getOrCreateEngineGroup(context).createAndRunDefaultEngine(this)
+  }
+
   override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
     super.configureFlutterEngine(flutterEngine)
     registerPlugins(this, flutterEngine)

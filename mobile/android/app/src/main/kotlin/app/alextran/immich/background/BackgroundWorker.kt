@@ -6,6 +6,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
+import app.alextran.immich.ImmichApp
 import app.alextran.immich.MainActivity
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
@@ -50,7 +51,14 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     Log.i(TAG, "Starting background upload worker")
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
-      engine = FlutterEngine(ctx)
+      engine = ImmichApp.getOrCreateEngineGroup(ctx).createAndRunEngine(
+        ctx,
+        DartExecutor.DartEntrypoint(
+          loader.findAppBundlePath(),
+          "package:immich_mobile/domain/services/background_worker.service.dart",
+          "backgroundSyncNativeEntrypoint"
+        )
+      )
 
       // Register custom plugins
       MainActivity.registerPlugins(ctx, engine!!)
@@ -61,13 +69,6 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
         api = this
       )
 
-      engine!!.dartExecutor.executeDartEntrypoint(
-        DartExecutor.DartEntrypoint(
-          loader.findAppBundlePath(),
-          "package:immich_mobile/domain/services/background_worker.service.dart",
-          "backgroundSyncNativeEntrypoint"
-        )
-      )
     }
 
     return completionHandler
