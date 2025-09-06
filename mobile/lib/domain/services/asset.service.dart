@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -25,6 +26,14 @@ class AssetService {
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
     return asset is LocalAsset ? _localAssetRepository.watch(id) : _remoteAssetRepository.watch(id);
+  }
+
+  Future<List<LocalAsset?>> getLocalAssetsByChecksum(String checksum) {
+    return _localAssetRepository.getByChecksum(checksum);
+  }
+
+  Future<RemoteAsset?> getRemoteAssetByChecksum(String checksum) {
+    return _remoteAssetRepository.getByChecksum(checksum);
   }
 
   Future<RemoteAsset?> getRemoteAsset(String id) {
@@ -88,5 +97,9 @@ class AssetService {
 
   Future<int> getLocalHashedCount() {
     return _localAssetRepository.getHashedCount();
+  }
+
+  Future<List<LocalAlbum>> getSourceAlbums(String localAssetId, {BackupSelection? backupSelection}) {
+    return _localAssetRepository.getSourceAlbums(localAssetId, backupSelection: backupSelection);
   }
 }
