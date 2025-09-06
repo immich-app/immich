@@ -28,6 +28,8 @@
   "add_to_album": "संग्रहात टाका",
   "add_to_album_bottom_sheet_added": "{album} मध्ये जोडले गेले",
   "add_to_album_bottom_sheet_already_exists": "आधीच {album} मध्ये आहे",
+  "add_to_album_toggle": "अल्बमसाठी निवड टॉगल करा",
+  "add_to_albums": "अल्बममध्ये जोडा",
   "add_to_shared_album": "सामायिक संग्रहात टाका",
   "add_url": "URL प्रविष्ट करा",
   "added_to_archive": "संग्रहित केले",
