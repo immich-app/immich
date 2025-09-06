@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
 enum SyncStatus {
   idle,
@@ -112,3 +113,8 @@ class SyncStatusNotifier extends Notifier<SyncStatusState> {
 }
 
 final syncStatusProvider = NotifierProvider<SyncStatusNotifier, SyncStatusState>(SyncStatusNotifier.new);
+
+final localHashedCountProvider = StreamProvider<int>((ref) {
+  final assetService = ref.read(assetServiceProvider);
+  return assetService.watchLocalHashedCount();
+});

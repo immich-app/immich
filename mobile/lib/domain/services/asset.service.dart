@@ -95,8 +95,8 @@ class AssetService {
     return (await _localAssetRepository.getCount(), await _remoteAssetRepository.getCount());
   }
 
-  Future<int> getLocalHashedCount() {
-    return _localAssetRepository.getHashedCount();
+  Stream<int> watchLocalHashedCount() {
+    return _localAssetRepository.watchHashedCount();
   }
 
   Future<List<LocalAlbum>> getSourceAlbums(String localAssetId, {BackupSelection? backupSelection}) {
