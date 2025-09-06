@@ -125,7 +125,7 @@ ENV NODE_ENV=production \
 COPY --from=server-prod /output/server-pruned ./server
 COPY --from=web-prod /usr/src/app/web/build /build/www
 COPY --from=cli-prod /output/cli-pruned ./cli
-RUN ln -s ./cli/bin/immich server/bin/immich
+RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 
