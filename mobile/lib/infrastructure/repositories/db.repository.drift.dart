@@ -25,19 +25,21 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
     as i11;
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart'
     as i12;
-import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart'
     as i13;
-import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart'
     as i14;
-import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart'
     as i15;
-import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart'
     as i16;
-import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart'
     as i17;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i18;
-import 'package:drift/internal/modular.dart' as i19;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i19;
+import 'package:drift/internal/modular.dart' as i20;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -65,16 +67,18 @@ abstract class $Drift extends i0.GeneratedDatabase {
       .$RemoteAlbumAssetEntityTable(this);
   late final i12.$RemoteAlbumUserEntityTable remoteAlbumUserEntity = i12
       .$RemoteAlbumUserEntityTable(this);
-  late final i13.$MemoryEntityTable memoryEntity = i13.$MemoryEntityTable(this);
-  late final i14.$MemoryAssetEntityTable memoryAssetEntity = i14
+  late final i13.$RemoteAssetCloudIdEntityTable remoteAssetCloudIdEntity = i13
+      .$RemoteAssetCloudIdEntityTable(this);
+  late final i14.$MemoryEntityTable memoryEntity = i14.$MemoryEntityTable(this);
+  late final i15.$MemoryAssetEntityTable memoryAssetEntity = i15
       .$MemoryAssetEntityTable(this);
-  late final i15.$PersonEntityTable personEntity = i15.$PersonEntityTable(this);
-  late final i16.$AssetFaceEntityTable assetFaceEntity = i16
+  late final i16.$PersonEntityTable personEntity = i16.$PersonEntityTable(this);
+  late final i17.$AssetFaceEntityTable assetFaceEntity = i17
       .$AssetFaceEntityTable(this);
-  late final i17.$StoreEntityTable storeEntity = i17.$StoreEntityTable(this);
-  i18.MergedAssetDrift get mergedAssetDrift => i19.ReadDatabaseContainer(
+  late final i18.$StoreEntityTable storeEntity = i18.$StoreEntityTable(this);
+  i19.MergedAssetDrift get mergedAssetDrift => i20.ReadDatabaseContainer(
     this,
-  ).accessor<i18.MergedAssetDrift>(i18.MergedAssetDrift.new);
+  ).accessor<i19.MergedAssetDrift>(i19.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -88,6 +92,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     localAlbumEntity,
     localAlbumAssetEntity,
     i4.idxLocalAssetChecksum,
+    i4.idxLocalAssetCloudId,
     i2.idxRemoteAssetOwnerChecksum,
     i2.uQRemoteAssetsOwnerChecksum,
     i2.uQRemoteAssetsOwnerLibraryChecksum,
@@ -97,6 +102,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     remoteExifEntity,
     remoteAlbumAssetEntity,
     remoteAlbumUserEntity,
+    remoteAssetCloudIdEntity,
     memoryEntity,
     memoryAssetEntity,
     personEntity,
@@ -238,6 +244,18 @@ abstract class $Drift extends i0.GeneratedDatabase {
     ),
     i0.WritePropagation(
       on: i0.TableUpdateQuery.onTableName(
+        'remote_asset_entity',
+        limitUpdateKind: i0.UpdateKind.delete,
+      ),
+      result: [
+        i0.TableUpdate(
+          'remote_asset_cloud_id_entity',
+          kind: i0.UpdateKind.delete,
+        ),
+      ],
+    ),
+    i0.WritePropagation(
+      on: i0.TableUpdateQuery.onTableName(
         'user_entity',
         limitUpdateKind: i0.UpdateKind.delete,
       ),
@@ -318,14 +336,20 @@ class $DriftManager {
       );
   i12.$$RemoteAlbumUserEntityTableTableManager get remoteAlbumUserEntity => i12
       .$$RemoteAlbumUserEntityTableTableManager(_db, _db.remoteAlbumUserEntity);
-  i13.$$MemoryEntityTableTableManager get memoryEntity =>
-      i13.$$MemoryEntityTableTableManager(_db, _db.memoryEntity);
-  i14.$$MemoryAssetEntityTableTableManager get memoryAssetEntity =>
-      i14.$$MemoryAssetEntityTableTableManager(_db, _db.memoryAssetEntity);
-  i15.$$PersonEntityTableTableManager get personEntity =>
-      i15.$$PersonEntityTableTableManager(_db, _db.personEntity);
-  i16.$$AssetFaceEntityTableTableManager get assetFaceEntity =>
-      i16.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
-  i17.$$StoreEntityTableTableManager get storeEntity =>
-      i17.$$StoreEntityTableTableManager(_db, _db.storeEntity);
+  i13.$$RemoteAssetCloudIdEntityTableTableManager
+  get remoteAssetCloudIdEntity =>
+      i13.$$RemoteAssetCloudIdEntityTableTableManager(
+        _db,
+        _db.remoteAssetCloudIdEntity,
+      );
+  i14.$$MemoryEntityTableTableManager get memoryEntity =>
+      i14.$$MemoryEntityTableTableManager(_db, _db.memoryEntity);
+  i15.$$MemoryAssetEntityTableTableManager get memoryAssetEntity =>
+      i15.$$MemoryAssetEntityTableTableManager(_db, _db.memoryAssetEntity);
+  i16.$$PersonEntityTableTableManager get personEntity =>
+      i16.$$PersonEntityTableTableManager(_db, _db.personEntity);
+  i17.$$AssetFaceEntityTableTableManager get assetFaceEntity =>
+      i17.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
+  i18.$$StoreEntityTableTableManager get storeEntity =>
+      i18.$$StoreEntityTableTableManager(_db, _db.storeEntity);
 }

@@ -6,8 +6,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
@@ -301,6 +301,16 @@ class BetaSyncSettings extends HookConsumerWidget {
                   ref.read(backgroundSyncProvider).hashAssets();
                 },
               ),
+              ListTile(
+                title: Text(
+                  "sync_cloud_ids".t(context: context),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                leading: const Icon(Icons.keyboard_command_key_rounded),
+                subtitle: Text("tap_to_run_job".t(context: context)),
+                trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).cloudIdSyncStatus),
+                onTap: ref.read(backgroundSyncProvider).syncCloudIds,
+              ),
               const Divider(height: 1, indent: 16, endIndent: 16),
               const SizedBox(height: 24),
               _SectionHeaderText(text: "actions".t(context: context)),
@@ -347,7 +357,7 @@ class _SyncStatusIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (status) {
-      SyncStatus.idle => const Icon(Icons.pause_circle_outline_rounded),
+      SyncStatus.idle => const SizedBox.shrink(),
       SyncStatus.syncing => const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2)),
       SyncStatus.success => const Icon(Icons.check_circle_outline, color: Colors.green),
       SyncStatus.error => Icon(Icons.error_outline, color: context.colorScheme.error),

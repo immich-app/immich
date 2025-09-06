@@ -3,11 +3,13 @@ part of 'base_asset.model.dart';
 class LocalAsset extends BaseAsset {
   final String id;
   final String? remoteId;
+  final String? cloudId;
   final int orientation;
 
   const LocalAsset({
     required this.id,
     this.remoteId,
+    this.cloudId,
     required super.name,
     super.checksum,
     required super.type,
@@ -31,6 +33,8 @@ class LocalAsset extends BaseAsset {
   String toString() {
     return '''LocalAsset {
    id: $id,
+   remoteId: ${remoteId ?? "<NA>"},
+   cloudId: ${cloudId ?? "<NA>"},
    name: $name,
    type: $type,
    createdAt: $createdAt,
@@ -49,7 +53,7 @@ class LocalAsset extends BaseAsset {
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;
     if (identical(this, other)) return true;
-    return super == other && id == other.id && orientation == other.orientation;
+    return super == other && id == other.id && orientation == other.orientation && cloudId == other.cloudId;
   }
 
   @override
@@ -58,6 +62,7 @@ class LocalAsset extends BaseAsset {
   LocalAsset copyWith({
     String? id,
     String? remoteId,
+    String? cloudId,
     String? name,
     String? checksum,
     AssetType? type,
@@ -72,6 +77,7 @@ class LocalAsset extends BaseAsset {
     return LocalAsset(
       id: id ?? this.id,
       remoteId: remoteId ?? this.remoteId,
+      cloudId: cloudId ?? this.cloudId,
       name: name ?? this.name,
       checksum: checksum ?? this.checksum,
       type: type ?? this.type,

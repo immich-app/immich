@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/album.stub.dart';
@@ -39,6 +39,7 @@ void main() {
     registerFallbackValue(LocalAlbumStub.recent);
     registerFallbackValue(LocalAssetStub.image1);
 
+    when(() => mockAssetRepo.getHashMappingFromCloudId()).thenAnswer((_) async => []);
     when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
     when(() => mockStorageRepo.clearCache()).thenAnswer((_) async => {});
   });
@@ -87,7 +88,8 @@ void main() {
       await sut.hashAssets();
 
       verify(() => mockNativeApi.hashPaths(['image-path'])).called(1);
-      final captured = verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAsset>;
+      final captured =
+          verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAssetHashMapping>;
       expect(captured.length, 1);
       expect(captured[0].checksum, base64.encode(hash));
     });
@@ -107,7 +109,8 @@ void main() {
 
       await sut.hashAssets();
 
-      final captured = verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAsset>;
+      final captured =
+          verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAssetHashMapping>;
       expect(captured.length, 0);
     });
 
@@ -128,7 +131,8 @@ void main() {
 
       await sut.hashAssets();
 
-      final captured = verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAsset>;
+      final captured =
+          verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAssetHashMapping>;
       expect(captured.length, 0);
     });
 
@@ -224,9 +228,10 @@ void main() {
 
       await sut.hashAssets();
 
-      final captured = verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAsset>;
+      final captured =
+          verify(() => mockAssetRepo.updateHashes(captureAny())).captured.first as List<LocalAssetHashMapping>;
       expect(captured.length, 1);
-      expect(captured.first.id, asset1.id);
+      expect(captured.first.assetId, asset1.id);
     });
   });
 }

@@ -5,6 +5,8 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
+typedef LocalAssetHashMapping = ({String assetId, String checksum});
+
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftLocalAssetRepository(this._db) : super(_db);
@@ -28,17 +30,17 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Stream<LocalAsset?> watch(String id) => _assetSelectable(id).watchSingleOrNull();
 
-  Future<void> updateHashes(Iterable<LocalAsset> hashes) {
+  Future<void> updateHashes(Iterable<LocalAssetHashMapping> hashes) {
     if (hashes.isEmpty) {
       return Future.value();
     }
 
     return _db.batch((batch) async {
-      for (final asset in hashes) {
+      for (final mapping in hashes) {
         batch.update(
           _db.localAssetEntity,
-          LocalAssetEntityCompanion(checksum: Value(asset.checksum)),
-          where: (e) => e.id.equals(asset.id),
+          LocalAssetEntityCompanion(checksum: Value(mapping.checksum)),
+          where: (e) => e.id.equals(mapping.assetId),
         );
       }
     });
@@ -68,5 +70,28 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Future<int> getHashedCount() {
     return _db.managers.localAssetEntity.filter((e) => e.checksum.isNull().not()).count();
+  }
+
+  Future<List<LocalAssetHashMapping>> getHashMappingFromCloudId() async {
+    final query =
+        _db.localAssetEntity.selectOnly().join([
+            leftOuterJoin(
+              _db.remoteAssetCloudIdEntity,
+              _db.localAssetEntity.cloudId.equalsExp(_db.remoteAssetCloudIdEntity.cloudId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetCloudIdEntity.assetId.equalsExp(_db.remoteAssetEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..addColumns([_db.localAssetEntity.id, _db.remoteAssetEntity.checksum])
+          ..where(_db.remoteAssetCloudIdEntity.cloudId.isNotNull() & _db.localAssetEntity.checksum.isNull());
+    return query
+        .map(
+          (row) => (assetId: row.read(_db.localAssetEntity.id)!, checksum: row.read(_db.remoteAssetEntity.checksum)!),
+        )
+        .get();
   }
 }

@@ -161,15 +161,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         }
       }
 
-      // Check if app is still active before hashing
-      if (_shouldContinueOperation()) {
-        try {
-          await backgroundManager.hashAssets();
-        } catch (e, stackTrace) {
-          _log.warning("Failed hashAssets: $e", e, stackTrace);
-        }
-      }
-
       // Check if app is still active before remote sync
       if (_shouldContinueOperation()) {
         try {
@@ -184,6 +175,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           } catch (e, stackTrace) {
             _log.warning("Failed syncLinkedAlbum: $e", e, stackTrace);
           }
+        }
+      }
+
+      // Check if app is still active before hashing
+      if (_shouldContinueOperation()) {
+        try {
+          await backgroundManager.hashAssets();
+        } catch (e, stackTrace) {
+          _log.warning("Failed hashAssets: $e", e, stackTrace);
         }
       }
 

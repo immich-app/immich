@@ -207,9 +207,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _syncAssets({Duration? hashTimeout}) async {
-    final futures = <Future<void>>[];
-
-    final localSyncFuture = _ref.read(backgroundSyncProvider).syncLocal().then((_) async {
+    await (
+      _ref.read(backgroundSyncProvider).syncLocal(),
+      _ref.read(backgroundSyncProvider).syncRemote(),
+    ).wait.whenComplete(() async {
       if (_isCleanedUp) {
         return;
       }
@@ -226,11 +227,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
       return hashFuture;
     });
-
-    futures.add(localSyncFuture);
-    futures.add(_ref.read(backgroundSyncProvider).syncRemote());
-
-    await Future.wait(futures);
   }
 }
 
