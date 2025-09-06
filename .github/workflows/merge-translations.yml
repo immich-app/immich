@@ -6,6 +6,10 @@ on:
 
 permissions: {}
 
+env:
+  WEBLATE_HOST: 'https://hosted.weblate.org'
+  WEBLATE_COMPONENT: 'immich/immich'
+
 jobs:
   merge:
     runs-on: ubuntu-latest
@@ -36,14 +40,14 @@ jobs:
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/lock/ -d lock=true
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' $WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/ -d lock=true
 
       - name: Commit translations
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/repository/ -d operation=commit
-          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/repository/ -d operation=push
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' $WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/ -d operation=commit
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' $WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/ -d operation=push
 
       - name: Merge PR
         env:
@@ -90,4 +94,4 @@ jobs:
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' https://hosted.weblate.org/api/components/immich/immich/lock/ -d lock=false
+          curl -X POST -H 'Authorization: Token $WEBLATE_TOKEN' $WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/ -d lock=false
