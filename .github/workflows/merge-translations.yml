@@ -79,16 +79,6 @@ jobs:
           gh pr merge $PR_NUMBER --repo $GITHUB_REPOSITORY --disable-auto
           exit 1
 
-      - name: Comment on failure
-        if: failure()
-        env:
-          PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
-        uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2.8.2
-        with:
-          issue: ${{ steps.find_pr.outputs.PR_NUMBER }}
-          message-id: 'merge-failure'
-          message: 'PR merge attempt timed out'
-
       - name: Unlock weblate
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
