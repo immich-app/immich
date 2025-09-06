@@ -77,7 +77,10 @@ class SharedLinkItem extends ConsumerWidget {
         return;
       }
 
-      Clipboard.setData(ClipboardData(text: "${serverUrl}share/${sharedLink.key}")).then((_) {
+      final linkIdentifier = sharedLink.slug ?? sharedLink.key;
+      final pathPrefix = sharedLink.slug != null ? 's/' : 'share/';
+
+      Clipboard.setData(ClipboardData(text: "${serverUrl}$pathPrefix$linkIdentifier")).then((_) {
         context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
@@ -168,7 +171,7 @@ class SharedLinkItem extends ConsumerWidget {
             iconSize: actionIconSize,
             icon: const Icon(Icons.delete_outline),
             style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             onPressed: deleteShareLink,
           ),
@@ -178,7 +181,7 @@ class SharedLinkItem extends ConsumerWidget {
             iconSize: actionIconSize,
             icon: const Icon(Icons.edit_outlined),
             style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             onPressed: () => context.pushRoute(SharedLinkEditRoute(existingLink: sharedLink)),
           ),
@@ -188,7 +191,7 @@ class SharedLinkItem extends ConsumerWidget {
             iconSize: actionIconSize,
             icon: const Icon(Icons.copy_outlined),
             style: const ButtonStyle(
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             onPressed: copyShareLinkToClipboard,
           ),
