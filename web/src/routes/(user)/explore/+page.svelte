@@ -5,7 +5,7 @@
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import type { PageData } from './$types';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { encodeSearchQuery } from '$lib/utils/metadata-search';
   import { t } from 'svelte-i18n';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { onMount } from 'svelte';
@@ -89,11 +89,7 @@
       <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4">
         {#snippet children({ itemCount })}
           {#each places.slice(0, itemCount) as item (item.data.id)}
-            <a
-              class="relative"
-              href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}"
-              draggable="false"
-            >
+            <a class="relative" href="{AppRoute.SEARCH}?{encodeSearchQuery({ city: item.value })}" draggable="false">
               <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
                 <img
                   src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
@@ -102,7 +98,7 @@
                 />
               </div>
               <span
-                class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
+                class="absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
               >
                 {item.value}
               </span>
