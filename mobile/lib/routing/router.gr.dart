@@ -404,6 +404,43 @@ class ArchiveRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [AssetTroubleshootPage]
+class AssetTroubleshootRoute extends PageRouteInfo<AssetTroubleshootRouteArgs> {
+  AssetTroubleshootRoute({
+    Key? key,
+    required BaseAsset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+         AssetTroubleshootRoute.name,
+         args: AssetTroubleshootRouteArgs(key: key, asset: asset),
+         initialChildren: children,
+       );
+
+  static const String name = 'AssetTroubleshootRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AssetTroubleshootRouteArgs>();
+      return AssetTroubleshootPage(key: args.key, asset: args.asset);
+    },
+  );
+}
+
+class AssetTroubleshootRouteArgs {
+  const AssetTroubleshootRouteArgs({this.key, required this.asset});
+
+  final Key? key;
+
+  final BaseAsset asset;
+
+  @override
+  String toString() {
+    return 'AssetTroubleshootRouteArgs{key: $key, asset: $asset}';
+  }
+}
+
+/// generated route for
 /// [AssetViewerPage]
 class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
   AssetViewerRoute({
