@@ -29,6 +29,36 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   SyncStreamRepository(super.db) : _db = db;
 
+  Future<void> reset() async {
+    _logger.fine("SyncResetV1 received. Resetting remote entities");
+    try {
+      await _db.exclusively(() async {
+        // foreign_keys PRAGMA is no-op within transactions
+        // https://www.sqlite.org/pragma.html#pragma_foreign_keys
+        await _db.customStatement('PRAGMA foreign_keys = OFF');
+        await transaction(() async {
+          await _db.assetFaceEntity.deleteAll();
+          await _db.memoryAssetEntity.deleteAll();
+          await _db.memoryEntity.deleteAll();
+          await _db.partnerEntity.deleteAll();
+          await _db.personEntity.deleteAll();
+          await _db.remoteAlbumAssetEntity.deleteAll();
+          await _db.remoteAlbumEntity.deleteAll();
+          await _db.remoteAlbumUserEntity.deleteAll();
+          await _db.remoteAssetEntity.deleteAll();
+          await _db.remoteExifEntity.deleteAll();
+          await _db.stackEntity.deleteAll();
+          await _db.userEntity.deleteAll();
+          await _db.userMetadataEntity.deleteAll();
+        });
+        await _db.customStatement('PRAGMA foreign_keys = ON');
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncResetV1', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.userEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.userId)));
