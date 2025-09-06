@@ -1559,7 +1559,7 @@
   "purchase_server_description_2": "Statut de contributeur",
   "purchase_server_title": "Serveur",
   "purchase_settings_server_activated": "La clé du produit pour le Serveur est gérée par l'administrateur",
-  "query_asset_id": "ID du média requis",
+  "query_asset_id": "Obtenir l'ID du média",
   "queue_status": "{count}/{total} en file d'attente",
   "rating": "Étoile d'évaluation",
   "rating_clear": "Effacer l'évaluation",
