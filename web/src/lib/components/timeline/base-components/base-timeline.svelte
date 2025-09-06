@@ -53,12 +53,16 @@
 
   const VIEWPORT_MULTIPLIER = 2; // Used to determine if timeline is "small"
 
-  let isInLeadOutSection = $state(false);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
   // Note: There may be multiple months visible within the viewport at any given time.
   let viewportTopMonthScrollPercent = $state(0);
+  // The timeline month intersecting the top position of the viewport
   let viewportTopMonth: TimelineYearMonth | undefined = $state(undefined);
+  // Overall scroll percentage through the entire timeline (0-1)
   let timelineScrollPercent: number = $state(0);
+  // Indicates whether the viewport is currently in the lead-out section (after all months)
+  let isInLeadOutSection = $state(false);
+  // Width of the scrubber component in pixels, used to adjust timeline margins
   let scrubberWidth: number = $state(0);
 
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
@@ -66,44 +70,15 @@
   const handleTimelineScroll = () => {
     isInLeadOutSection = false;
 
-    // Handle small timeline edge case: scroll limited due to size of content
-    if (isSmallTimeline()) {
-      handleSmallTimelineScroll();
-      return;
-    }
-
-    // Handle scrolling of the lead-in area
+    // Handle edge cases: small timeline (limited scroll) or lead-in area scrolling
     const top = timelineManager.visibleWindow.top;
-    if (top < timelineManager.topSectionHeight) {
-      handleLeadInScroll();
+    if (isSmallTimeline() || top < timelineManager.topSectionHeight) {
+      calculateTimelineScrollPercent();
       return;
     }
 
     // Handle normal month scrolling
     handleMonthScroll();
-  };
-
-  const isSmallTimeline = () => {
-    return timelineManager.timelineHeight < timelineManager.viewportHeight * VIEWPORT_MULTIPLIER;
-  };
-
-  const resetScrubberMonth = () => {
-    viewportTopMonth = undefined;
-    viewportTopMonthScrollPercent = 0;
-  };
-
-  const calculateTimelineScrollPercent = () => {
-    const maxScroll = timelineManager.getMaxScroll();
-    timelineScrollPercent = Math.min(1, timelineManager.visibleWindow.top / maxScroll);
-    resetScrubberMonth();
-  };
-
-  const handleSmallTimelineScroll = () => {
-    calculateTimelineScrollPercent();
-  };
-
-  const handleLeadInScroll = () => {
-    calculateTimelineScrollPercent();
   };
 
   const handleMonthScroll = () => {
@@ -118,12 +93,24 @@
       viewportTopMonth = searchResult.month;
       viewportTopMonthScrollPercent = searchResult.monthScrollPercent;
       isInLeadOutSection = false;
-    } else {
-      // We're in lead-out section
-      isInLeadOutSection = true;
-      timelineScrollPercent = 1;
-      resetScrubberMonth();
+      return;
     }
+
+    // We're in lead-out section
+    isInLeadOutSection = true;
+    timelineScrollPercent = 1;
+    resetScrubberMonth();
+  };
+
+  const resetScrubberMonth = () => {
+    viewportTopMonth = undefined;
+    viewportTopMonthScrollPercent = 0;
+  };
+
+  const calculateTimelineScrollPercent = () => {
+    const maxScroll = timelineManager.getMaxScroll();
+    timelineScrollPercent = Math.min(1, timelineManager.visibleWindow.top / maxScroll);
+    resetScrubberMonth();
   };
 
   const handleOverallPercentScroll = (percent: number, scrollTo?: (offset: number) => void) => {
@@ -136,6 +123,10 @@
     return timelineManager.months.find(
       ({ yearMonth }) => yearMonth.year === target.year && yearMonth.month === target.month,
     );
+  };
+
+  const isSmallTimeline = () => {
+    return timelineManager.timelineHeight < timelineManager.viewportHeight * VIEWPORT_MULTIPLIER;
   };
 
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker

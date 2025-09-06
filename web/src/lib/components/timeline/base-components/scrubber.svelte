@@ -11,18 +11,31 @@
   import { fade, fly } from 'svelte/transition';
 
   interface Props {
+    /** Offset from the top of the timeline (e.g., for headers) */
     timelineTopOffset?: number;
+    /** Offset from the bottom of the timeline (e.g., for footers) */
     timelineBottomOffset?: number;
+    /** Total height of the scrubber component */
     height?: number;
+    /** Timeline manager instance that controls the timeline state */
     timelineManager: TimelineManager;
+    /** Overall scroll percentage through the entire timeline (0-1), used when no specific month is targeted */
     timelineScrollPercent?: number;
+    /** The percentage of scroll through the month that is currently intersecting the top boundary of the viewport */
     viewportTopMonthScrollPercent?: number;
+    /** The year/month of the timeline month at the top of the viewport */
     viewportTopMonth?: TimelineYearMonth;
+    /** Indicates whether the viewport is currently in the lead-out section (after all months) */
     isInLeadOutSection?: boolean;
+    /** Width of the scrubber component in pixels (bindable for parent component margin adjustments) */
     scrubberWidth?: number;
+    /** Callback fired when user interacts with the scrubber to navigate */
     onScrub?: ScrubberListener;
+    /** Callback fired when keyboard events occur on the scrubber */
     onScrubKeyDown?: (event: KeyboardEvent, element: HTMLElement) => void;
+    /** Callback fired when scrubbing starts */
     startScrub?: ScrubberListener;
+    /** Callback fired when scrubbing stops */
     stopScrub?: ScrubberListener;
   }
 

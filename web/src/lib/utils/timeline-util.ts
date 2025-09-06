@@ -274,7 +274,7 @@ export function findMonthAtScrollPosition(
   }
 
   // Check if we're after the last month
-  const lastMonth = months[months.length - 1];
+  const lastMonth = months.at(-1)!;
   const lastMonthBottom = (lastMonth.top + lastMonth.height) * maxScrollPercent;
   if (scrollPosition >= lastMonthBottom - SUBPIXEL_TOLERANCE) {
     return null;
@@ -293,7 +293,7 @@ export function findMonthAtScrollPosition(
     if (scrollPosition >= monthTop - SUBPIXEL_TOLERANCE && scrollPosition < monthBottom - SUBPIXEL_TOLERANCE) {
       // Found the month containing the scroll position
       const distanceIntoMonth = scrollPosition - monthTop;
-      let monthScrollPercent = Math.max(0, distanceIntoMonth / (month.height * maxScrollPercent));
+      const monthScrollPercent = Math.max(0, distanceIntoMonth / (month.height * maxScrollPercent));
 
       // Handle month boundary edge case
       if (monthScrollPercent > NEAR_END_THRESHOLD && mid < months.length - 1) {
