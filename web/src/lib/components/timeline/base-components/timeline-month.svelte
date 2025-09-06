@@ -121,7 +121,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize" title={dayGroup.groupTitle}>
+      <span class="w-full truncate first-letter:capitalize" title={dayGroup.groupTitleFull}>
         {dayGroup.groupTitle}
       </span>
     </div>

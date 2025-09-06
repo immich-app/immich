@@ -5,7 +5,7 @@
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import type { ScrubberListener, TimelineYearMonth } from '$lib/utils/timeline-util';
+  import { findMonthAtScrollPosition, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import type { Snippet } from 'svelte';
   import Scrubber from './scrubber.svelte';
 
@@ -51,11 +51,7 @@
     empty,
   }: Props = $props();
 
-  // Constants for timeline calculations
   const VIEWPORT_MULTIPLIER = 2; // Used to determine if timeline is "small"
-  const SUBPIXEL_TOLERANCE = -1; // Tolerance for scroll position checks
-  const NEAR_END_THRESHOLD = 0.9999; // Threshold for detecting near-end of month
-
 
   let isInLeadOutSection = $state(false);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
@@ -91,11 +87,6 @@
     return timelineManager.timelineHeight < timelineManager.viewportHeight * VIEWPORT_MULTIPLIER;
   };
 
-  const isNearMonthBoundary = (progress: number) => {
-    return progress > NEAR_END_THRESHOLD;
-  };
-
-
   const resetScrubberMonth = () => {
     viewportTopMonth = undefined;
     viewportTopMonthScrollPercent = 0;
@@ -116,76 +107,24 @@
   };
 
   const handleMonthScroll = () => {
-    const scrollTop = timelineManager.visibleWindow.top;
+    const scrollPosition = timelineManager.visibleWindow.top;
     const months = timelineManager.months;
     const maxScrollPercent = timelineManager.getMaxScrollPercent();
-    
-    // Early exit if no months
-    if (months.length === 0) {
-      isInLeadOutSection = true;
-      timelineScrollPercent = 1;
-      resetScrubberMonth();
-      return;
-    }
-    
-    // Check if we're before the first month (in lead-in)
-    const firstMonthTop = months[0].top * maxScrollPercent;
-    if (scrollTop < firstMonthTop - SUBPIXEL_TOLERANCE) {
-      isInLeadOutSection = true;
-      timelineScrollPercent = 1;
-      resetScrubberMonth();
-      return;
-    }
-    
-    // Check if we're after the last month (in lead-out)
-    const lastMonth = months[months.length - 1];
-    const lastMonthBottom = (lastMonth.top + lastMonth.height) * maxScrollPercent;
-    if (scrollTop >= lastMonthBottom - SUBPIXEL_TOLERANCE) {
-      isInLeadOutSection = true;
-      timelineScrollPercent = 1;
-      resetScrubberMonth();
-      return;
-    }
-    
-    // Binary search to find the month containing the viewport top
-    let left = 0;
-    let right = months.length - 1;
-    
-    while (left <= right) {
-      const mid = Math.floor((left + right) / 2);
-      const month = months[mid];
-      const monthTop = month.top * maxScrollPercent;
-      const monthBottom = monthTop + month.height * maxScrollPercent;
-      
-      if (scrollTop >= monthTop - SUBPIXEL_TOLERANCE && scrollTop < monthBottom - SUBPIXEL_TOLERANCE) {
-        // Found the month containing the viewport top
-        viewportTopMonth = month.yearMonth;
-        const distanceIntoMonth = scrollTop - monthTop;
-        viewportTopMonthScrollPercent = Math.max(0, distanceIntoMonth / (month.height * maxScrollPercent));
-        
-        // Handle month boundary edge case
-        if (isNearMonthBoundary(viewportTopMonthScrollPercent) && mid < months.length - 1) {
-          viewportTopMonth = months[mid + 1].yearMonth;
-          viewportTopMonthScrollPercent = 0;
-        }
-        
-        isInLeadOutSection = false;
-        return;
-      }
-      
-      if (scrollTop < monthTop) {
-        right = mid - 1;
-      } else {
-        left = mid + 1;
-      }
-    }
-    
-    // Shouldn't reach here, but if we do, we're in lead-out
-    isInLeadOutSection = true;
-    timelineScrollPercent = 1;
-    resetScrubberMonth();
-  };
 
+    // Find the month at the current scroll position
+    const searchResult = findMonthAtScrollPosition(months, scrollPosition, maxScrollPercent);
+
+    if (searchResult) {
+      viewportTopMonth = searchResult.month;
+      viewportTopMonthScrollPercent = searchResult.monthScrollPercent;
+      isInLeadOutSection = false;
+    } else {
+      // We're in lead-out section
+      isInLeadOutSection = true;
+      timelineScrollPercent = 1;
+      resetScrubberMonth();
+    }
+  };
 
   const handleOverallPercentScroll = (percent: number, scrollTo?: (offset: number) => void) => {
     const maxScroll = timelineManager.getMaxScroll();
