@@ -38,12 +38,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.pull_request_review.pull_request.number }}
         run: |
           # TODO: Is github-actions[bot] the correct user here?
-          # Check for CHANGES_REQUESTED by the bot, if absent make one
-          if gh pr view $PR_NUMBER --json reviews | jq -e '.reviews | map(select(.author.login == "github-actions[bot]" and .state == "CHANGES_REQUESTED")) | length > 0'; then
-            exit 0
-          else
-            gh pr review $PR_NUMBER --request-changes --body "Holding translations PR for automated merge"
-          fi
           # Then check for APPROVED by the bot, if absent fail
           gh pr view $PR_NUMBER --json reviews | jq -e '.reviews | map(select(.author.login == "github-actions[bot]" and .state == "APPROVED")) | length > 0' \
             || (echo "The push-o-matic bot has not approved this PR yet" && exit 1)
