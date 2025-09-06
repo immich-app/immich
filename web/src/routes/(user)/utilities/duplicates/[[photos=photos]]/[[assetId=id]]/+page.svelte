@@ -15,11 +15,13 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
+  import { suggestDuplicateWithPrefs } from '$lib/utils/duplicate-utils';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-preferences';
+
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -43,6 +45,7 @@
     general: ExplainedShortcut[];
     actions: ExplainedShortcut[];
   }
+
   interface ExplainedShortcut {
     key: string[];
     action: string;
@@ -129,10 +132,15 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
+    const keepCandidates = duplicates.map((group) => suggestDuplicateWithPrefs(group.assets, $duplicateTiePreference));
+
+    const idsToKeep: (string | undefined)[] = keepCandidates.map((a) => a?.id);
+
     const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
+      group.assets.map((a) => a.id).filter((id) => id !== idsToKeep[i]),
     );
+
+    const keptIds = idsToKeep.filter((id): id is string => id !== undefined);
 
     let prompt, confirmText;
     if ($featureFlags.trash) {
@@ -148,7 +156,7 @@
         await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
         await updateAssets({
           assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
+            ids: [...idsToDelete, ...keptIds],
             duplicateId: null,
           },
         });
@@ -225,6 +233,38 @@
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
+      <div class="hidden md:flex items-center me-3">
+        <div class="inline-flex rounded-full overflow-hidden border border-gray-700">
+          <Button
+            size="small"
+            variant="ghost"
+            class="rounded-none"
+            color={$duplicateTiePreference === 'external' ? 'primary' : 'secondary'}
+            onclick={() => duplicateTiePreference.set('external')}
+          >
+            <Text class="hidden md:block">{$t('deduplicate_prefer_external')}</Text>
+          </Button>
+          <Button
+            size="small"
+            variant="ghost"
+            class="rounded-none"
+            color={$duplicateTiePreference === 'default' ? 'primary' : 'secondary'}
+            onclick={() => duplicateTiePreference.set('default')}
+          >
+            <Text class="hidden md:block">{$t('deduplicate_prefer_default')}</Text>
+          </Button>
+          <Button
+            size="small"
+            variant="ghost"
+            class="rounded-none"
+            color={$duplicateTiePreference === 'internal' ? 'primary' : 'secondary'}
+            onclick={() => duplicateTiePreference.set('internal')}
+          >
+            <Text class="hidden md:block">{$t('deduplicate_prefer_internal')}</Text>
+          </Button>
+        </div>
+      </div>
+
       <Button
         leadingIcon={mdiTrashCanOutline}
         onclick={() => handleDeduplicateAll()}
