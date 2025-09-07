@@ -8,9 +8,9 @@ import 'logger_db.repository.drift.dart';
 @DriftDatabase(tables: [LogMessageEntity])
 class DriftLogger extends $DriftLogger implements IDatabaseRepository {
   DriftLogger([QueryExecutor? executor])
-    : super(
-        executor ?? driftDatabase(name: 'immich_logs', native: const DriftNativeOptions(shareAcrossIsolates: true)),
-      );
+    : super(executor ?? driftDatabase(name: name, native: const DriftNativeOptions(shareAcrossIsolates: true)));
+
+  static final String name = 'immich_logs';
 
   @override
   int get schemaVersion => 1;

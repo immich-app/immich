@@ -42,6 +42,7 @@ import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
   ImmichWidgetsBinding();
+  await Bootstrap.shutdownAllDriftInstances();
   final (isar, drift, logDb) = await Bootstrap.initDB();
   await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();

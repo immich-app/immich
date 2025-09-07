@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:background_downloader/background_downloader.dart';
+import 'package:drift/isolate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -100,5 +103,20 @@ abstract final class Bootstrap {
       storeRepository: storeRepo,
       shouldBuffer: shouldBufferLogs,
     );
+  }
+
+  static Future<void> _shutdownAllDriftInstances(String name) async {
+    if (IsolateNameServer.lookupPortByName('drift-db/$name') case final port?) {
+      debugPrint("Shutting down drift-db/$name");
+      return DriftIsolate.fromConnectPort(port)
+          .shutdownAll()
+          .timeout(const Duration(seconds: 1))
+          .then((_) => debugPrint("Successfully shut down drift-db/$name"))
+          .onError<TimeoutException>((_, __) => debugPrint("Timeout while shutting down drift-db/$name"));
+    }
+  }
+
+  static Future<List<void>> shutdownAllDriftInstances() async {
+    return Future.wait([_shutdownAllDriftInstances(Drift.name), _shutdownAllDriftInstances(DriftLogger.name)]);
   }
 }

@@ -65,7 +65,9 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 )
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
+    : super(executor ?? driftDatabase(name: name, native: const DriftNativeOptions(shareAcrossIsolates: true)));
+
+  static final String name = 'immich';
 
   @override
   int get schemaVersion => 9;
