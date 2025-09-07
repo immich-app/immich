@@ -1,0 +1,62 @@
+{
+  "link.title.Overview": {
+    "message": "Overview",
+    "description": "The title of the footer links column with title=Overview in the footer"
+  },
+  "link.title.Documentation": {
+    "message": "Documentation",
+    "description": "The title of the footer links column with title=Documentation in the footer"
+  },
+  "link.title.Links": {
+    "message": "Links",
+    "description": "The title of the footer links column with title=Links in the footer"
+  },
+  "link.item.label.Welcome": {
+    "message": "Welcome",
+    "description": "The label of footer link with label=Welcome linking to /docs/overview/welcome"
+  },
+  "link.item.label.Installation": {
+    "message": "Installation",
+    "description": "The label of footer link with label=Installation linking to /docs/install/requirements"
+  },
+  "link.item.label.Contributing": {
+    "message": "Contributing",
+    "description": "The label of footer link with label=Contributing linking to /docs/overview/support-the-project"
+  },
+  "link.item.label.Privacy Policy": {
+    "message": "Privacy Policy",
+    "description": "The label of footer link with label=Privacy Policy linking to /privacy-policy"
+  },
+  "link.item.label.Roadmap": {
+    "message": "Roadmap",
+    "description": "The label of footer link with label=Roadmap linking to /roadmap"
+  },
+  "link.item.label.API": {
+    "message": "API",
+    "description": "The label of footer link with label=API linking to /docs/api"
+  },
+  "link.item.label.Cursed Knowledge": {
+    "message": "Cursed Knowledge",
+    "description": "The label of footer link with label=Cursed Knowledge linking to /cursed-knowledge"
+  },
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "The label of footer link with label=GitHub linking to https://github.com/immich-app/immich"
+  },
+  "link.item.label.YouTube": {
+    "message": "YouTube",
+    "description": "The label of footer link with label=YouTube linking to https://www.youtube.com/@immich-app"
+  },
+  "link.item.label.Discord": {
+    "message": "Discord",
+    "description": "The label of footer link with label=Discord linking to https://discord.immich.app"
+  },
+  "link.item.label.Reddit": {
+    "message": "Reddit",
+    "description": "The label of footer link with label=Reddit linking to https://www.reddit.com/r/immich/"
+  },
+  "copyright": {
+    "message": "Immich is available as open source under the terms of the GNU AGPL v3 License.",
+    "description": "The footer copyright"
+  }
+}

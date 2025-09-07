@@ -1,0 +1,28 @@
+---
+sidebar_position: 1
+---
+
+# Benvenuto in Immich
+
+<img
+  src={require('./img/social-preview-light.webp').default}
+  alt="Immich - Strumento di backup self-hosted per foto e video"
+  data-theme="light"
+/>
+
+## Benvenuto!
+
+Ciao, sono felice che tu sia qui.
+
+Mi chiamo Alex. Sono un ingegnere elettrico per formazione, diventato poi ingegnere del software per lavoro e per il puro amore di risolvere problemi.
+
+Eravamo a letto con il nostro neonato, e mia moglie disse:  
+"Stiamo iniziando ad accumulare molte foto e video del nostro bambino, e non voglio più pagare per **_l’App-Che-Non-Deve-Essere-Nominata_**. Tu vuoi sempre costruire qualcosa per me, quindi perché non crei un’app che possa fare questo?"
+
+Così è nata l’idea nella mia testa. Dopo di ciò, ho iniziato a cercare soluzioni esistenti nello spazio del self-hosting con funzionalità di backup simili e con il livello di prestazioni dell’**_App-Che-Non-Deve-Essere-Nominata_**. Ho scoperto che le soluzioni attuali si concentrano principalmente su applicazioni di tipo galleria. Tuttavia, io volevo uno strumento di backup semplice da usare, con un’app mobile nativa in grado di visualizzare foto e video in modo efficiente. Così sono partito per questo viaggio, da ingegnere affamato in cerca di una soluzione.
+
+Un’altra motivazione che mi ha spinto a realizzare la mia versione alternativa o sostitutiva dell’**_App-Che-Non-Deve-Essere-Nominata_** è stata quella di contribuire alla comunità open source, da cui ho tratto enormi benefici negli anni.
+
+Sono orgoglioso di condividere con te questa creazione, che valorizza la privacy, i ricordi e la gioia di rivivere quei momenti attraverso un’interfaccia semplice e intuitiva.
+
+Se l’applicazione ti piace o ti è utile in qualche modo, considera la possibilità di [supportare](./support-the-project.md) il progetto. Questo mi aiuterà a continuare a sviluppare e mantenere l’applicazione.

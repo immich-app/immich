@@ -1,0 +1,62 @@
+{
+  "link.title.Overview": {
+    "message": "Panoramica",
+    "description": "Il titolo della colonna dei link del footer con title=Panoramica"
+  },
+  "link.title.Documentation": {
+    "message": "Documentazione",
+    "description": "Il titolo della colonna dei link del footer con title=Documentazione"
+  },
+  "link.title.Links": {
+    "message": "Link",
+    "description": "Il titolo della colonna dei link del footer con title=Link"
+  },
+  "link.item.label.Welcome": {
+    "message": "Benvenuto",
+    "description": "L'etichetta del link nel footer con label=Benvenuto che punta a /docs/overview/welcome"
+  },
+  "link.item.label.Installation": {
+    "message": "Installazione",
+    "description": "L'etichetta del link nel footer con label=Installazione che punta a /docs/install/requirements"
+  },
+  "link.item.label.Contributing": {
+    "message": "Contribuire",
+    "description": "L'etichetta del link nel footer con label=Contribuire che punta a /docs/overview/support-the-project"
+  },
+  "link.item.label.Privacy Policy": {
+    "message": "Informativa sulla privacy",
+    "description": "L'etichetta del link nel footer con label=Informativa sulla privacy che punta a /privacy-policy"
+  },
+  "link.item.label.Roadmap": {
+    "message": "Tabella di marcia",
+    "description": "L'etichetta del link nel footer con label=Tabella di marcia che punta a /roadmap"
+  },
+  "link.item.label.API": {
+    "message": "API",
+    "description": "L'etichetta del link nel footer con label=API che punta a /docs/api"
+  },
+  "link.item.label.Cursed Knowledge": {
+    "message": "Conoscenza maledetta",
+    "description": "L'etichetta del link nel footer con label=Conoscenza maledetta che punta a /cursed-knowledge"
+  },
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "L'etichetta del link nel footer con label=GitHub che punta a https://github.com/immich-app/immich"
+  },
+  "link.item.label.YouTube": {
+    "message": "YouTube",
+    "description": "L'etichetta del link nel footer con label=YouTube che punta a https://www.youtube.com/@immich-app"
+  },
+  "link.item.label.Discord": {
+    "message": "Discord",
+    "description": "L'etichetta del link nel footer con label=Discord che punta a https://discord.immich.app"
+  },
+  "link.item.label.Reddit": {
+    "message": "Reddit",
+    "description": "L'etichetta del link nel footer con label=Reddit che punta a https://www.reddit.com/r/immich/"
+  },
+  "copyright": {
+    "message": "Immich è disponibile come open source secondo i termini della licenza GNU AGPL v3.",
+    "description": "Il copyright nel footer"
+  }
+}

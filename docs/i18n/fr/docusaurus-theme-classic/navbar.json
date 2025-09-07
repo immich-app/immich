@@ -1,0 +1,30 @@
+{
+  "logo.alt": {
+    "message": "Immich Logo",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Docs": {
+    "message": "Docs",
+    "description": "Navbar item with label Docs"
+  },
+  "item.label.Roadmap": {
+    "message": "Roadmap",
+    "description": "Navbar item with label Roadmap"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
+  "item.label.Merch": {
+    "message": "Merch",
+    "description": "Navbar item with label Merch"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Navbar item with label GitHub"
+  },
+  "item.label.Discord": {
+    "message": "Discord",
+    "description": "Navbar item with label Discord"
+  }
+}

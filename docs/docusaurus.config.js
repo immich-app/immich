@@ -23,7 +23,19 @@ const config = {
   // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'it', 'fr', 'de', 'es', 'pt', 'ru', 'zh-Hans', 'ja', 'ar'],
+    localeConfigs: {
+      en: { htmlLang: 'en-GB' },
+      it: { htmlLang: 'it-IT' },
+      fr: { htmlLang: 'fr-FR' },
+      de: { htmlLang: 'de-DE' },
+      es: { htmlLang: 'es-ES' },
+      pt: { htmlLang: 'pt-PT' },
+      ru: { htmlLang: 'ru' },
+      'zh-Hans': { htmlLang: 'zh-Hans' },
+      ja: { htmlLang: 'ja' },
+      ar: { direction: 'rtl', htmlLang: 'ar' },
+    },
   },
 
   plugins: [
@@ -93,6 +105,10 @@ const config = {
           {
             type: 'custom-versionSwitcher',
             position: 'right',
+          },
+          {
+            type: 'localeDropdown',
+            position: 'left',
           },
           {
             to: '/docs/overview/welcome',

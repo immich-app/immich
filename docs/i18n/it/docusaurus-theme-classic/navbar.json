@@ -1,0 +1,30 @@
+{
+  "logo.alt": {
+    "message": "Logo Immich",
+    "description": "Il testo alternativo del logo nella barra di navigazione"
+  },
+  "item.label.Docs": {
+    "message": "Documentazione",
+    "description": "Voce della navbar con etichetta Documentazione"
+  },
+  "item.label.Roadmap": {
+    "message": "Tabella di marcia",
+    "description": "Voce della navbar con etichetta Tabella di marcia"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Voce della navbar con etichetta API"
+  },
+  "item.label.Merch": {
+    "message": "Merchandising",
+    "description": "Voce della navbar con etichetta Merchandising"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub",
+    "description": "Voce della navbar con etichetta GitHub"
+  },
+  "item.label.Discord": {
+    "message": "Discord",
+    "description": "Voce della navbar con etichetta Discord"
+  }
+}
