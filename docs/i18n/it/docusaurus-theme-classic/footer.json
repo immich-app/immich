@@ -1,62 +1,62 @@
 {
   "link.title.Overview": {
     "message": "Panoramica",
-    "description": "Il titolo della colonna dei link del footer con title=Panoramica"
+    "description": "The title of the footer links column with title=Overview in the footer"
   },
   "link.title.Documentation": {
     "message": "Documentazione",
-    "description": "Il titolo della colonna dei link del footer con title=Documentazione"
+    "description": "The title of the footer links column with title=Documentation in the footer"
   },
   "link.title.Links": {
     "message": "Link",
-    "description": "Il titolo della colonna dei link del footer con title=Link"
+    "description": "The title of the footer links column with title=Links in the footer"
   },
   "link.item.label.Welcome": {
     "message": "Benvenuto",
-    "description": "L'etichetta del link nel footer con label=Benvenuto che punta a /docs/overview/welcome"
+    "description": "The label of footer link with label=Welcome linking to /docs/overview/welcome"
   },
   "link.item.label.Installation": {
     "message": "Installazione",
-    "description": "L'etichetta del link nel footer con label=Installazione che punta a /docs/install/requirements"
+    "description": "The label of footer link with label=Installation linking to /docs/install/requirements"
   },
   "link.item.label.Contributing": {
     "message": "Contribuire",
-    "description": "L'etichetta del link nel footer con label=Contribuire che punta a /docs/overview/support-the-project"
+    "description": "The label of footer link with label=Contributing linking to /docs/overview/support-the-project"
   },
   "link.item.label.Privacy Policy": {
     "message": "Informativa sulla privacy",
-    "description": "L'etichetta del link nel footer con label=Informativa sulla privacy che punta a /privacy-policy"
+    "description": "The label of footer link with label=Privacy Policy linking to /privacy-policy"
   },
   "link.item.label.Roadmap": {
-    "message": "Tabella di marcia",
-    "description": "L'etichetta del link nel footer con label=Tabella di marcia che punta a /roadmap"
+    "message": "Roadmap",
+    "description": "The label of footer link with label=Roadmap linking to /roadmap"
   },
   "link.item.label.API": {
     "message": "API",
-    "description": "L'etichetta del link nel footer con label=API che punta a /docs/api"
+    "description": "The label of footer link with label=API linking to /docs/api"
   },
   "link.item.label.Cursed Knowledge": {
     "message": "Conoscenza maledetta",
-    "description": "L'etichetta del link nel footer con label=Conoscenza maledetta che punta a /cursed-knowledge"
+    "description": "The label of footer link with label=Cursed Knowledge linking to /cursed-knowledge"
   },
   "link.item.label.GitHub": {
     "message": "GitHub",
-    "description": "L'etichetta del link nel footer con label=GitHub che punta a https://github.com/immich-app/immich"
+    "description": "The label of footer link with label=GitHub linking to https://github.com/immich-app/immich"
   },
   "link.item.label.YouTube": {
     "message": "YouTube",
-    "description": "L'etichetta del link nel footer con label=YouTube che punta a https://www.youtube.com/@immich-app"
+    "description": "The label of footer link with label=YouTube linking to https://www.youtube.com/@immich-app"
   },
   "link.item.label.Discord": {
     "message": "Discord",
-    "description": "L'etichetta del link nel footer con label=Discord che punta a https://discord.immich.app"
+    "description": "The label of footer link with label=Discord linking to https://discord.immich.app"
   },
   "link.item.label.Reddit": {
     "message": "Reddit",
-    "description": "L'etichetta del link nel footer con label=Reddit che punta a https://www.reddit.com/r/immich/"
+    "description": "The label of footer link with label=Reddit linking to https://www.reddit.com/r/immich/"
   },
   "copyright": {
     "message": "Immich è disponibile come open source secondo i termini della licenza GNU AGPL v3.",
-    "description": "Il copyright nel footer"
+    "description": "The footer copyright"
   }
 }

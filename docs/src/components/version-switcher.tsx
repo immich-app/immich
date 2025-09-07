@@ -1,10 +1,11 @@
 import { useWindowSize } from '@docusaurus/theme-common';
 import DropdownNavbarItem from '@theme/NavbarItem/DropdownNavbarItem';
+import { translate } from '@docusaurus/Translate';
 import React, { useEffect, useState } from 'react';
 
 export default function VersionSwitcher(): JSX.Element {
   const [versions, setVersions] = useState([]);
-  const [activeLabel, setLabel] = useState('Versions');
+  const [activeLabel, setLabel] = useState(translate({ message: 'Versions' }));
 
   const windowSize = useWindowSize();
 
@@ -21,8 +22,8 @@ export default function VersionSwitcher(): JSX.Element {
         const archiveVersions = await response.json();
 
         const allVersions = [
-          { label: 'Next', url: 'https://main.preview.immich.app' },
-          { label: 'Latest', url: 'https://immich.app' },
+          { label: translate({ message: 'Next' }), url: 'https://main.preview.immich.app' },
+          { label: translate({ message: 'Latest' }), url: 'https://immich.app' },
           ...archiveVersions,
         ].map(({ label, url }) => ({
           label,
