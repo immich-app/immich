@@ -338,6 +338,7 @@ class BackgroundService {
         dbProvider.overrideWithValue(isar),
         isarProvider.overrideWithValue(isar),
         driftProvider.overrideWith(driftOverride(drift)),
+        driftLoggerProvider.overrideWith(driftLoggerOverride(logDb)),
       ],
     );
 

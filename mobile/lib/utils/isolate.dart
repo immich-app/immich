@@ -43,6 +43,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         isarProvider.overrideWithValue(isar),
         cancellationProvider.overrideWithValue(cancelledChecker),
         driftProvider.overrideWith(driftOverride(drift)),
+        driftLoggerProvider.overrideWith(driftLoggerOverride(logDb)),
       ],
     );
 

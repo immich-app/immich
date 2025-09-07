@@ -50,6 +50,7 @@ class ImmichTestHelper {
           dbProvider.overrideWithValue(isar),
           isarProvider.overrideWithValue(isar),
           driftProvider.overrideWith(driftOverride(drift)),
+          driftLoggerProvider.overrideWith(driftLoggerOverride(logDb)),
         ],
         child: const app.MainWidget(),
       ),

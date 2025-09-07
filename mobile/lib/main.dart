@@ -56,6 +56,7 @@ void main() async {
         dbProvider.overrideWithValue(isar),
         isarProvider.overrideWithValue(isar),
         driftProvider.overrideWith(driftOverride(drift)),
+        driftLoggerProvider.overrideWith(driftLoggerOverride(logDb)),
       ],
       child: const MainWidget(),
     ),

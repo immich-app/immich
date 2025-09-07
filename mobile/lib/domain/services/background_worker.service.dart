@@ -36,7 +36,7 @@ class BackgroundWorkerFgService {
   Future<void> disable() => _foregroundHostApi.disable();
 }
 
-class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
+class _BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   late final ProviderContainer _ref;
   final Isar _isar;
   final Drift _drift;
@@ -47,7 +47,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool _isCleanedUp = false;
 
-  BackgroundWorkerBgService({required Isar isar, required Drift drift, required DriftLogger driftLogger})
+  _BackgroundWorkerBgService({required Isar isar, required Drift drift, required DriftLogger driftLogger})
     : _isar = isar,
       _drift = drift,
       _driftLogger = driftLogger,
@@ -57,6 +57,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         dbProvider.overrideWithValue(isar),
         isarProvider.overrideWithValue(isar),
         driftProvider.overrideWith(driftOverride(drift)),
+        driftLoggerProvider.overrideWith(driftLoggerOverride(driftLogger)),
       ],
     );
     _lockManager = IsolateLockManager(onCloseRequest: _cleanup);
@@ -246,5 +247,5 @@ Future<void> backgroundSyncNativeEntrypoint() async {
 
   final (isar, drift, logDB) = await Bootstrap.initDB();
   await Bootstrap.initDomain(isar, drift, logDB, shouldBufferLogs: false);
-  await BackgroundWorkerBgService(isar: isar, drift: drift, driftLogger: logDB).init();
+  await _BackgroundWorkerBgService(isar: isar, drift: drift, driftLogger: logDB).init();
 }
