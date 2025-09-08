@@ -1318,7 +1318,7 @@
   "menu": "Меню",
   "merge": "Об'єднати",
   "merge_people": "Об'єднати персони",
-  "merge_people_limit": "Ви можете об'єднати до 5 облич одночасно",
+  "merge_people_limit": "Ви можете об'єднати до 500 облич одночасно",
   "merge_people_prompt": "Ви хочете об'єднати цих людей? Ця дія незворотна.",
   "merge_people_successfully": "Успішне об'єднання людей",
   "merged_people_count": "Об'єднано {count, plural, one {# особа} few {# особи} many {# осіб} other {# людей}}",
