@@ -216,7 +216,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                       Switch.adaptive(
                         value: betaTimelineValue,
                         onChanged: onSwitchChanged,
-                        activeColor: context.primaryColor,
+                        activeTrackColor: context.primaryColor,
                       ),
                     ],
                   ),
