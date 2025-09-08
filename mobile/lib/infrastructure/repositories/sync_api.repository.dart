@@ -18,7 +18,8 @@ class SyncApiRepository {
   }
 
   Future<void> streamChanges(
-    Function(List<SyncEvent>, Function() abort) onData, {
+    Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onData, {
+    Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
   }) async {
@@ -69,6 +70,8 @@ class SyncApiRepository {
       shouldAbort = true;
     }
 
+    final reset = onReset ?? () {};
+
     try {
       final response = await client.send(request);
 
@@ -91,12 +94,12 @@ class SyncApiRepository {
           continue;
         }
 
-        await onData(_parseLines(lines), abort);
+        await onData(_parseLines(lines), abort, reset);
         lines.clear();
       }
 
       if (lines.isNotEmpty && !shouldAbort) {
-        await onData(_parseLines(lines), abort);
+        await onData(_parseLines(lines), abort, reset);
       }
     } catch (error, stack) {
       _logger.severe("Error processing stream", error, stack);
@@ -156,7 +159,8 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.albumToAssetV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetBackfillV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetDeleteV1: SyncAlbumToAssetDeleteV1.fromJson,
-  SyncEntityType.syncAckV1: _SyncAckV1.fromJson,
+  SyncEntityType.syncAckV1: _SyncEmptyDto.fromJson,
+  SyncEntityType.syncResetV1: _SyncEmptyDto.fromJson,
   SyncEntityType.memoryV1: SyncMemoryV1.fromJson,
   SyncEntityType.memoryDeleteV1: SyncMemoryDeleteV1.fromJson,
   SyncEntityType.memoryToAssetV1: SyncMemoryAssetV1.fromJson,
@@ -172,8 +176,9 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
+  SyncEntityType.syncCompleteV1: _SyncEmptyDto.fromJson,
 };
 
-class _SyncAckV1 {
-  static _SyncAckV1? fromJson(dynamic _) => _SyncAckV1();
+class _SyncEmptyDto {
+  static _SyncEmptyDto? fromJson(dynamic _) => _SyncEmptyDto();
 }
