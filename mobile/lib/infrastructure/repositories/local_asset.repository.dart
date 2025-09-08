@@ -74,8 +74,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     if (checksums.isEmpty) {
       return Future.value([]);
     }
-    final query = _db.localAssetEntity.select()
-      ..where((lae) => lae.checksum.isIn(checksums));
+    final query = _db.localAssetEntity.select()..where((lae) => lae.checksum.isIn(checksums));
     return query.map((row) => row.toDto()).get();
   }
 }
