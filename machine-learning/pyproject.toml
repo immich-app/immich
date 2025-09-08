@@ -65,20 +65,8 @@ name = "cuda12"
 url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
 explicit = true
 
-[[tool.uv.index]]
-name = "paddlepaddle-cpu"
-url = "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
-explicit = true
-
-[[tool.uv.index]]
-name = "paddlepaddle-gpu"
-url = "https://www.paddlepaddle.org.cn/packages/stable/cu118/"
-explicit = true
-
 [tool.uv.sources]
 onnxruntime-gpu = { index = "cuda12" }
-paddlepaddle = { index = "paddlepaddle-cpu" }
-paddlepaddle-gpu = { index = "paddlepaddle-gpu" }
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_ml"]
