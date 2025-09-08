@@ -1318,7 +1318,7 @@
   "menu": "Meni",
   "merge": "Združi",
   "merge_people": "Združi osebe",
-  "merge_people_limit": "Hkrati lahko združite največ 5 obrazov",
+  "merge_people_limit": "Hkrati lahko združite največ 500 obrazov",
   "merge_people_prompt": "Ali želite združiti te osebe? To dejanje je nepovratno.",
   "merge_people_successfully": "Združitev ljudi uspešno",
   "merged_people_count": "Združeno {count, plural, one {# oseba} two {# osebi} few {# osebe} other {# oseb}}",
