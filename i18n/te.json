@@ -849,7 +849,7 @@
   "menu": "మెను",
   "merge": "విలీనం",
   "merge_people": "వ్యక్తులను విలీనం చేయండి",
-  "merge_people_limit": "మీరు ఒకేసారి 5 ముఖాలను మాత్రమే విలీనం చేయగలరు",
+  "merge_people_limit": "మీరు ఒకేసారి 500 ముఖాలను మాత్రమే విలీనం చేయగలరు",
   "merge_people_prompt": "మీరు ఈ వ్యక్తులను విలీనం చేయాలనుకుంటున్నారా? ఈ చర్య తిరుగులేనిది.",
   "merge_people_successfully": "వ్యక్తులను విజయవంతంగా విలీనం చేసారు",
   "merged_people_count": "విలీనం చేయబడింది {count, plural, one {# person} other {# people}}",
