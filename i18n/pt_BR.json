@@ -1318,7 +1318,7 @@
   "menu": "Menu",
   "merge": "Mesclar",
   "merge_people": "Mesclar pessoas",
-  "merge_people_limit": "Só é possível mesclar até 5 pessoas de uma só vez",
+  "merge_people_limit": "Só é possível mesclar até 500 pessoas de uma só vez",
   "merge_people_prompt": "Tem certeza que deseja mesclar estas pessoas? Esta ação é irreversível.",
   "merge_people_successfully": "Pessoas mescladas com sucesso",
   "merged_people_count": "{count, plural, one {# pessoa foi mesclada} other {# pessoas foram mescladas}}",
