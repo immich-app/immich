@@ -1,4 +1,4 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
+import { AssetOrder, getAssetInfo, getTimeBuckets, type StackResponseDto } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
@@ -23,6 +23,7 @@ import {
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import type { StackResponse } from '$lib/utils/asset-utils';
 import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
@@ -551,5 +552,59 @@ export class TimelineManager {
 
   getAssetOrder() {
     return this.#options.order ?? AssetOrder.Desc;
+  }
+
+  /**
+   * Update the asset stack state in the asset store based on the provided stack response.
+   * This function updates the stack information so that the icon is shown for the primary asset
+   * and removes any assets from the timeline that are marked for deletion.
+   *
+   * @param {StackResponse} stackResponse - The stack response containing the stack and assets to delete.
+   */
+  stackAssets({ stack, toDeleteIds }: StackResponse) {
+    if (stack) {
+      this.updateAssetOperation([stack.primaryAssetId], (asset) => {
+        asset.stack = {
+          id: stack.id,
+          primaryAssetId: stack.primaryAssetId,
+          assetCount: stack.assets.length,
+        };
+        return { remove: false };
+      });
+      this.removeAssets(toDeleteIds);
+    }
+  }
+
+  /**
+   * Update the timeline manager to reflect the unstacked state of assets.
+   * This function updates the stack property of each asset to undefined, effectively unstacking them.
+   * It also adds the unstacked assets back to the timeline manager.
+   *
+   * @param timelineManager - The timeline manager to update.
+   * @param assets - The array of asset response DTOs to update in the timeline manager.
+   */
+  unstackAssets(assets: TimelineAsset[]) {
+    this.updateAssetOperation(
+      assets.map(({ id }) => id),
+      (asset) => {
+        asset.stack = null;
+        return { remove: false };
+      },
+    );
+    this.addAssets(assets);
+  }
+
+  refreshStack(stack: StackResponseDto, addPrimaryAsset: boolean = false) {
+    if (stack) {
+      if (addPrimaryAsset) {
+        this.addAssets(
+          stack.assets.filter((asset) => asset.id === stack.primaryAssetId).map((asset) => toTimelineAsset(asset)),
+        );
+      }
+      this.stackAssets({
+        stack,
+        toDeleteIds: stack.assets.filter((asset) => asset.id !== stack.primaryAssetId).map(({ id }) => id),
+      });
+    }
   }
 }

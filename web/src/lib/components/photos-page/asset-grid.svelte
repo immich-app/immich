@@ -26,7 +26,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
+  import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
@@ -427,7 +427,7 @@
   const onStackAssets = async () => {
     const result = await stackAssets(assetInteraction.selectedAssets);
 
-    updateStackedAssetInTimeline(timelineManager, result);
+    timelineManager.stackAssets(result);
 
     onEscape();
   };
@@ -531,38 +531,18 @@
       }
 
       case AssetAction.UNSTACK: {
-        updateUnstackedAssetInTimeline(timelineManager, action.assets);
+        timelineManager.unstackAssets(action.assets);
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
         timelineManager.addAssets([toTimelineAsset(action.asset)]);
         if (action.stack) {
-          //Have to unstack then restack assets in timeline in order to update the stack count in the timeline.
-          updateUnstackedAssetInTimeline(
-            timelineManager,
-            action.stack.assets.map((asset) => toTimelineAsset(asset)),
-          );
-          updateStackedAssetInTimeline(timelineManager, {
-            stack: action.stack,
-            toDeleteIds: action.stack.assets
-              .filter((asset) => asset.id !== action.stack?.primaryAssetId)
-              .map((asset) => asset.id),
-          });
+          timelineManager.refreshStack(action.stack);
         }
         break;
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
-        //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
-        updateUnstackedAssetInTimeline(
-          timelineManager,
-          action.stack.assets.map((asset) => toTimelineAsset(asset)),
-        );
-        updateStackedAssetInTimeline(timelineManager, {
-          stack: action.stack,
-          toDeleteIds: action.stack.assets
-            .filter((asset) => asset.id !== action.stack.primaryAssetId)
-            .map((asset) => asset.id),
-        });
+        timelineManager.refreshStack(action.stack, true);
         break;
       }
     }
