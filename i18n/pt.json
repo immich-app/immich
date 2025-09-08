@@ -1318,7 +1318,7 @@
   "menu": "Menu",
   "merge": "Unir",
   "merge_people": "Unir pessoas",
-  "merge_people_limit": "Só é possível unir até 5 rostos de cada vez",
+  "merge_people_limit": "Só é possível unir até 500 rostos de cada vez",
   "merge_people_prompt": "Tem a certeza de que deseja unir estas pessoas? Esta ação é irreversível.",
   "merge_people_successfully": "Pessoas unidas com sucesso",
   "merged_people_count": "Unidas {count, plural, one {# pessoa} other {# pessoas}}",
