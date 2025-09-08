@@ -1318,7 +1318,7 @@
   "menu": "Nabídka",
   "merge": "Sloučit",
   "merge_people": "Sloučit osoby",
-  "merge_people_limit": "Najednou můžete sloučit pouze 5 obličejů",
+  "merge_people_limit": "Najednou můžete sloučit pouze 500 obličejů",
   "merge_people_prompt": "Chcete tyto lidi sloučit? Tato akce je nevratná.",
   "merge_people_successfully": "Sloučení osob proběhlo úspěšně",
   "merged_people_count": "{count, plural, one {Sloučena # osoba} few {Sloučeny # osoby} other {Sloučeno # lidí}}",
