@@ -4,9 +4,16 @@
   import { AppRoute } from '$lib/constants';
   import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
   import { asyncTimeout } from '$lib/utils';
-  import { getAllJobsStatus, type AllJobStatusResponseDto } from '@immich/sdk';
+  import { handleError } from '$lib/utils/handle-error';
+  import {
+    getAllJobsStatus,
+    sendJobCommand,
+    JobCommand,
+    type AllJobStatusResponseDto,
+    type JobName,
+  } from '@immich/sdk';
   import { Button, HStack, modalManager, Text } from '@immich/ui';
-  import { mdiCog, mdiPlus } from '@mdi/js';
+  import { mdiCog, mdiPlay, mdiPlus } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -20,6 +27,29 @@
   let jobs: AllJobStatusResponseDto | undefined = $state();
 
   let running = true;
+
+  let pausedJobs = $derived.by(() => {
+    if (!jobs) {
+      return [];
+    }
+    return Object.entries(jobs)
+      .filter(([_, jobStatus]) => jobStatus.queueStatus?.isPaused)
+      .map(([jobName]) => jobName as JobName);
+  });
+
+  let pausedJobsCount = $derived(pausedJobs.length);
+
+  async function resumeAllPausedJobs() {
+    try {
+      for (const jobName of pausedJobs) {
+        await sendJobCommand({ id: jobName, jobCommandDto: { command: JobCommand.Resume, force: false } });
+      }
+      // Refresh jobs status immediately after resuming
+      jobs = await getAllJobsStatus();
+    } catch (error) {
+      handleError(error, $t('admin.failed_job_command', { values: { command: 'resume', job: 'paused jobs' } }));
+    }
+  }
 
   onMount(async () => {
     while (running) {
@@ -36,6 +66,13 @@
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={0}>
+      {#if pausedJobsCount > 0}
+        <Button leadingIcon={mdiPlay} onclick={resumeAllPausedJobs} size="small" variant="ghost" color="primary">
+          <Text class="hidden md:block">
+            {$t('resume_paused_jobs', { values: { count: pausedJobsCount } })}
+          </Text>
+        </Button>
+      {/if}
       <Button
         leadingIcon={mdiPlus}
         onclick={() => modalManager.show(JobCreateModal, {})}
