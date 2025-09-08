@@ -1318,7 +1318,7 @@
   "menu": "メニュー",
   "merge": "統合",
   "merge_people": "人物を統合",
-  "merge_people_limit": "一度に結合できる顔は最大5つまでです",
+  "merge_people_limit": "一度に組み合わせられる顔は最大500枚までです。",
   "merge_people_prompt": "これらの人物を統合しますか? この操作は元に戻せません。",
   "merge_people_successfully": "人物の統合に成功しました",
   "merged_people_count": "{count, plural, one {#人} other {#人}}の人物を統合しました",
