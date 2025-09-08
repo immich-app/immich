@@ -1234,7 +1234,7 @@
   "menu": "Menu",
   "merge": "Hợp nhất",
   "merge_people": "Hợp nhất người",
-  "merge_people_limit": "Bạn chỉ có thể hợp nhất tối đa 5 khuôn mặt cùng một lúc",
+  "merge_people_limit": "Bạn chỉ có thể hợp nhất tối đa 500 khuôn mặt cùng một lúc",
   "merge_people_prompt": "Bạn có muốn hợp nhất những người này không? Hành động này không thể hoàn tác.",
   "merge_people_successfully": "Hợp nhất người thành công",
   "merged_people_count": "Đã hợp nhất {count, plural, one {# người} other {# người}}",
