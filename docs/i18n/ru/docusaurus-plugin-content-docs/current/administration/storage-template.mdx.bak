@@ -1,5 +1,0 @@
-import StorageTemplate from '../partials/_storage-template.md';
-
-# Storage Template
-
-<StorageTemplate />
