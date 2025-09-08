@@ -866,7 +866,7 @@
   "menu": "Izvēlne",
   "merge": "Apvienot",
   "merge_people": "Personu apvienošana",
-  "merge_people_limit": "Vienlaikus var apvienot ne vairāk kā 5 sejas",
+  "merge_people_limit": "Vienlaikus var apvienot ne vairāk kā 500 sejas",
   "merge_people_prompt": "Vai vēlies apvienot šīs personas? Šī darbība ir neatceļama.",
   "merge_people_successfully": "Personas veiksmīgi apvienotas",
   "minimize": "Minimizēt",
