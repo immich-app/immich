@@ -251,9 +251,7 @@ const items: Item[] = [
     icon: mdiDatabase,
     iconColor: 'gray',
     title: translate({ message: 'PostgreSQL parameters are cursed' }),
-    description: translate({
-      message: `PostgresSQL has a limit of ${Number(65535).toLocaleString()} parameters, so bulk inserts can fail with large datasets.`,
-    }),
+    description: translate({ message: `PostgresSQL has a limit of 65,535 parameters, so bulk inserts can fail with large datasets.`}),
     link: {
       url: 'https://github.com/immich-app/immich/pull/6034',
       text: '#6034',

@@ -321,5 +321,1131 @@
   "theme.tags.tagsPageTitle": {
     "message": "الوسوم",
     "description": "The title of the tag list page"
+  },
+  "navbar.buy_immich_button": {
+    "message": "Buy Immich"
+  },
+  "announcement.project_prefix": {
+    "message": "The project is under"
+  },
+  "announcement.project_active": {
+    "message": "very active"
+  },
+  "announcement.project_suffix": {
+    "message": "development."
+  },
+  "announcement.warning_prefix": {
+    "message": "Expect bugs and changes. Do not use it as"
+  },
+  "announcement.warning_bold": {
+    "message": "the only way"
+  },
+  "announcement.warning_suffix": {
+    "message": "to store your photos and videos!"
+  },
+  "Cloudflare Tunnels with SSO/OAuth": {
+    "message": "Cloudflare Tunnels with SSO/OAuth"
+  },
+  "Setting up Cloudflare Tunnels and a SaaS App for Immich.": {
+    "message": "Setting up Cloudflare Tunnels and a SaaS App for Immich."
+  },
+  "Database backup in TrueNAS": {
+    "message": "Database backup in TrueNAS"
+  },
+  "Create a database backup with pgAdmin in TrueNAS.": {
+    "message": "Create a database backup with pgAdmin in TrueNAS."
+  },
+  "Unraid backup scripts": {
+    "message": "Unraid backup scripts"
+  },
+  "Back up your assets in Unraid with a pre-prepared script.": {
+    "message": "Back up your assets in Unraid with a pre-prepared script."
+  },
+  "Sync folders with albums": {
+    "message": "Sync folders with albums"
+  },
+  "synchronize folders in imported library with albums having the folders name.": {
+    "message": "synchronize folders in imported library with albums having the folders name."
+  },
+  "Podman/Quadlets Install": {
+    "message": "Podman/Quadlets Install"
+  },
+  "Documentation for simple podman setup using quadlets.": {
+    "message": "Documentation for simple podman setup using quadlets."
+  },
+  "Google Photos import + albums": {
+    "message": "Google Photos import + albums"
+  },
+  "Import your Google Photos files into Immich and add your albums.": {
+    "message": "Import your Google Photos files into Immich and add your albums."
+  },
+  "Access Immich with custom domain": {
+    "message": "Access Immich with custom domain"
+  },
+  "Access your local Immich installation over the internet using your own domain.": {
+    "message": "Access your local Immich installation over the internet using your own domain."
+  },
+  "Nginx caching map server": {
+    "message": "Nginx caching map server"
+  },
+  "Increase privacy by using nginx as a caching proxy in front of a map tile server.": {
+    "message": "Increase privacy by using nginx as a caching proxy in front of a map tile server."
+  },
+  "fail2ban setup instructions": {
+    "message": "fail2ban setup instructions"
+  },
+  "How to configure an existing fail2ban installation to block incorrect login attempts.": {
+    "message": "How to configure an existing fail2ban installation to block incorrect login attempts."
+  },
+  "Immich remote access with NordVPN Meshnet": {
+    "message": "Immich remote access with NordVPN Meshnet"
+  },
+  "Access Immich with an end-to-end encrypted connection.": {
+    "message": "Access Immich with an end-to-end encrypted connection."
+  },
+  "Trust Self Signed Certificates with Immich - OAuth Setup": {
+    "message": "Trust Self Signed Certificates with Immich - OAuth Setup"
+  },
+  "Set up Certificate Authority trust with Immich, and your private OAuth2/OpenID service, while using a private CA for HTTPS communication.": {
+    "message": "Set up Certificate Authority trust with Immich, and your private OAuth2/OpenID service, while using a private CA for HTTPS communication."
+  },
+  "View Guide": {
+    "message": "View Guide"
+  },
+  "immich-go": {
+    "message": "immich-go"
+  },
+  "An alternative to the immich-CLI that doesn't depend on nodejs. It specializes in importing Google Photos Takeout archives.": {
+    "message": "An alternative to the immich-CLI that doesn't depend on nodejs. It specializes in importing Google Photos Takeout archives."
+  },
+  "ImmichFrame": {
+    "message": "ImmichFrame"
+  },
+  "Run an Immich slideshow in a photo frame.": {
+    "message": "Run an Immich slideshow in a photo frame."
+  },
+  "API Album Sync": {
+    "message": "API Album Sync"
+  },
+  "A Python script to sync folders as albums.": {
+    "message": "A Python script to sync folders as albums."
+  },
+  "Remove offline files": {
+    "message": "Remove offline files"
+  },
+  "A simple way to remove orphaned offline assets from the Immich database": {
+    "message": "A simple way to remove orphaned offline assets from the Immich database"
+  },
+  "Immich-Tools": {
+    "message": "Immich-Tools"
+  },
+  "Provides scripts for handling problems on the repair page.": {
+    "message": "Provides scripts for handling problems on the repair page."
+  },
+  "Lightroom Publisher: mi.Immich.Publisher": {
+    "message": "Lightroom Publisher: mi.Immich.Publisher"
+  },
+  "Lightroom plugin to publish photos from Lightroom collections to Immich albums.": {
+    "message": "Lightroom plugin to publish photos from Lightroom collections to Immich albums."
+  },
+  "Lightroom Immich Plugin: lrc-immich-plugin": {
+    "message": "Lightroom Immich Plugin: lrc-immich-plugin"
+  },
+  "Lightroom plugin to publish, export photos from Lightroom to Immich. Import from Immich to Lightroom is also supported.": {
+    "message": "Lightroom plugin to publish, export photos from Lightroom to Immich. Import from Immich to Lightroom is also supported."
+  },
+  "Immich-Tiktok-Remover": {
+    "message": "Immich-Tiktok-Remover"
+  },
+  "Script to search for and remove TikTok videos from your Immich library.": {
+    "message": "Script to search for and remove TikTok videos from your Immich library."
+  },
+  "Immich Android TV": {
+    "message": "Immich Android TV"
+  },
+  "Unofficial Immich Android TV app.": {
+    "message": "Unofficial Immich Android TV app."
+  },
+  "Create albums from folders": {
+    "message": "Create albums from folders"
+  },
+  "A Python script to create albums based on the folder structure of an external library.": {
+    "message": "A Python script to create albums based on the folder structure of an external library."
+  },
+  "Powershell Module PSImmich": {
+    "message": "Powershell Module PSImmich"
+  },
+  "Powershell Module for the Immich API": {
+    "message": "Powershell Module for the Immich API"
+  },
+  "Immich Distribution": {
+    "message": "Immich Distribution"
+  },
+  "Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.": {
+    "message": "Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management."
+  },
+  "Immich Kiosk": {
+    "message": "Immich Kiosk"
+  },
+  "Lightweight slideshow to run on kiosk devices and browsers.": {
+    "message": "Lightweight slideshow to run on kiosk devices and browsers."
+  },
+  "Immich Power Tools": {
+    "message": "Immich Power Tools"
+  },
+  "Power tools for organizing your Immich library.": {
+    "message": "Power tools for organizing your Immich library."
+  },
+  "Immich Public Proxy": {
+    "message": "Immich Public Proxy"
+  },
+  "Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.": {
+    "message": "Share your Immich photos and albums in a safe way without exposing your Immich instance to the public."
+  },
+  "Immich Kodi": {
+    "message": "Immich Kodi"
+  },
+  "Unofficial Kodi plugin for Immich.": {
+    "message": "Unofficial Kodi plugin for Immich."
+  },
+  "Immich Downloader": {
+    "message": "Immich Downloader"
+  },
+  "Downloads a configurable number of random photos based on people or album ID.": {
+    "message": "Downloads a configurable number of random photos based on people or album ID."
+  },
+  "Immich Upload Optimizer": {
+    "message": "Immich Upload Optimizer"
+  },
+  "Automatically optimize files uploaded to Immich in order to save storage space": {
+    "message": "Automatically optimize files uploaded to Immich in order to save storage space"
+  },
+  "Immich Machine Learning Load Balancer": {
+    "message": "Immich Machine Learning Load Balancer"
+  },
+  "Speed up your machine learning by load balancing your requests to multiple computers": {
+    "message": "Speed up your machine learning by load balancing your requests to multiple computers"
+  },
+  "View Link": {
+    "message": "View Link"
+  },
+  "Versions": {
+    "message": "Versions"
+  },
+  "Next": {
+    "message": "Next"
+  },
+  "Latest": {
+    "message": "Latest"
+  },
+  "setTimeout is cursed": {
+    "message": "setTimeout is cursed"
+  },
+  "The setTimeout method in JavaScript is cursed when used with small values because the implementation may or may not actually wait the specified time.": {
+    "message": "The setTimeout method in JavaScript is cursed when used with small values because the implementation may or may not actually wait the specified time."
+  },
+  "PostgreSQL USER is cursed": {
+    "message": "PostgreSQL USER is cursed"
+  },
+  "The USER keyword in PostgreSQL is cursed because you can select from it like a table, which leads to confusion if you have a table name user as well.": {
+    "message": "The USER keyword in PostgreSQL is cursed because you can select from it like a table, which leads to confusion if you have a table name user as well."
+  },
+  "PostgreSQL RESET is cursed": {
+    "message": "PostgreSQL RESET is cursed"
+  },
+  "PostgreSQL RESET is cursed because it is impossible to RESET a PostgreSQL extension parameter if the extension has been uninstalled.": {
+    "message": "PostgreSQL RESET is cursed because it is impossible to RESET a PostgreSQL extension parameter if the extension has been uninstalled."
+  },
+  "Zitadel Actions are cursed": {
+    "message": "Zitadel Actions are cursed"
+  },
+  "Zitadel is cursed because its custom scripting feature is executed with a JS engine that doesn't support regex named capture groups.": {
+    "message": "Zitadel is cursed because its custom scripting feature is executed with a JS engine that doesn't support regex named capture groups."
+  },
+  "Entra is cursed": {
+    "message": "Entra is cursed"
+  },
+  "Microsoft Entra supports PKCE, but doesn't include it in its OpenID discovery document. This leads to clients thinking PKCE isn't available.": {
+    "message": "Microsoft Entra supports PKCE, but doesn't include it in its OpenID discovery document. This leads to clients thinking PKCE isn't available."
+  },
+  "Image dimensions in EXIF metadata are cursed": {
+    "message": "Image dimensions in EXIF metadata are cursed"
+  },
+  "The dimensions in EXIF metadata can be different from the actual dimensions of the image, causing issues with cropping and resizing.": {
+    "message": "The dimensions in EXIF metadata can be different from the actual dimensions of the image, causing issues with cropping and resizing."
+  },
+  "YAML whitespace is cursed": {
+    "message": "YAML whitespace is cursed"
+  },
+  "YAML whitespaces are often handled in unintuitive ways.": {
+    "message": "YAML whitespaces are often handled in unintuitive ways."
+  },
+  "Hidden files in Windows are cursed": {
+    "message": "Hidden files in Windows are cursed"
+  },
+  "Hidden files in Windows cannot be opened with the \"w\" flag. That, combined with SMB option \"hide dot files\" leads to a lot of confusion.": {
+    "message": "Hidden files in Windows cannot be opened with the \"w\" flag. That, combined with SMB option \"hide dot files\" leads to a lot of confusion."
+  },
+  "Carriage returns in bash scripts are cursed": {
+    "message": "Carriage returns in bash scripts are cursed"
+  },
+  "Git can be configured to automatically convert LF to CRLF on checkout and CRLF breaks bash scripts.": {
+    "message": "Git can be configured to automatically convert LF to CRLF on checkout and CRLF breaks bash scripts."
+  },
+  "Fetch inside Cloudflare Workers is cursed": {
+    "message": "Fetch inside Cloudflare Workers is cursed"
+  },
+  "Fetch requests in Cloudflare Workers use http by default, even if you explicitly specify https, which can often cause redirect loops.": {
+    "message": "Fetch requests in Cloudflare Workers use http by default, even if you explicitly specify https, which can often cause redirect loops."
+  },
+  "GPS sharing on mobile is cursed": {
+    "message": "GPS sharing on mobile is cursed"
+  },
+  "Some phones will silently strip GPS data from images when apps without location permission try to access them.": {
+    "message": "Some phones will silently strip GPS data from images when apps without location permission try to access them."
+  },
+  "PostgreSQL NOTIFY is cursed": {
+    "message": "PostgreSQL NOTIFY is cursed"
+  },
+  "PostgreSQL does everything in a transaction, including NOTIFY. This means using the socket.io postgres-adapter writes to WAL every 5 seconds.": {
+    "message": "PostgreSQL does everything in a transaction, including NOTIFY. This means using the socket.io postgres-adapter writes to WAL every 5 seconds."
+  },
+  "npm scripts are cursed": {
+    "message": "npm scripts are cursed"
+  },
+  "npm scripts make a http call to the npm registry each time they run, which means they are a terrible way to execute a health check.": {
+    "message": "npm scripts make a http call to the npm registry each time they run, which means they are a terrible way to execute a health check."
+  },
+  "50 extra packages are cursed": {
+    "message": "50 extra packages are cursed"
+  },
+  "There is a user in the JavaScript community who goes around adding \"backwards compatibility\" to projects. They do this by adding 50 extra package dependencies to your project, which are maintained by them.": {
+    "message": "There is a user in the JavaScript community who goes around adding \"backwards compatibility\" to projects. They do this by adding 50 extra package dependencies to your project, which are maintained by them."
+  },
+  "Long passwords are cursed": {
+    "message": "Long passwords are cursed"
+  },
+  "The bcrypt implementation only uses the first 72 bytes of a string. Any characters after that are ignored.": {
+    "message": "The bcrypt implementation only uses the first 72 bytes of a string. Any characters after that are ignored."
+  },
+  "JavaScript Date objects are cursed": {
+    "message": "JavaScript Date objects are cursed"
+  },
+  "JavaScript date objects are 1 indexed for years and days, but 0 indexed for months.": {
+    "message": "JavaScript date objects are 1 indexed for years and days, but 0 indexed for months."
+  },
+  "ESM imports are cursed": {
+    "message": "ESM imports are cursed"
+  },
+  "Prior to Node.js v20.8 using --experimental-vm-modules in a CommonJS project that imported an ES module that imported a CommonJS modules would create a segfault and crash Node.js": {
+    "message": "Prior to Node.js v20.8 using --experimental-vm-modules in a CommonJS project that imported an ES module that imported a CommonJS modules would create a segfault and crash Node.js"
+  },
+  "PostgreSQL parameters are cursed": {
+    "message": "PostgreSQL parameters are cursed"
+  },
+  "PostgresSQL has a limit of 65,535 parameters, so bulk inserts can fail with large datasets.": {
+    "message": "PostgresSQL has a limit of 65,535 parameters, so bulk inserts can fail with large datasets."
+  },
+  "Secure contexts are cursed": {
+    "message": "Secure contexts are cursed"
+  },
+  "Some web features like the clipboard API only work in \"secure contexts\" (ie. https or localhost)": {
+    "message": "Some web features like the clipboard API only work in \"secure contexts\" (ie. https or localhost)"
+  },
+  "TypeORM deletes are cursed": {
+    "message": "TypeORM deletes are cursed"
+  },
+  "The remove implementation in TypeORM mutates the input, deleting the id property from the original object.": {
+    "message": "The remove implementation in TypeORM mutates the input, deleting the id property from the original object."
+  },
+  "Cursed Knowledge": {
+    "message": "Cursed Knowledge"
+  },
+  "Things we wish we didn't know": {
+    "message": "Things we wish we didn't know"
+  },
+  "Cursed knowledge we have learned as a result of building Immich that we wish we never knew.": {
+    "message": "Cursed knowledge we have learned as a result of building Immich that we wish we never knew."
+  },
+  "Logo Immich": {
+    "message": "Logo Immich"
+  },
+  "hero.slogan": {
+    "message": "Self-hosted {highlight} solution",
+    "description": "Main hero slogan with highlighted part"
+  },
+  "hero.slogan.highlight": {
+    "message": "photo and video management"
+  },
+  "Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.": {
+    "message": "Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy."
+  },
+  "Get Started": {
+    "message": "Get Started"
+  },
+  "Open Demo": {
+    "message": "Open Demo"
+  },
+  "Join our Discord": {
+    "message": "Join our Discord"
+  },
+  "screenshots": {
+    "message": "screenshots"
+  },
+  "Download the mobile app": {
+    "message": "Download the mobile app"
+  },
+  "Download the Immich app and start backing up your photos and videos securely to your own server": {
+    "message": "Download the Immich app and start backing up your photos and videos securely to your own server"
+  },
+  "Get it on Google Play": {
+    "message": "Get it on Google Play"
+  },
+  "Download on the App Store": {
+    "message": "Download on the App Store"
+  },
+  "Download APK": {
+    "message": "Download APK"
+  },
+  "app qr code": {
+    "message": "app qr code"
+  },
+  "Home": {
+    "message": "Home"
+  },
+  "Self-hosted photo and video management solution": {
+    "message": "Self-hosted photo and video management solution"
+  },
+  "This project is available under GNU AGPL v3 license.": {
+    "message": "This project is available under GNU AGPL v3 license."
+  },
+  "Privacy should not be a luxury": {
+    "message": "Privacy should not be a luxury"
+  },
+  "privacy.title": {
+    "message": "Privacy Policy"
+  },
+  "privacy.lastUpdated": {
+    "message": "Last updated: July 31st 2024"
+  },
+  "privacy.intro": {
+    "message": "Welcome to Immich. We are committed to respecting your privacy. This Privacy Policy sets out how we collect, use, and share information when you use our Immich app."
+  },
+  "privacy.scope.title": {
+    "message": "1. Scope of This Policy"
+  },
+  "privacy.scope.text": {
+    "message": "This Privacy Policy applies to the Immich app (\"we\", \"our\", or \"us\") and covers our collection, use, and disclosure of your information. This Policy does not cover any third-party websites, services, or applications that can be accessed through our app, or third-party services you may access through Immich."
+  },
+  "privacy.collect.title": {
+    "message": "2. Information We Collect"
+  },
+  "privacy.collect.localData": {
+    "message": "Locally Stored Data"
+  },
+  "privacy.collect.localData.text": {
+    "message": "Immich stores all your photos, albums, and settings locally on your device. We do not have access to this data, nor do we transmit or store it on any of our servers."
+  },
+  "privacy.collect.purchase": {
+    "message": "Purchase Information"
+  },
+  "privacy.collect.purchase.text": {
+    "message": "When you make a purchase within the {link}, we collect the following information for tax calculation purposes:"
+  },
+  "privacy.collect.country": {
+    "message": "Country of origin"
+  },
+  "privacy.collect.postal": {
+    "message": "Postal code (if the user is from Canada or the United States)"
+  },
+  "privacy.use.title": {
+    "message": "3. Use of Your Information"
+  },
+  "privacy.use.tax": {
+    "message": "Tax Calculation:"
+  },
+  "privacy.use.text": {
+    "message": "The country of origin and postal code (for users from Canada or the United States) are collected solely for determining the applicable tax rates on your purchase."
+  },
+  "privacy.sharing.title": {
+    "message": "4. Sharing of Your Information"
+  },
+  "privacy.sharing.tax": {
+    "message": "Tax Authorities:"
+  },
+  "privacy.sharing.tax.text": {
+    "message": "The purchase information may be shared with tax authorities as required by law."
+  },
+  "privacy.sharing.payment": {
+    "message": "Payment Providers:"
+  },
+  "privacy.sharing.payment.text": {
+    "message": "The purchase information may be shared with payment providers where required."
+  },
+  "privacy.changes.title": {
+    "message": "5. Changes to This Policy"
+  },
+  "privacy.changes.text": {
+    "message": "We may update our Privacy Policy from time to time. If we make any changes, we will notify you by revising the \"Last updated\" date at the top of this policy. It's encouraged that users frequently check this page for any changes to stay informed about how we are helping to protect the personal information we collect."
+  },
+  "privacy.contact.title": {
+    "message": "6. Contact Us"
+  },
+  "privacy.contact.text": {
+    "message": "If you have any questions about this Privacy Policy, please contact us at {email}"
+  },
+  "privacy.description": {
+    "message": "Immich self-hosted photo and video backup solution directly from your mobile phone"
+  },
+  "privacy.footer.license": {
+    "message": "This project is available under GNU AGPL v3 license."
+  },
+  "privacy.footer.slogan": {
+    "message": "Privacy should not be a luxury"
+  },
+  "Roadmap": {
+    "message": "Roadmap"
+  },
+  "A list of future plans and goals, as well as past achievements and milestones.": {
+    "message": "A list of future plans and goals, as well as past achievements and milestones."
+  },
+  "Workflows": {
+    "message": "Workflows"
+  },
+  "Automate tasks with workflows": {
+    "message": "Automate tasks with workflows"
+  },
+  "Planned for 2025": {
+    "message": "Planned for 2025"
+  },
+  "Basic editor": {
+    "message": "Basic editor"
+  },
+  "Basic photo editing capabilities": {
+    "message": "Basic photo editing capabilities"
+  },
+  "Stable release": {
+    "message": "Stable release"
+  },
+  "Immich goes stable": {
+    "message": "Immich goes stable"
+  },
+  "Better background backups": {
+    "message": "Better background backups"
+  },
+  "Rework background backups to be more reliable": {
+    "message": "Rework background backups to be more reliable"
+  },
+  "Auto stacking": {
+    "message": "Auto stacking"
+  },
+  "Auto stack burst photos": {
+    "message": "Auto stack burst photos"
+  },
+  "70,000 Stars": {
+    "message": "70,000 Stars"
+  },
+  "Reached 70K Stars on GitHub!": {
+    "message": "Reached 70K Stars on GitHub!"
+  },
+  "Fine grained access controls": {
+    "message": "Fine grained access controls"
+  },
+  "Granular access controls for api keys": {
+    "message": "Granular access controls for api keys"
+  },
+  "Google Cast (web and mobile)": {
+    "message": "Google Cast (web and mobile)"
+  },
+  "Cast assets to Google Cast/Chromecast compatible devices": {
+    "message": "Cast assets to Google Cast/Chromecast compatible devices"
+  },
+  "Private/locked photos": {
+    "message": "Private/locked photos"
+  },
+  "Private assets with extra protections": {
+    "message": "Private assets with extra protections"
+  },
+  "Folders view in the mobile app": {
+    "message": "Folders view in the mobile app"
+  },
+  "Browse your photos and videos in their folder structure inside the mobile app": {
+    "message": "Browse your photos and videos in their folder structure inside the mobile app"
+  },
+  "60,000 Stars": {
+    "message": "60,000 Stars"
+  },
+  "Reached 60K Stars on GitHub!": {
+    "message": "Reached 60K Stars on GitHub!"
+  },
+  "Manual face tagging": {
+    "message": "Manual face tagging"
+  },
+  "Manually tag or remove faces in photos and videos, even when automatic detection misses or misidentifies them.": {
+    "message": "Manually tag or remove faces in photos and videos, even when automatic detection misses or misidentifies them."
+  },
+  "Automatic URL switching": {
+    "message": "Automatic URL switching"
+  },
+  "The mobile app now supports automatic switching between different server URLs": {
+    "message": "The mobile app now supports automatic switching between different server URLs"
+  },
+  "Native video player": {
+    "message": "Native video player"
+  },
+  "HDR videos are now fully supported using the Immich native video player": {
+    "message": "HDR videos are now fully supported using the Immich native video player"
+  },
+  "Automatic database dumps": {
+    "message": "Automatic database dumps"
+  },
+  "Database dumps are now integrated into the Immich server": {
+    "message": "Database dumps are now integrated into the Immich server"
+  },
+  "50,000 Stars": {
+    "message": "50,000 Stars"
+  },
+  "Reached 50K Stars on GitHub!": {
+    "message": "Reached 50K Stars on GitHub!"
+  },
+  "Metadata Face Import": {
+    "message": "Metadata Face Import"
+  },
+  "Read face metadata in Digikam format during import": {
+    "message": "Read face metadata in Digikam format during import"
+  },
+  "Tag your photos and videos": {
+    "message": "Tag your photos and videos"
+  },
+  "Album sync (mobile)": {
+    "message": "Album sync (mobile)"
+  },
+  "Sync or mirror an album from your phone to the Immich server": {
+    "message": "Sync or mirror an album from your phone to the Immich server"
+  },
+  "Folders view": {
+    "message": "Folders view"
+  },
+  "Browse your photos and videos in their folder structure": {
+    "message": "Browse your photos and videos in their folder structure"
+  },
+  "Theming (mobile)": {
+    "message": "Theming (mobile)"
+  },
+  "Pick a primary color for the mobile app": {
+    "message": "Pick a primary color for the mobile app"
+  },
+  "Star rating": {
+    "message": "Star rating"
+  },
+  "Rate your photos and videos": {
+    "message": "Rate your photos and videos"
+  },
+  "Editor (mobile)": {
+    "message": "Editor (mobile)"
+  },
+  "Crop and rotate on mobile": {
+    "message": "Crop and rotate on mobile"
+  },
+  "Deploy tiles.immich.cloud": {
+    "message": "Deploy tiles.immich.cloud"
+  },
+  "Dedicated tile server for Immich": {
+    "message": "Dedicated tile server for Immich"
+  },
+  "40,000 Stars": {
+    "message": "40,000 Stars"
+  },
+  "Reached 40K Stars on GitHub!": {
+    "message": "Reached 40K Stars on GitHub!"
+  },
+  "Deploy my.immich.app": {
+    "message": "Deploy my.immich.app"
+  },
+  "Url router for immich links": {
+    "message": "Url router for immich links"
+  },
+  "Supporter Badge": {
+    "message": "Supporter Badge"
+  },
+  "The option to buy Immich to support its development!": {
+    "message": "The option to buy Immich to support its development!"
+  },
+  "Versioned documentation": {
+    "message": "Versioned documentation"
+  },
+  "View documentation as it was at the time of past releases": {
+    "message": "View documentation as it was at the time of past releases"
+  },
+  "Web translations": {
+    "message": "Web translations"
+  },
+  "Translate the web application to multiple languages": {
+    "message": "Translate the web application to multiple languages"
+  },
+  "Similar image detection": {
+    "message": "Similar image detection"
+  },
+  "Detect duplicate assets that aren't exactly identical": {
+    "message": "Detect duplicate assets that aren't exactly identical"
+  },
+  "Container consolidation": {
+    "message": "Container consolidation"
+  },
+  "The microservices container can be run as a worker within the server image, allowing us to remove it from the default stack.": {
+    "message": "The microservices container can be run as a worker within the server image, allowing us to remove it from the default stack."
+  },
+  "Read-write external libraries": {
+    "message": "Read-write external libraries"
+  },
+  "Edit, update, and delete files in external libraries": {
+    "message": "Edit, update, and delete files in external libraries"
+  },
+  "Email notifications": {
+    "message": "Email notifications"
+  },
+  "Send emails for important events": {
+    "message": "Send emails for important events"
+  },
+  "Immich joins FUTO!": {
+    "message": "Immich joins FUTO!"
+  },
+  "Joined Futo and Immich core team goes full-time": {
+    "message": "Joined Futo and Immich core team goes full-time"
+  },
+  "Read-only albums": {
+    "message": "Read-only albums"
+  },
+  "Share albums with other users as read-only": {
+    "message": "Share albums with other users as read-only"
+  },
+  "Permanent URLs (Web)": {
+    "message": "Permanent URLs (Web)"
+  },
+  "Assets on the web now have permanent URLs": {
+    "message": "Assets on the web now have permanent URLs"
+  },
+  "30,000 Stars": {
+    "message": "30,000 Stars"
+  },
+  "Reached 30K Stars on GitHub!": {
+    "message": "Reached 30K Stars on GitHub!"
+  },
+  "OpenTelemetry metrics": {
+    "message": "OpenTelemetry metrics"
+  },
+  "OpenTelemetry metrics for local evaluation and advanced debugging": {
+    "message": "OpenTelemetry metrics for local evaluation and advanced debugging"
+  },
+  "New logo": {
+    "message": "New logo"
+  },
+  "Immich got its new logo": {
+    "message": "Immich got its new logo"
+  },
+  "Search enhancement with advanced filters": {
+    "message": "Search enhancement with advanced filters"
+  },
+  "Advanced search with filters by date, location and more": {
+    "message": "Advanced search with filters by date, location and more"
+  },
+  "AGPL License": {
+    "message": "AGPL License"
+  },
+  "Immich switches to AGPLv3 license": {
+    "message": "Immich switches to AGPLv3 license"
+  },
+  "Library watching": {
+    "message": "Library watching"
+  },
+  "Automatically import files in external libraries when the operating system detects changes.": {
+    "message": "Automatically import files in external libraries when the operating system detects changes."
+  },
+  "GPU acceleration for machine-learning": {
+    "message": "GPU acceleration for machine-learning"
+  },
+  "Hardware acceleration support for Nvidia and Intel devices through CUDA and OpenVINO.": {
+    "message": "Hardware acceleration support for Nvidia and Intel devices through CUDA and OpenVINO."
+  },
+  "250 unique contributors": {
+    "message": "250 unique contributors"
+  },
+  "250 amazing people contributed to Immich": {
+    "message": "250 amazing people contributed to Immich"
+  },
+  "Search improvement with pgvecto.rs": {
+    "message": "Search improvement with pgvecto.rs"
+  },
+  "Moved the search from typesense to pgvecto.rs": {
+    "message": "Moved the search from typesense to pgvecto.rs"
+  },
+  "Edit metadata": {
+    "message": "Edit metadata"
+  },
+  "Edit a photo or video's date, time, hours, timezone, and GPS information": {
+    "message": "Edit a photo or video's date, time, hours, timezone, and GPS information"
+  },
+  "The serving of the web app is merged into the server image, allowing us to remove two containers from the stack.": {
+    "message": "The serving of the web app is merged into the server image, allowing us to remove two containers from the stack."
+  },
+  "CLI v2": {
+    "message": "CLI v2"
+  },
+  "Version 2 of the Immich CLI is released, replacing the legacy v1 CLI.": {
+    "message": "Version 2 of the Immich CLI is released, replacing the legacy v1 CLI."
+  },
+  "Activity": {
+    "message": "Activity"
+  },
+  "Comment a photo or a video in a shared album": {
+    "message": "Comment a photo or a video in a shared album"
+  },
+  "20,000 Stars": {
+    "message": "20,000 Stars"
+  },
+  "Reached 20K Stars on GitHub!": {
+    "message": "Reached 20K Stars on GitHub!"
+  },
+  "Stack assets": {
+    "message": "Stack assets"
+  },
+  "Manual asset stacking for grouping and hiding related assets in the main timeline.": {
+    "message": "Manual asset stacking for grouping and hiding related assets in the main timeline."
+  },
+  "Custom theme": {
+    "message": "Custom theme"
+  },
+  "Apply your custom CSS for modifying fonts, colors, and styles in the web application.": {
+    "message": "Apply your custom CSS for modifying fonts, colors, and styles in the web application."
+  },
+  "Trash feature": {
+    "message": "Trash feature"
+  },
+  "Trash, restore from trash, and automatically empty the recycle bin after 30 days.": {
+    "message": "Trash, restore from trash, and automatically empty the recycle bin after 30 days."
+  },
+  "External libraries": {
+    "message": "External libraries"
+  },
+  "Automatically import media into Immich based on imports paths and ignore patterns.": {
+    "message": "Automatically import media into Immich based on imports paths and ignore patterns."
+  },
+  "Map view (mobile)": {
+    "message": "Map view (mobile)"
+  },
+  "Heat map implementation in the mobile app.": {
+    "message": "Heat map implementation in the mobile app."
+  },
+  "Configuration file": {
+    "message": "Configuration file"
+  },
+  "Auto-configure an Immich installation via a configuration file.": {
+    "message": "Auto-configure an Immich installation via a configuration file."
+  },
+  "Slideshow mode (web)": {
+    "message": "Slideshow mode (web)"
+  },
+  "Start a full-screen slideshow from an Album on the web.": {
+    "message": "Start a full-screen slideshow from an Album on the web."
+  },
+  "Hardware transcoding": {
+    "message": "Hardware transcoding"
+  },
+  "Support hardware acceleration (QuickSync, VAAPI, and Nvidia) for video transcoding.": {
+    "message": "Support hardware acceleration (QuickSync, VAAPI, and Nvidia) for video transcoding."
+  },
+  "View albums via time buckets": {
+    "message": "View albums via time buckets"
+  },
+  "Upgrade albums to use time buckets, an optimized virtual viewport.": {
+    "message": "Upgrade albums to use time buckets, an optimized virtual viewport."
+  },
+  "Album description": {
+    "message": "Album description"
+  },
+  "Save an album description.": {
+    "message": "Save an album description."
+  },
+  "360° Photos (web)": {
+    "message": "360° Photos (web)"
+  },
+  "View 360° Photos on the web.": {
+    "message": "View 360° Photos on the web."
+  },
+  "Android motion photos": {
+    "message": "Android motion photos"
+  },
+  "Add support for Android Motion Photos.": {
+    "message": "Add support for Android Motion Photos."
+  },
+  "Show/hide faces": {
+    "message": "Show/hide faces"
+  },
+  "Add the options to show or hide faces.": {
+    "message": "Add the options to show or hide faces."
+  },
+  "Merge faces": {
+    "message": "Merge faces"
+  },
+  "Add the ability to merge multiple faces together.": {
+    "message": "Add the ability to merge multiple faces together."
+  },
+  "Feature photo": {
+    "message": "Feature photo"
+  },
+  "Add the option to change the feature photo for a person.": {
+    "message": "Add the option to change the feature photo for a person."
+  },
+  "Multi-select via SHIFT": {
+    "message": "Multi-select via SHIFT"
+  },
+  "Add the option to multi-select while holding SHIFT.": {
+    "message": "Add the option to multi-select while holding SHIFT."
+  },
+  "Memories (mobile)": {
+    "message": "Memories (mobile)"
+  },
+  "View \"On this day...\" memories in the mobile app.": {
+    "message": "View \"On this day...\" memories in the mobile app."
+  },
+  "Facial recognition (mobile)": {
+    "message": "Facial recognition (mobile)"
+  },
+  "View detected faces in the mobile app.": {
+    "message": "View detected faces in the mobile app."
+  },
+  "Memories (web)": {
+    "message": "Memories (web)"
+  },
+  "View pictures taken in past years on this day on the web.": {
+    "message": "View pictures taken in past years on this day on the web."
+  },
+  "Justified layout (web)": {
+    "message": "Justified layout (web)"
+  },
+  "Implement justified layout (collage) on the web.": {
+    "message": "Implement justified layout (collage) on the web."
+  },
+  "RAW file formats": {
+    "message": "RAW file formats"
+  },
+  "Support for RAW file formats.": {
+    "message": "Support for RAW file formats."
+  },
+  "Partner sharing (mobile)": {
+    "message": "Partner sharing (mobile)"
+  },
+  "View shared partner photos in the mobile app.": {
+    "message": "View shared partner photos in the mobile app."
+  },
+  "XMP sidecar": {
+    "message": "XMP sidecar"
+  },
+  "Attach XMP sidecar files to assets.": {
+    "message": "Attach XMP sidecar files to assets."
+  },
+  "Custom storage label": {
+    "message": "Custom storage label"
+  },
+  "Replace the user UUID in the storage template with a custom label.": {
+    "message": "Replace the user UUID in the storage template with a custom label."
+  },
+  "Partner sharing": {
+    "message": "Partner sharing"
+  },
+  "Share your entire collection with another user.": {
+    "message": "Share your entire collection with another user."
+  },
+  "Facial recognition": {
+    "message": "Facial recognition"
+  },
+  "Detect faces in pictures and cluster them together as people, which can be named.": {
+    "message": "Detect faces in pictures and cluster them together as people, which can be named."
+  },
+  "Map view (web)": {
+    "message": "Map view (web)"
+  },
+  "View a global map, with clusters of photos based on corresponding GPS data.": {
+    "message": "View a global map, with clusters of photos based on corresponding GPS data."
+  },
+  "Manage auth devices": {
+    "message": "Manage auth devices"
+  },
+  "Manage logged-in devices and revoke access from User Settings.": {
+    "message": "Manage logged-in devices and revoke access from User Settings."
+  },
+  "10,000 Stars": {
+    "message": "10,000 Stars"
+  },
+  "Reached 10K stars on GitHub!": {
+    "message": "Reached 10K stars on GitHub!"
+  },
+  "Asset descriptions": {
+    "message": "Asset descriptions"
+  },
+  "Save an asset description": {
+    "message": "Save an asset description"
+  },
+  "Archiving": {
+    "message": "Archiving"
+  },
+  "Remove assets from the main timeline by archiving them.": {
+    "message": "Remove assets from the main timeline by archiving them."
+  },
+  "Responsive web app": {
+    "message": "Responsive web app"
+  },
+  "Optimize the web app for small screen.": {
+    "message": "Optimize the web app for small screen."
+  },
+  "Search by metadata": {
+    "message": "Search by metadata"
+  },
+  "Search images by filename, description, tagged people, make, model, and other metadata.": {
+    "message": "Search images by filename, description, tagged people, make, model, and other metadata."
+  },
+  "CLIP search": {
+    "message": "CLIP search"
+  },
+  "Search images with free-form text like \"Sunset at the beach\".": {
+    "message": "Search images with free-form text like \"Sunset at the beach\"."
+  },
+  "Explore page": {
+    "message": "Explore page"
+  },
+  "View tagged places, object, and people.": {
+    "message": "View tagged places, object, and people."
+  },
+  "iOS background uploads": {
+    "message": "iOS background uploads"
+  },
+  "Automatically backup pictures in the background on iOS.": {
+    "message": "Automatically backup pictures in the background on iOS."
+  },
+  "Auto-Link live photos": {
+    "message": "Auto-Link live photos"
+  },
+  "Automatically link live photos, even when uploaded as separate files.": {
+    "message": "Automatically link live photos, even when uploaded as separate files."
+  },
+  "Material design 3 (mobile)": {
+    "message": "Material design 3 (mobile)"
+  },
+  "Upgrade the mobile app to Material Design 3.": {
+    "message": "Upgrade the mobile app to Material Design 3."
+  },
+  "Favorites (mobile)": {
+    "message": "Favorites (mobile)"
+  },
+  "Show favorites on the mobile app.": {
+    "message": "Show favorites on the mobile app."
+  },
+  "Immich turns 1": {
+    "message": "Immich turns 1"
+  },
+  "Immich is officially one year old.": {
+    "message": "Immich is officially one year old."
+  },
+  "Favorites page (web)": {
+    "message": "Favorites page (web)"
+  },
+  "Favorite and view favorites on the web.": {
+    "message": "Favorite and view favorites on the web."
+  },
+  "Public share links": {
+    "message": "Public share links"
+  },
+  "Share photos and albums publicly via a shared link.": {
+    "message": "Share photos and albums publicly via a shared link."
+  },
+  "User-defined storage structure": {
+    "message": "User-defined storage structure"
+  },
+  "Support custom storage structures.": {
+    "message": "Support custom storage structures."
+  },
+  "iOS live photos": {
+    "message": "iOS live photos"
+  },
+  "Backup and display iOS Live Photos.": {
+    "message": "Backup and display iOS Live Photos."
+  },
+  "OAuth integration": {
+    "message": "OAuth integration"
+  },
+  "Support OAuth2 and OIDC capable identity providers.": {
+    "message": "Support OAuth2 and OIDC capable identity providers."
+  },
+  "Documentation site": {
+    "message": "Documentation site"
+  },
+  "Release an official documentation website.": {
+    "message": "Release an official documentation website."
+  },
+  "Dark mode (web)": {
+    "message": "Dark mode (web)"
+  },
+  "Dark mode on the web.": {
+    "message": "Dark mode on the web."
+  },
+  "Virtual scrollbar (web)": {
+    "message": "Virtual scrollbar (web)"
+  },
+  "View the main timeline with a virtual scrollbar, allowing to jump to any point in time, instantly.": {
+    "message": "View the main timeline with a virtual scrollbar, allowing to jump to any point in time, instantly."
+  },
+  "Checksum duplication check": {
+    "message": "Checksum duplication check"
+  },
+  "Enforce per user sha1 checksum uniqueness.": {
+    "message": "Enforce per user sha1 checksum uniqueness."
+  },
+  "Android background backup": {
+    "message": "Android background backup"
+  },
+  "Automatic backup in the background on Android.": {
+    "message": "Automatic backup in the background on Android."
+  },
+  "Admin portal": {
+    "message": "Admin portal"
+  },
+  "Manage users and admin settings from the web.": {
+    "message": "Manage users and admin settings from the web."
+  },
+  "Album sharing": {
+    "message": "Album sharing"
+  },
+  "Share albums with other users.": {
+    "message": "Share albums with other users."
+  },
+  "Image tagging": {
+    "message": "Image tagging"
+  },
+  "Tag images with custom values.": {
+    "message": "Tag images with custom values."
+  },
+  "View exif": {
+    "message": "View exif"
+  },
+  "View metadata about assets.": {
+    "message": "View metadata about assets."
+  },
+  "Multi select": {
+    "message": "Multi select"
+  },
+  "Select and execute actions on multiple assets at the same time.": {
+    "message": "Select and execute actions on multiple assets at the same time."
+  },
+  "Video player": {
+    "message": "Video player"
+  },
+  "Play videos in the web and on mobile.": {
+    "message": "Play videos in the web and on mobile."
+  },
+  "First commit": {
+    "message": "First commit"
+  },
+  "First commit on GitHub, Immich is born.": {
+    "message": "First commit on GitHub, Immich is born."
   }
 }

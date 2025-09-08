@@ -325,15 +325,6 @@
   "Logo Immich": {
     "message": "Logo Immich"
   },
-  "Self-hosted": {
-    "message": "Self-hosted"
-  },
-  "photo and video management": {
-    "message": "Gestione di foto e video"
-  },
-  "solution": {
-    "message": "soluzione"
-  },
   "Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.": {
     "message": "Effettua il backup, organizza e gestisci facilmente le tue foto sul tuo server. Immich ti aiuta a navigare, cercare e organizzare foto e video senza compromettere la tua privacy."
   },
@@ -378,159 +369,6 @@
   },
   "Privacy should not be a luxury": {
     "message": "La privacy non dovrebbe essere un lusso"
-  },
-  "Privacy Policy": {
-    "message": "Informativa sulla Privacy"
-  },
-  "Last updated: July 31st 2024": {
-    "message": "Ultimo aggiornamento: 31 luglio 2024"
-  },
-  "Welcome to Immich. We are committed to respecting your privacy. This Privacy Policy sets out how we collect, use, and share information when you use our Immich app.": {
-    "message": "Benvenuto su Immich. Ci impegniamo a rispettare la tua privacy. Questa Informativa sulla Privacy spiega come raccogliamo, utilizziamo e condividiamo le informazioni quando usi la nostra app Immich."
-  },
-  "1. Scope of This Policy": {
-    "message": "1. Ambito di questa informativa"
-  },
-  "This Privacy Policy applies to the Immich app (\"we\", \"our\", or \"us\") and covers our collection, use, and disclosure of your information. This Policy does not cover any third-party websites, services, or applications that can be accessed through our app, or third-party services you may access through Immich.": {
-    "message": "Questa Informativa sulla Privacy si applica all’app Immich (\"noi\", \"nostro\" o \"ci\") e riguarda la raccolta, l’uso e la divulgazione delle tue informazioni. Non copre siti web, servizi o applicazioni di terzi accessibili tramite la nostra app, né servizi di terzi a cui puoi accedere tramite Immich."
-  },
-  "2. Information We Collect": {
-    "message": "2. Informazioni che raccogliamo"
-  },
-  "Locally Stored Data": {
-    "message": "Dati memorizzati localmente"
-  },
-  "Immich stores all your photos, albums, settings, and locally on your device. We do not have access to this data, nor do we transmit or store it on any of our servers.": {
-    "message": "Immich salva tutte le tue foto, album e impostazioni direttamente sul tuo dispositivo. Non abbiamo accesso a questi dati né li trasmettiamo o memorizziamo sui nostri server."
-  },
-  "Purchase Information": {
-    "message": "Informazioni sugli acquisti"
-  },
-  " ": {
-    "message": " "
-  },
-  ", we collect the following information for tax calculation purposes:": {
-    "message": ", raccogliamo le seguenti informazioni ai fini del calcolo delle tasse:"
-  },
-  "Country of origin": {
-    "message": "Paese di origine"
-  },
-  "Postal code (if the user is from Canada or the United States)": {
-    "message": "Codice postale (se l’utente proviene da Canada o Stati Uniti)"
-  },
-  "3. Use of Your Information": {
-    "message": "3. Utilizzo delle tue informazioni"
-  },
-  "Tax Calculation:": {
-    "message": "Calcolo delle tasse:"
-  },
-  "The country of origin and postal code (for users from Canada or the United States) are collected solely for determining the applicable tax rates on your purchase.": {
-    "message": "Il paese di origine e il codice postale (per gli utenti di Canada o Stati Uniti) vengono raccolti esclusivamente per determinare le aliquote fiscali applicabili al tuo acquisto."
-  },
-  "4. Sharing of Your Information": {
-    "message": "4. Condivisione delle tue informazioni"
-  },
-  "Tax Authorities:": {
-    "message": "Autorità fiscali:"
-  },
-  "The purchase information may be shared with tax authorities as required by law.": {
-    "message": "Le informazioni sugli acquisti possono essere condivise con le autorità fiscali se richiesto dalla legge."
-  },
-  "Payment Providers:": {
-    "message": "Fornitori di pagamento:"
-  },
-  "The purchase information may be shared with payment providers where required.": {
-    "message": "Le informazioni sugli acquisti possono essere condivise con i fornitori di servizi di pagamento, se necessario."
-  },
-  "5. Changes to This Policy": {
-    "message": "5. Modifiche a questa informativa"
-  },
-  "We may update our Privacy Policy from time to time. If we make any changes, we will notify you by revising the \"Last updated\" date at the top of this policy. It's encouraged that users frequently check this page for any changes to stay informed about how we are helping to protect the personal information we collect.": {
-    "message": "Potremmo aggiornare di tanto in tanto la nostra Informativa sulla Privacy. In caso di modifiche, aggiorneremo la data di \"Ultimo aggiornamento\" riportata in alto. Invitiamo gli utenti a controllare regolarmente questa pagina per rimanere informati su come proteggiamo i dati personali raccolti."
-  },
-  "6. Contact Us": {
-    "message": "6. Contatti"
-  },
-  "If you have any questions about this Privacy Policy, please contact us at": {
-    "message": "Se hai domande su questa Informativa sulla Privacy, contattaci a"
-  },
-  "Immich self-hosted photo and video backup solution directly from your mobile phone": {
-    "message": "Immich - soluzione self-hosted per il backup di foto e video direttamente dal tuo telefono"
-  },
-  "Fai il backup facilmente, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.": {
-    "message": "Fai il backup facilmente, organizza e gestisci le tue foto sul tuo server. Immich ti aiuta a navigare, cercare e organizzare foto e video senza compromettere la tua privacy."
-  },
-  "Informativa sulla Privacy": {
-    "message": "Informativa sulla Privacy"
-  },
-  "Ultimo aggiornamento: 31 luglio 2024": {
-    "message": "Ultimo aggiornamento: 31 luglio 2024"
-  },
-  "Benvenuto su Immich. Ci impegniamo a rispettare la tua privacy. Questa Informativa sulla Privacy descrive come raccogliamo, utilizziamo e condividiamo le informazioni quando usi la nostra app Immich.": {
-    "message": "Benvenuto su Immich. Ci impegniamo a rispettare la tua privacy. Questa Informativa sulla Privacy descrive come raccogliamo, utilizziamo e condividiamo le informazioni quando usi la nostra app Immich."
-  },
-  "1. Ambito di questa informativa": {
-    "message": "1. Ambito di questa informativa"
-  },
-  "Questa Informativa sulla Privacy si applica all’app Immich (\"noi\", \"nostro\" o \"ci\") e riguarda la raccolta, l’uso e la divulgazione delle tue informazioni. Questa informativa non copre siti web, servizi o applicazioni di terze parti accessibili tramite la nostra app, né i servizi di terzi a cui puoi accedere tramite Immich.": {
-    "message": "Questa Informativa sulla Privacy si applica all’app Immich (\"noi\", \"nostro\" o \"ci\") e riguarda la raccolta, l’uso e la divulgazione delle tue informazioni. Questa informativa non copre siti web, servizi o applicazioni di terze parti accessibili tramite la nostra app, né i servizi di terzi a cui puoi accedere tramite Immich."
-  },
-  "2. Informazioni che raccogliamo": {
-    "message": "2. Informazioni che raccogliamo"
-  },
-  "Dati memorizzati localmente": {
-    "message": "Dati memorizzati localmente"
-  },
-  "Immich salva tutte le tue foto, album e impostazioni direttamente sul tuo dispositivo. Non abbiamo accesso a questi dati, né li trasmettiamo o memorizziamo sui nostri server.": {
-    "message": "Immich salva tutte le tue foto, album e impostazioni direttamente sul tuo dispositivo. Non abbiamo accesso a questi dati, né li trasmettiamo o memorizziamo sui nostri server."
-  },
-  "Informazioni sugli acquisti": {
-    "message": "Informazioni sugli acquisti"
-  },
-  ", raccogliamo le seguenti informazioni ai fini del calcolo delle tasse:": {
-    "message": ", raccogliamo le seguenti informazioni ai fini del calcolo delle tasse:"
-  },
-  "Paese di origine": {
-    "message": "Paese di origine"
-  },
-  "Codice postale (se l’utente proviene da Canada o Stati Uniti)": {
-    "message": "Codice postale (se l’utente proviene da Canada o Stati Uniti)"
-  },
-  "3. Utilizzo delle tue informazioni": {
-    "message": "3. Utilizzo delle tue informazioni"
-  },
-  "Calcolo delle tasse:": {
-    "message": "Calcolo delle tasse:"
-  },
-  "Il paese di origine e il codice postale (per gli utenti di Canada o Stati Uniti) vengono raccolti esclusivamente per determinare le aliquote fiscali applicabili al tuo acquisto.": {
-    "message": "Il paese di origine e il codice postale (per gli utenti di Canada o Stati Uniti) vengono raccolti esclusivamente per determinare le aliquote fiscali applicabili al tuo acquisto."
-  },
-  "4. Condivisione delle tue informazioni": {
-    "message": "4. Condivisione delle tue informazioni"
-  },
-  "Autorità fiscali:": {
-    "message": "Autorità fiscali:"
-  },
-  "Le informazioni sugli acquisti possono essere condivise con le autorità fiscali se richiesto dalla legge.": {
-    "message": "Le informazioni sugli acquisti possono essere condivise con le autorità fiscali se richiesto dalla legge."
-  },
-  "Fornitori di pagamento:": {
-    "message": "Fornitori di pagamento:"
-  },
-  "Le informazioni sugli acquisti possono essere condivise con i fornitori di servizi di pagamento, se necessario.": {
-    "message": "Le informazioni sugli acquisti possono essere condivise con i fornitori di servizi di pagamento, se necessario."
-  },
-  "5. Modifiche a questa informativa": {
-    "message": "5. Modifiche a questa informativa"
-  },
-  "Potremmo aggiornare di tanto in tanto la nostra Informativa sulla Privacy. In caso di modifiche, aggiorneremo la data di \"Ultimo aggiornamento\" riportata in alto. Invitiamo gli utenti a controllare regolarmente questa pagina per rimanere informati su come proteggiamo i dati personali raccolti.": {
-    "message": "Potremmo aggiornare di tanto in tanto la nostra Informativa sulla Privacy. In caso di modifiche, aggiorneremo la data di \"Ultimo aggiornamento\" riportata in alto. Invitiamo gli utenti a controllare regolarmente questa pagina per rimanere informati su come proteggiamo i dati personali raccolti."
-  },
-  "6. Contatti": {
-    "message": "6. Contatti"
-  },
-  "Se hai domande su questa Informativa sulla Privacy, contattaci a": {
-    "message": "Se hai domande su questa Informativa sulla Privacy, contattaci a"
   },
   "Immich - soluzione self-hosted per il backup di foto e video direttamente dal tuo telefono": {
     "message": "Immich - soluzione self-hosted per il backup di foto e video direttamente dal tuo telefono"
@@ -1506,6 +1344,117 @@
   },
   "Cursed knowledge we have learned as a result of building Immich that we wish we never knew.": {
     "message": "Conoscenze problematiche che abbiamo appreso costruendo Immich e che avremmo preferito non sapere."
+  },
+  "announcement.project_prefix": {
+    "message": "Il progetto è in sviluppo "
+  },
+  "announcement.project_active": {
+    "message": "molto attivo"
+  },
+  "announcement.project_suffix": {
+    "message": "."
+  },
+  "announcement.warning_prefix": {
+    "message": "Ci possono essere bug e cambiamenti. Non usarlo come "
+  },
+  "announcement.warning_bold": {
+    "message": "unico modo"
+  },
+  "announcement.warning_suffix": {
+    "message": " per salvare le tue foto e video!"
+  },
+  "navbar.buy_immich_button": {
+    "message": "Compra Immich"
+  },
+  "PostgresSQL has a limit of 65,535 parameters, so bulk inserts can fail with large datasets.": {
+    "message": "PostgreSQL ha un limite di 65.535 parametri, quindi le operazioni di inserimento in blocco possono fallire con dataset di grandi dimensioni."
+  },
+  "hero.slogan": {
+    "message": "Soluzione self-hosted per {highlight}",
+    "description": "Main hero slogan with highlighted part"
+  },
+  "hero.slogan.highlight": {
+    "message": "la gestione di foto e video"
+  },
+  "privacy.title": {
+    "message": "Informativa sulla Privacy"
+  },
+  "privacy.lastUpdated": {
+    "message": "Ultimo aggiornamento: 31 luglio 2024"
+  },
+  "privacy.intro": {
+    "message": "Benvenuto su Immich. Ci impegniamo a rispettare la tua privacy. Questa Informativa sulla Privacy descrive come raccogliamo, utilizziamo e condividiamo le informazioni quando usi la nostra app Immich."
+  },
+  "privacy.scope.title": {
+    "message": "1. Ambito di questa informativa"
+  },
+  "privacy.scope.text": {
+    "message": "Questa Informativa sulla Privacy si applica all’app Immich (\"noi\", \"nostro\" o \"ci\") e riguarda la raccolta, l’uso e la divulgazione delle tue informazioni. Questa informativa non copre siti web, servizi o applicazioni di terze parti accessibili tramite la nostra app, né i servizi di terzi a cui puoi accedere tramite Immich."
+  },
+  "privacy.collect.title": {
+    "message": "2. Informazioni che raccogliamo"
+  },
+  "privacy.collect.localData": {
+    "message": "Dati memorizzati localmente"
+  },
+  "privacy.collect.localData.text": {
+    "message": "Immich salva tutte le tue foto, album e impostazioni direttamente sul tuo dispositivo. Non abbiamo accesso a questi dati, né li trasmettiamo o memorizziamo sui nostri server."
+  },
+  "privacy.collect.purchase": {
+    "message": "Informazioni sugli acquisti"
+  },
+  "privacy.collect.purchase.text": {
+    "message": "Quando effettui un acquisto su {link}, raccogliamo le seguenti informazioni ai fini del calcolo delle tasse:"
+  },
+  "privacy.collect.country": {
+    "message": "Paese di origine"
+  },
+  "privacy.collect.postal": {
+    "message": "Codice postale (se l’utente proviene da Canada o Stati Uniti)"
+  },
+  "privacy.use.title": {
+    "message": "3. Utilizzo delle tue informazioni"
+  },
+  "privacy.use.tax": {
+    "message": "Calcolo delle tasse:"
+  },
+  "privacy.use.text": {
+    "message": "Il paese di origine e il codice postale (per gli utenti di Canada o Stati Uniti) vengono raccolti esclusivamente per determinare le aliquote fiscali applicabili al tuo acquisto."
+  },
+  "privacy.sharing.title": {
+    "message": "4. Condivisione delle tue informazioni"
+  },
+  "privacy.sharing.tax": {
+    "message": "Autorità fiscali:"
+  },
+  "privacy.sharing.tax.text": {
+    "message": "Le informazioni sugli acquisti possono essere condivise con le autorità fiscali se richiesto dalla legge."
+  },
+  "privacy.sharing.payment": {
+    "message": "Fornitori di pagamento:"
+  },
+  "privacy.sharing.payment.text": {
+    "message": "Le informazioni sugli acquisti possono essere condivise con i fornitori di servizi di pagamento, se necessario."
+  },
+  "privacy.changes.title": {
+    "message": "5. Modifiche a questa informativa"
+  },
+  "privacy.changes.text": {
+    "message": "Potremmo aggiornare di tanto in tanto la nostra Informativa sulla Privacy. In caso di modifiche, aggiorneremo la data di \"Ultimo aggiornamento\" riportata in alto. Invitiamo gli utenti a controllare regolarmente questa pagina per rimanere informati su come proteggiamo i dati personali raccolti."
+  },
+  "privacy.contact.title": {
+    "message": "6. Contatti"
+  },
+  "privacy.contact.text": {
+    "message": "Se hai domande su questa Informativa sulla Privacy, contattaci a {email}"
+  },
+  "privacy.description": {
+    "message": "Soluzione self-hosted per il backup di foto e video direttamente dal tuo telefono"
+  },
+  "privacy.footer.license": {
+    "message": "Questo progetto è disponibile sotto licenza GNU AGPL v3."
+  },
+  "privacy.footer.slogan": {
+    "message": "La privacy non dovrebbe essere un lusso"
   }
 }
-

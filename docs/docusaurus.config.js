@@ -2,7 +2,7 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const prism = require('prism-react-renderer');
-import { translate } from '@docusaurus/Translate';
+
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -86,11 +86,8 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       announcementBar: {
-        content: translate({
-          id: 'site_announcement_immich',
-          message: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
-          description: 'Warning message about project being in active development',
-        }),
+        id: 'site_announcement_immich',
+        content: '⚠️',
         isCloseable: false,
       },
       docs: {
@@ -147,8 +144,7 @@ const config = {
           {
             type: 'html',
             position: 'right',
-            value:
-              <a href="https://buy.immich.app" target="_blank" className="no-underline hover:no-underline"><button className="buy-button bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-black rounded-xl">  {translate({ message: "Buy Immich" })}</button></a>,
+            value: '<div id="buy-button-container"></div>',
           },
         ],
       },

@@ -35,11 +35,20 @@ function HomepageHeader() {
 
         <div className="mt-8">
           <p className="text-3xl md:text-5xl sm:leading-tight mb-1 font-extrabold text-black/90 dark:text-white px-4">
-            <Translate>Self-hosted </Translate>
-            <span className="text-immich-primary dark:text-immich-dark-primary">
-              <Translate>photo and video management </Translate>
-            </span>
-            <Translate>solution</Translate>
+            {translate(
+              {
+                id: 'hero.slogan',
+                message: 'Self-hosted {highlight} solution',
+                description: 'Main hero slogan with highlighted part',
+              },
+              {
+                highlight: (
+                  <span className="text-immich-primary dark:text-immich-dark-primary">
+                    {translate({ id: 'hero.slogan.highlight', message: 'photo and video management' })}
+                  </span>
+                ),
+              }
+            )}
           </p>
 
           <p className="max-w-1/4 m-auto mt-4 px-4 text-lg text-gray-700 dark:text-gray-100">

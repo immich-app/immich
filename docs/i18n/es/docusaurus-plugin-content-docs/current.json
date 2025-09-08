@@ -1,30 +1,30 @@
 {
   "version.label": {
     "message": "Prossima",
-    "description": "L'etichetta per la versione corrente"
+    "description": "The label for version current"
   },
   "sidebar.tutorialSidebar.category.Overview": {
     "message": "Panoramica",
-    "description": "L'etichetta per la categoria Panoramica nella sidebar tutorialSidebar"
+    "description": "The label for category Overview in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Install": {
     "message": "Installazione",
-    "description": "L'etichetta per la categoria Installazione nella sidebar tutorialSidebar"
+    "description": "The label for category Install in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Features": {
     "message": "Funzionalità",
-    "description": "L'etichetta per la categoria Funzionalità nella sidebar tutorialSidebar"
+    "description": "The label for category Features in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Administration": {
     "message": "Amministrazione",
-    "description": "L'etichetta per la categoria Amministrazione nella sidebar tutorialSidebar"
+    "description": "The label for category Administration in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Developer": {
     "message": "Sviluppatore",
-    "description": "L'etichetta per la categoria Sviluppatore nella sidebar tutorialSidebar"
+    "description": "The label for category Developer in sidebar tutorialSidebar"
   },
   "sidebar.tutorialSidebar.category.Guides": {
     "message": "Guide",
-    "description": "L'etichetta per la categoria Guide nella sidebar tutorialSidebar"
+    "description": "The label for category Guides in sidebar tutorialSidebar"
   }
 }
