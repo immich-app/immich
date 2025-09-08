@@ -13,7 +13,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      should_run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}
+      should_run: ${{ steps.found_paths.outputs.i18n == 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
