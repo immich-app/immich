@@ -1,0 +1,103 @@
+---
+title: Immich Update - June 2023
+authors: [alextran]
+tags: [update]
+---
+
+Hello everybody, Alex here!
+
+I am back with another update on Immich. It has been only a month since my last update (May 18th, 2023), but it seems forever. I think the rapid releases of Immich and the amount of work make the perspective of time change in Immich’s world. We have some exciting updates that I think you will like.
+
+Before going into detail, on behalf of the core team, I would like to thank all of you for loving Immich and contributing to the project. Thank you for helping me make Immich an enjoyable alternative solution to Google Photos so that you have complete control of your data and privacy. I know we are still young and have a lot of work to do, but I am confident we will get there with help from the community. I appreciate all of you from the bottom of my heart!
+
+<!--truncate-->
+
+And now, to the exciting part, what is new in Immich’s world?
+
+- Initial support for existing gallery.
+- Memory feature.
+- Support XMP sidecar.
+- Support more raw formats.
+- Justified layout for web timeline and blurred thumbnail hash.
+- Mechanism to host machine learning on a completely different machine.
+
+## Support for existing gallery
+
+I know this is the most controversial feature when it comes to Immich’s way of ingesting photos and videos. For many users, having to upload photos and videos to Immich is simply not working. We listen, discuss, and digest this feature internally more than you imagine because it is not a simple feature to tackle while keeping the performance and the user experience at the top level, which is Immich’s primary goal.
+
+Thankfully, we have many great contributors and developers that want to make this come true. So we came up with an initial implementation of this feature in the form of a supporting read-only gallery.
+
+To be concise, Immich can now read in the gallery files, register the path into the database, and then generate necessary files and put them through Immich’s machine learning pipeline so you can use all the goodness of Immich without the need to upload them. Since this is the initial implementation, some actions/behavior are not yet supported, and we aim to build toward them in future releases, namely:
+
+- Assets are not automatically synced and must instead be manually synced with the CLI tool.
+- Only new files that are added to the gallery will be detected.
+- Deleted and moved files will not be detected.
+
+## Memory feature
+
+This is considered a fun feature that the team and I wanted to build for so long, but we had to put it off because of the refactoring of the code base. The code base is now in a good enough form to circle back and add more exciting features.
+
+This memory feature is very much similar to GPhotos' implementation of “x years since…”. We are aiming to add more categories of memories in the future, such as “Spotlight of the day” or “Day of the Week highlights”
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/j5XZKvViPew"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+
+This feature is now available on the web and will be ported to the mobile app in the near future.
+
+## Support XMP Sidecar
+
+Immich can now import/upload XMP sidecars from the CLI and use the information as the metadata of assets.
+
+## Support more raw formats.
+
+With the recent updates on the dependencies of Immich, we are now extending and hardening support for multiple raw formats. So users with DSLR or mirrorless cameras can now upload their original files to Immich and have them displayed in high-quality thumbnails on the web and mobile view.
+
+## Justified layout for web timeline and blurred thumbnail hash
+
+This is an aesthetic improvement in user experience when browsing the timeline. Photos and videos are now displayed correctly with perspective orientation, making the browsing experience more pleasurable.
+
+To further improve the browsing experience, we now added a blur hash to the thumbnail, so the transition is more natural with a dreamy fade in effect, similar to how our brain goes from faded to vivid memory
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/b95FLmGHRFc"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+
+## Hosting machine learning container on a different machine
+
+With more capabilities Immich is building toward, machine learning will get more powerful and therefore require more resources to run effectively. However, we understand that users might not have the best server resources where they host the Immich instance. Therefore, we changed how machine learning interacts and receives the photos and videos to run through its inference pipeline.
+
+The machine learning container is now a headless system that can run on any machine. As long as your Immich instance can communicate with the system running the machine learning container, it can send the files and receive the required information to make Immich powerful in terms of searching and intelligence. This helps you to utilize a more powerful machine in your home/infrastructure to perform the CPU-intensive tasks while letting Immich only handle the I/O operations for a pleasant and smooth experience.
+
+---
+
+So, those are the highlights for the team and the community after a busy month. There are a lot more changes and improvements. I encourage you to read some release notes, starting from version [v1.57.0](https://github.com/immich-app/immich/releases/tag/v1.57.0) to now.
+
+Thank you, and I am asking for your support for the project. I hope to be a full-time maintainer of Immich one day to dedicate myself to the project as my life works for the community and my family. You can find the support channels below:
+
+- Monthly donation via [GitHub Sponsors](https://github.com/sponsors/alextran1502)
+- One-time donation via [GitHub Sponsors](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
+- [Liberapay](https://liberapay.com/alex.tran1502/)
+- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
+- Bitcoin: 3QVAb9dCHutquVejeNXitPqZX26Yg5kxb7
+- Give a project a star - the contributors love gazing at the stars and seeing their creations shining in the sky.
+
+Join our friendly [Discord](https://discord.immich.app) to talk and discuss Immich, tech, or anything
+
+Cheer!
+
+Until next time!
+
+Alex
