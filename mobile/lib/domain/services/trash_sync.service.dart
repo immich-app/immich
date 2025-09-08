@@ -52,7 +52,7 @@ class TrashSyncService {
     if (trashedAssetsChecksums.isEmpty) {
       return Future.value();
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
+      final localAssetsToTrash = await _localAssetRepository.getBackupSelectedAssets(trashedAssetsChecksums);
       if (localAssetsToTrash.isNotEmpty) {
         final mediaUrls = await Future.wait(
           localAssetsToTrash.map(
@@ -62,6 +62,8 @@ class TrashSyncService {
         _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
         await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
         await _localAssetRepository.delete(localAssetsToTrash.map((asset) => asset.id));
+      } else {
+        _logger.info("No assets found in backup-enabled albums for checksums: $trashedAssetsChecksums");
       }
     }
   }

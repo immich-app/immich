@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
@@ -7,6 +8,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
+
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
@@ -70,11 +72,22 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return _db.managers.localAssetEntity.filter((e) => e.checksum.isNull().not()).count();
   }
 
-  Future<List<LocalAsset>> getByChecksums(Iterable<String> checksums) {
+  Future<List<LocalAsset>> getBackupSelectedAssets(Iterable<String> checksums) {
     if (checksums.isEmpty) {
       return Future.value([]);
     }
-    final query = _db.localAssetEntity.select()..where((lae) => lae.checksum.isIn(checksums));
+    final backedUpAssetIds = _db.localAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
+        ),
+      ])
+      ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
+    final query = _db.localAssetEntity.select()
+      ..where((la) => la.checksum.isIn(checksums) & la.id.isInQuery(backedUpAssetIds));
     return query.map((row) => row.toDto()).get();
   }
 }
