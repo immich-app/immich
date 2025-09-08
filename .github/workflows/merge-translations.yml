@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Find translation PR
         id: find_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh pr list --repo $GITHUB_REPOSITORY --author weblate --json number,mergeable | read PR
           echo "$PR" | jq '
@@ -52,7 +54,7 @@ jobs:
 
       - name: Merge PR
         env:
-          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
           PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
         run: |
           gh api -X POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --field event='APPROVE' --field body='Automatically merging translations PR' \
@@ -62,7 +64,7 @@ jobs:
 
       - name: Wait for PR to merge
         env:
-          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
           PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
           REVIEW_ID: ${{ steps.merge_pr.outputs.REVIEW_ID }}
         run: |
