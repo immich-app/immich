@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -139,7 +141,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           toastType: ToastType.success,
         );
 
-        context.pushRoute(const DriftAlbumsRoute());
+        unawaited(context.pushRoute(const DriftAlbumsRoute()));
       } catch (e) {
         ImmichToast.show(
           context: context,
@@ -161,12 +163,12 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       setState(() {
         _album = _album.copyWith(name: result.name, description: result.description ?? '');
       });
-      HapticFeedback.mediumImpact();
+      unawaited(HapticFeedback.mediumImpact());
     }
   }
 
   Future<void> showActivity(BuildContext context) async {
-    context.pushRoute(const DriftActivitiesRoute());
+    unawaited(context.pushRoute(const DriftActivitiesRoute()));
   }
 
   Future<void> showOptionSheet(BuildContext context) async {

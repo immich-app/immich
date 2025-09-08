@@ -102,13 +102,13 @@ class LocalNetworkPreference extends HookConsumerWidget {
           ),
         );
       } else {
-        saveWifiName(wifiName);
+        await saveWifiName(wifiName);
       }
 
       final serverEndpoint = ref.read(authProvider.notifier).getServerEndpoint();
 
       if (serverEndpoint != null) {
-        saveLocalEndpoint(serverEndpoint);
+        await saveLocalEndpoint(serverEndpoint);
       }
     }
 

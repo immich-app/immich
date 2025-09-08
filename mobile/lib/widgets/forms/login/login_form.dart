@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -188,7 +189,7 @@ class LoginForm extends HookConsumerWidget {
         final result = await ref.read(authProvider.notifier).login(emailController.text, passwordController.text);
 
         if (result.shouldChangePassword && !result.isAdmin) {
-          context.pushRoute(const ChangePasswordRoute());
+          unawaited(context.pushRoute(const ChangePasswordRoute()));
         } else {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
@@ -198,7 +199,7 @@ class LoginForm extends HookConsumerWidget {
             context.replaceRoute(const TabShellRoute());
             return;
           }
-          context.replaceRoute(const TabControllerRoute());
+          unawaited(context.replaceRoute(const TabControllerRoute()));
         }
       } catch (error) {
         ImmichToast.show(
@@ -288,7 +289,7 @@ class LoginForm extends HookConsumerWidget {
             final permission = ref.watch(galleryPermissionNotifier);
             final isBeta = Store.isBetaTimelineEnabled;
             if (!isBeta && (permission.isGranted || permission.isLimited)) {
-              ref.watch(backupProvider.notifier).resumeBackup();
+              unawaited(ref.watch(backupProvider.notifier).resumeBackup());
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
@@ -296,7 +297,7 @@ class LoginForm extends HookConsumerWidget {
               context.replaceRoute(const TabShellRoute());
               return;
             }
-            context.replaceRoute(const TabControllerRoute());
+            unawaited(context.replaceRoute(const TabControllerRoute()));
           }
         } catch (error, stack) {
           log.severe('Error logging in with OAuth: $error', stack);

@@ -1,4 +1,5 @@
-import 'package:auto_route/auto_route.dart';
+import 'dart:async';
+
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -70,7 +71,7 @@ class ActionNotifier extends Notifier<void> {
   void _downloadLivePhotoCallback(TaskStatusUpdate update) async {
     if (update.status == TaskStatus.complete) {
       final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
-      _downloadService.saveLivePhotos(update.task, livePhotosId);
+      unawaited(_downloadService.saveLivePhotos(update.task, livePhotosId));
     }
   }
 

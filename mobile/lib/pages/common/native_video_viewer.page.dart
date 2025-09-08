@@ -267,11 +267,11 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       nc.onPlaybackReady.addListener(onPlaybackReady);
       nc.onPlaybackEnded.addListener(onPlaybackEnded);
 
-      nc.loadVideoSource(source).catchError((error) {
+      await nc.loadVideoSource(source).catchError((error) {
         log.severe('Error loading video source: $error');
       });
       final loopVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo);
-      nc.setLoop(loopVideo);
+      await nc.setLoop(loopVideo);
 
       controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
@@ -342,12 +342,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     useOnAppLifecycleStateChange((_, state) async {
       if (state == AppLifecycleState.resumed && shouldPlayOnForeground.value) {
-        controller.value?.play();
+        await controller.value?.play();
       } else if (state == AppLifecycleState.paused) {
         final videoPlaying = await controller.value?.isPlaying();
         if (videoPlaying ?? true) {
           shouldPlayOnForeground.value = true;
-          controller.value?.pause();
+          await controller.value?.pause();
         } else {
           shouldPlayOnForeground.value = false;
         }

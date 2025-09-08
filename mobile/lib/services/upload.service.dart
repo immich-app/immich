@@ -254,7 +254,7 @@ class UploadService {
         return;
       }
 
-      enqueueTasks([uploadTask]);
+      await enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
     }

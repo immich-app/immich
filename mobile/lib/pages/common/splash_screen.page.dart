@@ -95,8 +95,8 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
-      ref.read(authProvider.notifier).logout();
-      context.replaceRoute(const LoginRoute());
+      unawaited(ref.read(authProvider.notifier).logout());
+      unawaited(context.replaceRoute(const LoginRoute()));
       return;
     }
 
@@ -120,7 +120,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
     if (hasPermission) {
       // Resume backup (if enable) then navigate
-      ref.watch(backupProvider.notifier).resumeBackup();
+      await ref.watch(backupProvider.notifier).resumeBackup();
     }
   }
 

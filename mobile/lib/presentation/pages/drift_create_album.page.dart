@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -179,7 +181,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
 
     if (album != null) {
       ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
-      context.replaceRoute(RemoteAlbumRoute(album: album));
+      unawaited(context.replaceRoute(RemoteAlbumRoute(album: album)));
     }
   }
 
