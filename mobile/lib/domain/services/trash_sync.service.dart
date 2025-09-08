@@ -75,7 +75,9 @@ class TrashSyncService {
         isTrashed: true,
       );
       if (remoteAssetsToRestore.isNotEmpty) {
-        _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => "${e.name}/${e.checksum}").join(", ")} assets");
+        _logger.info(
+          "Restoring from trash ${remoteAssetsToRestore.map((e) => "${e.name}/${e.checksum}").join(", ")} assets",
+        );
         for (RemoteAsset asset in remoteAssetsToRestore) {
           await _localFilesManager.restoreFromTrash(asset.name, asset.type.index, asset.checksum!);
         }
