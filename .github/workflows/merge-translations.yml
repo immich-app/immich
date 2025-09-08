@@ -23,16 +23,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          gh pr list --repo $GITHUB_REPOSITORY --author weblate --json number,mergeable | read PR
+          PR=$(gh pr list --repo $GITHUB_REPOSITORY --author weblate --json number,mergeable)
           echo "$PR"
 
-          echo "$PR" | jq '
+          PR_NUMBER=$(echo "$PR" | jq '
             if length == 1 then
               .[0].number
             else
               error("Expected exactly 1 entry, got \(length)")
             end
-          ' 2>&1 | read PR_NUMBER || exit 1
+          ' 2>&1) || exit 1
 
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
           echo "Selected PR $PR_NUMBER"
@@ -64,8 +64,8 @@ jobs:
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
           PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
         run: |
-          gh api -X POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --field event='APPROVE' --field body='Automatically merging translations PR' \
-            | jq '.id' | read REVIEW_ID
+          REVIEW_ID=$(gh api -X POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --field event='APPROVE' --field body='Automatically merging translations PR' \
+            | jq '.id')
           echo "REVIEW_ID=$REVIEW_ID" >> $GITHUB_OUTPUT
           gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --auto --squash
 
