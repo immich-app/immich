@@ -4994,6 +4994,48 @@
         ],
         "x-immich-permission": "partner.read",
         "description": "This endpoint requires the `partner.read` permission."
+      },
+      "post": {
+        "operationId": "createPartner",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartnerCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ],
+        "x-immich-permission": "partner.create",
+        "description": "This endpoint requires the `partner.create` permission."
       }
     },
     "/partners/{id}": {
@@ -5033,7 +5075,9 @@
         "description": "This endpoint requires the `partner.delete` permission."
       },
       "post": {
-        "operationId": "createPartner",
+        "deprecated": true,
+        "description": "This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.",
+        "operationId": "createPartnerDeprecated",
         "parameters": [
           {
             "name": "id",
@@ -5069,10 +5113,13 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners",
+          "Deprecated"
         ],
-        "x-immich-permission": "partner.create",
-        "description": "This endpoint requires the `partner.create` permission."
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.141.0"
+        },
+        "x-immich-permission": "partner.create"
       },
       "put": {
         "operationId": "updatePartner",
@@ -5091,7 +5138,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePartnerDto"
+                "$ref": "#/components/schemas/PartnerUpdateDto"
               }
             }
           },
@@ -9790,7 +9837,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.141.0",
+    "version": "1.141.1",
     "contact": {}
   },
   "tags": [],
@@ -12853,6 +12900,18 @@
         ],
         "type": "object"
       },
+      "PartnerCreateDto": {
+        "properties": {
+          "sharedWithId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sharedWithId"
+        ],
+        "type": "object"
+      },
       "PartnerDirection": {
         "enum": [
           "shared-by",
@@ -12896,6 +12955,17 @@
           "name",
           "profileChangedAt",
           "profileImagePath"
+        ],
+        "type": "object"
+      },
+      "PartnerUpdateDto": {
+        "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "inTimeline"
         ],
         "type": "object"
       },
@@ -17239,17 +17309,6 @@
             "type": "string"
           }
         },
-        "type": "object"
-      },
-      "UpdatePartnerDto": {
-        "properties": {
-          "inTimeline": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "inTimeline"
-        ],
         "type": "object"
       },
       "UsageByUserDto": {
