@@ -1318,7 +1318,7 @@
   "menu": "Meny",
   "merge": "Sammanfoga",
   "merge_people": "Sammanfoga personer",
-  "merge_people_limit": "Du kan maximalt sammanfoga 5 ansikten på samma gång",
+  "merge_people_limit": "Du kan maximalt sammanfoga 500 ansikten på samma gång",
   "merge_people_prompt": "Vill du sammanfoga dessa personer? Denna handling är oåterkallelig.",
   "merge_people_successfully": "Personer sammanfogades framgångsrikt",
   "merged_people_count": "Sammanfogat {count, plural, one {# person} other {# people}}",
