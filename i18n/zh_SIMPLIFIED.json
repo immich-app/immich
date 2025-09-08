@@ -1318,7 +1318,7 @@
   "menu": "菜单",
   "merge": "合并",
   "merge_people": "合并人物",
-  "merge_people_limit": "每次最多只能合并 5 个人",
+  "merge_people_limit": "每次最多只能合并 500 个人",
   "merge_people_prompt": "是否确定合并所选人物？该操作无法撤销。",
   "merge_people_successfully": "合并人物成功",
   "merged_people_count": "已合并{count, plural, one {# 个人} other {# 个人}}",
