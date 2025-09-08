@@ -31,7 +31,6 @@ class ModelType(StrEnum):
     RECOGNITION = "recognition"
     TEXTUAL = "textual"
     VISUAL = "visual"
-    OCR = "ocr"
 
 
 class ModelFormat(StrEnum):
