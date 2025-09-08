@@ -21,16 +21,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
+
           gh pr list --repo $GITHUB_REPOSITORY --author weblate --json number,mergeable | read PR
+          echo "$PR"
+
           echo "$PR" | jq '
             if length == 1 then
               .[0].number
             else
               error("Expected exactly 1 entry, got \(length)")
             end
-          ' | read PR_NUMBER
+          ' 2>&1 | read PR_NUMBER || exit 1
+
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
-          echo "$PR" | jq -e '.[0].mergeable == "MERGEABLE"' || (echo "PR is not mergeable" && exit 1)
+          echo "Selected PR $PR_NUMBER"
+
+          echo "$PR" | jq -e '.[0].mergeable == "MERGEABLE"' || { echo "PR is not mergeable" ; exit 1 }
 
       - name: Generate a token
         id: generate_token
