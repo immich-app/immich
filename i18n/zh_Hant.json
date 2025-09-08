@@ -1315,7 +1315,7 @@
   "menu": "選單",
   "merge": "合併",
   "merge_people": "合併人物",
-  "merge_people_limit": "一次最多只能合併 5 張臉孔",
+  "merge_people_limit": "一次最多只能合併 500 張臉孔",
   "merge_people_prompt": "您要合併這些人物嗎？此操作無法撤銷。",
   "merge_people_successfully": "成功合併人物",
   "merged_people_count": "合併了 {count, plural, one {# 位人士} other {# 位人士}}",
