@@ -1,6 +1,7 @@
 name: Weblate checks
 
 on:
+  pull_request_review:
   pull_request:
     branches: [main]
 
@@ -12,7 +13,7 @@ jobs:
     permissions:
       contents: read
     outputs:
-      should_run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}
+      should_run: ${{ steps.found_paths.outputs.i18n == 'true' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -32,19 +33,15 @@ jobs:
     permissions: {}
     if: ${{ needs.pre-job.outputs.should_run == 'true' }}
     steps:
-      - name: Check weblate lock
+      - name: Bot review status
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.pull_request_review.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if [[ "false" = $(curl https://hosted.weblate.org/api/components/immich/immich/lock/ | jq .locked) ]]; then
-            exit 1
-          fi
-      - name: Find Pull Request
-        uses: juliangruber/find-pull-request-action@952b3bb1ddb2dcc0aa3479e98bb1c2d1a922f096 # v1.10.0
-        id: find-pr
-        with:
-          branch: chore/translations
-      - name: Fail if existing weblate PR
-        if: ${{ steps.find-pr.outputs.number }}
-        run: exit 1
+          # Then check for APPROVED by the bot, if absent fail
+          gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json reviews | jq -e '.reviews | map(select(.author.login == "github-actions[bot]" and .state == "APPROVED")) | length > 0' \
+            || (echo "The push-o-matic bot has not approved this PR yet" && exit 1)
+
   success-check-lock:
     name: Weblate Lock Check Success
     needs: [enforce-lock]

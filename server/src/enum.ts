@@ -571,8 +571,7 @@ export enum JobName {
   SendMail = 'SendMail',
 
   SidecarQueueAll = 'SidecarQueueAll',
-  SidecarDiscovery = 'SidecarDiscovery',
-  SidecarSync = 'SidecarSync',
+  SidecarCheck = 'SidecarCheck',
   SidecarWrite = 'SidecarWrite',
 
   SmartSearchQueueAll = 'SmartSearchQueueAll',

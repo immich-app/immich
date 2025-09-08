@@ -1,5 +1,6 @@
+import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { plainToInstance, Transform, Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
 import { AssetVisibility } from 'src/enum';
@@ -65,10 +66,18 @@ export class AssetMediaCreateDto extends AssetMediaBase {
   @ValidateUUID({ optional: true })
   livePhotoVideoId?: string;
 
+  @Transform(({ value }) => {
+    try {
+      const json = JSON.parse(value);
+      const items = Array.isArray(json) ? json : [json];
+      return items.map((item) => plainToInstance(AssetMetadataUpsertItemDto, item));
+    } catch {
+      throw new BadRequestException(['metadata must be valid JSON']);
+    }
+  })
   @Optional()
-  @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => AssetMetadataUpsertItemDto)
+  @IsArray()
   metadata!: AssetMetadataUpsertItemDto[];
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })

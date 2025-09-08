@@ -3444,6 +3444,7 @@ final class Schema9 extends i0.VersionedSchema {
     remoteAssetEntity,
     stackEntity,
     localAssetEntity,
+    remoteAlbumEntity,
     localAlbumEntity,
     localAlbumAssetEntity,
     idxLocalAssetChecksum,
@@ -3451,11 +3452,9 @@ final class Schema9 extends i0.VersionedSchema {
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
-    authUserEntity,
     userMetadataEntity,
     partnerEntity,
     remoteExifEntity,
-    remoteAlbumEntity,
     remoteAlbumAssetEntity,
     remoteAlbumUserEntity,
     memoryEntity,
@@ -3465,7 +3464,7 @@ final class Schema9 extends i0.VersionedSchema {
     storeEntity,
     idxLatLng,
   ];
-  late final Shape19 userEntity = Shape19(
+  late final Shape16 userEntity = Shape16(
     source: i0.VersionedTable(
       entityName: 'user_entity',
       withoutRowId: true,
@@ -3474,10 +3473,11 @@ final class Schema9 extends i0.VersionedSchema {
       columns: [
         _column_0,
         _column_1,
+        _column_2,
         _column_3,
         _column_84,
         _column_85,
-        _column_90,
+        _column_5,
       ],
       attachedDatabase: database,
     ),
@@ -3547,7 +3547,28 @@ final class Schema9 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape6 localAlbumEntity = Shape6(
+  late final Shape9 remoteAlbumEntity = Shape9(
+    source: i0.VersionedTable(
+      entityName: 'remote_album_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_56,
+        _column_9,
+        _column_5,
+        _column_15,
+        _column_57,
+        _column_58,
+        _column_59,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
+  );
+  late final Shape19 localAlbumEntity = Shape19(
     source: i0.VersionedTable(
       entityName: 'local_album_entity',
       withoutRowId: true,
@@ -3559,6 +3580,7 @@ final class Schema9 extends i0.VersionedSchema {
         _column_5,
         _column_31,
         _column_32,
+        _column_90,
         _column_33,
       ],
       attachedDatabase: database,
@@ -3595,28 +3617,6 @@ final class Schema9 extends i0.VersionedSchema {
   final i1.Index idxRemoteAssetChecksum = i1.Index(
     'idx_remote_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
-  );
-  late final Shape20 authUserEntity = Shape20(
-    source: i0.VersionedTable(
-      entityName: 'auth_user_entity',
-      withoutRowId: true,
-      isStrict: true,
-      tableConstraints: ['PRIMARY KEY(id)'],
-      columns: [
-        _column_0,
-        _column_1,
-        _column_3,
-        _column_2,
-        _column_84,
-        _column_85,
-        _column_91,
-        _column_92,
-        _column_7,
-        _column_93,
-      ],
-      attachedDatabase: database,
-    ),
-    alias: null,
   );
   late final Shape4 userMetadataEntity = Shape4(
     source: i0.VersionedTable(
@@ -3669,27 +3669,6 @@ final class Schema9 extends i0.VersionedSchema {
         _column_53,
         _column_54,
         _column_55,
-      ],
-      attachedDatabase: database,
-    ),
-    alias: null,
-  );
-  late final Shape9 remoteAlbumEntity = Shape9(
-    source: i0.VersionedTable(
-      entityName: 'remote_album_entity',
-      withoutRowId: true,
-      isStrict: true,
-      tableConstraints: ['PRIMARY KEY(id)'],
-      columns: [
-        _column_0,
-        _column_1,
-        _column_56,
-        _column_9,
-        _column_5,
-        _column_15,
-        _column_57,
-        _column_58,
-        _column_59,
       ],
       attachedDatabase: database,
     ),
@@ -3819,70 +3798,27 @@ class Shape19 extends i0.VersionedTable {
       columnsByName['id']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get name =>
       columnsByName['name']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get email =>
-      columnsByName['email']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<bool> get hasProfileImage =>
-      columnsByName['has_profile_image']! as i1.GeneratedColumn<bool>;
-  i1.GeneratedColumn<DateTime> get profileChangedAt =>
-      columnsByName['profile_changed_at']! as i1.GeneratedColumn<DateTime>;
-  i1.GeneratedColumn<int> get avatarColor =>
-      columnsByName['avatar_color']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<DateTime> get updatedAt =>
+      columnsByName['updated_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<int> get backupSelection =>
+      columnsByName['backup_selection']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<bool> get isIosSharedAlbum =>
+      columnsByName['is_ios_shared_album']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<String> get linkedRemoteAlbumId =>
+      columnsByName['linked_remote_album_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<bool> get marker_ =>
+      columnsByName['marker']! as i1.GeneratedColumn<bool>;
 }
 
-i1.GeneratedColumn<int> _column_90(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'avatar_color',
-      aliasedName,
-      false,
-      type: i1.DriftSqlType.int,
-      defaultValue: const CustomExpression('0'),
-    );
-
-class Shape20 extends i0.VersionedTable {
-  Shape20({required super.source, required super.alias}) : super.aliased();
-  i1.GeneratedColumn<String> get id =>
-      columnsByName['id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get name =>
-      columnsByName['name']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get email =>
-      columnsByName['email']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<bool> get isAdmin =>
-      columnsByName['is_admin']! as i1.GeneratedColumn<bool>;
-  i1.GeneratedColumn<bool> get hasProfileImage =>
-      columnsByName['has_profile_image']! as i1.GeneratedColumn<bool>;
-  i1.GeneratedColumn<DateTime> get profileChangedAt =>
-      columnsByName['profile_changed_at']! as i1.GeneratedColumn<DateTime>;
-  i1.GeneratedColumn<int> get avatarColor =>
-      columnsByName['avatar_color']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<int> get quotaSizeInBytes =>
-      columnsByName['quota_size_in_bytes']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<int> get quotaUsageInBytes =>
-      columnsByName['quota_usage_in_bytes']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<String> get pinCode =>
-      columnsByName['pin_code']! as i1.GeneratedColumn<String>;
-}
-
-i1.GeneratedColumn<int> _column_91(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'avatar_color',
-      aliasedName,
-      false,
-      type: i1.DriftSqlType.int,
-    );
-i1.GeneratedColumn<int> _column_92(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'quota_size_in_bytes',
-      aliasedName,
-      false,
-      type: i1.DriftSqlType.int,
-      defaultValue: const CustomExpression('0'),
-    );
-i1.GeneratedColumn<String> _column_93(String aliasedName) =>
+i1.GeneratedColumn<String> _column_90(String aliasedName) =>
     i1.GeneratedColumn<String>(
-      'pin_code',
+      'linked_remote_album_id',
       aliasedName,
       true,
       type: i1.DriftSqlType.string,
+      defaultConstraints: i1.GeneratedColumn.constraintIsAlways(
+        'REFERENCES remote_album_entity (id) ON DELETE SET NULL',
+      ),
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,

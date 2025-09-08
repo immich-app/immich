@@ -16,6 +16,59 @@ class DeprecatedApi {
 
   final ApiClient apiClient;
 
+  /// This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> createPartnerDeprecatedWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/partners/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<PartnerResponseDto?> createPartnerDeprecated(String id,) async {
+    final response = await createPartnerDeprecatedWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PartnerResponseDto',) as PartnerResponseDto;
+    
+    }
+    return null;
+  }
+
   /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
   ///
   /// Note: This method returns the HTTP [Response].
