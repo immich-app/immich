@@ -28,7 +28,7 @@
 
   let running = true;
 
-  let pausedJobs = $derived.by(() => {
+  const pausedJobs = $derived.by(() => {
     if (!jobs) {
       return [];
     }
@@ -37,7 +37,7 @@
       .map(([jobName]) => jobName as JobName);
   });
 
-  let pausedJobsCount = $derived(pausedJobs.length);
+  const pausedJobsCount = $derived(pausedJobs.length);
 
   async function resumeAllPausedJobs() {
     try {
