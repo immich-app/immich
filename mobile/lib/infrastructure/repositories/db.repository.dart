@@ -148,7 +148,7 @@ class Drift extends $Drift implements IDatabaseRepository {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 500');
+      await customStatement('PRAGMA busy_timeout = 30000');
     },
   );
 }
