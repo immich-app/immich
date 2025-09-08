@@ -14,8 +14,8 @@ class LocalFilesManagerRepository {
     return await _service.moveToTrash(mediaUrls);
   }
 
-  Future<bool> restoreFromTrash(String fileName, int type) async {
-    return await _service.restoreFromTrash(fileName, type);
+  Future<bool> restoreFromTrash(String fileName, int type, String checksum) async {
+    return await _service.restoreFromTrash(fileName, type, checksum);
   }
 
   Future<bool> requestManageMediaPermission() async {

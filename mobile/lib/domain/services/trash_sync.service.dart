@@ -52,20 +52,16 @@ class TrashSyncService {
     if (trashedAssetsChecksums.isEmpty) {
       return Future.value();
     } else {
-      final candidatesToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
-      if (candidatesToTrash.isNotEmpty) {
-        final groupedByChecksum = <String, LocalAsset>{};
-        for (final localAsset in candidatesToTrash) {
-          groupedByChecksum[localAsset.checksum!] = localAsset;
-        }
+      final localAssetsToTrash = await _localAssetRepository.getByChecksums(trashedAssetsChecksums);
+      if (localAssetsToTrash.isNotEmpty) {
         final mediaUrls = await Future.wait(
-          groupedByChecksum.values.map(
+          localAssetsToTrash.map(
             (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
           ),
         );
         _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
         await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-        await _localAssetRepository.delete(candidatesToTrash.map((asset) => asset.id));
+        await _localAssetRepository.delete(localAssetsToTrash.map((asset) => asset.id));
       }
     }
   }
@@ -79,9 +75,9 @@ class TrashSyncService {
         isTrashed: true,
       );
       if (remoteAssetsToRestore.isNotEmpty) {
-        _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => e.name).join(", ")} assets");
+        _logger.info("Restoring from trash ${remoteAssetsToRestore.map((e) => "${e.name}/${e.checksum}").join(", ")} assets");
         for (RemoteAsset asset in remoteAssetsToRestore) {
-          await _localFilesManager.restoreFromTrash(asset.name, asset.type.index);
+          await _localFilesManager.restoreFromTrash(asset.name, asset.type.index, asset.checksum!);
         }
       }
     }
