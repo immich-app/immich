@@ -1308,7 +1308,7 @@
   "menu": "Menü",
   "merge": "Összevonás",
   "merge_people": "Személyek összevonása",
-  "merge_people_limit": "Egyszerre legfeljebb 5 arcot vonhatsz össze",
+  "merge_people_limit": "Egyszerre legfeljebb 500 arcot vonhatsz össze",
   "merge_people_prompt": "Biztosan összevonod ezeket a személyeket? Ez a művelet nem visszavonható.",
   "merge_people_successfully": "Személyek sikeresen összevonva",
   "merged_people_count": "Összevonva {count, plural, other {# személy}}",
