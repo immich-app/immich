@@ -1318,7 +1318,7 @@
   "menu": "Menüü",
   "merge": "Ühenda",
   "merge_people": "Ühenda isikud",
-  "merge_people_limit": "Korraga saab ühendada kuni 5 nägu",
+  "merge_people_limit": "Korraga saab ühendada kuni 500 nägu",
   "merge_people_prompt": "Kas soovid need isikud ühendada? Seda tegevust ei saa tagasi võtta.",
   "merge_people_successfully": "Isikud ühendatud",
   "merged_people_count": "Ühendatud {count, plural, one {# isik} other {# isikut}}",
