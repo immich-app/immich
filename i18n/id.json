@@ -1300,7 +1300,7 @@
   "menu": "Menu",
   "merge": "Gabungkan",
   "merge_people": "Gabungkan orang",
-  "merge_people_limit": "Anda hanya dapat menggabungkan sampai 5 wajah sekaligus",
+  "merge_people_limit": "Anda hanya dapat menggabungkan sampai 500 wajah sekaligus",
   "merge_people_prompt": "Apakah Anda ingin menggabungkan orang ini? Tindakan ini tidak dapat diurungkan.",
   "merge_people_successfully": "Orang berhasil digabungkan",
   "merged_people_count": "{count, plural, one {# orang} other {# orang}} digabung",
