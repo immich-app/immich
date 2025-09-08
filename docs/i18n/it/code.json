@@ -1382,129 +1382,130 @@
     "message": "Un elenco di piani e obiettivi futuri, così come dei traguardi e risultati passati."
   },
   "setTimeout is cursed": {
-    "message": "setTimeout is cursed"
+    "message": "setTimeout è problematico"
   },
   "The setTimeout method in JavaScript is cursed when used with small values because the implementation may or may not actually wait the specified time.": {
-    "message": "The setTimeout method in JavaScript is cursed when used with small values because the implementation may or may not actually wait the specified time."
+    "message": "Il metodo setTimeout in JavaScript è problematico quando usato con valori piccoli perché l’implementazione potrebbe o meno aspettare il tempo specificato."
   },
   "PostgreSQL USER is cursed": {
-    "message": "PostgreSQL USER is cursed"
+    "message": "PostgreSQL USER è problematico"
   },
   "The USER keyword in PostgreSQL is cursed because you can select from it like a table, which leads to confusion if you have a table name user as well.": {
-    "message": "The USER keyword in PostgreSQL is cursed because you can select from it like a table, which leads to confusion if you have a table name user as well."
+    "message": "La keyword USER in PostgreSQL è problematica perché la si può selezionare come se fosse una tabella, causando confusione se esiste anche una tabella chiamata user."
   },
   "PostgreSQL RESET is cursed": {
-    "message": "PostgreSQL RESET is cursed"
+    "message": "PostgreSQL RESET è problematico"
   },
   "PostgreSQL RESET is cursed because it is impossible to RESET a PostgreSQL extension parameter if the extension has been uninstalled.": {
-    "message": "PostgreSQL RESET is cursed because it is impossible to RESET a PostgreSQL extension parameter if the extension has been uninstalled."
+    "message": "PostgreSQL RESET è problematico perché è impossibile resettare un parametro di estensione se l’estensione è stata disinstallata."
   },
   "Zitadel Actions are cursed": {
-    "message": "Zitadel Actions are cursed"
+    "message": "Le Actions di Zitadel sono problematiche"
   },
   "Zitadel is cursed because its custom scripting feature is executed with a JS engine that doesn't support regex named capture groups.": {
-    "message": "Zitadel is cursed because its custom scripting feature is executed with a JS engine that doesn't support regex named capture groups."
+    "message": "Zitadel è problematico perché la sua funzione di scripting personalizzato viene eseguita con un motore JS che non supporta i gruppi di cattura regex nominati."
   },
   "Entra is cursed": {
-    "message": "Entra is cursed"
+    "message": "Entra è problematico"
   },
   "Microsoft Entra supports PKCE, but doesn't include it in its OpenID discovery document. This leads to clients thinking PKCE isn't available.": {
-    "message": "Microsoft Entra supports PKCE, but doesn't include it in its OpenID discovery document. This leads to clients thinking PKCE isn't available."
+    "message": "Microsoft Entra supporta PKCE, ma non lo include nel documento di discovery OpenID. Questo porta i client a pensare che PKCE non sia disponibile."
   },
   "Image dimensions in EXIF metadata are cursed": {
-    "message": "Image dimensions in EXIF metadata are cursed"
+    "message": "Le dimensioni delle immagini nei metadati EXIF sono problematiche"
   },
   "The dimensions in EXIF metadata can be different from the actual dimensions of the image, causing issues with cropping and resizing.": {
-    "message": "The dimensions in EXIF metadata can be different from the actual dimensions of the image, causing issues with cropping and resizing."
+    "message": "Le dimensioni nei metadati EXIF possono essere diverse dalle dimensioni reali dell’immagine, causando problemi di ritaglio e ridimensionamento."
   },
   "YAML whitespace is cursed": {
-    "message": "YAML whitespace is cursed"
+    "message": "Gli spazi bianchi in YAML sono problematici"
   },
   "YAML whitespaces are often handled in unintuitive ways.": {
-    "message": "YAML whitespaces are often handled in unintuitive ways."
+    "message": "Gli spazi bianchi in YAML vengono spesso gestiti in modi poco intuitivi."
   },
   "Hidden files in Windows are cursed": {
-    "message": "Hidden files in Windows are cursed"
+    "message": "I file nascosti in Windows sono problematici"
   },
   "Hidden files in Windows cannot be opened with the \"w\" flag. That, combined with SMB option \"hide dot files\" leads to a lot of confusion.": {
-    "message": "Hidden files in Windows cannot be opened with the \"w\" flag. That, combined with SMB option \"hide dot files\" leads to a lot of confusion."
+    "message": "I file nascosti in Windows non possono essere aperti con il flag \"w\". Questo, unito all’opzione SMB \"hide dot files\", porta a molta confusione."
   },
   "Carriage returns in bash scripts are cursed": {
-    "message": "Carriage returns in bash scripts are cursed"
+    "message": "I ritorni a capo nei script bash sono problematici"
   },
   "Git can be configured to automatically convert LF to CRLF on checkout and CRLF breaks bash scripts.": {
-    "message": "Git can be configured to automatically convert LF to CRLF on checkout and CRLF breaks bash scripts."
+    "message": "Git può essere configurato per convertire automaticamente LF in CRLF durante il checkout e i CRLF rompono gli script bash."
   },
   "Fetch inside Cloudflare Workers is cursed": {
-    "message": "Fetch inside Cloudflare Workers is cursed"
+    "message": "Fetch dentro Cloudflare Workers è problematici"
   },
   "Fetch requests in Cloudflare Workers use http by default, even if you explicitly specify https, which can often cause redirect loops.": {
-    "message": "Fetch requests in Cloudflare Workers use http by default, even if you explicitly specify https, which can often cause redirect loops."
+    "message": "Le richieste Fetch in Cloudflare Workers usano http di default, anche se si specifica esplicitamente https, il che può causare loop di reindirizzamento."
   },
   "GPS sharing on mobile is cursed": {
-    "message": "GPS sharing on mobile is cursed"
+    "message": "La condivisione GPS sui telefoni è problematica"
   },
   "Some phones will silently strip GPS data from images when apps without location permission try to access them.": {
-    "message": "Some phones will silently strip GPS data from images when apps without location permission try to access them."
+    "message": "Alcuni telefoni rimuovono silenziosamente i dati GPS dalle immagini quando le app senza permessi di localizzazione tentano di accedervi."
   },
   "PostgreSQL NOTIFY is cursed": {
-    "message": "PostgreSQL NOTIFY is cursed"
+    "message": "PostgreSQL NOTIFY è problematico"
   },
   "PostgreSQL does everything in a transaction, including NOTIFY. This means using the socket.io postgres-adapter writes to WAL every 5 seconds.": {
-    "message": "PostgreSQL does everything in a transaction, including NOTIFY. This means using the socket.io postgres-adapter writes to WAL every 5 seconds."
+    "message": "PostgreSQL fa tutto in una transazione, incluso NOTIFY. Questo significa che usare il socket.io postgres-adapter scrive nel WAL ogni 5 secondi."
   },
   "npm scripts are cursed": {
-    "message": "npm scripts are cursed"
+    "message": "Gli script npm sono problematici"
   },
   "npm scripts make a http call to the npm registry each time they run, which means they are a terrible way to execute a health check.": {
-    "message": "npm scripts make a http call to the npm registry each time they run, which means they are a terrible way to execute a health check."
+    "message": "Gli script npm fanno una chiamata http al registro npm ogni volta che vengono eseguiti, il che li rende un pessimo modo per fare un health check."
   },
   "50 extra packages are cursed": {
-    "message": "50 extra packages are cursed"
+    "message": "50 pacchetti extra sono problematici"
   },
   "There is a user in the JavaScript community who goes around adding \"backwards compatibility\" to projects. They do this by adding 50 extra package dependencies to your project, which are maintained by them.": {
-    "message": "There is a user in the JavaScript community who goes around adding \"backwards compatibility\" to projects. They do this by adding 50 extra package dependencies to your project, which are maintained by them."
+    "message": "C’è un utente nella community JavaScript che aggiunge \"retrocompatibilità\" ai progetti. Lo fa aggiungendo 50 dipendenze extra al tuo progetto, che vengono mantenute da lui."
   },
   "Long passwords are cursed": {
-    "message": "Long passwords are cursed"
+    "message": "Le password lunghe sono problematiche"
   },
   "The bcrypt implementation only uses the first 72 bytes of a string. Any characters after that are ignored.": {
-    "message": "The bcrypt implementation only uses the first 72 bytes of a string. Any characters after that are ignored."
+    "message": "L’implementazione di bcrypt usa solo i primi 72 byte di una stringa. Tutti i caratteri successivi vengono ignorati."
   },
   "JavaScript Date objects are cursed": {
-    "message": "JavaScript Date objects are cursed"
+    "message": "Gli oggetti Date di JavaScript sono problematici"
   },
   "JavaScript date objects are 1 indexed for years and days, but 0 indexed for months.": {
-    "message": "JavaScript date objects are 1 indexed for years and days, but 0 indexed for months."
+    "message": "Gli oggetti Date di JavaScript indicizzano gli anni e i giorni a partire da 1, ma i mesi a partire da 0."
   },
   "ESM imports are cursed": {
-    "message": "ESM imports are cursed"
+    "message": "Gli import ESM sono problematici"
   },
   "Prior to Node.js v20.8 using --experimental-vm-modules in a CommonJS project that imported an ES module that imported a CommonJS modules would create a segfault and crash Node.js": {
-    "message": "Prior to Node.js v20.8 using --experimental-vm-modules in a CommonJS project that imported an ES module that imported a CommonJS modules would create a segfault and crash Node.js"
+    "message": "Prima di Node.js v20.8, usare --experimental-vm-modules in un progetto CommonJS che importava un modulo ES che importava a sua volta un modulo CommonJS causava un segfault e crashava Node.js."
   },
   "PostgreSQL parameters are cursed": {
-    "message": "PostgreSQL parameters are cursed"
+    "message": "I parametri PostgreSQL sono problematici"
   },
   "Secure contexts are cursed": {
-    "message": "Secure contexts are cursed"
+    "message": "I contesti sicuri sono problematici"
   },
   "Some web features like the clipboard API only work in \"secure contexts\" (ie. https or localhost)": {
-    "message": "Some web features like the clipboard API only work in \"secure contexts\" (ie. https or localhost)"
+    "message": "Alcune funzionalità web, come la clipboard API, funzionano solo in \"contesti sicuri\" (cioè https o localhost)"
   },
   "TypeORM deletes are cursed": {
-    "message": "TypeORM deletes are cursed"
+    "message": "Le delete in TypeORM sono problematiche"
   },
   "The remove implementation in TypeORM mutates the input, deleting the id property from the original object.": {
-    "message": "The remove implementation in TypeORM mutates the input, deleting the id property from the original object."
+    "message": "L’implementazione di remove in TypeORM muta l’input, eliminando la proprietà id dall’oggetto originale."
   },
   "Cursed Knowledge": {
-    "message": "Cursed Knowledge"
+    "message": "Conoscenze problematiche"
   },
   "Things we wish we didn't know": {
-    "message": "Things we wish we didn't know"
+    "message": "Cose che avremmo preferito non sapere"
   },
   "Cursed knowledge we have learned as a result of building Immich that we wish we never knew.": {
-    "message": "Cursed knowledge we have learned as a result of building Immich that we wish we never knew."
+    "message": "Conoscenze problematiche che abbiamo appreso costruendo Immich e che avremmo preferito non sapere."
   }
 }
+

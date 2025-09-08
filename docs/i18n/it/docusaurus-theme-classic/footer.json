@@ -36,7 +36,7 @@
     "description": "The label of footer link with label=API linking to /docs/api"
   },
   "link.item.label.Cursed Knowledge": {
-    "message": "Conoscenza maledetta",
+    "message": "Conoscenze problematiche",
     "description": "The label of footer link with label=Cursed Knowledge linking to /cursed-knowledge"
   },
   "link.item.label.GitHub": {
