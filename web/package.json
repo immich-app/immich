@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.141.0",
+  "version": "1.141.1",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "scripts": {
@@ -109,6 +109,6 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.18.0"
+    "node": "22.19.0"
   }
 }

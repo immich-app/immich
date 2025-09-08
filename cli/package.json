@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.87",
+  "version": "2.2.88",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
@@ -69,6 +69,6 @@
     "micromatch": "^4.0.8"
   },
   "volta": {
-    "node": "22.18.0"
+    "node": "22.19.0"
   }
 }
