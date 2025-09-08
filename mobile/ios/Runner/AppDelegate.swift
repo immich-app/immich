@@ -15,7 +15,7 @@ import UIKit
   ) -> Bool {
     // Required for flutter_local_notification
     if #available(iOS 10.0, *) {
-      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+      UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     }
 
     GeneratedPluginRegistrant.register(with: self)
@@ -47,6 +47,9 @@ import UIKit
         FPPNetworkInfoPlusPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.network-info-plus")!)
       }
     }
+    
+    let factory = NativeImageViewFactory(messenger: controller.binaryMessenger)
+    registrar(forPlugin: "NativeImageView")!.register(factory, withId: NativeImageViewFactory.id)
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

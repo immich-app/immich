@@ -19,7 +19,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.wid
 import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/images/native_image.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
@@ -533,24 +533,21 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   PhotoViewGalleryPageOptions _imageBuilder(BuildContext ctx, BaseAsset asset) {
-    final size = ctx.sizeData;
-    return PhotoViewGalleryPageOptions(
-      key: ValueKey(asset.heroTag),
-      imageProvider: getFullImageProvider(asset, size: size),
-      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
-      filterQuality: FilterQuality.high,
-      tightMode: true,
-      disableScaleGestures: showingBottomSheet,
+    return PhotoViewGalleryPageOptions.customChild(
+      disableScaleGestures: true,
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
       onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
-      errorBuilder: (_, __, ___) => Container(
-        width: size.width,
-        height: size.height,
-        color: backgroundColor,
-        child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
+      heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
+      filterQuality: FilterQuality.high,
+      basePosition: Alignment.center,
+      child: NativeImageView(
+        key: _getVideoPlayerKey(asset.heroTag),
+        assetId: (asset as LocalAsset).id,
+        width: ctx.width,
+        height: ctx.height,
       ),
     );
   }

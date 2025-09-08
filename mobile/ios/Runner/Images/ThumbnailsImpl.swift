@@ -193,12 +193,12 @@ class ThumbnailApiImpl: ThumbnailApi {
     }
   }
   
-  private static func requestAsset(assetId: String) -> PHAsset? {
+  static func requestAsset(assetId: String) -> PHAsset? {
     var asset: PHAsset?
     assetQueue.sync { asset = assetCache.object(forKey: assetId as NSString) }
     if asset != nil { return asset }
     
-    guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: Self.fetchOptions).firstObject
+    guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: fetchOptions).firstObject
     else { return nil }
     assetQueue.async { assetCache.setObject(asset, forKey: assetId as NSString) }
     return asset
