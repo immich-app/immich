@@ -5,7 +5,7 @@ pnpm = "10.15.1"
 dart = "3.8.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
-version = "1.31.4"
+version = "1.30.0"
 bin = "dcm"
 postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
 
