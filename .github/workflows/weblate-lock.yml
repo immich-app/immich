@@ -36,6 +36,7 @@ jobs:
       - name: Bot review status
         env:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.pull_request_review.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           # Then check for APPROVED by the bot, if absent fail
           gh pr view "$PR_NUMBER" --json reviews | jq -e '.reviews | map(select(.author.login == "github-actions[bot]" and .state == "APPROVED")) | length > 0' \
