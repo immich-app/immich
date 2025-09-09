@@ -1,0 +1,96 @@
+name: Merge translations
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  WEBLATE_HOST: 'https://hosted.weblate.org'
+  WEBLATE_COMPONENT: 'immich/immich'
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Find translation PR
+        id: find_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          gh pr list --repo $GITHUB_REPOSITORY --author weblate --json number,mergeable | read PR
+          echo "$PR"
+
+          echo "$PR" | jq '
+            if length == 1 then
+              .[0].number
+            else
+              error("Expected exactly 1 entry, got \(length)")
+            end
+          ' 2>&1 | read PR_NUMBER || exit 1
+
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "Selected PR $PR_NUMBER"
+
+          echo "$PR" | jq -e '.[0].mergeable == "MERGEABLE"' || { echo "PR is not mergeable" ; exit 1 }
+
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Lock weblate
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=true
+
+      - name: Commit translations
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=commit
+          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=push
+
+      - name: Merge PR
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
+        run: |
+          gh api -X POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --field event='APPROVE' --field body='Automatically merging translations PR' \
+            | jq '.id' | read REVIEW_ID
+          echo "REVIEW_ID=$REVIEW_ID" >> $GITHUB_OUTPUT
+          gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --auto --squash
+
+      - name: Wait for PR to merge
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
+          REVIEW_ID: ${{ steps.merge_pr.outputs.REVIEW_ID }}
+        run: |
+          for i in {1..10}; do
+            if gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json merged | jq -e '.merged == true'; then
+              echo "PR merged"
+              exit 0
+            else
+              echo "PR not merged yet, waiting..."
+              sleep 6
+            fi
+          done
+          echo "PR did not merge in time"
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews/$REVIEW_ID/dismissals" --field message='Merge attempt timed out' --field event='DISMISS'
+          gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --disable-auto
+          exit 1
+
+      - name: Unlock weblate
+        env:
+          WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
+        run: |
+          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=false

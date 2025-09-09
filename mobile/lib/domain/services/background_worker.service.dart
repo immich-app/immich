@@ -169,15 +169,20 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     try {
       _isCleanedUp = true;
       _logger.info("Cleaning up background worker");
-      await _ref.read(backgroundSyncProvider).cancel();
-      await _ref.read(backgroundSyncProvider).cancelLocal();
+      final cleanupFutures = [
+        _drift.close(),
+        _driftLogger.close(),
+        _ref.read(backgroundSyncProvider).cancel(),
+        _ref.read(backgroundSyncProvider).cancelLocal(),
+      ];
+
       if (_isar.isOpen) {
-        await _isar.close();
+        cleanupFutures.add(_isar.close());
       }
-      await _drift.close();
-      await _driftLogger.close();
       _ref.dispose();
       _lockManager.releaseLock();
+
+      await Future.wait(cleanupFutures);
       _logger.info("Background worker resources cleaned up");
     } catch (error, stack) {
       debugPrint('Failed to cleanup background worker: $error with stack: $stack');

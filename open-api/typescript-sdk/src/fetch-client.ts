@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.141.0
+ * 1.141.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -811,7 +811,10 @@ export type PartnerResponseDto = {
     profileChangedAt: string;
     profileImagePath: string;
 };
-export type UpdatePartnerDto = {
+export type PartnerCreateDto = {
+    sharedWithId: string;
+};
+export type PartnerUpdateDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
@@ -3123,6 +3126,21 @@ export function getPartners({ direction }: {
     }));
 }
 /**
+ * This endpoint requires the `partner.create` permission.
+ */
+export function createPartner({ partnerCreateDto }: {
+    partnerCreateDto: PartnerCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PartnerResponseDto;
+    }>("/partners", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: partnerCreateDto
+    })));
+}
+/**
  * This endpoint requires the `partner.delete` permission.
  */
 export function removePartner({ id }: {
@@ -3134,9 +3152,9 @@ export function removePartner({ id }: {
     }));
 }
 /**
- * This endpoint requires the `partner.create` permission.
+ * This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
  */
-export function createPartner({ id }: {
+export function createPartnerDeprecated({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3150,9 +3168,9 @@ export function createPartner({ id }: {
 /**
  * This endpoint requires the `partner.update` permission.
  */
-export function updatePartner({ id, updatePartnerDto }: {
+export function updatePartner({ id, partnerUpdateDto }: {
     id: string;
-    updatePartnerDto: UpdatePartnerDto;
+    partnerUpdateDto: PartnerUpdateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3160,7 +3178,7 @@ export function updatePartner({ id, updatePartnerDto }: {
     }>(`/partners/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: updatePartnerDto
+        body: partnerUpdateDto
     })));
 }
 /**

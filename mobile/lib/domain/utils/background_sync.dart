@@ -24,6 +24,7 @@ class BackgroundSyncManager {
   Cancelable<void>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
+  Cancelable<void>? _linkedAlbumSyncTask;
   Cancelable<void>? _hashTask;
 
   BackgroundSyncManager({
@@ -52,6 +53,12 @@ class BackgroundSyncManager {
     }
     _syncWebsocketTask?.cancel();
     _syncWebsocketTask = null;
+
+    if (_linkedAlbumSyncTask != null) {
+      futures.add(_linkedAlbumSyncTask!.future);
+    }
+    _linkedAlbumSyncTask?.cancel();
+    _linkedAlbumSyncTask = null;
 
     try {
       await Future.wait(futures);
@@ -158,8 +165,14 @@ class BackgroundSyncManager {
   }
 
   Future<void> syncLinkedAlbum() {
-    final task = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
-    return task.future;
+    if (_linkedAlbumSyncTask != null) {
+      return _linkedAlbumSyncTask!.future;
+    }
+
+    _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
+    return _linkedAlbumSyncTask!.whenComplete(() {
+      _linkedAlbumSyncTask = null;
+    });
   }
 }
 

@@ -23,54 +23,17 @@ class SyncStreamService {
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
-  Future<void> sync() {
+  Future<void> sync() async {
     _logger.info("Remote sync request for user");
     // Start the sync stream and handle events
-    return _syncApiRepository.streamChanges(_handleEvents);
-  }
-
-  Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
-    if (batchData.isEmpty) return;
-
-    _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV1 events');
-
-    final List<SyncAssetV1> assets = [];
-    final List<SyncAssetExifV1> exifs = [];
-
-    try {
-      for (final data in batchData) {
-        if (data is! Map<String, dynamic>) {
-          continue;
-        }
-
-        final payload = data;
-        final assetData = payload['asset'];
-        final exifData = payload['exif'];
-
-        if (assetData == null || exifData == null) {
-          continue;
-        }
-
-        final asset = SyncAssetV1.fromJson(assetData);
-        final exif = SyncAssetExifV1.fromJson(exifData);
-
-        if (asset != null && exif != null) {
-          assets.add(asset);
-          exifs.add(exif);
-        }
-      }
-
-      if (assets.isNotEmpty && exifs.isNotEmpty) {
-        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-batch');
-        await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
-        _logger.info('Successfully processed ${assets.length} assets in batch');
-      }
-    } catch (error, stackTrace) {
-      _logger.severe("Error processing AssetUploadReadyV1 websocket batch events", error, stackTrace);
+    bool shouldReset = false;
+    await _syncApiRepository.streamChanges(_handleEvents, onReset: () => shouldReset = true);
+    if (shouldReset) {
+      await _syncApiRepository.streamChanges(_handleEvents);
     }
   }
 
-  Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
+  Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {
     List<SyncEvent> items = [];
     for (final event in events) {
       if (isCancelled) {
@@ -81,6 +44,10 @@ class SyncStreamService {
 
       if (event.type != items.firstOrNull?.type) {
         await _processBatch(items);
+      }
+
+      if (event.type == SyncEntityType.syncResetV1) {
+        reset();
       }
 
       items.add(event);
@@ -103,6 +70,8 @@ class SyncStreamService {
   Future<void> _handleSyncData(SyncEntityType type, Iterable<Object> data) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
     switch (type) {
+      case SyncEntityType.authUserV1:
+        return _syncStreamRepository.updateAuthUsersV1(data.cast());
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
       case SyncEntityType.userDeleteV1:
@@ -159,6 +128,12 @@ class SyncStreamService {
       // to acknowledge that the client has processed all the backfill events
       case SyncEntityType.syncAckV1:
         return;
+      // No-op. SyncCompleteV1 is used to signal the completion of the sync process
+      case SyncEntityType.syncCompleteV1:
+        return;
+      // Request to reset the client state. Clear everything related to remote entities
+      case SyncEntityType.syncResetV1:
+        return _syncStreamRepository.reset();
       case SyncEntityType.memoryV1:
         return _syncStreamRepository.updateMemoriesV1(data.cast());
       case SyncEntityType.memoryDeleteV1:
@@ -191,6 +166,47 @@ class SyncStreamService {
         return _syncStreamRepository.deleteAssetFacesV1(data.cast());
       default:
         _logger.warning("Unknown sync data type: $type");
+    }
+  }
+
+  Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
+    if (batchData.isEmpty) return;
+
+    _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV1 events');
+
+    final List<SyncAssetV1> assets = [];
+    final List<SyncAssetExifV1> exifs = [];
+
+    try {
+      for (final data in batchData) {
+        if (data is! Map<String, dynamic>) {
+          continue;
+        }
+
+        final payload = data;
+        final assetData = payload['asset'];
+        final exifData = payload['exif'];
+
+        if (assetData == null || exifData == null) {
+          continue;
+        }
+
+        final asset = SyncAssetV1.fromJson(assetData);
+        final exif = SyncAssetExifV1.fromJson(exifData);
+
+        if (asset != null && exif != null) {
+          assets.add(asset);
+          exifs.add(exif);
+        }
+      }
+
+      if (assets.isNotEmpty && exifs.isNotEmpty) {
+        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-batch');
+        await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
+        _logger.info('Successfully processed ${assets.length} assets in batch');
+      }
+    } catch (error, stackTrace) {
+      _logger.severe("Error processing AssetUploadReadyV1 websocket batch events", error, stackTrace);
     }
   }
 }
