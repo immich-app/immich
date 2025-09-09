@@ -2,10 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -23,23 +21,14 @@ class SplashScreenPage extends StatefulHookConsumerWidget {
 
 class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   final log = Logger("SplashScreenPage");
-
   @override
   void initState() {
     super.initState();
-    final lockManager = ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
-
-    lockManager.requestHolderToClose();
-    lockManager
-        .acquireLock()
-        .timeout(const Duration(seconds: 5))
-        .whenComplete(
-          () => ref
-              .read(authProvider.notifier)
-              .setOpenApiServiceEndpoint()
-              .then(logConnectionInfo)
-              .whenComplete(() => resumeSession()),
-        );
+    ref
+        .read(authProvider.notifier)
+        .setOpenApiServiceEndpoint()
+        .then(logConnectionInfo)
+        .whenComplete(() => resumeSession());
   }
 
   void logConnectionInfo(String? endpoint) {

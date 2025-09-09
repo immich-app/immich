@@ -5,7 +5,6 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
@@ -42,8 +41,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
-  final Logger _logger = Logger('BackgroundUploadBgService');
-  late final IsolateLockManager _lockManager;
+  final Logger _logger = Logger('BackgroundWorkerBgService');
 
   bool _isCleanedUp = false;
 
@@ -59,7 +57,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         driftProvider.overrideWith(driftOverride(drift)),
       ],
     );
-    _lockManager = IsolateLockManager(onCloseRequest: _cleanup);
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
@@ -83,25 +80,11 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
       await FileDownloader().trackTasks();
       configureFileDownloaderNotifications();
+
       await _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
 
-      // Notify the host that the background upload service has been initialized and is ready to use
-      debugPrint("Acquiring background worker lock");
-      if (await _lockManager.acquireLock().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          _lockManager.cancel();
-          return false;
-        },
-      )) {
-        _logger.info("Acquired background worker lock");
-        await _backgroundHostApi.onInitialized();
-        return;
-      }
-
-      _logger.warning("Failed to acquire background worker lock");
-      await _cleanup();
-      await _backgroundHostApi.close();
+      // Notify the host that the background worker service has been initialized and is ready to use
+      _backgroundHostApi.onInitialized();
     } catch (error, stack) {
       _logger.severe("Failed to initialize background worker", error, stack);
       _backgroundHostApi.close();
@@ -180,8 +163,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         cleanupFutures.add(_isar.close());
       }
       _ref.dispose();
-      _lockManager.releaseLock();
-
       await Future.wait(cleanupFutures);
       _logger.info("Background worker resources cleaned up");
     } catch (error, stack) {
