@@ -72,8 +72,8 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   if (version == 15) {
     final isBeta = Store.tryGet(StoreKey.betaTimeline);
 
-    // If the key is not found, it means the user is installing the app for the first time
-    if (isBeta != null || isBeta == true) {
+    // If the key is not found (new installation) or if beta timeline is enabled, no migration needed
+    if (isBeta == null || isBeta == true) {
       Store.put(StoreKey.needBetaMigration, false);
     } else {
       await resetDriftDatabase(drift);
