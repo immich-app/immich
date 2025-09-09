@@ -43,6 +43,7 @@ class SearchApiRepository extends ApiRepository {
         originalFileName: filter.filename != null && filter.filename!.isNotEmpty ? filter.filename : null,
         country: filter.location.country,
         description: filter.description != null && filter.description!.isNotEmpty ? filter.description : null,
+        ocr: filter.ocr != null && filter.ocr!.isNotEmpty ? filter.ocr : null,
         state: filter.location.state,
         city: filter.location.city,
         make: filter.camera.make,

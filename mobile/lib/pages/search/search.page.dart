@@ -389,31 +389,18 @@ class SearchPage extends HookConsumerWidget {
     handleTextSubmitted(String value) {
       switch (textSearchType.value) {
         case TextSearchType.context:
-          filter.value = filter.value.copyWith(filename: '', context: value, description: '');
+          filter.value = filter.value.copyWith(filename: '', context: value, description: '', ocr: '');
 
           break;
         case TextSearchType.filename:
-          filter.value = filter.value.copyWith(filename: value, context: '', description: '');
+          filter.value = filter.value.copyWith(filename: value, context: '', description: '', ocr: '');
 
           break;
         case TextSearchType.description:
-          filter.value = filter.value.copyWith(filename: '', context: '', description: value);
+          filter.value = filter.value.copyWith(filename: '', context: '', description: value, ocr: '');
           break;
         case TextSearchType.ocr:
-          filter.value = filter.value.copyWith(
-            filename: '',
-            context: '',
-            description: '',
-            ocr: value,
-          );
-          break;
-        case TextSearchType.ocr:
-          filter.value = filter.value.copyWith(
-            filename: '',
-            context: '',
-            description: '',
-            ocr: value,
-          );
+          filter.value = filter.value.copyWith(filename: '', context: '', description: '', ocr: value);
           break;
       }
 
