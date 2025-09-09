@@ -11,6 +11,8 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
@@ -86,7 +88,14 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
     Widget navigationRail(TabsRouter tabsRouter) {
       return NavigationRail(
         destinations: navigationDestinations
-            .map((e) => NavigationRailDestination(icon: e.icon, label: Text(e.label), selectedIcon: e.selectedIcon))
+            .map(
+              (e) => NavigationRailDestination(
+                icon: e.icon,
+                label: Text(e.label),
+                selectedIcon: e.selectedIcon,
+                disabled: !e.enabled,
+              ),
+            )
             .toList(),
         onDestinationSelected: (index) => _onNavigationSelected(tabsRouter, index, ref),
         selectedIndex: tabsRouter.activeIndex,
@@ -129,6 +138,10 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
     EventStream.shared.emit(const ScrollToTopEvent());
   }
 
+  if (index == 0) {
+    ref.invalidate(driftMemoryFutureProvider);
+  }
+
   // On Search page tapped
   if (router.activeIndex == 1 && index == 1) {
     ref.read(searchInputFocusProvider).requestFocus();
@@ -139,8 +152,10 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
     ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
+  // Library page
   if (index == 3) {
     ref.invalidate(localAlbumProvider);
+    ref.invalidate(driftGetAllPeopleProvider);
   }
 
   ref.read(hapticFeedbackProvider.notifier).selectionClick();

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
@@ -155,6 +156,7 @@ class _AssetTileWidget extends ConsumerWidget {
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
+      AssetViewer.setAsset(ref, asset);
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,

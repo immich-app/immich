@@ -10,14 +10,14 @@ dev-update: prepare-volumes
 dev-scale: prepare-volumes
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --scale immich-server=3 --remove-orphans
 
-dev-docs: prepare-volumes
+dev-docs:
 	npm --prefix docs run start
 
 .PHONY: e2e
-e2e: prepare-volumes
+e2e:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --remove-orphans
 
-e2e-update: prepare-volumes
+e2e-update:
 	@trap 'make e2e-down' EXIT; COMPOSE_BAKE=true docker compose -f ./e2e/docker-compose.yml up --build -V --remove-orphans
 
 e2e-down:
@@ -73,6 +73,8 @@ define safe_chown
 	if chown $(2) $(or $(UID),1000):$(or $(GID),1000) "$(1)" 2>/dev/null; then \
 		true; \
 	else \
+	  	STATUS=$$?; echo "Exit code: $$STATUS $(1)"; \
+		echo "$$STATUS $(1)"; \
 		echo "Permission denied when changing owner of volumes and upload location. Try running 'sudo make prepare-volumes' first."; \
 		exit 1; \
 	fi;
@@ -83,11 +85,13 @@ prepare-volumes:
 	@$(foreach dir,$(VOLUME_DIRS),$(call safe_chown,$(dir),-R))
 ifneq ($(UPLOAD_LOCATION),)
 ifeq ($(filter /%,$(UPLOAD_LOCATION)),)
-	@mkdir -p "docker/$(UPLOAD_LOCATION)"
+	@mkdir -p "docker/$(UPLOAD_LOCATION)/photos/upload"
 	@$(call safe_chown,docker/$(UPLOAD_LOCATION),)
+	@$(call safe_chown,docker/$(UPLOAD_LOCATION)/photos,-R)
 else
-	@mkdir -p "$(UPLOAD_LOCATION)"
+	@mkdir -p "$(UPLOAD_LOCATION)/photos/upload"
 	@$(call safe_chown,$(UPLOAD_LOCATION),)
+	@$(call safe_chown,$(UPLOAD_LOCATION)/photos,-R)
 endif
 endif
 

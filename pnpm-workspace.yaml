@@ -27,7 +27,7 @@ onlyBuiltDependencies:
   - '@tailwindcss/oxide'
 overrides:
   canvas: 2.11.2
-  sharp: ^0.34.2
+  sharp: ^0.34.3
 packageExtensions:
   nestjs-kysely:
     dependencies:

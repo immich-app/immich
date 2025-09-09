@@ -73,9 +73,8 @@ class BackgroundWorkerPigeonCodec: FlutterStandardMessageCodec, @unchecked Senda
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerFgHostApi {
-  func enableSyncWorker() throws
-  func enableUploadWorker(callbackHandle: Int64) throws
-  func disableUploadWorker() throws
+  func enable() throws
+  func disable() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -84,52 +83,38 @@ class BackgroundWorkerFgHostApiSetup {
   /// Sets up an instance of `BackgroundWorkerFgHostApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: BackgroundWorkerFgHostApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    let enableSyncWorkerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableSyncWorker\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let enableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      enableSyncWorkerChannel.setMessageHandler { _, reply in
+      enableChannel.setMessageHandler { _, reply in
         do {
-          try api.enableSyncWorker()
+          try api.enable()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      enableSyncWorkerChannel.setMessageHandler(nil)
+      enableChannel.setMessageHandler(nil)
     }
-    let enableUploadWorkerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableUploadWorker\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let disableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      enableUploadWorkerChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let callbackHandleArg = args[0] as! Int64
+      disableChannel.setMessageHandler { _, reply in
         do {
-          try api.enableUploadWorker(callbackHandle: callbackHandleArg)
+          try api.disable()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      enableUploadWorkerChannel.setMessageHandler(nil)
-    }
-    let disableUploadWorkerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disableUploadWorker\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      disableUploadWorkerChannel.setMessageHandler { _, reply in
-        do {
-          try api.disableUploadWorker()
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      disableUploadWorkerChannel.setMessageHandler(nil)
+      disableChannel.setMessageHandler(nil)
     }
   }
 }
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerBgHostApi {
   func onInitialized() throws
+  func close() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -151,11 +136,23 @@ class BackgroundWorkerBgHostApiSetup {
     } else {
       onInitializedChannel.setMessageHandler(nil)
     }
+    let closeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.close\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      closeChannel.setMessageHandler { _, reply in
+        do {
+          try api.close()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      closeChannel.setMessageHandler(nil)
+    }
   }
 }
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol BackgroundWorkerFlutterApiProtocol {
-  func onLocalSync(maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func onIosUpload(isRefresh isRefreshArg: Bool, maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func onAndroidUpload(completion: @escaping (Result<Void, PigeonError>) -> Void)
   func cancel(completion: @escaping (Result<Void, PigeonError>) -> Void)
@@ -169,24 +166,6 @@ class BackgroundWorkerFlutterApi: BackgroundWorkerFlutterApiProtocol {
   }
   var codec: BackgroundWorkerPigeonCodec {
     return BackgroundWorkerPigeonCodec.shared
-  }
-  func onLocalSync(maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onLocalSync\(messageChannelSuffix)"
-    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage([maxSecondsArg] as [Any?]) { response in
-      guard let listResponse = response as? [Any?] else {
-        completion(.failure(createConnectionError(withChannelName: channelName)))
-        return
-      }
-      if listResponse.count > 1 {
-        let code: String = listResponse[0] as! String
-        let message: String? = nilOrValue(listResponse[1])
-        let details: String? = nilOrValue(listResponse[2])
-        completion(.failure(PigeonError(code: code, message: message, details: details)))
-      } else {
-        completion(.success(()))
-      }
-    }
   }
   func onIosUpload(isRefresh isRefreshArg: Bool, maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosUpload\(messageChannelSuffix)"

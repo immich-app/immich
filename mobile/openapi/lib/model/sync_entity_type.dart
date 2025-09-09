@@ -69,6 +69,7 @@ class SyncEntityType {
   static const userMetadataDeleteV1 = SyncEntityType._(r'UserMetadataDeleteV1');
   static const syncAckV1 = SyncEntityType._(r'SyncAckV1');
   static const syncResetV1 = SyncEntityType._(r'SyncResetV1');
+  static const syncCompleteV1 = SyncEntityType._(r'SyncCompleteV1');
 
   /// List of all possible values in this [enum][SyncEntityType].
   static const values = <SyncEntityType>[
@@ -118,6 +119,7 @@ class SyncEntityType {
     userMetadataDeleteV1,
     syncAckV1,
     syncResetV1,
+    syncCompleteV1,
   ];
 
   static SyncEntityType? fromJson(dynamic value) => SyncEntityTypeTypeTransformer().decode(value);
@@ -202,6 +204,7 @@ class SyncEntityTypeTypeTransformer {
         case r'UserMetadataDeleteV1': return SyncEntityType.userMetadataDeleteV1;
         case r'SyncAckV1': return SyncEntityType.syncAckV1;
         case r'SyncResetV1': return SyncEntityType.syncResetV1;
+        case r'SyncCompleteV1': return SyncEntityType.syncCompleteV1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

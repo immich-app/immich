@@ -1,7 +1,7 @@
 import BackgroundTasks
 import Flutter
 
-enum BackgroundTaskType { case localSync, refreshUpload, processingUpload }
+enum BackgroundTaskType { case refresh, processing }
 
 /*
  * DEBUG: Testing Background Tasks in Xcode
@@ -9,10 +9,6 @@ enum BackgroundTaskType { case localSync, refreshUpload, processingUpload }
  * To test background task functionality during development:
  * 1. Pause the application in Xcode debugger
  * 2. In the debugger console, enter one of the following commands:
-
- ## For local sync (short-running sync):
- 
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.localSync"]
  
  ## For background refresh (short-running sync):
  
@@ -23,8 +19,6 @@ enum BackgroundTaskType { case localSync, refreshUpload, processingUpload }
  e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateLaunchForTaskWithIdentifier:@"app.alextran.immich.background.processingUpload"]
 
  * To simulate task expiration (useful for testing expiration handlers):
- 
- e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.localSync"]
  
  e -l objc -- (void)[[BGTaskScheduler sharedScheduler] _simulateExpirationForTaskWithIdentifier:@"app.alextran.immich.background.refreshUpload"]
  
@@ -86,28 +80,10 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * starts the engine, and sets up a timeout timer if specified.
    */
   func run() {
-    // Retrieve the callback handle stored by the main Flutter app
-    // This handle points to the Flutter function that should be executed in the background
-    let callbackHandle = Int64(UserDefaults.standard.string(
-      forKey: BackgroundWorkerApiImpl.backgroundUploadCallbackHandleKey) ?? "0") ?? 0
-
-    if callbackHandle == 0 {
-      // Without a valid callback handle, we cannot start the Flutter background execution
-      complete(success: false)
-      return
-    }
-    
-    // Use the callback handle to retrieve the actual Flutter callback information
-    guard let callback = FlutterCallbackCache.lookupCallbackInformation(callbackHandle) else {
-      // The callback handle is invalid or the callback was not found
-      complete(success: false)
-      return
-    }
-           
     // Start the Flutter engine with the specified callback as the entry point
     let isRunning = engine.run(
-      withEntrypoint: callback.callbackName,
-      libraryURI: callback.callbackLibraryPath
+      withEntrypoint: "backgroundSyncNativeEntrypoint",
+      libraryURI: "package:immich_mobile/domain/services/background_worker.service.dart"
     )
     
     // Verify that the Flutter engine started successfully
@@ -127,7 +103,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     if maxSeconds != nil {
         // Schedule a timer to cancel the task after the specified timeout period
         Timer.scheduledTimer(withTimeInterval: TimeInterval(maxSeconds!), repeats: false) { _ in
-          self.cancel()
+          self.close()
         }
     }
   }
@@ -138,25 +114,17 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * This method acts as a bridge between the native iOS background task system and Flutter.
    */
   func onInitialized() throws {
-    switch self.taskType {
-    case .refreshUpload, .processingUpload:
-      flutterApi?.onIosUpload(isRefresh: self.taskType == .refreshUpload,
-                              maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
-        self.handleHostResult(result: result)
-      })
-    case .localSync:
-      flutterApi?.onLocalSync(maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
-        self.handleHostResult(result: result)
-      })
-    }
+    flutterApi?.onIosUpload(isRefresh: self.taskType == .refresh, maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
+      self.handleHostResult(result: result)
+    })
   }
-
+  
   /**
    * Cancels the currently running background task, either due to timeout or external request.
    * Sends a cancel signal to the Flutter side and sets up a fallback timer to ensure
    * the completion handler is eventually called even if Flutter doesn't respond.
    */
-  func cancel() {
+  func close() {
     if isComplete {
       return
     }
@@ -172,6 +140,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       self.complete(success: false)
     }
   }
+
   
   /**
    * Handles the result from Flutter API calls and determines the success/failure status.
@@ -182,7 +151,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
   private func handleHostResult(result: Result<Void, PigeonError>) {
     switch result {
       case .success(): self.complete(success: true)
-      case .failure(_): self.cancel()
+      case .failure(_): self.close()
     }
   }
 
@@ -195,6 +164,10 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * - Parameter success: Indicates whether the background task completed successfully
    */
   private func complete(success: Bool) {
+    if(isComplete) {
+      return
+    }
+    
     isComplete = true
     engine.destroyContext()
     completionHandler(success)
