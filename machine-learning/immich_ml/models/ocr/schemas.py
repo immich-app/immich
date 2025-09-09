@@ -2,7 +2,7 @@ from typing import Iterable
 
 import numpy as np
 import numpy.typing as npt
-from rapidocr.utils.typings import EngineType
+from rapidocr.utils.typings import EngineType, LangRec
 from typing_extensions import TypedDict
 
 
@@ -19,8 +19,10 @@ class TextRecognitionOutput(TypedDict):
     textScore: npt.NDArray[np.float32]
 
 
-# RapidOCR expects engine_type to be an attribute
+# RapidOCR expects `engine_type`, `lang_type`, and `font_path` to be attributes
 class OcrOptions(dict):
     def __init__(self, **options):
         super().__init__(**options)
         self.engine_type = EngineType.ONNXRUNTIME
+        self.lang_type = LangRec.CH
+        self.font_path = None
