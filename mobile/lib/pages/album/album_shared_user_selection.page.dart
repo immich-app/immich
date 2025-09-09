@@ -111,7 +111,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
         centerTitle: false,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () async {
+          onPressed: () {
             unawaited(context.maybePop());
           },
         ),

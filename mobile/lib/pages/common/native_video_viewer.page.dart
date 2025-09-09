@@ -267,11 +267,13 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       nc.onPlaybackReady.addListener(onPlaybackReady);
       nc.onPlaybackEnded.addListener(onPlaybackEnded);
 
-      await nc.loadVideoSource(source).catchError((error) {
-        log.severe('Error loading video source: $error');
-      });
+      unawaited(
+        nc.loadVideoSource(source).catchError((error) {
+          log.severe('Error loading video source: $error');
+        }),
+      );
       final loopVideo = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.loopVideo);
-      await nc.setLoop(loopVideo);
+      unawaited(nc.setLoop(loopVideo));
 
       controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
