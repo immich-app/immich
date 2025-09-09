@@ -71,13 +71,15 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   // TODO: remove when old timeline is removed
   if (version == 15) {
     final isBeta = Store.tryGet(StoreKey.betaTimeline);
+    final isNewInstallation = await _isNewInstallation(db, drift);
 
-    // If the key is not found (new installation) or if beta timeline is enabled, no migration needed
-    if (isBeta == null || isBeta == true) {
-      Store.put(StoreKey.needBetaMigration, false);
+    // For new installations, no migration needed
+    // For existing installations, only migrate if beta timeline is not enabled (null or false)
+    if (isNewInstallation || isBeta == true) {
+      await Store.put(StoreKey.needBetaMigration, false);
     } else {
       await resetDriftDatabase(drift);
-      Store.put(StoreKey.needBetaMigration, true);
+      await Store.put(StoreKey.needBetaMigration, true);
     }
   }
 
@@ -90,6 +92,35 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (shouldTruncate) {
     await _migrateTo(db, targetVersion);
+  }
+}
+
+Future<bool> _isNewInstallation(Isar db, Drift drift) async {
+  try {
+    final isarUserCount = await db.users.count();
+    if (isarUserCount > 0) {
+      return false;
+    }
+
+    final isarAssetCount = await db.assets.count();
+    if (isarAssetCount > 0) {
+      return false;
+    }
+
+    final driftStoreCount = await drift.storeEntity.select().get().then((list) => list.length);
+    if (driftStoreCount > 0) {
+      return false;
+    }
+
+    final driftAssetCount = await drift.localAssetEntity.select().get().then((list) => list.length);
+    if (driftAssetCount > 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    debugPrint("[MIGRATION] Error checking if new installation: $error");
+    return false;
   }
 }
 
