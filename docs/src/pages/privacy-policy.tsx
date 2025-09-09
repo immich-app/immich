@@ -15,7 +15,8 @@ function HomepageHeader() {
           </p>
           <p>
             <Translate id="privacy.intro">
-              Welcome to Immich. We are committed to respecting your privacy. This Privacy Policy sets out how we collect, use, and share information when you use our Immich app.
+              Welcome to Immich. We are committed to respecting your privacy. This Privacy Policy sets out how we
+              collect, use, and share information when you use our Immich app.
             </Translate>
           </p>
         </section>
@@ -27,7 +28,9 @@ function HomepageHeader() {
           </h2>
           <p>
             <Translate id="privacy.scope.text">
-              This Privacy Policy applies to the Immich app ("we", "our", or "us") and covers our collection, use, and disclosure of your information. This Policy does not cover any third-party websites, services, or applications that can be accessed through our app, or third-party services you may access through Immich.
+              This Privacy Policy applies to the Immich app ("we", "our", or "us") and covers our collection, use, and
+              disclosure of your information. This Policy does not cover any third-party websites, services, or
+              applications that can be accessed through our app, or third-party services you may access through Immich.
             </Translate>
           </p>
         </section>
@@ -44,7 +47,8 @@ function HomepageHeader() {
               </strong>
               :{' '}
               <Translate id="privacy.collect.localData.text">
-                Immich stores all your photos, albums, and settings locally on your device. We do not have access to this data, nor do we transmit or store it on any of our servers.
+                Immich stores all your photos, albums, and settings locally on your device. We do not have access to
+                this data, nor do we transmit or store it on any of our servers.
               </Translate>
             </p>
           </div>
@@ -67,7 +71,7 @@ function HomepageHeader() {
                       https://buy.immich.app
                     </a>
                   ),
-                }
+                },
               )}
             </p>
             <ul>
@@ -93,7 +97,8 @@ function HomepageHeader() {
               <Translate id="privacy.use.tax">Tax Calculation:</Translate>
             </strong>{' '}
             <Translate id="privacy.use.text">
-              The country of origin and postal code (for users from Canada or the United States) are collected solely for determining the applicable tax rates on your purchase.
+              The country of origin and postal code (for users from Canada or the United States) are collected solely
+              for determining the applicable tax rates on your purchase.
             </Translate>
           </p>
         </section>
@@ -130,7 +135,9 @@ function HomepageHeader() {
           </h2>
           <p>
             <Translate id="privacy.changes.text">
-              We may update our Privacy Policy from time to time. If we make any changes, we will notify you by revising the "Last updated" date at the top of this policy. It's encouraged that users frequently check this page for any changes to stay informed about how we are helping to protect the personal information we collect.
+              We may update our Privacy Policy from time to time. If we make any changes, we will notify you by revising
+              the "Last updated" date at the top of this policy. It's encouraged that users frequently check this page
+              for any changes to stay informed about how we are helping to protect the personal information we collect.
             </Translate>
           </p>
         </section>
@@ -147,10 +154,8 @@ function HomepageHeader() {
                 message: 'If you have any questions about this Privacy Policy, please contact us at {email}',
               },
               {
-                email: (
-                  <a href="mailto:immich@futo.org">immich@futo.org</a>
-                ),
-              }
+                email: <a href="mailto:immich@futo.org">immich@futo.org</a>,
+              },
             )}
           </p>
         </section>
@@ -172,9 +177,7 @@ export default function Home(): JSX.Element {
       <HomepageHeader />
       <div className="flex flex-col place-items-center place-content-center">
         <p>
-          <Translate id="privacy.footer.license">
-            This project is available under GNU AGPL v3 license.
-          </Translate>
+          <Translate id="privacy.footer.license">This project is available under GNU AGPL v3 license.</Translate>
         </p>
         <p className="text-xs">
           <Translate id="privacy.footer.slogan">Privacy should not be a luxury</Translate>

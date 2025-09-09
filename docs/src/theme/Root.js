@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import BuyButton from '../components/BuyButton';
+import BuyButton from '../components/BuyButtonNavbarItem';
 
 export default function Root({ children }) {
   useEffect(() => {

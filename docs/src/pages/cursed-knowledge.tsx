@@ -239,7 +239,7 @@ const items: Item[] = [
     title: translate({ message: 'ESM imports are cursed' }),
     description: translate({
       message:
-        "Prior to Node.js v20.8 using --experimental-vm-modules in a CommonJS project that imported an ES module that imported a CommonJS modules would create a segfault and crash Node.js",
+        'Prior to Node.js v20.8 using --experimental-vm-modules in a CommonJS project that imported an ES module that imported a CommonJS modules would create a segfault and crash Node.js',
     }),
     link: {
       url: 'https://github.com/immich-app/immich/pull/6719',
@@ -251,7 +251,9 @@ const items: Item[] = [
     icon: mdiDatabase,
     iconColor: 'gray',
     title: translate({ message: 'PostgreSQL parameters are cursed' }),
-    description: translate({ message: `PostgresSQL has a limit of 65,535 parameters, so bulk inserts can fail with large datasets.`}),
+    description: translate({
+      message: `PostgresSQL has a limit of 65,535 parameters, so bulk inserts can fail with large datasets.`,
+    }),
     link: {
       url: 'https://github.com/immich-app/immich/pull/6034',
       text: '#6034',

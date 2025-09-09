@@ -1334,22 +1334,22 @@
     "message": "Conoscenze problematiche che abbiamo appreso costruendo Immich e che avremmo preferito non sapere."
   },
   "announcement.project_prefix": {
-    "message": "Il progetto è in sviluppo "
+    "message": "Il progetto è in sviluppo"
   },
   "announcement.project_active": {
-    "message": "molto attivo"
+    "message": "molto attivo."
   },
   "announcement.project_suffix": {
-    "message": "."
+    "message": ""
   },
   "announcement.warning_prefix": {
-    "message": "Ci possono essere bug e cambiamenti. Non usarlo come "
+    "message": "Ci possono essere bug e cambiamenti. Non usarlo come"
   },
   "announcement.warning_bold": {
     "message": "unico modo"
   },
   "announcement.warning_suffix": {
-    "message": " per salvare le tue foto e video!"
+    "message": "per salvare le tue foto e video!"
   },
   "navbar.buy_immich_button": {
     "message": "Compra Immich"

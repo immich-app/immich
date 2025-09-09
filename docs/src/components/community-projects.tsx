@@ -11,7 +11,12 @@ interface CommunityProjectProps {
 const projects: CommunityProjectProps[] = [
   {
     title: <Translate>immich-go</Translate>,
-    description: <Translate>An alternative to the immich-CLI that doesn't depend on nodejs. It specializes in importing Google Photos Takeout archives.</Translate>,
+    description: (
+      <Translate>
+        An alternative to the immich-CLI that doesn't depend on nodejs. It specializes in importing Google Photos
+        Takeout archives.
+      </Translate>
+    ),
     url: 'https://github.com/simulot/immich-go',
   },
   {
@@ -41,7 +46,12 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: <Translate>Lightroom Immich Plugin: lrc-immich-plugin</Translate>,
-    description: <Translate>Lightroom plugin to publish, export photos from Lightroom to Immich. Import from Immich to Lightroom is also supported.</Translate>,
+    description: (
+      <Translate>
+        Lightroom plugin to publish, export photos from Lightroom to Immich. Import from Immich to Lightroom is also
+        supported.
+      </Translate>
+    ),
     url: 'https://blog.fokuspunk.de/lrc-immich-plugin/',
   },
   {
@@ -56,7 +66,9 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: <Translate>Create albums from folders</Translate>,
-    description: <Translate>A Python script to create albums based on the folder structure of an external library.</Translate>,
+    description: (
+      <Translate>A Python script to create albums based on the folder structure of an external library.</Translate>
+    ),
     url: 'https://github.com/Salvoxia/immich-folder-album-creator',
   },
   {
@@ -66,7 +78,11 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: <Translate>Immich Distribution</Translate>,
-    description: <Translate>Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.</Translate>,
+    description: (
+      <Translate>
+        Snap package for easy install and zero-care auto updates of Immich. Self-hosted photo management.
+      </Translate>
+    ),
     url: 'https://immich-distribution.nsg.cc',
   },
   {
@@ -81,7 +97,11 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: <Translate>Immich Public Proxy</Translate>,
-    description: <Translate>Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.</Translate>,
+    description: (
+      <Translate>
+        Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.
+      </Translate>
+    ),
     url: 'https://github.com/alangrainger/immich-public-proxy',
   },
   {
@@ -101,7 +121,9 @@ const projects: CommunityProjectProps[] = [
   },
   {
     title: <Translate>Immich Machine Learning Load Balancer</Translate>,
-    description: <Translate>Speed up your machine learning by load balancing your requests to multiple computers</Translate>,
+    description: (
+      <Translate>Speed up your machine learning by load balancing your requests to multiple computers</Translate>
+    ),
     url: 'https://github.com/apetersson/immich_ml_balancer',
   },
 ];

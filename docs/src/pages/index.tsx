@@ -34,41 +34,41 @@ function HomepageHeader() {
         </a>
 
         <div className="mt-8">
-        <p className="text-3xl md:text-5xl sm:leading-tight mb-1 font-extrabold text-black/90 dark:text-white px-4 text-center">
-          {translate(
-            {
-              id: 'hero.slogan',
-              message: 'Self-hosted {highlight}',
-              description: 'Main hero slogan with highlighted part',
-            },
-            {
-              highlight: (
-                <>
-                  <span className="text-immich-primary dark:text-immich-dark-primary">
-                    {translate({ id: 'hero.slogan.highlight1', message: 'photo and' })}
-                  </span>
-                  <span className="block">
+          <p className="text-3xl md:text-5xl sm:leading-tight mb-1 font-extrabold text-black/90 dark:text-white px-4 text-center">
+            {translate(
+              {
+                id: 'hero.slogan',
+                message: 'Self-hosted {highlight}',
+                description: 'Main hero slogan with highlighted part',
+              },
+              {
+                highlight: (
+                  <>
                     <span className="text-immich-primary dark:text-immich-dark-primary">
-                      {translate({ id: 'hero.slogan.highlight2', message: 'video management' })}
-                    </span>{' '}
-                    <span className="text-black dark:text-black">
-                      {translate({ id: 'hero.slogan.solution', message: 'solution' })}
+                      {translate({ id: 'hero.slogan.highlight1', message: 'photo and' })}
                     </span>
-                  </span>
-                </>
-              ),
-            }
-          )}
-        </p>
+                    <span className="block">
+                      <span className="text-immich-primary dark:text-immich-dark-primary">
+                        {translate({ id: 'hero.slogan.highlight2', message: 'video management' })}
+                      </span>
+                      <span className="text-black dark:text-white px-4 text-center">
+                        {translate({ id: 'hero.slogan.solution', message: 'solution' })}
+                      </span>
+                    </span>
+                  </>
+                ),
+              },
+            )}
+          </p>
 
-        <p className="max-w-4xl mx-auto mt-4 px-4 text-lg text-center text-gray-700 dark:text-gray-100">
-          {translate({
-            id: 'hero.caption',
-            message:
-              'Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.',
-            description: 'Caption under the main hero slogan',
-          })}
-        </p>
+          <p className="max-w-4xl mx-auto mt-4 px-4 text-lg text-center text-gray-700 dark:text-gray-100">
+            {translate({
+              id: 'hero.caption',
+              message:
+                'Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.',
+              description: 'Caption under the main hero slogan',
+            })}
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 gap-4">
@@ -124,19 +124,31 @@ function HomepageHeader() {
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-4 gap-1">
           <div className="h-24">
             <a href="https://play.google.com/store/apps/details?id=app.alextran.immich">
-              <img className="h-24" alt={translate({ message: 'Get it on Google Play' })} src="img/google-play-badge.png" />
+              <img
+                className="h-24"
+                alt={translate({ message: 'Get it on Google Play' })}
+                src="img/google-play-badge.png"
+              />
             </a>
           </div>
 
           <div className="h-24">
             <a href="https://apps.apple.com/sg/app/immich/id1613945652">
-              <img className="h-24 sm:p-3.5 p-3" alt={translate({ message: 'Download on the App Store' })} src="img/ios-app-store-badge.svg" />
+              <img
+                className="h-24 sm:p-3.5 p-3"
+                alt={translate({ message: 'Download on the App Store' })}
+                src="img/ios-app-store-badge.svg"
+              />
             </a>
           </div>
 
           <div className="h-24">
             <a href="https://github.com/immich-app/immich/releases/latest">
-              <img className="h-24 sm:p-3.5 p-3" alt={translate({ message: 'Download APK' })} src="img/download-apk-github.svg" />
+              <img
+                className="h-24 sm:p-3.5 p-3"
+                alt={translate({ message: 'Download APK' })}
+                src="img/download-apk-github.svg"
+              />
             </a>
           </div>
         </div>
@@ -154,7 +166,11 @@ function HomepageHeader() {
 
 export default function Home(): JSX.Element {
   return (
-    <Layout title={translate({ message: 'Home' })} description={translate({ message: 'Self-hosted photo and video management solution' })} noFooter={true}>
+    <Layout
+      title={translate({ message: 'Home' })}
+      description={translate({ message: 'Self-hosted photo and video management solution' })}
+      noFooter={true}
+    >
       <HomepageHeader />
       <div className="flex flex-col place-items-center text-center place-content-center dark:bg-immich-dark-bg py-8">
         <p>{translate({ message: 'This project is available under GNU AGPL v3 license.' })}</p>

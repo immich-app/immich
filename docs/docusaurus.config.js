@@ -141,11 +141,7 @@ const config = {
             label: 'Discord',
             position: 'right',
           },
-          {
-            type: 'html',
-            position: 'right',
-            value: '<div id="buy-button-container"></div>',
-          },
+          { type: 'custom-buyButtonNavbarItem', position: 'right' },
         ],
       },
       footer: {
@@ -220,6 +216,9 @@ const config = {
       },
       image: 'img/feature-panel.png',
     }),
+    customFields: {
+    buyButtonUrl: 'https://buy.immich.app',
+  },
 };
 
 module.exports = config;

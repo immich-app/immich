@@ -13,7 +13,7 @@ Our [GitHub Repository](https://github.com/immich-app/immich) is a [monorepo](ht
 | `cli/`              | Source code for the work-in-progress CLI rewrite                     |
 | `docker/`           | Docker compose resources for dev, test, production                   |
 | `design/`           | Screenshots and logos for the README                                 |
-| `../`             | Source code for the [https://immich.app](https://immich.app) website |
+| `../`               | Source code for the [https://immich.app](https://immich.app) website |
 | `machine-learning/` | Source code for the `immich-machine-learning` docker image           |
 | `misc/release/`     | Scripts for version bumps and draft releases                         |
 | `mobile/`           | Source code for the mobile app, both Android and iOS                 |

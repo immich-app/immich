@@ -1,10 +1,14 @@
 import React from 'react';
 import Translate from '@docusaurus/Translate';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
-export default function BuyButton() {
+export default function BuyButtonNavbarItem() {
+  const { siteConfig } = useDocusaurusContext();
+  const url = siteConfig?.customFields?.buyButtonUrl ?? 'https://buy.immich.app';
+
   return (
     <a
-      href="https://buy.immich.app"
+      href={url}
       target="_blank"
       rel="noopener noreferrer"
       className="no-underline hover:no-underline"

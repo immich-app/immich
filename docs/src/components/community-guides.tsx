@@ -46,12 +46,16 @@ const guides: CommunityGuidesProps[] = [
   },
   {
     title: <Translate>Nginx caching map server</Translate>,
-    description: <Translate>Increase privacy by using nginx as a caching proxy in front of a map tile server.</Translate>,
+    description: (
+      <Translate>Increase privacy by using nginx as a caching proxy in front of a map tile server.</Translate>
+    ),
     url: 'https://github.com/pcouy/pcouy.github.io/blob/main/_posts/2024-08-30-proxying-a-map-tile-server-for-increased-privacy.md',
   },
   {
     title: <Translate>fail2ban setup instructions</Translate>,
-    description: <Translate>How to configure an existing fail2ban installation to block incorrect login attempts.</Translate>,
+    description: (
+      <Translate>How to configure an existing fail2ban installation to block incorrect login attempts.</Translate>
+    ),
     url: 'https://github.com/immich-app/immich/discussions/3243#discussioncomment-6681948',
   },
   {
@@ -61,7 +65,12 @@ const guides: CommunityGuidesProps[] = [
   },
   {
     title: <Translate>Trust Self Signed Certificates with Immich - OAuth Setup</Translate>,
-    description: <Translate>Set up Certificate Authority trust with Immich, and your private OAuth2/OpenID service, while using a private CA for HTTPS communication.</Translate>,
+    description: (
+      <Translate>
+        Set up Certificate Authority trust with Immich, and your private OAuth2/OpenID service, while using a private CA
+        for HTTPS communication.
+      </Translate>
+    ),
     url: 'https://github.com/immich-app/immich/discussions/18614',
   },
 ];
