@@ -1,9 +1,14 @@
 import { IsNotEmpty } from 'class-validator';
 import { UserResponseDto } from 'src/dtos/user.dto';
 import { PartnerDirection } from 'src/repositories/partner.repository';
-import { ValidateEnum } from 'src/validation';
+import { ValidateEnum, ValidateUUID } from 'src/validation';
 
-export class UpdatePartnerDto {
+export class PartnerCreateDto {
+  @ValidateUUID()
+  sharedWithId!: string;
+}
+
+export class PartnerUpdateDto {
   @IsNotEmpty()
   inTimeline!: boolean;
 }

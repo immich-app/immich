@@ -312,8 +312,7 @@ export type JobItem =
 
   // Sidecar Scanning
   | { name: JobName.SidecarQueueAll; data: IBaseJob }
-  | { name: JobName.SidecarDiscovery; data: IEntityJob }
-  | { name: JobName.SidecarSync; data: IEntityJob }
+  | { name: JobName.SidecarCheck; data: IEntityJob }
   | { name: JobName.SidecarWrite; data: ISidecarWriteJob }
 
   // Facial Recognition
@@ -400,8 +399,8 @@ export interface VectorUpdateResult {
 }
 
 export interface ImmichFile extends Express.Multer.File {
-  /** sha1 hash of file */
   uuid: string;
+  /** sha1 hash of file */
   checksum: Buffer;
 }
 

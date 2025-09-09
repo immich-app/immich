@@ -22,7 +22,7 @@ platform :ios do
       path: "./Runner.xcodeproj",
     )
     increment_version_number(
-      version_number: "1.140.1"
+      version_number: "1.141.1"
     )
     increment_build_number(
       build_number: latest_testflight_build_number + 1,

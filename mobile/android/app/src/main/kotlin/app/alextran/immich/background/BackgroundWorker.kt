@@ -130,8 +130,10 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    * - Parameter success: Indicates whether the background task completed successfully
    */
   private fun complete(success: Result) {
+    Log.d(TAG, "About to complete BackupWorker with result: $success")
     isComplete = true
     engine?.destroy()
+    engine = null
     flutterApi = null
     completionHandler.set(success)
   }
