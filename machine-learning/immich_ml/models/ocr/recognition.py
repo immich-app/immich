@@ -7,7 +7,7 @@ from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.ch_ppocr_rec import TextRecognizer as RapidTextRecognizer
 from rapidocr.inference_engine.base import FileInfo, InferSession
 from rapidocr.utils import DownloadFile, DownloadFileInput
-from rapidocr.utils.typings import EngineType, LangDet, OCRVersion, TaskType
+from rapidocr.utils.typings import EngineType, LangRec, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
 
 from immich_ml.config import log, settings
@@ -38,7 +38,7 @@ class TextRecognizer(InferenceModel):
                 engine_type=EngineType.ONNXRUNTIME,
                 ocr_version=OCRVersion.PPOCRV5,
                 task_type=TaskType.REC,
-                lang_type=LangDet.CH,
+                lang_type=LangRec.CH,
                 model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
             )
         )
