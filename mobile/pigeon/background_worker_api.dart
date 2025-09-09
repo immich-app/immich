@@ -24,6 +24,7 @@ abstract class BackgroundWorkerBgHostApi {
   // required platform channels to notify the native side to start the background upload
   void onInitialized();
 
+  // Called from the background flutter engine to request the native side to cleanup
   void close();
 }
 

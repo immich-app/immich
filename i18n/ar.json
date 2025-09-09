@@ -396,6 +396,7 @@
   "advanced_settings_prefer_remote_title": "تفضل الصور البعيدة",
   "advanced_settings_proxy_headers_subtitle": "عرف عناوين الوكيل التي يستخدمها Immich لارسال كل طلب شبكي",
   "advanced_settings_proxy_headers_title": "عناوين الوكيل",
+  "advanced_settings_readonly_mode_title": "وضع القراءة فقط",
   "advanced_settings_self_signed_ssl_subtitle": "تخطي التحقق من شهادة SSL لخادم النقطة النهائي. مكلوب للشهادات الموقعة ذاتيا.",
   "advanced_settings_self_signed_ssl_title": "السماح بشهادات SSL الموقعة ذاتيًا",
   "advanced_settings_sync_remote_deletions_subtitle": "حذف او استعادة تلقائي للاصول على هذا الجهاز عند تنفيذ العملية على الويب",

@@ -173,7 +173,7 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
             const (bool) => entity.intValue == 1,
             const (DateTime) => entity.intValue == null ? null : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
             const (UserDto) =>
-              entity.stringValue == null ? null : await DriftUserRepository(_db).get(entity.stringValue!),
+              entity.stringValue == null ? null : await DriftAuthUserRepository(_db).get(entity.stringValue!),
             _ => null,
           }
           as T?;
@@ -184,7 +184,7 @@ class DriftStoreRepository extends DriftDatabaseRepository implements IStoreRepo
       const (String) => (null, value as String),
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
-      const (UserDto) => (null, (await DriftUserRepository(_db).upsert(value as UserDto)).id),
+      const (UserDto) => (null, (await DriftAuthUserRepository(_db).upsert(value as UserDto)).id),
       _ => throw UnsupportedError("Unsupported primitive type: ${key.type} for key: ${key.name}"),
     };
     return StoreEntityCompanion(id: Value(key.id), intValue: Value(intValue), stringValue: Value(strValue));

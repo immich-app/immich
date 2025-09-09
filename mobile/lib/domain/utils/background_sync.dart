@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -23,6 +24,7 @@ class BackgroundSyncManager {
   Cancelable<void>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
+  Cancelable<void>? _linkedAlbumSyncTask;
   Cancelable<void>? _hashTask;
 
   BackgroundSyncManager({
@@ -51,6 +53,12 @@ class BackgroundSyncManager {
     }
     _syncWebsocketTask?.cancel();
     _syncWebsocketTask = null;
+
+    if (_linkedAlbumSyncTask != null) {
+      futures.add(_linkedAlbumSyncTask!.future);
+    }
+    _linkedAlbumSyncTask?.cancel();
+    _linkedAlbumSyncTask = null;
 
     try {
       await Future.wait(futures);
@@ -153,6 +161,17 @@ class BackgroundSyncManager {
     _syncWebsocketTask = _handleWsAssetUploadReadyV1Batch(batchData);
     return _syncWebsocketTask!.whenComplete(() {
       _syncWebsocketTask = null;
+    });
+  }
+
+  Future<void> syncLinkedAlbum() {
+    if (_linkedAlbumSyncTask != null) {
+      return _linkedAlbumSyncTask!.future;
+    }
+
+    _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
+    return _linkedAlbumSyncTask!.whenComplete(() {
+      _linkedAlbumSyncTask = null;
     });
   }
 }
