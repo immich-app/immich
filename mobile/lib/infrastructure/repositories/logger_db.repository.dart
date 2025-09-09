@@ -7,9 +7,13 @@ import 'logger_db.repository.drift.dart';
 
 @DriftDatabase(tables: [LogMessageEntity])
 class DriftLogger extends $DriftLogger implements IDatabaseRepository {
-  DriftLogger([QueryExecutor? executor])
+  DriftLogger({QueryExecutor? executor, bool shareAcrossIsolates = true})
     : super(
-        executor ?? driftDatabase(name: 'immich_logs', native: const DriftNativeOptions(shareAcrossIsolates: true)),
+        executor ??
+            driftDatabase(
+              name: 'immich_logs',
+              native: DriftNativeOptions(shareAcrossIsolates: shareAcrossIsolates),
+            ),
       );
 
   @override

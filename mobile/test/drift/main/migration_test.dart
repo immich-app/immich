@@ -27,7 +27,7 @@ void main() {
         for (final toVersion in versions.skip(i + 1)) {
           test('to $toVersion', () async {
             final schema = await verifier.schemaAt(fromVersion);
-            final db = Drift(schema.newConnection());
+            final db = Drift(executor: schema.newConnection());
             await verifier.migrateAndValidate(db, toVersion);
             await db.close();
           });

@@ -12,7 +12,7 @@ void main() {
   late MediumFactory mediumFactory;
 
   setUp(() {
-    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    db = Drift(executor: DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     mediumFactory = MediumFactory(db);
   });
 

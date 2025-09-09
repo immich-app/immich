@@ -297,7 +297,9 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
   Widget build(BuildContext context) {
     final syncStatus = ref.watch(syncStatusProvider);
     final isSyncing = syncStatus.isRemoteSyncing || syncStatus.isLocalSyncing;
-
+    print(
+      "SyncStatusIndicator build - syncStatus.isRemoteSyncing: ${syncStatus.isRemoteSyncing} , isLocalSyncing: ${syncStatus.isLocalSyncing}, isHashing: ${syncStatus.isHashing}",
+    );
     // Control animations based on sync status
     if (isSyncing) {
       if (!_rotationController.isAnimating) {

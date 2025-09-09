@@ -56,9 +56,9 @@ void configureFileDownloaderNotifications() {
 }
 
 abstract final class Bootstrap {
-  static Future<(Isar isar, Drift drift, DriftLogger logDb)> initDB() async {
-    final drift = Drift();
-    final logDb = DriftLogger();
+  static Future<(Isar isar, Drift drift, DriftLogger logDb)> initDB({required bool shareAcrossIsolates}) async {
+    final drift = Drift(shareAcrossIsolates: shareAcrossIsolates);
+    final logDb = DriftLogger(shareAcrossIsolates: shareAcrossIsolates);
 
     Isar? isar = Isar.getInstance();
 

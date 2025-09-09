@@ -246,7 +246,7 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  final (isar, drift, logDB) = await Bootstrap.initDB();
+  final (isar, drift, logDB) = await Bootstrap.initDB(shareAcrossIsolates: false);
   await Bootstrap.initDomain(isar, drift, logDB, shouldBufferLogs: false);
   await BackgroundWorkerBgService(isar: isar, drift: drift, driftLogger: logDB).init();
 }
