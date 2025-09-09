@@ -3,14 +3,19 @@ package app.alextran.immich.images
 import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
+import android.provider.DocumentsContract
 import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
+import android.system.Int64Ref
 import android.util.Size
+import androidx.annotation.RequiresApi
 import java.nio.ByteBuffer
 import kotlin.math.*
 import java.util.concurrent.Executors
@@ -172,7 +177,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     }
 
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      resolver.loadThumbnail(uri, Size(targetWidth, targetHeight), signal)
+      loadThumbnail(uri, Size(targetWidth, targetHeight), signal)
     } else {
       signal.setOnCancelListener { Images.Thumbnails.cancelThumbnailRequest(resolver, id) }
       Images.Thumbnails.getThumbnail(resolver, id, Images.Thumbnails.MINI_KIND, OPTIONS)
@@ -185,7 +190,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       val uri = ContentUris.withAppendedId(Video.Media.EXTERNAL_CONTENT_URI, id)
-      resolver.loadThumbnail(uri, Size(targetWidth, targetHeight), signal)
+      loadThumbnail(uri, Size(targetWidth, targetHeight), signal)
     } else {
       signal.setOnCancelListener { Video.Thumbnails.cancelThumbnailRequest(resolver, id) }
       Video.Thumbnails.getThumbnail(resolver, id, Video.Thumbnails.MINI_KIND, OPTIONS)
@@ -214,5 +219,73 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
       signal.setOnCancelListener { Glide.with(ctx).clear(ref) }
       ref.get()
     }
+  }
+
+  /*
+   * Copyright (C) 2006 The Android Open Source Project
+   *
+   * Licensed under the Apache License, Version 2.0 (the "License");
+   * you may not use this file except in compliance with the License.
+   * You may obtain a copy of the License at
+   *
+   *      http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
+  @RequiresApi(Build.VERSION_CODES.Q)
+  fun loadThumbnail(uri: Uri, size: Size, signal: CancellationSignal?): Bitmap {
+    // Convert to Point, since that's what the API is defined as
+    val opts = Bundle()
+    if (size.width < 512 && size.height < 512) {
+      opts.putParcelable(ContentResolver.EXTRA_SIZE, Point(size.width, size.height))
+    }
+    val orientation = Int64Ref(0)
+
+    var bitmap =
+      ImageDecoder.decodeBitmap(
+        ImageDecoder.createSource {
+          val afd =
+            resolver.openTypedAssetFile(uri, "image/*", opts, signal)
+              ?: throw Resources.NotFoundException("Asset $uri not found")
+          val extras = afd.extras
+          orientation.value =
+            (extras?.getInt(DocumentsContract.EXTRA_ORIENTATION, 0) ?: 0).toLong()
+          afd
+        }
+      ) { decoder: ImageDecoder, info: ImageDecoder.ImageInfo, _: ImageDecoder.Source ->
+        decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
+        // One last-ditch check to see if we've been canceled.
+        signal?.throwIfCanceled()
+
+        // We requested a rough thumbnail size, but the remote size may have
+        // returned something giant, so defensively scale down as needed.
+        // This is modified from the original to target the smaller edge instead of the larger edge.
+        val widthSample = info.size.width.toDouble() / size.width
+        val heightSample = info.size.height.toDouble() / size.height
+        val sample = min(widthSample, heightSample)
+        if (sample > 1) {
+          val width = (info.size.width / sample).toInt()
+          val height = (info.size.height / sample).toInt()
+          decoder.setTargetSize(width, height)
+        }
+      }
+
+    // Transform the bitmap if requested. We use a side-channel to
+    // communicate the orientation, since EXIF thumbnails don't contain
+    // the rotation flags of the original image.
+    if (orientation.value != 0L) {
+      val width = bitmap.getWidth()
+      val height = bitmap.getHeight()
+
+      val m = Matrix()
+      m.setRotate(orientation.value.toFloat(), (width / 2).toFloat(), (height / 2).toFloat())
+      bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, m, false)
+    }
+
+    return bitmap
   }
 }

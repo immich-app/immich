@@ -16,8 +16,9 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   final String id;
   final Size size;
   final AssetType assetType;
+  final bool exact;
 
-  LocalThumbProvider({required this.id, required this.assetType, this.size = kThumbnailResolution});
+  LocalThumbProvider({required this.id, required this.assetType, this.size = kThumbnailResolution, this.exact = true});
 
   @override
   Future<LocalThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -37,7 +38,12 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   }
 
   Stream<ImageInfo> _codec(LocalThumbProvider key, ImageDecoderCallback decode) {
-    final request = this.request = LocalImageRequest(localId: key.id, size: key.size, assetType: key.assetType);
+    final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
+    final request = this.request = LocalImageRequest(
+      localId: key.id,
+      size: key.size * devicePixelRatio,
+      assetType: key.assetType,
+    );
     return loadRequest(request, decode);
   }
 
@@ -45,7 +51,7 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is LocalThumbProvider) {
-      return id == other.id;
+      return id == other.id && (!exact || size == other.size);
     }
     return false;
   }
@@ -60,7 +66,12 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final Size size;
   final AssetType assetType;
 
-  LocalFullImageProvider({required this.id, required this.assetType, required this.size});
+  LocalFullImageProvider({
+    required this.id,
+    required this.assetType,
+    required this.size,
+    LocalThumbProvider? initialProvider,
+  });
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -71,7 +82,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   ImageStreamCompleter loadImage(LocalFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getInitialImage(LocalThumbProvider(id: key.id, assetType: key.assetType)),
+      initialImage: getInitialImage(LocalThumbProvider(id: id, assetType: assetType, exact: false)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Id', key.id),
