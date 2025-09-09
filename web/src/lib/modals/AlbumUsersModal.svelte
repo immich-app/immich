@@ -31,6 +31,15 @@
 
   let isOwned = $derived(currentUser?.id == album.ownerId);
 
+  // Map contributor counts by user id (owner + collaborators)
+  type ContributorCount = { userId: string; assetCount: number };
+  const contributorMap = $derived(
+    Object.fromEntries(
+      (((album as any)?.contributorCounts ?? []) as ContributorCount[]).map((c) => [c.userId, c.assetCount]),
+    ) as Record<string, number>,
+  );
+  const getCount = (userId: string) => contributorMap[userId] ?? 0;
+
   onMount(async () => {
     try {
       currentUser = await getMyUser();
@@ -97,12 +106,36 @@
 <Modal title={$t('options')} size="small" {onClose}>
   <ModalBody>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
+      <div class="flex w-full place-items-center justify-between gap-4 p-5">
+        <div class="flex place-items-center gap-4">
+          <UserAvatar user={album.owner} size="md" />
+          <div>
+            <p class="text-sm font-medium">{album.owner.name}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {$t('items_count', { values: { count: getCount(album.owner.id) } })}
+            </p>
+          </div>
+        </div>
+
+        <div id="icon-{album.owner.id}" class="flex place-items-center">
+          <p class="text-sm">{$t('owner')}</p>
+        </div>
+      </div>
+      {#each album.albumUsers as { user, role } (user.id)}
+        <div
+          class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+        >
       {#each [{ user: album.owner, role: 'owner' }, ...album.albumUsers] as { user, role } (user.id)}
         <div class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors">
           <div class="flex place-items-center gap-4">
             <UserAvatar {user} size="md" />
             <div class="flex flex-col">
+              <div>
               <p class="font-medium">{user.name}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {$t('items_count', { values: { count: getCount(user.id) } })}
+              </p>
+            </div>
               <Text color="muted" size="tiny">
                 {#if role === 'owner'}
                   {$t('owner')}

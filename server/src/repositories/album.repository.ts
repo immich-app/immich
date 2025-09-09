@@ -17,6 +17,12 @@ export interface AlbumAssetCount {
   lastModifiedAssetTimestamp: Date | null;
 }
 
+export interface AlbumContributorCount {
+  albumId: string;
+  userId: string;
+  assetCount: number;
+}
+
 export interface AlbumInfoOptions {
   withAssets: boolean;
 }
@@ -137,6 +143,27 @@ export class AlbumRepository {
         .groupBy('album_asset.albumsId')
         .execute()
     );
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
+  async getContributorCountsForIds(ids: string[]): Promise<AlbumContributorCount[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+
+    return this.db
+      .selectFrom('asset')
+      .$call(withDefaultVisibility)
+      .innerJoin('album_asset', 'album_asset.assetsId', 'asset.id')
+      .select('album_asset.albumsId as albumId')
+      .select('asset.ownerId as userId')
+      .select((eb) => sql<number>`${eb.fn.count('asset.id')}::int`.as('assetCount'))
+      .where('album_asset.albumsId', 'in', ids)
+      .where('asset.deletedAt', 'is', null)
+      .groupBy('album_asset.albumsId')
+      .groupBy('asset.ownerId')
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
