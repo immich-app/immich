@@ -6,16 +6,17 @@
     onDateChange: (year?: number, month?: number, day?: number) => Promise<void>;
     onClearFilters?: () => void;
     defaultDate?: string;
+    startYear: number;
   }
 
-  let { onDateChange, onClearFilters, defaultDate }: Props = $props();
+  let { onDateChange, onClearFilters, defaultDate, startYear }: Props = $props();
 
   let selectedYear = $state<number | undefined>(undefined);
   let selectedMonth = $state<number | undefined>(undefined);
   let selectedDay = $state<number | undefined>(undefined);
 
   const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 30 }, (_, i) => currentYear - i);
+  let yearOptions = $derived(Array.from({ length: currentYear - startYear + 1 }, (_, i) => currentYear - i));
 
   const monthOptions = Array.from({ length: 12 }, (_, i) => ({
     value: i + 1,

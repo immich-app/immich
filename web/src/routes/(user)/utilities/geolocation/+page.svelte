@@ -12,7 +12,7 @@
   import { setQueryValue } from '$lib/utils/navigation';
   import { buildDateString } from '$lib/utils/string-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { searchAssets, updateAssets, type AssetResponseDto } from '@immich/sdk';
+  import { AssetOrder, searchAssets, updateAssets, type AssetResponseDto } from '@immich/sdk';
   import { Button, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import {
     mdiMapMarkerMultipleOutline,
@@ -32,6 +32,7 @@
   let partialDate = $state<string | null>(data.partialDate);
   let isLoading = $state(false);
   let assets = $state<AssetResponseDto[]>([]);
+  let startYear = $state(2000);
   let shiftKeyIsDown = $state(false);
   let assetInteraction = new AssetInteraction();
   let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
@@ -63,6 +64,25 @@
       await loadAssets();
     }
   }
+
+  const getEarliestAsset = async () => {
+    const earliest = await searchAssets({
+      metadataSearchDto: {
+        withExif: true,
+        size: 1,
+        order: AssetOrder.Asc,
+      },
+    });
+
+    const asset = earliest.assets.items[0];
+    if (!asset) {
+      return;
+    }
+
+    startYear = new Date(asset.localDateTime).getFullYear();
+  };
+
+  void getEarliestAsset();
 
   const loadAssets = async () => {
     if (takenRange) {
@@ -262,6 +282,7 @@
         onDateChange={handleDateChange}
         onClearFilters={handleClearFilters}
         defaultDate={partialDate || undefined}
+        {startYear}
       />
     </div>
 
