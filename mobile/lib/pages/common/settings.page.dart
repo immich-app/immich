@@ -11,7 +11,7 @@ import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_se
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
-import 'package:immich_mobile/widgets/settings/beta_sync_settings/beta_sync_settings.dart';
+import 'package:immich_mobile/widgets/settings/beta_sync_settings/sync_status_and_actions.dart';
 import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
@@ -20,7 +20,7 @@ import 'package:immich_mobile/widgets/settings/preference_settings/preference_se
 import 'package:immich_mobile/widgets/settings/settings_card.dart';
 
 enum SettingSection {
-  beta('beta_sync', Icons.sync_outlined, "beta_sync_subtitle"),
+  beta('sync_status', Icons.sync_outlined, "sync_status_subtitle"),
   advanced('advanced', Icons.build_outlined, "advanced_settings_tile_subtitle"),
   assetViewer('asset_viewer_settings_title', Icons.image_outlined, "asset_viewer_settings_subtitle"),
   backup('backup', Icons.cloud_upload_outlined, "backup_settings_subtitle"),
@@ -76,9 +76,9 @@ class _MobileLayout extends StatelessWidget {
                   if (Store.isBetaTimelineEnabled)
                     SettingsCard(
                       icon: Icons.sync_outlined,
-                      title: 'beta_sync'.tr(),
-                      subtitle: 'beta_sync_subtitle'.tr(),
-                      settingRoute: const BetaSyncSettingsRoute(),
+                      title: 'sync_status'.tr(),
+                      subtitle: 'sync_status_subtitle'.tr(),
+                      settingRoute: const SyncStatusRoute(),
                     ),
                 ]
               : [
@@ -143,7 +143,7 @@ class _BetaLandscapeToggle extends HookWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(height: 100, child: BetaTimelineListTile()),
-        if (Store.isBetaTimelineEnabled) const Expanded(child: BetaSyncSettings()),
+        if (Store.isBetaTimelineEnabled) const Expanded(child: SyncStatusAndActions()),
       ],
     );
   }
