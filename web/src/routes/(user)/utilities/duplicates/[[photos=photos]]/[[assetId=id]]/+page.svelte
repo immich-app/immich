@@ -21,7 +21,7 @@
   import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
   import { suggestDuplicateWithPrefs } from '$lib/utils/duplicate-utils';
   import { duplicateTiePreference } from '$lib/stores/duplicate-preferences';
-
+  import DuplicatesSettingsModal from '$lib/modals/DuplicatesSettingsModal.svelte';
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -31,6 +31,7 @@
     mdiPageFirst,
     mdiPageLast,
     mdiTrashCanOutline,
+    mdiCogOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -233,37 +234,21 @@
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
-      <div class="hidden md:flex items-center me-3">
-        <div class="inline-flex rounded-full overflow-hidden border border-gray-700">
-          <Button
-            size="small"
-            variant="ghost"
-            class="rounded-none"
-            color={$duplicateTiePreference === 'external' ? 'primary' : 'secondary'}
-            onclick={() => duplicateTiePreference.set('external')}
-          >
-            <Text class="hidden md:block">{$t('deduplicate_prefer_external')}</Text>
-          </Button>
-          <Button
-            size="small"
-            variant="ghost"
-            class="rounded-none"
-            color={$duplicateTiePreference === 'default' ? 'primary' : 'secondary'}
-            onclick={() => duplicateTiePreference.set('default')}
-          >
-            <Text class="hidden md:block">{$t('deduplicate_prefer_default')}</Text>
-          </Button>
-          <Button
-            size="small"
-            variant="ghost"
-            class="rounded-none"
-            color={$duplicateTiePreference === 'internal' ? 'primary' : 'secondary'}
-            onclick={() => duplicateTiePreference.set('internal')}
-          >
-            <Text class="hidden md:block">{$t('deduplicate_prefer_internal')}</Text>
-          </Button>
-        </div>
-      </div>
+      <Button
+        size="small"
+        variant="ghost"
+        color={$duplicateTiePreference !== 'default' ? 'primary' : 'secondary'}
+        leadingIcon={mdiCogOutline}
+        onclick={() => modalManager.show(DuplicatesSettingsModal)}
+        title={$t('settings')}
+        aria-label={$t('settings')}
+        class="relative"
+      >
+        <Text class="hidden md:block">{$t('settings')}</Text>
+        {#if $duplicateTiePreference !== 'default'}
+          <span class="ml-2 inline-block h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
+        {/if}
+      </Button>
 
       <Button
         leadingIcon={mdiTrashCanOutline}
