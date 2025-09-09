@@ -157,15 +157,23 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
         val fileName = call.argument<String>("fileName")
         val type = call.argument<Int>("type")
         val checksum = call.argument<String>("checksum")
+        val mediaId = call.argument<String>("mediaId")
         if (fileName != null && type != null && checksum != null) {
           if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) && hasManageMediaPermission()) {
             restoreFromTrash(fileName, type, checksum, result)
           } else {
             result.error("PERMISSION_DENIED", "Media permission required", null)
           }
-        } else {
-          result.error("INVALID_NAME", "The file name or checksum is not specified.", null)
-        }
+        } else
+          if (mediaId != null && type != null) {
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) && hasManageMediaPermission()) {
+              restoreFromTrashById(mediaId, type, result)
+            } else {
+              result.error("PERMISSION_DENIED", "Media permission required", null)
+            }
+          } else {
+            result.error("INVALID_PARAMS", "Required params are not specified.", null)
+          }
       }
 
       "requestManageMediaPermission" -> {
@@ -223,6 +231,30 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     }
     Log.i(TAG, "trying to restore from trash FILE_URI - $uri")
     uri.let { toggleTrash(listOf(it), false, result) }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.R)
+  private fun restoreFromTrashById(mediaId: String, type: Int, result: Result) {
+    val id = mediaId.toLongOrNull()
+    if (id == null) {
+      result.error("INVALID_ID", "The file id is not a valid number: $mediaId", null)
+      return
+    }
+    if (!isInTrash(id)) {
+      result.error("TrashNotFound", "Item with id=$id not found in trash", null)
+      return
+    }
+
+    val primary = ContentUris.withAppendedId(contentUriForType(type), id)
+    val fallback = ContentUris.withAppendedId(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL), id)
+
+    try {
+      Log.i(TAG, "restoreFromTrashById: primary=$primary (type=$type,id=$id)")
+      restoreUris(listOf(primary), result)
+    } catch (e: Exception) {
+      Log.w(TAG, "restoreFromTrashById: primary failed, try fallback=$fallback", e)
+      restoreUris(listOf(fallback), result)
+    }
   }
 
   @RequiresApi(Build.VERSION_CODES.R)
@@ -292,13 +324,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
         } ?: continue
 
         if (sha1Bytes.contentEquals(expectedBytes)) {
-          // same order as AssetType from dart
-          val contentUri = when (type) {
-            1 -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            2 -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            3 -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-            else -> queryUri
-          }
+          val contentUri = contentUriForType(type)
           return ContentUris.withAppendedId(contentUri, id)
         }
       }
@@ -346,6 +372,30 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     return false
   }
 
+  @RequiresApi(Build.VERSION_CODES.R)
+  private fun isInTrash(id: Long): Boolean {
+    val contentResolver = context?.contentResolver ?: return false
+    val filesUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
+    val args = Bundle().apply {
+      putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Files.FileColumns._ID}=?")
+      putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(id.toString()))
+      putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
+      putInt(ContentResolver.QUERY_ARG_LIMIT, 1)
+    }
+    return contentResolver.query(filesUri, arrayOf(MediaStore.Files.FileColumns._ID), args, null)
+      ?.use { it.moveToFirst() } == true
+  }
+
+  @RequiresApi(Build.VERSION_CODES.R)
+  private fun restoreUris(uris: List<Uri>, result: Result) {
+    if (uris.isEmpty()) {
+      result.error("TrashError", "No URIs to restore", null)
+      return
+    }
+    Log.i(TAG, "restoreUris: count=${uris.size}, first=${uris.first()}")
+    toggleTrash(uris, false, result)
+  }
+
   private fun sha1OfStream(ins: InputStream): ByteArray {
     val buf = ByteArray(BUFFER_SIZE)
     val md = MessageDigest.getInstance("SHA-1")
@@ -357,6 +407,16 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     }
     return md.digest()
   }
+
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private fun contentUriForType(type: Int): Uri =
+    when (type) {
+      // same order as AssetType from dart
+      1 -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+      2 -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+      3 -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+      else -> MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
+    }
 }
 
 private const val TAG = "BackgroundServicePlugin"
