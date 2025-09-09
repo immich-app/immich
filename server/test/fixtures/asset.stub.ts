@@ -35,7 +35,7 @@ export const stackStub = (stackId: string, assets: (MapAsset & { exifInfo: Exif 
     primaryAssetId: assets[0].id,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    updateId: 'uuid-v7',
+    updateId: expect.any(String),
   };
 };
 
