@@ -2,7 +2,7 @@
 node = "22.19.0"
 flutter = "3.32.8"
 pnpm = "10.14.0"
-dart = "3.8.2"
+dart = "3.9.3"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.31.4"
