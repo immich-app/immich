@@ -325,9 +325,6 @@
   "Logo Immich": {
     "message": "Logo Immich"
   },
-  "Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.": {
-    "message": "Effettua il backup, organizza e gestisci facilmente le tue foto sul tuo server. Immich ti aiuta a navigare, cercare e organizzare foto e video senza compromettere la tua privacy."
-  },
   "Get Started": {
     "message": "Inizia"
   },
@@ -368,15 +365,6 @@
     "message": "Questo progetto è disponibile sotto licenza GNU AGPL v3."
   },
   "Privacy should not be a luxury": {
-    "message": "La privacy non dovrebbe essere un lusso"
-  },
-  "Immich - soluzione self-hosted per il backup di foto e video direttamente dal tuo telefono": {
-    "message": "Immich - soluzione self-hosted per il backup di foto e video direttamente dal tuo telefono"
-  },
-  "Questo progetto è disponibile sotto licenza GNU AGPL v3.": {
-    "message": "Questo progetto è disponibile sotto licenza GNU AGPL v3."
-  },
-  "La privacy non dovrebbe essere un lusso": {
     "message": "La privacy non dovrebbe essere un lusso"
   },
   "immich-go": {
@@ -1373,9 +1361,6 @@
     "message": "Soluzione self-hosted per {highlight}",
     "description": "Main hero slogan with highlighted part"
   },
-  "hero.slogan.highlight": {
-    "message": "la gestione di foto e video"
-  },
   "privacy.title": {
     "message": "Informativa sulla Privacy"
   },
@@ -1456,5 +1441,18 @@
   },
   "privacy.footer.slogan": {
     "message": "La privacy non dovrebbe essere un lusso"
+  },
+  "hero.caption": {
+    "message": "Esegui facilmente il backup, organizza e gestisci le tue foto sul tuo server. Immich ti aiuta a cercare, sfogliare e organizzare foto e video con facilità, senza rinunciare alla tua privacy.",
+    "description": "Caption under the main hero slogan"
+  },
+  "hero.slogan.highlight1": {
+    "message": " "
+  },
+  "hero.slogan.highlight2": {
+    "message": "la gestione di foto e video"
+  },
+  "hero.slogan.solution": {
+    "message": " "
   }
 }

@@ -34,28 +34,41 @@ function HomepageHeader() {
         </a>
 
         <div className="mt-8">
-          <p className="text-3xl md:text-5xl sm:leading-tight mb-1 font-extrabold text-black/90 dark:text-white px-4">
-            {translate(
-              {
-                id: 'hero.slogan',
-                message: 'Self-hosted {highlight} solution',
-                description: 'Main hero slogan with highlighted part',
-              },
-              {
-                highlight: (
+        <p className="text-3xl md:text-5xl sm:leading-tight mb-1 font-extrabold text-black/90 dark:text-white px-4 text-center">
+          {translate(
+            {
+              id: 'hero.slogan',
+              message: 'Self-hosted {highlight}',
+              description: 'Main hero slogan with highlighted part',
+            },
+            {
+              highlight: (
+                <>
                   <span className="text-immich-primary dark:text-immich-dark-primary">
-                    {translate({ id: 'hero.slogan.highlight', message: 'photo and video management' })}
+                    {translate({ id: 'hero.slogan.highlight1', message: 'photo and' })}
                   </span>
-                ),
-              }
-            )}
-          </p>
+                  <span className="block">
+                    <span className="text-immich-primary dark:text-immich-dark-primary">
+                      {translate({ id: 'hero.slogan.highlight2', message: 'video management' })}
+                    </span>{' '}
+                    <span className="text-black dark:text-black">
+                      {translate({ id: 'hero.slogan.solution', message: 'solution' })}
+                    </span>
+                  </span>
+                </>
+              ),
+            }
+          )}
+        </p>
 
-          <p className="max-w-1/4 m-auto mt-4 px-4 text-lg text-gray-700 dark:text-gray-100">
-            <Translate>
-              Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.
-            </Translate>
-          </p>
+        <p className="max-w-4xl mx-auto mt-4 px-4 text-lg text-center text-gray-700 dark:text-gray-100">
+          {translate({
+            id: 'hero.caption',
+            message:
+              'Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.',
+            description: 'Caption under the main hero slogan',
+          })}
+        </p>
         </div>
 
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-9 gap-4">

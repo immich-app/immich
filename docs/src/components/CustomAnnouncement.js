@@ -6,17 +6,22 @@ export default function CustomAnnouncement() {
     <div className="custom-announcement-wrapper">
       <div className="custom-announcement-bar">
         ⚠️ 
-        <Translate id="announcement.project_prefix"> The project is under </Translate>
+        {' '}
+        <Translate id="announcement.project_prefix">The project is under</Translate>
+        {' '}
         <strong>
           <Translate id="announcement.project_active">very active</Translate>
         </strong>
-        <Translate id="announcement.project_suffix"> development.</Translate>
         {' '}
-        <Translate id="announcement.warning_prefix">Expect bugs and changes. Do not use it as </Translate>
+        <Translate id="announcement.project_suffix">development.</Translate>
+        {' '}
+        <Translate id="announcement.warning_prefix">Expect bugs and changes. Do not use it as</Translate>
+        {' '}
         <strong>
           <Translate id="announcement.warning_bold">the only way</Translate>
         </strong>
-        <Translate id="announcement.warning_suffix"> to store your photos and videos!</Translate>
+        {' '}
+        <Translate id="announcement.warning_suffix">to store your photos and videos!</Translate>
       </div>
       <div className="custom-announcement-bar-line"></div>
     </div>

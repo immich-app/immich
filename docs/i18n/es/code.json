@@ -671,14 +671,8 @@
     "message": "Logo Immich"
   },
   "hero.slogan": {
-    "message": "Self-hosted {highlight} solution",
+    "message": "Self-hosted {highlight}",
     "description": "Main hero slogan with highlighted part"
-  },
-  "hero.slogan.highlight": {
-    "message": "photo and video management"
-  },
-  "Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.": {
-    "message": "Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy."
   },
   "Get Started": {
     "message": "Get Started"
@@ -1447,5 +1441,18 @@
   },
   "First commit on GitHub, Immich is born.": {
     "message": "First commit on GitHub, Immich is born."
+  },
+  "hero.caption": {
+    "message": "Easily back up, organize, and manage your photos on your own server. Immich helps you browse, search and organize your photos and videos with ease, without sacrificing your privacy.",
+    "description": "Caption under the main hero slogan"
+  },
+  "hero.slogan.highlight1": {
+    "message": "photo and"
+  },
+  "hero.slogan.highlight2": {
+    "message": "video management"
+  },
+  "hero.slogan.solution": {
+    "message": "solution"
   }
 }

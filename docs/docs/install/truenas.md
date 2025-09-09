@@ -60,7 +60,7 @@ For an easy setup:
 :::tip
 To improve performance, Immich recommends using SSDs for the database. If you have a pool made of SSDs, you can create the `pgData` dataset on that pool.
 
-Thumbnails can also be stored on the SSDs for faster access. This is an advanced option and not required for Immich to run. More information on how you can use multiple datasets to manage Immich storage in a finer-grained manner can be found in the [Advanced: Multiple Datasets for Immich Storage](#advanced-multiple-datasets-for-immich-storage) section below.
+Thumbnails can also be stored on the SSDs for faster access. This is an advanced option and not required for Immich to run. More information on how you can use multiple datasets to manage Immich storage in a finer-grained manner can be found in the [Advanced: Multiple Datasets for Immich Storage](#additional-storage-advanced-users) section below.
 :::
 
 :::warning
