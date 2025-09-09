@@ -336,6 +336,9 @@ export class SyncAckV1 {}
 @ExtraModel()
 export class SyncResetV1 {}
 
+@ExtraModel()
+export class SyncCompleteV1 {}
+
 export type SyncItem = {
   [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
   [SyncEntityType.UserV1]: SyncUserV1;
@@ -382,6 +385,7 @@ export type SyncItem = {
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
+  [SyncEntityType.SyncCompleteV1]: SyncCompleteV1;
   [SyncEntityType.SyncResetV1]: SyncResetV1;
 };
 

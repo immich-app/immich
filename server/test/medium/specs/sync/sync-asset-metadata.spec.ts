@@ -26,7 +26,6 @@ describe(SyncEntityType.AssetMetadataV1, () => {
     await assetRepo.upsertMetadata(asset.id, [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123' } }]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -37,10 +36,11 @@ describe(SyncEntityType.AssetMetadataV1, () => {
         },
         type: 'AssetMetadataV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetMetadataV1]);
   });
 
   it('should update asset metadata', async () => {
@@ -51,7 +51,6 @@ describe(SyncEntityType.AssetMetadataV1, () => {
     await assetRepo.upsertMetadata(asset.id, [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123' } }]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -62,6 +61,7 @@ describe(SyncEntityType.AssetMetadataV1, () => {
         },
         type: 'AssetMetadataV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -79,10 +79,11 @@ describe(SyncEntityType.AssetMetadataV1, () => {
         },
         type: 'AssetMetadataV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, updatedResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetMetadataV1]);
   });
 });
 
@@ -95,7 +96,6 @@ describe(SyncEntityType.AssetMetadataDeleteV1, () => {
     await assetRepo.upsertMetadata(asset.id, [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: 'abc123' } }]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetMetadataV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -106,6 +106,7 @@ describe(SyncEntityType.AssetMetadataDeleteV1, () => {
         },
         type: 'AssetMetadataV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -121,6 +122,7 @@ describe(SyncEntityType.AssetMetadataDeleteV1, () => {
         },
         type: 'AssetMetadataDeleteV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
 });

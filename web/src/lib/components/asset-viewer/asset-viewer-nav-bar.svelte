@@ -22,6 +22,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -41,6 +42,7 @@
   import {
     mdiAlertOutline,
     mdiCogRefreshOutline,
+    mdiCompare,
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
@@ -98,6 +100,7 @@
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
+  let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -223,6 +226,13 @@
                 icon={mdiImageSearch}
                 onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
                 text={$t('view_in_timeline')}
+              />
+            {/if}
+            {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
+              <MenuOption
+                icon={mdiCompare}
+                onClick={() => goto(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`)}
+                text={$t('view_similar_photos')}
               />
             {/if}
           {/if}

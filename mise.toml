@@ -1,0 +1,312 @@
+[tools]
+node = "22.19.0"
+flutter = "3.32.8"
+pnpm = "10.14.0"
+dart = "3.8.2"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.31.4"
+bin = "dcm"
+postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
+
+[settings]
+experimental = true
+lockfile = true
+pin = true
+
+# .github
+[tasks."github:install"]
+run = "pnpm install --filter github --frozen-lockfile"
+
+[tasks."github:format"]
+env._.path = "./.github/node_modules/.bin"
+dir = ".github"
+run = "prettier --check ."
+
+[tasks."github:format-fix"]
+env._.path = "./.github/node_modules/.bin"
+dir = ".github"
+run = "prettier --write ."
+
+# @immich/cli
+[tasks."cli:install"]
+run = "pnpm install --filter @immich/cli --frozen-lockfile"
+
+[tasks."cli:build"]
+env._.path = "./cli/node_modules/.bin"
+dir = "cli"
+run = "vite build"
+
+[tasks."cli:test"]
+env._.path = "./cli/node_modules/.bin"
+dir = "cli"
+run = "vite"
+
+[tasks."cli:lint"]
+env._.path = "./cli/node_modules/.bin"
+dir = "cli"
+run = "eslint \"src/**/*.ts\" --max-warnings 0"
+
+[tasks."cli:lint-fix"]
+run = "mise run cli:lint --fix"
+
+[tasks."cli:format"]
+env._.path = "./cli/node_modules/.bin"
+dir = "cli"
+run = "prettier --check ."
+
+[tasks."cli:format-fix"]
+env._.path = "./cli/node_modules/.bin"
+dir = "cli"
+run = "prettier --write ."
+
+[tasks."cli:check"]
+env._.path = "./cli/node_modules/.bin"
+dir = "cli"
+run = "tsc --noEmit"
+
+# @immich/sdk
+[tasks."sdk:install"]
+run = "pnpm install --filter @immich/sdk --frozen-lockfile"
+
+[tasks."sdk:build"]
+env._.path = "./open-api/typescript-sdk/node_modules/.bin"
+dir = "./open-api/typescript-sdk"
+run = "tsc"
+
+# docs
+[tasks."docs:install"]
+run = "pnpm install --filter documentation --frozen-lockfile"
+
+[tasks."docs:start"]
+env._.path = "./docs/node_modules/.bin"
+dir = "docs"
+run = "docusaurus --port 3005"
+
+[tasks."docs:build"]
+env._.path = "./docs/node_modules/.bin"
+dir = "docs"
+run = [
+  "jq -c < ../open-api/immich-openapi-specs.json > ./static/openapi.json || exit 0",
+  "docusaurus build",
+]
+
+
+[tasks."docs:preview"]
+env._.path = "./docs/node_modules/.bin"
+dir = "docs"
+run = "docusaurus serve"
+
+
+[tasks."docs:format"]
+env._.path = "./docs/node_modules/.bin"
+dir = "docs"
+run = "prettier --check ."
+
+[tasks."docs:format-fix"]
+env._.path = "./docs/node_modules/.bin"
+dir = "docs"
+run = "prettier --write ."
+
+
+# e2e
+[tasks."e2e:install"]
+run = "pnpm install --filter immich-e2e --frozen-lockfile"
+
+[tasks."e2e:test"]
+env._.path = "./e2e/node_modules/.bin"
+dir = "e2e"
+run = "vitest --run"
+
+[tasks."e2e:test-web"]
+env._.path = "./e2e/node_modules/.bin"
+dir = "e2e"
+run = "playwright test"
+
+[tasks."e2e:format"]
+env._.path = "./e2e/node_modules/.bin"
+dir = "e2e"
+run = "prettier --check ."
+
+[tasks."e2e:format-fix"]
+env._.path = "./e2e/node_modules/.bin"
+dir = "e2e"
+run = "prettier --write ."
+
+[tasks."e2e:lint"]
+env._.path = "./e2e/node_modules/.bin"
+dir = "e2e"
+run = "eslint \"src/**/*.ts\" --max-warnings 0"
+
+[tasks."e2e:lint-fix"]
+run = "mise run e2e:lint --fix"
+
+[tasks."e2e:check"]
+env._.path = "./e2e/node_modules/.bin"
+dir = "e2e"
+run = "tsc --noEmit"
+
+# i18n
+[tasks."i18n:format"]
+run = "mise run i18n:format-fix"
+
+[tasks."i18n:format-fix"]
+run = "pnpm dlx sort-json ./i18n/*.json"
+
+
+# server
+[tasks."server:install"]
+run = "pnpm install --filter immich --frozen-lockfile"
+
+[tasks."server:build"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "nest build"
+
+[tasks."server:test"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "vitest --config test/vitest.config.mjs"
+
+[tasks."server:test-medium"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "vitest --config test/vitest.config.medium.mjs"
+
+[tasks."server:format"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "prettier --check ."
+
+[tasks."server:format-fix"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "prettier --write ."
+
+[tasks."server:lint"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "eslint \"src/**/*.ts\" \"test/**/*.ts\" --max-warnings 0"
+
+[tasks."server:lint-fix"]
+run = "mise run server:lint --fix"
+
+[tasks."server:check"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "tsc --noEmit"
+
+[tasks."server:sql"]
+dir = "server"
+run = "node ./dist/bin/sync-open-api.js"
+
+[tasks."server:open-api"]
+dir = "server"
+run = "node ./dist/bin/sync-open-api.js"
+
+[tasks."server:migrations"]
+dir = "server"
+run = "node ./dist/bin/migrations.js"
+description = "Run database migration commands (create, generate, run, debug, or query)"
+
+[tasks."server:schema-drop"]
+run = "mise run server:migrations query 'DROP schema public cascade; CREATE schema public;'"
+
+[tasks."server:schema-reset"]
+run = "mise run server:schema-drop && mise run server:migrations run"
+
+[tasks."server:email-dev"]
+env._.path = "./server/node_modules/.bin"
+dir = "server"
+run = "email dev -p 3050 --dir src/emails"
+
+[tasks."server:checklist"]
+run = [
+  "mise run server:install",
+  "mise run server:format",
+  "mise run server:lint",
+  "mise run server:check",
+  "mise run server:test-medium --run",
+  "mise run server:test --run",
+]
+
+
+# web
+[tasks."web:install"]
+run = "pnpm install --filter immich-web --frozen-lockfile"
+
+[tasks."web:svelte-kit-sync"]
+env._.path = "./web/node_modules/.bin"
+dir = "web"
+run = "svelte-kit sync"
+
+[tasks."web:build"]
+env._.path = "./web/node_modules/.bin"
+dir = "web"
+run = "vite build"
+
+[tasks."web:build-stats"]
+env.BUILD_STATS = "true"
+env._.path = "./web/node_modules/.bin"
+dir = "web"
+run = "vite build"
+
+[tasks."web:preview"]
+env._.path = "./web/node_modules/.bin"
+dir = "web"
+run = "vite preview"
+
+[tasks."web:start"]
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "vite dev --host 0.0.0.0 --port 3000"
+
+[tasks."web:test"]
+depends = "web:svelte-kit-sync"
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "vitest"
+
+[tasks."web:format"]
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "prettier --check ."
+
+[tasks."web:format-fix"]
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "prettier --write ."
+
+[tasks."web:lint"]
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "eslint . --max-warnings 0"
+
+[tasks."web:lint-p"]
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "eslint-p . --max-warnings 0 --concurrency=4"
+
+[tasks."web:lint-fix"]
+run = "mise run web:lint --fix"
+
+[tasks."web:check"]
+depends = "web:svelte-kit-sync"
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "tsc --noEmit"
+
+[tasks."web:check-svelte"]
+depends = "web:svelte-kit-sync"
+env._.path = "web/node_modules/.bin"
+dir = "web"
+run = "svelte-check --no-tsconfig --fail-on-warnings --compiler-warnings 'reactive_declaration_non_reactive_property:ignore' --ignore src/lib/components/photos-page/asset-grid.svelte"
+
+[tasks."web:checklist"]
+run = [
+  "mise run web:install",
+  "mise run web:format",
+  "mise run web:check",
+  "mise run web:test --run",
+  "mise run web:lint",
+]
