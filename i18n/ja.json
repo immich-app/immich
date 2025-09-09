@@ -392,7 +392,7 @@
   "advanced_settings_enable_alternate_media_filter_subtitle": "別の基準に従ってメディアファイルにフィルターをかけて、同期を行います。アプリがすべてのアルバムを読み込んでくれない場合にのみ、この機能を試してください。",
   "advanced_settings_enable_alternate_media_filter_title": "[試験運用] 別のデバイスのアルバム同期フィルターを使用する",
   "advanced_settings_log_level_title": "ログレベル: {level}",
-  "advanced_settings_prefer_remote_subtitle": "デバイスによっては、デバイス上にあるサムネイルのロードに非常に時間がかかることがあります。このオプションをに有効にする事により、サーバーから直接画像をロードすることが可能です。",
+  "advanced_settings_prefer_remote_subtitle": "デバイスによっては、デバイス上にあるサムネイルのロードに非常に時間がかかることがあります。このオプションを有効にする事により、サーバーから直接画像をロードすることが可能です。",
   "advanced_settings_prefer_remote_title": "リモートを優先する",
   "advanced_settings_proxy_headers_subtitle": "プロキシヘッダを設定する",
   "advanced_settings_proxy_headers_title": "プロキシヘッダ",

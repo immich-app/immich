@@ -118,7 +118,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       self.handleHostResult(result: result)
     })
   }
-
+  
   /**
    * Cancels the currently running background task, either due to timeout or external request.
    * Sends a cancel signal to the Flutter side and sets up a fallback timer to ensure
@@ -140,6 +140,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       self.complete(success: false)
     }
   }
+
   
   /**
    * Handles the result from Flutter API calls and determines the success/failure status.

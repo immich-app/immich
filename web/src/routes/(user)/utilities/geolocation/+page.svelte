@@ -141,7 +141,9 @@
     <div class="flex gap-2 justify-end place-items-center">
       <Text class="hidden md:block text-xs mr-4 text-dark/50">{$t('geolocation_instruction_location')}</Text>
       <div class="border flex place-items-center place-content-center px-2 py-1 bg-primary/10 rounded-2xl">
-        <p class="text-xs text-gray-500 font-mono mr-5 ml-2 uppercase">{$t('selected_gps_coordinates')}</p>
+        <Text class="hidden md:inline-block text-xs text-gray-500 font-mono mr-5 ml-2 uppercase">
+          {$t('selected_gps_coordinates')}
+        </Text>
         <Text
           title="latitude, longitude"
           class="rounded-3xl font-mono text-sm text-primary px-2 py-1 transition-all duration-100 ease-in-out {locationUpdated
@@ -150,9 +152,9 @@
         >
       </div>
 
-      <Button size="small" color="secondary" variant="ghost" leadingIcon={mdiPencilOutline} onclick={handlePickOnMap}
-        >{$t('location_picker_choose_on_map')}</Button
-      >
+      <Button size="small" color="secondary" variant="ghost" leadingIcon={mdiPencilOutline} onclick={handlePickOnMap}>
+        <Text class="hidden sm:inline-block">{$t('location_picker_choose_on_map')}</Text>
+      </Button>
       <Button
         leadingIcon={mdiSelectRemove}
         size="small"
@@ -170,7 +172,9 @@
         disabled={assetInteraction.selectedAssets.length === 0}
         onclick={() => handleUpdate()}
       >
-        {$t('apply_count', { values: { count: assetInteraction.selectedAssets.length } })}
+        <Text class="hidden sm:inline-block">
+          {$t('apply_count', { values: { count: assetInteraction.selectedAssets.length } })}
+        </Text>
       </Button>
     </div>
   {/snippet}

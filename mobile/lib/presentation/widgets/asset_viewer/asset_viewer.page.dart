@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -129,6 +130,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     reloadSubscription?.cancel();
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -596,6 +598,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Rebuild the widget when the asset viewer state changes
     // Using multiple selectors to avoid unnecessary rebuilds for other state changes
     ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
+    ref.watch(assetViewerProvider.select((s) => s.showingControls));
     ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity));
     ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     ref.watch(isPlayingMotionVideoProvider);
@@ -610,6 +613,15 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _handleCasting();
       });
+    });
+
+    // Listen for control visibility changes and change system UI mode accordingly
+    ref.listen(assetViewerProvider.select((value) => value.showingControls), (_, showingControls) async {
+      if (showingControls) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      }
     });
 
     // Currently it is not possible to scroll the asset when the bottom sheet is open all the way.

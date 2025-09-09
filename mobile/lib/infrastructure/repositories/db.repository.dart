@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
@@ -43,6 +44,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 
 @DriftDatabase(
   tables: [
+    AuthUserEntity,
     UserEntity,
     UserMetadataEntity,
     PartnerEntity,
@@ -68,7 +70,7 @@ class Drift extends $Drift implements IDatabaseRepository {
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -123,6 +125,14 @@ class Drift extends $Drift implements IDatabaseRepository {
           from7To8: (m, v8) async {
             await m.create(v8.storeEntity);
           },
+          from8To9: (m, v9) async {
+            await m.addColumn(v9.localAlbumEntity, v9.localAlbumEntity.linkedRemoteAlbumId);
+          },
+          from9To10: (m, v10) async {
+            await m.createTable(v10.authUserEntity);
+            await m.addColumn(v10.userEntity, v10.userEntity.avatarColor);
+            await m.alterTable(TableMigration(v10.userEntity));
+          },
         ),
       );
 
@@ -138,7 +148,7 @@ class Drift extends $Drift implements IDatabaseRepository {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 500');
+      await customStatement('PRAGMA busy_timeout = 30000');
     },
   );
 }
