@@ -735,8 +735,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.24.0
-        version: 0.24.1(@internationalized/date@3.8.2)(svelte@5.35.5)
+        specifier: ^0.27.1
+        version: 0.27.1(@internationalized/date@3.8.2)(svelte@5.35.5)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -1625,6 +1625,10 @@ packages:
     resolution: {integrity: sha512-9uIQ10o0WGdpP6GDhXcdOJPJuDgFtIDtN/9+ArJQ2NAfAmiuhTQdzkaTGR33v43GYS2UrSA0eX2pPPHoFVvpxA==}
     engines: {node: '>=6.9.0'}
 
+  '@babel/runtime@7.28.4':
+    resolution: {integrity: sha512-Q/N6JNWvIvPnLDvjlE1OUBLPQHH6l3CltCEsHIujp45zQUSSh8K+gHnaEX45yAT1nyngnINhvWtzN+Nb9D8RAQ==}
+    engines: {node: '>=6.9.0'}
+
   '@babel/template@7.27.2':
     resolution: {integrity: sha512-LPDZ85aEJyYSd18/DkjNh4/y1ntkE5KwUHWTiqgRxruuZL2F1yuHligVHLvcHY2vMHXttKFpJn6LwfI7cw7ODw==}
     engines: {node: '>=6.9.0'}
@@ -2465,8 +2469,8 @@ packages:
   '@floating-ui/core@1.7.3':
     resolution: {integrity: sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==}
 
-  '@floating-ui/dom@1.7.3':
-    resolution: {integrity: sha512-uZA413QEpNuhtb3/iIKoYMSK07keHPYeXF02Zhd6e213j+d1NamLix/mCLxBUDW/Gx52sPH2m+chlUsyaBs/Ag==}
+  '@floating-ui/dom@1.7.4':
+    resolution: {integrity: sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==}
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
@@ -2649,8 +2653,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@immich/ui@0.24.1':
-    resolution: {integrity: sha512-phJ9BHV0+OnKsxXD+5+Te5Amnb1N4ExYpRGSJPYFqutd5WXeN7kZGKZXd3CfcQ1e31SXRy4DsHSGdM1pY7AUgA==}
+  '@immich/ui@0.27.1':
+    resolution: {integrity: sha512-d/LqCpFZwaZ6Vp2wz+DkhMirMle2zL/y4SHyKLmA0QI6pwz+yZaym6DlYkx3ZPKlN10/ugeHi58fXdlMxJiuKA==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -5284,8 +5288,8 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
-  bits-ui@2.9.4:
-    resolution: {integrity: sha512-Cqn685P6DDuEyBZT/CWMyS5+8JAnYbctvoEVPcmiut+HUpG3SozVgjoDaUib5VG4ZYUKEi1FPwHxiXo9c6J0PA==}
+  bits-ui@2.9.6:
+    resolution: {integrity: sha512-OzHktsQRsIz/hIMk5VwHo96Wpp/KY68q/ebUPUzTbvuFBrALB/X+QvO4KLgdczj5dfb3xHs9zpWq8yMH8ZbZlA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@internationalized/date': ^3.8.1
@@ -8762,6 +8766,9 @@ packages:
   nwsapi@2.2.21:
     resolution: {integrity: sha512-o6nIY3qwiSXl7/LuOU0Dmuctd34Yay0yeuZRLFmDPrrdHpXKFndPj3hM+YEPVHYC5fx2otBx4Ilc/gyYSAUaIA==}
 
+  nwsapi@2.2.22:
+    resolution: {integrity: sha512-ujSMe1OWVn55euT1ihwCI1ZcAaAU3nxUiDwfDQldc51ZXaB9m2AyOn6/jh1BLe2t/G8xd6uKG1UBF2aZJeg2SQ==}
+
   nypm@0.6.0:
     resolution: {integrity: sha512-mn8wBFV9G9+UFHIrq+pZ2r2zL4aPau/by3kJb3cM7+5tQHMt6HGQB8FDIeKFYp8o0D2pnH6nVsO88N4AmUxIWg==}
     engines: {node: ^14.16.0 || >=16.10.0}
@@ -10394,6 +10401,10 @@ packages:
   simple-get@3.1.1:
     resolution: {integrity: sha512-CQ5LTKGfCpvE1K0n2us+kuMPbk/q0EKl82s4aheV9oXjFEz6W/Y7oQFVJuU6QG77hRT4Ghb5RURteF5vnWjupA==}
 
+  simple-icons@15.14.0:
+    resolution: {integrity: sha512-eTBZiiwDFN8RPkcmHKoUz1+sckeqNQXv5ujQcgQddDzp3xuDIFWeZh/i0oEv1StOPsf9NPMC0gTBxUzhPqHzag==}
+    engines: {node: '>=0.12.18'}
+
   simple-swizzle@0.2.2:
     resolution: {integrity: sha512-JA//kQgZtbuY83m+xT+tXJkmJncGMTFT+C+g2h2R9uxkYIrE2yy9sgmcLhCnw57/WSD+Eh3J97FPEDFnbXnDUg==}
 
@@ -10784,8 +10795,8 @@ packages:
   tailwind-merge@3.3.1:
     resolution: {integrity: sha512-gBXpgUm/3rp1lMZZrM/w7D8GKqshif0zAymAhbCyIt8KMe+0v9DQ7cdYLR4FHH/cKpdTXb+A/tKKU3eolfsI+g==}
 
-  tailwind-variants@2.1.0:
-    resolution: {integrity: sha512-82m0eRex0z6A3GpvfoTCpHr+wWJmbecfVZfP3mqLoDxeya5tN4mYJQZwa5Aw1hRZTedwpu1D2JizYenoEdyD8w==}
+  tailwind-variants@3.1.1:
+    resolution: {integrity: sha512-ftLXe3krnqkMHsuBTEmaVUXYovXtPyTK7ckEfDRXS8PBZx0bAUas+A0jYxuKA5b8qg++wvQ3d2MQ7l/xeZxbZQ==}
     engines: {node: '>=16.x', pnpm: '>=7.x'}
     peerDependencies:
       tailwind-merge: '>=3.0.0'
@@ -12699,6 +12710,8 @@ snapshots:
 
   '@babel/runtime@7.28.3': {}
 
+  '@babel/runtime@7.28.4': {}
+
   '@babel/template@7.27.2':
     dependencies:
       '@babel/code-frame': 7.27.1
@@ -14006,7 +14019,7 @@ snapshots:
     dependencies:
       '@floating-ui/utils': 0.2.10
 
-  '@floating-ui/dom@1.7.3':
+  '@floating-ui/dom@1.7.4':
     dependencies:
       '@floating-ui/core': 1.7.3
       '@floating-ui/utils': 0.2.10
@@ -14162,13 +14175,14 @@ snapshots:
   '@img/sharp-win32-x64@0.34.3':
     optional: true
 
-  '@immich/ui@0.24.1(@internationalized/date@3.8.2)(svelte@5.35.5)':
+  '@immich/ui@0.27.1(@internationalized/date@3.8.2)(svelte@5.35.5)':
     dependencies:
       '@mdi/js': 7.4.47
-      bits-ui: 2.9.4(@internationalized/date@3.8.2)(svelte@5.35.5)
+      bits-ui: 2.9.6(@internationalized/date@3.8.2)(svelte@5.35.5)
+      simple-icons: 15.14.0
       svelte: 5.35.5
       tailwind-merge: 3.3.1
-      tailwind-variants: 2.1.0(tailwind-merge@3.3.1)(tailwindcss@4.1.12)
+      tailwind-variants: 3.1.1(tailwind-merge@3.3.1)(tailwindcss@4.1.12)
       tailwindcss: 4.1.12
     transitivePeerDependencies:
       - '@internationalized/date'
@@ -15752,7 +15766,7 @@ snapshots:
 
   '@slorber/react-helmet-async@1.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@babel/runtime': 7.28.3
+      '@babel/runtime': 7.28.4
       invariant: 2.2.4
       prop-types: 15.8.1
       react: 18.3.1
@@ -17257,10 +17271,10 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bits-ui@2.9.4(@internationalized/date@3.8.2)(svelte@5.35.5):
+  bits-ui@2.9.6(@internationalized/date@3.8.2)(svelte@5.35.5):
     dependencies:
       '@floating-ui/core': 1.7.3
-      '@floating-ui/dom': 1.7.3
+      '@floating-ui/dom': 1.7.4
       '@internationalized/date': 3.8.2
       esm-env: 1.2.2
       runed: 0.29.2(svelte@5.35.5)
@@ -20271,7 +20285,7 @@ snapshots:
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       is-potential-custom-element-name: 1.0.1
-      nwsapi: 2.2.21
+      nwsapi: 2.2.22
       parse5: 7.3.0
       rrweb-cssom: 0.8.0
       saxes: 6.0.0
@@ -20301,7 +20315,7 @@ snapshots:
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       is-potential-custom-element-name: 1.0.1
-      nwsapi: 2.2.21
+      nwsapi: 2.2.22
       parse5: 7.3.0
       rrweb-cssom: 0.8.0
       saxes: 6.0.0
@@ -21601,6 +21615,9 @@ snapshots:
   nwsapi@2.2.21:
     optional: true
 
+  nwsapi@2.2.22:
+    optional: true
+
   nypm@0.6.0:
     dependencies:
       citty: 0.1.6
@@ -22808,7 +22825,7 @@ snapshots:
 
   react-redux@7.2.9(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@babel/runtime': 7.28.3
+      '@babel/runtime': 7.28.4
       '@types/react-redux': 7.1.34
       hoist-non-react-statics: 3.3.2
       loose-envify: 1.4.0
@@ -22947,7 +22964,7 @@ snapshots:
 
   redux@4.2.1:
     dependencies:
-      '@babel/runtime': 7.28.3
+      '@babel/runtime': 7.28.4
 
   reflect-metadata@0.2.2: {}
 
@@ -23548,6 +23565,8 @@ snapshots:
       once: 1.4.0
       simple-concat: 1.0.1
 
+  simple-icons@15.14.0: {}
+
   simple-swizzle@0.2.2:
     dependencies:
       is-arrayish: 0.3.2
@@ -24023,7 +24042,7 @@ snapshots:
 
   tailwind-merge@3.3.1: {}
 
-  tailwind-variants@2.1.0(tailwind-merge@3.3.1)(tailwindcss@4.1.12):
+  tailwind-variants@3.1.1(tailwind-merge@3.3.1)(tailwindcss@4.1.12):
     dependencies:
       tailwindcss: 4.1.12
     optionalDependencies:
