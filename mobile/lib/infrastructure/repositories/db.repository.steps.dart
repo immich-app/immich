@@ -3837,6 +3837,7 @@ final class Schema10 extends i0.VersionedSchema {
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
+    authUserEntity,
     userMetadataEntity,
     partnerEntity,
     remoteExifEntity,
@@ -3847,11 +3848,9 @@ final class Schema10 extends i0.VersionedSchema {
     personEntity,
     assetFaceEntity,
     storeEntity,
-    localTrashedAssetEntity,
     idxLatLng,
-    idxLocalTrashedAssetChecksum,
   ];
-  late final Shape16 userEntity = Shape16(
+  late final Shape20 userEntity = Shape20(
     source: i0.VersionedTable(
       entityName: 'user_entity',
       withoutRowId: true,
@@ -3860,11 +3859,10 @@ final class Schema10 extends i0.VersionedSchema {
       columns: [
         _column_0,
         _column_1,
-        _column_2,
         _column_3,
         _column_84,
         _column_85,
-        _column_5,
+        _column_91,
       ],
       attachedDatabase: database,
     ),
@@ -4004,6 +4002,28 @@ final class Schema10 extends i0.VersionedSchema {
   final i1.Index idxRemoteAssetChecksum = i1.Index(
     'idx_remote_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
+  );
+  late final Shape21 authUserEntity = Shape21(
+    source: i0.VersionedTable(
+      entityName: 'auth_user_entity',
+      withoutRowId: true,
+      isStrict: true,
+      tableConstraints: ['PRIMARY KEY(id)'],
+      columns: [
+        _column_0,
+        _column_1,
+        _column_3,
+        _column_2,
+        _column_84,
+        _column_85,
+        _column_92,
+        _column_93,
+        _column_7,
+        _column_94,
+      ],
+      attachedDatabase: database,
+    ),
+    alias: null,
   );
   late final Shape4 userMetadataEntity = Shape4(
     source: i0.VersionedTable(
@@ -4173,24 +4193,9 @@ final class Schema10 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape20 localTrashedAssetEntity = Shape20(
-    source: i0.VersionedTable(
-      entityName: 'local_trashed_asset_entity',
-      withoutRowId: true,
-      isStrict: true,
-      tableConstraints: ['PRIMARY KEY(id)'],
-      columns: [_column_0, _column_36, _column_13, _column_1, _column_9],
-      attachedDatabase: database,
-    ),
-    alias: null,
-  );
   final i1.Index idxLatLng = i1.Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
-  );
-  final i1.Index idxLocalTrashedAssetChecksum = i1.Index(
-    'idx_local_trashed_asset_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_local_trashed_asset_checksum ON local_trashed_asset_entity (checksum)',
   );
 }
 
@@ -4198,16 +4203,73 @@ class Shape20 extends i0.VersionedTable {
   Shape20({required super.source, required super.alias}) : super.aliased();
   i1.GeneratedColumn<String> get id =>
       columnsByName['id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get assetId =>
-      columnsByName['asset_id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get checksum =>
-      columnsByName['checksum']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get name =>
       columnsByName['name']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<DateTime> get createdAt =>
-      columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<String> get email =>
+      columnsByName['email']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<bool> get hasProfileImage =>
+      columnsByName['has_profile_image']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<DateTime> get profileChangedAt =>
+      columnsByName['profile_changed_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<int> get avatarColor =>
+      columnsByName['avatar_color']! as i1.GeneratedColumn<int>;
 }
 
+i1.GeneratedColumn<int> _column_91(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'avatar_color',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      defaultValue: const CustomExpression('0'),
+    );
+
+class Shape21 extends i0.VersionedTable {
+  Shape21({required super.source, required super.alias}) : super.aliased();
+  i1.GeneratedColumn<String> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get name =>
+      columnsByName['name']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get email =>
+      columnsByName['email']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<bool> get isAdmin =>
+      columnsByName['is_admin']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<bool> get hasProfileImage =>
+      columnsByName['has_profile_image']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<DateTime> get profileChangedAt =>
+      columnsByName['profile_changed_at']! as i1.GeneratedColumn<DateTime>;
+  i1.GeneratedColumn<int> get avatarColor =>
+      columnsByName['avatar_color']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get quotaSizeInBytes =>
+      columnsByName['quota_size_in_bytes']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get quotaUsageInBytes =>
+      columnsByName['quota_usage_in_bytes']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get pinCode =>
+      columnsByName['pin_code']! as i1.GeneratedColumn<String>;
+}
+
+i1.GeneratedColumn<int> _column_92(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'avatar_color',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+    );
+i1.GeneratedColumn<int> _column_93(String aliasedName) =>
+    i1.GeneratedColumn<int>(
+      'quota_size_in_bytes',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.int,
+      defaultValue: const CustomExpression('0'),
+    );
+i1.GeneratedColumn<String> _column_94(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'pin_code',
+      aliasedName,
+      true,
+      type: i1.DriftSqlType.string,
+    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,

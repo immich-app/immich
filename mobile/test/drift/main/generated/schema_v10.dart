@@ -22,17 +22,6 @@ class UserEntity extends Table with TableInfo<UserEntity, UserEntityData> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  late final GeneratedColumn<bool> isAdmin = GeneratedColumn<bool>(
-    'is_admin',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_admin" IN (0, 1))',
-    ),
-    defaultValue: const CustomExpression('0'),
-  );
   late final GeneratedColumn<String> email = GeneratedColumn<String>(
     'email',
     aliasedName,
@@ -60,23 +49,22 @@ class UserEntity extends Table with TableInfo<UserEntity, UserEntityData> {
         requiredDuringInsert: false,
         defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
       );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
+  late final GeneratedColumn<int> avatarColor = GeneratedColumn<int>(
+    'avatar_color',
     aliasedName,
     false,
-    type: DriftSqlType.dateTime,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+    defaultValue: const CustomExpression('0'),
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     name,
-    isAdmin,
     email,
     hasProfileImage,
     profileChangedAt,
-    updatedAt,
+    avatarColor,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -97,10 +85,6 @@ class UserEntity extends Table with TableInfo<UserEntity, UserEntityData> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
-      isAdmin: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}is_admin'],
-      )!,
       email: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}email'],
@@ -113,9 +97,9 @@ class UserEntity extends Table with TableInfo<UserEntity, UserEntityData> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}profile_changed_at'],
       )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
+      avatarColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}avatar_color'],
       )!,
     );
   }
@@ -134,30 +118,27 @@ class UserEntity extends Table with TableInfo<UserEntity, UserEntityData> {
 class UserEntityData extends DataClass implements Insertable<UserEntityData> {
   final String id;
   final String name;
-  final bool isAdmin;
   final String email;
   final bool hasProfileImage;
   final DateTime profileChangedAt;
-  final DateTime updatedAt;
+  final int avatarColor;
   const UserEntityData({
     required this.id,
     required this.name,
-    required this.isAdmin,
     required this.email,
     required this.hasProfileImage,
     required this.profileChangedAt,
-    required this.updatedAt,
+    required this.avatarColor,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
-    map['is_admin'] = Variable<bool>(isAdmin);
     map['email'] = Variable<String>(email);
     map['has_profile_image'] = Variable<bool>(hasProfileImage);
     map['profile_changed_at'] = Variable<DateTime>(profileChangedAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['avatar_color'] = Variable<int>(avatarColor);
     return map;
   }
 
@@ -169,11 +150,10 @@ class UserEntityData extends DataClass implements Insertable<UserEntityData> {
     return UserEntityData(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      isAdmin: serializer.fromJson<bool>(json['isAdmin']),
       email: serializer.fromJson<String>(json['email']),
       hasProfileImage: serializer.fromJson<bool>(json['hasProfileImage']),
       profileChangedAt: serializer.fromJson<DateTime>(json['profileChangedAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      avatarColor: serializer.fromJson<int>(json['avatarColor']),
     );
   }
   @override
@@ -182,36 +162,32 @@ class UserEntityData extends DataClass implements Insertable<UserEntityData> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
-      'isAdmin': serializer.toJson<bool>(isAdmin),
       'email': serializer.toJson<String>(email),
       'hasProfileImage': serializer.toJson<bool>(hasProfileImage),
       'profileChangedAt': serializer.toJson<DateTime>(profileChangedAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'avatarColor': serializer.toJson<int>(avatarColor),
     };
   }
 
   UserEntityData copyWith({
     String? id,
     String? name,
-    bool? isAdmin,
     String? email,
     bool? hasProfileImage,
     DateTime? profileChangedAt,
-    DateTime? updatedAt,
+    int? avatarColor,
   }) => UserEntityData(
     id: id ?? this.id,
     name: name ?? this.name,
-    isAdmin: isAdmin ?? this.isAdmin,
     email: email ?? this.email,
     hasProfileImage: hasProfileImage ?? this.hasProfileImage,
     profileChangedAt: profileChangedAt ?? this.profileChangedAt,
-    updatedAt: updatedAt ?? this.updatedAt,
+    avatarColor: avatarColor ?? this.avatarColor,
   );
   UserEntityData copyWithCompanion(UserEntityCompanion data) {
     return UserEntityData(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
-      isAdmin: data.isAdmin.present ? data.isAdmin.value : this.isAdmin,
       email: data.email.present ? data.email.value : this.email,
       hasProfileImage: data.hasProfileImage.present
           ? data.hasProfileImage.value
@@ -219,7 +195,9 @@ class UserEntityData extends DataClass implements Insertable<UserEntityData> {
       profileChangedAt: data.profileChangedAt.present
           ? data.profileChangedAt.value
           : this.profileChangedAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      avatarColor: data.avatarColor.present
+          ? data.avatarColor.value
+          : this.avatarColor,
     );
   }
 
@@ -228,11 +206,10 @@ class UserEntityData extends DataClass implements Insertable<UserEntityData> {
     return (StringBuffer('UserEntityData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('isAdmin: $isAdmin, ')
           ..write('email: $email, ')
           ..write('hasProfileImage: $hasProfileImage, ')
           ..write('profileChangedAt: $profileChangedAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('avatarColor: $avatarColor')
           ..write(')'))
         .toString();
   }
@@ -241,11 +218,10 @@ class UserEntityData extends DataClass implements Insertable<UserEntityData> {
   int get hashCode => Object.hash(
     id,
     name,
-    isAdmin,
     email,
     hasProfileImage,
     profileChangedAt,
-    updatedAt,
+    avatarColor,
   );
   @override
   bool operator ==(Object other) =>
@@ -253,78 +229,70 @@ class UserEntityData extends DataClass implements Insertable<UserEntityData> {
       (other is UserEntityData &&
           other.id == this.id &&
           other.name == this.name &&
-          other.isAdmin == this.isAdmin &&
           other.email == this.email &&
           other.hasProfileImage == this.hasProfileImage &&
           other.profileChangedAt == this.profileChangedAt &&
-          other.updatedAt == this.updatedAt);
+          other.avatarColor == this.avatarColor);
 }
 
 class UserEntityCompanion extends UpdateCompanion<UserEntityData> {
   final Value<String> id;
   final Value<String> name;
-  final Value<bool> isAdmin;
   final Value<String> email;
   final Value<bool> hasProfileImage;
   final Value<DateTime> profileChangedAt;
-  final Value<DateTime> updatedAt;
+  final Value<int> avatarColor;
   const UserEntityCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
-    this.isAdmin = const Value.absent(),
     this.email = const Value.absent(),
     this.hasProfileImage = const Value.absent(),
     this.profileChangedAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    this.avatarColor = const Value.absent(),
   });
   UserEntityCompanion.insert({
     required String id,
     required String name,
-    this.isAdmin = const Value.absent(),
     required String email,
     this.hasProfileImage = const Value.absent(),
     this.profileChangedAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
+    this.avatarColor = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
        email = Value(email);
   static Insertable<UserEntityData> custom({
     Expression<String>? id,
     Expression<String>? name,
-    Expression<bool>? isAdmin,
     Expression<String>? email,
     Expression<bool>? hasProfileImage,
     Expression<DateTime>? profileChangedAt,
-    Expression<DateTime>? updatedAt,
+    Expression<int>? avatarColor,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (isAdmin != null) 'is_admin': isAdmin,
       if (email != null) 'email': email,
       if (hasProfileImage != null) 'has_profile_image': hasProfileImage,
       if (profileChangedAt != null) 'profile_changed_at': profileChangedAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
+      if (avatarColor != null) 'avatar_color': avatarColor,
     });
   }
 
   UserEntityCompanion copyWith({
     Value<String>? id,
     Value<String>? name,
-    Value<bool>? isAdmin,
     Value<String>? email,
     Value<bool>? hasProfileImage,
     Value<DateTime>? profileChangedAt,
-    Value<DateTime>? updatedAt,
+    Value<int>? avatarColor,
   }) {
     return UserEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      isAdmin: isAdmin ?? this.isAdmin,
       email: email ?? this.email,
       hasProfileImage: hasProfileImage ?? this.hasProfileImage,
       profileChangedAt: profileChangedAt ?? this.profileChangedAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      avatarColor: avatarColor ?? this.avatarColor,
     );
   }
 
@@ -337,9 +305,6 @@ class UserEntityCompanion extends UpdateCompanion<UserEntityData> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (isAdmin.present) {
-      map['is_admin'] = Variable<bool>(isAdmin.value);
-    }
     if (email.present) {
       map['email'] = Variable<String>(email.value);
     }
@@ -349,8 +314,8 @@ class UserEntityCompanion extends UpdateCompanion<UserEntityData> {
     if (profileChangedAt.present) {
       map['profile_changed_at'] = Variable<DateTime>(profileChangedAt.value);
     }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    if (avatarColor.present) {
+      map['avatar_color'] = Variable<int>(avatarColor.value);
     }
     return map;
   }
@@ -360,11 +325,10 @@ class UserEntityCompanion extends UpdateCompanion<UserEntityData> {
     return (StringBuffer('UserEntityCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('isAdmin: $isAdmin, ')
           ..write('email: $email, ')
           ..write('hasProfileImage: $hasProfileImage, ')
           ..write('profileChangedAt: $profileChangedAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('avatarColor: $avatarColor')
           ..write(')'))
         .toString();
   }
@@ -2957,6 +2921,487 @@ class LocalAlbumAssetEntityCompanion
     return (StringBuffer('LocalAlbumAssetEntityCompanion(')
           ..write('assetId: $assetId, ')
           ..write('albumId: $albumId')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class AuthUserEntity extends Table
+    with TableInfo<AuthUserEntity, AuthUserEntityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  AuthUserEntity(this.attachedDatabase, [this._alias]);
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+    'email',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<bool> isAdmin = GeneratedColumn<bool>(
+    'is_admin',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_admin" IN (0, 1))',
+    ),
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<bool> hasProfileImage = GeneratedColumn<bool>(
+    'has_profile_image',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("has_profile_image" IN (0, 1))',
+    ),
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<DateTime> profileChangedAt =
+      GeneratedColumn<DateTime>(
+        'profile_changed_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
+      );
+  late final GeneratedColumn<int> avatarColor = GeneratedColumn<int>(
+    'avatar_color',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<int> quotaSizeInBytes = GeneratedColumn<int>(
+    'quota_size_in_bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<int> quotaUsageInBytes = GeneratedColumn<int>(
+    'quota_usage_in_bytes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<String> pinCode = GeneratedColumn<String>(
+    'pin_code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    email,
+    isAdmin,
+    hasProfileImage,
+    profileChangedAt,
+    avatarColor,
+    quotaSizeInBytes,
+    quotaUsageInBytes,
+    pinCode,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'auth_user_entity';
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AuthUserEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AuthUserEntityData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      email: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}email'],
+      )!,
+      isAdmin: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_admin'],
+      )!,
+      hasProfileImage: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}has_profile_image'],
+      )!,
+      profileChangedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}profile_changed_at'],
+      )!,
+      avatarColor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}avatar_color'],
+      )!,
+      quotaSizeInBytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quota_size_in_bytes'],
+      )!,
+      quotaUsageInBytes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quota_usage_in_bytes'],
+      )!,
+      pinCode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pin_code'],
+      ),
+    );
+  }
+
+  @override
+  AuthUserEntity createAlias(String alias) {
+    return AuthUserEntity(attachedDatabase, alias);
+  }
+
+  @override
+  bool get withoutRowId => true;
+  @override
+  bool get isStrict => true;
+}
+
+class AuthUserEntityData extends DataClass
+    implements Insertable<AuthUserEntityData> {
+  final String id;
+  final String name;
+  final String email;
+  final bool isAdmin;
+  final bool hasProfileImage;
+  final DateTime profileChangedAt;
+  final int avatarColor;
+  final int quotaSizeInBytes;
+  final int quotaUsageInBytes;
+  final String? pinCode;
+  const AuthUserEntityData({
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.isAdmin,
+    required this.hasProfileImage,
+    required this.profileChangedAt,
+    required this.avatarColor,
+    required this.quotaSizeInBytes,
+    required this.quotaUsageInBytes,
+    this.pinCode,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['email'] = Variable<String>(email);
+    map['is_admin'] = Variable<bool>(isAdmin);
+    map['has_profile_image'] = Variable<bool>(hasProfileImage);
+    map['profile_changed_at'] = Variable<DateTime>(profileChangedAt);
+    map['avatar_color'] = Variable<int>(avatarColor);
+    map['quota_size_in_bytes'] = Variable<int>(quotaSizeInBytes);
+    map['quota_usage_in_bytes'] = Variable<int>(quotaUsageInBytes);
+    if (!nullToAbsent || pinCode != null) {
+      map['pin_code'] = Variable<String>(pinCode);
+    }
+    return map;
+  }
+
+  factory AuthUserEntityData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AuthUserEntityData(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      email: serializer.fromJson<String>(json['email']),
+      isAdmin: serializer.fromJson<bool>(json['isAdmin']),
+      hasProfileImage: serializer.fromJson<bool>(json['hasProfileImage']),
+      profileChangedAt: serializer.fromJson<DateTime>(json['profileChangedAt']),
+      avatarColor: serializer.fromJson<int>(json['avatarColor']),
+      quotaSizeInBytes: serializer.fromJson<int>(json['quotaSizeInBytes']),
+      quotaUsageInBytes: serializer.fromJson<int>(json['quotaUsageInBytes']),
+      pinCode: serializer.fromJson<String?>(json['pinCode']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'email': serializer.toJson<String>(email),
+      'isAdmin': serializer.toJson<bool>(isAdmin),
+      'hasProfileImage': serializer.toJson<bool>(hasProfileImage),
+      'profileChangedAt': serializer.toJson<DateTime>(profileChangedAt),
+      'avatarColor': serializer.toJson<int>(avatarColor),
+      'quotaSizeInBytes': serializer.toJson<int>(quotaSizeInBytes),
+      'quotaUsageInBytes': serializer.toJson<int>(quotaUsageInBytes),
+      'pinCode': serializer.toJson<String?>(pinCode),
+    };
+  }
+
+  AuthUserEntityData copyWith({
+    String? id,
+    String? name,
+    String? email,
+    bool? isAdmin,
+    bool? hasProfileImage,
+    DateTime? profileChangedAt,
+    int? avatarColor,
+    int? quotaSizeInBytes,
+    int? quotaUsageInBytes,
+    Value<String?> pinCode = const Value.absent(),
+  }) => AuthUserEntityData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    email: email ?? this.email,
+    isAdmin: isAdmin ?? this.isAdmin,
+    hasProfileImage: hasProfileImage ?? this.hasProfileImage,
+    profileChangedAt: profileChangedAt ?? this.profileChangedAt,
+    avatarColor: avatarColor ?? this.avatarColor,
+    quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
+    quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
+    pinCode: pinCode.present ? pinCode.value : this.pinCode,
+  );
+  AuthUserEntityData copyWithCompanion(AuthUserEntityCompanion data) {
+    return AuthUserEntityData(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      email: data.email.present ? data.email.value : this.email,
+      isAdmin: data.isAdmin.present ? data.isAdmin.value : this.isAdmin,
+      hasProfileImage: data.hasProfileImage.present
+          ? data.hasProfileImage.value
+          : this.hasProfileImage,
+      profileChangedAt: data.profileChangedAt.present
+          ? data.profileChangedAt.value
+          : this.profileChangedAt,
+      avatarColor: data.avatarColor.present
+          ? data.avatarColor.value
+          : this.avatarColor,
+      quotaSizeInBytes: data.quotaSizeInBytes.present
+          ? data.quotaSizeInBytes.value
+          : this.quotaSizeInBytes,
+      quotaUsageInBytes: data.quotaUsageInBytes.present
+          ? data.quotaUsageInBytes.value
+          : this.quotaUsageInBytes,
+      pinCode: data.pinCode.present ? data.pinCode.value : this.pinCode,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthUserEntityData(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('email: $email, ')
+          ..write('isAdmin: $isAdmin, ')
+          ..write('hasProfileImage: $hasProfileImage, ')
+          ..write('profileChangedAt: $profileChangedAt, ')
+          ..write('avatarColor: $avatarColor, ')
+          ..write('quotaSizeInBytes: $quotaSizeInBytes, ')
+          ..write('quotaUsageInBytes: $quotaUsageInBytes, ')
+          ..write('pinCode: $pinCode')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    email,
+    isAdmin,
+    hasProfileImage,
+    profileChangedAt,
+    avatarColor,
+    quotaSizeInBytes,
+    quotaUsageInBytes,
+    pinCode,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AuthUserEntityData &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.email == this.email &&
+          other.isAdmin == this.isAdmin &&
+          other.hasProfileImage == this.hasProfileImage &&
+          other.profileChangedAt == this.profileChangedAt &&
+          other.avatarColor == this.avatarColor &&
+          other.quotaSizeInBytes == this.quotaSizeInBytes &&
+          other.quotaUsageInBytes == this.quotaUsageInBytes &&
+          other.pinCode == this.pinCode);
+}
+
+class AuthUserEntityCompanion extends UpdateCompanion<AuthUserEntityData> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String> email;
+  final Value<bool> isAdmin;
+  final Value<bool> hasProfileImage;
+  final Value<DateTime> profileChangedAt;
+  final Value<int> avatarColor;
+  final Value<int> quotaSizeInBytes;
+  final Value<int> quotaUsageInBytes;
+  final Value<String?> pinCode;
+  const AuthUserEntityCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.email = const Value.absent(),
+    this.isAdmin = const Value.absent(),
+    this.hasProfileImage = const Value.absent(),
+    this.profileChangedAt = const Value.absent(),
+    this.avatarColor = const Value.absent(),
+    this.quotaSizeInBytes = const Value.absent(),
+    this.quotaUsageInBytes = const Value.absent(),
+    this.pinCode = const Value.absent(),
+  });
+  AuthUserEntityCompanion.insert({
+    required String id,
+    required String name,
+    required String email,
+    this.isAdmin = const Value.absent(),
+    this.hasProfileImage = const Value.absent(),
+    this.profileChangedAt = const Value.absent(),
+    required int avatarColor,
+    this.quotaSizeInBytes = const Value.absent(),
+    this.quotaUsageInBytes = const Value.absent(),
+    this.pinCode = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       email = Value(email),
+       avatarColor = Value(avatarColor);
+  static Insertable<AuthUserEntityData> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? email,
+    Expression<bool>? isAdmin,
+    Expression<bool>? hasProfileImage,
+    Expression<DateTime>? profileChangedAt,
+    Expression<int>? avatarColor,
+    Expression<int>? quotaSizeInBytes,
+    Expression<int>? quotaUsageInBytes,
+    Expression<String>? pinCode,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (email != null) 'email': email,
+      if (isAdmin != null) 'is_admin': isAdmin,
+      if (hasProfileImage != null) 'has_profile_image': hasProfileImage,
+      if (profileChangedAt != null) 'profile_changed_at': profileChangedAt,
+      if (avatarColor != null) 'avatar_color': avatarColor,
+      if (quotaSizeInBytes != null) 'quota_size_in_bytes': quotaSizeInBytes,
+      if (quotaUsageInBytes != null) 'quota_usage_in_bytes': quotaUsageInBytes,
+      if (pinCode != null) 'pin_code': pinCode,
+    });
+  }
+
+  AuthUserEntityCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String>? email,
+    Value<bool>? isAdmin,
+    Value<bool>? hasProfileImage,
+    Value<DateTime>? profileChangedAt,
+    Value<int>? avatarColor,
+    Value<int>? quotaSizeInBytes,
+    Value<int>? quotaUsageInBytes,
+    Value<String?>? pinCode,
+  }) {
+    return AuthUserEntityCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      isAdmin: isAdmin ?? this.isAdmin,
+      hasProfileImage: hasProfileImage ?? this.hasProfileImage,
+      profileChangedAt: profileChangedAt ?? this.profileChangedAt,
+      avatarColor: avatarColor ?? this.avatarColor,
+      quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
+      quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
+      pinCode: pinCode ?? this.pinCode,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (isAdmin.present) {
+      map['is_admin'] = Variable<bool>(isAdmin.value);
+    }
+    if (hasProfileImage.present) {
+      map['has_profile_image'] = Variable<bool>(hasProfileImage.value);
+    }
+    if (profileChangedAt.present) {
+      map['profile_changed_at'] = Variable<DateTime>(profileChangedAt.value);
+    }
+    if (avatarColor.present) {
+      map['avatar_color'] = Variable<int>(avatarColor.value);
+    }
+    if (quotaSizeInBytes.present) {
+      map['quota_size_in_bytes'] = Variable<int>(quotaSizeInBytes.value);
+    }
+    if (quotaUsageInBytes.present) {
+      map['quota_usage_in_bytes'] = Variable<int>(quotaUsageInBytes.value);
+    }
+    if (pinCode.present) {
+      map['pin_code'] = Variable<String>(pinCode.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthUserEntityCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('email: $email, ')
+          ..write('isAdmin: $isAdmin, ')
+          ..write('hasProfileImage: $hasProfileImage, ')
+          ..write('profileChangedAt: $profileChangedAt, ')
+          ..write('avatarColor: $avatarColor, ')
+          ..write('quotaSizeInBytes: $quotaSizeInBytes, ')
+          ..write('quotaUsageInBytes: $quotaUsageInBytes, ')
+          ..write('pinCode: $pinCode')
           ..write(')'))
         .toString();
   }
@@ -6629,297 +7074,6 @@ class StoreEntityCompanion extends UpdateCompanion<StoreEntityData> {
   }
 }
 
-class LocalTrashedAssetEntity extends Table
-    with TableInfo<LocalTrashedAssetEntity, LocalTrashedAssetEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  LocalTrashedAssetEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> assetId = GeneratedColumn<String>(
-    'asset_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES remote_asset_entity (id) ON DELETE CASCADE',
-    ),
-  );
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    assetId,
-    checksum,
-    name,
-    createdAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'local_trashed_asset_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  LocalTrashedAssetEntityData map(
-    Map<String, dynamic> data, {
-    String? tablePrefix,
-  }) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return LocalTrashedAssetEntityData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      assetId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}asset_id'],
-      )!,
-      checksum: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
-      )!,
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-    );
-  }
-
-  @override
-  LocalTrashedAssetEntity createAlias(String alias) {
-    return LocalTrashedAssetEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class LocalTrashedAssetEntityData extends DataClass
-    implements Insertable<LocalTrashedAssetEntityData> {
-  final String id;
-  final String assetId;
-  final String checksum;
-  final String name;
-  final DateTime createdAt;
-  const LocalTrashedAssetEntityData({
-    required this.id,
-    required this.assetId,
-    required this.checksum,
-    required this.name,
-    required this.createdAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['asset_id'] = Variable<String>(assetId);
-    map['checksum'] = Variable<String>(checksum);
-    map['name'] = Variable<String>(name);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    return map;
-  }
-
-  factory LocalTrashedAssetEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return LocalTrashedAssetEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      assetId: serializer.fromJson<String>(json['assetId']),
-      checksum: serializer.fromJson<String>(json['checksum']),
-      name: serializer.fromJson<String>(json['name']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'assetId': serializer.toJson<String>(assetId),
-      'checksum': serializer.toJson<String>(checksum),
-      'name': serializer.toJson<String>(name),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-    };
-  }
-
-  LocalTrashedAssetEntityData copyWith({
-    String? id,
-    String? assetId,
-    String? checksum,
-    String? name,
-    DateTime? createdAt,
-  }) => LocalTrashedAssetEntityData(
-    id: id ?? this.id,
-    assetId: assetId ?? this.assetId,
-    checksum: checksum ?? this.checksum,
-    name: name ?? this.name,
-    createdAt: createdAt ?? this.createdAt,
-  );
-  LocalTrashedAssetEntityData copyWithCompanion(
-    LocalTrashedAssetEntityCompanion data,
-  ) {
-    return LocalTrashedAssetEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      assetId: data.assetId.present ? data.assetId.value : this.assetId,
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      name: data.name.present ? data.name.value : this.name,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LocalTrashedAssetEntityData(')
-          ..write('id: $id, ')
-          ..write('assetId: $assetId, ')
-          ..write('checksum: $checksum, ')
-          ..write('name: $name, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, assetId, checksum, name, createdAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is LocalTrashedAssetEntityData &&
-          other.id == this.id &&
-          other.assetId == this.assetId &&
-          other.checksum == this.checksum &&
-          other.name == this.name &&
-          other.createdAt == this.createdAt);
-}
-
-class LocalTrashedAssetEntityCompanion
-    extends UpdateCompanion<LocalTrashedAssetEntityData> {
-  final Value<String> id;
-  final Value<String> assetId;
-  final Value<String> checksum;
-  final Value<String> name;
-  final Value<DateTime> createdAt;
-  const LocalTrashedAssetEntityCompanion({
-    this.id = const Value.absent(),
-    this.assetId = const Value.absent(),
-    this.checksum = const Value.absent(),
-    this.name = const Value.absent(),
-    this.createdAt = const Value.absent(),
-  });
-  LocalTrashedAssetEntityCompanion.insert({
-    required String id,
-    required String assetId,
-    required String checksum,
-    required String name,
-    this.createdAt = const Value.absent(),
-  }) : id = Value(id),
-       assetId = Value(assetId),
-       checksum = Value(checksum),
-       name = Value(name);
-  static Insertable<LocalTrashedAssetEntityData> custom({
-    Expression<String>? id,
-    Expression<String>? assetId,
-    Expression<String>? checksum,
-    Expression<String>? name,
-    Expression<DateTime>? createdAt,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (assetId != null) 'asset_id': assetId,
-      if (checksum != null) 'checksum': checksum,
-      if (name != null) 'name': name,
-      if (createdAt != null) 'created_at': createdAt,
-    });
-  }
-
-  LocalTrashedAssetEntityCompanion copyWith({
-    Value<String>? id,
-    Value<String>? assetId,
-    Value<String>? checksum,
-    Value<String>? name,
-    Value<DateTime>? createdAt,
-  }) {
-    return LocalTrashedAssetEntityCompanion(
-      id: id ?? this.id,
-      assetId: assetId ?? this.assetId,
-      checksum: checksum ?? this.checksum,
-      name: name ?? this.name,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (assetId.present) {
-      map['asset_id'] = Variable<String>(assetId.value);
-    }
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('LocalTrashedAssetEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('assetId: $assetId, ')
-          ..write('checksum: $checksum, ')
-          ..write('name: $name, ')
-          ..write('createdAt: $createdAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class DatabaseAtV10 extends GeneratedDatabase {
   DatabaseAtV10(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
@@ -6950,6 +7104,7 @@ class DatabaseAtV10 extends GeneratedDatabase {
     'idx_remote_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
   );
+  late final AuthUserEntity authUserEntity = AuthUserEntity(this);
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
   late final PartnerEntity partnerEntity = PartnerEntity(this);
   late final RemoteExifEntity remoteExifEntity = RemoteExifEntity(this);
@@ -6962,15 +7117,9 @@ class DatabaseAtV10 extends GeneratedDatabase {
   late final PersonEntity personEntity = PersonEntity(this);
   late final AssetFaceEntity assetFaceEntity = AssetFaceEntity(this);
   late final StoreEntity storeEntity = StoreEntity(this);
-  late final LocalTrashedAssetEntity localTrashedAssetEntity =
-      LocalTrashedAssetEntity(this);
   late final Index idxLatLng = Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
-  );
-  late final Index idxLocalTrashedAssetChecksum = Index(
-    'idx_local_trashed_asset_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_local_trashed_asset_checksum ON local_trashed_asset_entity (checksum)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -6989,6 +7138,7 @@ class DatabaseAtV10 extends GeneratedDatabase {
     uQRemoteAssetsOwnerChecksum,
     uQRemoteAssetsOwnerLibraryChecksum,
     idxRemoteAssetChecksum,
+    authUserEntity,
     userMetadataEntity,
     partnerEntity,
     remoteExifEntity,
@@ -6999,9 +7149,7 @@ class DatabaseAtV10 extends GeneratedDatabase {
     personEntity,
     assetFaceEntity,
     storeEntity,
-    localTrashedAssetEntity,
     idxLatLng,
-    idxLocalTrashedAssetChecksum,
   ];
   @override
   int get schemaVersion => 10;
