@@ -21,7 +21,7 @@ export const ImmichFooter = () => (
     </Row>
 
     <Text className="text-center text-sm text-immich-footer">
-      <Link href="https://immich.app">Immich</Link> project is available under GNU AGPL v3 license.
+      <Link href="https://pixelunion.eu">PixelUnion</Link> project is available under GNU AGPL v3 license.
     </Text>
   </>
 );

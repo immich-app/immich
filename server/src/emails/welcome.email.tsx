@@ -37,7 +37,7 @@ export const WelcomeEmail = ({ baseUrl, displayName, username, password, customT
 
   return (
     <ImmichLayout
-      preview={customTemplate ? emailContent.toString() : 'You have been invited to a new Immich instance.'}
+      preview={customTemplate ? emailContent.toString() : 'You have been invited to a new PixelUnion instance.'}
     >
       {customTemplate && (
         <Text className="m-0">
