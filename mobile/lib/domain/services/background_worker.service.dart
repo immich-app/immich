@@ -23,6 +23,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
+import 'package:worker_manager/worker_manager.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -64,24 +65,27 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> init() async {
     try {
-      await loadTranslations();
       HttpSSLOptions.apply(applyNative: false);
-      await _ref.read(authServiceProvider).setOpenApiServiceEndpoint();
 
-      // Initialize the file downloader
-      await FileDownloader().configure(
-        globalConfig: [
-          // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-          (Config.holdingQueue, (6, 6, 3)),
-          // On Android, if files are larger than 256MB, run in foreground service
-          (Config.runInForegroundIfFileLargerThan, 256),
-        ],
-      );
-      await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
-      await FileDownloader().trackTasks();
+      await Future.wait([
+        loadTranslations(),
+        workerManager.init(dynamicSpawning: true),
+        _ref.read(authServiceProvider).setOpenApiServiceEndpoint(),
+        // Initialize the file downloader
+        FileDownloader().configure(
+          globalConfig: [
+            // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
+            (Config.holdingQueue, (6, 6, 3)),
+            // On Android, if files are larger than 256MB, run in foreground service
+            (Config.runInForegroundIfFileLargerThan, 256),
+          ],
+        ),
+        FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false),
+        FileDownloader().trackTasks(),
+        _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess(),
+      ]);
+
       configureFileDownloaderNotifications();
-
-      await _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
 
       // Notify the host that the background worker service has been initialized and is ready to use
       _backgroundHostApi.onInitialized();
@@ -153,6 +157,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _isCleanedUp = true;
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
+        workerManager.dispose(),
         _drift.close(),
         _driftLogger.close(),
         _ref.read(backgroundSyncProvider).cancel(),
@@ -172,22 +177,29 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> _handleBackup({bool processBulk = true}) async {
     if (!_isBackupEnabled) {
+      _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
       return;
     }
 
+    _logger.info("[_handleBackup 2] Enqueuing assets for backup from the background service");
+
     final currentUser = _ref.read(currentUserProvider);
     if (currentUser == null) {
+      _logger.warning("[_handleBackup 3] No current user found. Skipping backup from background");
       return;
     }
 
     if (processBulk) {
+      _logger.info("[_handleBackup 4] Resume backup from background");
       return _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
     }
 
     final activeTask = await _ref.read(uploadServiceProvider).getActiveTasks(currentUser.id);
     if (activeTask.isNotEmpty) {
+      _logger.info("[_handleBackup 5] Resuming backup for active tasks from background");
       await _ref.read(uploadServiceProvider).resumeBackup();
     } else {
+      _logger.info("[_handleBackup 6] Starting serial backup for new tasks from background");
       await _ref.read(uploadServiceProvider).startBackupSerial(currentUser.id);
     }
   }
