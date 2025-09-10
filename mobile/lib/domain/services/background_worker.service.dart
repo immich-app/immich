@@ -64,24 +64,26 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> init() async {
     try {
-      await loadTranslations();
       HttpSSLOptions.apply(applyNative: false);
-      await _ref.read(authServiceProvider).setOpenApiServiceEndpoint();
 
-      // Initialize the file downloader
-      await FileDownloader().configure(
-        globalConfig: [
-          // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-          (Config.holdingQueue, (6, 6, 3)),
-          // On Android, if files are larger than 256MB, run in foreground service
-          (Config.runInForegroundIfFileLargerThan, 256),
-        ],
-      );
-      await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
-      await FileDownloader().trackTasks();
+      await Future.wait([
+        loadTranslations(),
+        _ref.read(authServiceProvider).setOpenApiServiceEndpoint(),
+        // Initialize the file downloader
+        FileDownloader().configure(
+          globalConfig: [
+            // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
+            (Config.holdingQueue, (6, 6, 3)),
+            // On Android, if files are larger than 256MB, run in foreground service
+            (Config.runInForegroundIfFileLargerThan, 256),
+          ],
+        ),
+        FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false),
+        FileDownloader().trackTasks(),
+        _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess(),
+      ]);
+
       configureFileDownloaderNotifications();
-
-      await _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
 
       // Notify the host that the background worker service has been initialized and is ready to use
       _backgroundHostApi.onInitialized();
