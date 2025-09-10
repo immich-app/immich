@@ -190,6 +190,8 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     city: city || null,
     country: country || null,
     people,
+    latitude: assetResponse.exifInfo?.latitude || null,
+    longitude: assetResponse.exifInfo?.longitude || null,
   };
 };
 
