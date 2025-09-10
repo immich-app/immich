@@ -33,12 +33,11 @@ import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 14;
+const int targetVersion = 15;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
   final int version = Store.get(StoreKey.version, targetVersion);
-
   if (version < 9) {
     await Store.put(StoreKey.version, targetVersion);
     final value = await db.storeValues.get(StoreKey.currentUser.id);
@@ -68,6 +67,22 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     await Store.populateCache();
   }
 
+  // Handle migration only for this version
+  // TODO: remove when old timeline is removed
+  if (version == 15) {
+    final isBeta = Store.tryGet(StoreKey.betaTimeline);
+    final isNewInstallation = await _isNewInstallation(db, drift);
+
+    // For new installations, no migration needed
+    // For existing installations, only migrate if beta timeline is not enabled (null or false)
+    if (isNewInstallation || isBeta == true) {
+      await Store.put(StoreKey.needBetaMigration, false);
+    } else {
+      await resetDriftDatabase(drift);
+      await Store.put(StoreKey.needBetaMigration, true);
+    }
+  }
+
   if (targetVersion >= 12) {
     await Store.put(StoreKey.version, targetVersion);
     return;
@@ -77,6 +92,35 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (shouldTruncate) {
     await _migrateTo(db, targetVersion);
+  }
+}
+
+Future<bool> _isNewInstallation(Isar db, Drift drift) async {
+  try {
+    final isarUserCount = await db.users.count();
+    if (isarUserCount > 0) {
+      return false;
+    }
+
+    final isarAssetCount = await db.assets.count();
+    if (isarAssetCount > 0) {
+      return false;
+    }
+
+    final driftStoreCount = await drift.storeEntity.select().get().then((list) => list.length);
+    if (driftStoreCount > 0) {
+      return false;
+    }
+
+    final driftAssetCount = await drift.localAssetEntity.select().get().then((list) => list.length);
+    if (driftAssetCount > 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    debugPrint("[MIGRATION] Error checking if new installation: $error");
+    return false;
   }
 }
 
@@ -283,4 +327,28 @@ Future<List<void>> runNewSync(WidgetRef ref, {bool full = false}) {
       }
     }),
   ]);
+}
+
+Future<void> resetDriftDatabase(Drift drift) async {
+  // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
+  final database = drift.attachedDatabase;
+  await database.exclusively(() async {
+    // https://stackoverflow.com/a/65743498/25690041
+    await database.customStatement('PRAGMA writable_schema = 1;');
+    await database.customStatement('DELETE FROM sqlite_master;');
+    await database.customStatement('VACUUM;');
+    await database.customStatement('PRAGMA writable_schema = 0;');
+    await database.customStatement('PRAGMA integrity_check');
+
+    await database.customStatement('PRAGMA user_version = 0');
+    await database.beforeOpen(
+      // ignore: invalid_use_of_internal_member
+      database.resolvedEngine.executor,
+      OpeningDetails(null, database.schemaVersion),
+    );
+    await database.customStatement('PRAGMA user_version = ${database.schemaVersion}');
+
+    // Refresh all stream queries
+    database.notifyUpdates({for (final table in database.allTables) TableUpdate.onTable(table)});
+  });
 }

@@ -80,7 +80,16 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
+    // clean install - change the default of the flag
+    // current install not using beta timeline
     if (context.router.current.name == SplashScreenRoute.name) {
+      final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
+      if (needBetaMigration) {
+        await Store.put(StoreKey.needBetaMigration, false);
+        context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]);
+        return;
+      }
+
       context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
     }
 
