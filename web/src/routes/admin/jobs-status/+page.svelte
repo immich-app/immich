@@ -62,7 +62,13 @@
   {#snippet buttons()}
     <HStack gap={0}>
       {#if pausedJobs.length > 0}
-        <Button leadingIcon={mdiPlay} onclick={handleResumePausedJobs} size="small" variant="ghost">
+        <Button
+          leadingIcon={mdiPlay}
+          onclick={handleResumePausedJobs}
+          size="small"
+          variant="ghost"
+          title={pausedJobs.join(', ')}
+        >
           <Text class="hidden md:block">
             {$t('resume_paused_jobs', { values: { count: pausedJobs.length } })}
           </Text>
