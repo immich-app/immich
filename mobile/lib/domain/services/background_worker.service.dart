@@ -177,29 +177,29 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> _handleBackup({bool processBulk = true}) async {
     if (!_isBackupEnabled) {
-      _logger.info("Backup is disabled. Skipping backup routine");
+      _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
       return;
     }
 
-    _logger.info("Enqueuing assets for backup from the background service");
+    _logger.info("[_handleBackup 2] Enqueuing assets for backup from the background service");
 
     final currentUser = _ref.read(currentUserProvider);
     if (currentUser == null) {
-      _logger.warning("No current user found. Skipping backup from background");
+      _logger.warning("[_handleBackup 3] No current user found. Skipping backup from background");
       return;
     }
 
     if (processBulk) {
-      _logger.info("Resume backup from background");
+      _logger.info("[_handleBackup 4] Resume backup from background");
       return _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
     }
 
     final activeTask = await _ref.read(uploadServiceProvider).getActiveTasks(currentUser.id);
     if (activeTask.isNotEmpty) {
-      _logger.info("Resuming backup for active tasks from background");
+      _logger.info("[_handleBackup 5] Resuming backup for active tasks from background");
       await _ref.read(uploadServiceProvider).resumeBackup();
     } else {
-      _logger.info("Starting serial backup for new tasks from background");
+      _logger.info("[_handleBackup 6] Starting serial backup for new tasks from background");
       await _ref.read(uploadServiceProvider).startBackupSerial(currentUser.id);
     }
   }
