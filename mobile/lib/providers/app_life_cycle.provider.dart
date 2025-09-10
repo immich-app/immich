@@ -125,6 +125,18 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
   }
 
+  Future<void> _safeRun(Future<void> action, String debugName) async {
+    if (!_shouldContinueOperation()) {
+      return;
+    }
+
+    try {
+      await action;
+    } catch (e, stackTrace) {
+      _log.warning("Error during $debugName operation", e, stackTrace);
+    }
+  }
+
   Future<void> _handleBetaTimelineResume() async {
     _ref.read(backupProvider.notifier).cancelBackup();
     final lockManager = _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
@@ -150,57 +162,23 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+    final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
     try {
       // Run operations sequentially with state checks and error handling for each
-      if (_shouldContinueOperation()) {
-        try {
-          await backgroundManager.syncLocal();
-        } catch (e, stackTrace) {
-          _log.warning("Failed syncLocal: $e", e, stackTrace);
+      _safeRun(backgroundManager.syncLocal(), "syncLocal");
+      _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      _safeRun(backgroundManager.syncRemote(), "syncRemote").then((_) {
+        if (isAlbumLinkedSyncEnable) {
+          _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
         }
-      }
-
-      // Check if app is still active before hashing
-      if (_shouldContinueOperation()) {
-        try {
-          await backgroundManager.hashAssets();
-        } catch (e, stackTrace) {
-          _log.warning("Failed hashAssets: $e", e, stackTrace);
-        }
-      }
-
-      // Check if app is still active before remote sync
-      if (_shouldContinueOperation()) {
-        try {
-          await backgroundManager.syncRemote();
-        } catch (e, stackTrace) {
-          _log.warning("Failed syncRemote: $e", e, stackTrace);
-        }
-
-        if (isAlbumLinkedSyncEnable && _shouldContinueOperation()) {
-          try {
-            await backgroundManager.syncLinkedAlbum();
-          } catch (e, stackTrace) {
-            _log.warning("Failed syncLinkedAlbum: $e", e, stackTrace);
-          }
-        }
-      }
+      });
 
       // Handle backup resume only if still active
-      if (_shouldContinueOperation()) {
-        final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
-
-        if (isEnableBackup) {
-          final currentUser = _ref.read(currentUserProvider);
-          if (currentUser != null) {
-            try {
-              await _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-              _log.fine("Completed backup resume");
-            } catch (e, stackTrace) {
-              _log.warning("Failed backup resume: $e", e, stackTrace);
-            }
-          }
+      if (isEnableBackup) {
+        final currentUser = _ref.read(currentUserProvider);
+        if (currentUser != null) {
+          _safeRun(_ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id), "handleBackupResume");
         }
       }
     } catch (e, stackTrace) {
@@ -209,7 +187,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       // Ensure lock is released even if operations fail
       try {
         lockManager.releaseLock();
-        _log.fine("Lock released after background sync operations");
+        _log.info("Lock released after background sync operations");
       } catch (lockError) {
         _log.warning("Failed to release lock after error: $lockError");
       }
