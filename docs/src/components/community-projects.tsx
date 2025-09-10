@@ -105,6 +105,11 @@ const projects: CommunityProjectProps[] = [
     description: 'Speed up your machine learning by load balancing your requests to multiple computers',
     url: 'https://github.com/apetersson/immich_ml_balancer',
   },
+  {
+    title: 'Immich Drop Uploader',
+    description: 'A tiny, zero-login web app for collecting photos/videos from anyone into your Immich server.',
+    url: 'https://github.com/Nasogaa/immich-drop',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
