@@ -525,7 +525,7 @@
             <a
               href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
-              class="font-medium text-immich-primary"
+              class="font-medium text-primary underline focus:outline-none"
             >
               {$t('open_in_openstreetmap')}
             </a>
