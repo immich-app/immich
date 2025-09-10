@@ -37,7 +37,10 @@ jobs:
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_OUTPUT
           echo "Selected PR $PR_NUMBER"
 
-          echo "$PR" | jq -e '.[0].mergeable == "MERGEABLE"' || { echo "PR is not mergeable" ; exit 1 }
+          if ! echo "$PR" | jq -e '.[0].mergeable == "MERGEABLE"'; then
+            echo "PR is not mergeable"
+            exit 1
+          fi
 
       - name: Generate a token
         id: generate_token
