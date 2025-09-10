@@ -2504,7 +2504,8 @@
         "description": "This endpoint requires the `asset.download` permission."
       },
       "put": {
-        "description": "Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.",
+        "deprecated": true,
+        "description": "This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -2566,12 +2567,14 @@
             "api_key": []
           }
         ],
-        "summary": "replaceAsset",
+        "summary": "Replace the asset with new file, without changing its id",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-lifecycle": {
-          "addedAt": "v1.106.0"
+          "addedAt": "v1.106.0",
+          "deprecatedAt": "v1.142.0"
         },
         "x-immich-permission": "asset.replace"
       }

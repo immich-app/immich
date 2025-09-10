@@ -2368,7 +2368,7 @@ export function downloadAsset({ id, key, slug }: {
     }));
 }
 /**
- * replaceAsset
+ * Replace the asset with new file, without changing its id
  */
 export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;
