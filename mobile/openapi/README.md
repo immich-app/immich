@@ -107,7 +107,7 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
-*AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | replaceAsset
+*AssetsApi* | [**replaceAsset**](doc//AssetsApi.md#replaceasset) | **PUT** /assets/{id}/original | Replace the asset with new file, without changing its id
 *AssetsApi* | [**runAssetJobs**](doc//AssetsApi.md#runassetjobs) | **POST** /assets/jobs | 
 *AssetsApi* | [**updateAsset**](doc//AssetsApi.md#updateasset) | **PUT** /assets/{id} | 
 *AssetsApi* | [**updateAssetMetadata**](doc//AssetsApi.md#updateassetmetadata) | **PUT** /assets/{id}/metadata | 
@@ -128,6 +128,7 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | 
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | 
 *DeprecatedApi* | [**getRandom**](doc//DeprecatedApi.md#getrandom) | **GET** /assets/random | 
+*DeprecatedApi* | [**replaceAsset**](doc//DeprecatedApi.md#replaceasset) | **PUT** /assets/{id}/original | Replace the asset with new file, without changing its id
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | 
