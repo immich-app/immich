@@ -148,19 +148,21 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     try {
       // Run operations sequentially with state checks and error handling for each
-      _safeRun(backgroundManager.syncLocal(), "syncLocal");
-      _safeRun(backgroundManager.hashAssets(), "hashAssets");
-      _safeRun(backgroundManager.syncRemote(), "syncRemote").then((_) {
-        if (isAlbumLinkedSyncEnable) {
-          _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
-        }
-      });
+      await _safeRun(backgroundManager.syncLocal(), "syncLocal");
+      await _safeRun(backgroundManager.syncRemote(), "syncRemote");
+      await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      if (isAlbumLinkedSyncEnable) {
+        await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
+      }
 
       // Handle backup resume only if still active
       if (isEnableBackup) {
         final currentUser = _ref.read(currentUserProvider);
         if (currentUser != null) {
-          _safeRun(_ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id), "handleBackupResume");
+          await _safeRun(
+            _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
+            "handleBackupResume",
+          );
         }
       }
     } catch (e, stackTrace) {

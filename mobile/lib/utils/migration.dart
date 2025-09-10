@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -23,13 +22,8 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
-import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
@@ -308,25 +302,6 @@ class _DeviceAsset {
   final DateTime? dateTime;
 
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
-}
-
-Future<List<void>> runNewSync(WidgetRef ref, {bool full = false}) {
-  ref.read(backupProvider.notifier).cancelBackup();
-
-  final backgroundManager = ref.read(backgroundSyncProvider);
-  final isAlbumLinkedSyncEnable = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
-
-  return Future.wait([
-    backgroundManager.syncLocal(full: full).then((_) {
-      Logger("runNewSync").fine("Hashing assets after syncLocal");
-      return backgroundManager.hashAssets();
-    }),
-    backgroundManager.syncRemote().then((_) {
-      if (isAlbumLinkedSyncEnable) {
-        return backgroundManager.syncLinkedAlbum();
-      }
-    }),
-  ]);
 }
 
 Future<void> resetDriftDatabase(Drift drift) async {
