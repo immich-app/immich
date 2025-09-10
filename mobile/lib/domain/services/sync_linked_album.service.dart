@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:logging/logging.dart';
 
 final syncLinkedAlbumServiceProvider = Provider(
   (ref) => SyncLinkedAlbumService(
@@ -19,32 +20,41 @@ class SyncLinkedAlbumService {
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
 
-  const SyncLinkedAlbumService(this._localAlbumRepository, this._remoteAlbumRepository, this._albumApiRepository);
+  SyncLinkedAlbumService(this._localAlbumRepository, this._remoteAlbumRepository, this._albumApiRepository);
+
+  final _log = Logger("SyncLinkedAlbumService");
 
   Future<void> syncLinkedAlbums(String userId) async {
-    final selectedAlbums = await _localAlbumRepository.getBackupAlbums();
+    try {
+      final selectedAlbums = await _localAlbumRepository.getBackupAlbums();
 
-    await Future.wait(
-      selectedAlbums.map((localAlbum) async {
-        final linkedRemoteAlbumId = localAlbum.linkedRemoteAlbumId;
-        if (linkedRemoteAlbumId == null) {
-          return;
-        }
+      await Future.wait(
+        selectedAlbums.map((localAlbum) async {
+          final linkedRemoteAlbumId = localAlbum.linkedRemoteAlbumId;
+          if (linkedRemoteAlbumId == null) {
+            return;
+          }
 
-        final remoteAlbum = await _remoteAlbumRepository.get(linkedRemoteAlbumId);
-        if (remoteAlbum == null) {
-          return;
-        }
+          final remoteAlbum = await _remoteAlbumRepository.get(linkedRemoteAlbumId);
+          if (remoteAlbum == null) {
+            return;
+          }
 
-        // get assets that are uploaded but not in the remote album
-        final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
+          // get assets that are uploaded but not in the remote album
+          final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
 
-        if (assetIds.isNotEmpty) {
-          final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
-          await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
-        }
-      }),
-    );
+          if (assetIds.isNotEmpty) {
+            final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
+            await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);
+          }
+        }),
+      );
+    } catch (error, stackTrace) {
+      debugPrint("Error syncing linked albums: $error");
+      _log.severe("Error syncing linked albums", error, stackTrace);
+    } finally {
+      _log.info("Finished syncing linked albums");
+    }
   }
 
   Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) async {

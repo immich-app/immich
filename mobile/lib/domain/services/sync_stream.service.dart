@@ -24,12 +24,16 @@ class SyncStreamService {
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
   Future<void> sync() async {
-    _logger.info("Remote sync request for user");
-    // Start the sync stream and handle events
-    bool shouldReset = false;
-    await _syncApiRepository.streamChanges(_handleEvents, onReset: () => shouldReset = true);
-    if (shouldReset) {
-      await _syncApiRepository.streamChanges(_handleEvents);
+    try {
+      _logger.info("Remote sync request for user");
+      // Start the sync stream and handle events
+      bool shouldReset = false;
+      await _syncApiRepository.streamChanges(_handleEvents, onReset: () => shouldReset = true);
+      if (shouldReset) {
+        await _syncApiRepository.streamChanges(_handleEvents);
+      }
+    } catch (error, stackTrace) {
+      _logger.severe("Error during sync", error, stackTrace);
     }
   }
 

@@ -38,21 +38,26 @@ class HashService {
   Future<void> hashAssets() async {
     _log.info("Starting hashing of assets");
     final Stopwatch stopwatch = Stopwatch()..start();
-    // Sorted by backupSelection followed by isCloud
-    final localAlbums = await _localAlbumRepository.getAll(
-      sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
-    );
 
-    for (final album in localAlbums) {
-      if (isCancelled) {
-        _log.warning("Hashing cancelled. Stopped processing albums.");
-        break;
-      }
+    try {
+      // Sorted by backupSelection followed by isCloud
+      final localAlbums = await _localAlbumRepository.getAll(
+        sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
+      );
 
-      final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
-      if (assetsToHash.isNotEmpty) {
-        await _hashAssets(album, assetsToHash);
+      for (final album in localAlbums) {
+        if (isCancelled) {
+          _log.warning("Hashing cancelled. Stopped processing albums.");
+          break;
+        }
+
+        final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
+        if (assetsToHash.isNotEmpty) {
+          await _hashAssets(album, assetsToHash);
+        }
       }
+    } catch (error, stackTrace) {
+      _log.severe("Error during hashing", error, stackTrace);
     }
 
     stopwatch.stop();

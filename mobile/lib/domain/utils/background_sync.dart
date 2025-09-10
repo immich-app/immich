@@ -170,9 +170,13 @@ class BackgroundSyncManager {
     }
 
     _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
-    return _linkedAlbumSyncTask!.whenComplete(() {
-      _linkedAlbumSyncTask = null;
-    });
+    return _linkedAlbumSyncTask!
+        .whenComplete(() {
+          _linkedAlbumSyncTask = null;
+        })
+        .catchError((error) {
+          _linkedAlbumSyncTask = null;
+        });
   }
 }
 
