@@ -40,7 +40,8 @@ class ThumbnailApiImpl: ThumbnailApi {
   private static let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue).rawValue
   private static var requests = [Int64: Request]()
   private static let cancelledResult = Result<[String: Int64], any Error>.success([:])
-  private static let concurrencySemaphore = DispatchSemaphore(value: ProcessInfo.processInfo.activeProcessorCount * 2)
+  private static let assetConcurrencySemaphore = DispatchSemaphore(value: ProcessInfo.processInfo.activeProcessorCount * 2)
+  private static let thumbnailConcurrencySemaphore = DispatchSemaphore(value: ProcessInfo.processInfo.activeProcessorCount / 2 + 1)
   private static let assetCache = {
     let assetCache = NSCache<NSString, PHAsset>()
     assetCache.countLimit = 10000
@@ -82,21 +83,18 @@ class ThumbnailApiImpl: ThumbnailApi {
         return completion(Self.cancelledResult)
       }
       
-      Self.concurrencySemaphore.wait()
-      defer {
-        Self.concurrencySemaphore.signal()
-      }
-      
-      if request.isCancelled {
-        return completion(Self.cancelledResult)
-      }
-      
-      guard let asset = Self.requestAsset(assetId: assetId)
+      guard let asset = Self.requestAsset(request: request, assetId: assetId)
       else {
+        if request.isCancelled {
+          return completion(Self.cancelledResult)
+        }
         Self.removeRequest(requestId: requestId)
         completion(.failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
         return
       }
+      
+      Self.thumbnailConcurrencySemaphore.wait()
+      defer { Self.thumbnailConcurrencySemaphore.signal() }
       
       if request.isCancelled {
         return completion(Self.cancelledResult)
@@ -187,16 +185,24 @@ class ThumbnailApiImpl: ThumbnailApi {
       guard let request = requests.removeValue(forKey: requestId) else { return }
       request.isCancelled = true
       guard let item = request.workItem else { return }
+      item.cancel()
       if item.isCancelled {
         cancelQueue.async { request.callback(Self.cancelledResult) }
       }
     }
   }
   
-  private static func requestAsset(assetId: String) -> PHAsset? {
+  private static func requestAsset(request: Request, assetId: String) -> PHAsset? {
     var asset: PHAsset?
     assetQueue.sync { asset = assetCache.object(forKey: assetId as NSString) }
     if asset != nil { return asset }
+    
+    Self.assetConcurrencySemaphore.wait()
+    defer { Self.assetConcurrencySemaphore.signal() }
+    
+    if request.isCancelled {
+      return nil
+    }
     
     guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: Self.fetchOptions).firstObject
     else { return nil }
