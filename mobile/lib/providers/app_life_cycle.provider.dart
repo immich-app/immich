@@ -167,13 +167,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       }
     } catch (e, stackTrace) {
       _log.severe("Error during background sync", e, stackTrace);
-    } finally {
-      // Ensure lock is released even if operations fail
-      try {
-        _log.info("Lock released after background sync operations");
-      } catch (lockError) {
-        _log.warning("Failed to release lock after error: $lockError");
-      }
     }
   }
 

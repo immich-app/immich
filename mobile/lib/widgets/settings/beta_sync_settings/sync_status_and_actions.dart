@@ -104,7 +104,6 @@ class SyncStatusAndActions extends HookConsumerWidget {
       padding: const EdgeInsets.only(top: 16, bottom: 32),
       child: ListView(
         children: [
-          _SectionHeaderText(text: "assets".t(context: context)),
           const _SyncStatsCounts(),
           const Divider(height: 1, indent: 16, endIndent: 16),
           const SizedBox(height: 24),
@@ -270,7 +269,10 @@ class _SyncStatsCounts extends ConsumerWidget {
         final localHashedCount = snapshot.data![4]! as int;
 
         return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _SectionHeaderText(text: "assets".t(context: context)),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: Flex(
