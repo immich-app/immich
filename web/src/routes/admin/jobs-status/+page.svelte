@@ -7,8 +7,8 @@
   import { handleError } from '$lib/utils/handle-error';
   import {
     getAllJobsStatus,
-    sendJobCommand,
     JobCommand,
+    sendJobCommand,
     type AllJobStatusResponseDto,
     type JobName,
   } from '@immich/sdk';
@@ -28,18 +28,13 @@
 
   let running = true;
 
-  const pausedJobs = $derived.by(() => {
-    if (!jobs) {
-      return [];
-    }
-    return Object.entries(jobs)
+  const pausedJobs = $derived(
+    Object.entries(jobs ?? {})
       .filter(([_, jobStatus]) => jobStatus.queueStatus?.isPaused)
-      .map(([jobName]) => jobName as JobName);
-  });
+      .map(([jobName]) => jobName as JobName),
+  );
 
-  const pausedJobsCount = $derived(pausedJobs.length);
-
-  async function resumeAllPausedJobs() {
+  const handleResumePausedJobs = async () => {
     try {
       for (const jobName of pausedJobs) {
         await sendJobCommand({ id: jobName, jobCommandDto: { command: JobCommand.Resume, force: false } });
@@ -49,7 +44,7 @@
     } catch (error) {
       handleError(error, $t('admin.failed_job_command', { values: { command: 'resume', job: 'paused jobs' } }));
     }
-  }
+  };
 
   onMount(async () => {
     while (running) {
@@ -66,10 +61,10 @@
 <AdminPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={0}>
-      {#if pausedJobsCount > 0}
-        <Button leadingIcon={mdiPlay} onclick={resumeAllPausedJobs} size="small" variant="ghost" color="primary">
+      {#if pausedJobs.length > 0}
+        <Button leadingIcon={mdiPlay} onclick={handleResumePausedJobs} size="small" variant="ghost">
           <Text class="hidden md:block">
-            {$t('resume_paused_jobs', { values: { count: pausedJobsCount } })}
+            {$t('resume_paused_jobs', { values: { count: pausedJobs.length } })}
           </Text>
         </Button>
       {/if}
