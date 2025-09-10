@@ -22,10 +22,6 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    Future<void> resetDatabase() {
-      return resetDriftDatabase(ref.read(driftProvider));
-    }
-
     Future<void> exportDatabase() async {
       try {
         // WAL Checkpoint to ensure all changes are written to the database
@@ -87,7 +83,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
               ),
               TextButton(
                 onPressed: () async {
-                  await resetDatabase();
+                  await resetDriftDatabase(ref.read(driftProvider));
                   context.pop();
                   context.scaffoldMessenger.showSnackBar(
                     SnackBar(content: Text("reset_sqlite_success".t(context: context))),
