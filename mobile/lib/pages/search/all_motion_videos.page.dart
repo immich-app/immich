@@ -17,16 +17,9 @@ class AllMotionPhotosPage extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('search_page_motion_photos').tr(),
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
       ),
-      body: motionPhotos.widgetWhen(
-        onData: (assets) => ImmichAssetGrid(
-          assets: assets,
-        ),
-      ),
+      body: motionPhotos.widgetWhen(onData: (assets) => ImmichAssetGrid(assets: assets)),
     );
   }
 }

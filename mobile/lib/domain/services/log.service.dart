@@ -14,8 +14,8 @@ import 'package:logging/logging.dart';
 /// writes them to a persistent [ILogRepository], and manages log levels
 /// via [IStoreRepository]
 class LogService {
-  final IsarLogRepository _logRepository;
-  final IsarStoreRepository _storeRepository;
+  final LogRepository _logRepository;
+  final IStoreRepository _storeRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -37,8 +37,8 @@ class LogService {
   }
 
   static Future<LogService> init({
-    required IsarLogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required LogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
@@ -50,23 +50,18 @@ class LogService {
   }
 
   static Future<LogService> create({
-    required IsarLogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required LogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     final instance = LogService._(logRepository, storeRepository, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
-    final level = await instance._storeRepository.tryGet(StoreKey.logLevel) ??
-        LogLevel.info.index;
+    final level = await instance._storeRepository.tryGet(StoreKey.logLevel) ?? LogLevel.info.index;
     Logger.root.level = Level.LEVELS.elementAtOrNull(level) ?? Level.INFO;
     return instance;
   }
 
-  LogService._(
-    this._logRepository,
-    this._storeRepository,
-    this._shouldBuffer,
-  ) {
+  LogService._(this._logRepository, this._storeRepository, this._shouldBuffer) {
     _logSubscription = Logger.root.onRecord.listen(_handleLogRecord);
   }
 
@@ -90,17 +85,14 @@ class LogService {
 
     if (_shouldBuffer) {
       _msgBuffer.add(record);
-      _flushTimer ??= Timer(
-        const Duration(seconds: 5),
-        () => unawaited(flushBuffer()),
-      );
+      _flushTimer ??= Timer(const Duration(seconds: 5), () => unawaited(_flushBuffer()));
     } else {
       unawaited(_logRepository.insert(record));
     }
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _storeRepository.insert(StoreKey.logLevel, level.index);
+    await _storeRepository.upsert(StoreKey.logLevel, level.index);
     Logger.root.level = level.toLevel();
   }
 
@@ -116,23 +108,26 @@ class LogService {
     await _logRepository.deleteAll();
   }
 
-  void flush() {
+  Future<void> flush() {
     _flushTimer?.cancel();
-    // TODO: Rename enable this after moving to sqlite - #16504
-    // await _flushBufferToDatabase();
+    return _flushBuffer();
   }
 
   Future<void> dispose() {
     _flushTimer?.cancel();
     _logSubscription.cancel();
-    return flushBuffer();
+    return _flushBuffer();
   }
 
-  // TOOD: Move this to private once Isar is removed
-  Future<void> flushBuffer() async {
+  Future<void> _flushBuffer() async {
     _flushTimer = null;
     final buffer = [..._msgBuffer];
     _msgBuffer.clear();
+
+    if (buffer.isEmpty) {
+      return;
+    }
+
     await _logRepository.insertAll(buffer);
   }
 }
@@ -146,9 +141,7 @@ class LoggerUnInitializedException implements Exception {
 
 /// Log levels according to dart logging [Level]
 extension LevelDomainToInfraExtension on Level {
-  LogLevel toLogLevel() =>
-      LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ??
-      LogLevel.info;
+  LogLevel toLogLevel() => LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ?? LogLevel.info;
 }
 
 extension on LogLevel {

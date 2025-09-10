@@ -20,31 +20,31 @@ export class MemoryController {
   constructor(private service: MemoryService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.MEMORY_READ })
+  @Authenticated({ permission: Permission.MemoryRead })
   searchMemories(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryResponseDto[]> {
     return this.service.search(auth, dto);
   }
 
   @Post()
-  @Authenticated({ permission: Permission.MEMORY_CREATE })
+  @Authenticated({ permission: Permission.MemoryCreate })
   createMemory(@Auth() auth: AuthDto, @Body() dto: MemoryCreateDto): Promise<MemoryResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get('statistics')
-  @Authenticated({ permission: Permission.MEMORY_READ })
+  @Authenticated({ permission: Permission.MemoryStatistics })
   memoriesStatistics(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryStatisticsResponseDto> {
     return this.service.statistics(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.MEMORY_READ })
+  @Authenticated({ permission: Permission.MemoryRead })
   getMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<MemoryResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.MEMORY_UPDATE })
+  @Authenticated({ permission: Permission.MemoryUpdate })
   updateMemory(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -54,14 +54,14 @@ export class MemoryController {
   }
 
   @Delete(':id')
+  @Authenticated({ permission: Permission.MemoryDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.MEMORY_DELETE })
   deleteMemory(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }
 
   @Put(':id/assets')
-  @Authenticated()
+  @Authenticated({ permission: Permission.MemoryAssetCreate })
   addMemoryAssets(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -71,8 +71,8 @@ export class MemoryController {
   }
 
   @Delete(':id/assets')
+  @Authenticated({ permission: Permission.MemoryAssetDelete })
   @HttpCode(HttpStatus.OK)
-  @Authenticated()
   removeMemoryAssets(
     @Auth() auth: AuthDto,
     @Body() dto: BulkIdsDto,

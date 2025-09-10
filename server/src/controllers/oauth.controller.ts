@@ -41,8 +41,8 @@ export class OAuthController {
       {
         isSecure: loginDetails.isSecure,
         values: [
-          { key: ImmichCookie.OAUTH_STATE, value: state },
-          { key: ImmichCookie.OAUTH_CODE_VERIFIER, value: codeVerifier },
+          { key: ImmichCookie.OAuthState, value: state },
+          { key: ImmichCookie.OAuthCodeVerifier, value: codeVerifier },
         ],
       },
     );
@@ -56,20 +56,21 @@ export class OAuthController {
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<LoginResponseDto> {
     const body = await this.service.callback(dto, request.headers, loginDetails);
-    res.clearCookie(ImmichCookie.OAUTH_STATE);
-    res.clearCookie(ImmichCookie.OAUTH_CODE_VERIFIER);
+    res.clearCookie(ImmichCookie.OAuthState);
+    res.clearCookie(ImmichCookie.OAuthCodeVerifier);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
       values: [
-        { key: ImmichCookie.ACCESS_TOKEN, value: body.accessToken },
-        { key: ImmichCookie.AUTH_TYPE, value: AuthType.OAUTH },
-        { key: ImmichCookie.IS_AUTHENTICATED, value: 'true' },
+        { key: ImmichCookie.AccessToken, value: body.accessToken },
+        { key: ImmichCookie.AuthType, value: AuthType.OAuth },
+        { key: ImmichCookie.IsAuthenticated, value: 'true' },
       ],
     });
   }
 
   @Post('link')
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   linkOAuthAccount(
     @Req() request: Request,
     @Auth() auth: AuthDto,
@@ -79,8 +80,8 @@ export class OAuthController {
   }
 
   @Post('unlink')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.unlink(auth);
   }

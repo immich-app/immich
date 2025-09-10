@@ -30,28 +30,35 @@ export const schemaDiff = (source: DatabaseSchema, target: DatabaseSchema, optio
 
   type SchemaName = SchemaDiff['type'];
   const itemMap: Record<SchemaName, SchemaDiff[]> = {
-    EnumCreate: [],
-    EnumDrop: [],
-    ExtensionCreate: [],
-    ExtensionDrop: [],
-    FunctionCreate: [],
-    FunctionDrop: [],
-    TableCreate: [],
-    TableDrop: [],
-    ColumnAdd: [],
-    ColumnAlter: [],
     ColumnRename: [],
-    ColumnDrop: [],
-    ConstraintAdd: [],
-    ConstraintDrop: [],
     ConstraintRename: [],
-    IndexCreate: [],
     IndexRename: [],
-    IndexDrop: [],
-    TriggerCreate: [],
-    TriggerDrop: [],
+
+    ExtensionDrop: [],
+    ExtensionCreate: [],
+
     ParameterSet: [],
     ParameterReset: [],
+
+    FunctionDrop: [],
+    FunctionCreate: [],
+
+    EnumDrop: [],
+    EnumCreate: [],
+
+    TriggerDrop: [],
+    ConstraintDrop: [],
+    TableDrop: [],
+    ColumnDrop: [],
+    ColumnAdd: [],
+    ColumnAlter: [],
+    TableCreate: [],
+    ConstraintAdd: [],
+    TriggerCreate: [],
+
+    IndexCreate: [],
+    IndexDrop: [],
+
     OverrideCreate: [],
     OverrideUpdate: [],
     OverrideDrop: [],

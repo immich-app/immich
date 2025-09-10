@@ -13,7 +13,7 @@ import { TranscodingService } from 'src/services/transcoding.service';
 import { sendFile } from 'src/utils/file';
 
 @ApiTags('Transcoder')
-@Controller(RouteKey.PLAYBACK)
+@Controller(RouteKey.Playback)
 export class TranscodingController {
   constructor(
     private service: TranscodingService,

@@ -9,12 +9,14 @@ import {
   AssetBulkUpdateDto,
   AssetJobName,
   AssetJobsDto,
+  AssetMetadataResponseDto,
+  AssetMetadataUpsertDto,
   AssetStatsDto,
   UpdateAssetDto,
   mapStats,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { AssetMetadataKey, AssetStatus, AssetVisibility, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
@@ -23,7 +25,7 @@ import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUn
 @Injectable()
 export class AssetService extends BaseService {
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
-    if (dto.visibility === AssetVisibility.LOCKED) {
+    if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
 
@@ -46,7 +48,7 @@ export class AssetService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
 
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
@@ -78,7 +80,7 @@ export class AssetService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
@@ -93,7 +95,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
@@ -113,22 +115,48 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, latitude, longitude, ...options } = dto;
-    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
+    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, ...options } = dto;
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    if (
-      description !== undefined ||
-      dateTimeOriginal !== undefined ||
-      latitude !== undefined ||
-      longitude !== undefined
-    ) {
+    const staticValuesChanged =
+      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
+
+    if (staticValuesChanged) {
       await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
-      await this.jobRepository.queueAll(
-        ids.map((id) => ({
-          name: JobName.SIDECAR_WRITE,
-          data: { id, description, dateTimeOriginal, latitude, longitude },
-        })),
-      );
+    }
+
+    const assets =
+      (dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined
+        ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone)
+        : null;
+
+    const dateTimesWithTimezone =
+      assets?.map((asset) => {
+        const isoString = asset.dateTimeOriginal?.toISOString();
+        let dateTime = isoString ? DateTime.fromISO(isoString) : null;
+
+        if (dateTime && asset.timeZone) {
+          dateTime = dateTime.setZone(asset.timeZone);
+        }
+
+        return {
+          assetId: asset.assetId,
+          dateTimeOriginal: dateTime?.toISO() ?? null,
+        };
+      }) ?? null;
+
+    if (staticValuesChanged || dateTimesWithTimezone) {
+      const entries: JobItem[] = (dateTimesWithTimezone ?? ids).map((entry: any) => ({
+        name: JobName.SidecarWrite,
+        data: {
+          id: entry.assetId ?? entry,
+          description,
+          dateTimeOriginal: entry.dateTimeOriginal ?? dateTimeOriginal,
+          latitude,
+          longitude,
+        },
+      }));
+      await this.jobRepository.queueAll(entries);
     }
 
     if (
@@ -139,13 +167,13 @@ export class AssetService extends BaseService {
     ) {
       await this.assetRepository.updateAll(ids, options);
 
-      if (options.visibility === AssetVisibility.LOCKED) {
+      if (options.visibility === AssetVisibility.Locked) {
         await this.albumRepository.removeAssetsFromAll(ids);
       }
     }
   }
 
-  @OnJob({ name: JobName.ASSET_DELETION_CHECK, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })
   async handleAssetDeletionCheck(): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
@@ -158,7 +186,7 @@ export class AssetService extends BaseService {
       if (chunk.length > 0) {
         await this.jobRepository.queueAll(
           chunk.map(({ id, isOffline }) => ({
-            name: JobName.ASSET_DELETION,
+            name: JobName.AssetDelete,
             data: { id, deleteOnDisk: !isOffline },
           })),
         );
@@ -176,17 +204,17 @@ export class AssetService extends BaseService {
 
     await queueChunk();
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.ASSET_DELETION, queue: QueueName.BACKGROUND_TASK })
-  async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
+  @OnJob({ name: JobName.AssetDelete, queue: QueueName.BackgroundTask })
+  async handleAssetDeletion(job: JobOf<JobName.AssetDelete>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetJobRepository.getForAssetDeletion(id);
 
     if (!asset) {
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
     // Replace the parent of the stack children with a new asset
@@ -208,14 +236,14 @@ export class AssetService extends BaseService {
       await this.userRepository.updateUsage(asset.ownerId, -(asset.exifInfo?.fileSizeInByte || 0));
     }
 
-    await this.eventRepository.emit('asset.delete', { assetId: id, userId: asset.ownerId });
+    await this.eventRepository.emit('AssetDelete', { assetId: id, userId: asset.ownerId });
 
     // delete the motion if it is not used by another asset
     if (asset.livePhotoVideoId) {
       const count = await this.assetRepository.getLivePhotoCount(asset.livePhotoVideoId);
       if (count === 0) {
         await this.jobRepository.queue({
-          name: JobName.ASSET_DELETION,
+          name: JobName.AssetDelete,
           data: { id: asset.livePhotoVideoId, deleteOnDisk },
         });
       }
@@ -228,46 +256,74 @@ export class AssetService extends BaseService {
       files.push(asset.sidecarPath, asset.originalPath);
     }
 
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files } });
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 
-    await this.requireAccess({ auth, permission: Permission.ASSET_DELETE, ids });
+    await this.requireAccess({ auth, permission: Permission.AssetDelete, ids });
     await this.assetRepository.updateAll(ids, {
       deletedAt: new Date(),
-      status: force ? AssetStatus.DELETED : AssetStatus.TRASHED,
+      status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
     });
-    await this.eventRepository.emit(force ? 'assets.delete' : 'assets.trash', { assetIds: ids, userId: auth.user.id });
+    await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
+      assetIds: ids,
+      userId: auth.user.id,
+    });
+  }
+
+  async getMetadata(auth: AuthDto, id: string): Promise<AssetMetadataResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
+    return this.assetRepository.getMetadata(id);
+  }
+
+  async upsertMetadata(auth: AuthDto, id: string, dto: AssetMetadataUpsertDto): Promise<AssetMetadataResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+    return this.assetRepository.upsertMetadata(id, dto.items);
+  }
+
+  async getMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<AssetMetadataResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [id] });
+
+    const item = await this.assetRepository.getMetadataByKey(id, key);
+    if (!item) {
+      throw new BadRequestException(`Metadata with key "${key}" not found for asset with id "${id}"`);
+    }
+    return item;
+  }
+
+  async deleteMetadataByKey(auth: AuthDto, id: string, key: AssetMetadataKey): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+    return this.assetRepository.deleteMetadataByKey(id, key);
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
-    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds });
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds });
 
     const jobs: JobItem[] = [];
 
     for (const id of dto.assetIds) {
       switch (dto.name) {
         case AssetJobName.REFRESH_FACES: {
-          jobs.push({ name: JobName.FACE_DETECTION, data: { id } });
+          jobs.push({ name: JobName.AssetDetectFaces, data: { id } });
           break;
         }
 
         case AssetJobName.REFRESH_METADATA: {
-          jobs.push({ name: JobName.METADATA_EXTRACTION, data: { id } });
+          jobs.push({ name: JobName.AssetExtractMetadata, data: { id } });
           break;
         }
 
         case AssetJobName.REGENERATE_THUMBNAIL: {
-          jobs.push({ name: JobName.GENERATE_THUMBNAILS, data: { id } });
+          jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id } });
           break;
         }
 
         case AssetJobName.TRANSCODE_VIDEO: {
-          jobs.push({ name: JobName.VIDEO_CONVERSION, data: { id } });
+          jobs.push({ name: JobName.AssetEncodeVideo, data: { id } });
           break;
         }
       }
@@ -284,12 +340,12 @@ export class AssetService extends BaseService {
     return asset;
   }
 
-  private async updateMetadata(dto: ISidecarWriteJob) {
+  private async updateExif(dto: ISidecarWriteJob) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
     const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
-      await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
+      await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id, ...writes } });
     }
   }
 }

@@ -15,13 +15,7 @@ class ServerFeatures {
     required this.streamingType
   });
 
-  ServerFeatures copyWith({
-    bool? trash,
-    bool? map,
-    bool? oauthEnabled,
-    bool? passwordLogin,
-    String? streamingType
-  }) {
+  ServerFeatures copyWith({bool? trash, bool? map, bool? oauthEnabled, bool? passwordLogin, String? streamingType}) {
     return ServerFeatures(
         trash: trash ?? this.trash,
         map: map ?? this.map,
@@ -37,11 +31,11 @@ class ServerFeatures {
   }
 
   ServerFeatures.fromDto(ServerFeaturesDto dto)
-      : trash = dto.trash,
-        map = dto.map,
-        oauthEnabled = dto.oauth,
-        passwordLogin = dto.passwordLogin,
-        streamingType = dto.streaming;
+    : trash = dto.trash,
+      map = dto.map,
+      oauthEnabled = dto.oauth,
+      passwordLogin = dto.passwordLogin
+      streamingType = dto.streaming;
 
   @override
   bool operator ==(covariant ServerFeatures other) {
@@ -56,10 +50,6 @@ class ServerFeatures {
 
   @override
   int get hashCode {
-    return trash.hashCode ^
-    map.hashCode ^
-    oauthEnabled.hashCode ^
-    passwordLogin.hashCode ^
-    streamingType.hashCode;
+    return trash.hashCode ^ map.hashCode ^ oauthEnabled.hashCode ^ passwordLogin.hashCode ^ streamingType.hashCode;
   }
 }

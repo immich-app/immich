@@ -11,23 +11,10 @@ class MainTimelinePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final memoryLaneProvider = ref.watch(driftMemoryFutureProvider);
-
-    return memoryLaneProvider.when(
-      data: (memories) {
-        return memories.isEmpty
-            ? const Timeline(showStorageIndicator: true)
-            : Timeline(
-                topSliverWidget: SliverToBoxAdapter(
-                  key: Key('memory-lane-${memories.first.assets.first.id}'),
-                  child: DriftMemoryLane(memories: memories),
-                ),
-                topSliverWidgetHeight: 200,
-                showStorageIndicator: true,
-              );
-      },
-      loading: () => const Timeline(showStorageIndicator: true),
-      error: (error, stackTrace) => const Timeline(showStorageIndicator: true),
+    final hasMemories = ref.watch(driftMemoryFutureProvider.select((state) => state.value?.isNotEmpty ?? false));
+    return Timeline(
+      topSliverWidget: const SliverToBoxAdapter(child: DriftMemoryLane()),
+      topSliverWidgetHeight: hasMemories ? 200 : 0,
     );
   }
 }

@@ -53,7 +53,7 @@ describe(VersionService.name, () => {
       await versionHistoryRepo.create({ version: 'v1.128.0' });
       await sut.onBootstrap();
 
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.MEMORIES_CREATE });
+      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.MemoryGenerate });
     });
 
     it('should not queue memory creation when upgrading from 1.129.0', async () => {

@@ -4,8 +4,7 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:isar/isar.dart';
 
-final etagRepositoryProvider =
-    Provider((ref) => ETagRepository(ref.watch(dbProvider)));
+final etagRepositoryProvider = Provider((ref) => ETagRepository(ref.watch(dbProvider)));
 
 class ETagRepository extends DatabaseRepository {
   const ETagRepository(super.db);
@@ -16,8 +15,7 @@ class ETagRepository extends DatabaseRepository {
 
   Future<void> upsertAll(List<ETag> etags) => txn(() => db.eTags.putAll(etags));
 
-  Future<void> deleteByIds(List<String> ids) =>
-      txn(() => db.eTags.deleteAllById(ids));
+  Future<void> deleteByIds(List<String> ids) => txn(() => db.eTags.deleteAllById(ids));
 
   Future<ETag?> getById(String id) => db.eTags.getById(id);
 

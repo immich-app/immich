@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { Permission } from 'src/enum';
 import { ApiKeyService } from 'src/services/api-key.service';
 import { factory, newUuid } from 'test/small.factory';
@@ -15,7 +15,7 @@ describe(ApiKeyService.name, () => {
   describe('create', () => {
     it('should create a new key', async () => {
       const auth = factory.auth();
-      const apiKey = factory.apiKey({ userId: auth.user.id, permissions: [Permission.ALL] });
+      const apiKey = factory.apiKey({ userId: auth.user.id, permissions: [Permission.All] });
       const key = 'super-secret';
 
       mocks.crypto.randomBytesAsText.mockReturnValue(key);
@@ -41,12 +41,12 @@ describe(ApiKeyService.name, () => {
       mocks.crypto.randomBytesAsText.mockReturnValue(key);
       mocks.apiKey.create.mockResolvedValue(apiKey);
 
-      await sut.create(auth, { permissions: [Permission.ALL] });
+      await sut.create(auth, { permissions: [Permission.All] });
 
       expect(mocks.apiKey.create).toHaveBeenCalledWith({
         key: 'super-secret (hashed)',
         name: 'API Key',
-        permissions: [Permission.ALL],
+        permissions: [Permission.All],
         userId: auth.user.id,
       });
       expect(mocks.crypto.randomBytesAsText).toHaveBeenCalled();
@@ -54,9 +54,9 @@ describe(ApiKeyService.name, () => {
     });
 
     it('should throw an error if the api key does not have sufficient permissions', async () => {
-      const auth = factory.auth({ apiKey: { permissions: [Permission.ASSET_READ] } });
+      const auth = factory.auth({ apiKey: { permissions: [Permission.AssetRead] } });
 
-      await expect(sut.create(auth, { permissions: [Permission.ASSET_UPDATE] })).rejects.toBeInstanceOf(
+      await expect(sut.create(auth, { permissions: [Permission.AssetUpdate] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
@@ -69,7 +69,7 @@ describe(ApiKeyService.name, () => {
 
       mocks.apiKey.getById.mockResolvedValue(void 0);
 
-      await expect(sut.update(auth, id, { name: 'New Name', permissions: [Permission.ALL] })).rejects.toBeInstanceOf(
+      await expect(sut.update(auth, id, { name: 'New Name', permissions: [Permission.All] })).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
@@ -84,18 +84,18 @@ describe(ApiKeyService.name, () => {
       mocks.apiKey.getById.mockResolvedValue(apiKey);
       mocks.apiKey.update.mockResolvedValue(apiKey);
 
-      await sut.update(auth, apiKey.id, { name: newName, permissions: [Permission.ALL] });
+      await sut.update(auth, apiKey.id, { name: newName, permissions: [Permission.All] });
 
       expect(mocks.apiKey.update).toHaveBeenCalledWith(auth.user.id, apiKey.id, {
         name: newName,
-        permissions: [Permission.ALL],
+        permissions: [Permission.All],
       });
     });
 
     it('should update permissions', async () => {
       const auth = factory.auth();
       const apiKey = factory.apiKey({ userId: auth.user.id });
-      const newPermissions = [Permission.ACTIVITY_CREATE, Permission.ACTIVITY_READ, Permission.ACTIVITY_UPDATE];
+      const newPermissions = [Permission.ActivityCreate, Permission.ActivityRead, Permission.ActivityUpdate];
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
       mocks.apiKey.update.mockResolvedValue(apiKey);
@@ -131,6 +131,41 @@ describe(ApiKeyService.name, () => {
       await sut.delete(auth, apiKey.id);
 
       expect(mocks.apiKey.delete).toHaveBeenCalledWith(auth.user.id, apiKey.id);
+    });
+  });
+
+  describe('getMine', () => {
+    it('should not work with a session token', async () => {
+      const session = factory.session();
+      const auth = factory.auth({ session });
+
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
+      await expect(sut.getMine(auth)).rejects.toBeInstanceOf(ForbiddenException);
+
+      expect(mocks.apiKey.getById).not.toHaveBeenCalled();
+    });
+
+    it('should throw an error if the key is not found', async () => {
+      const apiKey = factory.authApiKey();
+      const auth = factory.auth({ apiKey });
+
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
+      await expect(sut.getMine(auth)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.apiKey.getById).toHaveBeenCalledWith(auth.user.id, apiKey.id);
+    });
+
+    it('should get a key by id', async () => {
+      const auth = factory.auth();
+      const apiKey = factory.apiKey({ userId: auth.user.id });
+
+      mocks.apiKey.getById.mockResolvedValue(apiKey);
+
+      await sut.getById(auth, apiKey.id);
+
+      expect(mocks.apiKey.getById).toHaveBeenCalledWith(auth.user.id, apiKey.id);
     });
   });
 

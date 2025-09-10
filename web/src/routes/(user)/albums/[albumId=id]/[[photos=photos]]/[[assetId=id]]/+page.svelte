@@ -34,7 +34,6 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
@@ -70,13 +69,13 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
-  import { Button, IconButton } from '@immich/ui';
+  import { Button, IconButton, modalManager } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsVertical,
-    mdiFolderDownloadOutline,
+    mdiDownload,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -403,9 +402,9 @@
 
   const handleShareLink = async () => {
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
-
     if (sharedLink) {
-      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink.key) });
+      await refreshAlbum();
+      await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
     }
   };
 
@@ -413,7 +412,7 @@
     const changed = await modalManager.show(AlbumUsersModal, { album });
 
     if (changed) {
-      album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+      await refreshAlbum();
     }
   };
 
@@ -666,7 +665,7 @@
                 color="secondary"
                 aria-label={$t('download')}
                 onclick={handleDownloadAlbum}
-                icon={mdiFolderDownloadOutline}
+                icon={mdiDownload}
               />
             {/if}
 

@@ -28,7 +28,7 @@ export const album_user_after_insert = registerFunction({
   language: 'PLPGSQL',
   body: `
     BEGIN
-      UPDATE albums SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
+      UPDATE album SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
       WHERE "id" IN (SELECT DISTINCT "albumsId" FROM inserted_rows);
       RETURN NULL;
     END`,
@@ -80,83 +80,83 @@ export const ll_to_earth_public = registerFunction({
   body: `SELECT public.cube(public.cube(public.cube(public.earth()*cos(radians(latitude))*cos(radians(longitude))),public.earth()*cos(radians(latitude))*sin(radians(longitude))),public.earth()*sin(radians(latitude)))::public.earth`,
 });
 
-export const users_delete_audit = registerFunction({
-  name: 'users_delete_audit',
+export const user_delete_audit = registerFunction({
+  name: 'user_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO users_audit ("userId")
+      INSERT INTO user_audit ("userId")
       SELECT "id"
       FROM OLD;
       RETURN NULL;
     END`,
 });
 
-export const partners_delete_audit = registerFunction({
-  name: 'partners_delete_audit',
+export const partner_delete_audit = registerFunction({
+  name: 'partner_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO partners_audit ("sharedById", "sharedWithId")
+      INSERT INTO partner_audit ("sharedById", "sharedWithId")
       SELECT "sharedById", "sharedWithId"
       FROM OLD;
       RETURN NULL;
     END`,
 });
 
-export const assets_delete_audit = registerFunction({
-  name: 'assets_delete_audit',
+export const asset_delete_audit = registerFunction({
+  name: 'asset_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO assets_audit ("assetId", "ownerId")
+      INSERT INTO asset_audit ("assetId", "ownerId")
       SELECT "id", "ownerId"
       FROM OLD;
       RETURN NULL;
     END`,
 });
 
-export const albums_delete_audit = registerFunction({
-  name: 'albums_delete_audit',
+export const album_delete_audit = registerFunction({
+  name: 'album_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO albums_audit ("albumId", "userId")
+      INSERT INTO album_audit ("albumId", "userId")
       SELECT "id", "ownerId"
       FROM OLD;
       RETURN NULL;
     END`,
 });
 
-export const album_assets_delete_audit = registerFunction({
-  name: 'album_assets_delete_audit',
+export const album_asset_delete_audit = registerFunction({
+  name: 'album_asset_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO album_assets_audit ("albumId", "assetId")
+      INSERT INTO album_asset_audit ("albumId", "assetId")
       SELECT "albumsId", "assetsId" FROM OLD
-      WHERE "albumsId" IN (SELECT "id" FROM albums WHERE "id" IN (SELECT "albumsId" FROM OLD));
+      WHERE "albumsId" IN (SELECT "id" FROM album WHERE "id" IN (SELECT "albumsId" FROM OLD));
       RETURN NULL;
     END`,
 });
 
-export const album_users_delete_audit = registerFunction({
-  name: 'album_users_delete_audit',
+export const album_user_delete_audit = registerFunction({
+  name: 'album_user_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO albums_audit ("albumId", "userId")
+      INSERT INTO album_audit ("albumId", "userId")
       SELECT "albumsId", "usersId"
       FROM OLD;
 
       IF pg_trigger_depth() = 1 THEN
-        INSERT INTO album_users_audit ("albumId", "userId")
+        INSERT INTO album_user_audit ("albumId", "userId")
         SELECT "albumsId", "usersId"
         FROM OLD;
       END IF;
@@ -165,39 +165,39 @@ export const album_users_delete_audit = registerFunction({
     END`,
 });
 
-export const memories_delete_audit = registerFunction({
-  name: 'memories_delete_audit',
+export const memory_delete_audit = registerFunction({
+  name: 'memory_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO memories_audit ("memoryId", "userId")
+      INSERT INTO memory_audit ("memoryId", "userId")
       SELECT "id", "ownerId"
       FROM OLD;
       RETURN NULL;
     END`,
 });
 
-export const memory_assets_delete_audit = registerFunction({
-  name: 'memory_assets_delete_audit',
+export const memory_asset_delete_audit = registerFunction({
+  name: 'memory_asset_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO memory_assets_audit ("memoryId", "assetId")
+      INSERT INTO memory_asset_audit ("memoryId", "assetId")
       SELECT "memoriesId", "assetsId" FROM OLD
-      WHERE "memoriesId" IN (SELECT "id" FROM memories WHERE "id" IN (SELECT "memoriesId" FROM OLD));
+      WHERE "memoriesId" IN (SELECT "id" FROM memory WHERE "id" IN (SELECT "memoriesId" FROM OLD));
       RETURN NULL;
     END`,
 });
 
-export const stacks_delete_audit = registerFunction({
-  name: 'stacks_delete_audit',
+export const stack_delete_audit = registerFunction({
+  name: 'stack_delete_audit',
   returnType: 'TRIGGER',
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO stacks_audit ("stackId", "userId")
+      INSERT INTO stack_audit ("stackId", "userId")
       SELECT "id", "ownerId"
       FROM OLD;
       RETURN NULL;
@@ -225,6 +225,32 @@ export const user_metadata_audit = registerFunction({
     BEGIN
       INSERT INTO user_metadata_audit ("userId", "key")
       SELECT "userId", "key"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
+export const asset_metadata_audit = registerFunction({
+  name: 'asset_metadata_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_metadata_audit ("assetId", "key")
+      SELECT "assetId", "key"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
+export const asset_face_audit = registerFunction({
+  name: 'asset_face_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_face_audit ("assetFaceId", "assetId")
+      SELECT "id", "assetId"
       FROM OLD;
       RETURN NULL;
     END`,

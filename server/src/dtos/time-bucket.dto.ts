@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsEnum, IsString } from 'class-validator';
+import { IsString } from 'class-validator';
 import { AssetOrder, AssetVisibility } from 'src/enum';
-import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
   @ValidateUUID({ optional: true, description: 'Filter assets by specific user ID' })
@@ -38,20 +38,27 @@ export class TimeBucketDto {
   @ValidateBoolean({ optional: true, description: 'Include assets shared by partners' })
   withPartners?: boolean;
 
-  @IsEnum(AssetOrder)
-  @Optional()
-  @ApiProperty({
+  @ValidateEnum({
     enum: AssetOrder,
-    enumName: 'AssetOrder',
+    name: 'AssetOrder',
     description: 'Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)',
+    optional: true,
   })
   order?: AssetOrder;
 
-  @ValidateAssetVisibility({
+  @ValidateEnum({
+    enum: AssetVisibility,
+    name: 'AssetVisibility',
     optional: true,
     description: 'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
   })
   visibility?: AssetVisibility;
+
+  @ValidateBoolean({
+    optional: true,
+    description: 'Include location data in the response',
+  })
+  withCoordinates?: boolean;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
@@ -93,10 +100,10 @@ export class TimeBucketAssetResponseDto {
   })
   isFavorite!: boolean[];
 
-  @ApiProperty({
+  @ValidateEnum({
     enum: AssetVisibility,
-    enumName: 'AssetVisibility',
-    isArray: true,
+    name: 'AssetVisibility',
+    each: true,
     description: 'Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
   })
   visibility!: AssetVisibility[];
@@ -184,6 +191,22 @@ export class TimeBucketAssetResponseDto {
     description: 'Array of country names extracted from EXIF GPS data',
   })
   country!: (string | null)[];
+
+  @ApiProperty({
+    type: 'array',
+    required: false,
+    items: { type: 'number', nullable: true },
+    description: 'Array of latitude coordinates extracted from EXIF GPS data',
+  })
+  latitude!: number[];
+
+  @ApiProperty({
+    type: 'array',
+    required: false,
+    items: { type: 'number', nullable: true },
+    description: 'Array of longitude coordinates extracted from EXIF GPS data',
+  })
+  longitude!: number[];
 }
 
 export class TimeBucketsResponseDto {

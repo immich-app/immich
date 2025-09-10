@@ -1,11 +1,6 @@
 part of 'base_asset.model.dart';
 
-enum AssetVisibility {
-  timeline,
-  hidden,
-  archive,
-  locked,
-}
+enum AssetVisibility { timeline, hidden, archive, locked }
 
 // Model for an asset stored in the server
 class RemoteAsset extends BaseAsset {
@@ -14,6 +9,7 @@ class RemoteAsset extends BaseAsset {
   final String? thumbHash;
   final AssetVisibility visibility;
   final String ownerId;
+  final String? stackId;
 
   const RemoteAsset({
     required this.id,
@@ -31,11 +27,11 @@ class RemoteAsset extends BaseAsset {
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
     super.livePhotoVideoId,
+    this.stackId,
   });
 
   @override
-  AssetState get storage =>
-      localId == null ? AssetState.remote : AssetState.merged;
+  AssetState get storage => localId == null ? AssetState.remote : AssetState.merged;
 
   @override
   String get heroTag => '${localId ?? checksum}_$id';
@@ -56,9 +52,13 @@ class RemoteAsset extends BaseAsset {
     isFavorite: $isFavorite,
     thumbHash: ${thumbHash ?? "<NA>"},
     visibility: $visibility,
+    stackId: ${stackId ?? "<NA>"},
+    checksum: $checksum,
+    livePhotoVideoId: ${livePhotoVideoId ?? "<NA>"},
  }''';
   }
 
+  // Not checking for localId here
   @override
   bool operator ==(Object other) {
     if (other is! RemoteAsset) return false;
@@ -67,7 +67,8 @@ class RemoteAsset extends BaseAsset {
         id == other.id &&
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
-        visibility == other.visibility;
+        visibility == other.visibility &&
+        stackId == other.stackId;
   }
 
   @override
@@ -77,7 +78,8 @@ class RemoteAsset extends BaseAsset {
       ownerId.hashCode ^
       localId.hashCode ^
       thumbHash.hashCode ^
-      visibility.hashCode;
+      visibility.hashCode ^
+      stackId.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -94,6 +96,8 @@ class RemoteAsset extends BaseAsset {
     bool? isFavorite,
     String? thumbHash,
     AssetVisibility? visibility,
+    String? livePhotoVideoId,
+    String? stackId,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -110,6 +114,8 @@ class RemoteAsset extends BaseAsset {
       isFavorite: isFavorite ?? this.isFavorite,
       thumbHash: thumbHash ?? this.thumbHash,
       visibility: visibility ?? this.visibility,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+      stackId: stackId ?? this.stackId,
     );
   }
 }

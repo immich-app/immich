@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -13,22 +14,15 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class MesmerizingSliverAppBar extends ConsumerStatefulWidget {
-  const MesmerizingSliverAppBar({
-    super.key,
-    required this.title,
-    this.icon = Icons.camera,
-  });
+  const MesmerizingSliverAppBar({super.key, required this.title, this.icon = Icons.camera});
 
   final String title;
   final IconData icon;
-
   @override
-  ConsumerState<MesmerizingSliverAppBar> createState() =>
-      _MesmerizingSliverAppBarState();
+  ConsumerState<MesmerizingSliverAppBar> createState() => _MesmerizingSliverAppBarState();
 }
 
-class _MesmerizingSliverAppBarState
-    extends ConsumerState<MesmerizingSliverAppBar> {
+class _MesmerizingSliverAppBarState extends ConsumerState<MesmerizingSliverAppBar> {
   double _scrollProgress = 0.0;
 
   double _calculateScrollProgress(FlexibleSpaceBarSettings? settings) {
@@ -41,14 +35,12 @@ class _MesmerizingSliverAppBarState
       return 1.0;
     }
 
-    return (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent)
-        .clamp(0.0, 1.0);
+    return (1.0 - (settings.currentExtent - settings.minExtent) / deltaExtent).clamp(0.0, 1.0);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isMultiSelectEnabled =
-        ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
     return isMultiSelectEnabled
         ? SliverToBoxAdapter(
@@ -65,26 +57,12 @@ class _MesmerizingSliverAppBarState
             elevation: 0,
             leading: IconButton(
               icon: Icon(
-                Platform.isIOS
-                    ? Icons.arrow_back_ios_new_rounded
-                    : Icons.arrow_back,
-                color: Color.lerp(
-                  Colors.white,
-                  context.primaryColor,
-                  _scrollProgress,
-                ),
+                Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
+                color: Color.lerp(Colors.white, context.primaryColor, _scrollProgress),
                 shadows: [
                   _scrollProgress < 0.95
-                      ? Shadow(
-                          offset: const Offset(0, 2),
-                          blurRadius: 5,
-                          color: Colors.black.withValues(alpha: 0.5),
-                        )
-                      : const Shadow(
-                          offset: Offset(0, 2),
-                          blurRadius: 0,
-                          color: Colors.transparent,
-                        ),
+                      ? Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
+                      : const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
                 ],
               ),
               onPressed: () {
@@ -93,8 +71,7 @@ class _MesmerizingSliverAppBarState
             ),
             flexibleSpace: Builder(
               builder: (context) {
-                final settings = context.dependOnInheritedWidgetOfExactType<
-                    FlexibleSpaceBarSettings>();
+                final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
                 final scrollProgress = _calculateScrollProgress(settings);
 
                 // Update scroll progress for the leading button
@@ -113,11 +90,7 @@ class _MesmerizingSliverAppBarState
                     child: scrollProgress > 0.95
                         ? Text(
                             widget.title,
-                            style: TextStyle(
-                              color: context.primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                            ),
+                            style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
                           )
                         : null,
                   ),
@@ -138,19 +111,13 @@ class _ExpandedBackground extends ConsumerStatefulWidget {
   final String title;
   final IconData icon;
 
-  const _ExpandedBackground({
-    required this.scrollProgress,
-    required this.title,
-    required this.icon,
-  });
+  const _ExpandedBackground({required this.scrollProgress, required this.title, required this.icon});
 
   @override
-  ConsumerState<_ExpandedBackground> createState() =>
-      _ExpandedBackgroundState();
+  ConsumerState<_ExpandedBackground> createState() => _ExpandedBackgroundState();
 }
 
-class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
-    with SingleTickerProviderStateMixin {
+class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with SingleTickerProviderStateMixin {
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
 
@@ -158,20 +125,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
   void initState() {
     super.initState();
 
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
+    _slideController = AnimationController(duration: const Duration(milliseconds: 800), vsync: this);
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1.5),
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _slideController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
@@ -197,10 +156,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
           offset: Offset(0, widget.scrollProgress * 50),
           child: Transform.scale(
             scale: 1.4 - (widget.scrollProgress * 0.2),
-            child: _RandomAssetBackground(
-              timelineService: timelineService,
-              icon: widget.icon,
-            ),
+            child: _RandomAssetBackground(timelineService: timelineService, icon: widget.icon),
           ),
         ),
         Container(
@@ -211,9 +167,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
               colors: [
                 Colors.transparent,
                 Colors.transparent,
-                Colors.black.withValues(
-                  alpha: 0.6 + (widget.scrollProgress * 0.2),
-                ),
+                Colors.black.withValues(alpha: 0.6 + (widget.scrollProgress * 0.2)),
               ],
               stops: const [0.0, 0.65, 1.0],
             ),
@@ -241,21 +195,12 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground>
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 2),
-                            blurRadius: 12,
-                            color: Colors.black45,
-                          ),
-                        ],
+                        shadows: [Shadow(offset: Offset(0, 2), blurRadius: 12, color: Colors.black45)],
                       ),
                     ),
                   ),
                 ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  child: const _ItemCountText(),
-                ),
+                AnimatedContainer(duration: const Duration(milliseconds: 300), child: const _ItemCountText()),
               ],
             ),
           ),
@@ -278,8 +223,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
   @override
   void initState() {
     super.initState();
-    _reloadSubscription =
-        EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
+    _reloadSubscription = EventStream.shared.listen<TimelineReloadEvent>((_) => setState(() {}));
   }
 
   @override
@@ -290,26 +234,15 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 
   @override
   Widget build(BuildContext context) {
-    final assetCount = ref.watch(
-      timelineServiceProvider.select((s) => s.totalAssets),
-    );
+    final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
 
     return Text(
-      'items_count'.t(
-        context: context,
-        args: {"count": assetCount},
-      ),
+      'items_count'.t(context: context, args: {"count": assetCount}),
       style: context.textTheme.labelLarge?.copyWith(
         // letterSpacing: 0.2,
         fontWeight: FontWeight.bold,
         color: Colors.white,
-        shadows: [
-          const Shadow(
-            offset: Offset(0, 1),
-            blurRadius: 6,
-            color: Colors.black45,
-          ),
-        ],
+        shadows: [const Shadow(offset: Offset(0, 1), blurRadius: 6, color: Colors.black45)],
       ),
     );
   }
@@ -319,17 +252,13 @@ class _RandomAssetBackground extends StatefulWidget {
   final TimelineService timelineService;
   final IconData icon;
 
-  const _RandomAssetBackground({
-    required this.timelineService,
-    required this.icon,
-  });
+  const _RandomAssetBackground({required this.timelineService, required this.icon});
 
   @override
   State<_RandomAssetBackground> createState() => _RandomAssetBackgroundState();
 }
 
-class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
-    with TickerProviderStateMixin {
+class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with TickerProviderStateMixin {
   late AnimationController _zoomController;
   late AnimationController _crossFadeController;
   late Animation<double> _zoomAnimation;
@@ -346,47 +275,31 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
     _zoomController = AnimationController(
       duration: const Duration(seconds: 12),
       vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
     );
 
     _crossFadeController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
     );
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,
       end: 1.2,
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _panAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0.5, -0.5),
-    ).animate(
-      CurvedAnimation(
-        parent: _zoomController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _zoomController, curve: Curves.easeInOut));
 
     _crossFadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _crossFadeController,
-        curve: Curves.easeInOutCubic,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _crossFadeController, curve: Curves.easeInOutCubic));
 
-    Future.delayed(
-      Durations.medium1,
-      () => _loadFirstAsset(),
-    );
+    Future.delayed(Durations.medium1, () => _loadFirstAsset());
   }
 
   @override
@@ -476,16 +389,14 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
     }
 
     return AnimatedBuilder(
-      animation: Listenable.merge(
-        [_zoomAnimation, _panAnimation, _crossFadeAnimation],
-      ),
+      animation: Listenable.merge([_zoomAnimation, _panAnimation, _crossFadeAnimation]),
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          filterQuality: FilterQuality.low,
+          filterQuality: Platform.isAndroid ? FilterQuality.low : null,
           child: Transform.translate(
             offset: _panAnimation.value,
-            filterQuality: FilterQuality.low,
+            filterQuality: Platform.isAndroid ? FilterQuality.low : null,
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -500,8 +411,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                         alignment: Alignment.topRight,
                         image: getFullImageProvider(_currentAsset!),
                         fit: BoxFit.cover,
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                           if (wasSynchronouslyLoaded || frame != null) {
                             return child;
                           }
@@ -511,11 +421,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),
@@ -532,8 +438,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                         alignment: Alignment.topRight,
                         image: getFullImageProvider(_nextAsset!),
                         fit: BoxFit.cover,
-                        frameBuilder:
-                            (context, child, frame, wasSynchronouslyLoaded) {
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
                           if (wasSynchronouslyLoaded || frame != null) {
                             return child;
                           }
@@ -543,11 +448,7 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground>
                           return SizedBox(
                             width: double.infinity,
                             height: double.infinity,
-                            child: Icon(
-                              Icons.error_outline_rounded,
-                              size: 24,
-                              color: Colors.red[300],
-                            ),
+                            child: Icon(Icons.error_outline_rounded, size: 24, color: Colors.red[300]),
                           );
                         },
                       ),

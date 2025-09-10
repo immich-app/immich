@@ -100,6 +100,16 @@ const projects: CommunityProjectProps[] = [
     description: 'Automatically optimize files uploaded to Immich in order to save storage space',
     url: 'https://github.com/miguelangel-nubla/immich-upload-optimizer',
   },
+  {
+    title: 'Immich Machine Learning Load Balancer',
+    description: 'Speed up your machine learning by load balancing your requests to multiple computers',
+    url: 'https://github.com/apetersson/immich_ml_balancer',
+  },
+  {
+    title: 'Immich Drop Uploader',
+    description: 'A tiny, zero-login web app for collecting photos/videos from anyone into your Immich server.',
+    url: 'https://github.com/Nasogaa/immich-drop',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {

@@ -13,24 +13,14 @@ class AllPlacesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<SearchCuratedContent>> places =
-        ref.watch(getAllPlacesProvider);
+    AsyncValue<List<SearchCuratedContent>> places = ref.watch(getAllPlacesProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'places',
-        ).tr(),
-        leading: IconButton(
-          onPressed: () => context.maybePop(),
-          icon: const Icon(Icons.arrow_back_ios_rounded),
-        ),
+        title: const Text('places').tr(),
+        leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.arrow_back_ios_rounded)),
       ),
-      body: places.widgetWhen(
-        onData: (data) => ExploreGrid(
-          curatedContent: data,
-        ),
-      ),
+      body: places.widgetWhen(onData: (data) => ExploreGrid(curatedContent: data)),
     );
   }
 }

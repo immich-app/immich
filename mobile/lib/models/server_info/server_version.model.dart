@@ -5,22 +5,10 @@ class ServerVersion {
   final int minor;
   final int patch;
 
-  const ServerVersion({
-    required this.major,
-    required this.minor,
-    required this.patch,
-  });
+  const ServerVersion({required this.major, required this.minor, required this.patch});
 
-  ServerVersion copyWith({
-    int? major,
-    int? minor,
-    int? patch,
-  }) {
-    return ServerVersion(
-      major: major ?? this.major,
-      minor: minor ?? this.minor,
-      patch: patch ?? this.patch,
-    );
+  ServerVersion copyWith({int? major, int? minor, int? patch}) {
+    return ServerVersion(major: major ?? this.major, minor: minor ?? this.minor, patch: patch ?? this.patch);
   }
 
   @override
@@ -28,19 +16,13 @@ class ServerVersion {
     return 'ServerVersion(major: $major, minor: $minor, patch: $patch)';
   }
 
-  ServerVersion.fromDto(ServerVersionResponseDto dto)
-      : major = dto.major,
-        minor = dto.minor,
-        patch = dto.patch_;
+  ServerVersion.fromDto(ServerVersionResponseDto dto) : major = dto.major, minor = dto.minor, patch = dto.patch_;
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is ServerVersion &&
-        other.major == major &&
-        other.minor == minor &&
-        other.patch == patch;
+    return other is ServerVersion && other.major == major && other.minor == minor && other.patch == patch;
   }
 
   @override

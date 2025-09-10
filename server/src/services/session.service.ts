@@ -14,7 +14,7 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class SessionService extends BaseService {
-  @OnJob({ name: JobName.CLEAN_OLD_SESSION_TOKENS, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.SessionCleanup, queue: QueueName.BackgroundTask })
   async handleCleanup(): Promise<JobStatus> {
     const sessions = await this.sessionRepository.cleanup();
     for (const session of sessions) {
@@ -23,7 +23,7 @@ export class SessionService extends BaseService {
 
     this.logger.log(`Deleted ${sessions.length} expired session tokens`);
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   async create(auth: AuthDto, dto: SessionCreateDto): Promise<SessionCreateResponseDto> {
@@ -51,7 +51,7 @@ export class SessionService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: SessionUpdateDto): Promise<SessionResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.SESSION_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.SessionUpdate, ids: [id] });
 
     if (Object.values(dto).filter((prop) => prop !== undefined).length === 0) {
       throw new BadRequestException('No fields to update');
@@ -65,12 +65,12 @@ export class SessionService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AuthDeviceDelete, ids: [id] });
     await this.sessionRepository.delete(id);
   }
 
   async lock(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.SESSION_LOCK, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.SessionLock, ids: [id] });
     await this.sessionRepository.update(id, { pinExpiresAt: null });
   }
 

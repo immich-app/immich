@@ -6,16 +6,16 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 class UserMetadataEntity extends Table with DriftDefaultsMixin {
   const UserMetadataEntity();
 
-  TextColumn get userId =>
-      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
-  TextColumn get preferences => text().map(userPreferenceConverter)();
+  TextColumn get userId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+
+  IntColumn get key => intEnum<UserMetadataKey>()();
+
+  BlobColumn get value => blob().map(userMetadataConverter)();
 
   @override
-  Set<Column> get primaryKey => {userId};
+  Set<Column> get primaryKey => {userId, key};
 }
 
-final JsonTypeConverter2<UserPreferences, String, Object?>
-    userPreferenceConverter = TypeConverter.json2(
-  fromJson: (json) => UserPreferences.fromMap(json as Map<String, Object?>),
-  toJson: (pref) => pref.toMap(),
+final JsonTypeConverter2<Map<String, Object?>, Uint8List, Object?> userMetadataConverter = TypeConverter.jsonb(
+  fromJson: (json) => json as Map<String, Object?>,
 );

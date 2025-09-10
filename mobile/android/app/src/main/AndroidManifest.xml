@@ -27,7 +27,9 @@
 
   <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
-    android:largeHeap="true" android:enableOnBackInvokedCallback="false">
+    android:largeHeap="true" android:enableOnBackInvokedCallback="false" android:allowBackup="false">
+
+    <profileable android:shell="true" />
 
     <service
       android:name="androidx.work.impl.foreground.SystemForegroundService"
@@ -141,6 +143,41 @@
       android:name="androidx.startup.InitializationProvider"
       android:authorities="${applicationId}.androidx-startup"
       tools:node="remove" />
+
+
+    <!-- Widgets -->
+    <receiver
+      android:name=".widget.RandomReceiver"
+      android:exported="true"
+      android:label="@string/random_widget_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/random_widget" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.MemoryReceiver"
+      android:exported="true"
+      android:label="@string/memory_widget_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/memory_widget" />
+    </receiver>
+
+    <activity android:name=".widget.configure.RandomConfigure"
+      android:exported="true"
+      android:theme="@style/Theme.Material3.DayNight.NoActionBar">
+
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+      </intent-filter>
+    </activity>
   </application>
 
 

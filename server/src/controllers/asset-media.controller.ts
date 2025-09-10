@@ -35,7 +35,7 @@ import {
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ImmichHeader, RouteKey } from 'src/enum';
+import { ImmichHeader, Permission, RouteKey } from 'src/enum';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor';
@@ -47,7 +47,7 @@ import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 import { TranscodingService } from 'src/services/transcoding.service';
 
 @ApiTags('Assets')
-@Controller(RouteKey.ASSET)
+@Controller(RouteKey.Asset)
 export class AssetMediaController {
   constructor(
     private logger: LoggingRepository,
@@ -59,12 +59,12 @@ export class AssetMediaController {
   @UseInterceptors(AssetUploadInterceptor, FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @ApiHeader({
-    name: ImmichHeader.CHECKSUM,
+    name: ImmichHeader.Checksum,
     description: 'sha1 checksum that can be used for duplicate detection before the file is uploaded',
     required: false,
   })
   @ApiBody({ description: 'Asset Upload Information', type: AssetMediaCreateDto })
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AssetUpload, sharedLink: true })
   async uploadAsset(
     @Auth() auth: AuthDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator(['assetData'])] })) files: UploadFiles,
@@ -83,7 +83,7 @@ export class AssetMediaController {
 
   @Get(':id/original')
   @FileResponse()
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
   async downloadAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -104,7 +104,7 @@ export class AssetMediaController {
     summary: 'replaceAsset',
     description: 'Replace the asset with new file, without changing its id',
   })
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AssetReplace, sharedLink: true })
   async replaceAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -123,7 +123,7 @@ export class AssetMediaController {
 
   @Get(':id/thumbnail')
   @FileResponse()
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   async viewAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -160,7 +160,7 @@ export class AssetMediaController {
 
   @Get(':id/video/playback')
   @FileResponse()
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
   async playAssetVideo(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -190,12 +190,12 @@ export class AssetMediaController {
    * Checks if multiple assets exist on the server and returns all existing - used by background backup
    */
   @Post('exist')
-  @HttpCode(HttpStatus.OK)
+  @Authenticated()
   @ApiOperation({
     summary: 'checkExistingAssets',
     description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
   })
-  @Authenticated()
+  @HttpCode(HttpStatus.OK)
   checkExistingAssets(
     @Auth() auth: AuthDto,
     @Body() dto: CheckExistingAssetsDto,
@@ -207,12 +207,12 @@ export class AssetMediaController {
    * Checks if assets exist by checksums
    */
   @Post('bulk-upload-check')
-  @HttpCode(HttpStatus.OK)
+  @Authenticated({ permission: Permission.AssetUpload })
   @ApiOperation({
     summary: 'checkBulkUpload',
     description: 'Checks if assets exist by checksums',
   })
-  @Authenticated()
+  @HttpCode(HttpStatus.OK)
   checkBulkUpload(
     @Auth() auth: AuthDto,
     @Body() dto: AssetBulkUploadCheckDto,

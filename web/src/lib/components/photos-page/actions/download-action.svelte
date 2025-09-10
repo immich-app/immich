@@ -4,11 +4,11 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
   import { getAssetInfo } from '@immich/sdk';
-  import { mdiCloudDownloadOutline, mdiFileDownloadOutline, mdiFolderDownloadOutline } from '@mdi/js';
+  import { IconButton } from '@immich/ui';
+  import { mdiDownload } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     filename?: string;
@@ -23,7 +23,7 @@
     const assets = [...getAssets()];
     if (assets.length === 1) {
       clearSelect();
-      let asset = await getAssetInfo({ id: assets[0].id, key: authManager.key });
+      let asset = await getAssetInfo({ ...authManager.params, id: assets[0].id });
       await downloadFile(asset);
       return;
     }
@@ -31,21 +31,19 @@
     clearSelect();
     await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) });
   };
-
-  let menuItemIcon = $derived(getAssets().length === 1 ? mdiFileDownloadOutline : mdiFolderDownloadOutline);
 </script>
 
 <svelte:document use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: handleDownloadFiles }} />
 
 {#if menuItem}
-  <MenuOption text={$t('download')} icon={menuItemIcon} onClick={handleDownloadFiles} />
+  <MenuOption text={$t('download')} icon={mdiDownload} onClick={handleDownloadFiles} />
 {:else}
   <IconButton
     shape="round"
     color="secondary"
     variant="ghost"
     aria-label={$t('download')}
-    icon={mdiCloudDownloadOutline}
+    icon={mdiDownload}
     onclick={handleDownloadFiles}
   />
 {/if}

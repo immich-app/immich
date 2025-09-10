@@ -15,12 +15,7 @@ import '../../test_utils.dart';
 import '../../widget_tester_extensions.dart';
 import '../asset_viewer/asset_viewer_mocks.dart';
 
-final activity = Activity(
-  id: '1',
-  createdAt: DateTime(100),
-  type: ActivityType.like,
-  user: UserStub.admin,
-);
+final activity = Activity(id: '1', createdAt: DateTime(100), type: ActivityType.like, user: UserStub.admin);
 
 void main() {
   late MockCurrentAssetProvider assetProvider;
@@ -34,10 +29,7 @@ void main() {
   });
 
   testWidgets('Returns a Dismissible', (tester) async {
-    await tester.pumpConsumerWidget(
-      DismissibleActivity('1', ActivityTile(activity)),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(DismissibleActivity('1', ActivityTile(activity)), overrides: overrides);
 
     expect(find.byType(Dismissible), findsOneWidget);
   });
@@ -55,16 +47,10 @@ void main() {
     expect(find.byType(ConfirmDialog), findsOneWidget);
   });
 
-  testWidgets(
-      'Ok action in ConfirmDialog should call onDismiss with activityId',
-      (tester) async {
+  testWidgets('Ok action in ConfirmDialog should call onDismiss with activityId', (tester) async {
     String? receivedActivityId;
     await tester.pumpConsumerWidget(
-      DismissibleActivity(
-        '1',
-        ActivityTile(activity),
-        onDismiss: (id) => receivedActivityId = id,
-      ),
+      DismissibleActivity('1', ActivityTile(activity), onDismiss: (id) => receivedActivityId = id),
       overrides: overrides,
     );
 
@@ -93,10 +79,7 @@ void main() {
   });
 
   testWidgets('No delete dialog if onDismiss is not set', (tester) async {
-    await tester.pumpConsumerWidget(
-      DismissibleActivity('1', ActivityTile(activity)),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(DismissibleActivity('1', ActivityTile(activity)), overrides: overrides);
 
     final dismissible = find.byType(Dismissible);
     await tester.drag(dismissible, const Offset(500, 0));
@@ -106,10 +89,7 @@ void main() {
   });
 
   testWidgets('No icon for background if onDismiss is not set', (tester) async {
-    await tester.pumpConsumerWidget(
-      DismissibleActivity('1', ActivityTile(activity)),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(DismissibleActivity('1', ActivityTile(activity)), overrides: overrides);
 
     final dismissible = find.byType(Dismissible);
     await tester.drag(dismissible, const Offset(-500, 0));

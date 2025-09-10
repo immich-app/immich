@@ -1,18 +1,19 @@
 <script lang="ts">
   import StatsCard from '$lib/components/admin-page/server-stats/stats-card.svelte';
+  import FeatureSetting from '$lib/components/admin-page/user/feature-setting.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
   import UserEditModal from '$lib/modals/UserEditModal.svelte';
   import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user as authUser } from '$lib/stores/user.store';
+  import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin } from '@immich/sdk';
@@ -29,6 +30,7 @@
     Heading,
     HStack,
     Icon,
+    modalManager,
     Stack,
     Text,
   } from '@immich/ui';
@@ -48,7 +50,6 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import FeatureSetting from '$lib/components/admin-page/user/feature-setting.svelte';
 
   interface Props {
     data: PageData;
@@ -69,6 +70,12 @@
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
   let canResetPassword = $derived($authUser.id !== user.id);
   let newPassword = $state<string>('');
+
+  let editedLocale = $derived(findLocale($locale).code);
+  let createAtDate: Date = $derived(new Date(user.createdAt));
+  let updatedAtDate: Date = $derived(new Date(user.updatedAt));
+  let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
+  let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
 
   const handleEdit = async () => {
     const result = await modalManager.show(UserEditModal, { user: { ...user } });
@@ -266,11 +273,11 @@
                   </div>
                   <div>
                     <Heading tag="h3" size="tiny">{$t('created_at')}</Heading>
-                    <Text>{user.createdAt}</Text>
+                    <Text>{userCreatedAtDateAndTime}</Text>
                   </div>
                   <div>
                     <Heading tag="h3" size="tiny">{$t('updated_at')}</Heading>
-                    <Text>{user.updatedAt}</Text>
+                    <Text>{userUpdatedAtDateAndTime}</Text>
                   </div>
                   <div>
                     <Heading tag="h3" size="tiny">{$t('id')}</Heading>

@@ -36,7 +36,7 @@ def to_numpy(img: Image.Image) -> NDArray[np.float32]:
 def normalize(
     img: NDArray[np.float32], mean: float | NDArray[np.float32], std: float | NDArray[np.float32]
 ) -> NDArray[np.float32]:
-    return np.divide(img - mean, std, dtype=np.float32)
+    return (img - mean) / std
 
 
 def get_pil_resampling(resample: str) -> Image.Resampling:
@@ -58,11 +58,13 @@ def decode_pil(image_bytes: bytes | IO[bytes] | Image.Image) -> Image.Image:
 
 
 def decode_cv2(image_bytes: NDArray[np.uint8] | bytes | Image.Image) -> NDArray[np.uint8]:
-    if isinstance(image_bytes, bytes):
-        image_bytes = decode_pil(image_bytes)  # pillow is much faster than cv2
-    if isinstance(image_bytes, Image.Image):
-        return pil_to_cv2(image_bytes)
-    return image_bytes
+    match image_bytes:
+        case bytes() | memoryview() | bytearray():
+            return pil_to_cv2(decode_pil(image_bytes))  # pillow is much faster than cv2
+        case Image.Image():
+            return pil_to_cv2(image_bytes)
+        case _:
+            return image_bytes
 
 
 def clean_text(text: str, canonicalize: bool = False) -> str:

@@ -14,8 +14,7 @@ class MemoryEntity extends Table with DriftDefaultsMixin {
 
   DateTimeColumn get deletedAt => dateTime().nullable()();
 
-  TextColumn get ownerId =>
-      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
   IntColumn get type => intEnum<MemoryTypeEnum>()();
 

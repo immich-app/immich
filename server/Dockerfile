@@ -1,56 +1,62 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202507091427@sha256:733e510024e03bc2450608a1f3622f45bf287b70d89a06e60acbccea4bf4fd8c AS dev
+FROM ghcr.io/immich-app/base-server-dev:202509021104@sha256:47d38c94775332000a93fbbeca1c796687b2d2919e3c75b6e26ab8a65d1864f3 AS dev
 
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp
+
+RUN npm install --global corepack@latest && \
+  corepack enable pnpm && \
+  echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
+  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc
+
+COPY ./package* ./pnpm* .pnpmfile.cjs /tmp/create-dep-cache/
+COPY ./web/package* ./web/pnpm* /tmp/create-dep-cache/web/
+COPY ./server/package* ./server/pnpm* /tmp/create-dep-cache/server/
+COPY ./open-api/typescript-sdk/package* ./open-api/typescript-sdk/pnpm* /tmp/create-dep-cache/open-api/typescript-sdk/
+WORKDIR /tmp/create-dep-cache
+RUN pnpm fetch && rm -rf /tmp/create-dep-cache && chmod -R o+rw /buildcache
 WORKDIR /usr/src/app
-COPY server/package.json server/package-lock.json ./
-RUN npm ci && \
-    # exiftool-vendored.pl, sharp-linux-x64 and sharp-linux-arm64 are the only ones we need
-    # they're marked as optional dependencies, so we need to copy them manually after pruning
-    rm -rf node_modules/@img/sharp-libvips* && \
-    rm -rf node_modules/@img/sharp-linuxmusl-x64
-ENV PATH="${PATH}:/usr/src/app/bin" \
-    IMMICH_ENV=development \
-    NVIDIA_DRIVER_CAPABILITIES=all \
-    NVIDIA_VISIBLE_DEVICES=all
-ENTRYPOINT ["tini", "--", "/bin/sh"]
+
+ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \
+  IMMICH_ENV=development \
+  NVIDIA_DRIVER_CAPABILITIES=all \
+  NVIDIA_VISIBLE_DEVICES=all
+ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 
 FROM dev AS dev-container-server
 
-RUN rm -rf /usr/src/app
-RUN apt-get update && \
-    apt-get install sudo inetutils-ping openjdk-11-jre-headless \
-    vim nano \
-    -y --no-install-recommends --fix-missing
+RUN apt-get update --allow-releaseinfo-change && \
+  apt-get install sudo inetutils-ping openjdk-11-jre-headless \
+  vim nano \
+  -y --no-install-recommends --fix-missing
 
-RUN usermod -aG sudo node
-RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-RUN mkdir -p /workspaces/immich
-RUN chown node -R /workspaces
-COPY --chown=node:node --chmod=777 ../.devcontainer/server/*.sh /immich-devcontainer/
+RUN usermod -aG sudo node && \
+  echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+  mkdir -p /workspaces/immich
 
-USER node
-COPY --chown=node:node .. /tmp/create-dep-cache/
-WORKDIR /tmp/create-dep-cache
-RUN make ci-all && rm -rf /tmp/create-dep-cache
+RUN chown node:node -R /workspaces
+COPY --chown=node:node --chmod=755 ../.devcontainer/server/*.sh /immich-devcontainer/
 
+WORKDIR /workspaces/immich
 
 FROM dev-container-server AS dev-container-mobile
 USER root
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
-    dpkg --add-architecture amd64 && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-        qemu-user-static \
-        libc6:amd64 \
-        libstdc++6:amd64 \
-        libgcc1:amd64; \
-    fi
+  dpkg --add-architecture amd64 && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  qemu-user-static \
+  libc6:amd64 \
+  libstdc++6:amd64 \
+  libgcc1:amd64; \
+  fi
 
 # Flutter SDK
 # https://flutter.dev/docs/development/tools/sdk/releases?tab=linux
 ENV FLUTTER_CHANNEL="stable"
-ENV FLUTTER_VERSION="3.32.6"
+ENV FLUTTER_VERSION="3.32.8"
 ENV FLUTTER_HOME=/flutter
 ENV PATH=${PATH}:${FLUTTER_HOME}/bin
 
@@ -61,61 +67,69 @@ RUN mkdir -p ${FLUTTER_HOME} \
   && rm flutter.tar.xz \
   && chown -R node ${FLUTTER_HOME}
 
-USER node
-RUN sudo apt-get update \
-  && wget -qO- https://dcm.dev/pgp-key.public | sudo gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
-  && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list \
-  && sudo apt-get update \
-  && sudo apt-get install dcm -y
 
-COPY --chmod=777 ../.devcontainer/mobile/container-mobile-post-create.sh /immich-devcontainer/container-mobile-post-create.sh
+RUN apt-get update \
+  && wget -qO- https://dcm.dev/pgp-key.public | gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
+  && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | tee /etc/apt/sources.list.d/dart_stable.list \
+  && apt-get update \
+  && apt-get install dcm -y
 
 RUN dart --disable-analytics
 
-FROM dev AS prod
+# production-builder-base image
+FROM ghcr.io/immich-app/base-server-dev:202509021104@sha256:47d38c94775332000a93fbbeca1c796687b2d2919e3c75b6e26ab8a65d1864f3 AS prod-builder-base
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
+  CI=1 \
+  COREPACK_HOME=/tmp
 
-COPY server .
-RUN npm run build
-RUN npm prune --omit=dev --omit=optional
-COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
-COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
+RUN npm install --global corepack@latest && \
+  corepack enable pnpm
 
-# web build
-FROM node:22.16.0-alpine3.20@sha256:2289fb1fba0f4633b08ec47b94a89c7e20b829fc5679f9b7b298eaa2f1ed8b7e AS web
-
-WORKDIR /usr/src/open-api/typescript-sdk
-COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
-RUN npm ci
-COPY open-api/typescript-sdk/ ./
-RUN npm run build
+# server production build
+FROM prod-builder-base AS server-prod
 
 WORKDIR /usr/src/app
-COPY web/package*.json web/svelte.config.js ./
-RUN npm ci
-COPY web ./
-COPY i18n ../i18n
-RUN npm run build
+COPY ./package* ./pnpm* .pnpmfile.cjs ./
+COPY ./server ./server/
+RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
+  SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
 
+# web production build
+FROM prod-builder-base AS web-prod
 
-# prod build
-FROM ghcr.io/immich-app/base-server-prod:202507091427@sha256:ad10451acd8eda05a006a2586b6b0425cdaaca97c413fb4c1a10896712528bdc
+WORKDIR /usr/src/app
+COPY ./package* ./pnpm* .pnpmfile.cjs ./
+COPY ./web ./web/
+COPY ./i18n ./i18n/
+COPY ./open-api ./open-api/
+RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
+  pnpm --filter @immich/sdk --filter immich-web build
+
+FROM prod-builder-base AS cli-prod
+
+COPY ./package* ./pnpm* .pnpmfile.cjs ./
+COPY ./cli ./cli/
+COPY ./open-api ./open-api/
+RUN pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && \
+  pnpm --filter @immich/sdk --filter @immich/cli build && \
+  pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
+
+# prod base image
+FROM ghcr.io/immich-app/base-server-prod:202509021104@sha256:84f3727cff75c623f79236cdd9a2b72c84f7665057f474851016f702c67157af
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
-    NVIDIA_DRIVER_CAPABILITIES=all \
-    NVIDIA_VISIBLE_DEVICES=all
-COPY --from=prod /usr/src/app/node_modules ./node_modules
-COPY --from=prod /usr/src/app/dist ./dist
-COPY --from=prod /usr/src/app/bin ./bin
-COPY --from=web /usr/src/app/build /build/www
-COPY server/resources resources
-COPY server/package.json server/package-lock.json ./
-COPY server/start*.sh ./
-COPY "docker/scripts/get-cpus.sh" ./
-RUN npm install -g @immich/cli && npm cache clean --force
+  NVIDIA_DRIVER_CAPABILITIES=all \
+  NVIDIA_VISIBLE_DEVICES=all
+
+COPY --from=server-prod /output/server-pruned ./server
+COPY --from=web-prod /usr/src/app/web/build /build/www
+COPY --from=cli-prod /output/cli-pruned ./cli
+RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
-ENV PATH="${PATH}:/usr/src/app/bin"
+
+ENV PATH="${PATH}:/usr/src/app/server/bin"
 
 ARG BUILD_ID
 ARG BUILD_IMAGE
@@ -132,9 +146,9 @@ ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
 ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
 
-VOLUME /usr/src/app/upload
+VOLUME /data
 EXPOSE 2283
-ENTRYPOINT ["tini", "--", "/bin/bash"]
+ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 CMD ["start.sh"]
 
 HEALTHCHECK CMD immich-healthcheck

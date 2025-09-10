@@ -15,9 +15,9 @@ export class TrashService extends BaseService {
       return { count: 0 };
     }
 
-    await this.requireAccess({ auth, permission: Permission.ASSET_DELETE, ids });
+    await this.requireAccess({ auth, permission: Permission.AssetDelete, ids });
     await this.trashRepository.restoreAll(ids);
-    await this.eventRepository.emit('assets.restore', { assetIds: ids, userId: auth.user.id });
+    await this.eventRepository.emit('AssetRestoreAll', { assetIds: ids, userId: auth.user.id });
 
     this.logger.log(`Restored ${ids.length} asset(s) from trash`);
 
@@ -35,18 +35,18 @@ export class TrashService extends BaseService {
   async empty(auth: AuthDto): Promise<TrashResponseDto> {
     const count = await this.trashRepository.empty(auth.user.id);
     if (count > 0) {
-      await this.jobRepository.queue({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
+      await this.jobRepository.queue({ name: JobName.AssetEmptyTrash, data: {} });
     }
     return { count };
   }
 
-  @OnEvent({ name: 'assets.delete' })
+  @OnEvent({ name: 'AssetDeleteAll' })
   async onAssetsDelete() {
-    await this.jobRepository.queue({ name: JobName.QUEUE_TRASH_EMPTY, data: {} });
+    await this.jobRepository.queue({ name: JobName.AssetEmptyTrash, data: {} });
   }
 
-  @OnJob({ name: JobName.QUEUE_TRASH_EMPTY, queue: QueueName.BACKGROUND_TASK })
-  async handleQueueEmptyTrash() {
+  @OnJob({ name: JobName.AssetEmptyTrash, queue: QueueName.BackgroundTask })
+  async handleEmptyTrash() {
     const assets = this.trashRepository.getDeletedIds();
 
     let count = 0;
@@ -67,14 +67,14 @@ export class TrashService extends BaseService {
 
     this.logger.log(`Queued ${count} asset(s) for deletion from the trash`);
 
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async handleBatch(ids: string[]) {
     this.logger.debug(`Queueing ${ids.length} asset(s) for deletion from the trash`);
     await this.jobRepository.queueAll(
       ids.map((assetId) => ({
-        name: JobName.ASSET_DELETION,
+        name: JobName.AssetDelete,
         data: {
           id: assetId,
           deleteOnDisk: true,

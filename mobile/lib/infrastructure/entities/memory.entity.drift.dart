@@ -10,65 +10,76 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
     as i5;
 import 'package:drift/internal/modular.dart' as i6;
 
-typedef $$MemoryEntityTableCreateCompanionBuilder = i1.MemoryEntityCompanion
-    Function({
-  required String id,
-  i0.Value<DateTime> createdAt,
-  i0.Value<DateTime> updatedAt,
-  i0.Value<DateTime?> deletedAt,
-  required String ownerId,
-  required i2.MemoryTypeEnum type,
-  required String data,
-  i0.Value<bool> isSaved,
-  required DateTime memoryAt,
-  i0.Value<DateTime?> seenAt,
-  i0.Value<DateTime?> showAt,
-  i0.Value<DateTime?> hideAt,
-});
-typedef $$MemoryEntityTableUpdateCompanionBuilder = i1.MemoryEntityCompanion
-    Function({
-  i0.Value<String> id,
-  i0.Value<DateTime> createdAt,
-  i0.Value<DateTime> updatedAt,
-  i0.Value<DateTime?> deletedAt,
-  i0.Value<String> ownerId,
-  i0.Value<i2.MemoryTypeEnum> type,
-  i0.Value<String> data,
-  i0.Value<bool> isSaved,
-  i0.Value<DateTime> memoryAt,
-  i0.Value<DateTime?> seenAt,
-  i0.Value<DateTime?> showAt,
-  i0.Value<DateTime?> hideAt,
-});
+typedef $$MemoryEntityTableCreateCompanionBuilder =
+    i1.MemoryEntityCompanion Function({
+      required String id,
+      i0.Value<DateTime> createdAt,
+      i0.Value<DateTime> updatedAt,
+      i0.Value<DateTime?> deletedAt,
+      required String ownerId,
+      required i2.MemoryTypeEnum type,
+      required String data,
+      i0.Value<bool> isSaved,
+      required DateTime memoryAt,
+      i0.Value<DateTime?> seenAt,
+      i0.Value<DateTime?> showAt,
+      i0.Value<DateTime?> hideAt,
+    });
+typedef $$MemoryEntityTableUpdateCompanionBuilder =
+    i1.MemoryEntityCompanion Function({
+      i0.Value<String> id,
+      i0.Value<DateTime> createdAt,
+      i0.Value<DateTime> updatedAt,
+      i0.Value<DateTime?> deletedAt,
+      i0.Value<String> ownerId,
+      i0.Value<i2.MemoryTypeEnum> type,
+      i0.Value<String> data,
+      i0.Value<bool> isSaved,
+      i0.Value<DateTime> memoryAt,
+      i0.Value<DateTime?> seenAt,
+      i0.Value<DateTime?> showAt,
+      i0.Value<DateTime?> hideAt,
+    });
 
-final class $$MemoryEntityTableReferences extends i0.BaseReferences<
-    i0.GeneratedDatabase, i1.$MemoryEntityTable, i1.MemoryEntityData> {
+final class $$MemoryEntityTableReferences
+    extends
+        i0.BaseReferences<
+          i0.GeneratedDatabase,
+          i1.$MemoryEntityTable,
+          i1.MemoryEntityData
+        > {
   $$MemoryEntityTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static i5.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
       i6.ReadDatabaseContainer(db)
           .resultSet<i5.$UserEntityTable>('user_entity')
-          .createAlias(i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$MemoryEntityTable>('memory_entity')
-                  .ownerId,
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i5.$UserEntityTable>('user_entity')
-                  .id));
+          .createAlias(
+            i0.$_aliasNameGenerator(
+              i6.ReadDatabaseContainer(
+                db,
+              ).resultSet<i1.$MemoryEntityTable>('memory_entity').ownerId,
+              i6.ReadDatabaseContainer(
+                db,
+              ).resultSet<i5.$UserEntityTable>('user_entity').id,
+            ),
+          );
 
   i5.$$UserEntityTableProcessedTableManager get ownerId {
     final $_column = $_itemColumn<String>('owner_id')!;
 
     final manager = i5
         .$$UserEntityTableTableManager(
+          $_db,
+          i6.ReadDatabaseContainer(
             $_db,
-            i6.ReadDatabaseContainer($_db)
-                .resultSet<i5.$UserEntityTable>('user_entity'))
+          ).resultSet<i5.$UserEntityTable>('user_entity'),
+        )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_ownerIdTable($_db));
     if (item == null) return manager;
     return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
   }
 }
 
@@ -82,59 +93,85 @@ class $$MemoryEntityTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnFilters(column));
+    column: $table.id,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.createdAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.updatedAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get deletedAt => $composableBuilder(
-      column: $table.deletedAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.deletedAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnWithTypeConverterFilters<i2.MemoryTypeEnum, i2.MemoryTypeEnum, int>
-      get type => $composableBuilder(
-          column: $table.type,
-          builder: (column) => i0.ColumnWithTypeConverterFilters(column));
+  get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  );
 
   i0.ColumnFilters<String> get data => $composableBuilder(
-      column: $table.data, builder: (column) => i0.ColumnFilters(column));
+    column: $table.data,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<bool> get isSaved => $composableBuilder(
-      column: $table.isSaved, builder: (column) => i0.ColumnFilters(column));
+    column: $table.isSaved,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get memoryAt => $composableBuilder(
-      column: $table.memoryAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.memoryAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get seenAt => $composableBuilder(
-      column: $table.seenAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.seenAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get showAt => $composableBuilder(
-      column: $table.showAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.showAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get hideAt => $composableBuilder(
-      column: $table.hideAt, builder: (column) => i0.ColumnFilters(column));
+    column: $table.hideAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i5.$$UserEntityTableFilterComposer get ownerId {
     final i5.$$UserEntityTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i6.ReadDatabaseContainer($db)
-            .resultSet<i5.$UserEntityTable>('user_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i5.$$UserEntityTableFilterComposer(
-              $db: $db,
-              $table: i6.ReadDatabaseContainer($db)
-                  .resultSet<i5.$UserEntityTable>('user_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.ownerId,
+      referencedTable: i6.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i5.$UserEntityTable>('user_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i5.$$UserEntityTableFilterComposer(
+            $db: $db,
+            $table: i6.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i5.$UserEntityTable>('user_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
@@ -149,60 +186,84 @@ class $$MemoryEntityTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<String> get id => $composableBuilder(
-      column: $table.id, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.id,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-      column: $table.createdAt,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.createdAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-      column: $table.updatedAt,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.updatedAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
-      column: $table.deletedAt,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.deletedAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<int> get type => $composableBuilder(
-      column: $table.type, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.type,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get data => $composableBuilder(
-      column: $table.data, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.data,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<bool> get isSaved => $composableBuilder(
-      column: $table.isSaved, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.isSaved,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get memoryAt => $composableBuilder(
-      column: $table.memoryAt, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.memoryAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get seenAt => $composableBuilder(
-      column: $table.seenAt, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.seenAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get showAt => $composableBuilder(
-      column: $table.showAt, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.showAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get hideAt => $composableBuilder(
-      column: $table.hideAt, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.hideAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i5.$$UserEntityTableOrderingComposer get ownerId {
     final i5.$$UserEntityTableOrderingComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i6.ReadDatabaseContainer($db)
-            .resultSet<i5.$UserEntityTable>('user_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i5.$$UserEntityTableOrderingComposer(
-              $db: $db,
-              $table: i6.ReadDatabaseContainer($db)
-                  .resultSet<i5.$UserEntityTable>('user_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.ownerId,
+      referencedTable: i6.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i5.$UserEntityTable>('user_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i5.$$UserEntityTableOrderingComposer(
+            $db: $db,
+            $table: i6.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i5.$UserEntityTable>('user_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
@@ -251,42 +312,52 @@ class $$MemoryEntityTableAnnotationComposer
 
   i5.$$UserEntityTableAnnotationComposer get ownerId {
     final i5.$$UserEntityTableAnnotationComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.ownerId,
-        referencedTable: i6.ReadDatabaseContainer($db)
-            .resultSet<i5.$UserEntityTable>('user_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i5.$$UserEntityTableAnnotationComposer(
-              $db: $db,
-              $table: i6.ReadDatabaseContainer($db)
-                  .resultSet<i5.$UserEntityTable>('user_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.ownerId,
+      referencedTable: i6.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i5.$UserEntityTable>('user_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i5.$$UserEntityTableAnnotationComposer(
+            $db: $db,
+            $table: i6.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i5.$UserEntityTable>('user_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
 
-class $$MemoryEntityTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$MemoryEntityTable,
-    i1.MemoryEntityData,
-    i1.$$MemoryEntityTableFilterComposer,
-    i1.$$MemoryEntityTableOrderingComposer,
-    i1.$$MemoryEntityTableAnnotationComposer,
-    $$MemoryEntityTableCreateCompanionBuilder,
-    $$MemoryEntityTableUpdateCompanionBuilder,
-    (i1.MemoryEntityData, i1.$$MemoryEntityTableReferences),
-    i1.MemoryEntityData,
-    i0.PrefetchHooks Function({bool ownerId})> {
+class $$MemoryEntityTableTableManager
+    extends
+        i0.RootTableManager<
+          i0.GeneratedDatabase,
+          i1.$MemoryEntityTable,
+          i1.MemoryEntityData,
+          i1.$$MemoryEntityTableFilterComposer,
+          i1.$$MemoryEntityTableOrderingComposer,
+          i1.$$MemoryEntityTableAnnotationComposer,
+          $$MemoryEntityTableCreateCompanionBuilder,
+          $$MemoryEntityTableUpdateCompanionBuilder,
+          (i1.MemoryEntityData, i1.$$MemoryEntityTableReferences),
+          i1.MemoryEntityData,
+          i0.PrefetchHooks Function({bool ownerId})
+        > {
   $$MemoryEntityTableTableManager(
-      i0.GeneratedDatabase db, i1.$MemoryEntityTable table)
-      : super(i0.TableManagerState(
+    i0.GeneratedDatabase db,
+    i1.$MemoryEntityTable table,
+  ) : super(
+        i0.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -295,74 +366,77 @@ class $$MemoryEntityTableTableManager extends i0.RootTableManager<
               i1.$$MemoryEntityTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               i1.$$MemoryEntityTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<String> id = const i0.Value.absent(),
-            i0.Value<DateTime> createdAt = const i0.Value.absent(),
-            i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
-            i0.Value<String> ownerId = const i0.Value.absent(),
-            i0.Value<i2.MemoryTypeEnum> type = const i0.Value.absent(),
-            i0.Value<String> data = const i0.Value.absent(),
-            i0.Value<bool> isSaved = const i0.Value.absent(),
-            i0.Value<DateTime> memoryAt = const i0.Value.absent(),
-            i0.Value<DateTime?> seenAt = const i0.Value.absent(),
-            i0.Value<DateTime?> showAt = const i0.Value.absent(),
-            i0.Value<DateTime?> hideAt = const i0.Value.absent(),
-          }) =>
-              i1.MemoryEntityCompanion(
-            id: id,
-            createdAt: createdAt,
-            updatedAt: updatedAt,
-            deletedAt: deletedAt,
-            ownerId: ownerId,
-            type: type,
-            data: data,
-            isSaved: isSaved,
-            memoryAt: memoryAt,
-            seenAt: seenAt,
-            showAt: showAt,
-            hideAt: hideAt,
-          ),
-          createCompanionCallback: ({
-            required String id,
-            i0.Value<DateTime> createdAt = const i0.Value.absent(),
-            i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-            i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
-            required String ownerId,
-            required i2.MemoryTypeEnum type,
-            required String data,
-            i0.Value<bool> isSaved = const i0.Value.absent(),
-            required DateTime memoryAt,
-            i0.Value<DateTime?> seenAt = const i0.Value.absent(),
-            i0.Value<DateTime?> showAt = const i0.Value.absent(),
-            i0.Value<DateTime?> hideAt = const i0.Value.absent(),
-          }) =>
-              i1.MemoryEntityCompanion.insert(
-            id: id,
-            createdAt: createdAt,
-            updatedAt: updatedAt,
-            deletedAt: deletedAt,
-            ownerId: ownerId,
-            type: type,
-            data: data,
-            isSaved: isSaved,
-            memoryAt: memoryAt,
-            seenAt: seenAt,
-            showAt: showAt,
-            hideAt: hideAt,
-          ),
+          updateCompanionCallback:
+              ({
+                i0.Value<String> id = const i0.Value.absent(),
+                i0.Value<DateTime> createdAt = const i0.Value.absent(),
+                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+                i0.Value<String> ownerId = const i0.Value.absent(),
+                i0.Value<i2.MemoryTypeEnum> type = const i0.Value.absent(),
+                i0.Value<String> data = const i0.Value.absent(),
+                i0.Value<bool> isSaved = const i0.Value.absent(),
+                i0.Value<DateTime> memoryAt = const i0.Value.absent(),
+                i0.Value<DateTime?> seenAt = const i0.Value.absent(),
+                i0.Value<DateTime?> showAt = const i0.Value.absent(),
+                i0.Value<DateTime?> hideAt = const i0.Value.absent(),
+              }) => i1.MemoryEntityCompanion(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                ownerId: ownerId,
+                type: type,
+                data: data,
+                isSaved: isSaved,
+                memoryAt: memoryAt,
+                seenAt: seenAt,
+                showAt: showAt,
+                hideAt: hideAt,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                i0.Value<DateTime> createdAt = const i0.Value.absent(),
+                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+                required String ownerId,
+                required i2.MemoryTypeEnum type,
+                required String data,
+                i0.Value<bool> isSaved = const i0.Value.absent(),
+                required DateTime memoryAt,
+                i0.Value<DateTime?> seenAt = const i0.Value.absent(),
+                i0.Value<DateTime?> showAt = const i0.Value.absent(),
+                i0.Value<DateTime?> hideAt = const i0.Value.absent(),
+              }) => i1.MemoryEntityCompanion.insert(
+                id: id,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                ownerId: ownerId,
+                type: type,
+                data: data,
+                isSaved: isSaved,
+                memoryAt: memoryAt,
+                seenAt: seenAt,
+                showAt: showAt,
+                hideAt: hideAt,
+              ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    i1.$$MemoryEntityTableReferences(db, table, e)
-                  ))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  i1.$$MemoryEntityTableReferences(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: ({ownerId = false}) {
             return i0.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends i0.TableManagerState<
+              addJoins:
+                  <
+                    T extends i0.TableManagerState<
                       dynamic,
                       dynamic,
                       dynamic,
@@ -373,40 +447,50 @@ class $$MemoryEntityTableTableManager extends i0.RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic,
-                      dynamic>>(state) {
-                if (ownerId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.ownerId,
-                    referencedTable:
-                        i1.$$MemoryEntityTableReferences._ownerIdTable(db),
-                    referencedColumn:
-                        i1.$$MemoryEntityTableReferences._ownerIdTable(db).id,
-                  ) as T;
-                }
+                      dynamic
+                    >
+                  >(state) {
+                    if (ownerId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.ownerId,
+                                referencedTable: i1
+                                    .$$MemoryEntityTableReferences
+                                    ._ownerIdTable(db),
+                                referencedColumn: i1
+                                    .$$MemoryEntityTableReferences
+                                    ._ownerIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );
           },
-        ));
+        ),
+      );
 }
 
-typedef $$MemoryEntityTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$MemoryEntityTable,
-    i1.MemoryEntityData,
-    i1.$$MemoryEntityTableFilterComposer,
-    i1.$$MemoryEntityTableOrderingComposer,
-    i1.$$MemoryEntityTableAnnotationComposer,
-    $$MemoryEntityTableCreateCompanionBuilder,
-    $$MemoryEntityTableUpdateCompanionBuilder,
-    (i1.MemoryEntityData, i1.$$MemoryEntityTableReferences),
-    i1.MemoryEntityData,
-    i0.PrefetchHooks Function({bool ownerId})>;
+typedef $$MemoryEntityTableProcessedTableManager =
+    i0.ProcessedTableManager<
+      i0.GeneratedDatabase,
+      i1.$MemoryEntityTable,
+      i1.MemoryEntityData,
+      i1.$$MemoryEntityTableFilterComposer,
+      i1.$$MemoryEntityTableOrderingComposer,
+      i1.$$MemoryEntityTableAnnotationComposer,
+      $$MemoryEntityTableCreateCompanionBuilder,
+      $$MemoryEntityTableUpdateCompanionBuilder,
+      (i1.MemoryEntityData, i1.$$MemoryEntityTableReferences),
+      i1.MemoryEntityData,
+      i0.PrefetchHooks Function({bool ownerId})
+    >;
 
 class $MemoryEntityTable extends i3.MemoryEntity
     with i0.TableInfo<$MemoryEntityTable, i1.MemoryEntityData> {
@@ -417,100 +501,159 @@ class $MemoryEntityTable extends i3.MemoryEntity
   static const i0.VerificationMeta _idMeta = const i0.VerificationMeta('id');
   @override
   late final i0.GeneratedColumn<String> id = i0.GeneratedColumn<String>(
-      'id', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _createdAtMeta =
-      const i0.VerificationMeta('createdAt');
+    'id',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const i0.VerificationMeta _createdAtMeta = const i0.VerificationMeta(
+    'createdAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> createdAt =
-      i0.GeneratedColumn<DateTime>('created_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: i4.currentDateAndTime);
-  static const i0.VerificationMeta _updatedAtMeta =
-      const i0.VerificationMeta('updatedAt');
+      i0.GeneratedColumn<DateTime>(
+        'created_at',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: i4.currentDateAndTime,
+      );
+  static const i0.VerificationMeta _updatedAtMeta = const i0.VerificationMeta(
+    'updatedAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> updatedAt =
-      i0.GeneratedColumn<DateTime>('updated_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime,
-          requiredDuringInsert: false,
-          defaultValue: i4.currentDateAndTime);
-  static const i0.VerificationMeta _deletedAtMeta =
-      const i0.VerificationMeta('deletedAt');
+      i0.GeneratedColumn<DateTime>(
+        'updated_at',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: i4.currentDateAndTime,
+      );
+  static const i0.VerificationMeta _deletedAtMeta = const i0.VerificationMeta(
+    'deletedAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> deletedAt =
-      i0.GeneratedColumn<DateTime>('deleted_at', aliasedName, true,
-          type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const i0.VerificationMeta _ownerIdMeta =
-      const i0.VerificationMeta('ownerId');
+      i0.GeneratedColumn<DateTime>(
+        'deleted_at',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _ownerIdMeta = const i0.VerificationMeta(
+    'ownerId',
+  );
   @override
   late final i0.GeneratedColumn<String> ownerId = i0.GeneratedColumn<String>(
-      'owner_id', aliasedName, false,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'REFERENCES user_entity (id) ON DELETE CASCADE'));
+    'owner_id',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'REFERENCES user_entity (id) ON DELETE CASCADE',
+    ),
+  );
   @override
   late final i0.GeneratedColumnWithTypeConverter<i2.MemoryTypeEnum, int> type =
-      i0.GeneratedColumn<int>('type', aliasedName, false,
-              type: i0.DriftSqlType.int, requiredDuringInsert: true)
-          .withConverter<i2.MemoryTypeEnum>(
-              i1.$MemoryEntityTable.$convertertype);
-  static const i0.VerificationMeta _dataMeta =
-      const i0.VerificationMeta('data');
+      i0.GeneratedColumn<int>(
+        'type',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<i2.MemoryTypeEnum>(i1.$MemoryEntityTable.$convertertype);
+  static const i0.VerificationMeta _dataMeta = const i0.VerificationMeta(
+    'data',
+  );
   @override
   late final i0.GeneratedColumn<String> data = i0.GeneratedColumn<String>(
-      'data', aliasedName, false,
-      type: i0.DriftSqlType.string, requiredDuringInsert: true);
-  static const i0.VerificationMeta _isSavedMeta =
-      const i0.VerificationMeta('isSaved');
+    'data',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const i0.VerificationMeta _isSavedMeta = const i0.VerificationMeta(
+    'isSaved',
+  );
   @override
   late final i0.GeneratedColumn<bool> isSaved = i0.GeneratedColumn<bool>(
-      'is_saved', aliasedName, false,
-      type: i0.DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          i0.GeneratedColumn.constraintIsAlways('CHECK ("is_saved" IN (0, 1))'),
-      defaultValue: const i4.Constant(false));
-  static const i0.VerificationMeta _memoryAtMeta =
-      const i0.VerificationMeta('memoryAt');
+    'is_saved',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_saved" IN (0, 1))',
+    ),
+    defaultValue: const i4.Constant(false),
+  );
+  static const i0.VerificationMeta _memoryAtMeta = const i0.VerificationMeta(
+    'memoryAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> memoryAt =
-      i0.GeneratedColumn<DateTime>('memory_at', aliasedName, false,
-          type: i0.DriftSqlType.dateTime, requiredDuringInsert: true);
-  static const i0.VerificationMeta _seenAtMeta =
-      const i0.VerificationMeta('seenAt');
+      i0.GeneratedColumn<DateTime>(
+        'memory_at',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const i0.VerificationMeta _seenAtMeta = const i0.VerificationMeta(
+    'seenAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> seenAt = i0.GeneratedColumn<DateTime>(
-      'seen_at', aliasedName, true,
-      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const i0.VerificationMeta _showAtMeta =
-      const i0.VerificationMeta('showAt');
+    'seen_at',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _showAtMeta = const i0.VerificationMeta(
+    'showAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> showAt = i0.GeneratedColumn<DateTime>(
-      'show_at', aliasedName, true,
-      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const i0.VerificationMeta _hideAtMeta =
-      const i0.VerificationMeta('hideAt');
+    'show_at',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _hideAtMeta = const i0.VerificationMeta(
+    'hideAt',
+  );
   @override
   late final i0.GeneratedColumn<DateTime> hideAt = i0.GeneratedColumn<DateTime>(
-      'hide_at', aliasedName, true,
-      type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
+    'hide_at',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<i0.GeneratedColumn> get $columns => [
-        id,
-        createdAt,
-        updatedAt,
-        deletedAt,
-        ownerId,
-        type,
-        data,
-        isSaved,
-        memoryAt,
-        seenAt,
-        showAt,
-        hideAt
-      ];
+    id,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    ownerId,
+    type,
+    data,
+    isSaved,
+    memoryAt,
+    seenAt,
+    showAt,
+    hideAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -518,8 +661,9 @@ class $MemoryEntityTable extends i3.MemoryEntity
   static const String $name = 'memory_entity';
   @override
   i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.MemoryEntityData> instance,
-      {bool isInserting = false}) {
+    i0.Insertable<i1.MemoryEntityData> instance, {
+    bool isInserting = false,
+  }) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -528,50 +672,70 @@ class $MemoryEntityTable extends i3.MemoryEntity
       context.missing(_idMeta);
     }
     if (data.containsKey('created_at')) {
-      context.handle(_createdAtMeta,
-          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
     }
     if (data.containsKey('updated_at')) {
-      context.handle(_updatedAtMeta,
-          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
     }
     if (data.containsKey('deleted_at')) {
-      context.handle(_deletedAtMeta,
-          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
     }
     if (data.containsKey('owner_id')) {
-      context.handle(_ownerIdMeta,
-          ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta));
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_ownerIdMeta);
     }
     if (data.containsKey('data')) {
       context.handle(
-          _dataMeta, this.data.isAcceptableOrUnknown(data['data']!, _dataMeta));
+        _dataMeta,
+        this.data.isAcceptableOrUnknown(data['data']!, _dataMeta),
+      );
     } else if (isInserting) {
       context.missing(_dataMeta);
     }
     if (data.containsKey('is_saved')) {
-      context.handle(_isSavedMeta,
-          isSaved.isAcceptableOrUnknown(data['is_saved']!, _isSavedMeta));
+      context.handle(
+        _isSavedMeta,
+        isSaved.isAcceptableOrUnknown(data['is_saved']!, _isSavedMeta),
+      );
     }
     if (data.containsKey('memory_at')) {
-      context.handle(_memoryAtMeta,
-          memoryAt.isAcceptableOrUnknown(data['memory_at']!, _memoryAtMeta));
+      context.handle(
+        _memoryAtMeta,
+        memoryAt.isAcceptableOrUnknown(data['memory_at']!, _memoryAtMeta),
+      );
     } else if (isInserting) {
       context.missing(_memoryAtMeta);
     }
     if (data.containsKey('seen_at')) {
-      context.handle(_seenAtMeta,
-          seenAt.isAcceptableOrUnknown(data['seen_at']!, _seenAtMeta));
+      context.handle(
+        _seenAtMeta,
+        seenAt.isAcceptableOrUnknown(data['seen_at']!, _seenAtMeta),
+      );
     }
     if (data.containsKey('show_at')) {
-      context.handle(_showAtMeta,
-          showAt.isAcceptableOrUnknown(data['show_at']!, _showAtMeta));
+      context.handle(
+        _showAtMeta,
+        showAt.isAcceptableOrUnknown(data['show_at']!, _showAtMeta),
+      );
     }
     if (data.containsKey('hide_at')) {
-      context.handle(_hideAtMeta,
-          hideAt.isAcceptableOrUnknown(data['hide_at']!, _hideAtMeta));
+      context.handle(
+        _hideAtMeta,
+        hideAt.isAcceptableOrUnknown(data['hide_at']!, _hideAtMeta),
+      );
     }
     return context;
   }
@@ -582,31 +746,56 @@ class $MemoryEntityTable extends i3.MemoryEntity
   i1.MemoryEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return i1.MemoryEntityData(
-      id: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}id'])!,
+      id: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
       updatedAt: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      deletedAt: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
-      ownerId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}owner_id'])!,
-      type: i1.$MemoryEntityTable.$convertertype.fromSql(attachedDatabase
-          .typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}type'])!),
-      data: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}data'])!,
-      isSaved: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.bool, data['${effectivePrefix}is_saved'])!,
-      memoryAt: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}memory_at'])!,
-      seenAt: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}seen_at']),
-      showAt: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}show_at']),
-      hideAt: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.dateTime, data['${effectivePrefix}hide_at']),
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      ownerId: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}owner_id'],
+      )!,
+      type: i1.$MemoryEntityTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.int,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+      data: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}data'],
+      )!,
+      isSaved: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}is_saved'],
+      )!,
+      memoryAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}memory_at'],
+      )!,
+      seenAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}seen_at'],
+      ),
+      showAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}show_at'],
+      ),
+      hideAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}hide_at'],
+      ),
     );
   }
 
@@ -637,19 +826,20 @@ class MemoryEntityData extends i0.DataClass
   final DateTime? seenAt;
   final DateTime? showAt;
   final DateTime? hideAt;
-  const MemoryEntityData(
-      {required this.id,
-      required this.createdAt,
-      required this.updatedAt,
-      this.deletedAt,
-      required this.ownerId,
-      required this.type,
-      required this.data,
-      required this.isSaved,
-      required this.memoryAt,
-      this.seenAt,
-      this.showAt,
-      this.hideAt});
+  const MemoryEntityData({
+    required this.id,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+    required this.ownerId,
+    required this.type,
+    required this.data,
+    required this.isSaved,
+    required this.memoryAt,
+    this.seenAt,
+    this.showAt,
+    this.hideAt,
+  });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -661,8 +851,9 @@ class MemoryEntityData extends i0.DataClass
     }
     map['owner_id'] = i0.Variable<String>(ownerId);
     {
-      map['type'] =
-          i0.Variable<int>(i1.$MemoryEntityTable.$convertertype.toSql(type));
+      map['type'] = i0.Variable<int>(
+        i1.$MemoryEntityTable.$convertertype.toSql(type),
+      );
     }
     map['data'] = i0.Variable<String>(data);
     map['is_saved'] = i0.Variable<bool>(isSaved);
@@ -679,8 +870,10 @@ class MemoryEntityData extends i0.DataClass
     return map;
   }
 
-  factory MemoryEntityData.fromJson(Map<String, dynamic> json,
-      {i0.ValueSerializer? serializer}) {
+  factory MemoryEntityData.fromJson(
+    Map<String, dynamic> json, {
+    i0.ValueSerializer? serializer,
+  }) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return MemoryEntityData(
       id: serializer.fromJson<String>(json['id']),
@@ -688,8 +881,9 @@ class MemoryEntityData extends i0.DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
       ownerId: serializer.fromJson<String>(json['ownerId']),
-      type: i1.$MemoryEntityTable.$convertertype
-          .fromJson(serializer.fromJson<int>(json['type'])),
+      type: i1.$MemoryEntityTable.$convertertype.fromJson(
+        serializer.fromJson<int>(json['type']),
+      ),
       data: serializer.fromJson<String>(json['data']),
       isSaved: serializer.fromJson<bool>(json['isSaved']),
       memoryAt: serializer.fromJson<DateTime>(json['memoryAt']),
@@ -707,8 +901,9 @@ class MemoryEntityData extends i0.DataClass
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
       'ownerId': serializer.toJson<String>(ownerId),
-      'type': serializer
-          .toJson<int>(i1.$MemoryEntityTable.$convertertype.toJson(type)),
+      'type': serializer.toJson<int>(
+        i1.$MemoryEntityTable.$convertertype.toJson(type),
+      ),
       'data': serializer.toJson<String>(data),
       'isSaved': serializer.toJson<bool>(isSaved),
       'memoryAt': serializer.toJson<DateTime>(memoryAt),
@@ -718,33 +913,33 @@ class MemoryEntityData extends i0.DataClass
     };
   }
 
-  i1.MemoryEntityData copyWith(
-          {String? id,
-          DateTime? createdAt,
-          DateTime? updatedAt,
-          i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
-          String? ownerId,
-          i2.MemoryTypeEnum? type,
-          String? data,
-          bool? isSaved,
-          DateTime? memoryAt,
-          i0.Value<DateTime?> seenAt = const i0.Value.absent(),
-          i0.Value<DateTime?> showAt = const i0.Value.absent(),
-          i0.Value<DateTime?> hideAt = const i0.Value.absent()}) =>
-      i1.MemoryEntityData(
-        id: id ?? this.id,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-        ownerId: ownerId ?? this.ownerId,
-        type: type ?? this.type,
-        data: data ?? this.data,
-        isSaved: isSaved ?? this.isSaved,
-        memoryAt: memoryAt ?? this.memoryAt,
-        seenAt: seenAt.present ? seenAt.value : this.seenAt,
-        showAt: showAt.present ? showAt.value : this.showAt,
-        hideAt: hideAt.present ? hideAt.value : this.hideAt,
-      );
+  i1.MemoryEntityData copyWith({
+    String? id,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+    String? ownerId,
+    i2.MemoryTypeEnum? type,
+    String? data,
+    bool? isSaved,
+    DateTime? memoryAt,
+    i0.Value<DateTime?> seenAt = const i0.Value.absent(),
+    i0.Value<DateTime?> showAt = const i0.Value.absent(),
+    i0.Value<DateTime?> hideAt = const i0.Value.absent(),
+  }) => i1.MemoryEntityData(
+    id: id ?? this.id,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    ownerId: ownerId ?? this.ownerId,
+    type: type ?? this.type,
+    data: data ?? this.data,
+    isSaved: isSaved ?? this.isSaved,
+    memoryAt: memoryAt ?? this.memoryAt,
+    seenAt: seenAt.present ? seenAt.value : this.seenAt,
+    showAt: showAt.present ? showAt.value : this.showAt,
+    hideAt: hideAt.present ? hideAt.value : this.hideAt,
+  );
   MemoryEntityData copyWithCompanion(i1.MemoryEntityCompanion data) {
     return MemoryEntityData(
       id: data.id.present ? data.id.value : this.id,
@@ -782,8 +977,20 @@ class MemoryEntityData extends i0.DataClass
   }
 
   @override
-  int get hashCode => Object.hash(id, createdAt, updatedAt, deletedAt, ownerId,
-      type, data, isSaved, memoryAt, seenAt, showAt, hideAt);
+  int get hashCode => Object.hash(
+    id,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    ownerId,
+    type,
+    data,
+    isSaved,
+    memoryAt,
+    seenAt,
+    showAt,
+    hideAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -842,11 +1049,11 @@ class MemoryEntityCompanion extends i0.UpdateCompanion<i1.MemoryEntityData> {
     this.seenAt = const i0.Value.absent(),
     this.showAt = const i0.Value.absent(),
     this.hideAt = const i0.Value.absent(),
-  })  : id = i0.Value(id),
-        ownerId = i0.Value(ownerId),
-        type = i0.Value(type),
-        data = i0.Value(data),
-        memoryAt = i0.Value(memoryAt);
+  }) : id = i0.Value(id),
+       ownerId = i0.Value(ownerId),
+       type = i0.Value(type),
+       data = i0.Value(data),
+       memoryAt = i0.Value(memoryAt);
   static i0.Insertable<i1.MemoryEntityData> custom({
     i0.Expression<String>? id,
     i0.Expression<DateTime>? createdAt,
@@ -877,19 +1084,20 @@ class MemoryEntityCompanion extends i0.UpdateCompanion<i1.MemoryEntityData> {
     });
   }
 
-  i1.MemoryEntityCompanion copyWith(
-      {i0.Value<String>? id,
-      i0.Value<DateTime>? createdAt,
-      i0.Value<DateTime>? updatedAt,
-      i0.Value<DateTime?>? deletedAt,
-      i0.Value<String>? ownerId,
-      i0.Value<i2.MemoryTypeEnum>? type,
-      i0.Value<String>? data,
-      i0.Value<bool>? isSaved,
-      i0.Value<DateTime>? memoryAt,
-      i0.Value<DateTime?>? seenAt,
-      i0.Value<DateTime?>? showAt,
-      i0.Value<DateTime?>? hideAt}) {
+  i1.MemoryEntityCompanion copyWith({
+    i0.Value<String>? id,
+    i0.Value<DateTime>? createdAt,
+    i0.Value<DateTime>? updatedAt,
+    i0.Value<DateTime?>? deletedAt,
+    i0.Value<String>? ownerId,
+    i0.Value<i2.MemoryTypeEnum>? type,
+    i0.Value<String>? data,
+    i0.Value<bool>? isSaved,
+    i0.Value<DateTime>? memoryAt,
+    i0.Value<DateTime?>? seenAt,
+    i0.Value<DateTime?>? showAt,
+    i0.Value<DateTime?>? hideAt,
+  }) {
     return i1.MemoryEntityCompanion(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
@@ -926,7 +1134,8 @@ class MemoryEntityCompanion extends i0.UpdateCompanion<i1.MemoryEntityData> {
     }
     if (type.present) {
       map['type'] = i0.Variable<int>(
-          i1.$MemoryEntityTable.$convertertype.toSql(type.value));
+        i1.$MemoryEntityTable.$convertertype.toSql(type.value),
+      );
     }
     if (data.present) {
       map['data'] = i0.Variable<String>(data.value);

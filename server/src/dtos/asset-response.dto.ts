@@ -15,11 +15,15 @@ import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
+<<<<<<< HEAD
 import { AudioStreamInfo, VideoStreamInfo } from 'src/types';
+=======
+import { ValidateEnum } from 'src/validation';
+>>>>>>> upstream/main
 
 export class SanitizedAssetResponseDto {
   id!: string;
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
   type!: AssetType;
   thumbhash!: string | null;
   originalMimeType?: string;
@@ -37,6 +41,13 @@ export class SanitizedAssetResponseDto {
 }
 
 export class AssetResponseDto extends SanitizedAssetResponseDto {
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description: 'The UTC timestamp when the asset was originally uploaded to Immich.',
+    example: '2024-01-15T20:30:00.000Z',
+  })
+  createdAt!: Date;
   deviceAssetId!: string;
   deviceId!: string;
   ownerId!: string;
@@ -73,7 +84,7 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isArchived!: boolean;
   isTrashed!: boolean;
   isOffline!: boolean;
-  @ApiProperty({ enum: AssetVisibility, enumName: 'AssetVisibility' })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
   visibility!: AssetVisibility;
   exifInfo?: ExifResponseDto;
   tags?: TagResponseDto[];
@@ -193,6 +204,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
 
   return {
     id: entity.id,
+    createdAt: entity.createdAt,
     deviceAssetId: entity.deviceAssetId,
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
@@ -208,7 +220,7 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     localDateTime: entity.localDateTime,
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
-    isArchived: entity.visibility === AssetVisibility.ARCHIVE,
+    isArchived: entity.visibility === AssetVisibility.Archive,
     isTrashed: !!entity.deletedAt,
     visibility: entity.visibility,
     duration: entity.duration ?? '0:00:00.00000',

@@ -162,6 +162,10 @@ export class StorageRepository {
     }
   }
 
+  existsSync(filepath: string) {
+    return existsSync(filepath);
+  }
+
   async checkDiskUsage(folder: string): Promise<DiskUsage> {
     const stats = await fs.statfs(folder);
     return {

@@ -2,32 +2,42 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart' as isar_backup_album;
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/device_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
+import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 13;
+const int targetVersion = 15;
 
-Future<void> migrateDatabaseIfNeeded(Isar db) async {
+Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
+  final hasVersion = Store.tryGet(StoreKey.version) != null;
   final int version = Store.get(StoreKey.version, targetVersion);
-
   if (version < 9) {
     await Store.put(StoreKey.version, targetVersion);
     final value = await db.storeValues.get(StoreKey.currentUser.id);
@@ -36,8 +46,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
       if (id != null) {
         await db.writeTxn(() async {
           final user = await db.users.get(id);
-          await db.storeValues
-              .put(StoreValue(StoreKey.currentUser.id, strValue: user?.id));
+          await db.storeValues.put(StoreValue(StoreKey.currentUser.id, strValue: user?.id));
         });
       }
     }
@@ -48,16 +57,30 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
     await _migrateDeviceAsset(db);
   }
 
-  if (version < 12 && (!kReleaseMode)) {
-    final backgroundSync = BackgroundSyncManager();
-    await backgroundSync.syncLocal();
-    final drift = Drift();
-    await _migrateDeviceAssetToSqlite(db, drift);
-    await drift.close();
-  }
-
   if (version < 13) {
     await Store.put(StoreKey.photoManagerCustomFilter, true);
+  }
+
+  // This means that the SQLite DB is just created and has no version
+  if (version < 14 || !hasVersion) {
+    await migrateStoreToSqlite(db, drift);
+    await Store.populateCache();
+  }
+
+  // Handle migration only for this version
+  // TODO: remove when old timeline is removed
+  if (version == 15) {
+    final isBeta = Store.tryGet(StoreKey.betaTimeline);
+    final isNewInstallation = await _isNewInstallation(db, drift);
+
+    // For new installations, no migration needed
+    // For existing installations, only migrate if beta timeline is not enabled (null or false)
+    if (isNewInstallation || isBeta == true) {
+      await Store.put(StoreKey.needBetaMigration, false);
+    } else {
+      await resetDriftDatabase(drift);
+      await Store.put(StoreKey.needBetaMigration, true);
+    }
   }
 
   if (targetVersion >= 12) {
@@ -69,6 +92,35 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
 
   if (shouldTruncate) {
     await _migrateTo(db, targetVersion);
+  }
+}
+
+Future<bool> _isNewInstallation(Isar db, Drift drift) async {
+  try {
+    final isarUserCount = await db.users.count();
+    if (isarUserCount > 0) {
+      return false;
+    }
+
+    final isarAssetCount = await db.assets.count();
+    if (isarAssetCount > 0) {
+      return false;
+    }
+
+    final driftStoreCount = await drift.storeEntity.select().get().then((list) => list.length);
+    if (driftStoreCount > 0) {
+      return false;
+    }
+
+    final driftAssetCount = await drift.localAssetEntity.select().get().then((list) => list.length);
+    if (driftAssetCount > 0) {
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    debugPrint("[MIGRATION] Error checking if new installation: $error");
+    return false;
   }
 }
 
@@ -87,46 +139,33 @@ Future<void> _migrateTo(Isar db, int version) async {
 Future<void> _migrateDeviceAsset(Isar db) async {
   final ids = Platform.isAndroid
       ? (await db.androidDeviceAssets.where().findAll())
-          .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
-          .toList()
-      : (await db.iOSDeviceAssets.where().findAll())
-          .map((i) => _DeviceAsset(assetId: i.id, hash: i.hash))
-          .toList();
+            .map((a) => _DeviceAsset(assetId: a.id.toString(), hash: a.hash))
+            .toList()
+      : (await db.iOSDeviceAssets.where().findAll()).map((i) => _DeviceAsset(assetId: i.id, hash: i.hash)).toList();
 
   final PermissionState ps = await PhotoManager.requestPermissionExtend();
   if (!ps.hasAccess) {
     if (kDebugMode) {
-      debugPrint(
-        "[MIGRATION] Photo library permission not granted. Skipping device asset migration.",
-      );
+      debugPrint("[MIGRATION] Photo library permission not granted. Skipping device asset migration.");
     }
 
     return;
   }
 
   List<_DeviceAsset> localAssets = [];
-  final List<AssetPathEntity> paths =
-      await PhotoManager.getAssetPathList(onlyAll: true);
+  final List<AssetPathEntity> paths = await PhotoManager.getAssetPathList(onlyAll: true);
 
   if (paths.isEmpty) {
-    localAssets = (await db.assets
-            .where()
-            .anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId))
-            .findAll())
-        .map(
-          (a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt),
-        )
+    localAssets = (await db.assets.where().anyOf(ids, (query, id) => query.localIdEqualTo(id.assetId)).findAll())
+        .map((a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt))
         .toList();
   } else {
     final AssetPathEntity albumWithAll = paths.first;
     final int assetCount = await albumWithAll.assetCountAsync;
 
-    final List<AssetEntity> allDeviceAssets =
-        await albumWithAll.getAssetListRange(start: 0, end: assetCount);
+    final List<AssetEntity> allDeviceAssets = await albumWithAll.getAssetListRange(start: 0, end: assetCount);
 
-    localAssets = allDeviceAssets
-        .map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime))
-        .toList();
+    localAssets = allDeviceAssets.map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime)).toList();
   }
 
   debugPrint("[MIGRATION] Device Asset Ids length - ${ids.length}");
@@ -140,34 +179,24 @@ Future<void> _migrateDeviceAsset(Isar db) async {
     compare: (a, b) => a.assetId.compareTo(b.assetId),
     both: (deviceAsset, asset) {
       toAdd.add(
-        DeviceAssetEntity(
-          assetId: deviceAsset.assetId,
-          hash: deviceAsset.hash!,
-          modifiedTime: asset.dateTime!,
-        ),
+        DeviceAssetEntity(assetId: deviceAsset.assetId, hash: deviceAsset.hash!, modifiedTime: asset.dateTime!),
       );
       return false;
     },
     onlyFirst: (deviceAsset) {
       if (kDebugMode) {
-        debugPrint(
-          '[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}',
-        );
+        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}');
       }
     },
     onlySecond: (asset) {
       if (kDebugMode) {
-        debugPrint(
-          '[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}',
-        );
+        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}');
       }
     },
   );
 
   if (kDebugMode) {
-    debugPrint(
-      "[MIGRATION] Total number of device assets migrated - ${toAdd.length}",
-    );
+    debugPrint("[MIGRATION] Total number of device assets migrated - ${toAdd.length}");
   }
 
   await db.writeTxn(() async {
@@ -175,33 +204,101 @@ Future<void> _migrateDeviceAsset(Isar db) async {
   });
 }
 
-Future<void> _migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
+Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
   try {
-    final isarDeviceAssets =
-        await db.deviceAssetEntitys.where().sortByAssetId().findAll();
+    final isarDeviceAssets = await db.deviceAssetEntitys.where().findAll();
     await drift.batch((batch) {
       for (final deviceAsset in isarDeviceAssets) {
-        final companion = LocalAssetEntityCompanion(
-          updatedAt: Value(deviceAsset.modifiedTime),
-          id: Value(deviceAsset.assetId),
-          checksum: Value(base64.encode(deviceAsset.hash)),
-        );
-        batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
+        batch.update(
           drift.localAssetEntity,
-          companion,
-          onConflict: DoUpdate(
-            (_) => companion,
-            where: (old) => old.updatedAt.equals(deviceAsset.modifiedTime),
-          ),
+          LocalAssetEntityCompanion(checksum: Value(base64.encode(deviceAsset.hash))),
+          where: (t) => t.id.equals(deviceAsset.assetId),
         );
       }
     });
   } catch (error) {
-    if (kDebugMode) {
-      debugPrint(
-        "[MIGRATION] Error while migrating device assets to SQLite: $error",
-      );
+    debugPrint("[MIGRATION] Error while migrating device assets to SQLite: $error");
+  }
+}
+
+Future<void> migrateBackupAlbumsToSqlite(Isar db, Drift drift) async {
+  try {
+    final isarBackupAlbums = await db.backupAlbums.where().findAll();
+    // Recents is a virtual album on Android, and we don't have it with the new sync
+    // If recents is selected previously, select all albums during migration except the excluded ones
+    if (Platform.isAndroid) {
+      final recentAlbum = isarBackupAlbums.firstWhereOrNull((album) => album.id == 'isAll');
+      if (recentAlbum != null) {
+        await drift.localAlbumEntity.update().write(
+          const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.selected)),
+        );
+        final excluded = isarBackupAlbums
+            .where((album) => album.selection == isar_backup_album.BackupSelection.exclude)
+            .map((album) => album.id)
+            .toList();
+        await drift.batch((batch) async {
+          for (final id in excluded) {
+            batch.update(
+              drift.localAlbumEntity,
+              const LocalAlbumEntityCompanion(backupSelection: Value(BackupSelection.excluded)),
+              where: (t) => t.id.equals(id),
+            );
+          }
+        });
+        return;
+      }
     }
+
+    await drift.batch((batch) {
+      for (final album in isarBackupAlbums) {
+        batch.update(
+          drift.localAlbumEntity,
+          LocalAlbumEntityCompanion(
+            backupSelection: Value(switch (album.selection) {
+              isar_backup_album.BackupSelection.none => BackupSelection.none,
+              isar_backup_album.BackupSelection.select => BackupSelection.selected,
+              isar_backup_album.BackupSelection.exclude => BackupSelection.excluded,
+            }),
+          ),
+          where: (t) => t.id.equals(album.id),
+        );
+      }
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating backup albums to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToSqlite(Isar db, Drift drift) async {
+  try {
+    final isarStoreValues = await db.storeValues.where().findAll();
+    await drift.batch((batch) {
+      for (final storeValue in isarStoreValues) {
+        final companion = StoreEntityCompanion(
+          id: Value(storeValue.id),
+          stringValue: Value(storeValue.strValue),
+          intValue: Value(storeValue.intValue),
+        );
+        batch.insert(drift.storeEntity, companion, onConflict: DoUpdate((_) => companion));
+      }
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to SQLite: $error");
+  }
+}
+
+Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
+  try {
+    final driftStoreValues = await drift.storeEntity
+        .select()
+        .map((entity) => StoreValue(entity.id, intValue: entity.intValue, strValue: entity.stringValue))
+        .get();
+
+    await db.writeTxn(() async {
+      await db.storeValues.putAll(driftStoreValues);
+    });
+  } catch (error) {
+    debugPrint("[MIGRATION] Error while migrating store values to Isar: $error");
   }
 }
 
@@ -211,4 +308,47 @@ class _DeviceAsset {
   final DateTime? dateTime;
 
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
+}
+
+Future<List<void>> runNewSync(WidgetRef ref, {bool full = false}) {
+  ref.read(backupProvider.notifier).cancelBackup();
+
+  final backgroundManager = ref.read(backgroundSyncProvider);
+  final isAlbumLinkedSyncEnable = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+
+  return Future.wait([
+    backgroundManager.syncLocal(full: full).then((_) {
+      Logger("runNewSync").fine("Hashing assets after syncLocal");
+      return backgroundManager.hashAssets();
+    }),
+    backgroundManager.syncRemote().then((_) {
+      if (isAlbumLinkedSyncEnable) {
+        return backgroundManager.syncLinkedAlbum();
+      }
+    }),
+  ]);
+}
+
+Future<void> resetDriftDatabase(Drift drift) async {
+  // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
+  final database = drift.attachedDatabase;
+  await database.exclusively(() async {
+    // https://stackoverflow.com/a/65743498/25690041
+    await database.customStatement('PRAGMA writable_schema = 1;');
+    await database.customStatement('DELETE FROM sqlite_master;');
+    await database.customStatement('VACUUM;');
+    await database.customStatement('PRAGMA writable_schema = 0;');
+    await database.customStatement('PRAGMA integrity_check');
+
+    await database.customStatement('PRAGMA user_version = 0');
+    await database.beforeOpen(
+      // ignore: invalid_use_of_internal_member
+      database.resolvedEngine.executor,
+      OpeningDetails(null, database.schemaVersion),
+    );
+    await database.customStatement('PRAGMA user_version = ${database.schemaVersion}');
+
+    // Refresh all stream queries
+    database.notifyUpdates({for (final table in database.allTables) TableUpdate.onTable(table)});
+  });
 }

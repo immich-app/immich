@@ -17,17 +17,10 @@ const IOSDeviceAssetSchema = CollectionSchema(
   name: r'IOSDeviceAsset',
   id: -1671546753821948030,
   properties: {
-    r'hash': PropertySchema(
-      id: 0,
-      name: r'hash',
-      type: IsarType.byteList,
-    ),
-    r'id': PropertySchema(
-      id: 1,
-      name: r'id',
-      type: IsarType.string,
-    )
+    r'hash': PropertySchema(id: 0, name: r'hash', type: IsarType.byteList),
+    r'id': PropertySchema(id: 1, name: r'id', type: IsarType.string),
   },
+
   estimateSize: _iOSDeviceAssetEstimateSize,
   serialize: _iOSDeviceAssetSerialize,
   deserialize: _iOSDeviceAssetDeserialize,
@@ -44,7 +37,7 @@ const IOSDeviceAssetSchema = CollectionSchema(
           name: r'id',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
     ),
     r'hash': IndexSchema(
@@ -57,12 +50,13 @@ const IOSDeviceAssetSchema = CollectionSchema(
           name: r'hash',
           type: IndexType.hash,
           caseSensitive: false,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _iOSDeviceAssetGetId,
   getLinks: _iOSDeviceAssetGetLinks,
   attach: _iOSDeviceAssetAttach,
@@ -128,7 +122,10 @@ List<IsarLinkBase<dynamic>> _iOSDeviceAssetGetLinks(IOSDeviceAsset object) {
 }
 
 void _iOSDeviceAssetAttach(
-    IsarCollection<dynamic> col, Id id, IOSDeviceAsset object) {}
+  IsarCollection<dynamic> col,
+  Id id,
+  IOSDeviceAsset object,
+) {}
 
 extension IOSDeviceAssetByIndex on IsarCollection<IOSDeviceAsset> {
   Future<IOSDeviceAsset?> getById(String id) {
@@ -179,8 +176,10 @@ extension IOSDeviceAssetByIndex on IsarCollection<IOSDeviceAsset> {
     return putAllByIndex(r'id', objects);
   }
 
-  List<Id> putAllByIdSync(List<IOSDeviceAsset> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByIdSync(
+    List<IOSDeviceAsset> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'id', objects, saveLinks: saveLinks);
   }
 }
@@ -197,17 +196,17 @@ extension IOSDeviceAssetQueryWhereSort
 extension IOSDeviceAssetQueryWhere
     on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QWhereClause> {
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> isarIdEqualTo(
-      Id isarId) {
+    Id isarId,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: isarId,
-        upper: isarId,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(lower: isarId, upper: isarId),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
-      isarIdNotEqualTo(Id isarId) {
+  isarIdNotEqualTo(Id isarId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -230,7 +229,7 @@ extension IOSDeviceAssetQueryWhere
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
-      isarIdGreaterThan(Id isarId, {bool include = false}) {
+  isarIdGreaterThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: isarId, includeLower: include),
@@ -239,7 +238,7 @@ extension IOSDeviceAssetQueryWhere
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
-      isarIdLessThan(Id isarId, {bool include = false}) {
+  isarIdLessThan(Id isarId, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: isarId, includeUpper: include),
@@ -254,101 +253,120 @@ extension IOSDeviceAssetQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerIsarId,
-        includeLower: includeLower,
-        upper: upperIsarId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerIsarId,
+          includeLower: includeLower,
+          upper: upperIsarId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> idEqualTo(
-      String id) {
+    String id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'id',
-        value: [id],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'id', value: [id]),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> idNotEqualTo(
-      String id) {
+    String id,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [id],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'id',
-              lower: [],
-              upper: [id],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [id],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'id',
+                lower: [],
+                upper: [id],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause> hashEqualTo(
-      List<int> hash) {
+    List<int> hash,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'hash',
-        value: [hash],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'hash', value: [hash]),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterWhereClause>
-      hashNotEqualTo(List<int> hash) {
+  hashNotEqualTo(List<int> hash) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [],
-              upper: [hash],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [hash],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [],
+                upper: [hash],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [hash],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [hash],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'hash',
-              lower: [],
-              upper: [hash],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [hash],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'hash',
+                lower: [],
+                upper: [hash],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
@@ -357,134 +375,97 @@ extension IOSDeviceAssetQueryWhere
 extension IOSDeviceAssetQueryFilter
     on QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QFilterCondition> {
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashElementEqualTo(int value) {
+  hashElementEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'hash',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'hash', value: value),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashElementGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  hashElementGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'hash',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'hash',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashElementLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  hashElementLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'hash',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'hash',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashElementBetween(
+  hashElementBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'hash',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        length,
-        true,
-        length,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'hash',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashIsEmpty() {
+  hashLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        0,
-        true,
-        0,
-        true,
-      );
+      return query.listLength(r'hash', length, true, length, true);
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashIsNotEmpty() {
+  hashIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        0,
-        false,
-        999999,
-        true,
-      );
+      return query.listLength(r'hash', 0, true, 0, true);
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
+  hashIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        0,
-        true,
-        length,
-        include,
-      );
+      return query.listLength(r'hash', 0, false, 999999, true);
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
+  hashLengthLessThan(int length, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'hash',
-        length,
-        include,
-        999999,
-        true,
-      );
+      return query.listLength(r'hash', 0, true, length, include);
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      hashLengthBetween(
+  hashLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'hash', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+  hashLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -506,43 +487,45 @@ extension IOSDeviceAssetQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      idGreaterThan(
+  idGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      idLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
+  idLessThan(String value, {bool include = false, bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -554,141 +537,143 @@ extension IOSDeviceAssetQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      idStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      idEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  idEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      idContains(String value, {bool caseSensitive = true}) {
+  idContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'id',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'id',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition> idMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'id',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      idIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      idIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'id',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      isarIdEqualTo(Id value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isarId',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      isarIdGreaterThan(
-    Id value, {
-    bool include = false,
+    String pattern, {
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'id',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      isarIdLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'isarId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: ''),
+      );
     });
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
-      isarIdBetween(
+  idIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'id', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+  isarIdEqualTo(Id value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isarId', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+  isarIdGreaterThan(Id value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+  isarIdLessThan(Id value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'isarId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterFilterCondition>
+  isarIdBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'isarId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'isarId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -735,7 +720,7 @@ extension IOSDeviceAssetQuerySortThenBy
   }
 
   QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QAfterSortBy>
-      thenByIsarIdDesc() {
+  thenByIsarIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isarId', Sort.desc);
     });
@@ -750,8 +735,9 @@ extension IOSDeviceAssetQueryWhereDistinct
     });
   }
 
-  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QDistinct> distinctById(
-      {bool caseSensitive = true}) {
+  QueryBuilder<IOSDeviceAsset, IOSDeviceAsset, QDistinct> distinctById({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'id', caseSensitive: caseSensitive);
     });

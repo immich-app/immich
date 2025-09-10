@@ -55,16 +55,21 @@ class MapThumbnail extends HookConsumerWidget {
         // The iOS impl returns wrong toScreenLocation without the delay
         Future.delayed(
           const Duration(milliseconds: 100),
-          () async =>
-              position.value = await mapController.toScreenLocation(centre),
+          () async => position.value = await mapController.toScreenLocation(centre),
         );
       }
       onCreated?.call(mapController);
     }
 
     Future<void> onStyleLoaded() async {
-      if (showMarkerPin && controller.value != null) {
-        await controller.value?.addMarkerAtLatLng(centre);
+      try {
+        if (showMarkerPin && controller.value != null) {
+          await controller.value?.addMarkerAtLatLng(centre);
+        }
+      } finally {
+        // Calling methods on the controller after it is disposed will throw an error
+        // We do not have a way to check if the controller is disposed for now
+        // https://github.com/maplibre/flutter-maplibre-gl/issues/192
       }
       styleLoaded.value = true;
     }
@@ -75,8 +80,7 @@ class MapThumbnail extends HookConsumerWidget {
         duration: Durations.medium2,
         curve: Curves.easeOut,
         foregroundDecoration: BoxDecoration(
-          color: context.colorScheme.inverseSurface
-              .withAlpha(styleLoaded.value ? 0 : 200),
+          color: context.colorScheme.inverseSurface.withAlpha(styleLoaded.value ? 0 : 200),
           borderRadius: const BorderRadius.all(Radius.circular(15)),
         ),
         height: height,
@@ -88,8 +92,7 @@ class MapThumbnail extends HookConsumerWidget {
             children: [
               style.widgetWhen(
                 onData: (style) => MapLibreMap(
-                  initialCameraPosition:
-                      CameraPosition(target: offsettedCentre, zoom: zoom),
+                  initialCameraPosition: CameraPosition(target: offsettedCentre, zoom: zoom),
                   styleString: style,
                   onMapCreated: onMapCreated,
                   onStyleLoadedCallback: onStyleLoaded,
@@ -101,18 +104,13 @@ class MapThumbnail extends HookConsumerWidget {
                   scrollGesturesEnabled: false,
                   rotateGesturesEnabled: false,
                   myLocationEnabled: false,
-                  attributionButtonMargins:
-                      showAttribution == false ? const Point(-100, 0) : null,
+                  attributionButtonMargins: showAttribution == false ? const Point(-100, 0) : null,
                 ),
               ),
               ValueListenableBuilder(
                 valueListenable: position,
-                builder: (_, value, __) => value != null
-                    ? PositionedAssetMarkerIcon(
-                        size: height / 2,
-                        point: value,
-                        assetRemoteId: assetMarkerRemoteId!,
-                      )
+                builder: (_, value, __) => value != null && assetMarkerRemoteId != null
+                    ? PositionedAssetMarkerIcon(size: height / 2, point: value, assetRemoteId: assetMarkerRemoteId!)
                     : const SizedBox.shrink(),
               ),
             ],

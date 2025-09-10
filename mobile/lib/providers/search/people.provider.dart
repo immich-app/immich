@@ -9,9 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'people.provider.g.dart';
 
 @riverpod
-Future<List<Person>> getAllPeople(
-  Ref ref,
-) async {
+Future<List<PersonDto>> getAllPeople(Ref ref) async {
   final PersonService personService = ref.read(personServiceProvider);
 
   final people = await personService.getAllPeople();
@@ -25,17 +23,12 @@ Future<RenderList> personAssets(Ref ref, String personId) async {
   final assets = await personService.getPersonAssets(personId);
 
   final settings = ref.read(appSettingsServiceProvider);
-  final groupBy =
-      GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  final groupBy = GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
   return await RenderList.fromAssets(assets, groupBy);
 }
 
 @riverpod
-Future<bool> updatePersonName(
-  Ref ref,
-  String personId,
-  String updatedName,
-) async {
+Future<bool> updatePersonName(Ref ref, String personId, String updatedName) async {
   final PersonService personService = ref.read(personServiceProvider);
   final person = await personService.updateName(personId, updatedName);
 

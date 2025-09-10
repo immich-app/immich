@@ -20,7 +20,7 @@ jobs:
       should_run: ${{ steps.found_paths.outputs.mobile == 'true' || steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
       - id: found_paths
@@ -47,7 +47,7 @@ jobs:
         working-directory: ./mobile
     steps:
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
 
@@ -61,15 +61,14 @@ jobs:
         run: dart pub get
 
       - name: Install DCM
-        # TODO: Move to upstream after https://github.com/CQLabs/setup-dcm/pull/235 merges
-        uses: bo0tzz/setup-dcm@b4952ab813659c03513b57bd78bfe3f634171f8a
+        uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version: auto
           working-directory: ./mobile
 
       - name: Generate translation file
-        run: make translation
+        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
 
       - name: Run Build Runner
         run: make build
@@ -91,7 +90,7 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
+          echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
@@ -99,7 +98,7 @@ jobs:
         run: dart analyze --fatal-infos
 
       - name: Run dart format
-        run: dart format lib/ --set-exit-if-changed
+        run: make format
 
       - name: Run dart custom_lint
         run: dart run custom_lint
@@ -117,7 +116,7 @@ jobs:
       actions: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           persist-credentials: false
 
@@ -130,7 +129,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@181d5eefc20863364f96762470ba6f862bdef56b # v3.29.2
+        uses: github/codeql-action/upload-sarif@2d92b76c45b91eb80fc44c74ce3fce0ee94e8f9d # v3.30.0
         with:
           sarif_file: results.sarif
           category: zizmor

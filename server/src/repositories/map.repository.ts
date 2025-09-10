@@ -5,7 +5,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
-import { citiesFile } from 'src/constants';
+import { citiesFile, reverseGeocodeMaxDistance } from 'src/constants';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -61,14 +61,14 @@ export class MapRepository {
     const geodataDate = await readFile(resourcePaths.geodata.dateFile, 'utf8');
 
     // TODO move to service init
-    const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.REVERSE_GEOCODING_STATE);
+    const geocodingMetadata = await this.metadataRepository.get(SystemMetadataKey.ReverseGeocodingState);
     if (geocodingMetadata?.lastUpdate === geodataDate) {
       return;
     }
 
     await Promise.all([this.importGeodata(), this.importNaturalEarthCountries()]);
 
-    await this.metadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
+    await this.metadataRepository.set(SystemMetadataKey.ReverseGeocodingState, {
       lastUpdate: geodataDate,
       lastImportFileName: citiesFile,
     });
@@ -83,25 +83,32 @@ export class MapRepository {
     { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore }: MapMarkerSearchOptions = {},
   ) {
     return this.db
-      .selectFrom('assets')
-      .innerJoin('exif', (builder) =>
+      .selectFrom('asset')
+      .innerJoin('asset_exif', (builder) =>
         builder
-          .onRef('assets.id', '=', 'exif.assetId')
-          .on('exif.latitude', 'is not', null)
-          .on('exif.longitude', 'is not', null),
+          .onRef('asset.id', '=', 'asset_exif.assetId')
+          .on('asset_exif.latitude', 'is not', null)
+          .on('asset_exif.longitude', 'is not', null),
       )
-      .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
+      .select([
+        'id',
+        'asset_exif.latitude as lat',
+        'asset_exif.longitude as lon',
+        'asset_exif.city',
+        'asset_exif.state',
+        'asset_exif.country',
+      ])
       .$narrowType<{ lat: NotNull; lon: NotNull }>()
       .$if(isArchived === true, (qb) =>
         qb.where((eb) =>
           eb.or([
-            eb('assets.visibility', '=', AssetVisibility.TIMELINE),
-            eb('assets.visibility', '=', AssetVisibility.ARCHIVE),
+            eb('asset.visibility', '=', AssetVisibility.Timeline),
+            eb('asset.visibility', '=', AssetVisibility.Archive),
           ]),
         ),
       )
       .$if(isArchived === false || isArchived === undefined, (qb) =>
-        qb.where('assets.visibility', '=', AssetVisibility.TIMELINE),
+        qb.where('asset.visibility', '=', AssetVisibility.Timeline),
       )
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
@@ -118,9 +125,9 @@ export class MapRepository {
           expression.push(
             eb.exists((eb) =>
               eb
-                .selectFrom('albums_assets_assets')
-                .whereRef('assets.id', '=', 'albums_assets_assets.assetsId')
-                .where('albums_assets_assets.albumsId', 'in', albumIds),
+                .selectFrom('album_asset')
+                .whereRef('asset.id', '=', 'album_asset.assetsId')
+                .where('album_asset.albumsId', 'in', albumIds),
             ),
           );
         }
@@ -138,7 +145,7 @@ export class MapRepository {
       .selectFrom('geodata_places')
       .selectAll()
       .where(
-        sql`earth_box(ll_to_earth_public(${point.latitude}, ${point.longitude}), 25000)`,
+        sql`earth_box(ll_to_earth_public(${point.latitude}, ${point.longitude}), ${reverseGeocodeMaxDistance})`,
         '@>',
         sql`ll_to_earth_public(latitude, longitude)`,
       )
@@ -158,8 +165,8 @@ export class MapRepository {
       return { country, state, city };
     }
 
-    this.logger.warn(
-      `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+    this.logger.log(
+      `Empty response from database for city reverse geocoding lat: ${point.latitude}, lon: ${point.longitude}. Likely cause: no nearby large populated place (500+ within ${reverseGeocodeMaxDistance / 1000}km). Falling back to country boundaries.`,
     );
 
     const ne_response = await this.db
@@ -170,8 +177,8 @@ export class MapRepository {
       .executeTakeFirst();
 
     if (!ne_response) {
-      this.logger.warn(
-        `Response from database for natural earth reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
+      this.logger.log(
+        `Empty response from database for natural earth country reverse geocoding lat: ${point.latitude}, lon: ${point.longitude}`,
       );
 
       return { country: null, state: null, city: null };
@@ -258,6 +265,9 @@ export class MapRepository {
       throw new Error(`Geodata file ${cities500} not found`);
     }
 
+    this.logger.log(`Starting geodata import`);
+    const startTime = performance.now();
+
     const input = createReadStream(cities500, { highWaterMark: 512 * 1024 * 1024 });
     let bufferGeodata = [];
     const lineReader = readLine.createInterface({ input });
@@ -307,7 +317,20 @@ export class MapRepository {
       }
     }
 
-    await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
+    if (bufferGeodata.length > 0) {
+      await this.db.insertInto('geodata_places').values(bufferGeodata).execute();
+      count += bufferGeodata.length;
+    }
+
+    await Promise.all(futures);
+
+    const duration = performance.now() - startTime;
+    const seconds = duration / 1000;
+    const recordsPerSecond = Math.round(count / seconds);
+
+    this.logger.log(
+      `Successfully imported ${count} geodata records in ${seconds.toFixed(2)}s (${recordsPerSecond} records/second)`,
+    );
   }
 
   private async loadAdmin(filePath: string) {

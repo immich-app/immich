@@ -112,21 +112,21 @@ export class TelemetryRepository {
     const { telemetry } = this.configRepository.getEnv();
     const { metrics } = telemetry;
 
-    this.api = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.API) });
-    this.host = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.HOST) });
-    this.jobs = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.JOB) });
-    this.repo = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.REPO) });
+    this.api = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.Api) });
+    this.host = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.Host) });
+    this.jobs = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.Job) });
+    this.repo = new MetricGroupRepository(metricService).configure({ enabled: metrics.has(ImmichTelemetry.Repo) });
   }
 
   setup({ repositories }: { repositories: ClassConstructor<unknown>[] }) {
     const { telemetry } = this.configRepository.getEnv();
     const { metrics } = telemetry;
-    if (!metrics.has(ImmichTelemetry.REPO)) {
+    if (!metrics.has(ImmichTelemetry.Repo)) {
       return;
     }
 
     for (const Repository of repositories) {
-      const isEnabled = this.reflect.get(MetadataKey.TELEMETRY_ENABLED, Repository) ?? true;
+      const isEnabled = this.reflect.get(MetadataKey.TelemetryEnabled, Repository) ?? true;
       if (!isEnabled) {
         this.logger.debug(`Telemetry disabled for ${Repository.name}`);
         continue;

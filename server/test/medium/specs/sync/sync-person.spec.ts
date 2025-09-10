@@ -24,14 +24,12 @@ describe(SyncEntityType.PersonV1, () => {
     const { person } = await ctx.newPerson({ ownerId: auth.user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PeopleV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({
           id: person.id,
           name: person.name,
-          thumbnailPath: person.thumbnailPath,
           isHidden: person.isHidden,
           birthDate: person.birthDate,
           faceAssetId: person.faceAssetId,
@@ -41,10 +39,11 @@ describe(SyncEntityType.PersonV1, () => {
         }),
         type: 'PersonV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PeopleV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PeopleV1]);
   });
 
   it('should detect and sync a deleted person', async () => {
@@ -54,7 +53,6 @@ describe(SyncEntityType.PersonV1, () => {
     await personRepo.delete([person.id]);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PeopleV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -63,10 +61,11 @@ describe(SyncEntityType.PersonV1, () => {
         },
         type: 'PersonDeleteV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.PeopleV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PeopleV1]);
   });
 
   it('should not sync a person or person delete for an unrelated user', async () => {
@@ -77,11 +76,18 @@ describe(SyncEntityType.PersonV1, () => {
     const { person } = await ctx.newPerson({ ownerId: user2.id });
     const auth2 = factory.auth({ session, user: user2 });
 
-    expect(await ctx.syncStream(auth2, [SyncRequestType.PeopleV1])).toHaveLength(1);
-    expect(await ctx.syncStream(auth, [SyncRequestType.PeopleV1])).toHaveLength(0);
+    expect(await ctx.syncStream(auth2, [SyncRequestType.PeopleV1])).toEqual([
+      expect.objectContaining({ type: SyncEntityType.PersonV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PeopleV1]);
 
     await personRepo.delete([person.id]);
-    expect(await ctx.syncStream(auth2, [SyncRequestType.PeopleV1])).toHaveLength(1);
-    expect(await ctx.syncStream(auth, [SyncRequestType.PeopleV1])).toHaveLength(0);
+
+    expect(await ctx.syncStream(auth2, [SyncRequestType.PeopleV1])).toEqual([
+      expect.objectContaining({ type: SyncEntityType.PersonDeleteV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.PeopleV1]);
   });
 });

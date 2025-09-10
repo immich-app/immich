@@ -23,7 +23,7 @@ class ImmichLinter extends PluginBase {
     return rules;
   }
 
-  static makeCode(String name, LintOptions options) => LintCode(
+  static LintCode makeCode(String name, LintOptions options) => LintCode(
         name: name,
         problemMessage: options.json["message"] as String,
         errorSeverity: ErrorSeverity.WARNING,

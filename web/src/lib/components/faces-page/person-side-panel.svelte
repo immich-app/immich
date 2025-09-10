@@ -2,7 +2,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
@@ -20,6 +19,7 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
+  import { IconButton, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -28,7 +28,6 @@
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     assetId: string;
@@ -309,7 +308,7 @@
                 </p>
               {/if}
 
-              <div class="absolute -end-[5px] -top-[5px] h-[20px] w-[20px] rounded-full">
+              <div class="absolute -end-[3px] -top-[3px] h-[20px] w-[20px] rounded-full">
                 {#if selectedPersonToCreate[face.id] || selectedPersonToReassign[face.id]}
                   <IconButton
                     shape="round"
@@ -317,38 +316,39 @@
                     color="primary"
                     icon={mdiRestart}
                     aria-label={$t('reset')}
-                    size="medium"
+                    size="small"
                     class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                     onclick={() => handleReset(face.id)}
                   />
                 {:else}
                   <IconButton
+                    shape="round"
                     color="primary"
                     icon={mdiPencil}
                     aria-label={$t('select_new_face')}
-                    size="medium"
+                    size="small"
                     class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                     onclick={() => handleFacePicker(face)}
                   />
                 {/if}
               </div>
-              <div class="absolute end-[25px] -top-[5px] h-[20px] w-[20px] rounded-full">
+              <div class="absolute end-[33px] -top-[3px] h-[20px] w-[20px] rounded-full">
                 {#if !selectedPersonToCreate[face.id] && !selectedPersonToReassign[face.id] && !face.person}
                   <div
                     class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                   >
-                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="18" />
+                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="24" />
                   </div>
                 {/if}
               </div>
               {#if face.person != null}
-                <div class="absolute -end-[5px] top-[25px] h-[20px] w-[20px] rounded-full">
+                <div class="absolute -end-[3px] top-[33px] h-[20px] w-[20px] rounded-full">
                   <IconButton
                     shape="round"
                     color="danger"
                     icon={mdiTrashCan}
                     aria-label={$t('delete_face')}
-                    size="medium"
+                    size="small"
                     class="absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                     onclick={() => deleteAssetFace(face)}
                   />

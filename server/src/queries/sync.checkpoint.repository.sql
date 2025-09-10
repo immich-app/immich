@@ -5,11 +5,15 @@ select
   "type",
   "ack"
 from
-  "session_sync_checkpoints"
+  "session_sync_checkpoint"
 where
   "sessionId" = $1
 
 -- SyncCheckpointRepository.deleteAll
-delete from "session_sync_checkpoints"
+delete from "session_sync_checkpoint"
 where
   "sessionId" = $1
+
+-- SyncCheckpointRepository.getNow
+select
+  immich_uuid_v7 (now() - interval '1 millisecond') as "nowId"

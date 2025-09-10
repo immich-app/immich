@@ -8,6 +8,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     createAll: vitest.fn(),
     upsertExif: vitest.fn(),
     updateAllExif: vitest.fn(),
+    updateDateTimeOriginal: vitest.fn().mockResolvedValue([]),
     upsertJobStatus: vitest.fn(),
     getByDayOfYear: vitest.fn(),
     getByIds: vitest.fn().mockResolvedValue([]),
@@ -39,5 +40,10 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     detectOfflineExternalAssets: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
+    getFileSamples: vitest.fn(),
+    getMetadata: vitest.fn(),
+    upsertMetadata: vitest.fn(),
+    getMetadataByKey: vitest.fn(),
+    deleteMetadataByKey: vitest.fn(),
   };
 };

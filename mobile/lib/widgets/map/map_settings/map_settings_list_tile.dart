@@ -8,22 +8,13 @@ class MapSettingsListTile extends StatelessWidget {
   final bool selected;
   final Function(bool) onChanged;
 
-  const MapSettingsListTile({
-    super.key,
-    required this.title,
-    required this.selected,
-    required this.onChanged,
-  });
+  const MapSettingsListTile({super.key, required this.title, required this.selected, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return SwitchListTile.adaptive(
       activeColor: context.primaryColor,
-      title: Text(
-        title,
-        style:
-            context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
-      ).tr(),
+      title: Text(title, style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)).tr(),
       value: selected,
       onChanged: onChanged,
     );

@@ -53,11 +53,14 @@ const messages = {
     `The database currently has ${name} ${installedVersion} activated, but the Postgres instance only has ${availableVersion} available.
     This most likely means the extension was downgraded.
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
+  deprecatedExtension: (name: string) =>
+    `DEPRECATION WARNING: The ${name} extension is deprecated and support for it will be removed very soon.
+     See https://immich.app/docs/install/upgrading#migrating-to-vectorchord in order to switch to the VectorChord extension instead.`,
 };
 
 @Injectable()
 export class DatabaseService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.DatabaseService })
+  @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);
@@ -71,6 +74,9 @@ export class DatabaseService extends BaseService {
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
       const extension = await this.databaseRepository.getVectorExtension();
       const name = EXTENSION_NAMES[extension];
+      if (extension === DatabaseExtension.Vectors) {
+        this.logger.warn(messages.deprecatedExtension(name));
+      }
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
       const extensionVersions = await this.databaseRepository.getExtensionVersions(VECTOR_EXTENSIONS);
@@ -100,7 +106,7 @@ export class DatabaseService extends BaseService {
       }
 
       try {
-        await this.databaseRepository.reindexVectorsIfNeeded([VectorIndex.CLIP, VectorIndex.FACE]);
+        await this.databaseRepository.reindexVectorsIfNeeded([VectorIndex.Clip, VectorIndex.Face]);
       } catch (error) {
         this.logger.warn(
           'Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance. If you are upgrading directly from a version below 1.107.2, please upgrade to 1.107.2 first.',
@@ -109,7 +115,7 @@ export class DatabaseService extends BaseService {
       }
 
       for (const { name: dbName, installedVersion } of extensionVersions) {
-        const isDepended = dbName === DatabaseExtension.VECTOR && extension === DatabaseExtension.VECTORCHORD;
+        const isDepended = dbName === DatabaseExtension.Vector && extension === DatabaseExtension.VectorChord;
         if (dbName !== extension && installedVersion && !isDepended) {
           await this.dropExtension(dbName);
         }
@@ -120,8 +126,8 @@ export class DatabaseService extends BaseService {
         await this.databaseRepository.runMigrations();
       }
       await Promise.all([
-        this.databaseRepository.prewarm(VectorIndex.CLIP),
-        this.databaseRepository.prewarm(VectorIndex.FACE),
+        this.databaseRepository.prewarm(VectorIndex.Clip),
+        this.databaseRepository.prewarm(VectorIndex.Face),
       ]);
     });
   }

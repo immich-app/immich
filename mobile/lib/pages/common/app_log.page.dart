@@ -12,17 +12,13 @@ import 'package:intl/intl.dart';
 
 @RoutePage()
 class AppLogPage extends HookConsumerWidget {
-  const AppLogPage({
-    super.key,
-  });
+  const AppLogPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final immichLogger = LogService.I;
     final shouldReload = useState(false);
-    final logMessages = useFuture(
-      useMemoized(() => immichLogger.getMessages(), [shouldReload.value]),
-    );
+    final logMessages = useFuture(useMemoized(() => immichLogger.getMessages(), [shouldReload.value]));
 
     Widget colorStatusIndicator(Color color) {
       return Column(
@@ -31,38 +27,29 @@ class AppLogPage extends HookConsumerWidget {
           Container(
             width: 10,
             height: 10,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
         ],
       );
     }
 
     Widget buildLeadingIcon(LogLevel level) => switch (level) {
-          LogLevel.info => colorStatusIndicator(context.primaryColor),
-          LogLevel.severe => colorStatusIndicator(Colors.redAccent),
-          LogLevel.warning => colorStatusIndicator(Colors.orangeAccent),
-          _ => colorStatusIndicator(Colors.grey),
-        };
+      LogLevel.info => colorStatusIndicator(context.primaryColor),
+      LogLevel.severe => colorStatusIndicator(Colors.redAccent),
+      LogLevel.warning => colorStatusIndicator(Colors.orangeAccent),
+      _ => colorStatusIndicator(Colors.grey),
+    };
 
     Color getTileColor(LogLevel level) => switch (level) {
-          LogLevel.info => Colors.transparent,
-          LogLevel.severe => Colors.redAccent.withValues(alpha: 0.25),
-          LogLevel.warning => Colors.orangeAccent.withValues(alpha: 0.25),
-          _ => context.primaryColor.withValues(alpha: 0.1),
-        };
+      LogLevel.info => Colors.transparent,
+      LogLevel.severe => Colors.redAccent.withValues(alpha: 0.25),
+      LogLevel.warning => Colors.orangeAccent.withValues(alpha: 0.25),
+      _ => context.primaryColor.withValues(alpha: 0.1),
+    };
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Logs",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16.0,
-          ),
-        ),
+        title: const Text("Logs", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)),
         scrolledUnderElevation: 1,
         elevation: 2,
         actions: [
@@ -81,12 +68,7 @@ class AppLogPage extends HookConsumerWidget {
           Builder(
             builder: (BuildContext iconContext) {
               return IconButton(
-                icon: Icon(
-                  Icons.share_rounded,
-                  color: context.primaryColor,
-                  semanticLabel: "Share logs",
-                  size: 20.0,
-                ),
+                icon: Icon(Icons.share_rounded, color: context.primaryColor, semanticLabel: "Share logs", size: 20.0),
                 onPressed: () {
                   ImmichLogger.shareLogs(iconContext);
                 },
@@ -98,10 +80,7 @@ class AppLogPage extends HookConsumerWidget {
           onPressed: () {
             context.maybePop();
           },
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 20.0,
-          ),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20.0),
         ),
         centerTitle: true,
       ),
@@ -113,11 +92,7 @@ class AppLogPage extends HookConsumerWidget {
         itemBuilder: (context, index) {
           var logMessage = logMessages.data![index];
           return ListTile(
-            onTap: () => context.pushRoute(
-              AppLogDetailRoute(
-                logMessage: logMessage,
-              ),
-            ),
+            onTap: () => context.pushRoute(AppLogDetailRoute(logMessage: logMessage)),
             trailing: const Icon(Icons.arrow_forward_ios_rounded),
             visualDensity: VisualDensity.compact,
             dense: true,
@@ -125,18 +100,11 @@ class AppLogPage extends HookConsumerWidget {
             minLeadingWidth: 10,
             title: Text(
               truncateLogMessage(logMessage.message, 4),
-              style: TextStyle(
-                fontSize: 14.0,
-                color: context.colorScheme.onSurface,
-                fontFamily: "Inconsolata",
-              ),
+              style: TextStyle(fontSize: 14.0, color: context.colorScheme.onSurface, fontFamily: "Inconsolata"),
             ),
             subtitle: Text(
               "at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)} in ${logMessage.logger}",
-              style: TextStyle(
-                fontSize: 12.0,
-                color: context.colorScheme.onSurfaceSecondary,
-              ),
+              style: TextStyle(fontSize: 12.0, color: context.colorScheme.onSurfaceSecondary),
             ),
             leading: buildLeadingIcon(logMessage.level),
           );

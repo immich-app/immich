@@ -60,7 +60,7 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
     _.set(partialConfig, property, newValue);
   }
 
-  await metadataRepo.set(SystemMetadataKey.SYSTEM_CONFIG, partialConfig);
+  await metadataRepo.set(SystemMetadataKey.SystemConfig, partialConfig);
 
   return getConfig(repos, { withCache: false });
 };
@@ -83,7 +83,7 @@ const buildConfig = async (repos: RepoDeps) => {
   // load partial
   const partial = configFile
     ? await loadFromFile(repos, configFile)
-    : await metadataRepo.get(SystemMetadataKey.SYSTEM_CONFIG);
+    : await metadataRepo.get(SystemMetadataKey.SystemConfig);
 
   // merge with defaults
   const rawConfig = _.cloneDeep(defaults);

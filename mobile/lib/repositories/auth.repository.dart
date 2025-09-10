@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -10,6 +9,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -24,7 +24,9 @@ class AuthRepository extends DatabaseRepository {
 
   const AuthRepository(super.db, this._drift);
 
-  Future<void> clearLocalData() {
+  Future<void> clearLocalData() async {
+    await SyncStreamRepository(_drift).reset();
+
     return db.writeTxn(() {
       return Future.wait([
         db.assets.clear(),
@@ -32,17 +34,6 @@ class AuthRepository extends DatabaseRepository {
         db.albums.clear(),
         db.eTags.clear(),
         db.users.clear(),
-        _drift.remoteAssetEntity.deleteAll(),
-        _drift.remoteExifEntity.deleteAll(),
-        _drift.userEntity.deleteAll(),
-        _drift.userMetadataEntity.deleteAll(),
-        _drift.partnerEntity.deleteAll(),
-        _drift.remoteAlbumEntity.deleteAll(),
-        _drift.remoteAlbumAssetEntity.deleteAll(),
-        _drift.remoteAlbumUserEntity.deleteAll(),
-        _drift.memoryEntity.deleteAll(),
-        _drift.memoryAssetEntity.deleteAll(),
-        _drift.stackEntity.deleteAll(),
       ]);
     });
   }
@@ -71,8 +62,7 @@ class AuthRepository extends DatabaseRepository {
     }
 
     final List<dynamic> jsonList = jsonDecode(jsonString);
-    final endpointList =
-        jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+    final endpointList = jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
 
     return endpointList;
   }

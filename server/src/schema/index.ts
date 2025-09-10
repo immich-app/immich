@@ -1,20 +1,23 @@
 import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
+  album_delete_audit,
   album_user_after_insert,
-  album_users_delete_audit,
-  albums_delete_audit,
-  assets_delete_audit,
+  album_user_delete_audit,
+  asset_delete_audit,
+  asset_face_audit,
+  asset_metadata_audit,
   f_concat_ws,
   f_unaccent,
   immich_uuid_v7,
   ll_to_earth_public,
-  memories_delete_audit,
-  memory_assets_delete_audit,
-  partners_delete_audit,
+  memory_asset_delete_audit,
+  memory_delete_audit,
+  partner_delete_audit,
   person_delete_audit,
-  stacks_delete_audit,
+  stack_delete_audit,
   updated_at,
-  users_delete_audit,
+  user_delete_audit,
+  user_metadata_audit,
 } from 'src/schema/functions';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AlbumAssetAuditTable } from 'src/schema/tables/album-asset-audit.table';
@@ -25,12 +28,15 @@ import { AlbumUserTable } from 'src/schema/tables/album-user.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { ApiKeyTable } from 'src/schema/tables/api-key.table';
 import { AssetAuditTable } from 'src/schema/tables/asset-audit.table';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetFaceAuditTable } from 'src/schema/tables/asset-face-audit.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { AssetFileTable } from 'src/schema/tables/asset-files.table';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
+import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table';
+import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AuditTable } from 'src/schema/tables/audit.table';
-import { ExifTable } from 'src/schema/tables/exif.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -77,11 +83,14 @@ export class ImmichDatabase {
     ApiKeyTable,
     AssetAuditTable,
     AssetFaceTable,
+    AssetFaceAuditTable,
+    AssetMetadataTable,
+    AssetMetadataAuditTable,
     AssetJobStatusTable,
     AssetTable,
     AssetFileTable,
     AuditTable,
-    ExifTable,
+    AssetExifTable,
     FaceSearchTable,
     GeodataPlacesTable,
     LibraryTable,
@@ -120,17 +129,19 @@ export class ImmichDatabase {
     f_concat_ws,
     f_unaccent,
     ll_to_earth_public,
-    users_delete_audit,
-    partners_delete_audit,
-    assets_delete_audit,
-    albums_delete_audit,
+    user_delete_audit,
+    partner_delete_audit,
+    asset_delete_audit,
+    album_delete_audit,
     album_user_after_insert,
-    album_users_delete_audit,
-    memories_delete_audit,
-    memory_assets_delete_audit,
-    stacks_delete_audit,
+    album_user_delete_audit,
+    memory_delete_audit,
+    memory_asset_delete_audit,
+    stack_delete_audit,
     person_delete_audit,
-    users_delete_audit,
+    user_metadata_audit,
+    asset_metadata_audit,
+    asset_face_audit,
   ];
 
   enum = [assets_status_enum, asset_face_source_type, asset_visibility_enum];
@@ -144,49 +155,74 @@ export interface Migrations {
 
 export interface DB {
   activity: ActivityTable;
-  albums: AlbumTable;
-  albums_audit: AlbumAuditTable;
-  albums_assets_assets: AlbumAssetTable;
-  album_assets_audit: AlbumAssetAuditTable;
-  albums_shared_users_users: AlbumUserTable;
-  album_users_audit: AlbumUserAuditTable;
-  api_keys: ApiKeyTable;
-  asset_faces: AssetFaceTable;
-  asset_files: AssetFileTable;
+
+  album: AlbumTable;
+  album_audit: AlbumAuditTable;
+  album_asset: AlbumAssetTable;
+  album_asset_audit: AlbumAssetAuditTable;
+  album_user: AlbumUserTable;
+  album_user_audit: AlbumUserAuditTable;
+
+  api_key: ApiKeyTable;
+
+  asset: AssetTable;
+  asset_audit: AssetAuditTable;
+  asset_exif: AssetExifTable;
+  asset_face: AssetFaceTable;
+  asset_face_audit: AssetFaceAuditTable;
+  asset_file: AssetFileTable;
+  asset_metadata: AssetMetadataTable;
+  asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
-  asset_stack: StackTable;
-  assets: AssetTable;
-  assets_audit: AssetAuditTable;
+
   audit: AuditTable;
-  exif: ExifTable;
+
   face_search: FaceSearchTable;
+
   geodata_places: GeodataPlacesTable;
-  libraries: LibraryTable;
-  memories: MemoryTable;
-  memories_audit: MemoryAuditTable;
-  memories_assets_assets: MemoryAssetTable;
-  memory_assets_audit: MemoryAssetAuditTable;
+
+  library: LibraryTable;
+
+  memory: MemoryTable;
+  memory_audit: MemoryAuditTable;
+  memory_asset: MemoryAssetTable;
+  memory_asset_audit: MemoryAssetAuditTable;
+
   migrations: Migrations;
-  notifications: NotificationTable;
+
+  notification: NotificationTable;
+
   move_history: MoveTable;
+
   naturalearth_countries: NaturalEarthCountriesTable;
-  partners_audit: PartnerAuditTable;
-  partners: PartnerTable;
+
+  partner: PartnerTable;
+  partner_audit: PartnerAuditTable;
+
   person: PersonTable;
   person_audit: PersonAuditTable;
-  sessions: SessionTable;
-  session_sync_checkpoints: SessionSyncCheckpointTable;
-  shared_link__asset: SharedLinkAssetTable;
-  shared_links: SharedLinkTable;
+
+  session: SessionTable;
+  session_sync_checkpoint: SessionSyncCheckpointTable;
+
+  shared_link: SharedLinkTable;
+  shared_link_asset: SharedLinkAssetTable;
+
   smart_search: SmartSearchTable;
-  stacks_audit: StackAuditTable;
+
+  stack: StackTable;
+  stack_audit: StackAuditTable;
+
   system_metadata: SystemMetadataTable;
+
+  tag: TagTable;
   tag_asset: TagAssetTable;
-  tags: TagTable;
-  tags_closure: TagClosureTable;
+  tag_closure: TagClosureTable;
+
+  user: UserTable;
+  user_audit: UserAuditTable;
   user_metadata: UserMetadataTable;
   user_metadata_audit: UserMetadataAuditTable;
-  users: UserTable;
-  users_audit: UserAuditTable;
+
   version_history: VersionHistoryTable;
 }

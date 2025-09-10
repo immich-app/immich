@@ -53,10 +53,8 @@ class ServerInfo {
       serverConfig: serverConfig ?? this.serverConfig,
       serverDiskInfo: serverDiskInfo ?? this.serverDiskInfo,
       isVersionMismatch: isVersionMismatch ?? this.isVersionMismatch,
-      isNewReleaseAvailable:
-          isNewReleaseAvailable ?? this.isNewReleaseAvailable,
-      versionMismatchErrorMessage:
-          versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
+      isNewReleaseAvailable: isNewReleaseAvailable ?? this.isNewReleaseAvailable,
+      versionMismatchErrorMessage: versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
     );
   }
 

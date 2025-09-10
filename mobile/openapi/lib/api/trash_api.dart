@@ -16,7 +16,9 @@ class TrashApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /trash/empty' operation and returns the [Response].
+  /// This endpoint requires the `asset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> emptyTrashWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/trash/empty';
@@ -42,6 +44,7 @@ class TrashApi {
     );
   }
 
+  /// This endpoint requires the `asset.delete` permission.
   Future<TrashResponseDto?> emptyTrash() async {
     final response = await emptyTrashWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -57,7 +60,10 @@ class TrashApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /trash/restore/assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -86,6 +92,8 @@ class TrashApi {
     );
   }
 
+  /// This endpoint requires the `asset.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -104,7 +112,9 @@ class TrashApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /trash/restore' operation and returns the [Response].
+  /// This endpoint requires the `asset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> restoreTrashWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/trash/restore';
@@ -130,6 +140,7 @@ class TrashApi {
     );
   }
 
+  /// This endpoint requires the `asset.delete` permission.
   Future<TrashResponseDto?> restoreTrash() async {
     final response = await restoreTrashWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

@@ -23,6 +23,7 @@ class RemoteAlbum {
   final AlbumAssetOrder order;
   final int assetCount;
   final String ownerName;
+  final bool isShared;
 
   const RemoteAlbum({
     required this.id,
@@ -36,6 +37,7 @@ class RemoteAlbum {
     required this.order,
     required this.assetCount,
     required this.ownerName,
+    required this.isShared,
   });
 
   @override
@@ -52,6 +54,7 @@ class RemoteAlbum {
     thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
     assetCount: $assetCount
     ownerName: $ownerName
+    isShared: $isShared
  }''';
   }
 
@@ -69,7 +72,8 @@ class RemoteAlbum {
         isActivityEnabled == other.isActivityEnabled &&
         order == other.order &&
         assetCount == other.assetCount &&
-        ownerName == other.ownerName;
+        ownerName == other.ownerName &&
+        isShared == other.isShared;
   }
 
   @override
@@ -84,6 +88,37 @@ class RemoteAlbum {
         isActivityEnabled.hashCode ^
         order.hashCode ^
         assetCount.hashCode ^
-        ownerName.hashCode;
+        ownerName.hashCode ^
+        isShared.hashCode;
+  }
+
+  RemoteAlbum copyWith({
+    String? id,
+    String? name,
+    String? ownerId,
+    String? description,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+    int? assetCount,
+    String? ownerName,
+    bool? isShared,
+  }) {
+    return RemoteAlbum(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      order: order ?? this.order,
+      assetCount: assetCount ?? this.assetCount,
+      ownerName: ownerName ?? this.ownerName,
+      isShared: isShared ?? this.isShared,
+    );
   }
 }

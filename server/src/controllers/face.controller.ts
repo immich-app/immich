@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -19,19 +19,19 @@ export class FaceController {
   constructor(private service: PersonService) {}
 
   @Post()
-  @Authenticated({ permission: Permission.FACE_CREATE })
+  @Authenticated({ permission: Permission.FaceCreate })
   createFace(@Auth() auth: AuthDto, @Body() dto: AssetFaceCreateDto) {
     return this.service.createFace(auth, dto);
   }
 
   @Get()
-  @Authenticated({ permission: Permission.FACE_READ })
+  @Authenticated({ permission: Permission.FaceRead })
   getFaces(@Auth() auth: AuthDto, @Query() dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     return this.service.getFacesById(auth, dto);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.FACE_UPDATE })
+  @Authenticated({ permission: Permission.FaceUpdate })
   reassignFacesById(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -41,8 +41,9 @@ export class FaceController {
   }
 
   @Delete(':id')
-  @Authenticated({ permission: Permission.FACE_DELETE })
-  deleteFace(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: AssetFaceDeleteDto) {
+  @Authenticated({ permission: Permission.FaceDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteFace(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: AssetFaceDeleteDto): Promise<void> {
     return this.service.deleteFace(auth, id, dto);
   }
 }

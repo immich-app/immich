@@ -8,30 +8,14 @@ class SearchLocationFilter {
   String? country;
   String? state;
   String? city;
-  SearchLocationFilter({
-    this.country,
-    this.state,
-    this.city,
-  });
+  SearchLocationFilter({this.country, this.state, this.city});
 
-  SearchLocationFilter copyWith({
-    String? country,
-    String? state,
-    String? city,
-  }) {
-    return SearchLocationFilter(
-      country: country ?? this.country,
-      state: state ?? this.state,
-      city: city ?? this.city,
-    );
+  SearchLocationFilter copyWith({String? country, String? state, String? city}) {
+    return SearchLocationFilter(country: country ?? this.country, state: state ?? this.state, city: city ?? this.city);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'country': country,
-      'state': state,
-      'city': city,
-    };
+    return <String, dynamic>{'country': country, 'state': state, 'city': city};
   }
 
   factory SearchLocationFilter.fromMap(Map<String, dynamic> map) {
@@ -48,16 +32,13 @@ class SearchLocationFilter {
       SearchLocationFilter.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'SearchLocationFilter(country: $country, state: $state, city: $city)';
+  String toString() => 'SearchLocationFilter(country: $country, state: $state, city: $city)';
 
   @override
   bool operator ==(covariant SearchLocationFilter other) {
     if (identical(this, other)) return true;
 
-    return other.country == country &&
-        other.state == state &&
-        other.city == city;
+    return other.country == country && other.state == state && other.city == city;
   }
 
   @override
@@ -67,26 +48,14 @@ class SearchLocationFilter {
 class SearchCameraFilter {
   String? make;
   String? model;
-  SearchCameraFilter({
-    this.make,
-    this.model,
-  });
+  SearchCameraFilter({this.make, this.model});
 
-  SearchCameraFilter copyWith({
-    String? make,
-    String? model,
-  }) {
-    return SearchCameraFilter(
-      make: make ?? this.make,
-      model: model ?? this.model,
-    );
+  SearchCameraFilter copyWith({String? make, String? model}) {
+    return SearchCameraFilter(make: make ?? this.make, model: model ?? this.model);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'make': make,
-      'model': model,
-    };
+    return <String, dynamic>{'make': make, 'model': model};
   }
 
   factory SearchCameraFilter.fromMap(Map<String, dynamic> map) {
@@ -118,19 +87,10 @@ class SearchCameraFilter {
 class SearchDateFilter {
   DateTime? takenBefore;
   DateTime? takenAfter;
-  SearchDateFilter({
-    this.takenBefore,
-    this.takenAfter,
-  });
+  SearchDateFilter({this.takenBefore, this.takenAfter});
 
-  SearchDateFilter copyWith({
-    DateTime? takenBefore,
-    DateTime? takenAfter,
-  }) {
-    return SearchDateFilter(
-      takenBefore: takenBefore ?? this.takenBefore,
-      takenAfter: takenAfter ?? this.takenAfter,
-    );
+  SearchDateFilter copyWith({DateTime? takenBefore, DateTime? takenAfter}) {
+    return SearchDateFilter(takenBefore: takenBefore ?? this.takenBefore, takenAfter: takenAfter ?? this.takenAfter);
   }
 
   Map<String, dynamic> toMap() {
@@ -142,12 +102,8 @@ class SearchDateFilter {
 
   factory SearchDateFilter.fromMap(Map<String, dynamic> map) {
     return SearchDateFilter(
-      takenBefore: map['takenBefore'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['takenBefore'] as int)
-          : null,
-      takenAfter: map['takenAfter'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['takenAfter'] as int)
-          : null,
+      takenBefore: map['takenBefore'] != null ? DateTime.fromMillisecondsSinceEpoch(map['takenBefore'] as int) : null,
+      takenAfter: map['takenAfter'] != null ? DateTime.fromMillisecondsSinceEpoch(map['takenAfter'] as int) : null,
     );
   }
 
@@ -157,8 +113,7 @@ class SearchDateFilter {
       SearchDateFilter.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() =>
-      'SearchDateFilter(takenBefore: $takenBefore, takenAfter: $takenAfter)';
+  String toString() => 'SearchDateFilter(takenBefore: $takenBefore, takenAfter: $takenAfter)';
 
   @override
   bool operator ==(covariant SearchDateFilter other) {
@@ -175,17 +130,9 @@ class SearchDisplayFilters {
   bool isNotInAlbum = false;
   bool isArchive = false;
   bool isFavorite = false;
-  SearchDisplayFilters({
-    required this.isNotInAlbum,
-    required this.isArchive,
-    required this.isFavorite,
-  });
+  SearchDisplayFilters({required this.isNotInAlbum, required this.isArchive, required this.isFavorite});
 
-  SearchDisplayFilters copyWith({
-    bool? isNotInAlbum,
-    bool? isArchive,
-    bool? isFavorite,
-  }) {
+  SearchDisplayFilters copyWith({bool? isNotInAlbum, bool? isArchive, bool? isFavorite}) {
     return SearchDisplayFilters(
       isNotInAlbum: isNotInAlbum ?? this.isNotInAlbum,
       isArchive: isArchive ?? this.isArchive,
@@ -194,11 +141,7 @@ class SearchDisplayFilters {
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'isNotInAlbum': isNotInAlbum,
-      'isArchive': isArchive,
-      'isFavorite': isFavorite,
-    };
+    return <String, dynamic>{'isNotInAlbum': isNotInAlbum, 'isArchive': isArchive, 'isFavorite': isFavorite};
   }
 
   factory SearchDisplayFilters.fromMap(Map<String, dynamic> map) {
@@ -222,14 +165,11 @@ class SearchDisplayFilters {
   bool operator ==(covariant SearchDisplayFilters other) {
     if (identical(this, other)) return true;
 
-    return other.isNotInAlbum == isNotInAlbum &&
-        other.isArchive == isArchive &&
-        other.isFavorite == isFavorite;
+    return other.isNotInAlbum == isNotInAlbum && other.isArchive == isArchive && other.isFavorite == isFavorite;
   }
 
   @override
-  int get hashCode =>
-      isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
+  int get hashCode => isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
 }
 
 class SearchFilter {
@@ -237,7 +177,7 @@ class SearchFilter {
   String? filename;
   String? description;
   String? language;
-  Set<Person> people;
+  Set<PersonDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -282,7 +222,7 @@ class SearchFilter {
     String? filename,
     String? description,
     String? language,
-    Set<Person>? people,
+    Set<PersonDto>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
     SearchDateFilter? date,

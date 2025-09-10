@@ -14,26 +14,26 @@ import { handlePromiseError } from 'src/utils/misc';
 export class BackupService extends BaseService {
   private backupLock = false;
 
-  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
   async onConfigInit({
     newConfig: {
       backup: { database },
     },
-  }: ArgOf<'config.init'>) {
+  }: ArgOf<'ConfigInit'>) {
     this.backupLock = await this.databaseRepository.tryLock(DatabaseLock.BackupDatabase);
 
     if (this.backupLock) {
       this.cronRepository.create({
         name: 'backupDatabase',
         expression: database.cronExpression,
-        onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.BACKUP_DATABASE }), this.logger),
+        onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.DatabaseBackup }), this.logger),
         start: database.enabled,
       });
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig: { backup } }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'ConfigUpdate', server: true })
+  onConfigUpdate({ newConfig: { backup } }: ArgOf<'ConfigUpdate'>) {
     if (!this.backupLock) {
       return;
     }
@@ -51,13 +51,18 @@ export class BackupService extends BaseService {
       backup: { database: config },
     } = await this.getConfig({ withCache: false });
 
-    const backupsFolder = StorageCore.getBaseFolder(StorageFolder.BACKUPS);
+    const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
     const files = await this.storageRepository.readdir(backupsFolder);
-    const failedBackups = files.filter((file) => file.match(/immich-db-backup-\d+\.sql\.gz\.tmp$/));
+    const failedBackups = files.filter((file) => file.match(/immich-db-backup-.*\.sql\.gz\.tmp$/));
     const backups = files
-      .filter((file) => file.match(/immich-db-backup-\d+\.sql\.gz$/))
+      .filter((file) => {
+        const oldBackupStyle = file.match(/immich-db-backup-\d+\.sql\.gz$/);
+        //immich-db-backup-20250729T114018-v1.136.0-pg14.17.sql.gz
+        const newBackupStyle = file.match(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
+        return oldBackupStyle || newBackupStyle;
+      })
       .sort()
-      .reverse();
+      .toReversed();
 
     const toDelete = backups.slice(config.keepLastAmount);
     toDelete.push(...failedBackups);
@@ -68,7 +73,7 @@ export class BackupService extends BaseService {
     this.logger.debug(`Database Backup Cleanup Finished, deleted ${toDelete.length} backups`);
   }
 
-  @OnJob({ name: JobName.BACKUP_DATABASE, queue: QueueName.BACKUP_DATABASE })
+  @OnJob({ name: JobName.DatabaseBackup, queue: QueueName.BackupDatabase })
   async handleBackupDatabase(): Promise<JobStatus> {
     this.logger.debug(`Database Backup Started`);
     const { database } = this.configRepository.getEnv();
@@ -92,7 +97,7 @@ export class BackupService extends BaseService {
     databaseParams.push('--clean', '--if-exists');
     const databaseVersion = await this.databaseRepository.getPostgresVersion();
     const backupFilePath = path.join(
-      StorageCore.getBaseFolder(StorageFolder.BACKUPS),
+      StorageCore.getBaseFolder(StorageFolder.Backups),
       `immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz.tmp`,
     );
     const databaseSemver = semver.coerce(databaseVersion);
@@ -100,7 +105,7 @@ export class BackupService extends BaseService {
 
     if (!databaseMajorVersion || !databaseSemver || !semver.satisfies(databaseSemver, '>=14.0.0 <18.0.0')) {
       this.logger.error(`Database Backup Failure: Unsupported PostgreSQL version: ${databaseVersion}`);
-      return JobStatus.FAILED;
+      return JobStatus.Failed;
     }
 
     this.logger.log(`Database Backup Starting. Database Version: ${databaseMajorVersion}`);
@@ -113,7 +118,7 @@ export class BackupService extends BaseService {
           {
             env: {
               PATH: process.env.PATH,
-              PGPASSWORD: isUrlConnection ? undefined : config.password,
+              PGPASSWORD: isUrlConnection ? new URL(config.url).password : config.password,
             },
           },
         );
@@ -179,6 +184,6 @@ export class BackupService extends BaseService {
 
     this.logger.log(`Database Backup Success`);
     await this.cleanupDatabaseBackups();
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 }

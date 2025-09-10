@@ -12,17 +12,20 @@ class PartnerSharedWithNotifier extends StateNotifier<List<UserDto>> {
 
   PartnerSharedWithNotifier(this._partnerService) : super([]) {
     Function eq = const ListEquality<UserDto>().equals;
-    _partnerService.getSharedWith().then((partners) {
-      if (!eq(state, partners)) {
-        state = partners;
-      }
-    }).then((_) {
-      streamSub = _partnerService.watchSharedWith().listen((partners) {
-        if (!eq(state, partners)) {
-          state = partners;
-        }
-      });
-    });
+    _partnerService
+        .getSharedWith()
+        .then((partners) {
+          if (!eq(state, partners)) {
+            state = partners;
+          }
+        })
+        .then((_) {
+          streamSub = _partnerService.watchSharedWith().listen((partners) {
+            if (!eq(state, partners)) {
+              state = partners;
+            }
+          });
+        });
   }
 
   Future<bool> updatePartner(UserDto partner, {required bool inTimeline}) {
@@ -38,11 +41,8 @@ class PartnerSharedWithNotifier extends StateNotifier<List<UserDto>> {
   }
 }
 
-final partnerSharedWithProvider =
-    StateNotifierProvider<PartnerSharedWithNotifier, List<UserDto>>((ref) {
-  return PartnerSharedWithNotifier(
-    ref.watch(partnerServiceProvider),
-  );
+final partnerSharedWithProvider = StateNotifierProvider<PartnerSharedWithNotifier, List<UserDto>>((ref) {
+  return PartnerSharedWithNotifier(ref.watch(partnerServiceProvider));
 });
 
 class PartnerSharedByNotifier extends StateNotifier<List<UserDto>> {
@@ -51,17 +51,20 @@ class PartnerSharedByNotifier extends StateNotifier<List<UserDto>> {
 
   PartnerSharedByNotifier(this._partnerService) : super([]) {
     Function eq = const ListEquality<UserDto>().equals;
-    _partnerService.getSharedBy().then((partners) {
-      if (!eq(state, partners)) {
-        state = partners;
-      }
-    }).then((_) {
-      streamSub = _partnerService.watchSharedBy().listen((partners) {
-        if (!eq(state, partners)) {
-          state = partners;
-        }
-      });
-    });
+    _partnerService
+        .getSharedBy()
+        .then((partners) {
+          if (!eq(state, partners)) {
+            state = partners;
+          }
+        })
+        .then((_) {
+          streamSub = _partnerService.watchSharedBy().listen((partners) {
+            if (!eq(state, partners)) {
+              state = partners;
+            }
+          });
+        });
   }
 
   @override
@@ -73,13 +76,11 @@ class PartnerSharedByNotifier extends StateNotifier<List<UserDto>> {
   }
 }
 
-final partnerSharedByProvider =
-    StateNotifierProvider<PartnerSharedByNotifier, List<UserDto>>((ref) {
+final partnerSharedByProvider = StateNotifierProvider<PartnerSharedByNotifier, List<UserDto>>((ref) {
   return PartnerSharedByNotifier(ref.watch(partnerServiceProvider));
 });
 
-final partnerAvailableProvider =
-    FutureProvider.autoDispose<List<UserDto>>((ref) async {
+final partnerAvailableProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async {
   final otherUsers = await ref.watch(otherUsersProvider.future);
   final currentPartners = ref.watch(partnerSharedByProvider);
   final available = Set<UserDto>.of(otherUsers);

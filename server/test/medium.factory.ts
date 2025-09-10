@@ -5,7 +5,15 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
-import { AlbumUserRole, AssetType, AssetVisibility, MemoryType, SourceType, SyncRequestType } from 'src/enum';
+import {
+  AlbumUserRole,
+  AssetType,
+  AssetVisibility,
+  MemoryType,
+  SourceType,
+  SyncEntityType,
+  SyncRequestType,
+} from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -25,6 +33,7 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
@@ -34,9 +43,9 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
+import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { ExifTable } from 'src/schema/tables/exif.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
@@ -154,6 +163,12 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { asset, result };
   }
 
+  async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
+    const assetFace = mediumFactory.assetFaceInsert(dto);
+    const result = await this.get(PersonRepository).createAssetFace(assetFace);
+    return { assetFace, result };
+  }
+
   async newMemory(dto: Partial<Insertable<MemoryTable>> = {}) {
     const memory = mediumFactory.memoryInsert(dto);
     const result = await this.get(MemoryRepository).create(memory, new Set<string>());
@@ -165,7 +180,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { memoryAsset: dto, result };
   }
 
-  async newExif(dto: Insertable<ExifTable>) {
+  async newExif(dto: Insertable<AssetExifTable>) {
     const result = await this.get(AssetRepository).upsertExif(dto);
     return { result };
   }
@@ -182,7 +197,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newAlbumUser(dto: { albumId: string; userId: string; role?: AlbumUserRole }) {
-    const { albumId, userId, role = AlbumUserRole.EDITOR } = dto;
+    const { albumId, userId, role = AlbumUserRole.Editor } = dto;
     const result = await this.get(AlbumUserRepository).create({ albumsId: albumId, usersId: userId, role });
     return { albumUser: { albumId, userId, role }, result };
   }
@@ -243,13 +258,24 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     return stream.getResponse();
   }
 
+  async assertSyncIsComplete(auth: AuthDto, types: SyncRequestType[]) {
+    await expect(this.syncStream(auth, types)).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  }
+
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {
     const acks: Record<string, string> = {};
+    const syncAcks: string[] = [];
     for (const { type, ack } of response) {
+      if (type === SyncEntityType.SyncAckV1) {
+        syncAcks.push(ack);
+        continue;
+      }
       acks[type] = ack;
     }
 
-    await this.sut.setAcks(auth, { acks: Object.values(acks) });
+    await this.sut.setAcks(auth, { acks: [...Object.values(acks), ...syncAcks] });
   }
 }
 
@@ -267,6 +293,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case PersonRepository:
     case SearchRepository:
     case SessionRepository:
+    case SharedLinkRepository:
     case StackRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
@@ -370,14 +397,14 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
-    type: AssetType.IMAGE,
+    type: AssetType.Image,
     originalPath: '/path/to/something.jpg',
-    ownerId: '@immich.cloud',
+    ownerId: 'not-a-valid-uuid',
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,
-    visibility: AssetVisibility.TIMELINE,
+    visibility: AssetVisibility.Timeline,
   };
 
   return {
@@ -423,7 +450,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     imageHeight: assetFace.imageHeight ?? 10,
     imageWidth: assetFace.imageWidth ?? 10,
     personId: assetFace.personId ?? null,
-    sourceType: assetFace.sourceType ?? SourceType.MACHINE_LEARNING,
+    sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
   };
 
   return {
@@ -462,8 +489,6 @@ const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: stri
     name: person.name || 'Test Name',
     ownerId: person.ownerId || newUuid(),
     thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
-    updatedAt: person.updatedAt || newDate(),
-    updateId: person.updateId || newUuid(),
   };
   return {
     ...defaults,
@@ -501,7 +526,14 @@ const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
     deletedAt: null,
     isAdmin: false,
     profileImagePath: '',
+    profileChangedAt: newDate(),
     shouldChangePassword: true,
+    storageLabel: null,
+    pinCode: null,
+    oauthId: '',
+    avatarColor: null,
+    quotaSizeInBytes: null,
+    quotaUsageInBytes: 0,
   };
 
   return { ...defaults, ...user, id };
@@ -516,7 +548,7 @@ const memoryInsert = (memory: Partial<Insertable<MemoryTable>> = {}) => {
     createdAt: date,
     updatedAt: date,
     deletedAt: null,
-    type: MemoryType.ON_THIS_DAY,
+    type: MemoryType.OnThisDay,
     data: { year: 2025 },
     showAt: null,
     hideAt: null,

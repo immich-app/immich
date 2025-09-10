@@ -26,7 +26,7 @@ export class TagService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<TagResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TagRead, ids: [id] });
     const tag = await this.findOrFail(id);
     return mapTag(tag);
   }
@@ -34,7 +34,7 @@ export class TagService extends BaseService {
   async create(auth: AuthDto, dto: TagCreateDto) {
     let parent;
     if (dto.parentId) {
-      await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [dto.parentId] });
+      await this.requireAccess({ auth, permission: Permission.TagRead, ids: [dto.parentId] });
       parent = await this.tagRepository.get(dto.parentId);
       if (!parent) {
         throw new BadRequestException('Tag not found');
@@ -55,7 +55,7 @@ export class TagService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: TagUpdateDto): Promise<TagResponseDto> {
-    await this.requireAccess({ auth, permission: Permission.TAG_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TagUpdate, ids: [id] });
 
     const { color } = dto;
     const tag = await this.tagRepository.update(id, { color });
@@ -68,7 +68,7 @@ export class TagService extends BaseService {
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.TAG_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TagDelete, ids: [id] });
 
     // TODO sync tag changes for affected assets
 
@@ -77,8 +77,8 @@ export class TagService extends BaseService {
 
   async bulkTagAssets(auth: AuthDto, dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     const [tagIds, assetIds] = await Promise.all([
-      this.checkAccess({ auth, permission: Permission.TAG_ASSET, ids: dto.tagIds }),
-      this.checkAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds }),
+      this.checkAccess({ auth, permission: Permission.TagAsset, ids: dto.tagIds }),
+      this.checkAccess({ auth, permission: Permission.AssetUpdate, ids: dto.assetIds }),
     ]);
 
     const items: Insertable<TagAssetTable>[] = [];
@@ -90,14 +90,14 @@ export class TagService extends BaseService {
 
     const results = await this.tagRepository.upsertAssetIds(items);
     for (const assetId of new Set(results.map((item) => item.assetsId))) {
-      await this.eventRepository.emit('asset.tag', { assetId });
+      await this.eventRepository.emit('AssetTag', { assetId });
     }
 
     return { count: results.length };
   }
 
   async addAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.TAG_ASSET, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TagAsset, ids: [id] });
 
     const results = await addAssets(
       auth,
@@ -107,7 +107,7 @@ export class TagService extends BaseService {
 
     for (const { id: assetId, success } of results) {
       if (success) {
-        await this.eventRepository.emit('asset.tag', { assetId });
+        await this.eventRepository.emit('AssetTag', { assetId });
       }
     }
 
@@ -115,27 +115,27 @@ export class TagService extends BaseService {
   }
 
   async removeAssets(auth: AuthDto, id: string, dto: BulkIdsDto): Promise<BulkIdResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.TAG_ASSET, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.TagAsset, ids: [id] });
 
     const results = await removeAssets(
       auth,
       { access: this.accessRepository, bulk: this.tagRepository },
-      { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.TAG_DELETE },
+      { parentId: id, assetIds: dto.ids, canAlwaysRemove: Permission.TagDelete },
     );
 
     for (const { id: assetId, success } of results) {
       if (success) {
-        await this.eventRepository.emit('asset.untag', { assetId });
+        await this.eventRepository.emit('AssetUntag', { assetId });
       }
     }
 
     return results;
   }
 
-  @OnJob({ name: JobName.TAG_CLEANUP, queue: QueueName.BACKGROUND_TASK })
+  @OnJob({ name: JobName.TagCleanup, queue: QueueName.BackgroundTask })
   async handleTagCleanup() {
     await this.tagRepository.deleteEmptyTags();
-    return JobStatus.SUCCESS;
+    return JobStatus.Success;
   }
 
   private async findOrFail(id: string) {
