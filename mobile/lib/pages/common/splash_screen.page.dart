@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -47,11 +48,23 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (accessToken != null && serverUrl != null && endpoint != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
+      final backgroundManager = ref.read(backgroundSyncProvider);
+
       ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-        (a) {
+        (_) async {
           try {
             wsProvider.connect();
             infoProvider.getServerInfo();
+
+            if (Store.isBetaTimelineEnabled) {
+              await backgroundManager.syncLocal();
+              await backgroundManager.syncRemote();
+              await backgroundManager.hashAssets();
+            }
+
+            if (Store.get(StoreKey.syncAlbums, false)) {
+              await backgroundManager.syncLinkedAlbum();
+            }
           } catch (e) {
             log.severe('Failed establishing connection to the server: $e');
           }

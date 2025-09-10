@@ -176,7 +176,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _handleBackup({bool processBulk = true}) async {
-    if (!_isBackupEnabled) {
+    if (!_isBackupEnabled || _isCleanedUp) {
       _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
       return;
     }
@@ -205,30 +205,27 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _syncAssets({Duration? hashTimeout}) async {
-    final futures = <Future<void>>[];
+    await _ref.read(backgroundSyncProvider).syncLocal();
+    if (_isCleanedUp) {
+      return;
+    }
 
-    final localSyncFuture = _ref.read(backgroundSyncProvider).syncLocal().then((_) async {
-      if (_isCleanedUp) {
-        return;
-      }
+    await _ref.read(backgroundSyncProvider).syncRemote();
+    if (_isCleanedUp) {
+      return;
+    }
 
-      var hashFuture = _ref.read(backgroundSyncProvider).hashAssets();
-      if (hashTimeout != null) {
-        hashFuture = hashFuture.timeout(
-          hashTimeout,
-          onTimeout: () {
-            // Consume cancellation errors as we want to continue processing
-          },
-        );
-      }
+    var hashFuture = _ref.read(backgroundSyncProvider).hashAssets();
+    if (hashTimeout != null) {
+      hashFuture = hashFuture.timeout(
+        hashTimeout,
+        onTimeout: () {
+          // Consume cancellation errors as we want to continue processing
+        },
+      );
+    }
 
-      return hashFuture;
-    });
-
-    futures.add(localSyncFuture);
-    futures.add(_ref.read(backgroundSyncProvider).syncRemote());
-
-    await Future.wait(futures);
+    await hashFuture;
   }
 }
 
