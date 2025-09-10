@@ -17,9 +17,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
@@ -205,9 +205,9 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       // needs to be delayed so that EasyLocalization is working
       if (Store.isBetaTimelineEnabled) {
         ref.read(backgroundServiceProvider).disableService();
-        ref.read(driftBackgroundUploadFgService).enable();
+        ref.read(backgroundWorkerFgServiceProvider).enable();
       } else {
-        ref.read(driftBackgroundUploadFgService).disable();
+        ref.read(backgroundWorkerFgServiceProvider).disable();
         ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
       }
     });

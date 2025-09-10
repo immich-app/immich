@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -79,7 +80,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
         ref.read(readonlyModeProvider.notifier).setReadonlyMode(false);
         await migrateStoreToIsar(ref.read(isarProvider), ref.read(driftProvider));
         await ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-        await ref.read(driftBackgroundUploadFgService).disable();
+        await ref.read(backgroundWorkerFgServiceProvider).disable();
       }
 
       await IsarStoreRepository(ref.read(isarProvider)).upsert(StoreKey.betaTimeline, widget.switchingToBeta);

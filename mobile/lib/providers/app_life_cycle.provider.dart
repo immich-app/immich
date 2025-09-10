@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
-import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
@@ -139,26 +138,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _handleBetaTimelineResume() async {
     _ref.read(backupProvider.notifier).cancelBackup();
-    final lockManager = _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
 
     // Give isolates time to complete any ongoing database transactions
     await Future.delayed(const Duration(milliseconds: 500));
-
-    lockManager.requestHolderToClose();
-
-    // Add timeout to prevent deadlock on lock acquisition
-    try {
-      await lockManager.acquireLock().timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          _log.warning("Lock acquisition timed out, proceeding without lock");
-          throw TimeoutException("Lock acquisition timed out", const Duration(seconds: 10));
-        },
-      );
-    } catch (e) {
-      _log.warning("Failed to acquire lock: $e");
-      return;
-    }
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
@@ -186,7 +168,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     } finally {
       // Ensure lock is released even if operations fail
       try {
-        lockManager.releaseLock();
         _log.info("Lock released after background sync operations");
       } catch (lockError) {
         _log.warning("Failed to release lock after error: $lockError");
@@ -241,28 +222,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
           _ref.read(backupProvider.notifier).cancelBackup();
         }
-      } else {
-        final backgroundManager = _ref.read(backgroundSyncProvider);
-
-        // Cancel operations with extended timeout to allow database transactions to complete
-        try {
-          await Future.wait([
-            backgroundManager.cancel().timeout(const Duration(seconds: 10)),
-            backgroundManager.cancelLocal().timeout(const Duration(seconds: 10)),
-          ]).timeout(const Duration(seconds: 15));
-
-          // Give additional time for isolates to clean up database connections
-          await Future.delayed(const Duration(milliseconds: 1000));
-        } catch (e) {
-          _log.warning("Timeout during background cancellation: $e");
-        }
-
-        // Always release the lock, even if cancellation failed
-        try {
-          _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort)).releaseLock();
-        } catch (e) {
-          _log.warning("Failed to release lock on pause: $e");
-        }
       }
 
       _ref.read(websocketProvider.notifier).disconnect();
@@ -290,7 +249,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     } catch (_) {}
 
     if (Store.isBetaTimelineEnabled) {
-      _ref.read(isolateLockManagerProvider(kIsolateLockManagerPort)).releaseLock();
       return;
     }
 
