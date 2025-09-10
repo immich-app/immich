@@ -24,11 +24,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://git.orenit.solutions/open/immichalbumpull',
   },
   {
-    title: 'Remove offline files',
-    description: 'A simple way to remove orphaned offline assets from the Immich database',
-    url: 'https://github.com/Thoroslives/immich_remove_offline_files',
-  },
-  {
     title: 'Immich-Tools',
     description: 'Provides scripts for handling problems on the repair page.',
     url: 'https://github.com/clumsyCoder00/Immich-Tools',
