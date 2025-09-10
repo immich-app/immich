@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:c642d5dfaf9115a12086785f23008558ae2e13bcd0c4794536340bcb777a4381 AS builder-cpu
+FROM python:3.11-bookworm@sha256:fc1f2e357c307c4044133952b203e66a47e7726821a664f603a180a0c5823844 AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -68,11 +68,11 @@ RUN if [ "$DEVICE" = "rocm" ]; then \
     uv pip install /opt/onnxruntime_rocm-*.whl; \
     fi
 
-FROM python:3.11-slim-bookworm@sha256:838ff46ae6c481e85e369706fa3dea5166953824124735639f3c9f52af85f319 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-cpu
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-FROM python:3.11-slim-bookworm@sha256:838ff46ae6c481e85e369706fa3dea5166953824124735639f3c9f52af85f319 AS prod-openvino
+FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
