@@ -4,6 +4,7 @@ import { EndpointLifecycle } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
+  AssetBulkGetDto,
   AssetBulkUpdateDto,
   AssetJobsDto,
   AssetMetadataResponseDto,
@@ -71,6 +72,12 @@ export class AssetController {
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
+  }
+
+  @Post('bulk')
+  @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
+  getBulkAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkGetDto): Promise<AssetResponseDto[]> {
+    return this.service.getBulk(auth, dto);
   }
 
   @Get(':id')
