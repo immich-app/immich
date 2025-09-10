@@ -147,7 +147,10 @@ SELECT "key", "value" FROM "system_metadata" WHERE "key" = 'system-config';
 ### File properties
 
 ```sql title="Without thumbnails"
-SELECT * FROM "asset" WHERE "asset"."previewPath" IS NULL OR "asset"."thumbnailPath" IS NULL;
+SELECT * FROM "asset"
+WHERE (NOT EXISTS (SELECT 1 FROM "asset_file" WHERE "asset"."id" = "asset_file"."assetId" AND "asset_file"."type" = 'thumbnail')
+    OR NOT EXISTS (SELECT 1 FROM "asset_file" WHERE "asset"."id" = "asset_file"."assetId" AND "asset_file"."type" = 'preview'))
+AND "asset"."visibility" = 'timeline';
 ```
 
 ```sql title="Failed file movements"
