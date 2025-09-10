@@ -266,7 +266,7 @@ class SearchPage extends HookConsumerWidget {
         filter.value = filter.value.copyWith(date: SearchDateFilter());
 
         dateRangeCurrentFilterWidget.value = null;
-        search();
+        unawaited(search());
         return;
       }
 
@@ -295,7 +295,7 @@ class SearchPage extends HookConsumerWidget {
         );
       }
 
-      search();
+      unawaited(search());
     }
 
     // MEDIA PICKER

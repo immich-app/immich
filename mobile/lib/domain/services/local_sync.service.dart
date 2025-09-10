@@ -254,7 +254,7 @@ class LocalSyncService {
 
       if (assetsToUpsert.isEmpty && assetsToDelete.isEmpty) {
         _log.fine("No asset changes detected in album ${deviceAlbum.name}. Updating metadata.");
-        _localAlbumRepository.upsert(updatedDeviceAlbum);
+        await _localAlbumRepository.upsert(updatedDeviceAlbum);
         return true;
       }
 

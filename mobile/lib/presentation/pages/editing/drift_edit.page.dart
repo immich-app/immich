@@ -65,7 +65,7 @@ class DriftEditImagePage extends ConsumerWidget {
         Logger("SaveEditedImage").warning("Failed to retrieve the saved image back from OS", e);
       }
 
-      ref.read(backgroundSyncProvider).syncLocal(full: true);
+      unawaited(ref.read(backgroundSyncProvider).syncLocal(full: true));
       context.navigator.popUntil((route) => route.isFirst);
       ImmichToast.show(durationInSecond: 3, context: context, msg: 'Image Saved!');
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -54,9 +56,11 @@ class DriftBackupOptionsPage extends ConsumerWidget {
           );
 
           final backupNotifier = ref.read(driftBackupProvider.notifier);
-          backupNotifier.cancel().then((_) {
-            backupNotifier.startBackup(currentUser.id);
-          });
+          unawaited(
+            backupNotifier.cancel().then((_) {
+              backupNotifier.startBackup(currentUser.id);
+            }),
+          );
         }
       },
       child: Scaffold(

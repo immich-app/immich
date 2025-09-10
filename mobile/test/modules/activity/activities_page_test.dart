@@ -64,9 +64,9 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     await StoreService.init(storeRepository: IsarStoreRepository(db));
-    Store.put(StoreKey.currentUser, UserStub.admin);
-    Store.put(StoreKey.serverEndpoint, '');
-    Store.put(StoreKey.accessToken, '');
+    await Store.put(StoreKey.currentUser, UserStub.admin);
+    await Store.put(StoreKey.serverEndpoint, '');
+    await Store.put(StoreKey.accessToken, '');
   });
 
   setUp(() async {

@@ -104,7 +104,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await _backgroundHostApi.close();
     } catch (error, stack) {
       _logger.severe("Failed to initialize background worker", error, stack);
-      _backgroundHostApi.close();
+      await _backgroundHostApi.close();
     }
   }
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -58,30 +60,32 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (accessToken != null && serverUrl != null && endpoint != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
-      ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-        (a) {
-          try {
-            wsProvider.connect();
-            infoProvider.getServerInfo();
-          } catch (e) {
-            log.severe('Failed establishing connection to the server: $e');
-          }
-        },
-        onError: (exception) => {
-          log.severe('Failed to update auth info with access token: $accessToken'),
-          ref.read(authProvider.notifier).logout(),
-          context.replaceRoute(const LoginRoute()),
-        },
+      unawaited(
+        ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
+          (a) {
+            try {
+              wsProvider.connect();
+              infoProvider.getServerInfo();
+            } catch (e) {
+              log.severe('Failed establishing connection to the server: $e');
+            }
+          },
+          onError: (exception) => {
+            log.severe('Failed to update auth info with access token: $accessToken'),
+            ref.read(authProvider.notifier).logout(),
+            context.replaceRoute(const LoginRoute()),
+          },
+        ),
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
-      ref.read(authProvider.notifier).logout();
-      context.replaceRoute(const LoginRoute());
+      unawaited(ref.read(authProvider.notifier).logout());
+      unawaited(context.replaceRoute(const LoginRoute()));
       return;
     }
 
     if (context.router.current.name == SplashScreenRoute.name) {
-      context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
+      unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
     }
 
     if (Store.isBetaTimelineEnabled) {
@@ -91,7 +95,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
     if (hasPermission) {
       // Resume backup (if enable) then navigate
-      ref.watch(backupProvider.notifier).resumeBackup();
+      await ref.watch(backupProvider.notifier).resumeBackup();
     }
   }
 

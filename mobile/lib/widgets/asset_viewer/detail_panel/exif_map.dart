@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -67,7 +68,7 @@ class ExifMap extends StatelessWidget {
             }
 
             debugPrint('Opening Map Uri: $uri');
-            launchUrl(uri);
+            unawaited(launchUrl(uri));
           },
           onCreated: onMapCreated,
         );

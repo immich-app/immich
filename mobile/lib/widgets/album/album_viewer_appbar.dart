@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +59,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
     deleteAlbum() async {
       final bool success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
 
-      context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
+      unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
 
       if (!success) {
         ImmichToast.show(
@@ -105,7 +107,7 @@ class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidge
       bool isSuccess = await ref.watch(albumProvider.notifier).leaveAlbum(album);
 
       if (isSuccess) {
-        context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
+        unawaited(context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()])));
       } else {
         context.pop();
         ImmichToast.show(

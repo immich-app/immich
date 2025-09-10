@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
@@ -89,7 +90,7 @@ class _BetaTimelineListTileState extends ConsumerState<BetaTimelineListTile> wit
                   ElevatedButton(
                     onPressed: () async {
                       Navigator.of(context).pop();
-                      context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: value)]);
+                      unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: value)]));
                     },
                     child: Text("ok".t(context: context)),
                   ),

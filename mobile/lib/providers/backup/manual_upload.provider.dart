@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart';
@@ -293,7 +294,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           );
         }
       } else {
-        openAppSettings();
+        unawaited(openAppSettings());
         debugPrint("[_startUpload] Do not have permission to the gallery");
       }
     } catch (e) {
