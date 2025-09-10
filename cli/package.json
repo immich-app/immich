@@ -13,7 +13,6 @@
     "cli"
   ],
   "devDependencies": {
-    "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@types/byte-size": "^8.1.0",
