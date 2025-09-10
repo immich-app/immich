@@ -1672,6 +1672,7 @@
   "search_by_filename_example": "i.e. IMG_1234.JPG or PNG",
   "search_camera_make": "Search camera make...",
   "search_camera_model": "Search camera model...",
+  "search_camera_lens_model": "Search lens model...",
   "search_city": "Search city...",
   "search_country": "Search country...",
   "search_filter_apply": "Apply filter",
