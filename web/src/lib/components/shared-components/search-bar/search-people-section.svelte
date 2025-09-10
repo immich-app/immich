@@ -6,16 +6,17 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Checkbox, Label } from '@immich/ui';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
+    strictPersonSearch: boolean;
   }
 
-  let { selectedPeople = $bindable() }: Props = $props();
+  let { selectedPeople = $bindable(), strictPersonSearch = $bindable() }: Props = $props();
 
   let peoplePromise = getPeople();
   let showAllPeople = $state(false);
@@ -62,10 +63,18 @@
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
+    <div id="people-selection" class="max-h-66 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
         <p class="immich-form-label py-3">{$t('people').toUpperCase()}</p>
-        <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
+
+        <div class="flex items-center">
+          <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <Checkbox id="strict-search-checkbox" size="tiny" bind:checked={strictPersonSearch} />
+        <Label label={$t('strict_person_search')} for="strict-search-checkbox" />
       </div>
 
       <SingleGridRow
