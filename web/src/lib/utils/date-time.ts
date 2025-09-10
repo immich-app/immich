@@ -85,3 +85,28 @@ export const getAlbumDateRange = (album: { startDate?: string; endDate?: string 
  */
 export const asLocalTimeISO = (date: DateTime<true>) =>
   (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();
+
+/**
+ * Format a date string or Date object to a localized date-time string.
+ * Returns null if the input is null, undefined, or an invalid date.
+ */
+export function formatDateTime(dateString: string | Date | null | undefined): string | null {
+  if (!dateString) {
+    return null;
+  }
+  const date = dateString instanceof Date ? dateString : new Date(dateString);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  const currentLocale = get(locale);
+
+  return new Intl.DateTimeFormat(currentLocale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).format(date);
+}
