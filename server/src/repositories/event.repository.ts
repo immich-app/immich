@@ -81,7 +81,7 @@ type EventMap = {
   StackDeleteAll: [{ stackIds: string[]; userId: string }];
 
   // user events
-  UserSignup: [{ notify: boolean; id: string; tempPassword?: string }];
+  UserSignup: [{ notify: boolean; id: string; password?: string }];
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
