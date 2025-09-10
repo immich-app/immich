@@ -29,7 +29,6 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
-import 'package:logging/logging.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
@@ -266,21 +265,16 @@ class _DeviceAsset {
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
 }
 
-Future<List<void>> runNewSync(WidgetRef ref, {bool full = false}) {
+Future<void> runNewSync(WidgetRef ref, {bool full = false}) {
   ref.read(backupProvider.notifier).cancelBackup();
 
   final backgroundManager = ref.read(backgroundSyncProvider);
   final isAlbumLinkedSyncEnable = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
-  return Future.wait([
-    backgroundManager.syncLocal(full: full).then((_) {
-      Logger("runNewSync").fine("Hashing assets after syncLocal");
-      return backgroundManager.hashAssets();
-    }),
-    backgroundManager.syncRemote().then((_) {
-      if (isAlbumLinkedSyncEnable) {
-        return backgroundManager.syncLinkedAlbum();
-      }
-    }),
-  ]);
+  return (backgroundManager.syncLocal(full: full), backgroundManager.syncRemote()).wait.whenComplete(() async {
+    await backgroundManager.hashAssets();
+    if (isAlbumLinkedSyncEnable) {
+      await backgroundManager.syncLinkedAlbum();
+    }
+  });
 }

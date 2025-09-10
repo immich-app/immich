@@ -38,6 +38,10 @@ class HashService {
   Future<void> hashAssets() async {
     _log.info("Starting hashing of assets");
     final Stopwatch stopwatch = Stopwatch()..start();
+
+    // Migrate hashes from cloud ID to local ID so we don't have to re-hash them
+    await _migrateHashes();
+
     // Sorted by backupSelection followed by isCloud
     final localAlbums = await _localAlbumRepository.getAll(
       sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
@@ -57,6 +61,15 @@ class HashService {
 
     stopwatch.stop();
     _log.info("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
+  }
+
+  Future<void> _migrateHashes() async {
+    final hashMappings = await _localAssetRepository.getHashMappingFromCloudId();
+    if (hashMappings.isEmpty) {
+      return;
+    }
+
+    await _localAssetRepository.updateHashes(hashMappings);
   }
 
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB
@@ -101,7 +114,7 @@ class HashService {
 
     _log.fine("Hashing ${toHash.length} files");
 
-    final hashed = <LocalAsset>[];
+    final hashed = <LocalAssetHashMapping>[];
     final hashes = await _nativeSyncApi.hashPaths(toHash.map((e) => e.path).toList());
     assert(
       hashes.length == toHash.length,
@@ -117,7 +130,7 @@ class HashService {
       final hash = hashes[i];
       final asset = toHash[i].asset;
       if (hash?.length == 20) {
-        hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
+        hashed.add((assetId: asset.id, checksum: base64.encode(hash!)));
       } else {
         _log.warning(
           "Failed to hash file for ${asset.id}: ${asset.name} created at ${asset.createdAt} from album: ${album.name}",
