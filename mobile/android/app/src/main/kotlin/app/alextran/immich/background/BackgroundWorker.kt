@@ -1,18 +1,27 @@
 package app.alextran.immich.background
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.work.ForegroundInfo
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import app.alextran.immich.MainActivity
+import app.alextran.immich.R
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
+import java.util.concurrent.TimeUnit
 
 private const val TAG = "BackgroundWorker"
 
@@ -40,14 +49,31 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   /// Flag to track whether the background task has completed to prevent duplicate completions
   private var isComplete = false
 
+  private val notificationManager =
+    ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+  private var fgFuture: ListenableFuture<Void>? = null
+
   init {
     if (!loader.initialized()) {
       loader.startInitialization(ctx)
     }
   }
 
+  companion object {
+    private const val NOTIFICATION_CHANNEL_ID = "immich::background_worker::notif"
+    private const val NOTIFICATION_ID = 100
+  }
+
   override fun startWork(): ListenableFuture<Result> {
     Log.i(TAG, "Starting background upload worker")
+
+    val notificationChannel = NotificationChannel(
+      NOTIFICATION_CHANNEL_ID,
+      NOTIFICATION_CHANNEL_ID,
+      NotificationManager.IMPORTANCE_LOW
+    )
+    notificationManager.createNotificationChannel(notificationChannel)
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
@@ -82,6 +108,33 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     flutterApi?.onAndroidUpload { handleHostResult(it) }
   }
 
+  override fun showNotification(title: String, content: String) {
+    val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
+      .setSmallIcon(R.drawable.notification_icon)
+      .setOnlyAlertOnce(true)
+      .setOngoing(true)
+      .setTicker(title)
+      .setContentTitle(title)
+      .setContentText(content)
+      .build()
+
+    if (isIgnoringBatteryOptimizations()) {
+      fgFuture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        setForegroundAsync(
+          ForegroundInfo(
+            NOTIFICATION_ID,
+            notification,
+            FOREGROUND_SERVICE_TYPE_DATA_SYNC
+          )
+        )
+      } else {
+        setForegroundAsync(ForegroundInfo(NOTIFICATION_ID, notification))
+      }
+    } else {
+      notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+  }
+
   override fun close() {
     if (isComplete) {
       return
@@ -94,6 +147,8 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
         }
       }
     }
+
+    waitForForegroundPromotion()
 
     Handler(Looper.getMainLooper()).postDelayed({
       complete(Result.failure())
@@ -136,5 +191,26 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     engine = null
     flutterApi = null
     completionHandler.set(success)
+    notificationManager.cancel(NOTIFICATION_ID)
+    waitForForegroundPromotion()
+  }
+
+  /**
+   * Returns `true` if the app is ignoring battery optimizations
+   */
+  private fun isIgnoringBatteryOptimizations(): Boolean {
+    val powerManager = ctx.getSystemService(Context.POWER_SERVICE) as PowerManager
+    return powerManager.isIgnoringBatteryOptimizations(ctx.packageName)
+  }
+
+  private fun waitForForegroundPromotion() {
+    val fgFuture = this.fgFuture
+    if (fgFuture != null && !fgFuture.isCancelled && !fgFuture.isDone) {
+      try {
+        fgFuture.get(500, TimeUnit.MILLISECONDS)
+      } catch (e: Exception) {
+        // ignored, there is nothing to be done
+      }
+    }
   }
 }
