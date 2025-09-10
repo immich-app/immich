@@ -1645,6 +1645,7 @@
   "restore_user": "Restore user",
   "restored_asset": "Restored asset",
   "resume": "Resume",
+  "resume_paused_jobs": "Resume {count, plural, one {# paused job} other {# paused jobs}}",
   "retry_upload": "Retry upload",
   "review_duplicates": "Review duplicates",
   "review_large_files": "Review large files",
