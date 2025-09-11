@@ -1,8 +1,15 @@
 name: Merge translations
 
 on:
-  workflow_call:
   workflow_dispatch:
+  workflow_call:
+    secrets:
+      PUSH_O_MATIC_APP_ID:
+        required: true
+      PUSH_O_MATIC_APP_KEY:
+        required: true
+      WEBLATE_TOKEN:
+        required: true
 
 permissions: {}
 
