@@ -82,7 +82,7 @@ export class StorageRepository {
   }
 
   createZipStream(): ImmichZipStream {
-    const archive = archiver('zip', { store: true });
+    const archive = archiver('zip', { store: true, forceZip64: true });
 
     const addFile = (input: string, filename: string) => {
       archive.file(input, { name: filename, mode: 0o644 });
