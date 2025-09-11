@@ -3,38 +3,6 @@ import Flutter
 import MobileCoreServices
 import Photos
 
-class CancellationToken {
-  var isCancelled = false
-}
-
-class Request {
-  let cancellationToken: CancellationToken
-
-  init(cancellationToken: CancellationToken) {
-    self.cancellationToken = cancellationToken
-  }
-  
-  var isCancelled: Bool {
-    get {
-      return cancellationToken.isCancelled
-    }
-    set(newValue) {
-      cancellationToken.isCancelled = newValue
-    }
-  }
-}
-
-class AssetRequest: Request {
-  let assetId: String
-  var completion: (PHAsset?) -> Void
-
-  init(cancellationToken: CancellationToken, assetId: String, completion: @escaping (PHAsset?) -> Void) {
-    self.assetId = assetId
-    self.completion = completion
-    super.init(cancellationToken: cancellationToken)
-  }
-}
-
 class ThumbnailRequest: Request {
   weak var workItem: DispatchWorkItem?
   let completion: (Result<[String: Int64], any Error>) -> Void
@@ -45,13 +13,8 @@ class ThumbnailRequest: Request {
   }
 }
 
-class ThumbnailApiImpl: ThumbnailApi {
+class ThumbnailResolver: ThumbnailApi {
   private static let imageManager = PHImageManager.default()
-  private static let fetchOptions = {
-    let fetchOptions = PHFetchOptions()
-    fetchOptions.wantsIncrementalChangeDetails = false
-    return fetchOptions
-  }()
   private static let requestOptions = {
     let requestOptions = PHImageRequestOptions()
     requestOptions.isNetworkAccessAllowed = true
@@ -62,28 +25,16 @@ class ThumbnailApiImpl: ThumbnailApi {
     return requestOptions
   }()
 
-  private static let assetQueue = DispatchQueue(label: "thumbnail.assets", qos: .userInitiated)
   private static let requestQueue = DispatchQueue(label: "thumbnail.requests", qos: .userInitiated)
   private static let cancelQueue = DispatchQueue(label: "thumbnail.cancellation", qos: .default)
   private static let processingQueue = DispatchQueue(label: "thumbnail.processing", qos: .userInteractive, attributes: .concurrent)
-  private static let batchQueue = DispatchQueue(label: "thumbnail.batching", qos: .userInitiated)
 
   private static let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
   private static let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue).rawValue
   private static var requests = [Int64: ThumbnailRequest]()
   private static let cancelledResult = Result<[String: Int64], any Error>.success([:])
   private static let thumbnailConcurrencySemaphore = DispatchSemaphore(value: ProcessInfo.processInfo.activeProcessorCount / 2 + 1)
-  private static let assetCache = {
-    let assetCache = NSCache<NSString, PHAsset>()
-    assetCache.countLimit = 10000
-    return assetCache
-  }()
   private static let activitySemaphore = DispatchSemaphore(value: 1)
-
-  private static var assetRequests = [AssetRequest]()
-  private static var batchTimer: DispatchWorkItem?
-  private static let batchLock = NSLock()
-  private static let batchTimeout: TimeInterval = 0.001 // 1ms
 
   private static let willResignActiveObserver = NotificationCenter.default.addObserver(
     forName: UIApplication.willResignActiveNotification,
@@ -116,7 +67,7 @@ class ThumbnailApiImpl: ThumbnailApi {
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
     let cancellationToken = CancellationToken()
     let thumbnailRequest = ThumbnailRequest(cancellationToken: cancellationToken, completion: completion)
-    Self.requestAsset(request: AssetRequest(cancellationToken: cancellationToken, assetId: assetId) { asset in
+    AssetResolver.requestAsset(request: AssetRequest(cancellationToken: cancellationToken, assetId: assetId) { asset in
       let item = DispatchWorkItem {
         if cancellationToken.isCancelled {
           return completion(Self.cancelledResult)
@@ -228,70 +179,6 @@ class ThumbnailApiImpl: ThumbnailApi {
       if item.isCancelled {
         cancelQueue.async { request.completion(Self.cancelledResult) }
       }
-    }
-  }
-
-  private static func requestAsset(request: AssetRequest) {
-    assetQueue.async {
-      if (request.isCancelled) {
-        request.completion(nil)
-      }
-
-      if let cachedAsset = assetCache.object(forKey: request.assetId as NSString) {
-        request.completion(cachedAsset)
-        return
-      }
-
-      batchLock.lock()
-      if (request.isCancelled) {
-        batchLock.unlock()
-        request.completion(nil)
-        return
-      }
-
-      assetRequests.append(request)
-
-      batchTimer?.cancel()
-      let timer = DispatchWorkItem(block: processBatch)
-      batchTimer = timer
-      batchLock.unlock()
-
-      batchQueue.asyncAfter(deadline: .now() + batchTimeout, execute: timer)
-    }
-  }
-
-  private static func processBatch() {
-    batchLock.lock()
-    var completionMap = [String: [(PHAsset?) -> Void]]()
-    var activeAssetIds = [String]()
-    completionMap.reserveCapacity(assetRequests.count)
-    activeAssetIds.reserveCapacity(assetRequests.count)
-    for request in assetRequests {
-      if (request.isCancelled) {
-        request.completion(nil)
-        continue
-      }
-
-      if var completions = completionMap[request.assetId] {
-        completions.append(request.completion)
-      } else {
-        activeAssetIds.append(request.assetId)
-        completionMap[request.assetId] = [request.completion]
-      }
-    }
-    assetRequests.removeAll(keepingCapacity: true)
-    batchTimer = nil
-    batchLock.unlock()
-
-    guard !requests.isEmpty else { return }
-
-    let assets = PHAsset.fetchAssets(withLocalIdentifiers: activeAssetIds, options: Self.fetchOptions)
-    assets.enumerateObjects { asset, _, _ in
-      let assetId = asset.localIdentifier
-      for completion in completionMap[assetId]! {
-        completion(asset)
-      }
-      assetQueue.async { assetCache.setObject(asset, forKey: assetId as NSString) }
     }
   }
 

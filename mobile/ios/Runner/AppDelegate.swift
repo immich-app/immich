@@ -15,7 +15,7 @@ import UIKit
   ) -> Bool {
     // Required for flutter_local_notification
     if #available(iOS 10.0, *) {
-      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+      UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     }
 
     GeneratedPluginRegistrant.register(with: self)
@@ -53,7 +53,7 @@ import UIKit
   
   public static func registerPlugins(binaryMessenger: FlutterBinaryMessenger) {
     NativeSyncApiSetup.setUp(binaryMessenger: binaryMessenger, api: NativeSyncApiImpl())
-    ThumbnailApiSetup.setUp(binaryMessenger: binaryMessenger, api: ThumbnailApiImpl())
+    ThumbnailApiSetup.setUp(binaryMessenger: binaryMessenger, api: ThumbnailResolver())
     BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: BackgroundWorkerApiImpl())
   }
 }
