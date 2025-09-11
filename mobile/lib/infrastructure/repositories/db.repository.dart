@@ -66,8 +66,14 @@ class IsarDatabaseRepository implements IDatabaseRepository {
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
 class Drift extends $Drift implements IDatabaseRepository {
-  Drift([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
+  Drift({QueryExecutor? executor, bool shareAcrossIsolates = true})
+    : super(
+        executor ??
+            driftDatabase(
+              name: 'immich',
+              native: DriftNativeOptions(shareAcrossIsolates: shareAcrossIsolates),
+            ),
+      );
 
   @override
   int get schemaVersion => 10;

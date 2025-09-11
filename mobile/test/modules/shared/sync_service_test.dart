@@ -62,7 +62,10 @@ void main() {
   );
 
   setUpAll(() async {
-    final loggerDb = DriftLogger(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    final loggerDb = DriftLogger(
+      executor: DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true),
+      shareAcrossIsolates: true,
+    );
     final LogRepository logRepository = LogRepository(loggerDb);
 
     WidgetsFlutterBinding.ensureInitialized();

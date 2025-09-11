@@ -34,7 +34,7 @@ Cancelable<T?> runInIsolateGentle<T>({
     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
     DartPluginRegistrant.ensureInitialized();
 
-    final (isar, drift, logDb) = await Bootstrap.initDB();
+    final (isar, drift, logDb) = await Bootstrap.initDB(shareAcrossIsolates: true);
     await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false);
     final ref = ProviderContainer(
       overrides: [

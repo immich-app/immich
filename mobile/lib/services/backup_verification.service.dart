@@ -115,7 +115,7 @@ class BackupVerificationService {
     assert(tuple.deleteCandidates.length == tuple.originals.length);
     final List<Asset> result = [];
     BackgroundIsolateBinaryMessenger.ensureInitialized(tuple.rootIsolateToken);
-    final (isar, drift, logDb) = await Bootstrap.initDB();
+    final (isar, drift, logDb) = await Bootstrap.initDB(shareAcrossIsolates: true);
     await Bootstrap.initDomain(isar, drift, logDb);
     await tuple.fileMediaRepository.enableBackgroundAccess();
     final ApiService apiService = ApiService();

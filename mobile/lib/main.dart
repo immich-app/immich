@@ -42,7 +42,7 @@ import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-  final (isar, drift, logDb) = await Bootstrap.initDB();
+  final (isar, drift, logDb) = await Bootstrap.initDB(shareAcrossIsolates: true);
   await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
