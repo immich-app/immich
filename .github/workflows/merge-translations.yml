@@ -53,7 +53,7 @@ jobs:
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=true
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=true
 
       - name: Commit translations
         env:
@@ -98,4 +98,4 @@ jobs:
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=false
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=false
