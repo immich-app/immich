@@ -6,7 +6,7 @@ import Photos
 class ThumbnailRequest: Request {
   weak var workItem: DispatchWorkItem?
   let completion: (Result<[String: Int64], any Error>) -> Void
-
+  
   init(cancellationToken: CancellationToken, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
     self.completion = completion
     super.init(cancellationToken: cancellationToken)
@@ -15,6 +15,11 @@ class ThumbnailRequest: Request {
 
 class ThumbnailResolver: ThumbnailApi {
   private static let imageManager = PHImageManager.default()
+  private static let assetResolver = AssetResolver(fetchOptions: {
+    let fetchOptions = PHFetchOptions()
+    fetchOptions.wantsIncrementalChangeDetails = false
+    return fetchOptions
+  }(), qos: .userInitiated)
   private static let requestOptions = {
     let requestOptions = PHImageRequestOptions()
     requestOptions.isNetworkAccessAllowed = true
@@ -24,18 +29,18 @@ class ThumbnailResolver: ThumbnailApi {
     requestOptions.version = .current
     return requestOptions
   }()
-
+  
   private static let requestQueue = DispatchQueue(label: "thumbnail.requests", qos: .userInitiated)
   private static let cancelQueue = DispatchQueue(label: "thumbnail.cancellation", qos: .default)
   private static let processingQueue = DispatchQueue(label: "thumbnail.processing", qos: .userInteractive, attributes: .concurrent)
-
+  
   private static let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
   private static let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue).rawValue
   private static var requests = [Int64: ThumbnailRequest]()
   private static let cancelledResult = Result<[String: Int64], any Error>.success([:])
   private static let thumbnailConcurrencySemaphore = DispatchSemaphore(value: ProcessInfo.processInfo.activeProcessorCount / 2 + 1)
   private static let activitySemaphore = DispatchSemaphore(value: 1)
-
+  
   private static let willResignActiveObserver = NotificationCenter.default.addObserver(
     forName: UIApplication.willResignActiveNotification,
     object: nil,
@@ -52,31 +57,31 @@ class ThumbnailResolver: ThumbnailApi {
     processingQueue.resume()
     activitySemaphore.signal()
   }
-
+  
   func getThumbhash(thumbhash: String, completion: @escaping (Result<[String : Int64], any Error>) -> Void) {
     Self.processingQueue.async {
       guard let data = Data(base64Encoded: thumbhash)
       else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
-
+      
       let (width, height, pointer) = thumbHashToRGBA(hash: data)
       self.waitForActiveState()
       completion(.success(["pointer": Int64(Int(bitPattern: pointer.baseAddress)), "width": Int64(width), "height": Int64(height)]))
     }
   }
-
+  
   func requestImage(assetId: String, requestId: Int64, width: Int64, height: Int64, isVideo: Bool, completion: @escaping (Result<[String: Int64], any Error>) -> Void) {
     let cancellationToken = CancellationToken()
     let thumbnailRequest = ThumbnailRequest(cancellationToken: cancellationToken, completion: completion)
-    AssetResolver.requestAsset(request: AssetRequest(cancellationToken: cancellationToken, assetId: assetId) { asset in
+    Self.assetResolver.requestAsset(request: AssetRequest(cancellationToken: cancellationToken, assetId: assetId) { asset in
       if cancellationToken.isCancelled {
         return completion(Self.cancelledResult)
       }
-
+      
       let item = DispatchWorkItem {
         if cancellationToken.isCancelled {
           return completion(Self.cancelledResult)
         }
-
+        
         guard let asset = asset else {
           if cancellationToken.isCancelled {
             return completion(Self.cancelledResult)
@@ -85,14 +90,14 @@ class ThumbnailResolver: ThumbnailApi {
           completion(.failure(PigeonError(code: "", message: "Could not get asset data for \(assetId)", details: nil)))
           return
         }
-
+        
         Self.thumbnailConcurrencySemaphore.wait()
         defer { Self.thumbnailConcurrencySemaphore.signal() }
-
+        
         if cancellationToken.isCancelled {
           return completion(Self.cancelledResult)
         }
-
+        
         var image: UIImage?
         Self.imageManager.requestImage(
           for: asset,
@@ -103,27 +108,27 @@ class ThumbnailResolver: ThumbnailApi {
             image = _image
           }
         )
-
+        
         if cancellationToken.isCancelled {
           return completion(Self.cancelledResult)
         }
-
+        
         guard let image = image,
               let cgImage = image.cgImage else {
           Self.removeRequest(requestId: requestId)
           return completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil)))
         }
-
+        
         let pointer = UnsafeMutableRawPointer.allocate(
           byteCount: Int(cgImage.width) * Int(cgImage.height) * 4,
           alignment: MemoryLayout<UInt8>.alignment
         )
-
+        
         if cancellationToken.isCancelled {
           pointer.deallocate()
           return completion(Self.cancelledResult)
         }
-
+        
         guard let context = CGContext(
           data: pointer,
           width: cgImage.width,
@@ -137,20 +142,20 @@ class ThumbnailResolver: ThumbnailApi {
           Self.removeRequest(requestId: requestId)
           return completion(.failure(PigeonError(code: "", message: "Could not create context for \(assetId)", details: nil)))
         }
-
+        
         if cancellationToken.isCancelled {
           pointer.deallocate()
           return completion(Self.cancelledResult)
         }
-
+        
         context.interpolationQuality = .none
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height))
-
+        
         if cancellationToken.isCancelled {
           pointer.deallocate()
           return completion(Self.cancelledResult)
         }
-
+        
         self.waitForActiveState()
         completion(.success(["pointer": Int64(Int(bitPattern: pointer)), "width": Int64(cgImage.width), "height": Int64(cgImage.height)]))
         Self.removeRequest(requestId: requestId)
@@ -158,22 +163,22 @@ class ThumbnailResolver: ThumbnailApi {
       thumbnailRequest.workItem = item
       Self.processingQueue.async(execute: item)
     })
-
+    
     Self.addRequest(requestId: requestId, request: thumbnailRequest)
   }
-
+  
   func cancelImageRequest(requestId: Int64) {
     Self.cancelRequest(requestId: requestId)
   }
-
+  
   private static func addRequest(requestId: Int64, request: ThumbnailRequest) -> Void {
     requestQueue.sync { requests[requestId] = request }
   }
-
+  
   private static func removeRequest(requestId: Int64) -> Void {
     requestQueue.sync { requests[requestId] = nil }
   }
-
+  
   private static func cancelRequest(requestId: Int64) -> Void {
     requestQueue.async {
       guard let request = requests.removeValue(forKey: requestId) else { return }
@@ -185,7 +190,7 @@ class ThumbnailResolver: ThumbnailApi {
       }
     }
   }
-
+  
   func waitForActiveState() {
     Self.activitySemaphore.wait()
     Self.activitySemaphore.signal()

@@ -3,7 +3,7 @@ import Photos
 class AssetRequest: Request {
   let assetId: String
   var completion: (PHAsset?) -> Void
-
+  
   init(cancellationToken: CancellationToken, assetId: String, completion: @escaping (PHAsset?) -> Void) {
     self.assetId = assetId
     self.completion = completion
@@ -12,61 +12,65 @@ class AssetRequest: Request {
 }
 
 class AssetResolver {
-  private static let requestQueue = DispatchQueue(label: "assets.requests", qos: .userInitiated)
-  private static let processingQueue = DispatchQueue(label: "assets.processing", qos: .userInitiated)
-
-  private static var batchTimer: DispatchWorkItem?
-  private static let batchLock = NSLock()
-  private static let batchTimeout: TimeInterval = 0.00025 // 250μs
-
-  private static let fetchOptions = {
-    let fetchOptions = PHFetchOptions()
-    fetchOptions.wantsIncrementalChangeDetails = false
-    return fetchOptions
-  }()
-  private static var assetRequests = [AssetRequest]()
-  private static let assetCache = {
-    let assetCache = NSCache<NSString, PHAsset>()
-    assetCache.countLimit = 10000
-    return assetCache
-  }()
-
-  static func requestAsset(request: AssetRequest) {
+  private let requestQueue: DispatchQueue
+  private let processingQueue: DispatchQueue
+  
+  private var batchTimer: DispatchWorkItem?
+  private let batchLock = NSLock()
+  private let batchTimeout: TimeInterval
+  
+  private let fetchOptions: PHFetchOptions
+  private var assetRequests = [AssetRequest]()
+  private let assetCache: NSCache<NSString, PHAsset>
+  
+  init(fetchOptions: PHFetchOptions, batchTimeout: TimeInterval = 0.00025, cacheSize: Int = 10000, qos: DispatchQoS = .unspecified) {
+    self.fetchOptions = fetchOptions
+    self.batchTimeout = batchTimeout
+    self.assetCache = {
+      let assetCache = NSCache<NSString, PHAsset>()
+      assetCache.countLimit = cacheSize
+      return assetCache
+    }()
+    self.requestQueue = DispatchQueue(label: "assets.requests", qos: qos)
+    self.processingQueue = DispatchQueue(label: "assets.processing", qos: qos)
+  }
+  
+  func requestAsset(request: AssetRequest) {
     requestQueue.async {
       if (request.isCancelled) {
         request.completion(nil)
         return
       }
-
-      if let cachedAsset = assetCache.object(forKey: request.assetId as NSString) {
+      
+      if let cachedAsset = self.assetCache.object(forKey: request.assetId as NSString) {
         request.completion(cachedAsset)
         return
       }
-
-      batchLock.lock()
+      
+      self.batchLock.lock()
       if (request.isCancelled) {
-        batchLock.unlock()
+        self.batchLock.unlock()
         request.completion(nil)
         return
       }
-
-      assetRequests.append(request)
-
-      batchTimer?.cancel()
-      let timer = DispatchWorkItem(block: processBatch)
-      batchTimer = timer
-      batchLock.unlock()
-      processingQueue.asyncAfter(deadline: .now() + batchTimeout, execute: timer)
+      
+      self.assetRequests.append(request)
+      
+      self.batchTimer?.cancel()
+      let timer = DispatchWorkItem(block: self.processBatch)
+      self.batchTimer = timer
+      self.batchLock.unlock()
+      self.processingQueue.asyncAfter(deadline: .now() + self.batchTimeout, execute: timer)
     }
   }
-
-  private static func processBatch() {
+  
+  private func processBatch() {
     batchLock.lock()
     if assetRequests.isEmpty {
       batchLock.unlock()
       return
     }
-
+    
     var completionMap = [String: [(PHAsset?) -> Void]]()
     var activeAssetIds = [String]()
     completionMap.reserveCapacity(assetRequests.count)
@@ -76,7 +80,7 @@ class AssetResolver {
         request.completion(nil)
         continue
       }
-
+      
       if var completions = completionMap[request.assetId] {
         completions.append(request.completion)
       } else {
@@ -87,18 +91,18 @@ class AssetResolver {
     assetRequests.removeAll(keepingCapacity: true)
     batchTimer = nil
     batchLock.unlock()
-
+    
     guard !activeAssetIds.isEmpty else { return }
-
-    let assets = PHAsset.fetchAssets(withLocalIdentifiers: activeAssetIds, options: Self.fetchOptions)
+    
+    let assets = PHAsset.fetchAssets(withLocalIdentifiers: activeAssetIds, options: self.fetchOptions)
     assets.enumerateObjects { asset, _, _ in
       let assetId = asset.localIdentifier
       for completion in completionMap.removeValue(forKey: assetId)! {
         completion(asset)
       }
-      requestQueue.async { assetCache.setObject(asset, forKey: assetId as NSString) }
+      self.requestQueue.async { self.assetCache.setObject(asset, forKey: assetId as NSString) }
     }
-
+    
     for completions in completionMap.values {
       for completion in completions {
         completion(nil)
