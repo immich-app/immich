@@ -67,6 +67,8 @@ jobs:
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
           PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
         run: |
+          set -euo pipefail
+          
           REVIEW_ID=$(gh api -X POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --field event='APPROVE' --field body='Automatically merging translations PR' \
             | jq '.id')
           echo "REVIEW_ID=$REVIEW_ID" >> $GITHUB_OUTPUT
