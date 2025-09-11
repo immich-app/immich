@@ -156,7 +156,7 @@ class UploadService {
     }
   }
 
-  Future<void> startBackupWithHttpClient(String userId, CancellationToken token) async {
+  Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
     await _storageRepository.clearCache();
 
     shouldAbortQueuingTasks = false;
@@ -175,6 +175,11 @@ class UploadService {
       final batch = candidates.skip(i).take(batchSize).toList();
       List<UploadTaskWithFile> tasks = [];
       for (final asset in batch) {
+        final requireWifi = _shouldRequireWiFi(asset);
+        if (requireWifi && !hasWifi) {
+          continue;
+        }
+
         final task = await _getUploadTaskWithFile(asset);
         if (task != null) {
           tasks.add(task);
