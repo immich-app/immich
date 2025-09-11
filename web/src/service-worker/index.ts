@@ -2,7 +2,7 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
-import { installBroadcastChannelListener } from './broadcast-channel';
+import './broadcast-channel';
 import { prune } from './cache';
 import { handleRequest } from './request';
 
@@ -36,4 +36,3 @@ const handleFetch = (event: FetchEvent): void => {
 sw.addEventListener('install', handleInstall, { passive: true });
 sw.addEventListener('activate', handleActivate, { passive: true });
 sw.addEventListener('fetch', handleFetch, { passive: true });
-installBroadcastChannelListener();
