@@ -27,7 +27,7 @@ ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 FROM dev AS dev-container-server
 
 RUN apt-get update --allow-releaseinfo-change && \
-  apt-get install sudo inetutils-ping openjdk-11-jre-headless \
+  apt-get install sudo inetutils-ping openjdk-21-jre-headless \
   vim nano \
   -y --no-install-recommends --fix-missing
 
