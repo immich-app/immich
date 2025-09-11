@@ -59,8 +59,8 @@ jobs:
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=commit
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=push
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=commit
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=push
 
       - name: Merge PR
         env:
