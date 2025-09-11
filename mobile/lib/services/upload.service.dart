@@ -20,6 +20,7 @@ import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 final uploadServiceProvider = Provider((ref) {
@@ -52,6 +53,7 @@ class UploadService {
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final AppSettingsService _appSettingsService;
+  final Logger _logger = Logger('UploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
   final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
@@ -177,6 +179,7 @@ class UploadService {
       for (final asset in batch) {
         final requireWifi = _shouldRequireWiFi(asset);
         if (requireWifi && !hasWifi) {
+          _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
           continue;
         }
 
