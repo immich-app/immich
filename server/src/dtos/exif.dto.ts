@@ -1,30 +1,37 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Exif } from 'src/database';
 
 export class ExifResponseDto {
   make?: string | null = null;
   model?: string | null = null;
+  @ApiPropertyOptional({ type: 'integer' })
   exifImageWidth?: number | null = null;
+  @ApiPropertyOptional({ type: 'integer' })
   exifImageHeight?: number | null = null;
-
-  @ApiProperty({ type: 'integer', format: 'int64' })
+  @ApiPropertyOptional({ type: 'integer', format: 'int64' })
   fileSizeInByte?: number | null = null;
   orientation?: string | null = null;
   dateTimeOriginal?: Date | null = null;
   modifyDate?: Date | null = null;
   timeZone?: string | null = null;
   lensModel?: string | null = null;
+  @ApiPropertyOptional({ type: 'number', format: 'double' })
   fNumber?: number | null = null;
+  @ApiPropertyOptional({ type: 'number', format: 'double' })
   focalLength?: number | null = null;
+  @ApiPropertyOptional({ type: 'integer' })
   iso?: number | null = null;
   exposureTime?: string | null = null;
+  @ApiPropertyOptional({ type: 'number', format: 'double' })
   latitude?: number | null = null;
+  @ApiPropertyOptional({ type: 'number', format: 'double' })
   longitude?: number | null = null;
   city?: string | null = null;
   state?: string | null = null;
   country?: string | null = null;
   description?: string | null = null;
   projectionType?: string | null = null;
+  @ApiPropertyOptional({ type: 'integer' })
   rating?: number | null = null;
 }
 

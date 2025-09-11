@@ -2035,7 +2035,7 @@
             "in": "query",
             "schema": {
               "minimum": 1,
-              "type": "number"
+              "type": "integer"
             }
           }
         ],
@@ -5242,7 +5242,7 @@
             "schema": {
               "minimum": 1,
               "default": 1,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -5254,7 +5254,7 @@
               "minimum": 1,
               "maximum": 1000,
               "default": 500,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -5955,7 +5955,7 @@
             "schema": {
               "minimum": -1,
               "maximum": 5,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -5965,7 +5965,7 @@
             "schema": {
               "minimum": 1,
               "maximum": 1000,
-              "type": "number"
+              "type": "integer"
             }
           },
           {
@@ -10408,7 +10408,7 @@
             "type": "string"
           },
           "dateTimeRelative": {
-            "type": "number"
+            "type": "integer"
           },
           "description": {
             "type": "string"
@@ -10428,15 +10428,17 @@
             "type": "boolean"
           },
           "latitude": {
+            "format": "double",
             "type": "number"
           },
           "longitude": {
+            "format": "double",
             "type": "number"
           },
           "rating": {
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "timeZone": {
             "type": "string"
@@ -11571,7 +11573,7 @@
           },
           "keepLastAmount": {
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -11764,12 +11766,12 @@
           "exifImageHeight": {
             "default": null,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exifImageWidth": {
             "default": null,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "exposureTime": {
             "default": null,
@@ -11778,6 +11780,7 @@
           },
           "fNumber": {
             "default": null,
+            "format": "double",
             "nullable": true,
             "type": "number"
           },
@@ -11789,16 +11792,18 @@
           },
           "focalLength": {
             "default": null,
+            "format": "double",
             "nullable": true,
             "type": "number"
           },
           "iso": {
             "default": null,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "latitude": {
             "default": null,
+            "format": "double",
             "nullable": true,
             "type": "number"
           },
@@ -11809,6 +11814,7 @@
           },
           "longitude": {
             "default": null,
+            "format": "double",
             "nullable": true,
             "type": "number"
           },
@@ -11841,7 +11847,7 @@
           "rating": {
             "default": null,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "default": null,
@@ -12594,7 +12600,7 @@
           },
           "page": {
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
             "items": {
@@ -12609,12 +12615,12 @@
           "rating": {
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "size": {
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "nullable": true,
@@ -12891,7 +12897,7 @@
         "properties": {
           "year": {
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "required": [
@@ -13440,9 +13446,11 @@
             "type": "string"
           },
           "latitude": {
+            "format": "double",
             "type": "number"
           },
           "longitude": {
+            "format": "double",
             "type": "number"
           },
           "name": {
@@ -13566,12 +13574,12 @@
           "rating": {
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "size": {
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "nullable": true,
@@ -14254,7 +14262,7 @@
           "duration": {
             "description": "session duration, in seconds",
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           }
         },
         "type": "object"
@@ -14650,7 +14658,7 @@
           },
           "page": {
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "personIds": {
             "items": {
@@ -14669,12 +14677,12 @@
           "rating": {
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "size": {
             "maximum": 1000,
             "minimum": 1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "nullable": true,
@@ -14863,7 +14871,7 @@
           "rating": {
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "state": {
             "nullable": true,
@@ -16683,7 +16691,7 @@
           "port": {
             "maximum": 65535,
             "minimum": 0,
-            "type": "number"
+            "type": "integer"
           },
           "username": {
             "type": "string"
@@ -17299,6 +17307,7 @@
             "type": "boolean"
           },
           "latitude": {
+            "format": "double",
             "type": "number"
           },
           "livePhotoVideoId": {
@@ -17307,12 +17316,13 @@
             "type": "string"
           },
           "longitude": {
+            "format": "double",
             "type": "number"
           },
           "rating": {
             "maximum": 5,
             "minimum": -1,
-            "type": "number"
+            "type": "integer"
           },
           "visibility": {
             "allOf": [

@@ -141,7 +141,7 @@ class RandomSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? rating;
+  int? rating;
 
   /// Minimum value: 1
   /// Maximum value: 1000
@@ -151,7 +151,7 @@ class RandomSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? size;
+  int? size;
 
   String? state;
 
@@ -513,8 +513,8 @@ class RandomSearchDto {
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        rating: num.parse('${json[r'rating']}'),
-        size: num.parse('${json[r'size']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
+        size: mapValueOfType<int>(json, r'size'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)

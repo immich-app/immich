@@ -36,9 +36,9 @@ class PlacesResponseDto {
   ///
   String? admin2name;
 
-  num latitude;
+  double latitude;
 
-  num longitude;
+  double longitude;
 
   String name;
 
@@ -91,8 +91,8 @@ class PlacesResponseDto {
       return PlacesResponseDto(
         admin1name: mapValueOfType<String>(json, r'admin1name'),
         admin2name: mapValueOfType<String>(json, r'admin2name'),
-        latitude: num.parse('${json[r'latitude']}'),
-        longitude: num.parse('${json[r'longitude']}'),
+        latitude: (mapValueOfType<num>(json, r'latitude')!).toDouble(),
+        longitude: (mapValueOfType<num>(json, r'longitude')!).toDouble(),
         name: mapValueOfType<String>(json, r'name')!,
       );
     }

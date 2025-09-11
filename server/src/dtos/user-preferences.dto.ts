@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsInt, IsPositive, ValidateNested } from 'class-validator';
 import { AssetOrder, UserAvatarColor } from 'src/enum';
@@ -72,7 +72,7 @@ class DownloadUpdate implements Partial<DownloadResponse> {
   @Optional()
   @IsInt()
   @IsPositive()
-  @ApiProperty({ type: 'integer' })
+  @ApiPropertyOptional({ type: 'integer' })
   archiveSize?: number;
 
   @ValidateBoolean({ optional: true })

@@ -145,7 +145,7 @@ class StatisticsSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? rating;
+  int? rating;
 
   String? state;
 
@@ -448,7 +448,7 @@ class StatisticsSearchDto {
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        rating: num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)

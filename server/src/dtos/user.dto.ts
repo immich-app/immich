@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 import { User, UserAdmin } from 'src/database';
@@ -93,7 +93,7 @@ export class UserAdminCreateDto {
   @Optional({ nullable: true })
   @IsInt()
   @Min(0)
-  @ApiProperty({ type: 'integer', format: 'int64' })
+  @ApiPropertyOptional({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
 
   @ValidateBoolean({ optional: true })
@@ -139,7 +139,7 @@ export class UserAdminUpdateDto {
   @Optional({ nullable: true })
   @IsInt()
   @Min(0)
-  @ApiProperty({ type: 'integer', format: 'int64' })
+  @ApiPropertyOptional({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
 
   @ValidateBoolean({ optional: true })

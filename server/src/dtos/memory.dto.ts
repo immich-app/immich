@@ -32,6 +32,7 @@ export class MemorySearchDto {
 class OnThisDayDto {
   @IsInt()
   @IsPositive()
+  @ApiProperty({ type: 'integer' })
   year!: number;
 }
 

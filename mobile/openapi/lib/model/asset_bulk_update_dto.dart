@@ -40,7 +40,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? dateTimeRelative;
+  int? dateTimeRelative;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -68,7 +68,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? latitude;
+  double? latitude;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -76,7 +76,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? longitude;
+  double? longitude;
 
   /// Minimum value: -1
   /// Maximum value: 5
@@ -86,7 +86,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? rating;
+  int? rating;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -202,16 +202,16 @@ class AssetBulkUpdateDto {
 
       return AssetBulkUpdateDto(
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        dateTimeRelative: num.parse('${json[r'dateTimeRelative']}'),
+        dateTimeRelative: mapValueOfType<int>(json, r'dateTimeRelative'),
         description: mapValueOfType<String>(json, r'description'),
         duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: num.parse('${json[r'latitude']}'),
-        longitude: num.parse('${json[r'longitude']}'),
-        rating: num.parse('${json[r'rating']}'),
+        latitude: (mapValueOfType<num>(json, r'latitude')).toDouble(),
+        longitude: (mapValueOfType<num>(json, r'longitude')).toDouble(),
+        rating: mapValueOfType<int>(json, r'rating'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );
