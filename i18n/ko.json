@@ -596,8 +596,6 @@
   "backup_setting_subtitle": "백그라운드 및 포그라운드 백업 설정을 관리합니다.",
   "backup_settings_subtitle": "업로드 설정을 관리합니다.",
   "backward": "뒤로",
-  "beta_sync": "동기화 (베타) 상태",
-  "beta_sync_subtitle": "새 동기화 시스템의 설정을 관리합니다.",
   "biometric_auth_enabled": "생체 인증이 활성화되었습니다.",
   "biometric_locked_out": "생체 인증이 일시적으로 비활성화되었습니다.",
   "biometric_no_options": "사용 가능한 생체 인증 옵션 없음",
