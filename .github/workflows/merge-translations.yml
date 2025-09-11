@@ -53,20 +53,23 @@ jobs:
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=true
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=true
 
       - name: Commit translations
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=commit
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=push
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=commit
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/repository/" -d operation=push
 
       - name: Merge PR
+        id: merge_pr
         env:
           GH_TOKEN: ${{ steps.generate_token.outputs.token }}
           PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
         run: |
+          set -euo pipefail
+
           REVIEW_ID=$(gh api -X POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --field event='APPROVE' --field body='Automatically merging translations PR' \
             | jq '.id')
           echo "REVIEW_ID=$REVIEW_ID" >> $GITHUB_OUTPUT
@@ -78,8 +81,11 @@ jobs:
           PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
           REVIEW_ID: ${{ steps.merge_pr.outputs.REVIEW_ID }}
         run: |
+          # So we clean up no matter what
+          set +e
+
           for i in {1..10}; do
-            if gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json merged | jq -e '.merged == true'; then
+            if gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state | jq -e '.state == "MERGED"'; then
               echo "PR merged"
               exit 0
             else
@@ -96,4 +102,4 @@ jobs:
         env:
           WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
         run: |
-          curl -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=false
+          curl --fail-with-body -X POST -H "Authorization: Token $WEBLATE_TOKEN" "$WEBLATE_HOST/api/components/$WEBLATE_COMPONENT/lock/" -d lock=false
