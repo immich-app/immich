@@ -5,6 +5,8 @@ import android.os.Build
 import android.os.ext.SdkExtensions
 import app.alextran.immich.background.BackgroundWorkerApiImpl
 import app.alextran.immich.background.BackgroundWorkerFgHostApi
+import app.alextran.immich.connectivity.ConnectivityApi
+import app.alextran.immich.connectivity.ConnectivityApiImpl
 import app.alextran.immich.images.ThumbnailApi
 import app.alextran.immich.images.ThumbnailsImpl
 import app.alextran.immich.sync.NativeSyncApi
@@ -34,6 +36,7 @@ class MainActivity : FlutterFragmentActivity() {
       NativeSyncApi.setUp(messenger, nativeSyncApiImpl)
       ThumbnailApi.setUp(messenger, ThumbnailsImpl(ctx))
       BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
+      ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
     }
   }
 }
