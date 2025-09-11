@@ -46,7 +46,7 @@ void main() async {
   await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
-  await workerManager.init(dynamicSpawning: false);
+  await workerManager.init(dynamicSpawning: true);
   await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 

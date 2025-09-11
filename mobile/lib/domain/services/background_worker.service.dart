@@ -169,7 +169,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
 
     try {
+      final backgroundSyncManager = _ref.read(backgroundSyncProvider);
       _isCleanedUp = true;
+      _ref.dispose();
+
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
@@ -179,14 +182,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         }),
         _drift.close(),
         _driftLogger.close(),
-        _ref.read(backgroundSyncProvider).cancel(),
-        _ref.read(backgroundSyncProvider).cancelLocal(),
+        backgroundSyncManager.cancel(),
+        backgroundSyncManager.cancelLocal(),
       ];
 
       if (_isar.isOpen) {
         cleanupFutures.add(_isar.close());
       }
-      _ref.dispose();
       await Future.wait(cleanupFutures);
       _logger.info("Background worker resources cleaned up");
     } catch (error, stack) {
@@ -195,35 +197,42 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _handleBackup() async {
-    if (!_isBackupEnabled || _isCleanedUp) {
-      _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
-      return;
-    }
+    await runZonedGuarded(
+      () async {
+        if (!_isBackupEnabled || _isCleanedUp) {
+          _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
+          return;
+        }
 
-    _logger.info("[_handleBackup 2] Enqueuing assets for backup from the background service");
+        _logger.info("[_handleBackup 2] Enqueuing assets for backup from the background service");
 
-    final currentUser = _ref.read(currentUserProvider);
-    if (currentUser == null) {
-      _logger.warning("[_handleBackup 3] No current user found. Skipping backup from background");
-      return;
-    }
+        final currentUser = _ref.read(currentUserProvider);
+        if (currentUser == null) {
+          _logger.warning("[_handleBackup 3] No current user found. Skipping backup from background");
+          return;
+        }
 
-    _logger.info("[_handleBackup 4] Resume backup from background");
-    if (Platform.isIOS) {
-      return _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
-    }
+        _logger.info("[_handleBackup 4] Resume backup from background");
+        if (Platform.isIOS) {
+          return _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
+        }
 
-    final canPing = await _ref.read(serverInfoServiceProvider).ping();
-    if (!canPing) {
-      _logger.warning("[_handleBackup 5] Server is not reachable. Skipping backup from background");
-      return;
-    }
+        final canPing = await _ref.read(serverInfoServiceProvider).ping();
+        if (!canPing) {
+          _logger.warning("[_handleBackup 5] Server is not reachable. Skipping backup from background");
+          return;
+        }
 
-    final networkCapabilities = await _ref.read(connectivityApiProvider).getCapabilities();
+        final networkCapabilities = await _ref.read(connectivityApiProvider).getCapabilities();
 
-    return _ref
-        .read(uploadServiceProvider)
-        .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _cancellationToken);
+        return _ref
+            .read(uploadServiceProvider)
+            .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _cancellationToken);
+      },
+      (error, stack) {
+        debugPrint("Error in backup zone $error, $stack");
+      },
+    );
   }
 
   Future<void> _syncAssets({Duration? hashTimeout}) async {
