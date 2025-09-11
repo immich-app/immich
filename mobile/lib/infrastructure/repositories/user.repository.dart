@@ -78,9 +78,13 @@ class DriftAuthUserRepository extends DriftDatabaseRepository {
     if (user == null) return null;
 
     final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(id));
+
+    print("getting metadata for user $id");
     final metadata = await query.map((row) => row.toDto()).get();
 
-    return user.toDto(metadata);
+    final a = user.toDto(metadata);
+    print("get user $id metadata $a");
+    return a;
   }
 
   Future<UserDto> upsert(UserDto user) async {

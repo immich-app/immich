@@ -31,55 +31,71 @@ Cancelable<T?> runInIsolateGentle<T>({
   }
 
   return workerManager.executeGentle((cancelledChecker) async {
-    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-    DartPluginRegistrant.ensureInitialized();
+    await runZonedGuarded(
+      () async {
+        BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        DartPluginRegistrant.ensureInitialized();
 
-    final (isar, drift, logDb) = await Bootstrap.initDB();
-    await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false);
-    final ref = ProviderContainer(
-      overrides: [
-        // TODO: Remove once isar is removed
-        dbProvider.overrideWithValue(isar),
-        isarProvider.overrideWithValue(isar),
-        cancellationProvider.overrideWithValue(cancelledChecker),
-        driftProvider.overrideWith(driftOverride(drift)),
-      ],
-    );
+        final (isar, drift, logDb) = await Bootstrap.initDB();
+        await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false);
+        final ref = ProviderContainer(
+          overrides: [
+            // TODO: Remove once isar is removed
+            dbProvider.overrideWithValue(isar),
+            isarProvider.overrideWithValue(isar),
+            cancellationProvider.overrideWithValue(cancelledChecker),
+            driftProvider.overrideWith(driftOverride(drift)),
+          ],
+        );
 
-    Logger log = Logger("IsolateLogger");
+        Logger log = Logger("IsolateLogger");
 
-    try {
-      HttpSSLOptions.apply(applyNative: false);
-      return await computation(ref);
-    } on CanceledError {
-      log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");
-    } catch (error, stack) {
-      log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
-    } finally {
-      try {
-        await LogService.I.dispose();
-        await logDb.close();
-        await ref.read(driftProvider).close();
-
-        // Close Isar safely
         try {
-          final isar = ref.read(isarProvider);
-          if (isar.isOpen) {
-            await isar.close();
-          }
-        } catch (e) {
-          debugPrint("Error closing Isar: $e");
-        }
+          HttpSSLOptions.apply(applyNative: false);
+          return await computation(ref);
+        } on CanceledError {
+          log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");
+        } catch (error, stack) {
+          log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
+        } finally {
+          try {
+            print("1 close logs service");
+            await LogService.I.dispose();
 
-        ref.dispose();
-      } catch (error, stack) {
-        debugPrint("Error closing resources in isolate: $error, $stack");
-      } finally {
-        ref.dispose();
-        // Delay to ensure all resources are released
-        await Future.delayed(const Duration(seconds: 2));
-      }
-    }
-    return null;
+            print("2 close logs db");
+            await logDb.close();
+
+            print("3 close drift $debugLabel");
+            await ref.read(driftProvider).close();
+
+            // Close Isar safely
+            try {
+              print("4 close isar");
+              final isar = ref.read(isarProvider);
+              if (isar.isOpen) {
+                await isar.close();
+              }
+              print("5 closed isar");
+            } catch (e) {
+              debugPrint("Error closing Isar: $e");
+            }
+
+            print("6 dispose ref");
+          } catch (error, stack) {
+            debugPrint("Error closing resources in isolate: $error, $stack");
+          } finally {
+            print("finished isolate ${debugLabel == null ? '' : ' for $debugLabel'}");
+            ref.dispose();
+
+            // Delay to ensure all resources are released
+            await Future.delayed(const Duration(seconds: 2));
+          }
+        }
+        return null;
+      },
+      (error, stackTrace) {
+        print("Run zoned error in isolate ${debugLabel == null ? '' : ' for $debugLabel'}: $error, $stackTrace");
+      },
+    );
   });
 }
