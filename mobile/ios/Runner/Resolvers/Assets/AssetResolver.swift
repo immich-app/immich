@@ -17,7 +17,7 @@ class AssetResolver {
 
   private static var batchTimer: DispatchWorkItem?
   private static let batchLock = NSLock()
-  private static let batchTimeout: TimeInterval = 0.001 // 1ms
+  private static let batchTimeout: TimeInterval = 0.00025 // 250μs
 
   private static let fetchOptions = {
     let fetchOptions = PHFetchOptions()
@@ -35,6 +35,7 @@ class AssetResolver {
     requestQueue.async {
       if (request.isCancelled) {
         request.completion(nil)
+        return
       }
 
       if let cachedAsset = assetCache.object(forKey: request.assetId as NSString) {
@@ -55,13 +56,17 @@ class AssetResolver {
       let timer = DispatchWorkItem(block: processBatch)
       batchTimer = timer
       batchLock.unlock()
-
       processingQueue.asyncAfter(deadline: .now() + batchTimeout, execute: timer)
     }
   }
 
   private static func processBatch() {
     batchLock.lock()
+    if assetRequests.isEmpty {
+      batchLock.unlock()
+      return
+    }
+
     var completionMap = [String: [(PHAsset?) -> Void]]()
     var activeAssetIds = [String]()
     completionMap.reserveCapacity(assetRequests.count)
