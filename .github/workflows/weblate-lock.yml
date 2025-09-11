@@ -15,17 +15,9 @@ jobs:
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
-      - name: Sparse checkout for pre-job action
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-        with:
-          sparse-checkout: |
-            .github/actions/pre-job
-          sparse-checkout-cone-mode: false
-          persist-credentials: false
-
       - name: Check what should run
         id: check
-        uses: ./.github/actions/pre-job
+        uses: immich-app/devtools/actions/pre-job@bcfa6f5730943225848bb2ad331715b7e5f3cc81 # pre-job-action-v1.0.0
         with:
           filters: |
             i18n:
