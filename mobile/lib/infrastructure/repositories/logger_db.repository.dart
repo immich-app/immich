@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/drirft_native.dart';
 
 import 'logger_db.repository.drift.dart';
 
@@ -9,7 +10,7 @@ import 'logger_db.repository.drift.dart';
 class DriftLogger extends $DriftLogger implements IDatabaseRepository {
   DriftLogger([QueryExecutor? executor])
     : super(
-        executor ?? driftDatabase(name: 'immich_logs', native: const DriftNativeOptions(shareAcrossIsolates: true)),
+        executor ?? driftDatabaseTest(name: 'immich_logs', native: const DriftNativeOptions(shareAcrossIsolates: true)),
       );
 
   @override

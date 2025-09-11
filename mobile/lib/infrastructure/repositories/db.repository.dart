@@ -23,6 +23,7 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
+import 'package:immich_mobile/infrastructure/repositories/drirft_native.dart';
 import 'package:isar/isar.dart' hide Index;
 
 import 'db.repository.drift.dart';
@@ -67,7 +68,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 )
 class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
+    : super(executor ?? driftDatabaseTest(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
   int get schemaVersion => 10;
