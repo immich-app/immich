@@ -23,7 +23,12 @@ class AssetResolver {
   private var assetRequests = [AssetRequest]()
   private let assetCache: NSCache<NSString, PHAsset>
   
-  init(fetchOptions: PHFetchOptions, batchTimeout: TimeInterval = 0.00025, cacheSize: Int = 10000, qos: DispatchQoS = .unspecified) {
+  init(
+    fetchOptions: PHFetchOptions,
+    batchTimeout: TimeInterval = 0.00025, // 250μs
+    cacheSize: Int = 10000,
+    qos: DispatchQoS = .unspecified
+  ) {
     self.fetchOptions = fetchOptions
     self.batchTimeout = batchTimeout
     self.assetCache =  NSCache<NSString, PHAsset>()
