@@ -52,7 +52,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   private val notificationManager =
     ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-  private var fgFuture: ListenableFuture<Void>? = null
+  private var foregroundFuture: ListenableFuture<Void>? = null
 
   init {
     if (!loader.initialized()) {
@@ -108,6 +108,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     flutterApi?.onAndroidUpload { handleHostResult(it) }
   }
 
+  // TODO: Move this to a separate NotificationManager class
   override fun showNotification(title: String, content: String) {
     val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
       .setSmallIcon(R.drawable.notification_icon)
@@ -119,7 +120,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       .build()
 
     if (isIgnoringBatteryOptimizations()) {
-      fgFuture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      foregroundFuture = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
         setForegroundAsync(
           ForegroundInfo(
             NOTIFICATION_ID,
@@ -190,9 +191,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     engine?.destroy()
     engine = null
     flutterApi = null
-    completionHandler.set(success)
     notificationManager.cancel(NOTIFICATION_ID)
     waitForForegroundPromotion()
+    completionHandler.set(success)
   }
 
   /**
@@ -203,11 +204,16 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     return powerManager.isIgnoringBatteryOptimizations(ctx.packageName)
   }
 
+  /**
+   *  Calls to setForegroundAsync() that do not complete before completion of a ListenableWorker will signal an IllegalStateException
+   * https://android-review.googlesource.com/c/platform/frameworks/support/+/1262743
+   * Wait for a short period of time for the foreground promotion to complete before completing the worker
+   */
   private fun waitForForegroundPromotion() {
-    val fgFuture = this.fgFuture
-    if (fgFuture != null && !fgFuture.isCancelled && !fgFuture.isDone) {
+    val foregroundFuture = this.foregroundFuture
+    if (foregroundFuture != null && !foregroundFuture.isCancelled && !foregroundFuture.isDone) {
       try {
-        fgFuture.get(500, TimeUnit.MILLISECONDS)
+        foregroundFuture.get(500, TimeUnit.MILLISECONDS)
       } catch (e: Exception) {
         // ignored, there is nothing to be done
       }
