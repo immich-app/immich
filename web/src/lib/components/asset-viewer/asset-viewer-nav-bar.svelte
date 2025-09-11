@@ -176,7 +176,14 @@
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} />
 
-      <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
+      <ButtonContextMenu
+        offset={{ x: 50, y: 0 }}
+        direction="left"
+        align="top-right"
+        color="secondary"
+        title={$t('more')}
+        icon={mdiDotsVertical}
+      >
         {#if showSlideshow && !isLocked}
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
