@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { plainToInstance, Transform, Type } from 'class-transformer';
 import { ArrayNotEmpty, IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
-import { AssetVisibility } from 'src/enum';
+import { AccessHint, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export enum AssetMediaSize {
@@ -19,6 +19,9 @@ export enum AssetMediaSize {
 export class AssetMediaOptionsDto {
   @ValidateEnum({ enum: AssetMediaSize, name: 'AssetMediaSize', optional: true })
   size?: AssetMediaSize;
+
+  @ValidateEnum({ enum: AccessHint, name: 'AccessHint', optional: true })
+  hint?: AccessHint;
 }
 
 export enum UploadFieldName {

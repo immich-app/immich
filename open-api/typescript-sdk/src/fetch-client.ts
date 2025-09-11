@@ -2391,7 +2391,8 @@ export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
 /**
  * This endpoint requires the `asset.view` permission.
  */
-export function viewAsset({ id, key, size, slug }: {
+export function viewAsset({ hint, id, key, size, slug }: {
+    hint?: AccessHint;
     id: string;
     key?: string;
     size?: AssetMediaSize;
@@ -2401,6 +2402,7 @@ export function viewAsset({ id, key, size, slug }: {
         status: 200;
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/thumbnail${QS.query(QS.explode({
+        hint,
         key,
         size,
         slug
@@ -4841,6 +4843,12 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
+}
+export enum AccessHint {
+    Owner = "owner",
+    Album = "album",
+    Partner = "partner",
+    SharedLink = "sharedLink"
 }
 export enum AssetMediaSize {
     Fullsize = "fullsize",

@@ -1,7 +1,7 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthSharedLink } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AlbumUserRole, Permission } from 'src/enum';
+import { AccessHint, AlbumUserRole, Permission } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { setDifference, setIsEqual, setIsSuperset, setUnion } from 'src/utils/set';
 
@@ -22,10 +22,11 @@ export type AccessRequest = {
   auth: AuthDto;
   permission: Permission;
   ids: Set<string> | string[];
+  hint?: AccessHint;
 };
 
 type SharedLinkAccessRequest = { sharedLink: AuthSharedLink; permission: Permission; ids: Set<string> };
-type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string> };
+type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string>; hint?: AccessHint };
 
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   if (!auth || (auth.sharedLink && !auth.sharedLink.allowUpload)) {
@@ -43,7 +44,7 @@ export const requireAccess = async (access: AccessRepository, request: AccessReq
 
 export const checkAccess = async (
   access: AccessRepository,
-  { ids, auth, permission }: AccessRequest,
+  { ids, auth, permission, hint }: AccessRequest,
 ): Promise<Set<string>> => {
   const idSet = Array.isArray(ids) ? new Set(ids) : ids;
   if (idSet.size === 0) {
@@ -52,7 +53,7 @@ export const checkAccess = async (
 
   return auth.sharedLink
     ? checkSharedLinkAccess(access, { sharedLink: auth.sharedLink, permission, ids: idSet })
-    : checkOtherAccess(access, { auth, permission, ids: idSet });
+    : checkOtherAccess(access, { auth, permission, ids: idSet, hint });
 };
 
 const checkSharedLinkAccess = async (
@@ -102,8 +103,38 @@ const checkSharedLinkAccess = async (
   }
 };
 
+const safeMoveToFront = <T>(array: T[], index: number) => {
+  if (index <= 0 || index >= array.length) {
+    return;
+  }
+
+  const [item] = array.splice(index, 1);
+  array.unshift(item);
+};
+
+type CheckFn = (ids: Set<string>) => Promise<Set<string>>;
+const checkAll = async (ids: Set<string>, checks: Partial<Record<AccessHint, CheckFn>>, hint?: AccessHint) => {
+  let grantedIds = new Set<string>();
+
+  const items = Object.values(checks);
+  if (hint && checks[hint]) {
+    safeMoveToFront(items, items.indexOf(checks[hint]));
+  }
+
+  for (const check of items) {
+    if (ids.size === 0) {
+      break;
+    }
+    const approvedIds = await check(ids);
+    grantedIds = setUnion(grantedIds, approvedIds);
+    ids = setDifference(ids, approvedIds);
+  }
+
+  return grantedIds;
+};
+
 const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRequest): Promise<Set<string>> => {
-  const { auth, permission, ids } = request;
+  const { auth, permission, ids, hint } = request;
 
   switch (permission) {
     // uses album id
@@ -113,96 +144,118 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     // uses activity id
     case Permission.ActivityDelete: {
-      const isOwner = await access.activity.checkOwnerAccess(auth.user.id, ids);
-      const isAlbumOwner = await access.activity.checkAlbumOwnerAccess(auth.user.id, setDifference(ids, isOwner));
-      return setUnion(isOwner, isAlbumOwner);
+      return checkAll(
+        ids,
+        {
+          [AccessHint.Owner]: (ids) => access.activity.checkOwnerAccess(auth.user.id, ids),
+          [AccessHint.Album]: (ids) => access.activity.checkAlbumOwnerAccess(auth.user.id, ids),
+        },
+        hint,
+      );
     }
 
     case Permission.AssetRead: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
-      const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
-      return setUnion(isOwner, isAlbum, isPartner);
+      return checkAll(
+        ids,
+        {
+          [AccessHint.Owner]: (ids) =>
+            access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission),
+          [AccessHint.Album]: (ids) => access.asset.checkAlbumAccess(auth.user.id, ids),
+          [AccessHint.Partner]: (ids) => access.asset.checkPartnerAccess(auth.user.id, ids),
+        },
+        hint,
+      );
     }
 
     case Permission.AssetShare: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, false);
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner));
-      return setUnion(isOwner, isPartner);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.asset.checkOwnerAccess(auth.user.id, ids, false),
+        [AccessHint.Partner]: (ids) => access.asset.checkPartnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.AssetView: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
-      const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
-      return setUnion(isOwner, isAlbum, isPartner);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) =>
+          access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission),
+        [AccessHint.Album]: (ids) => access.asset.checkAlbumAccess(auth.user.id, ids),
+        [AccessHint.Partner]: (ids) => access.asset.checkPartnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.AssetDownload: {
-      const isOwner = await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
-      const isAlbum = await access.asset.checkAlbumAccess(auth.user.id, setDifference(ids, isOwner));
-      const isPartner = await access.asset.checkPartnerAccess(auth.user.id, setDifference(ids, isOwner, isAlbum));
-      return setUnion(isOwner, isAlbum, isPartner);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) =>
+          access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission),
+        [AccessHint.Album]: (ids) => access.asset.checkAlbumAccess(auth.user.id, ids),
+        [AccessHint.Partner]: (ids) => access.asset.checkPartnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.AssetUpdate: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) =>
+          access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission),
+      });
     }
 
     case Permission.AssetDelete: {
-      return await access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) =>
+          access.asset.checkOwnerAccess(auth.user.id, ids, auth.session?.hasElevatedPermission),
+      });
     }
 
     case Permission.AlbumRead: {
-      const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
-      const isShared = await access.album.checkSharedAlbumAccess(
-        auth.user.id,
-        setDifference(ids, isOwner),
-        AlbumUserRole.Viewer,
+      return checkAll(
+        ids,
+        {
+          [AccessHint.Owner]: (ids) => access.album.checkOwnerAccess(auth.user.id, ids),
+          [AccessHint.Album]: (ids) => access.album.checkSharedAlbumAccess(auth.user.id, ids, AlbumUserRole.Viewer),
+        },
+        hint,
       );
-      return setUnion(isOwner, isShared);
     }
 
     case Permission.AlbumAssetCreate: {
-      const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
-      const isShared = await access.album.checkSharedAlbumAccess(
-        auth.user.id,
-        setDifference(ids, isOwner),
-        AlbumUserRole.Editor,
-      );
-      return setUnion(isOwner, isShared);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.album.checkOwnerAccess(auth.user.id, ids),
+        [AccessHint.Album]: (ids) => access.album.checkSharedAlbumAccess(auth.user.id, ids, AlbumUserRole.Editor),
+      });
     }
 
-    case Permission.AlbumUpdate: {
-      return await access.album.checkOwnerAccess(auth.user.id, ids);
-    }
-
+    case Permission.AlbumShare:
+    case Permission.AlbumUpdate:
     case Permission.AlbumDelete: {
-      return await access.album.checkOwnerAccess(auth.user.id, ids);
-    }
-
-    case Permission.AlbumShare: {
-      return await access.album.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(
+        ids,
+        {
+          [AccessHint.Owner]: (ids) => access.album.checkOwnerAccess(auth.user.id, ids),
+        },
+        hint,
+      );
     }
 
     case Permission.AlbumDownload: {
-      const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
-      const isShared = await access.album.checkSharedAlbumAccess(
-        auth.user.id,
-        setDifference(ids, isOwner),
-        AlbumUserRole.Viewer,
+      return checkAll(
+        ids,
+        {
+          [AccessHint.Owner]: (ids) => access.album.checkOwnerAccess(auth.user.id, ids),
+          [AccessHint.Album]: (ids) => access.album.checkSharedAlbumAccess(auth.user.id, ids, AlbumUserRole.Viewer),
+        },
+        hint,
       );
-      return setUnion(isOwner, isShared);
     }
 
     case Permission.AlbumAssetDelete: {
-      const isOwner = await access.album.checkOwnerAccess(auth.user.id, ids);
-      const isShared = await access.album.checkSharedAlbumAccess(
-        auth.user.id,
-        setDifference(ids, isOwner),
-        AlbumUserRole.Editor,
+      return checkAll(
+        ids,
+        {
+          [AccessHint.Owner]: (ids) => access.album.checkOwnerAccess(auth.user.id, ids),
+          [AccessHint.Album]: (ids) => access.album.checkSharedAlbumAccess(auth.user.id, ids, AlbumUserRole.Editor),
+        },
+        hint,
       );
-      return setUnion(isOwner, isShared);
     }
 
     case Permission.AssetUpload: {
@@ -214,24 +267,36 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.AuthDeviceDelete: {
-      return await access.authDevice.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(
+        ids,
+        {
+          [AccessHint.Owner]: (ids) => access.authDevice.checkOwnerAccess(auth.user.id, ids),
+        },
+        hint,
+      );
     }
 
     case Permission.FaceDelete: {
-      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.person.checkFaceOwnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.NotificationRead:
     case Permission.NotificationUpdate:
     case Permission.NotificationDelete: {
-      return access.notification.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.notification.checkOwnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.TagAsset:
     case Permission.TagRead:
     case Permission.TagUpdate:
     case Permission.TagDelete: {
-      return await access.tag.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.tag.checkOwnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.TimelineRead: {
@@ -244,54 +309,56 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return ids.has(auth.user.id) ? new Set([auth.user.id]) : new Set();
     }
 
-    case Permission.MemoryRead: {
-      return access.memory.checkOwnerAccess(auth.user.id, ids);
-    }
-
-    case Permission.MemoryUpdate: {
-      return access.memory.checkOwnerAccess(auth.user.id, ids);
-    }
-
+    case Permission.MemoryRead:
+    case Permission.MemoryUpdate:
     case Permission.MemoryDelete: {
-      return access.memory.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.memory.checkOwnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.PersonCreate: {
-      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.person.checkFaceOwnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.PersonRead:
     case Permission.PersonUpdate:
     case Permission.PersonDelete:
     case Permission.PersonMerge: {
-      return await access.person.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.person.checkOwnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.PersonReassign: {
-      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.person.checkFaceOwnerAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.PartnerUpdate: {
-      return await access.partner.checkUpdateAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.partner.checkUpdateAccess(auth.user.id, ids),
+      });
     }
 
     case Permission.SessionRead:
     case Permission.SessionUpdate:
     case Permission.SessionDelete:
     case Permission.SessionLock: {
-      return access.session.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.session.checkOwnerAccess(auth.user.id, ids),
+      });
     }
 
-    case Permission.StackRead: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
-    }
-
-    case Permission.StackUpdate: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
-    }
-
+    case Permission.StackRead:
+    case Permission.StackUpdate:
     case Permission.StackDelete: {
-      return access.stack.checkOwnerAccess(auth.user.id, ids);
+      return checkAll(ids, {
+        [AccessHint.Owner]: (ids) => access.stack.checkOwnerAccess(auth.user.id, ids),
+      });
     }
 
     default: {

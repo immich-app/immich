@@ -1247,12 +1247,14 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [AccessHint] hint:
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
   ///
   /// * [String] slug:
-  Future<Response> viewAssetWithHttpInfo(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
+  Future<Response> viewAssetWithHttpInfo(String id, { AccessHint? hint, String? key, AssetMediaSize? size, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/{id}/thumbnail'
       .replaceAll('{id}', id);
@@ -1264,6 +1266,9 @@ class AssetsApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (hint != null) {
+      queryParams.addAll(_queryParams('', 'hint', hint));
+    }
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
     }
@@ -1294,13 +1299,15 @@ class AssetsApi {
   ///
   /// * [String] id (required):
   ///
+  /// * [AccessHint] hint:
+  ///
   /// * [String] key:
   ///
   /// * [AssetMediaSize] size:
   ///
   /// * [String] slug:
-  Future<MultipartFile?> viewAsset(String id, { String? key, AssetMediaSize? size, String? slug, }) async {
-    final response = await viewAssetWithHttpInfo(id,  key: key, size: size, slug: slug, );
+  Future<MultipartFile?> viewAsset(String id, { AccessHint? hint, String? key, AssetMediaSize? size, String? slug, }) async {
+    final response = await viewAssetWithHttpInfo(id,  hint: hint, key: key, size: size, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
