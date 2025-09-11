@@ -2,8 +2,6 @@ name: Weblate checks
 
 on:
   pull_request_review:
-  pull_request:
-    branches: [main]
 
 permissions: {}
 
