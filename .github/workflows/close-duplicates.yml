@@ -35,22 +35,21 @@ jobs:
     needs: [get_body, should_run]
     if: ${{ needs.should_run.outputs.should_run == 'true' }}
     container:
-      image: yshavit/mdq:0.8.0@sha256:c69224d34224a0043d9a3ee46679ba4a2a25afaac445f293d92afe13cd47fcea
+      image: yshavit/mdq:0.9.0@sha256:4399483ca857fb1a7ed28a596f754c7373e358647de31ce14b79a27c91e1e35e
     outputs:
-      json: ${{ steps.get_checkbox.outputs.json }}
+      checked: ${{ steps.get_checkbox.outputs.checked }}
     steps:
       - id: get_checkbox
         env:
           BODY: ${{ needs.get_body.outputs.body }}
-        # TODO: We should detect if the checkbox is missing entirely and also close_and_comment in that case.
         run: |
-          JSON=$(echo "$BODY" | base64 -d | /mdq --output json '# I have searched | - [?] Yes')
-          echo "json=$JSON" >> $GITHUB_OUTPUT
+          CHECKED=$(echo "$BODY" | base64 -d | /mdq --output json '# I have searched | - [?] Yes' | jq '.items[0].list[0].checked // false')
+          echo "checked=$CHECKED" >> $GITHUB_OUTPUT
 
   close_and_comment:
     runs-on: ubuntu-latest
     needs: [get_checkbox_json, should_run]
-    if: ${{ needs.should_run.outputs.should_run == 'true' && !fromJSON(needs.get_checkbox_json.outputs.json).items[0].list[0].checked }}
+    if: ${{ needs.should_run.outputs.should_run == 'true' && needs.get_checkbox_json.outputs.checked != 'true' }}
     permissions:
       issues: write
       discussions: write

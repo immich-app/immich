@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:logging/logging.dart';
 
 final syncLinkedAlbumServiceProvider = Provider(
   (ref) => SyncLinkedAlbumService(
@@ -19,7 +20,9 @@ class SyncLinkedAlbumService {
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
 
-  const SyncLinkedAlbumService(this._localAlbumRepository, this._remoteAlbumRepository, this._albumApiRepository);
+  SyncLinkedAlbumService(this._localAlbumRepository, this._remoteAlbumRepository, this._albumApiRepository);
+
+  final _log = Logger("SyncLinkedAlbumService");
 
   Future<void> syncLinkedAlbums(String userId) async {
     final selectedAlbums = await _localAlbumRepository.getBackupAlbums();
@@ -48,8 +51,12 @@ class SyncLinkedAlbumService {
   }
 
   Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) async {
-    for (final album in localAlbums) {
-      await _processLocalAlbum(album, ownerId);
+    try {
+      for (final album in localAlbums) {
+        await _processLocalAlbum(album, ownerId);
+      }
+    } catch (error, stackTrace) {
+      _log.severe("Error managing linked albums", error, stackTrace);
     }
   }
 

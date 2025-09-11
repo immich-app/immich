@@ -1,6 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
-import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 
 final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
@@ -18,8 +17,4 @@ final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
   );
   ref.onDispose(manager.cancel);
   return manager;
-});
-
-final isolateLockManagerProvider = Provider.family<IsolateLockManager, String>((ref, name) {
-  return IsolateLockManager(portName: name);
 });

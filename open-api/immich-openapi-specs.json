@@ -2504,7 +2504,8 @@
         "description": "This endpoint requires the `asset.download` permission."
       },
       "put": {
-        "description": "Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.",
+        "deprecated": true,
+        "description": "This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -2566,12 +2567,14 @@
             "api_key": []
           }
         ],
-        "summary": "replaceAsset",
+        "summary": "Replace the asset with new file, without changing its id",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-lifecycle": {
-          "addedAt": "v1.106.0"
+          "addedAt": "v1.106.0",
+          "deprecatedAt": "v1.142.0"
         },
         "x-immich-permission": "asset.replace"
       }
@@ -8904,6 +8907,15 @@
             }
           },
           {
+            "name": "withCoordinates",
+            "required": false,
+            "in": "query",
+            "description": "Include location data in the response",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "withPartners",
             "required": false,
             "in": "query",
@@ -9046,6 +9058,15 @@
             "description": "Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)",
             "schema": {
               "$ref": "#/components/schemas/AssetVisibility"
+            }
+          },
+          {
+            "name": "withCoordinates",
+            "required": false,
+            "in": "query",
+            "description": "Include location data in the response",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -17137,6 +17158,14 @@
             },
             "type": "array"
           },
+          "latitude": {
+            "description": "Array of latitude coordinates extracted from EXIF GPS data",
+            "items": {
+              "nullable": true,
+              "type": "number"
+            },
+            "type": "array"
+          },
           "livePhotoVideoId": {
             "description": "Array of live photo video asset IDs (null for non-live photos)",
             "items": {
@@ -17148,6 +17177,14 @@
           "localOffsetHours": {
             "description": "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
             "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "longitude": {
+            "description": "Array of longitude coordinates extracted from EXIF GPS data",
+            "items": {
+              "nullable": true,
               "type": "number"
             },
             "type": "array"
