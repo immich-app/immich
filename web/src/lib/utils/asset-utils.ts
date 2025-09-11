@@ -34,6 +34,7 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type ExifResponseDto,
   type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
@@ -327,6 +328,15 @@ export function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
 }
+
+export const getDimensions = (exifInfo: ExifResponseDto) => {
+  const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
+  if (isFlipped(exifInfo.orientation)) {
+    return { width: height, height: width };
+  }
+
+  return { width, height };
+};
 
 export function getFileSize(asset: AssetResponseDto, maxPrecision = 4): string {
   const size = asset.exifInfo?.fileSizeInByte || 0;

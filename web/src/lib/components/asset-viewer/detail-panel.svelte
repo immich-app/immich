@@ -16,21 +16,14 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { delay, isFlipped } from '$lib/utils/asset-utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import {
-    AssetMediaSize,
-    getAssetInfo,
-    updateAsset,
-    type AlbumResponseDto,
-    type AssetResponseDto,
-    type ExifResponseDto,
-  } from '@immich/sdk';
+  import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import {
     mdiCalendar,
@@ -61,17 +54,28 @@
 
   let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
 
-  const getDimensions = (exifInfo: ExifResponseDto) => {
-    const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
-    if (isFlipped(exifInfo.orientation)) {
-      return { width: height, height: width };
-    }
-
-    return { width, height };
-  };
-
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
+  let isOwner = $derived($user?.id === asset.ownerId);
+  let people = $derived(asset.people || []);
+  let unassignedFaces = $derived(asset.unassignedFaces || []);
+  let showingHiddenPeople = $state(false);
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromISODateTimeUTC(asset.localDateTime),
+  );
+  let latlng = $derived(
+    (() => {
+      const lat = asset.exifInfo?.latitude;
+      const lng = asset.exifInfo?.longitude;
+
+      if (lat && lng) {
+        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
+      }
+    })(),
+  );
   let previousId: string | undefined = $state();
 
   $effect(() => {
@@ -84,42 +88,6 @@
     }
   });
 
-  let isOwner = $derived($user?.id === asset.ownerId);
-
-  const handleNewAsset = async (newAsset: AssetResponseDto) => {
-    // TODO: check if reloading asset data is necessary
-    if (newAsset.id && !authManager.isSharedLink) {
-      const data = await getAssetInfo({ id: asset.id });
-      people = data?.people || [];
-      unassignedFaces = data?.unassignedFaces || [];
-    }
-  };
-
-  $effect(() => {
-    handlePromiseError(handleNewAsset(asset));
-  });
-
-  let latlng = $derived(
-    (() => {
-      const lat = asset.exifInfo?.latitude;
-      const lng = asset.exifInfo?.longitude;
-
-      if (lat && lng) {
-        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
-      }
-    })(),
-  );
-
-  let people = $state(asset.people || []);
-  let unassignedFaces = $state(asset.unassignedFaces || []);
-  let showingHiddenPeople = $state(false);
-  let timeZone = $derived(asset.exifInfo?.timeZone);
-  let dateTime = $derived(
-    timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(asset.localDateTime),
-  );
-
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
 
@@ -131,10 +99,7 @@
   };
 
   const handleRefreshPeople = async () => {
-    await getAssetInfo({ id: asset.id }).then((data) => {
-      people = data?.people || [];
-      unassignedFaces = data?.unassignedFaces || [];
-    });
+    asset = await getAssetInfo({ id: asset.id });
     showEditFaces = false;
   };
 
@@ -525,7 +490,7 @@
             <a
               href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
-              class="font-medium text-immich-primary"
+              class="font-medium text-primary underline focus:outline-none"
             >
               {$t('open_in_openstreetmap')}
             </a>

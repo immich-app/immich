@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
@@ -14,6 +15,7 @@ import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -41,6 +43,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
     final isInLockedView = ref.watch(inLockedViewProvider);
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
+    final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
 
     final buttonContext = ActionButtonContext(
       asset: asset,
@@ -49,6 +52,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       isTrashEnabled: isTrashEnable,
       isInLockedView: isInLockedView,
       currentAlbum: currentAlbum,
+      advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
     );
 
@@ -122,6 +126,10 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     return [fNumber, exposureTime, focalLength, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
+  Future<void> _editDateTime(BuildContext context, WidgetRef ref) async {
+    await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = ref.watch(currentAssetNotifier);
@@ -132,10 +140,6 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
 
-    Future<void> editDateTime() async {
-      await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
-    }
-
     return SliverList.list(
       children: [
         // Asset Date and Time
@@ -143,7 +147,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           trailing: asset.hasRemote ? const Icon(Icons.edit, size: 18) : null,
-          onTap: asset.hasRemote ? () async => await editDateTime() : null,
+          onTap: asset.hasRemote ? () async => await _editDateTime(context, ref) : null,
         ),
         if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
         const SheetPeopleDetails(),
