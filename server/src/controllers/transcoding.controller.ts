@@ -92,7 +92,7 @@ export class TranscodingController {
         async () => {
           return {
             path: `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(codec.toString())}/${sanitize(quality)}/${sanitize(arr[0])}.mp4`,
-            cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+            cacheControl: CacheControl.PrivateWithCache,
             contentType: 'video/mp4',
           };
         },

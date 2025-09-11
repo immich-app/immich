@@ -11,56 +11,17 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   ServerInfoNotifier(this._serverInfoService)
-<<<<<<< HEAD
-      : super(
-          const ServerInfo(
-            serverVersion: ServerVersion(
-              major: 0,
-              minor: 0,
-              patch: 0,
-            ),
-            latestVersion: ServerVersion(
-              major: 0,
-              minor: 0,
-              patch: 0,
-            ),
-            serverFeatures: ServerFeatures(
-              map: true,
-              trash: true,
-              oauthEnabled: false,
-              passwordLogin: true,
-              streamingType: ""
-            ),
-            serverConfig: ServerConfig(
-              trashDays: 30,
-              oauthButtonText: '',
-              externalDomain: '',
-              mapLightStyleUrl:
-                  'https://tiles.immich.cloud/v1/style/light.json',
-              mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
-            ),
-            serverDiskInfo: ServerDiskInfo(
-              diskAvailable: "0",
-              diskSize: "0",
-              diskUse: "0",
-              diskUsagePercentage: 0,
-            ),
-            isVersionMismatch: false,
-            isNewReleaseAvailable: false,
-            versionMismatchErrorMessage: "",
-=======
     : super(
         const ServerInfo(
           serverVersion: ServerVersion(major: 0, minor: 0, patch: 0),
           latestVersion: ServerVersion(major: 0, minor: 0, patch: 0),
-          serverFeatures: ServerFeatures(map: true, trash: true, oauthEnabled: false, passwordLogin: true),
+          serverFeatures: ServerFeatures(map: true, trash: true, oauthEnabled: false, passwordLogin: true, streamingType: ""),
           serverConfig: ServerConfig(
             trashDays: 30,
             oauthButtonText: '',
             externalDomain: '',
             mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
             mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
->>>>>>> upstream/main
           ),
           serverDiskInfo: ServerDiskInfo(diskAvailable: "0", diskSize: "0", diskUse: "0", diskUsagePercentage: 0),
           isVersionMismatch: false,

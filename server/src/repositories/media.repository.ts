@@ -180,6 +180,14 @@ export class MediaRepository {
     return Buffer.from(rgbaToThumbHash(info.width, info.height, data));
   }
 
+  private parseFraction(fr: string): number {
+    const spl = fr.split('/');
+    if (spl.length == 1) {
+      return this.parseInt(spl[0]);
+    }
+    return this.parseInt(spl[0]) / this.parseInt(spl[1]);
+  }
+
   async probe(input: string, options?: ProbeOptions): Promise<VideoInfo> {
     const results = await probe(input, options?.countFrames ? ['-count_packets'] : []); // gets frame count quickly: https://stackoverflow.com/a/28376817
     return {
@@ -200,8 +208,8 @@ export class MediaRepository {
           codecType: stream.codec_type,
           codecTag: stream.codec_tag_string,
           profile: stream.profile as unknown as string, // In reality this is string like High/Baseline
-          fps: (stream.avg_frame_rate)
-            ? this.parseInt(stream.avg_frame_rate.split('/')[0])
+          fps: stream.avg_frame_rate
+            ? this.parseFraction(stream.avg_frame_rate)
             : this.parseInt(stream.nb_frames) / this.parseInt(stream.duration),
           level: this.parseInt(stream.level),
           frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),

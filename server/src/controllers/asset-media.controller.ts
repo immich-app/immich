@@ -41,10 +41,10 @@ import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, getFiles } from 'src/middleware/file-upload.interceptor';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { TranscodingService } from 'src/services/transcoding.service';
 import { UploadFiles } from 'src/types';
 import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
-import { TranscodingService } from 'src/services/transcoding.service';
 
 @ApiTags('Assets')
 @Controller(RouteKey.Asset)
@@ -52,7 +52,7 @@ export class AssetMediaController {
   constructor(
     private logger: LoggingRepository,
     private service: AssetMediaService,
-    private transcodingService: TranscodingService
+    private transcodingService: TranscodingService,
   ) {}
 
   @Post()
@@ -109,7 +109,7 @@ export class AssetMediaController {
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
-      files: UploadFiles,
+    files: UploadFiles,
     @Body() dto: AssetMediaReplaceDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
@@ -173,13 +173,9 @@ export class AssetMediaController {
   @Get(':id/video/playback/hls')
   @FileResponse()
   @Authenticated({ sharedLink: true })
-  async streamAssetVideo(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Res() res: Response,
-  ) {
-    const { liveFfmpeg } = await this.service.getConfig({ withCache: true });
-    if (liveFfmpeg.enabled) {
+  async streamAssetVideo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Res() res: Response) {
+    const { ffmpeg } = await this.service.getConfig({ withCache: true });
+    if (ffmpeg.live.enabled) {
       res.redirect(await this.transcodingService.getPlaylistUrl(auth, id));
     } else {
       throw new BadRequestException('HLS is not enabled on this server');

@@ -22,7 +22,9 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
-  app.enableCors();
+  app.enableCors({
+    origin: 'https://hlsjs.video-dev.org',
+  });
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
 

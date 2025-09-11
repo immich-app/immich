@@ -59,6 +59,9 @@ class FFmpegInstance {
       }
     });
     const log = createWriteStream(this.logPath);
+    log.write('ffmpeg ');
+    log.write(this.args.join(' '));
+    log.write('\n');
     this.ffmpegCommand.stderr.pipe(log);
     this.ffmpegCommand.on('exit', (code) => {
       if (code === 0) {
@@ -82,7 +85,7 @@ class HLSConnection {
 
   private keyTimes: number[] = [];
   private partTimes: number[] = [];
-  private segTimes: number[] = [];
+  private partFrames: number[] = [];
 
   private videoInterfaces: VideoInterfaces;
 
@@ -99,13 +102,11 @@ class HLSConnection {
   private logger: LoggingRepository;
   private liveFfmpegConfig: SystemConfigFFmpegDto;
 
-  // This is placeholder
-  private vPlaylist?: string;
-  private aPlaylist?: string;
-
   private sessionId: string;
 
   private parts: PartManager;
+  private frames?: number[];
+  private gopSize: number;
 
   constructor(
     logger: LoggingRepository,
@@ -126,13 +127,14 @@ class HLSConnection {
     this.videoInterfaces = videoInterfaces;
 
     this.parts = new PartManager();
+    this.gopSize = Math.ceil(this.stats.videoStreams[0]!.fps * this.SEGMENT_TARGET_TIME);
   }
 
-  async generatePlaylists() {
-    if (this.vPlaylist) {
+  async probe() {
+    if (this.frames) {
       return;
     }
-
+    this.frames = [];
     // prettier-ignore
     const s = child_process.spawn('ffprobe', [
       '-loglevel', 'error',
@@ -141,7 +143,6 @@ class HLSConnection {
       '-of', 'csv=print_section=0',
       this.inputPath,
     ]);
-    const frames: number[] = [];
 
     let lines = '';
     await new Promise<void>((resolve, reject) => {
@@ -164,98 +165,12 @@ class HLSConnection {
       const [time_, type] = data.split(',');
 
       const time = Number.parseFloat(time_) * (type.startsWith('K') ? -1 : 1);
-      frames.push(time);
+      this.frames.push(time);
     }
-    if (frames.length === 0) {
+    if (this.frames.length === 0) {
       throw new NotFoundException('Video has no frames');
     }
-    frames.sort((a, b) => Math.abs(a) - Math.abs(b));
-
-    const videoPlaylist = [
-      '#EXTM3U',
-      '#EXT-X-VERSION:10',
-      '#EXT-X-MEDIA-SEQUENCE:0',
-      '#EXT-X-TARGETDURATION:2',
-      '#EXT-X-PART-INF:PART-TARGET=0.5',
-      '#EXT-X-PLAYLIST-TYPE:VOD',
-      `#EXT-X-MAP:URI="init.mp4"`,
-    ];
-    const audioPlaylist = [...videoPlaylist];
-
-    let l = 0;
-    let r = 1;
-    let partIdx = 0;
-    let possibleParts = [0];
-
-    const getPartAt = (at: number) => {
-      return Math.abs(possibleParts.at(at)!);
-    };
-
-    const isPartMarked = (at: number) => {
-      return possibleParts[at] < 0;
-    };
-
-    const markPart = (at: number) => {
-      possibleParts[at] = -possibleParts[at];
-    };
-
-    this.keyTimes.push(0);
-    this.segTimes.push(0);
-
-    if (frames.at(-1)! < 0) {
-      frames.push(-frames.at(-1)!); // This is fake keyframe to finish playlist
-    }
-    while (r < frames.length) {
-      const isKf = frames[r] <= 0;
-      frames[r] = Math.abs(frames[r]);
-      if (frames[r] - getPartAt(-1)! > 0.5) {
-        possibleParts.push(frames[r]);
-        if (frames[r] - this.keyTimes.at(-1)! > this.SEGMENT_TARGET_TIME) {
-          this.keyTimes.push(frames[r]); // Anyway it will be ignored when -c:v copy
-
-          markPart(possibleParts.length - 1);
-        }
-      }
-
-      if (isKf) {
-        // Recommened segment time by RFC is 2 seconds
-        // Otherwise we will split it to parts
-        if (frames[r] - frames[l] > 2) {
-          for (let i = 1; i < possibleParts.length; i++) {
-            const independent = isPartMarked(i) && i + 2 < possibleParts.length; // There is no necessary to add I-frame for 1 second
-            videoPlaylist.push(
-              `#EXT-X-PART:DURATION=${(getPartAt(i) - getPartAt(i - 1)).toFixed(5)},URI="${partIdx++}.mp4"${independent ? '%independent%' : ''}`,
-            );
-            possibleParts[i] = Math.abs(possibleParts[i]);
-          }
-          videoPlaylist.push(
-            `#EXTINF:${(frames[r] - frames[l]).toFixed(5)}`,
-            Array.from({ length: possibleParts.length - 1 }, (_, i) => partIdx - possibleParts.length + i + 1).join(
-              '.',
-            ) + '.mp4',
-          );
-          this.keyTimes.push(frames[r]);
-          this.partTimes.push(...possibleParts.slice(1));
-          this.segTimes.push(frames[r]);
-        } else {
-          this.partTimes.push(frames[r]);
-          this.keyTimes.push(frames[r]);
-          this.segTimes.push(frames[r]);
-          videoPlaylist.push(`#EXTINF:${(frames[r] - frames[l]).toFixed(5)}`, `${partIdx++}.mp4`);
-        }
-        possibleParts = [frames[r]];
-        l = r;
-      }
-      r++;
-    }
-
-    let audioSegIdx = 0;
-    for (let i = 1; i < this.segTimes.length; i++) {
-      audioPlaylist.push(`#EXTINF:${(this.segTimes[i] - this.segTimes[i - 1]).toFixed(5)}`, `${audioSegIdx++}.mp4`);
-    }
-
-    this.vPlaylist = videoPlaylist.join('\n');
-    this.aPlaylist = audioPlaylist.join('\n');
+    this.frames.sort((a, b) => Math.abs(a) - Math.abs(b));
   }
 
   get videoCodec(): VideoCodec | undefined {
@@ -321,14 +236,17 @@ class HLSConnection {
     if (this.videoQuality === 'original') {
       // prettier-ignore
       args.push(
+        '-i', this.inputPath,
+        
         '-c:v', 'copy',
         '-start_at_zero',
         '-copyts',
-        '-muxdelay', '0'
+        '-muxdelay', '0',
       );
     } else {
+      this.liveFfmpegConfig.gopSize = this.gopSize;
       const options = BaseConfig.create(this.liveFfmpegConfig, this.videoInterfaces).getCommand(
-        TranscodeTarget.VIDEO,
+        TranscodeTarget.Video,
         videoStream,
         // We will handle audio later
       );
@@ -363,14 +281,18 @@ class HLSConnection {
       '-segment_format', 'mp4',
       '-segment_list_type', 'csv',
 
-      '-break_non_keyframes', '1',
-      '-segment_times', this.partTimes!.join(','),
-      '-force_key_frames', this.keyTimes!.join(','),
+      '-segment_frames', this.partFrames!.join(',')
+    );
 
+    /*if (this.videoQuality !== 'original') {
+      args.push('-force_key_frames', this.keyTimes!.join(','));
+    }*/
+
+    // prettier-ignore
+    args.push(
       '-segment_header_filename', `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/init.mp4`,
       '-segment_format_options', 'movflags=dash+skip_sidx',
       '-segment_list', 'pipe:1',
-      '-segment_time_delta', '0.0001',
 
       '-strict', '-2',
       `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/%d.mp4`,
@@ -415,22 +337,22 @@ class HLSConnection {
 
     // prettier-ignore
     args.push(
-        '-map', '0:a:0',
-        '-f', 'segment',
-        '-vn',
-        '-segment_format', 'mp4',
-        '-segment_list_type', 'csv',
+      '-map', '0:a:0',
+      '-f', 'segment',
+      '-vn',
+      '-segment_format', 'mp4',
+      '-segment_list_type', 'csv',
 
-        '-segment_times', this.keyTimes!.join(','),
+      '-segment_times', this.keyTimes!.join(','),
 
-        '-segment_header_filename',
-        `/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/init.mp4`,
+      '-segment_header_filename',
+      `/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/init.mp4`,
 
-        '-segment_format_options', 'movflags=dash+skip_sidx',
-        '-segment_list', 'pipe:1',
+      '-segment_format_options', 'movflags=dash+skip_sidx',
+      '-segment_list', 'pipe:1',
 
-        `/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/%d.mp4`,
-      );
+      `/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/%d.mp4`,
+    );
 
     const instance = new FFmpegInstance(
       args,
@@ -443,18 +365,84 @@ class HLSConnection {
     this.ffmpegCommands.audio = instance;
   }
 
-  get videoPlaylist() {
-    if (!this.vPlaylist) {
-      throw new Error('Сall generatePlaylists() before videoPlaylist');
+  async getVideoPlaylist() {
+    await this.probe();
+    if (!this.frames) {
+      throw new NotFoundException(`Video ${this.id} has no frames`);
     }
-    return this.vPlaylist.replaceAll('%independent%', this.vQuality == 'original' ? '' : ',INDEPENDENT=YES');
+    this.partTimes = [];
+    this.keyTimes = [];
+    const videoPlaylist = [
+      '#EXTM3U',
+      '#EXT-X-VERSION:7',
+      '#EXT-X-MEDIA-SEQUENCE:0',
+      '#EXT-X-TARGETDURATION:2',
+      '#EXT-X-PLAYLIST-TYPE:VOD',
+      `#EXT-X-MAP:URI="init.mp4"`,
+    ];
+
+    let l = 0;
+    let r = 1;
+    let partIdx = 0;
+
+    if (this.videoQuality === 'original') {
+      while (r < this.frames.length - 1) {
+        const isKf = this.frames[r] <= 0;
+        const frame = Math.abs(this.frames[r]);
+        const prevFrame = Math.abs(this.frames[l]);
+
+        if (isKf) {
+          this.keyTimes.push(frame);
+          this.partTimes.push(frame);
+          this.partFrames.push(r - 1);
+          videoPlaylist.push(`#EXTINF:${(Math.abs(this.frames[r + 1]) - prevFrame).toFixed(5)}`, `${partIdx++}.mp4`);
+          l = r;
+        }
+        r++;
+      }
+    } else {
+      while (r < this.frames.length - 1) {
+        const isKf = this.frames[r] <= 0;
+        const frame = Math.abs(this.frames[r]);
+        const prevFrame = Math.abs(this.frames[l]);
+
+        if (r - l >= this.gopSize) {
+          videoPlaylist.push(`#EXTINF:${(Math.abs(this.frames[r + 1]) - prevFrame).toFixed(5)}`, `${partIdx++}.mp4`);
+          this.partTimes.push(frame);
+          this.partFrames.push(r - 1);
+          l = r;
+        }
+        r++;
+      }
+    }
+    videoPlaylist.push(
+      `#EXTINF:${(Math.abs(this.frames[this.frames.length - 1]) - Math.abs(this.frames[l])).toFixed(5)}`,
+      `${partIdx++}.mp4`,
+      '#EXT-X-ENDLIST',
+    );
+
+    return videoPlaylist.join('\n');
   }
 
-  get audioPlaylist() {
-    if (!this.aPlaylist) {
-      throw new Error('Сall generatePlaylists() before audioPlaylist');
+  async getAudioPlaylist() {
+    await this.probe();
+    if (!this.frames) {
+      throw new NotFoundException(`Video ${this.id} has no frames`);
     }
-    return this.aPlaylist;
+    const audioPlaylist = [];
+    let audioSegIdx = 0;
+    let i = this.gopSize;
+    for (; i < this.frames.length - 1; i += this.gopSize) {
+      audioPlaylist.push(
+        `#EXTINF:${(this.frames[i] - this.frames[i - this.gopSize]).toFixed(5)}`,
+        `${audioSegIdx++}.mp4`,
+      );
+    }
+    audioPlaylist.push(
+      `#EXTINF:${(this.frames[this.frames.length - 1] - this.frames[i - this.gopSize]).toFixed(5)}`,
+      `${audioSegIdx++}.mp4`,
+    );
+    return audioPlaylist.join('\n');
   }
 }
 
@@ -502,8 +490,14 @@ export class TranscodingService extends BaseService {
     }
 
     const config = await this.getConfig({ withCache: true });
-    const connection = new HLSConnection(this.logger, sessionId, config.liveFfmpeg, asset, this.videoInterfaces, stats);
-    await connection.generatePlaylists();
+    const connection = new HLSConnection(
+      this.logger,
+      sessionId,
+      config.ffmpeg.live,
+      asset,
+      this.videoInterfaces,
+      stats,
+    );
 
     this.connections.set(sessionId, connection);
 
@@ -512,7 +506,7 @@ export class TranscodingService extends BaseService {
 
     playlist.push(
       '#EXTM3U',
-      '#EXT-X-VERSION:10',
+      '#EXT-X-VERSION:7',
       '#EXT-X-INDEPENDENT-SEGMENTS',
 
       `#EXT-X-STREAM-INF:BANDWIDTH=56320,CODECS="mp4a.40.5"`,
@@ -536,10 +530,11 @@ export class TranscodingService extends BaseService {
     if (!connection) {
       throw new BadRequestException('Not connected');
     }
+    const playlist = await connection.getVideoPlaylist();
     await connection.updateVideoStream(codec, quality);
 
     await connection.ffmpegCommands.video!.waitForFirstSegment();
-    return connection.videoPlaylist;
+    return playlist;
   }
 
   async getAudioPlaylist(id: string, sessionId: string, codec: AudioCodec, quality: string): Promise<string> {
@@ -550,24 +545,24 @@ export class TranscodingService extends BaseService {
     await connection.updateAudioStream(codec, quality);
 
     await connection.ffmpegCommands.audio!.waitForFirstSegment();
-    return connection.audioPlaylist;
+    return connection.getAudioPlaylist();
   }
 
   // From media.serivce.ts
-  @OnEvent({ name: 'app.bootstrap' })
+  @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
     const [dri, mali] = await Promise.all([this.getDevices(), this.hasMaliOpenCL()]);
     this.videoInterfaces = { dri, mali };
   }
 
   async getPlaylistUrl(auth: AuthDto, id: string): Promise<string> {
-    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
 
     const asset = await this.assetRepository.getById(id);
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
-    if (asset.type !== AssetType.VIDEO) {
+    if (asset.type !== AssetType.Video) {
       throw new BadRequestException('Asset is not a video');
     }
 

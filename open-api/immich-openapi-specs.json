@@ -2726,6 +2726,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -5778,7 +5786,7 @@
             }
           },
           {
-            "name": "quality",
+            "name": "secret",
             "required": true,
             "in": "path",
             "schema": {
@@ -5786,7 +5794,7 @@
             }
           },
           {
-            "name": "secret",
+            "name": "quality",
             "required": true,
             "in": "path",
             "schema": {
@@ -5842,37 +5850,6 @@
         ]
       }
     },
-    "/playback/{secret}/original.m3u8": {
-      "get": {
-        "operationId": "getOriginalPlaylist",
-        "parameters": [
-          {
-            "name": "secret",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "format": "binary",
-                  "type": "string"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "tags": [
-          "Transcoder"
-        ]
-      }
-    },
     "/playback/{secret}/{codec}/{quality}/playlist.m3u8": {
       "get": {
         "operationId": "getVideoPlaylist",
@@ -5886,7 +5863,7 @@
             }
           },
           {
-            "name": "quality",
+            "name": "secret",
             "required": true,
             "in": "path",
             "schema": {
@@ -5894,7 +5871,7 @@
             }
           },
           {
-            "name": "secret",
+            "name": "quality",
             "required": true,
             "in": "path",
             "schema": {
@@ -5933,7 +5910,7 @@
             }
           },
           {
-            "name": "name",
+            "name": "secret",
             "required": true,
             "in": "path",
             "schema": {
@@ -5949,7 +5926,7 @@
             }
           },
           {
-            "name": "secret",
+            "name": "name",
             "required": true,
             "in": "path",
             "schema": {
@@ -16259,7 +16236,7 @@
             "$ref": "#/components/schemas/SystemConfigBackupsDto"
           },
           "ffmpeg": {
-            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+            "$ref": "#/components/schemas/SystemConfigFFmpegsDto"
           },
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
@@ -16269,9 +16246,6 @@
           },
           "library": {
             "$ref": "#/components/schemas/SystemConfigLibraryDto"
-          },
-          "liveFfmpeg": {
-            "$ref": "#/components/schemas/SystemConfigLiveFFmpegDto"
           },
           "logging": {
             "$ref": "#/components/schemas/SystemConfigLoggingDto"
@@ -16328,7 +16302,6 @@
           "image",
           "job",
           "library",
-          "liveFfmpeg",
           "logging",
           "machineLearning",
           "map",
@@ -16477,6 +16450,21 @@
           "tonemap",
           "transcode",
           "twoPass"
+        ],
+        "type": "object"
+      },
+      "SystemConfigFFmpegsDto": {
+        "properties": {
+          "live": {
+            "$ref": "#/components/schemas/SystemConfigLiveFFmpegDto"
+          },
+          "offline": {
+            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
+          }
+        },
+        "required": [
+          "live",
+          "offline"
         ],
         "type": "object"
       },
