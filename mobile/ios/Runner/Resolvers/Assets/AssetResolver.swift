@@ -69,6 +69,7 @@ class AssetResolver {
   private func processBatch() {
     batchLock.lock()
     if assetRequests.isEmpty {
+      batchTimer = nil
       batchLock.unlock()
       return
     }
