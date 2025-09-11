@@ -78,6 +78,8 @@ jobs:
           PR_NUMBER: ${{ steps.find_pr.outputs.PR_NUMBER }}
           REVIEW_ID: ${{ steps.merge_pr.outputs.REVIEW_ID }}
         run: |
+          set +e
+          
           for i in {1..10}; do
             if gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state | jq -e '.state == "MERGED"'; then
               echo "PR merged"
