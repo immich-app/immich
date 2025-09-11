@@ -103,6 +103,7 @@ Options:
   -c, --concurrency <number>  Number of assets to upload at the same time (default: 4, env: IMMICH_UPLOAD_CONCURRENCY)
   -j, --json-output           Output detailed information in json format (default: false, env: IMMICH_JSON_OUTPUT)
   --delete                    Delete local assets after upload (env: IMMICH_DELETE_ASSETS)
+  --delete-duplicates         Delete local assets that are duplicates (already exist on server) (env: IMMICH_DELETE_DUPLICATES)
   --no-progress               Hide progress bars (env: IMMICH_PROGRESS_BAR)
   --watch                     Watch for changes and upload automatically (default: false, env: IMMICH_WATCH_CHANGES)
   --help                      display help for command
