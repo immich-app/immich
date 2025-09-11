@@ -9,9 +9,11 @@ pigeon:
 	dart run pigeon --input pigeon/native_sync_api.dart
 	dart run pigeon --input pigeon/thumbnail_api.dart
 	dart run pigeon --input pigeon/background_worker_api.dart
+	dart run pigeon --input pigeon/connectivity_api.dart
 	dart format lib/platform/native_sync_api.g.dart
 	dart format lib/platform/thumbnail_api.g.dart
 	dart format lib/platform/background_worker_api.g.dart
+	dart format lib/platform/connectivity_api.g.dart
 
 watch:
 	dart run build_runner watch --delete-conflicting-outputs
