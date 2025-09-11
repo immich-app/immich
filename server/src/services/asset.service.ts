@@ -115,59 +115,68 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, ...options } = dto;
+    const {
+      ids,
+      isFavorite,
+      visibility,
+      dateTimeOriginal,
+      latitude,
+      longitude,
+      rating,
+      description,
+      duplicateId,
+      dateTimeRelative,
+      timeZone,
+    } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    const staticValuesChanged =
-      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
+    const assetDto = { isFavorite, visibility, duplicateId };
+    const exifDto = { latitude, longitude, rating, description, dateTimeOriginal };
 
-    if (staticValuesChanged) {
-      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
+    const isExifChanged = Object.values(exifDto).some((v) => v !== undefined);
+    if (isExifChanged) {
+      await this.assetRepository.updateAllExif(ids, exifDto);
     }
 
     const assets =
       (dateTimeRelative !== undefined && dateTimeRelative !== 0) || timeZone !== undefined
         ? await this.assetRepository.updateDateTimeOriginal(ids, dateTimeRelative, timeZone)
-        : null;
+        : undefined;
 
-    const dateTimesWithTimezone =
-      assets?.map((asset) => {
-        const isoString = asset.dateTimeOriginal?.toISOString();
-        let dateTime = isoString ? DateTime.fromISO(isoString) : null;
+    const dateTimesWithTimezone = assets
+      ? assets.map((asset) => {
+          const isoString = asset.dateTimeOriginal?.toISOString();
+          let dateTime = isoString ? DateTime.fromISO(isoString) : null;
 
-        if (dateTime && asset.timeZone) {
-          dateTime = dateTime.setZone(asset.timeZone);
-        }
+          if (dateTime && asset.timeZone) {
+            dateTime = dateTime.setZone(asset.timeZone);
+          }
 
-        return {
-          assetId: asset.assetId,
-          dateTimeOriginal: dateTime?.toISO() ?? null,
-        };
-      }) ?? null;
+          return {
+            assetId: asset.assetId,
+            dateTimeOriginal: dateTime?.toISO() ?? null,
+          };
+        })
+      : ids.map((id) => ({ assetId: id, dateTimeOriginal }));
 
-    if (staticValuesChanged || dateTimesWithTimezone) {
-      const entries: JobItem[] = (dateTimesWithTimezone ?? ids).map((entry: any) => ({
-        name: JobName.SidecarWrite,
-        data: {
-          id: entry.assetId ?? entry,
-          description,
-          dateTimeOriginal: entry.dateTimeOriginal ?? dateTimeOriginal,
-          latitude,
-          longitude,
-        },
-      }));
-      await this.jobRepository.queueAll(entries);
+    if (dateTimesWithTimezone.length > 0) {
+      await this.jobRepository.queueAll(
+        dateTimesWithTimezone.map(({ assetId: id, dateTimeOriginal }) => ({
+          name: JobName.SidecarWrite,
+          data: {
+            ...exifDto,
+            id,
+            dateTimeOriginal: dateTimeOriginal ?? undefined,
+          },
+        })),
+      );
     }
 
-    if (
-      options.visibility !== undefined ||
-      options.isFavorite !== undefined ||
-      options.duplicateId !== undefined ||
-      options.rating !== undefined
-    ) {
-      await this.assetRepository.updateAll(ids, options);
+    const isAssetChanged = Object.values(assetDto).some((v) => v !== undefined);
+    if (isAssetChanged) {
+      await this.assetRepository.updateAll(ids, assetDto);
 
-      if (options.visibility === AssetVisibility.Locked) {
+      if (visibility === AssetVisibility.Locked) {
         await this.albumRepository.removeAssetsFromAll(ids);
       }
     }
