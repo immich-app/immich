@@ -49,7 +49,7 @@ export class AuthController {
   }
 
   @Post('validateToken')
-  @Authenticated()
+  @Authenticated({ permission: false })
   @HttpCode(HttpStatus.OK)
   validateAccessToken(): ValidateAccessTokenResponseDto {
     return { authStatus: true };
