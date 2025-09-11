@@ -68,6 +68,10 @@ class ThumbnailResolver: ThumbnailApi {
     let cancellationToken = CancellationToken()
     let thumbnailRequest = ThumbnailRequest(cancellationToken: cancellationToken, completion: completion)
     AssetResolver.requestAsset(request: AssetRequest(cancellationToken: cancellationToken, assetId: assetId) { asset in
+      if cancellationToken.isCancelled {
+        return completion(Self.cancelledResult)
+      }
+
       let item = DispatchWorkItem {
         if cancellationToken.isCancelled {
           return completion(Self.cancelledResult)
