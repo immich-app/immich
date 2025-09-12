@@ -68,9 +68,9 @@ class LogService {
   void _handleLogRecord(LogRecord r) {
     dPrint(
       () =>
-        '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
-        '${r.error == null ? '' : '\nError: ${r.error}'}'
-        '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
+          '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
+          '${r.error == null ? '' : '\nError: ${r.error}'}'
+          '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
     );
 
     final record = LogMessage(

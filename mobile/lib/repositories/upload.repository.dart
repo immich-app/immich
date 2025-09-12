@@ -88,7 +88,8 @@ class UploadRepository {
       Canceled: ${canceledTasks.length}
       Waiting: ${waitingTasks.length}
       Paused: ${pausedTasks.length}
-    """);
+    """,
+    );
   }
 
   Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {
