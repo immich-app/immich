@@ -545,7 +545,8 @@ export class TimelineManager {
     return (
       isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
-      isMismatched(this.#options.isTrashed, asset.isTrashed)
+      isMismatched(this.#options.isTrashed, asset.isTrashed) ||
+      isMismatched(this.#options.userId, asset.ownerId)
     );
   }
 
