@@ -1,24 +1,59 @@
 <script lang="ts">
   import { userInteraction } from '$lib/stores/user.svelte';
+  import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import { getAlbumInfo, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let albums: AlbumResponseDto[] = $state([]);
+  let allAlbums: AlbumResponseDto[] = $state([]);
+
+  // Handle album deletion via websocket events
+  let unsubscribeWebsocket: (() => void) | undefined;
 
   onMount(async () => {
-    if (userInteraction.recentAlbums) {
-      albums = userInteraction.recentAlbums;
-      return;
-    }
     try {
-      const allAlbums = await getAllAlbums({});
+      allAlbums = await getAllAlbums({});
       albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
       userInteraction.recentAlbums = albums;
     } catch (error) {
       handleError(error, $t('failed_to_load_assets'));
+    }
+  });
+
+  onMount(() => {
+    const unsubscribeDelete = websocketEvents.on('on_album_delete', (albumId) => {
+      allAlbums = allAlbums.filter((album) => album.id !== albumId);
+      albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
+      userInteraction.recentAlbums = albums;
+    });
+
+    const unsubscribeUpdate = websocketEvents.on('on_album_update', async (albumId) => {
+      try {
+        const updatedAlbum = await getAlbumInfo({ id: albumId });
+
+        const index = allAlbums.findIndex((album) => album.id === albumId);
+        if (index !== -1) {
+          allAlbums[index] = updatedAlbum;
+          albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
+          userInteraction.recentAlbums = albums;
+        }
+      } catch (error) {
+        console.error('Failed to fetch updated album details:', error);
+      }
+    });
+
+    unsubscribeWebsocket = () => {
+      unsubscribeDelete?.();
+      unsubscribeUpdate?.();
+    };
+  });
+
+  onDestroy(() => {
+    if (unsubscribeWebsocket) {
+      unsubscribeWebsocket();
     }
   });
 </script>
