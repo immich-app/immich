@@ -210,7 +210,7 @@ export class MediaRepository {
           profile: stream.profile as unknown as string, // In reality this is string like High/Baseline
           fps: stream.avg_frame_rate
             ? this.parseFraction(stream.avg_frame_rate)
-            : this.parseInt(stream.nb_frames) / this.parseInt(stream.duration),
+            : this.parseInt(stream.nb_frames) / this.parseFloat(stream.duration),
           level: this.parseInt(stream.level),
           frameCount: this.parseInt(options?.countFrames ? stream.nb_read_packets : stream.nb_frames),
           rotation: this.parseInt(stream.rotation),
