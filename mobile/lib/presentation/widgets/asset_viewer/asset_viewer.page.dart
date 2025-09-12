@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -30,7 +31,6 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
-import 'package:platform/platform.dart';
 
 @RoutePage()
 class AssetViewerPage extends StatelessWidget {
@@ -53,10 +53,9 @@ class AssetViewerPage extends StatelessWidget {
 
 class AssetViewer extends ConsumerStatefulWidget {
   final int initialIndex;
-  final Platform? platform;
   final int? heroOffset;
 
-  const AssetViewer({super.key, required this.initialIndex, this.platform, this.heroOffset});
+  const AssetViewer({super.key, required this.initialIndex, this.heroOffset});
 
   @override
   ConsumerState createState() => _AssetViewerState();
@@ -86,7 +85,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
 
-  late Platform platform;
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
   bool? hasDraggedDown;
@@ -114,7 +112,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     super.initState();
     assert(ref.read(currentAssetNotifier) != null, "Current asset should not be null when opening the AssetViewer");
     pageController = PageController(initialPage: widget.initialIndex);
-    platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
@@ -638,7 +635,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           gaplessPlayback: true,
           loadingBuilder: _placeholderBuilder,
           pageController: pageController,
-          scrollPhysics: platform.isIOS
+          scrollPhysics: defaultTargetPlatform == TargetPlatform.iOS
               ? const FastScrollPhysics() // Use bouncing physics for iOS
               : const FastClampingScrollPhysics(), // Use heavy physics for Android
           itemCount: totalAssets,

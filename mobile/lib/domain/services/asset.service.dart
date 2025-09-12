@@ -1,22 +1,20 @@
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
-import 'package:platform/platform.dart';
 
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftLocalAssetRepository _localAssetRepository;
-  final Platform _platform;
 
   const AssetService({
     required RemoteAssetRepository remoteAssetRepository,
     required DriftLocalAssetRepository localAssetRepository,
   }) : _remoteAssetRepository = remoteAssetRepository,
-       _localAssetRepository = localAssetRepository,
-       _platform = const LocalPlatform();
+       _localAssetRepository = localAssetRepository;
 
   Future<BaseAsset?> getAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
@@ -71,7 +69,8 @@ class AssetService {
       width = exif?.width ?? asset.width?.toDouble();
       height = exif?.height ?? asset.height?.toDouble();
     } else if (asset is LocalAsset) {
-      isFlipped = _platform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
+      isFlipped =
+          defaultTargetPlatform == TargetPlatform.android && (asset.orientation == 90 || asset.orientation == 270);
       width = asset.width?.toDouble();
       height = asset.height?.toDouble();
     } else {
