@@ -394,7 +394,7 @@ class HLSConnection {
         if (isKf) {
           this.keyTimes.push(frame);
           this.partTimes.push(frame);
-          this.partFrames.push(r - 1);
+          this.partFrames.push(r + 1);
           videoPlaylist.push(`#EXTINF:${(Math.abs(this.frames[r + 1]) - prevFrame).toFixed(5)}`, `${partIdx++}.mp4`);
           l = r;
         }
@@ -409,7 +409,7 @@ class HLSConnection {
         if (r - l >= this.gopSize) {
           videoPlaylist.push(`#EXTINF:${(Math.abs(this.frames[r + 1]) - prevFrame).toFixed(5)}`, `${partIdx++}.mp4`);
           this.partTimes.push(frame);
-          this.partFrames.push(r - 1);
+          this.partFrames.push(r);
           l = r;
         }
         r++;
@@ -509,8 +509,8 @@ export class TranscodingService extends BaseService {
       '#EXT-X-VERSION:7',
       '#EXT-X-INDEPENDENT-SEGMENTS',
 
-      `#EXT-X-STREAM-INF:BANDWIDTH=56320,CODECS="mp4a.40.5"`,
-      `a/aac/55/playlist.m3u8`,
+      //`#EXT-X-STREAM-INF:BANDWIDTH=56320,CODECS="mp4a.40.5"`,
+      //`a/aac/55/playlist.m3u8`,
 
       `#EXT-X-STREAM-INF:BANDWIDTH=14358365,CODECS="avc1.64001e,mp4a.40.2",RESOLUTION=1920x1080,FRAME-RATE=30`,
       `h264/1080p/playlist.m3u8`,
