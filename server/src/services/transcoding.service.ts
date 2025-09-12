@@ -10,11 +10,8 @@ import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { AssetType, AudioCodec, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { BaseService } from 'src/services/base.service';
-import { VideoInfo, VideoInterfaces } from 'src/types';
+import { AudioStreamInfo, VideoInfo, VideoInterfaces, VideoStreamInfo } from 'src/types';
 import { BaseConfig } from 'src/utils/media';
-
-type VideoStream = VideoInfo['videoStreams'][0];
-type AudioStream = VideoInfo['audioStreams'][0];
 
 class FFmpegInstance {
   private firstSegmentDone?: PromiseWithResolvers<void>;
@@ -455,7 +452,7 @@ export class TranscodingService extends BaseService {
   connections: Map<string, HLSConnection> = new Map();
 
   // https://github.com/zoriya/Kyoo/blob/d08febf803e307da1277996f7856bd901b6e83e2/transcoder/src/codec.go#L18
-  videoStreamToMime(stream: VideoStream): string {
+  private videoStreamToMime(stream: VideoStreamInfo): string {
     let res = stream.codecTag;
     if (!res) {
       throw new Error('Codec tag is undefined');
@@ -469,7 +466,7 @@ export class TranscodingService extends BaseService {
     return res;
   }
 
-  audioStreamToMime(stream: AudioStream) {
+  private audioStreamToMime(stream: AudioStreamInfo) {
     // TODO: opus and ac3
     if (stream.codecName === 'aac') {
       return 'mp4a.40.34';

@@ -309,6 +309,7 @@ export type ColumnType =
   | 'character varying'
   | 'date'
   | 'double precision'
+  | 'real'
   | 'integer'
   | 'jsonb'
   | 'polygon'
