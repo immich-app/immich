@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -144,10 +143,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
 
   final PermissionState ps = await PhotoManager.requestPermissionExtend();
   if (!ps.hasAccess) {
-    if (kDebugMode) {
-      debugPrint("[MIGRATION] Photo library permission not granted. Skipping device asset migration.");
-    }
-
+    dPrint(() => "[MIGRATION] Photo library permission not granted. Skipping device asset migration.");
     return;
   }
 
@@ -183,20 +179,14 @@ Future<void> _migrateDeviceAsset(Isar db) async {
       return false;
     },
     onlyFirst: (deviceAsset) {
-      if (kDebugMode) {
-        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}');
-      }
+      dPrint(() => '[MIGRATION] Local asset not found in DeviceAsset: ${deviceAsset.assetId}');
     },
     onlySecond: (asset) {
-      if (kDebugMode) {
-        debugPrint('[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}');
-      }
+      dPrint(() => '[MIGRATION] Local asset not found in DeviceAsset: ${asset.assetId}');
     },
   );
 
-  if (kDebugMode) {
-    debugPrint("[MIGRATION] Total number of device assets migrated - ${toAdd.length}");
-  }
+  dPrint(() => "[MIGRATION] Total number of device assets migrated - ${toAdd.length}");
 
   await db.writeTxn(() async {
     await db.deviceAssetEntitys.putAll(toAdd);
