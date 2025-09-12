@@ -115,11 +115,16 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, rating, ...options } = dto;
+    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, rating, ...options } =
+      dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
     const staticValuesChanged =
-      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined || rating !== undefined;
+      description !== undefined ||
+      dateTimeOriginal !== undefined ||
+      latitude !== undefined ||
+      longitude !== undefined ||
+      rating !== undefined;
 
     if (staticValuesChanged) {
       await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude, rating });
@@ -160,11 +165,7 @@ export class AssetService extends BaseService {
       await this.jobRepository.queueAll(entries);
     }
 
-    if (
-      options.visibility !== undefined ||
-      options.isFavorite !== undefined ||
-      options.duplicateId !== undefined
-    ) {
+    if (options.visibility !== undefined || options.isFavorite !== undefined || options.duplicateId !== undefined) {
       await this.assetRepository.updateAll(ids, options);
 
       if (options.visibility === AssetVisibility.Locked) {
