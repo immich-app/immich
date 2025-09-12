@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
@@ -100,6 +100,7 @@ class BaseSearchDto {
   @IsInt()
   @Max(5)
   @Min(-1)
+  @ApiPropertyOptional({ type: 'integer' })
   rating?: number;
 }
 
@@ -115,6 +116,7 @@ class BaseSearchWithResultsDto extends BaseSearchDto {
   @Max(1000)
   @Type(() => Number)
   @Optional()
+  @ApiPropertyOptional({ type: 'integer' })
   size?: number;
 }
 
@@ -186,6 +188,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Min(1)
   @Type(() => Number)
   @Optional()
+  @ApiPropertyOptional({ type: 'integer' })
   page?: number;
 }
 
@@ -215,6 +218,7 @@ export class SmartSearchDto extends BaseSearchWithResultsDto {
   @Min(1)
   @Type(() => Number)
   @Optional()
+  @ApiPropertyOptional({ type: 'integer' })
   page?: number;
 }
 
@@ -235,7 +239,9 @@ export class SearchPeopleDto {
 
 export class PlacesResponseDto {
   name!: string;
+  @ApiProperty({ type: 'number', format: 'double' })
   latitude!: number;
+  @ApiProperty({ type: 'number', format: 'double' })
   longitude!: number;
   admin1name?: string;
   admin2name?: string;

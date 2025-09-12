@@ -53,6 +53,7 @@ export class DatabaseBackupConfig {
   @IsInt()
   @IsPositive()
   @IsNotEmpty()
+  @ApiProperty({ type: 'integer' })
   keepLastAmount!: number;
 }
 
@@ -451,6 +452,7 @@ class SystemConfigSmtpTransportDto {
   @IsNumber()
   @Min(0)
   @Max(65_535)
+  @ApiProperty({ type: 'integer' })
   port!: number;
 
   @IsString()

@@ -1,3 +1,4 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Equals, IsInt, IsPositive, IsString } from 'class-validator';
 import { Session } from 'src/database';
 import { Optional, ValidateBoolean } from 'src/validation';
@@ -9,6 +10,7 @@ export class SessionCreateDto {
   @IsInt()
   @IsPositive()
   @Optional()
+  @ApiPropertyOptional({ type: 'integer' })
   duration?: number;
 
   @IsString()

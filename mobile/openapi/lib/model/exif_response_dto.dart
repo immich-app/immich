@@ -45,25 +45,25 @@ class ExifResponseDto {
 
   String? description;
 
-  num? exifImageHeight;
+  int? exifImageHeight;
 
-  num? exifImageWidth;
+  int? exifImageWidth;
 
   String? exposureTime;
 
-  num? fNumber;
+  double? fNumber;
 
   int? fileSizeInByte;
 
-  num? focalLength;
+  double? focalLength;
 
-  num? iso;
+  int? iso;
 
-  num? latitude;
+  double? latitude;
 
   String? lensModel;
 
-  num? longitude;
+  double? longitude;
 
   String? make;
 
@@ -75,7 +75,7 @@ class ExifResponseDto {
 
   String? projectionType;
 
-  num? rating;
+  int? rating;
 
   String? state;
 
@@ -263,38 +263,22 @@ class ExifResponseDto {
         country: mapValueOfType<String>(json, r'country'),
         dateTimeOriginal: mapDateTime(json, r'dateTimeOriginal', r''),
         description: mapValueOfType<String>(json, r'description'),
-        exifImageHeight: json[r'exifImageHeight'] == null
-            ? null
-            : num.parse('${json[r'exifImageHeight']}'),
-        exifImageWidth: json[r'exifImageWidth'] == null
-            ? null
-            : num.parse('${json[r'exifImageWidth']}'),
+        exifImageHeight: mapValueOfType<int>(json, r'exifImageHeight'),
+        exifImageWidth: mapValueOfType<int>(json, r'exifImageWidth'),
         exposureTime: mapValueOfType<String>(json, r'exposureTime'),
-        fNumber: json[r'fNumber'] == null
-            ? null
-            : num.parse('${json[r'fNumber']}'),
+        fNumber: (mapValueOfType<num>(json, r'fNumber'))?.toDouble(),
         fileSizeInByte: mapValueOfType<int>(json, r'fileSizeInByte'),
-        focalLength: json[r'focalLength'] == null
-            ? null
-            : num.parse('${json[r'focalLength']}'),
-        iso: json[r'iso'] == null
-            ? null
-            : num.parse('${json[r'iso']}'),
-        latitude: json[r'latitude'] == null
-            ? null
-            : num.parse('${json[r'latitude']}'),
+        focalLength: (mapValueOfType<num>(json, r'focalLength'))?.toDouble(),
+        iso: mapValueOfType<int>(json, r'iso'),
+        latitude: (mapValueOfType<num>(json, r'latitude'))?.toDouble(),
         lensModel: mapValueOfType<String>(json, r'lensModel'),
-        longitude: json[r'longitude'] == null
-            ? null
-            : num.parse('${json[r'longitude']}'),
+        longitude: (mapValueOfType<num>(json, r'longitude'))?.toDouble(),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         modifyDate: mapDateTime(json, r'modifyDate', r''),
         orientation: mapValueOfType<String>(json, r'orientation'),
         projectionType: mapValueOfType<String>(json, r'projectionType'),
-        rating: json[r'rating'] == null
-            ? null
-            : num.parse('${json[r'rating']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
         state: mapValueOfType<String>(json, r'state'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
       );

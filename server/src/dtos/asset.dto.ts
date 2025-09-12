@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -46,17 +46,20 @@ export class UpdateAssetBase {
   @ValidateGPS()
   @IsLatitude()
   @IsNotEmpty()
+  @ApiPropertyOptional({ type: 'number', format: 'double' })
   latitude?: number;
 
   @ValidateGPS()
   @IsLongitude()
   @IsNotEmpty()
+  @ApiPropertyOptional({ type: 'number', format: 'double' })
   longitude?: number;
 
   @Optional()
   @IsInt()
   @Max(5)
   @Min(-1)
+  @ApiPropertyOptional({ type: 'integer' })
   rating?: number;
 
   @Optional()
@@ -74,6 +77,7 @@ export class AssetBulkUpdateDto extends UpdateAssetBase {
   @IsNotSiblingOf(['dateTimeOriginal'])
   @Optional()
   @IsInt()
+  @ApiPropertyOptional({ type: 'integer' })
   dateTimeRelative?: number;
 
   @IsNotSiblingOf(['dateTimeOriginal'])
@@ -92,6 +96,7 @@ export class RandomAssetsDto {
   @IsInt()
   @IsPositive()
   @Type(() => Number)
+  @ApiPropertyOptional({ type: 'integer' })
   count?: number;
 }
 
