@@ -33,6 +33,7 @@ import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final backgroundServiceProvider = Provider((ref) => BackgroundService());
 
@@ -165,7 +166,7 @@ class BackgroundService {
         ]);
       }
     } catch (error) {
-      debugPrint("[_updateNotification] failed to communicate with plugin");
+      dPrint(() => "[_updateNotification] failed to communicate with plugin");
     }
     return false;
   }
@@ -177,7 +178,7 @@ class BackgroundService {
         return await _backgroundChannel.invokeMethod('showError', [title, content, individualTag]);
       }
     } catch (error) {
-      debugPrint("[_showErrorNotification] failed to communicate with plugin");
+      dPrint(() => "[_showErrorNotification] failed to communicate with plugin");
     }
     return false;
   }
@@ -188,7 +189,7 @@ class BackgroundService {
         return await _backgroundChannel.invokeMethod('clearErrorNotifications');
       }
     } catch (error) {
-      debugPrint("[_clearErrorNotifications] failed to communicate with plugin");
+      dPrint(() => "[_clearErrorNotifications] failed to communicate with plugin");
     }
     return false;
   }
@@ -196,7 +197,7 @@ class BackgroundService {
   /// await to ensure this thread (foreground or background) has exclusive access
   Future<bool> acquireLock() async {
     if (_hasLock) {
-      debugPrint("WARNING: [acquireLock] called more than once");
+      dPrint(() => "WARNING: [acquireLock] called more than once");
       return true;
     }
     final int lockTime = Timeline.now;
@@ -302,19 +303,19 @@ class BackgroundService {
 
           final bool hasAccess = await waitForLock;
           if (!hasAccess) {
-            debugPrint("[_callHandler] could not acquire lock, exiting");
+            dPrint(() => "[_callHandler] could not acquire lock, exiting");
             return false;
           }
 
           final translationsOk = await loadTranslations();
           if (!translationsOk) {
-            debugPrint("[_callHandler] could not load translations");
+            dPrint(() => "[_callHandler] could not load translations");
           }
 
           final bool ok = await _onAssetsChanged();
           return ok;
         } catch (error) {
-          debugPrint(error.toString());
+          dPrint(() => error.toString());
           return false;
         } finally {
           releaseLock();
@@ -324,7 +325,7 @@ class BackgroundService {
         _cancellationToken?.cancel();
         return true;
       default:
-        debugPrint("Unknown method ${call.method}");
+        dPrint(() => "Unknown method ${call.method}");
         return false;
     }
   }

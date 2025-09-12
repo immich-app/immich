@@ -26,6 +26,7 @@ import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 const int targetVersion = 15;
 
@@ -117,7 +118,7 @@ Future<bool> _isNewInstallation(Isar db, Drift drift) async {
 
     return true;
   } catch (error) {
-    debugPrint("[MIGRATION] Error checking if new installation: $error");
+    dPrint(() => "[MIGRATION] Error checking if new installation: $error");
     return false;
   }
 }
@@ -166,8 +167,8 @@ Future<void> _migrateDeviceAsset(Isar db) async {
     localAssets = allDeviceAssets.map((a) => _DeviceAsset(assetId: a.id, dateTime: a.modifiedDateTime)).toList();
   }
 
-  debugPrint("[MIGRATION] Device Asset Ids length - ${ids.length}");
-  debugPrint("[MIGRATION] Local Asset Ids length - ${localAssets.length}");
+  dPrint(() => "[MIGRATION] Device Asset Ids length - ${ids.length}");
+  dPrint(() => "[MIGRATION] Local Asset Ids length - ${localAssets.length}");
   ids.sort((a, b) => a.assetId.compareTo(b.assetId));
   localAssets.sort((a, b) => a.assetId.compareTo(b.assetId));
   final List<DeviceAssetEntity> toAdd = [];
@@ -215,7 +216,7 @@ Future<void> migrateDeviceAssetToSqlite(Isar db, Drift drift) async {
       }
     });
   } catch (error) {
-    debugPrint("[MIGRATION] Error while migrating device assets to SQLite: $error");
+    dPrint(() => "[MIGRATION] Error while migrating device assets to SQLite: $error");
   }
 }
 
@@ -263,7 +264,7 @@ Future<void> migrateBackupAlbumsToSqlite(Isar db, Drift drift) async {
       }
     });
   } catch (error) {
-    debugPrint("[MIGRATION] Error while migrating backup albums to SQLite: $error");
+    dPrint(() => "[MIGRATION] Error while migrating backup albums to SQLite: $error");
   }
 }
 
@@ -281,7 +282,7 @@ Future<void> migrateStoreToSqlite(Isar db, Drift drift) async {
       }
     });
   } catch (error) {
-    debugPrint("[MIGRATION] Error while migrating store values to SQLite: $error");
+    dPrint(() => "[MIGRATION] Error while migrating store values to SQLite: $error");
   }
 }
 
@@ -296,7 +297,7 @@ Future<void> migrateStoreToIsar(Isar db, Drift drift) async {
       await db.storeValues.putAll(driftStoreValues);
     });
   } catch (error) {
-    debugPrint("[MIGRATION] Error while migrating store values to Isar: $error");
+    dPrint(() => "[MIGRATION] Error while migrating store values to Isar: $error");
   }
 }
 

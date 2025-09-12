@@ -31,6 +31,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -159,7 +160,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     try {
       await _cleanup();
     } catch (error, stack) {
-      debugPrint('Failed to cleanup background worker: $error with stack: $stack');
+      dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
     }
   }
 
@@ -192,7 +193,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await Future.wait(cleanupFutures);
       _logger.info("Background worker resources cleaned up");
     } catch (error, stack) {
-      debugPrint('Failed to cleanup background worker: $error with stack: $stack');
+      dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
     }
   }
 
@@ -230,7 +231,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
             .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _cancellationToken);
       },
       (error, stack) {
-        debugPrint("Error in backup zone $error, $stack");
+        dPrint(() => "Error in backup zone $error, $stack");
       },
     );
   }

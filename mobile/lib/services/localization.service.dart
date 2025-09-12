@@ -2,9 +2,9 @@
 
 import 'package:easy_localization/src/easy_localization_controller.dart';
 import 'package:easy_localization/src/localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 /// Workaround to manually load translations in another Isolate
 Future<bool> loadTranslations() async {
@@ -17,7 +17,7 @@ Future<bool> loadTranslations() async {
     assetLoader: const CodegenLoader(),
     path: translationsPath,
     useOnlyLangCode: false,
-    onLoadError: (e) => debugPrint(e.toString()),
+    onLoadError: (e) => dPrint(() => e.toString()),
     fallbackLocale: locales.values.first,
   );
 
