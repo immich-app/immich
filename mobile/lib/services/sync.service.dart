@@ -691,7 +691,7 @@ class SyncService {
         }
         trashMediaUrls.add(mediaUrl);
       } else {
-        await _localFilesManager.restoreFromTrash(asset.fileName, asset.type.index);
+        await _localFilesManager.restoreFromTrash(asset.fileName, asset.type.index, asset.checksum);
       }
     }
 

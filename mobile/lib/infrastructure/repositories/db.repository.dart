@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_trashed_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -62,6 +63,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     PersonEntity,
     AssetFaceEntity,
     StoreEntity,
+    LocalTrashedAssetEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -70,7 +72,7 @@ class Drift extends $Drift implements IDatabaseRepository {
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -132,6 +134,10 @@ class Drift extends $Drift implements IDatabaseRepository {
             await m.createTable(v10.authUserEntity);
             await m.addColumn(v10.userEntity, v10.userEntity.avatarColor);
             await m.alterTable(TableMigration(v10.userEntity));
+          },
+          from10To11: (m, v11) async {
+            await m.create(v11.localTrashedAssetEntity);
+            await m.createIndex(v11.idxLocalTrashedAssetRemoteId);
           },
         ),
       );

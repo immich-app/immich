@@ -18,11 +18,24 @@ class LocalFilesManagerService {
     }
   }
 
-  Future<bool> restoreFromTrash(String fileName, int type) async {
+  Future<bool> restoreFromTrash(String fileName, int type, String checksum) async {
     try {
-      return await _channel.invokeMethod('restoreFromTrash', {'fileName': fileName, 'type': type});
+      return await _channel.invokeMethod('restoreFromTrash', {
+        'fileName': fileName,
+        'type': type,
+        'checksum': checksum,
+      });
     } catch (e, s) {
       _logger.warning('Error restore file from trash', e, s);
+      return false;
+    }
+  }
+
+  Future<bool> restoreFromTrashById(String mediaId, int type) async {
+    try {
+      return await _channel.invokeMethod('restoreFromTrash', {'mediaId': mediaId, 'type': type});
+    } catch (e, s) {
+      _logger.warning('Error restore file from trash by Id', e, s);
       return false;
     }
   }
