@@ -20,7 +20,6 @@ class ImmichLinter extends PluginBase {
             buildGlob(forbiddenPaths), restrict));
       }
     }
-
     return rules;
   }
 
