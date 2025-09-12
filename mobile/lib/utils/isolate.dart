@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
@@ -85,7 +84,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         return null;
       },
       (error, stack) {
-        debugPrint("Error in isolate zone: $error, $stack");
+        dPrint(() => "Error in isolate zone: $error, $stack");
       },
     );
     return null;
