@@ -385,6 +385,10 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
     });
 
+    void logFunction(String message) {
+      log.info(message);
+    }
+
     return Stack(
       children: [
         // This remains under the video to avoid flickering
@@ -399,11 +403,23 @@ class NativeVideoViewer extends HookConsumerWidget {
               child: AspectRatio(
                 key: ValueKey(asset),
                 aspectRatio: aspectRatio.value!,
-                child: isCurrent ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController) : null,
+                child: isCurrent
+                    ? GestureDetector(
+                        onScaleUpdate: (_) => logFunction("Scale update 1"),
+                        onScaleStart: (_) => logFunction("Scale start 1"),
+                        onTap: () => logFunction("Single Tap 1"),
+                        child: NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController),
+                      )
+                    : null,
               ),
             ),
           ),
-        if (showControls) const Center(child: VideoViewerControls()),
+        // if (showControls) const Center(child: VideoViewerControls()),
+        GestureDetector(
+          // onTap: () => logFunction("Single Tap"),
+          onScaleUpdate: (_) => logFunction("Scale update"),
+          onScaleStart: (_) => logFunction("Scale start"),
+        ),
       ],
     );
   }
