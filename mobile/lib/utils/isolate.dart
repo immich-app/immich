@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
@@ -12,6 +11,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class InvalidIsolateUsageException implements Exception {
   const InvalidIsolateUsageException();
@@ -71,10 +71,10 @@ Cancelable<T?> runInIsolateGentle<T>({
                 await isar.close();
               }
             } catch (e) {
-              debugPrint("Error closing Isar: $e");
+              dPrint(() => "Error closing Isar: $e");
             }
           } catch (error, stack) {
-            debugPrint("Error closing resources in isolate: $error, $stack");
+            dPrint(() => "Error closing resources in isolate: $error, $stack");
           } finally {
             ref.dispose();
             // Delay to ensure all resources are released
@@ -84,7 +84,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         return null;
       },
       (error, stack) {
-        debugPrint("Error in isolate zone: $error, $stack");
+        dPrint(() => "Error in isolate zone: $error, $stack");
       },
     );
     return null;
