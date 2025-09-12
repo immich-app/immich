@@ -40,7 +40,6 @@
   // of zero when starting the 'slide' animation.
   let height: number = $state(0);
 
-  // Track if transition is done
   let isTransitioned = $state(false);
 
   $effect(() => {
