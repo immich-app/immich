@@ -6,6 +6,7 @@
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiKeyboardReturn } from '@mdi/js';
@@ -44,6 +45,8 @@
 
   const onNewAlbum = async (name: string) => {
     const album = await createAlbum({ createAlbumDto: { albumName: name } });
+    // Clear cached recent albums to force refresh in sidebar
+    userInteraction.recentAlbums = undefined;
     onClose([album]);
   };
 

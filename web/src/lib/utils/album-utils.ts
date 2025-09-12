@@ -9,6 +9,7 @@ import {
   locale,
   type AlbumViewSettings,
 } from '$lib/stores/preferences.store';
+import { userInteraction } from '$lib/stores/user.svelte';
 import { handleError } from '$lib/utils/handle-error';
 import type { AlbumResponseDto } from '@immich/sdk';
 import * as sdk from '@immich/sdk';
@@ -30,6 +31,8 @@ export const createAlbum = async (name?: string, assetIds?: string[]) => {
         assetIds,
       },
     });
+    // Clear cached recent albums to force refresh in sidebar
+    userInteraction.recentAlbums = undefined;
     return newAlbum;
   } catch (error) {
     const $t = get(t);
