@@ -42,15 +42,20 @@ class _StackList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        spacing: 5.0,
-        children: List.generate(stack.length, (i) {
-          final asset = stack[i];
-          return _StackItem(key: ValueKey(asset.heroTag), asset: asset, index: i);
-        }),
+    return Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 10.0, right: 10.0, bottom: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: 5.0,
+            children: List.generate(stack.length, (i) {
+              final asset = stack[i];
+              return _StackItem(key: ValueKey(asset.heroTag), asset: asset, index: i);
+            }),
+          ),
+        ),
       ),
     );
   }
