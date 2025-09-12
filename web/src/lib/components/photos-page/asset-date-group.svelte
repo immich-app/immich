@@ -169,10 +169,10 @@
       class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
       style:width={dayGroup.width + 'px'}
     >
-      {#if !singleSelect && ((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dayGroup.groupTitle))}
+      {#if !singleSelect}
         <div
-          transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
-          class="inline-block pe-2 hover:cursor-pointer"
+          class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-0"
+          class:w-8={((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dayGroup.groupTitle))}
           onclick={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
         >
