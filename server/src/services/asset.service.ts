@@ -115,14 +115,14 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, ...options } = dto;
+    const { ids, description, dateTimeOriginal, dateTimeRelative, timeZone, latitude, longitude, rating, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
     const staticValuesChanged =
-      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined;
+      description !== undefined || dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined || rating !== undefined;
 
     if (staticValuesChanged) {
-      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude });
+      await this.assetRepository.updateAllExif(ids, { description, dateTimeOriginal, latitude, longitude, rating });
     }
 
     const assets =
@@ -154,6 +154,7 @@ export class AssetService extends BaseService {
           dateTimeOriginal: entry.dateTimeOriginal ?? dateTimeOriginal,
           latitude,
           longitude,
+          rating,
         },
       }));
       await this.jobRepository.queueAll(entries);
@@ -162,8 +163,7 @@ export class AssetService extends BaseService {
     if (
       options.visibility !== undefined ||
       options.isFavorite !== undefined ||
-      options.duplicateId !== undefined ||
-      options.rating !== undefined
+      options.duplicateId !== undefined
     ) {
       await this.assetRepository.updateAll(ids, options);
 
