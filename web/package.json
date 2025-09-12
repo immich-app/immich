@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
-    "@faker-js/faker": "^9.3.0",
+    "@faker-js/faker": "^10.0.0",
     "@koddsson/eslint-plugin-tscompat": "^0.2.0",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.8",
