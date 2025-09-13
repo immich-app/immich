@@ -410,7 +410,10 @@ export class MediaService extends BaseService {
   }
 
   private async generateVideoThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {
-    const { image, ffmpeg } = await this.getConfig({ withCache: true });
+    const config = await this.getConfig({ withCache: true });
+    let image = config.image,
+      ffmpeg = config.ffmpeg.offline;
+
     const previewPath = StorageCore.getImagePath(asset, AssetPathType.Preview, image.preview.format);
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.Thumbnail, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
@@ -487,7 +490,8 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    let { ffmpeg } = await this.getConfig({ withCache: true });
+    const config = await this.getConfig({ withCache: true });
+    let ffmpeg = config.ffmpeg.offline;
     const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
     if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
       if (asset.encodedVideoPath) {
