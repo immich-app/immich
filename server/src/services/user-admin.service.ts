@@ -35,6 +35,7 @@ export class UserAdminService extends BaseService {
 
     const user = await this.createUser(userDto);
 
+    this.telemetryRepository.api.addToGauge(`immich.users.total`, 1);
     await this.eventRepository.emit('UserSignup', {
       notify: !!notify,
       id: user.id,
@@ -102,6 +103,7 @@ export class UserAdminService extends BaseService {
 
     const status = force ? UserStatus.Removing : UserStatus.Deleted;
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
+    this.telemetryRepository.api.addToGauge(`immich.users.total`, -1);
 
     if (force) {
       await this.jobRepository.queue({ name: JobName.UserDelete, data: { id: user.id, force } });
@@ -114,6 +116,7 @@ export class UserAdminService extends BaseService {
     await this.findOrFail(id, { withDeleted: true });
     await this.albumRepository.restoreAll(id);
     const user = await this.userRepository.restore(id);
+    this.telemetryRepository.api.addToGauge('immich.users.total', 1);
     return mapUserAdmin(user);
   }
 
