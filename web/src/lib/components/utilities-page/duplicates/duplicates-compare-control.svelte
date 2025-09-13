@@ -5,7 +5,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+  import { suggestDuplicateWithPrefs } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -13,7 +13,7 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-
+  import { duplicateTiePreference } from '$lib/stores/duplicate-preferences';
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -24,19 +24,20 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
+  const autoSelect = () => {
+    const suggested = suggestDuplicateWithPrefs(assets, $duplicateTiePreference) ?? assets[0];
+    selectedAssetIds = new SvelteSet([suggested.id]);
+  };
+
   onMount(() => {
-    const suggestedAsset = suggestDuplicate(assets);
+    autoSelect();
+  });
 
-    if (!suggestedAsset) {
-      selectedAssetIds = new SvelteSet(assets[0].id);
-      return;
-    }
-
-    selectedAssetIds.add(suggestedAsset.id);
+  $effect(() => {
+    autoSelect();
   });
 
   onDestroy(() => {
@@ -72,11 +73,7 @@
   };
 
   const onSelectAsset = (asset: AssetResponseDto) => {
-    if (selectedAssetIds.has(asset.id)) {
-      selectedAssetIds.delete(asset.id);
-    } else {
-      selectedAssetIds.add(asset.id);
-    }
+    selectedAssetIds = new SvelteSet([asset.id]);
   };
 
   const onSelectNone = () => {
