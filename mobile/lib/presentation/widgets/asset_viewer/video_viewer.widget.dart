@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
@@ -124,6 +125,8 @@ class NativeVideoViewer extends HookConsumerWidget {
 
     final videoSource = useMemoized<Future<VideoSource?>>(() => createSource());
     final aspectRatio = useState<double?>(null);
+    final videoWidth = useState<double?>(null);
+    final videoHeight = useState<double?>(null);
     useMemoized(() async {
       if (!context.mounted || aspectRatio.value != null) {
         return null;
@@ -385,41 +388,55 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
     });
 
-    void logFunction(String message) {
-      log.info(message);
+    final contextAspectRatio = context.width / context.height;
+    double renderedWidth = 0.0;
+    double renderedHeight = 0.0;
+
+    if (aspectRatio.value != null && (aspectRatio.value! > contextAspectRatio)) {
+      renderedWidth = context.width;
+      renderedHeight = context.width / aspectRatio.value!;
+    } else if (aspectRatio.value != null) {
+      renderedHeight = context.height;
+      renderedWidth = context.height * aspectRatio.value!;
+    } else {
+      renderedHeight = 0;
+      renderedWidth = 0;
     }
+
+    final horizontalMargin = (context.width - renderedWidth) / 2;
+    final verticalMargin = (context.height - renderedHeight) / 2;
+
+    log.info("Margins: h: $horizontalMargin, v: $verticalMargin");
 
     return Stack(
       children: [
-        // This remains under the video to avoid flickering
-        // For motion videos, this is the image portion of the asset
-        Center(key: ValueKey(asset.heroTag), child: image),
-        if (aspectRatio.value != null && !isCasting)
-          Visibility.maintain(
-            key: ValueKey(asset),
-            visible: isVisible.value,
-            child: Center(
-              key: ValueKey(asset),
-              child: AspectRatio(
-                key: ValueKey(asset),
-                aspectRatio: aspectRatio.value!,
-                child: isCurrent
-                    ? GestureDetector(
-                        onScaleUpdate: (_) => logFunction("Scale update 1"),
-                        onScaleStart: (_) => logFunction("Scale start 1"),
-                        onTap: () => logFunction("Single Tap 1"),
-                        child: NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController),
-                      )
-                    : null,
-              ),
-            ),
+        InteractiveViewer(
+          panEnabled: true,
+          scaleEnabled: true,
+          minScale: 0.8,
+          maxScale: 4.0,
+          boundaryMargin: EdgeInsets.fromLTRB(-horizontalMargin, -verticalMargin, -horizontalMargin, -verticalMargin),
+          child: Stack(
+            children: [
+              if (aspectRatio.value != null && !isCasting)
+                Visibility.maintain(
+                  visible: isVisible.value,
+                  child: SizedBox.expand(
+                    child: Center(
+                      child: AspectRatio(
+                        key: ValueKey(asset),
+                        aspectRatio: aspectRatio.value!,
+                        child: isCurrent
+                            ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController)
+                            : null,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
-        // if (showControls) const Center(child: VideoViewerControls()),
-        GestureDetector(
-          // onTap: () => logFunction("Single Tap"),
-          onScaleUpdate: (_) => logFunction("Scale update"),
-          onScaleStart: (_) => logFunction("Scale start"),
         ),
+        // if (showControls) const Center(child: VideoViewerControls()),
       ],
     );
   }
