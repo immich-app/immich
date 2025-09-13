@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
@@ -144,29 +146,39 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
-    final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
     try {
-      // Run operations sequentially with state checks and error handling for each
-      await _safeRun(backgroundManager.syncLocal(), "syncLocal");
-      await _safeRun(backgroundManager.syncRemote(), "syncRemote");
-      await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      await Future.wait([
+        _safeRun(backgroundManager.syncLocal(), "syncLocal"),
+        _safeRun(backgroundManager.syncRemote(), "syncRemote"),
+      ]);
+
+      await Future.wait([
+        _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+          _resumeBackup();
+        }),
+        _resumeBackup(),
+      ]);
+
       if (isAlbumLinkedSyncEnable) {
         await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
       }
-
-      // Handle backup resume only if still active
-      if (isEnableBackup) {
-        final currentUser = _ref.read(currentUserProvider);
-        if (currentUser != null) {
-          await _safeRun(
-            _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
-            "handleBackupResume",
-          );
-        }
-      }
     } catch (e, stackTrace) {
       _log.severe("Error during background sync", e, stackTrace);
+    }
+  }
+
+  Future<void> _resumeBackup() async {
+    final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+
+    if (isEnableBackup) {
+      final currentUser = Store.tryGet(StoreKey.currentUser);
+      if (currentUser != null) {
+        await _safeRun(
+          _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id),
+          "handleBackupResume",
+        );
+      }
     }
   }
 
