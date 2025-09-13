@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
@@ -59,7 +59,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     // Remove all assets that are only in this particular album
     // We cannot remove all assets in the album because they might be in other albums in iOS
     // That is not the case on Android since asset <-> album has one:one mapping
-    final assetsToDelete = defaultTargetPlatform == TargetPlatform.iOS
+    final assetsToDelete = CurrentPlatform.isIOS
         ? await _getUniqueAssetsInAlbum(albumId)
         : await getAssetIds(albumId);
     await _deleteAssets(assetsToDelete);
@@ -144,7 +144,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         }
       });
 
-      if (defaultTargetPlatform == TargetPlatform.android) {
+      if (CurrentPlatform.isAndroid) {
         // On Android, an asset can only be in one album
         // So, get the albums that are marked for deletion
         // and delete all the assets that are in those albums
@@ -265,7 +265,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return Future.value();
     }
 
-    if (defaultTargetPlatform == TargetPlatform.android) {
+    if (CurrentPlatform.isAndroid) {
       return _deleteAssets(assetIds);
     }
 

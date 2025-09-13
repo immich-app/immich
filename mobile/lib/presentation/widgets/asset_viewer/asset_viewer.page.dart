@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -11,6 +10,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
@@ -635,7 +635,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           gaplessPlayback: true,
           loadingBuilder: _placeholderBuilder,
           pageController: pageController,
-          scrollPhysics: defaultTargetPlatform == TargetPlatform.iOS
+          scrollPhysics: CurrentPlatform.isIOS
               ? const FastScrollPhysics() // Use bouncing physics for iOS
               : const FastClampingScrollPhysics(), // Use heavy physics for Android
           itemCount: totalAssets,
