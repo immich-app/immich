@@ -101,6 +101,11 @@ class BaseSearchDto {
   @Max(5)
   @Min(-1)
   rating?: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  ocr?: string;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {

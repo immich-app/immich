@@ -43,7 +43,7 @@
     type MetadataSearchDto,
     searchAssets,
     searchSmart,
-    type SmartSearchDto,
+    type SmartSearchDto
   } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
@@ -211,6 +211,7 @@
       originalFileName: $t('file_name'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      ocr: $t('ocr'),
     };
     return keyMap[key] || key;
   }
