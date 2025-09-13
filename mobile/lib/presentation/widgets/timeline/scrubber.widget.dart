@@ -80,6 +80,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   bool _isDragging = false;
   List<_Segment> _segments = [];
 
+  late double _dragStartX;
+  late double _currentDragX;
+  late bool _isFineScrollMode;
+
   late AnimationController _thumbAnimationController;
   Timer? _fadeOutTimer;
   late Animation<double> _thumbAnimation;
@@ -101,6 +105,9 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void initState() {
     super.initState();
     _isDragging = false;
+    _dragStartX = 0.0;
+    _currentDragX = 0.0;
+    _isFineScrollMode = false;
     _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
     _thumbAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
     _thumbAnimation = CurvedAnimation(parent: _thumbAnimationController, curve: Curves.fastEaseInToSlowEaseOut);
@@ -168,12 +175,15 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     return false;
   }
 
-  void _onDragStart(DragStartDetails _) {
+  void _onDragStart(DragStartDetails details) {
     ref.read(timelineStateProvider.notifier).setScrubbing(true);
     setState(() {
       _isDragging = true;
       _labelAnimationController.forward();
       _fadeOutTimer?.cancel();
+      _dragStartX = details.globalPosition.dx;
+      _currentDragX = _dragStartX;
+      _isFineScrollMode = false;
       _lastLabel = null;
     });
   }
@@ -187,7 +197,27 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       _thumbAnimationController.forward();
     }
 
-    final dragPosition = _calculateDragPosition(details);
+    _currentDragX += details.delta.dx;
+
+    double horizontalDragDistance = _dragStartX - _currentDragX;
+    double screenWidth = MediaQuery.of(context).size.width;
+    _isFineScrollMode = horizontalDragDistance > screenWidth * 0.33;
+
+    double scrollSensitivity = 1.0;
+    if (_isFineScrollMode) {
+      double triggerDistance = screenWidth * 0.33;
+      double effectiveDragDistance = horizontalDragDistance - triggerDistance;
+      double maxEffectiveDrag = screenWidth * 0.67;
+      scrollSensitivity = 0.01 - (effectiveDragDistance / maxEffectiveDrag).clamp(0.0, 0.009);
+    }
+
+    final adjustedDeltaY = details.delta.dy * scrollSensitivity;
+    final adjustedDetails = DragUpdateDetails(
+      globalPosition: details.globalPosition,
+      delta: Offset(details.delta.dx, adjustedDeltaY),
+    );
+
+    final dragPosition = _calculateDragPosition(adjustedDetails);
     final nearestMonthSegment = _findNearestMonthSegment(dragPosition);
 
     if (nearestMonthSegment != null) {
@@ -278,6 +308,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     _labelAnimationController.reverse();
     setState(() {
       _isDragging = false;
+      _isFineScrollMode = false;
     });
 
     _resetThumbTimer();
@@ -320,10 +351,15 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
               end: 0,
               child: RepaintBoundary(
                 child: GestureDetector(
-                  onVerticalDragStart: _onDragStart,
-                  onVerticalDragUpdate: _onDragUpdate,
-                  onVerticalDragEnd: _onDragEnd,
-                  child: _Scrubber(thumbAnimation: _thumbAnimation, labelAnimation: _labelAnimation, label: label),
+                  onPanStart: _onDragStart,
+                  onPanUpdate: _onDragUpdate,
+                  onPanEnd: _onDragEnd,
+                  child: _Scrubber(
+                    thumbAnimation: _thumbAnimation,
+                    labelAnimation: _labelAnimation,
+                    label: label,
+                    isFineScrollMode: _isFineScrollMode,
+                  ),
                 ),
               ),
             ),
@@ -424,14 +460,17 @@ class _Scrubber extends StatelessWidget {
   final Text? label;
   final Animation<double> thumbAnimation;
   final Animation<double> labelAnimation;
+  final bool? isFineScrollMode;
 
-  const _Scrubber({this.label, required this.thumbAnimation, required this.labelAnimation});
+  const _Scrubber({this.label, required this.thumbAnimation, required this.labelAnimation, this.isFineScrollMode});
 
   @override
   Widget build(BuildContext context) {
     final backgroundColor = context.isDarkTheme
         ? context.colorScheme.primary.darken(amount: .5)
         : context.colorScheme.primary;
+
+    Color thumbColor = isFineScrollMode == true ? Colors.orange : backgroundColor;
 
     return _SlideFadeTransition(
       animation: thumbAnimation,
@@ -440,7 +479,7 @@ class _Scrubber extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           if (label != null) _ScrollLabel(label: label!, backgroundColor: backgroundColor, animation: labelAnimation),
-          _CircularThumb(backgroundColor),
+          _CircularThumb(thumbColor),
         ],
       ),
     );
