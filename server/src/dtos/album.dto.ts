@@ -128,6 +128,14 @@ export class AlbumUserResponseDto {
   role!: AlbumUserRole;
 }
 
+export class ContributorCountResponseDto {
+  @ApiProperty()
+  userId!: string;
+
+  @ApiProperty({ type: 'integer' })
+  assetCount!: number;
+}
+
 export class AlbumResponseDto {
   id!: string;
   ownerId!: string;
@@ -143,6 +151,10 @@ export class AlbumResponseDto {
   owner!: UserResponseDto;
   @ApiProperty({ type: 'integer' })
   assetCount!: number;
+
+  @ApiProperty({ required: false, type: [ContributorCountResponseDto] })
+  contributorCounts?: ContributorCountResponseDto[];
+
   lastModifiedAssetTimestamp?: Date;
   startDate?: Date;
   endDate?: Date;

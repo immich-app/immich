@@ -31,6 +31,15 @@
 
   let isOwned = $derived(currentUser?.id == album.ownerId);
 
+  // Map contributor counts by user id (owner + collaborators)
+  type ContributorCount = { userId: string; assetCount: number };
+  const contributorMap = $derived(
+    Object.fromEntries(
+      (((album as any)?.contributorCounts ?? []) as ContributorCount[]).map((c) => [c.userId, c.assetCount]),
+    ) as Record<string, number>,
+  );
+  const getCount = (userId: string) => contributorMap[userId] ?? 0;
+
   onMount(async () => {
     try {
       currentUser = await getMyUser();
@@ -100,7 +109,12 @@
       <div class="flex w-full place-items-center justify-between gap-4 p-5">
         <div class="flex place-items-center gap-4">
           <UserAvatar user={album.owner} size="md" />
-          <p class="text-sm font-medium">{album.owner.name}</p>
+          <div>
+            <p class="text-sm font-medium">{album.owner.name}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              {$t('items_count', { values: { count: getCount(album.owner.id) } })}
+            </p>
+          </div>
         </div>
 
         <div id="icon-{album.owner.id}" class="flex place-items-center">
@@ -113,7 +127,12 @@
         >
           <div class="flex place-items-center gap-4">
             <UserAvatar {user} size="md" />
-            <p class="text-sm font-medium">{user.name}</p>
+            <div>
+              <p class="text-sm font-medium">{user.name}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                {$t('items_count', { values: { count: getCount(user.id) } })}
+              </p>
+            </div>
           </div>
 
           <div id="icon-{user.id}" class="flex place-items-center gap-2 text-sm">
