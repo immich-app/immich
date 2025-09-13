@@ -29,9 +29,14 @@ const guides: CommunityGuidesProps[] = [
     url: 'https://github.com/immich-app/immich/discussions/3382',
   },
   {
+    title: 'Immich Podman Quadlets Handbook',
+    description: 'A rewrite of the original Immich Docker Compose file using Podman Quadlets, with a set of extra guides in the repository’s wiki.',
+    url: 'https://github.com/linux-universe/immich-podman-quadlets/blob/main/README.md'
+  },
+  {
     title: 'Podman/Quadlets Install',
     description: 'Documentation for simple podman setup using quadlets.',
-    url: 'https://github.com/linux-universe/immich-podman-quadlets/blob/main/README.md',
+    url: 'https://github.com/tbelway/immich-podman-quadlets/blob/main/docs/install/podman-quadlet.md',
   },
   {
     title: 'Google Photos import + albums',
