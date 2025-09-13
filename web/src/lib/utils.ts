@@ -5,6 +5,7 @@ import { lang } from '$lib/stores/preferences.store';
 import { serverConfig } from '$lib/stores/server-config.store';
 import { handleError } from '$lib/utils/handle-error';
 import {
+  AccessHint,
   AssetJobName,
   AssetMediaSize,
   JobName,
@@ -197,12 +198,14 @@ export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
   return createUrl(getAssetOriginalPath(id), { ...authManager.params, c: cacheKey });
 };
 
-export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {
+export const getAssetThumbnailUrl = (
+  options: string | (AssetUrlOptions & { size?: AssetMediaSize; hint?: AccessHint }),
+) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, size, cacheKey } = options;
-  return createUrl(getAssetThumbnailPath(id), { ...authManager.params, size, c: cacheKey });
+  const { id, size, cacheKey, hint } = options;
+  return createUrl(getAssetThumbnailPath(id), { ...authManager.params, size, c: cacheKey, hint });
 };
 
 export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {

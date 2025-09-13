@@ -1,4 +1,4 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
+import { AccessHint, AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
@@ -38,6 +38,7 @@ import type {
 } from './types';
 
 export class TimelineManager {
+  hint?: AccessHint;
   isInitialized = $state(false);
   months: MonthGroup[] = $state([]);
   topSectionHeight = $state(0);
@@ -97,7 +98,9 @@ export class TimelineManager {
     monthGroup: undefined,
   });
 
-  constructor() {}
+  constructor(options?: { hint?: AccessHint }) {
+    this.hint = options?.hint;
+  }
 
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
     let changed = false;
