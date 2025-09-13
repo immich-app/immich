@@ -1,29 +1,24 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
-import 'package:platform/platform.dart';
 
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
   final NativeSyncApi _nativeSyncApi;
-  final Platform _platform;
   final Logger _log = Logger("DeviceSyncService");
 
-  LocalSyncService({
-    required DriftLocalAlbumRepository localAlbumRepository,
-    required NativeSyncApi nativeSyncApi,
-    Platform? platform,
-  }) : _localAlbumRepository = localAlbumRepository,
-       _nativeSyncApi = nativeSyncApi,
-       _platform = platform ?? const LocalPlatform();
+  LocalSyncService({required DriftLocalAlbumRepository localAlbumRepository, required NativeSyncApi nativeSyncApi})
+    : _localAlbumRepository = localAlbumRepository,
+      _nativeSyncApi = nativeSyncApi;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -53,14 +48,14 @@ class LocalSyncService {
       final dbAlbums = await _localAlbumRepository.getAll();
       // On Android, we need to sync all albums since it is not possible to
       // detect album deletions from the native side
-      if (_platform.isAndroid) {
+      if (CurrentPlatform.isAndroid) {
         for (final album in dbAlbums) {
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
         }
       }
 
-      if (_platform.isIOS) {
+      if (CurrentPlatform.isIOS) {
         // On iOS, we need to full sync albums that are marked as cloud as the delta sync
         // does not include changes for cloud albums. If ignoreIcloudAssets is enabled,
         // remove the albums from the local database from the previous sync
