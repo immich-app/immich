@@ -6,6 +6,7 @@
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences } from '$lib/stores/user.store';
+  import { getAllAlbums } from '@immich/sdk';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -31,6 +32,7 @@
     mdiTrashCan,
     mdiTrashCanOutline,
   } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import SideBarLink from './side-bar-link.svelte';
@@ -44,6 +46,22 @@
   let isTrashSelected: boolean = $state(false);
   let isUtilitiesSelected: boolean = $state(false);
   let isLockedFolderSelected: boolean = $state(false);
+  let hasAlbums = $state(false);
+  let albumsBaseProps = $derived({
+    title: $t('albums'),
+    href: resolve('/(user)/albums'),
+    icon: mdiImageAlbum,
+    flippedLogo: true,
+  });
+
+  onMount(async () => {
+    try {
+      const albums = await getAllAlbums({});
+      hasAlbums = albums.length > 0;
+    } catch {
+      hasAlbums = false;
+    }
+  });
 </script>
 
 <Sidebar ariaLabel={$t('primary')}>
@@ -96,19 +114,17 @@
     bind:isSelected={isFavoritesSelected}
   ></SideBarLink>
 
-  <SideBarLink
-    title={$t('albums')}
-    href={resolve('/(user)/albums')}
-    icon={mdiImageAlbum}
-    flippedLogo
-    bind:dropdownOpen={$recentAlbumsDropdown}
-  >
-    {#snippet dropDownContent()}
-      <span in:fly={{ y: -20 }} class="hidden md:block">
-        <RecentAlbums />
-      </span>
-    {/snippet}
-  </SideBarLink>
+  {#if hasAlbums}
+    <SideBarLink {...albumsBaseProps} bind:dropdownOpen={$recentAlbumsDropdown}>
+      {#snippet dropDownContent()}
+        <span in:fly={{ y: -20 }} class="hidden md:block">
+          <RecentAlbums />
+        </span>
+      {/snippet}
+    </SideBarLink>
+  {:else}
+    <SideBarLink {...albumsBaseProps} />
+  {/if}
 
   {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
     <SideBarLink title={$t('tags')} href={resolve('/(user)/tags')} icon={mdiTagMultipleOutline} flippedLogo />
