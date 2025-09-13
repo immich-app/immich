@@ -1,7 +1,7 @@
 [tools]
 node = "22.19.0"
 flutter = "3.32.8"
-pnpm = "10.14.0"
+pnpm = "10.15.1"
 dart = "3.8.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
