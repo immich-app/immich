@@ -12,14 +12,16 @@
   interface Props {
     asset: AssetResponseDto;
     person: PersonResponseDto;
+    onFeaturedPhotoChanged?: () => void;
   }
 
-  let { asset, person }: Props = $props();
+  let { asset, person, onFeaturedPhotoChanged }: Props = $props();
 
   const handleSelectFeaturePhoto = async () => {
     try {
       await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
       notificationController.show({ message: $t('feature_photo_updated'), type: NotificationType.Info });
+      onFeaturedPhotoChanged?.();
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_feature_photo'));
     }

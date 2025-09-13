@@ -50,9 +50,10 @@
     albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
     onClose: () => void;
+    refreshPeopleRef?: { current?: () => Promise<void> };
   }
 
-  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
+  let { asset, albums = [], currentAlbum = null, onClose, refreshPeopleRef }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -98,10 +99,20 @@
     return undefined;
   };
 
+  let refreshTimestamp = $state(Date.now());
+  
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
+    refreshTimestamp = Date.now(); // Force thumbnail refresh
     showEditFaces = false;
   };
+
+  // Expose the refresh function so parent can call it
+  $effect(() => {
+    if (refreshPeopleRef) {
+      refreshPeopleRef.current = handleRefreshPeople;
+    }
+  });
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
     const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
@@ -206,7 +217,7 @@
       </div>
 
       <div class="mt-2 flex flex-wrap gap-2">
-        {#each people as person, index (person.id)}
+        {#each people as person, index (`${person.id}-${person.updatedAt}-${refreshTimestamp}`)}
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-[90px]"
@@ -222,7 +233,7 @@
                 <ImageThumbnail
                   curve
                   shadow
-                  url={getPeopleThumbnailUrl(person)}
+                  url={`${getPeopleThumbnailUrl(person)}&refresh=${refreshTimestamp}`}
                   altText={person.name}
                   title={person.name}
                   widthStyle="90px"

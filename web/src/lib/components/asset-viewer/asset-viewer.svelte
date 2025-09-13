@@ -107,8 +107,13 @@
   let unsubscribes: (() => void)[] = [];
   let selectedEditType: string = $state('');
   let stack: StackResponseDto | null = $state(null);
+  let refreshPeopleRef: { current?: () => Promise<void> } = { current: undefined };
 
   let zoomToggle = $state(() => void 0);
+
+  const handleFeaturedPhotoChanged = () => {
+    refreshPeopleRef.current?.();
+  };
 
   const refreshStack = async () => {
     if (authManager.isSharedLink) {
@@ -405,6 +410,7 @@
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
+        onFeaturedPhotoChanged={handleFeaturedPhotoChanged}
       >
         {#snippet motionPhoto()}
           <MotionPhotoAction
@@ -536,7 +542,7 @@
       class="row-start-1 row-span-4 w-[360px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
+      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} {refreshPeopleRef} />
     </div>
   {/if}
 

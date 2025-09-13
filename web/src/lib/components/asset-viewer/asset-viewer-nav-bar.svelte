@@ -74,6 +74,7 @@
     onShowDetail: () => void;
     // export let showEditorHandler: () => void;
     onClose: () => void;
+    onFeaturedPhotoChanged?: () => void;
     motionPhoto?: Snippet;
   }
 
@@ -93,6 +94,7 @@
     onPlaySlideshow,
     onShowDetail,
     onClose,
+    onFeaturedPhotoChanged,
     motionPhoto,
   }: Props = $props();
 
@@ -208,7 +210,7 @@
             <SetAlbumCoverAction {asset} {album} />
           {/if}
           {#if person}
-            <SetFeaturedPhotoAction {asset} {person} />
+            <SetFeaturedPhotoAction {asset} {person} {onFeaturedPhotoChanged} />
           {/if}
           {#if asset.type === AssetTypeEnum.Image && !isLocked}
             <SetProfilePictureAction {asset} />
