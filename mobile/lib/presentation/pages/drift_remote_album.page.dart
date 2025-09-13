@@ -238,14 +238,15 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final isOwner = user != null ? user.id == _album.ownerId : false;
 
     return PopScope(
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          Future.microtask(() {
-            if (mounted) {
-              ref.read(currentRemoteAlbumProvider.notifier).dispose();
-              ref.read(remoteAlbumProvider.notifier).refresh();
-            }
-          });
+        if (didPop || !mounted) {
+          return;
+        }
+        final hasAncestor = context.findAncestorWidgetOfExactType<RemoteAlbumPage>() != null;
+        Navigator.of(context).pop();
+        if (!hasAncestor) {
+          ref.read(currentRemoteAlbumProvider.notifier).dispose();
         }
       },
       child: ProviderScope(

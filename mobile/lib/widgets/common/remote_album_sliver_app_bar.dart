@@ -18,7 +18,6 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/remote_album_shared_user_icons.dart';
 
 class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
@@ -89,7 +88,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
                 color: actionIconColor,
                 shadows: actionIconShadows,
               ),
-              onPressed: () => context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()])),
+              onPressed: () => context.maybePop(),
             ),
       actions: [
         if (widget.onToggleAlbumOrder != null)
