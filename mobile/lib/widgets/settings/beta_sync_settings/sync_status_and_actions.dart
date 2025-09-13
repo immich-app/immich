@@ -231,9 +231,8 @@ class _SyncStatsCounts extends ConsumerWidget {
       final localAlbumCounts = localAlbumService.getCount();
       final remoteAlbumCounts = remoteAlbumService.getCount();
       final memoryCount = memoryService.getCount();
-      final getLocalHashedCount = assetService.getLocalHashedCount();
 
-      return await Future.wait([assetCounts, localAlbumCounts, remoteAlbumCounts, memoryCount, getLocalHashedCount]);
+      return await Future.wait([assetCounts, localAlbumCounts, remoteAlbumCounts, memoryCount]);
     }
 
     return FutureBuilder(
@@ -266,7 +265,6 @@ class _SyncStatsCounts extends ConsumerWidget {
         final localAlbumCount = snapshot.data![1]! as int;
         final remoteAlbumCount = snapshot.data![2]! as int;
         final memoryCount = snapshot.data![3]! as int;
-        final localHashedCount = snapshot.data![4]! as int;
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -338,10 +336,24 @@ class _SyncStatsCounts extends ConsumerWidget {
                     ),
                   ),
                   Expanded(
-                    child: EntitiyCountTile(
-                      label: "hashed_assets".t(context: context),
-                      count: localHashedCount,
-                      icon: Icons.tag,
+                    child: Consumer(
+                      key: const ValueKey("hashed_assets_count_tile"),
+                      builder: (context, ref, _) {
+                        final assetService = ref.watch(assetServiceProvider);
+
+                        return StreamBuilder<int>(
+                          stream: assetService.watchLocalHashedCount(),
+                          initialData: 0,
+                          builder: (context, snapshot) {
+                            final localHashedCount = snapshot.data ?? 0;
+                            return EntitiyCountTile(
+                              label: "hashed_assets".t(context: context),
+                              count: localHashedCount,
+                              icon: Icons.tag,
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
                 ],
