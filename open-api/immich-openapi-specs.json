@@ -11093,6 +11093,9 @@
           "hasMetadata": {
             "type": "boolean"
           },
+          "hasUserLocation": {
+            "type": "boolean"
+          },
           "id": {
             "type": "string"
           },

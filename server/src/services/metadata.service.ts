@@ -415,6 +415,75 @@ export class MetadataService extends BaseService {
 
     await this.metadataRepository.writeTags(sidecarPath, exif);
 
+
+    try {
+      const writtenTags = await this.metadataRepository.readTags(sidecarPath);
+
+      const meaningfulKeys = new Set([
+        'Description',
+        'ImageDescription',
+        'DateTimeOriginal',
+        'Rating',
+        'TagsList',
+        'Keywords',
+        'HierarchicalSubject',
+        'RegionInfo',
+        'ContentIdentifier',
+        'MotionPhoto',
+        'MediaGroupUUID',
+        'GPSLatitude',
+        'GPSLongitude',
+        'GPSPosition',
+      ]);
+
+      const hasMeaningfulData =
+        writtenTags &&
+        Object.entries(writtenTags).some(([key, value]) => {
+          if (!meaningfulKeys.has(key)) {
+            return false;
+          }
+
+          if (value === null || value === undefined) {
+            return false;
+          }
+
+          if (Array.isArray(value)) {
+            return value.length > 0;
+          }
+
+          if (typeof value === 'string') {
+            const trimmed = value.trim();
+            return trimmed !== '' && trimmed !== '0';
+          }
+
+          if (typeof value === 'number') {
+            return value !== 0;
+          }
+
+          if (typeof value === 'object') {
+            return Object.keys(value).length > 0;
+          }
+
+          return true;
+        });
+
+      if (!hasMeaningfulData) {
+        const exists = await this.storageRepository.checkFileExists(sidecarPath);
+        if (exists) {
+          await this.storageRepository.unlink(sidecarPath);
+          this.logger.debug(`Removed empty sidecar file: ${sidecarPath}`);
+        }
+
+        if (asset.sidecarPath) {
+          await this.assetRepository.update({ id, sidecarPath: null });
+        }
+
+        return JobStatus.Success;
+      }
+    } catch (error: Error | any) {
+      this.logger.warn(`Failed to validate sidecar at ${sidecarPath}: ${error.message}`);
+    }
+
     if (!asset.sidecarPath) {
       await this.assetRepository.update({ id, sidecarPath });
     }

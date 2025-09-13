@@ -28,8 +28,8 @@ export class DeviceIdDto {
   deviceId!: string;
 }
 
-const hasGPS = (o: { latitude: undefined; longitude: undefined }) =>
-  o.latitude !== undefined || o.longitude !== undefined;
+const hasGPS = (o: { latitude: unknown; longitude: unknown }) =>
+  (o.latitude !== undefined && o.latitude !== null) || (o.longitude !== undefined && o.longitude !== null);
 const ValidateGPS = () => ValidateIf(hasGPS);
 
 export class UpdateAssetBase {
