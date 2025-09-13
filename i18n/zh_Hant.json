@@ -1510,7 +1510,7 @@
   "profile_drawer_client_out_of_date_minor": "客戶端有小版本升級，請盡快升級至最新版。",
   "profile_drawer_client_server_up_to_date": "客戶端和服務端都是最新的",
   "profile_drawer_github": "GitHub",
-  "profile_drawer_readonly_mode": "唯讀模式已開啟。請連點兩下使用者頭像圖示以退出。",
+  "profile_drawer_readonly_mode": "唯讀模式已開啟。請長按使用者頭像圖示以退出。",
   "profile_drawer_server_out_of_date_major": "服務端有大版本升級，請盡快升級至最新版。",
   "profile_drawer_server_out_of_date_minor": "服務端有小版本升級，請盡快升級至最新版。",
   "profile_image_of_user": "{user} 的個人資料圖片",
