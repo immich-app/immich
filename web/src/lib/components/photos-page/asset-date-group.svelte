@@ -16,7 +16,7 @@
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
-  import { fly, scale } from 'svelte/transition';
+  import { scale } from 'svelte/transition';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -172,7 +172,8 @@
       {#if !singleSelect}
         <div
           class="hover:cursor-pointer transition-all duration-200 ease-out overflow-hidden w-0"
-          class:w-8={((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dayGroup.groupTitle))}
+          class:w-8={(hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) ||
+            assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
           onclick={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
         >
