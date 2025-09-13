@@ -16,12 +16,15 @@ String? getServerUrl() {
   if (serverUri == null) {
     return null;
   }
-
-  return Uri.decodeFull(
-    serverUri.hasPort
-        ? "${serverUri.scheme}://${serverUri.host}:${serverUri.port}"
-        : "${serverUri.scheme}://${serverUri.host}",
-  );
+  var uriToDecodeToFull = "${serverUri.scheme}://";
+  if (serverUri.userInfo.isNotEmpty) {
+    uriToDecodeToFull += "${serverUri.userInfo}@";
+  }
+  uriToDecodeToFull += serverUri.host;
+  if (serverUri.hasPort) {
+    uriToDecodeToFull += ":${serverUri.port}";
+  }
+  return Uri.decodeFull(uriToDecodeToFull);
 }
 
 /// Converts a Unicode URL to its ASCII-compatible encoding (Punycode).
