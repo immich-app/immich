@@ -59,9 +59,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     // Remove all assets that are only in this particular album
     // We cannot remove all assets in the album because they might be in other albums in iOS
     // That is not the case on Android since asset <-> album has one:one mapping
-    final assetsToDelete = CurrentPlatform.isIOS
-        ? await _getUniqueAssetsInAlbum(albumId)
-        : await getAssetIds(albumId);
+    final assetsToDelete = CurrentPlatform.isIOS ? await _getUniqueAssetsInAlbum(albumId) : await getAssetIds(albumId);
     await _deleteAssets(assetsToDelete);
 
     await _db.managers.localAlbumEntity

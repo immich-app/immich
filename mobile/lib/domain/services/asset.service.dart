@@ -69,8 +69,7 @@ class AssetService {
       width = exif?.width ?? asset.width?.toDouble();
       height = exif?.height ?? asset.height?.toDouble();
     } else if (asset is LocalAsset) {
-      isFlipped =
-          CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
+      isFlipped = CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
       width = asset.width?.toDouble();
       height = asset.height?.toDouble();
     } else {
