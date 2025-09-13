@@ -274,7 +274,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       if (newLink != null && serverUrl != null) {
-        newShareLink.value = "${serverUrl}share/${newLink.key}";
+        final fullPath = getShareUrlPath(newLink);
+        newShareLink.value = "$serverUrl$fullPath";
         copyLinkToClipboard();
       } else if (newLink == null) {
         ImmichToast.show(

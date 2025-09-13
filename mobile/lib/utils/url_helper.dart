@@ -1,5 +1,6 @@
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:punycode/punycode.dart';
 
 String sanitizeUrl(String url) {
@@ -89,4 +90,13 @@ String? punycodeDecodeUrl(String? serverUrl) {
       .join('.');
 
   return Uri.decodeFull(serverUri.replace(host: decodedHost).toString());
+}
+
+/// Generates the appropriate share URL path for a given shared link.
+///
+/// Returns a path string based on the shared link's slug and key:
+/// - If slug is present: 's/${sharedLink.slug}'
+/// - Otherwise: 'share/${sharedLink.key}'
+String getShareUrlPath(SharedLink sharedLink) {
+  return sharedLink.slug != null ? 's/${sharedLink.slug}' : 'share/${sharedLink.key}';
 }
