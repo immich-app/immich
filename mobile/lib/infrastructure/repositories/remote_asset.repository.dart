@@ -62,12 +62,13 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {
-    if (asset.stackId == null) {
-      return Future.value([]);
+    final stackId = asset.stackId;
+    if (stackId == null) {
+      return Future.value(const []);
     }
 
     final query = _db.remoteAssetEntity.select()
-      ..where((row) => row.stackId.equals(asset.stackId!) & row.id.equals(asset.id).not())
+      ..where((row) => row.stackId.equals(stackId) & row.id.equals(asset.id).not())
       ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]);
 
     return query.map((row) => row.toDto()).get();

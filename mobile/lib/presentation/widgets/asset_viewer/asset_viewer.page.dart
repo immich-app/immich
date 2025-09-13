@@ -62,6 +62,15 @@ class AssetViewer extends ConsumerStatefulWidget {
   ConsumerState createState() => _AssetViewerState();
 
   static void setAsset(WidgetRef ref, BaseAsset asset) {
+    ref.read(assetViewerProvider.notifier).reset();
+    _setAsset(ref, asset);
+  }
+
+  void changeAsset(WidgetRef ref, BaseAsset asset) {
+    _setAsset(ref, asset);
+  }
+
+  static void _setAsset(WidgetRef ref, BaseAsset asset) {
     // Always holds the current asset from the timeline
     ref.read(assetViewerProvider.notifier).setAsset(asset);
     // The currentAssetNotifier actually holds the current asset that is displayed
@@ -191,7 +200,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    AssetViewer.setAsset(ref, asset);
+    widget.changeAsset(ref, asset);
     _precacheAssets(index);
     _handleCasting();
   }

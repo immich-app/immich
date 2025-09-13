@@ -42,13 +42,12 @@ class AssetService {
 
   Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
     if (asset.stackId == null) {
-      return [];
+      return const [];
     }
 
-    return _remoteAssetRepository.getStackChildren(asset).then((assets) {
-      // Include the primary asset in the stack as the first item
-      return [asset, ...assets];
-    });
+    final stack = await _remoteAssetRepository.getStackChildren(asset);
+    // Include the primary asset in the stack as the first item
+    return [asset, ...stack];
   }
 
   Future<ExifInfo?> getExif(BaseAsset asset) async {
