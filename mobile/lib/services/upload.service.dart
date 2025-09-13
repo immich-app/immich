@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/material.dart';
+import 'package:cancellation_token_http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -19,7 +19,9 @@ import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final uploadServiceProvider = Provider((ref) {
   final service = UploadService(
@@ -51,6 +53,7 @@ class UploadService {
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final AppSettingsService _appSettingsService;
+  final Logger _logger = Logger('UploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
   final StreamController<TaskProgressUpdate> _taskProgressController = StreamController<TaskProgressUpdate>.broadcast();
@@ -78,8 +81,8 @@ class UploadService {
     _taskProgressController.close();
   }
 
-  void enqueueTasks(List<UploadTask> tasks) {
-    _uploadRepository.enqueueBackgroundAll(tasks);
+  Future<List<bool>> enqueueTasks(List<UploadTask> tasks) {
+    return _uploadRepository.enqueueBackgroundAll(tasks);
   }
 
   Future<List<Task>> getActiveTasks(String group) {
@@ -113,7 +116,7 @@ class UploadService {
     }
 
     if (tasks.isNotEmpty) {
-      enqueueTasks(tasks);
+      await enqueueTasks(tasks);
     }
   }
 
@@ -138,7 +141,6 @@ class UploadService {
       }
 
       final batch = candidates.skip(i).take(batchSize).toList();
-
       List<UploadTask> tasks = [];
       for (final asset in batch) {
         final task = await _getUploadTask(asset);
@@ -149,9 +151,46 @@ class UploadService {
 
       if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
         count += tasks.length;
-        enqueueTasks(tasks);
+        await enqueueTasks(tasks);
 
         onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
+      }
+    }
+  }
+
+  Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
+    await _storageRepository.clearCache();
+
+    shouldAbortQueuingTasks = false;
+
+    final candidates = await _backupRepository.getCandidates(userId);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    const batchSize = 100;
+    for (int i = 0; i < candidates.length; i += batchSize) {
+      if (shouldAbortQueuingTasks || token.isCancelled) {
+        break;
+      }
+
+      final batch = candidates.skip(i).take(batchSize).toList();
+      List<UploadTaskWithFile> tasks = [];
+      for (final asset in batch) {
+        final requireWifi = _shouldRequireWiFi(asset);
+        if (requireWifi && !hasWifi) {
+          _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
+          continue;
+        }
+
+        final task = await _getUploadTaskWithFile(asset);
+        if (task != null) {
+          tasks.add(task);
+        }
+      }
+
+      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+        await _uploadRepository.backupWithDartClient(tasks, token);
       }
     }
   }
@@ -214,8 +253,44 @@ class UploadService {
 
       enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
-      debugPrint("Error handling live photo upload task: $error $stackTrace");
+      dPrint(() => "Error handling live photo upload task: $error $stackTrace");
     }
+  }
+
+  Future<UploadTaskWithFile?> _getUploadTaskWithFile(LocalAsset asset) async {
+    final entity = await _storageRepository.getAssetEntityForAsset(asset);
+    if (entity == null) {
+      return null;
+    }
+
+    final file = await _storageRepository.getFileForAsset(asset.id);
+    if (file == null) {
+      return null;
+    }
+
+    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+
+    String metadata = UploadTaskMetadata(
+      localAssetId: asset.id,
+      isLivePhotos: entity.isLivePhoto,
+      livePhotoVideoId: '',
+    ).toJson();
+
+    return UploadTaskWithFile(
+      file: file,
+      task: await buildUploadTask(
+        file,
+        createdAt: asset.createdAt,
+        modifiedAt: asset.updatedAt,
+        originalFileName: originalFileName,
+        deviceAssetId: asset.id,
+        metadata: metadata,
+        group: "group",
+        priority: 0,
+        isFavorite: asset.isFavorite,
+        requiresWiFi: false,
+      ),
+    );
   }
 
   Future<UploadTask?> _getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
@@ -254,16 +329,12 @@ class UploadService {
       livePhotoVideoId: '',
     ).toJson();
 
-    bool requiresWiFi = true;
-
-    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
-      requiresWiFi = false;
-    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
-      requiresWiFi = false;
-    }
+    final requiresWiFi = _shouldRequireWiFi(asset);
 
     return buildUploadTask(
       file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
       originalFileName: originalFileName,
       deviceAssetId: asset.id,
       metadata: metadata,
@@ -287,20 +358,39 @@ class UploadService {
 
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
+    final requiresWiFi = _shouldRequireWiFi(asset);
+
     return buildUploadTask(
       file,
+      createdAt: asset.createdAt,
+      modifiedAt: asset.updatedAt,
       originalFileName: asset.name,
       deviceAssetId: asset.id,
       fields: fields,
       group: kBackupLivePhotoGroup,
       priority: 0, // Highest priority to get upload immediately
       isFavorite: asset.isFavorite,
+      requiresWiFi: requiresWiFi,
     );
+  }
+
+  bool _shouldRequireWiFi(LocalAsset asset) {
+    bool requiresWiFi = true;
+
+    if (asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)) {
+      requiresWiFi = false;
+    } else if (!asset.isVideo && _appSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)) {
+      requiresWiFi = false;
+    }
+
+    return requiresWiFi;
   }
 
   Future<UploadTask> buildUploadTask(
     File file, {
     required String group,
+    required DateTime createdAt,
+    required DateTime modifiedAt,
     Map<String, String>? fields,
     String? originalFileName,
     String? deviceAssetId,
@@ -314,15 +404,12 @@ class UploadService {
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
     final (baseDirectory, directory, filename) = await Task.split(filePath: file.path);
-    final stats = await file.stat();
-    final fileCreatedAt = stats.changed;
-    final fileModifiedAt = stats.modified;
     final fieldsMap = {
       'filename': originalFileName ?? filename,
       'deviceAssetId': deviceAssetId ?? '',
       'deviceId': deviceId,
-      'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
-      'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
+      'fileCreatedAt': createdAt.toUtc().toIso8601String(),
+      'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
       if (fields != null) ...fields,

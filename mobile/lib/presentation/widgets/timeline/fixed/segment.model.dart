@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
@@ -15,6 +16,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -154,6 +156,7 @@ class _AssetTileWidget extends ConsumerWidget {
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
+      AssetViewer.setAsset(ref, asset);
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
@@ -190,11 +193,12 @@ class _AssetTileWidget extends ConsumerWidget {
 
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return RepaintBoundary(
       child: GestureDetector(
         onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
-        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
+        onLongPress: () => lockSelection || isReadonlyModeEnabled ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,

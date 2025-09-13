@@ -1,5 +1,4 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:openapi/api.dart';
 
 // TODO: Move to repository once all classes are refactored
@@ -29,6 +28,8 @@ abstract final class UserConverter {
     isPartnerSharedWith: false,
     profileChangedAt: adminDto.profileChangedAt,
     hasProfileImage: adminDto.profileImagePath.isNotEmpty,
+    quotaSizeInBytes: adminDto.quotaSizeInBytes ?? 0,
+    quotaUsageInBytes: adminDto.quotaUsageInBytes ?? 0,
   );
 
   static UserDto fromPartnerDto(PartnerResponseDto dto) => UserDto(

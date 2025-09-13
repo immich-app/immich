@@ -9,14 +9,16 @@ import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
 import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, withError } from '$lib/utils';
+import { downloadRequest, sleep, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import {
   addAssetsToAlbum as addAssets,
+  addAssetsToAlbums as addToAlbums,
   AssetVisibility,
+  BulkIdErrorReason,
   bulkTagAssets,
   createStack,
   deleteAssets,
@@ -32,6 +34,7 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type ExifResponseDto,
   type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
@@ -71,6 +74,52 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
         },
       },
     });
+  }
+};
+
+export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
+  const result = await addToAlbums({
+    ...authManager.params,
+    albumsAddAssetsDto: {
+      albumIds,
+      assetIds,
+    },
+  });
+
+  if (!showNotification) {
+    return result;
+  }
+
+  if (showNotification) {
+    const $t = get(t);
+
+    if (result.error === BulkIdErrorReason.Duplicate) {
+      notificationController.show({
+        type: NotificationType.Info,
+        timeout: 5000,
+        message: $t('assets_were_part_of_albums_count', { values: { count: assetIds.length } }),
+      });
+      return result;
+    }
+    if (result.error) {
+      notificationController.show({
+        type: NotificationType.Info,
+        timeout: 5000,
+        message: $t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }),
+      });
+      return result;
+    }
+    notificationController.show({
+      type: NotificationType.Info,
+      timeout: 5000,
+      message: $t('assets_added_to_albums_count', {
+        values: {
+          albumTotal: albumIds.length,
+          assetTotal: assetIds.length,
+        },
+      }),
+    });
+    return result;
   }
 };
 
@@ -230,7 +279,12 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
   const queryParams = asQueryString(authManager.params);
 
-  for (const { filename, id } of assets) {
+  for (const [i, { filename, id }] of assets.entries()) {
+    if (i !== 0) {
+      // play nice with Safari
+      await sleep(500);
+    }
+
     try {
       notificationController.show({
         type: NotificationType.Info,
@@ -274,6 +328,15 @@ export function isFlipped(orientation?: string | null) {
   const value = Number(orientation);
   return value && (isRotated270CW(value) || isRotated90CW(value));
 }
+
+export const getDimensions = (exifInfo: ExifResponseDto) => {
+  const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
+  if (isFlipped(exifInfo.orientation)) {
+    return { width: height, height: width };
+  }
+
+  return { width, height };
+};
 
 export function getFileSize(asset: AssetResponseDto, maxPrecision = 4): string {
   const size = asset.exifInfo?.fileSizeInByte || 0;

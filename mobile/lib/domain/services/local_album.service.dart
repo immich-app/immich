@@ -22,4 +22,16 @@ class LocalAlbumService {
   Future<int> getCount() {
     return _repository.getCount();
   }
+
+  Future<void> unlinkRemoteAlbum(String id) async {
+    return _repository.unlinkRemoteAlbum(id);
+  }
+
+  Future<void> linkRemoteAlbum(String localAlbumId, String remoteAlbumId) async {
+    return _repository.linkRemoteAlbum(localAlbumId, remoteAlbumId);
+  }
+
+  Future<List<LocalAlbum>> getBackupAlbums() {
+    return _repository.getBackupAlbums();
+  }
 }

@@ -67,13 +67,17 @@ enum StoreKey<T> {
   loadOriginalVideo<bool>._(136),
   manageLocalMediaAndroid<bool>._(137),
 
+  // Read-only Mode settings
+  readonlyModeEnabled<bool>._(138),
+
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),
   betaTimeline<bool>._(1002),
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
-  useWifiForUploadPhotos<bool>._(1005);
+  useWifiForUploadPhotos<bool>._(1005),
+  needBetaMigration<bool>._(1006);
 
   const StoreKey._(this.id);
   final int id;

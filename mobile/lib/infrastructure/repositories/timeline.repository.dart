@@ -258,7 +258,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   );
 
   TimelineQuery favorite(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-    filter: (row) => row.deletedAt.isNull() & row.isFavorite.equals(true) & row.ownerId.equals(userId),
+    filter: (row) =>
+        row.deletedAt.isNull() &
+        row.isFavorite.equals(true) &
+        row.ownerId.equals(userId) &
+        row.visibility.equalsValue(AssetVisibility.timeline),
     groupBy: groupBy,
   );
 
@@ -591,7 +595,7 @@ extension on String {
       GroupAssetsBy.none => throw ArgumentError("GroupAssetsBy.none is not supported for date formatting"),
     };
     try {
-      return DateFormat(format).parse(this);
+      return DateFormat(format, 'en').parse(this);
     } catch (e) {
       throw FormatException("Invalid date format: $this", e);
     }

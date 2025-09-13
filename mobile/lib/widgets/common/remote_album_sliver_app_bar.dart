@@ -28,12 +28,14 @@ class RemoteAlbumSliverAppBar extends ConsumerStatefulWidget {
     this.onShowOptions,
     this.onToggleAlbumOrder,
     this.onEditTitle,
+    this.onActivity,
   });
 
   final IconData icon;
   final void Function()? onShowOptions;
   final void Function()? onToggleAlbumOrder;
   final void Function()? onEditTitle;
+  final void Function()? onActivity;
 
   @override
   ConsumerState<RemoteAlbumSliverAppBar> createState() => _MesmerizingSliverAppBarState();
@@ -101,12 +103,33 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
               icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
               onPressed: widget.onToggleAlbumOrder,
             ),
+          if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
+            IconButton(
+              icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
+              onPressed: widget.onActivity,
+            ),
           if (widget.onShowOptions != null)
             IconButton(
               icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
               onPressed: widget.onShowOptions,
             ),
         ],
+        title: Builder(
+          builder: (context) {
+            final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+            final scrollProgress = _calculateScrollProgress(settings);
+
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: scrollProgress > 0.95
+                  ? Text(
+                      currentAlbum.name,
+                      style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
+                    )
+                  : null,
+            );
+          },
+        ),
         flexibleSpace: Builder(
           builder: (context) {
             final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
@@ -122,16 +145,6 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
             });
 
             return FlexibleSpaceBar(
-              centerTitle: true,
-              title: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: scrollProgress > 0.95
-                    ? Text(
-                        currentAlbum.name,
-                        style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
-                      )
-                    : null,
-              ),
               background: _ExpandedBackground(
                 scrollProgress: scrollProgress,
                 icon: widget.icon,
@@ -365,9 +378,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
   void initState() {
     super.initState();
 
-    _zoomController = AnimationController(duration: const Duration(seconds: 12), vsync: this);
+    _zoomController = AnimationController(
+      duration: const Duration(seconds: 12),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
-    _crossFadeController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
+    _crossFadeController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+      animationBehavior: AnimationBehavior.preserve,
+    );
 
     _zoomAnimation = Tween<double>(
       begin: 1.0,

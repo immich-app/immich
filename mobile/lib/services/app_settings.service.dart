@@ -46,10 +46,11 @@ enum AppSettingsEnum<T> {
   syncAlbums<bool>(StoreKey.syncAlbums, null, false),
   autoEndpointSwitching<bool>(StoreKey.autoEndpointSwitching, null, false),
   photoManagerCustomFilter<bool>(StoreKey.photoManagerCustomFilter, null, true),
-  betaTimeline<bool>(StoreKey.betaTimeline, null, false),
+  betaTimeline<bool>(StoreKey.betaTimeline, null, true),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
   useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
-  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false);
+  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
+  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

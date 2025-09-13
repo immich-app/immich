@@ -12,13 +12,14 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
@@ -38,21 +39,25 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:worker_manager/worker_manager.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 void main() async {
   ImmichWidgetsBinding();
-  final db = await Bootstrap.initIsar();
-  final logDb = DriftLogger();
-  await Bootstrap.initDomain(db, logDb);
+  final (isar, drift, logDb) = await Bootstrap.initDB();
+  await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
-  await migrateDatabaseIfNeeded(db);
+  await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
   runApp(
     ProviderScope(
-      overrides: [dbProvider.overrideWithValue(db), isarProvider.overrideWithValue(db)],
+      overrides: [
+        dbProvider.overrideWithValue(isar),
+        isarProvider.overrideWithValue(isar),
+        driftProvider.overrideWith(driftOverride(drift)),
+      ],
       child: const MainWidget(),
     ),
   );
@@ -65,9 +70,9 @@ Future<void> initApp() async {
   if (kReleaseMode && Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
-      debugPrint("Enabled high refresh mode");
+      dPrint(() => "Enabled high refresh mode");
     } catch (e) {
-      debugPrint("Error setting high refresh rate: $e");
+      dPrint(() => "Error setting high refresh rate: $e");
     }
   }
 
@@ -94,7 +99,9 @@ Future<void> initApp() async {
   // Initialize the file downloader
   await FileDownloader().configure(
     // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-    globalConfig: (Config.holdingQueue, (6, 6, 3)),
+
+    // On Android, if files are larger than 256MB, run in foreground service
+    globalConfig: [(Config.holdingQueue, (6, 6, 3)), (Config.runInForegroundIfFileLargerThan, 256)],
   );
 
   await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
@@ -120,23 +127,23 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        debugPrint("[APP STATE] resumed");
+        dPrint(() => "[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
         break;
       case AppLifecycleState.inactive:
-        debugPrint("[APP STATE] inactive");
+        dPrint(() => "[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
         break;
       case AppLifecycleState.paused:
-        debugPrint("[APP STATE] paused");
+        dPrint(() => "[APP STATE] paused");
         ref.read(appStateProvider.notifier).handleAppPause();
         break;
       case AppLifecycleState.detached:
-        debugPrint("[APP STATE] detached");
+        dPrint(() => "[APP STATE] detached");
         ref.read(appStateProvider.notifier).handleAppDetached();
         break;
       case AppLifecycleState.hidden:
-        debugPrint("[APP STATE] hidden");
+        dPrint(() => "[APP STATE] hidden");
         ref.read(appStateProvider.notifier).handleAppHidden();
         break;
     }
@@ -161,29 +168,6 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     await ref.read(localNotificationService).setup();
   }
 
-  void _configureFileDownloaderNotifications() {
-    FileDownloader().configureNotificationForGroup(
-      kDownloadGroupImage,
-      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
-      progressBar: true,
-    );
-
-    FileDownloader().configureNotificationForGroup(
-      kDownloadGroupVideo,
-      running: TaskNotification('downloading_media'.tr(), '${'file_name'.tr()}: {filename}'),
-      complete: TaskNotification('download_finished'.tr(), '${'file_name'.tr()}: {filename}'),
-      progressBar: true,
-    );
-
-    FileDownloader().configureNotificationForGroup(
-      kManualUploadGroup,
-      running: TaskNotification('uploading_media'.tr(), '${'file_name'.tr()}: {displayName}'),
-      complete: TaskNotification('upload_finished'.tr(), '${'file_name'.tr()}: {displayName}'),
-      progressBar: true,
-    );
-  }
-
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
     final deepLinkHandler = ref.read(deepLinkServiceProvider);
     final currentRouteName = ref.read(currentRouteNameProvider.notifier).state;
@@ -191,13 +175,13 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, isColdStart);
+      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
 
       return proposedRoute;
     }
 
     if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, isColdStart);
+      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, ref, isColdStart);
 
       return proposedRoute;
     }
@@ -210,17 +194,23 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     super.didChangeDependencies();
     Intl.defaultLocale = context.locale.toLanguageTag();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _configureFileDownloaderNotifications();
+      configureFileDownloaderNotifications();
     });
   }
 
   @override
   initState() {
     super.initState();
-    initApp().then((_) => debugPrint("App Init Completed"));
+    initApp().then((_) => dPrint(() => "App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+      if (Store.isBetaTimelineEnabled) {
+        ref.read(backgroundServiceProvider).disableService();
+        ref.read(backgroundWorkerFgServiceProvider).enable();
+      } else {
+        ref.read(backgroundWorkerFgServiceProvider).disable();
+        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+      }
     });
 
     ref.read(shareIntentUploadProvider.notifier).init();

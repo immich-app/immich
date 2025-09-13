@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:85c4ac66dea23fbd1beb5c48957c2589d104002f8b11c90a186be421117da5e0 AS builder-cpu
+FROM python:3.11-bookworm@sha256:fc1f2e357c307c4044133952b203e66a47e7726821a664f603a180a0c5823844 AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -59,7 +59,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-COPY --from=ghcr.io/astral-sh/uv:latest@sha256:cda9608307dbbfc1769f3b6b1f9abf5f1360de0be720f544d29a7ae2863c47ef /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.8.15@sha256:a5727064a0de127bdb7c9d3c1383f3a9ac307d9f2d8a391edc7896c54289ced0 /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
@@ -68,11 +68,11 @@ RUN if [ "$DEVICE" = "rocm" ]; then \
     uv pip install /opt/onnxruntime_rocm-*.whl; \
     fi
 
-FROM python:3.11-slim-bookworm@sha256:01f98e2d213e1cda58a21dabfd107c4a71c99caa0c932c593acfce05315b7251 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-cpu
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-FROM python:3.11-slim-bookworm@sha256:01f98e2d213e1cda58a21dabfd107c4a71c99caa0c932c593acfce05315b7251 AS prod-openvino
+FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \

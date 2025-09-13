@@ -79,7 +79,7 @@ export const tempDir = tmpdir();
 export const asBearerAuth = (accessToken: string) => ({ Authorization: `Bearer ${accessToken}` });
 export const asKeyAuth = (key: string) => ({ 'x-api-key': key });
 export const immichCli = (args: string[]) =>
-  executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]).promise;
+  executeCommand('pnpm', ['exec', 'immich', '-d', `/${tempDir}/immich/`, ...args], { cwd: '../cli' }).promise;
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
 export const specialCharStrings = ["'", '"', ',', '{', '}', '*'];
@@ -462,7 +462,8 @@ export const utils = {
   updateLibrary: (accessToken: string, id: string, dto: UpdateLibraryDto) =>
     updateLibrary({ id, updateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 
-  createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
+  createPartner: (accessToken: string, id: string) =>
+    createPartner({ partnerCreateDto: { sharedWithId: id } }, { headers: asBearerAuth(accessToken) }),
 
   updateMyPreferences: (accessToken: string, userPreferencesUpdateDto: UserPreferencesUpdateDto) =>
     updateMyPreferences({ userPreferencesUpdateDto }, { headers: asBearerAuth(accessToken) }),
