@@ -1179,7 +1179,7 @@
   "menu": "Мени",
   "merge": "Споји",
   "merge_people": "Споји особе",
-  "merge_people_limit": "Можете спојити највише 5 лица од једном",
+  "merge_people_limit": "Можете спојити највише 500 лица од једном",
   "merge_people_prompt": "Да ли желите да спојите ове особе? Овај потез се не може повратити.",
   "merge_people_successfully": "Спајање особа успешно",
   "merged_people_count": "Спојено {count, plural, one {# особа} other {# особе}}",

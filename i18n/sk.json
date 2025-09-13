@@ -1313,7 +1313,7 @@
   "menu": "Ponuka",
   "merge": "Zlúčiť",
   "merge_people": "Zlúčiť ľudí",
-  "merge_people_limit": "Zlúčiť môžete naraz najviac 5 tvárí",
+  "merge_people_limit": "Zlúčiť môžete naraz najviac 500 tvárí",
   "merge_people_prompt": "Chcete zlúčiť týchto ľudí? Táto akcia sa nedá vrátiť.",
   "merge_people_successfully": "Zlúčenie ľudí sa podarilo",
   "merged_people_count": "{count, plural, one {Zlúčená # osoba} few {Zlúčené # osoby} other {Zlúčených # osôb}}",

@@ -737,7 +737,7 @@
   "menu": "Meniu",
   "merge": "Sujungti",
   "merge_people": "Sujungti asmenis",
-  "merge_people_limit": "Vienu metu galite sujungti tik iki 5 veidų",
+  "merge_people_limit": "Vienu metu galite sujungti tik iki 500 veidų",
   "merge_people_prompt": "Ar norite sujungti šiuos asmenis? Šis veiksmas yra negrįžtamas.",
   "merge_people_successfully": "Asmenys sėkmingai sujungti",
   "merged_people_count": "{count, plural, one {Sujungtas # asmuo} few {Sujungti # asmenys} other {Sujungta # asmenų}}",
