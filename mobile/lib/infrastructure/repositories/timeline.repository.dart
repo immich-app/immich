@@ -595,7 +595,7 @@ extension on String {
       GroupAssetsBy.none => throw ArgumentError("GroupAssetsBy.none is not supported for date formatting"),
     };
     try {
-      return DateFormat(format).parse(this);
+      return DateFormat(format, 'en').parse(this);
     } catch (e) {
       throw FormatException("Invalid date format: $this", e);
     }

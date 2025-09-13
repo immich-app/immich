@@ -104,7 +104,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           const EditDateTimeActionButton(source: ActionSource.timeline),
           const EditLocationActionButton(source: ActionSource.timeline),
           const MoveToLockFolderActionButton(source: ActionSource.timeline),
-          const StackActionButton(source: ActionSource.timeline),
+          if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
           isTrashEnable
               ? const TrashActionButton(source: ActionSource.timeline)
               : const DeletePermanentActionButton(source: ActionSource.timeline),

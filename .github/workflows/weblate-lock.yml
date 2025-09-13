@@ -1,11 +1,19 @@
 name: Weblate checks
 
 on:
-  pull_request_review:
   pull_request:
     branches: [main]
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
+      - auto_merge_enabled
+      - auto_merge_disabled
 
 permissions: {}
+
+env:
+  BOT_NAME: immich-push-o-matic
 
 jobs:
   pre-job:
@@ -39,7 +47,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # Then check for APPROVED by the bot, if absent fail
-          gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json reviews | jq -e '.reviews | map(select(.author.login == "github-actions[bot]" and .state == "APPROVED")) | length > 0' \
+          gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json reviews | jq -e '.reviews | map(select(.author.login == env.BOT_NAME and .state == "APPROVED")) | length > 0' \
             || (echo "The push-o-matic bot has not approved this PR yet" && exit 1)
 
   success-check-lock:

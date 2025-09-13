@@ -70,11 +70,9 @@ VOLUME_DIRS = \
 
 # Helper function to chown, on error suggest remediation and exit
 define safe_chown
-	if chown $(2) $(or $(UID),1000):$(or $(GID),1000) "$(1)" 2>/dev/null; then \
-		true; \
-	else \
-	  	STATUS=$$?; echo "Exit code: $$STATUS $(1)"; \
-		echo "$$STATUS $(1)"; \
+	CURRENT_OWNER=$$(stat -c '%u:%g' "$(1)" 2>/dev/null || echo "none"); \
+	DESIRED_OWNER="$(or $(UID),0):$(or $(GID),0)"; \
+	if [ "$$CURRENT_OWNER" != "$$DESIRED_OWNER" ] && ! chown -v $(2) $$DESIRED_OWNER "$(1)" 2>/dev/null; then \
 		echo "Permission denied when changing owner of volumes and upload location. Try running 'sudo make prepare-volumes' first."; \
 		exit 1; \
 	fi;

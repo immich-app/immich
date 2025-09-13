@@ -111,6 +111,7 @@ interface BackgroundWorkerFgHostApi {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerBgHostApi {
   fun onInitialized()
+  fun showNotification(title: String, content: String)
   fun close()
 
   companion object {
@@ -128,6 +129,25 @@ interface BackgroundWorkerBgHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.onInitialized()
+              listOf(null)
+            } catch (exception: Throwable) {
+              BackgroundWorkerPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.showNotification$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val titleArg = args[0] as String
+            val contentArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.showNotification(titleArg, contentArg)
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)
