@@ -3541,9 +3541,10 @@ export function searchAssetStatistics({ statisticsSearchDto }: {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getSearchSuggestions({ country, includeNull, make, model, state, $type }: {
+export function getSearchSuggestions({ country, includeNull, lensModel, make, model, state, $type }: {
     country?: string;
     includeNull?: boolean;
+    lensModel?: string;
     make?: string;
     model?: string;
     state?: string;
@@ -3555,6 +3556,7 @@ export function getSearchSuggestions({ country, includeNull, make, model, state,
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
         includeNull,
+        lensModel,
         make,
         model,
         state,
@@ -4891,7 +4893,8 @@ export enum SearchSuggestionType {
     State = "state",
     City = "city",
     CameraMake = "camera-make",
-    CameraModel = "camera-model"
+    CameraModel = "camera-model",
+    CameraLensModel = "camera-lens-model"
 }
 export enum SharedLinkType {
     Album = "ALBUM",
