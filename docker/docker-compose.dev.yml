@@ -29,8 +29,9 @@ services:
     restart: unless-stopped
     volumes:
       - ..:/usr/src/app
-      - ${UPLOAD_LOCATION}/photos:/data
-      - ${UPLOAD_LOCATION}/photos/upload:/data/upload
+      # - ${UPLOAD_LOCATION}/photos:/data
+      # - ${UPLOAD_LOCATION}/photos/upload:/data/upload
+      - photos_data:/data
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
@@ -158,7 +159,8 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      # - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     shm_size: 128mb
@@ -217,3 +219,5 @@ volumes:
   app-node_modules:
   sveltekit:
   coverage:
+  postgres_data:
+  photos_data:
