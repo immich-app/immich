@@ -54,15 +54,22 @@ export const FileResponse = () =>
     content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
   });
 
+const getAppVersionFromUA = (ua: string) =>
+  ua.match(/^Immich_(?:Android|iOS)_(?<appVersion>.+)$/)?.groups?.appVersion ?? '';
+
 export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
   const request = context.switchToHttp().getRequest<Request>();
-  const userAgent = UAParser(request.headers['user-agent']);
+  const userAgentString = request.get('user-agent') || '';
+  const userAgent = UAParser(userAgentString);
+
+  const appVersion = getAppVersionFromUA(userAgentString);
 
   return {
     clientIp: request.ip ?? '',
     isSecure: request.secure,
-    deviceType: userAgent.browser.name || userAgent.device.type || (request.headers.devicemodel as string) || '',
-    deviceOS: userAgent.os.name || (request.headers.devicetype as string) || '',
+    deviceType: userAgent.browser.name || userAgent.device.type || request.get('devicemodel') || '',
+    deviceOS: userAgent.os.name || request.get('devicetype') || '',
+    appVersion,
   };
 });
 
@@ -86,7 +93,6 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const targets = [context.getHandler()];
-
     const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
     if (!options) {
       return true;
@@ -104,6 +110,12 @@ export class AuthGuard implements CanActivate {
       queryParams: request.query as Record<string, string>,
       metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
     });
+
+    if (request.user?.session) {
+      const userAgent = request.get('user-agent') || '';
+      const appVersion = request.get('x-app-version') || getAppVersionFromUA(userAgent);
+      await this.authService.heartbeat(request.user, appVersion);
+    }
 
     return true;
   }
