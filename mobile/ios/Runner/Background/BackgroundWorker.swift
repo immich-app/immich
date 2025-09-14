@@ -173,6 +173,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     
     isComplete = true
     engine.destroyContext()
+    flutterApi = nil
     completionHandler(success)
   }
 }
