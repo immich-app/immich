@@ -1,5 +1,5 @@
 import { SetMetadata, applyDecorators } from '@nestjs/common';
-import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiExtension, ApiOperation, ApiOperationOptions, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
 import { ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
@@ -159,12 +159,21 @@ type LifecycleMetadata = {
   deprecatedAt?: LifecycleRelease;
 };
 
-export const EndpointLifecycle = ({ addedAt, deprecatedAt }: LifecycleMetadata) => {
+export const EndpointLifecycle = ({
+  addedAt,
+  deprecatedAt,
+  description,
+  ...options
+}: LifecycleMetadata & ApiOperationOptions) => {
   const decorators: MethodDecorator[] = [ApiExtension(LIFECYCLE_EXTENSION, { addedAt, deprecatedAt })];
   if (deprecatedAt) {
     decorators.push(
       ApiTags('Deprecated'),
-      ApiOperation({ deprecated: true, description: DEPRECATED_IN_PREFIX + deprecatedAt }),
+      ApiOperation({
+        deprecated: true,
+        description: DEPRECATED_IN_PREFIX + deprecatedAt + (description ? `. ${description}` : ''),
+        ...options,
+      }),
     );
   }
 

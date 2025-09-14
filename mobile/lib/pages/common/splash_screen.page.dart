@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -23,23 +22,14 @@ class SplashScreenPage extends StatefulHookConsumerWidget {
 
 class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   final log = Logger("SplashScreenPage");
-
   @override
   void initState() {
     super.initState();
-    final lockManager = ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
-
-    lockManager.requestHolderToClose();
-    lockManager
-        .acquireLock()
-        .timeout(const Duration(seconds: 5))
-        .whenComplete(
-          () => ref
-              .read(authProvider.notifier)
-              .setOpenApiServiceEndpoint()
-              .then(logConnectionInfo)
-              .whenComplete(() => resumeSession()),
-        );
+    ref
+        .read(authProvider.notifier)
+        .setOpenApiServiceEndpoint()
+        .then(logConnectionInfo)
+        .whenComplete(() => resumeSession());
   }
 
   void logConnectionInfo(String? endpoint) {
@@ -58,11 +48,23 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (accessToken != null && serverUrl != null && endpoint != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
+      final backgroundManager = ref.read(backgroundSyncProvider);
+
       ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-        (a) {
+        (_) async {
           try {
             wsProvider.connect();
             infoProvider.getServerInfo();
+
+            if (Store.isBetaTimelineEnabled) {
+              await backgroundManager.syncLocal();
+              await backgroundManager.syncRemote();
+              await backgroundManager.hashAssets();
+            }
+
+            if (Store.get(StoreKey.syncAlbums, false)) {
+              await backgroundManager.syncLinkedAlbum();
+            }
           } catch (e) {
             log.severe('Failed establishing connection to the server: $e');
           }
@@ -80,7 +82,16 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
+    // clean install - change the default of the flag
+    // current install not using beta timeline
     if (context.router.current.name == SplashScreenRoute.name) {
+      final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
+      if (needBetaMigration) {
+        await Store.put(StoreKey.needBetaMigration, false);
+        context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]);
+        return;
+      }
+
       context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
     }
 

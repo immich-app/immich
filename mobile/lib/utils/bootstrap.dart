@@ -90,7 +90,7 @@ abstract final class Bootstrap {
   }
 
   static Future<void> initDomain(Isar db, Drift drift, DriftLogger logDb, {bool shouldBufferLogs = true}) async {
-    final isBeta = await IsarStoreRepository(db).tryGet(StoreKey.betaTimeline) ?? false;
+    final isBeta = await IsarStoreRepository(db).tryGet(StoreKey.betaTimeline) ?? true;
     final IStoreRepository storeRepo = isBeta ? DriftStoreRepository(drift) : IsarStoreRepository(db);
 
     await StoreService.init(storeRepository: storeRepo);
