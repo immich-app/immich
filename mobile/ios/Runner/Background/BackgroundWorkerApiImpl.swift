@@ -89,9 +89,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     }
 
     task.expirationHandler = {
-      DispatchQueue.main.async {
-        backgroundWorker.close()
-      }
+      backgroundWorker.close()
       isSuccess = false
       
       // Schedule a timer to signal the semaphore after 2 seconds
@@ -100,10 +98,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
       }
     }
 
-    DispatchQueue.main.async {
-      backgroundWorker.run()
-    }
-
+    backgroundWorker.run()
     semaphore.wait()
     task.setTaskCompleted(success: isSuccess)
     print("Background task completed with success: \(isSuccess)")

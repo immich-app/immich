@@ -75,26 +75,25 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     )
     notificationManager.createNotificationChannel(notificationChannel)
 
-    loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
-      engine = FlutterEngine(ctx)
+    loader.ensureInitializationComplete(ctx, null)
 
-      // Register custom plugins
-      MainActivity.registerPlugins(ctx, engine!!)
-      flutterApi =
-        BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
-      BackgroundWorkerBgHostApi.setUp(
-        binaryMessenger = engine!!.dartExecutor.binaryMessenger,
-        api = this
-      )
+    engine = FlutterEngine(ctx)
+    // Register custom plugins
+    MainActivity.registerPlugins(ctx, engine!!)
+    flutterApi =
+      BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
+    BackgroundWorkerBgHostApi.setUp(
+      binaryMessenger = engine!!.dartExecutor.binaryMessenger,
+      api = this
+    )
 
-      engine!!.dartExecutor.executeDartEntrypoint(
-        DartExecutor.DartEntrypoint(
-          loader.findAppBundlePath(),
-          "package:immich_mobile/domain/services/background_worker.service.dart",
-          "backgroundSyncNativeEntrypoint"
-        )
+    engine!!.dartExecutor.executeDartEntrypoint(
+      DartExecutor.DartEntrypoint(
+        loader.findAppBundlePath(),
+        "package:immich_mobile/domain/services/background_worker.service.dart",
+        "backgroundSyncNativeEntrypoint"
       )
-    }
+    )
 
     return completionHandler
   }
@@ -105,7 +104,10 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    * This method acts as a bridge between the native Android background task system and Flutter.
    */
   override fun onInitialized() {
-    flutterApi?.onAndroidUpload { handleHostResult(it) }
+    Handler(Looper.getMainLooper()).postAtFrontOfQueue {
+      flutterApi?.onAndroidUpload { handleHostResult(it) }
+    }
+
   }
 
   // TODO: Move this to a separate NotificationManager class

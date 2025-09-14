@@ -114,9 +114,13 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
    * This method acts as a bridge between the native iOS background task system and Flutter.
    */
   func onInitialized() throws {
-    flutterApi?.onIosUpload(isRefresh: self.taskType == .refresh, maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
-      self.handleHostResult(result: result)
-    })
+    DispatchQueue.main.async {
+      self.flutterApi?.onIosUpload(
+        isRefresh: self.taskType == .refresh,
+        maxSeconds: self.maxSeconds.map { Int64($0) },
+        completion: { result in self.handleHostResult(result: result) }
+      )
+    }
   }
   
   func showNotification(title: String, content: String) throws {
@@ -133,8 +137,10 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       return
     }
 
-    flutterApi?.cancel { result in
-      self.complete(success: false)
+    DispatchQueue.main.async {
+      self.flutterApi?.cancel { result in
+        self.complete(success: false)
+      }
     }
 
     // Fallback safety mechanism: ensure completion is called within 2 seconds
