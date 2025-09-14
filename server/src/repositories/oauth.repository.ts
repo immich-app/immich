@@ -36,18 +36,12 @@ export class OAuthRepository {
       codeVerifier = randomPKCECodeVerifier();
       codeChallenge = await calculatePKCECodeChallenge(codeVerifier);
     }
-    const params: Record<string, string> = {
+    const url = buildAuthorizationUrl(client, {
       redirect_uri: redirectUrl,
       scope: config.scope,
       state,
-    };
-
-    if (client.serverMetadata().supportsPKCE()) {
-      params.code_challenge = codeChallenge as string;
-      params.code_challenge_method = 'S256';
-    }
-
-    const url = buildAuthorizationUrl(client, params).toString();
+      ...(client.serverMetadata().supportsPKCE() && {code_challenge: codeChallenge, code_challenge_method: 'S256'}),
+    }).toString();
     return { url, state, codeVerifier };
   }
 
