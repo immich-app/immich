@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.w
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
@@ -31,7 +32,10 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
       return;
     }
 
-    ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(backgroundSyncProvider).syncRemote();
+      await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+    });
   }
 
   Future<void> startBackup() async {
@@ -230,11 +234,13 @@ class _BackupCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final backupCount = ref.watch(driftBackupProvider.select((p) => p.backupCount));
+    final syncStatus = ref.watch(syncStatusProvider);
 
     return BackupInfoCard(
       title: "backup_controller_page_backup".tr(),
       subtitle: "backup_controller_page_backup_sub".tr(),
       info: backupCount.toString(),
+      isLoading: syncStatus.isRemoteSyncing,
     );
   }
 }
@@ -245,10 +251,13 @@ class _RemainderCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final remainderCount = ref.watch(driftBackupProvider.select((p) => p.remainderCount));
+    final syncStatus = ref.watch(syncStatusProvider);
+
     return BackupInfoCard(
       title: "backup_controller_page_remainder".tr(),
       subtitle: "backup_controller_page_remainder_sub".tr(),
       info: remainderCount.toString(),
+      isLoading: syncStatus.isRemoteSyncing,
       onTap: () => context.pushRoute(const DriftBackupAssetDetailRoute()),
     );
   }
