@@ -561,24 +561,28 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   PhotoViewGalleryPageOptions _videoBuilder(BuildContext ctx, BaseAsset asset) {
-    final image = getFullImageProvider(asset, size: ctx.sizeData);
     return PhotoViewGalleryPageOptions.customChild(
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onTapDown: _onTapDown,
-      disableScaleGestures: false,
+      disableScaleGestures: true,
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
-      // maxScale: 1.0,
       basePosition: Alignment.center,
-      child: SizedBox(
-        width: ctx.width,
-        height: ctx.height,
-        child: NativeVideoViewer(
-          key: _getVideoPlayerKey(asset.heroTag),
-          asset: asset,
-          image: Image(key: ValueKey(asset), image: image, fit: BoxFit.contain, alignment: Alignment.center),
+      minScale: PhotoViewComputedScale.contained,
+      initialScale: PhotoViewComputedScale.contained,
+      tightMode: true,
+      child: NativeVideoViewer(
+        key: _getVideoPlayerKey(asset.heroTag),
+        asset: asset,
+        image: Image(
+          key: ValueKey(asset),
+          image: getFullImageProvider(asset, size: ctx.sizeData),
+          height: ctx.height,
+          width: ctx.width,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
         ),
       ),
     );

@@ -82,16 +82,17 @@ class VideoViewerControls extends HookConsumerWidget {
     }
 
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+      behavior: HitTestBehavior.translucent,
       onTap: showControlsAndStartHideTimer,
-      child: AbsorbPointer(
-        absorbing: !showControls,
+      child: IgnorePointer(
+        ignoring: !showControls,
         child: Stack(
           children: [
             if (showBuffering)
               const Center(child: DelayedLoadingIndicator(fadeInDuration: Duration(milliseconds: 400)))
             else
               GestureDetector(
+                behavior: HitTestBehavior.translucent,
                 onTap: () => ref.read(assetViewerProvider.notifier).setControls(false),
                 child: CenterPlayButton(
                   backgroundColor: Colors.black54,
