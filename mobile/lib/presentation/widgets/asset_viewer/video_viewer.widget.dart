@@ -26,10 +26,10 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
+import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 bool _isCurrentAsset(BaseAsset asset, BaseAsset? currentAsset) {
   if (asset is RemoteAsset) {
@@ -140,8 +140,7 @@ class NativeVideoViewer extends HookConsumerWidget {
 
     final videoSource = useMemoized<Future<VideoSource?>>(() => createSource());
     final aspectRatio = useState<double?>(null);
-    final videoWidth = useState<double?>(null);
-    final videoHeight = useState<double?>(null);
+
     useMemoized(() async {
       if (!context.mounted || aspectRatio.value != null) {
         return null;
@@ -409,15 +408,12 @@ class NativeVideoViewer extends HookConsumerWidget {
       renderedWidth = context.height * aspectRatio.value!;
     }
 
-    log.info("Rendered: h: $renderedHeight, w: $renderedWidth");
-    log.info("showControls: $showControls, isCurrent: $isCurrent, isVisible: ${isVisible.value}");
-
     return SizedBox(
       width: context.width,
       height: context.height,
       child: Stack(
         children: [
-          Center(key: ValueKey(asset.heroTag), child: image),
+          if (!isVisible.value || controller.value == null) Center(key: ValueKey(asset.heroTag), child: image),
           if (aspectRatio.value != null && !isCasting)
             Visibility.maintain(
               key: ValueKey(asset),
@@ -425,6 +421,7 @@ class NativeVideoViewer extends HookConsumerWidget {
               child: PhotoView.customChild(
                 key: ValueKey(asset),
                 enableRotation: false,
+                backgroundDecoration: const BoxDecoration(color: Colors.transparent),
                 childSize: Size(renderedWidth, renderedHeight),
                 child: AspectRatio(
                   key: ValueKey(asset),
