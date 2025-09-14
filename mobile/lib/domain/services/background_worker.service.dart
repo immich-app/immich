@@ -7,6 +7,8 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
@@ -27,11 +29,11 @@ import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 class BackgroundWorkerFgService {
   final BackgroundWorkerFgHostApi _foregroundHostApi;
@@ -271,6 +273,6 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   DartPluginRegistrant.ensureInitialized();
 
   final (isar, drift, logDB) = await Bootstrap.initDB();
-  await Bootstrap.initDomain(isar, drift, logDB, shouldBufferLogs: false);
+  await Bootstrap.initDomain(isar, drift, logDB, shouldBufferLogs: false, listenStoreUpdates: false);
   await BackgroundWorkerBgService(isar: isar, drift: drift, driftLogger: logDB).init();
 }
