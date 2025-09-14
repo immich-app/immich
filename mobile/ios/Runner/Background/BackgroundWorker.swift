@@ -133,7 +133,6 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       return
     }
 
-    isComplete = true
     flutterApi?.cancel { result in
       self.complete(success: false)
     }
