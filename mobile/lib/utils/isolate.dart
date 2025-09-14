@@ -84,7 +84,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         return null;
       },
       (error, stack) {
-        dPrint(() => "Error in isolate zone: $error, $stack");
+        dPrint(() => "Error in isolate $debugLabel zone: $error, $stack");
       },
     );
     return null;
