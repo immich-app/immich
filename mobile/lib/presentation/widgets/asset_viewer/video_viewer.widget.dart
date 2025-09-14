@@ -29,6 +29,7 @@ import 'package:immich_mobile/utils/hooks/interval_hook.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 bool _isCurrentAsset(BaseAsset asset, BaseAsset? currentAsset) {
   if (asset is RemoteAsset) {
@@ -406,46 +407,35 @@ class NativeVideoViewer extends HookConsumerWidget {
     } else if (aspectRatio.value != null) {
       renderedHeight = context.height;
       renderedWidth = context.height * aspectRatio.value!;
-    } else {
-      renderedHeight = 0;
-      renderedWidth = 0;
     }
 
-    final horizontalMargin = (context.width - renderedWidth) / 2;
-    final verticalMargin = (context.height - renderedHeight) / 2;
+    log.info("Rendered: h: $renderedHeight, w: $renderedWidth");
+    log.info("showControls: $showControls, isCurrent: $isCurrent, isVisible: ${isVisible.value}");
 
-    log.info("Margins: h: $horizontalMargin, v: $verticalMargin");
-
-    return Stack(
-      children: [
-        InteractiveViewer(
-          panEnabled: true,
-          scaleEnabled: true,
-          minScale: 0.8,
-          maxScale: 4.0,
-          boundaryMargin: EdgeInsets.fromLTRB(-horizontalMargin, -verticalMargin, -horizontalMargin, -verticalMargin),
-          child: Stack(
-            children: [
-              if (aspectRatio.value != null && !isCasting)
-                Visibility.maintain(
-                  visible: isVisible.value,
-                  child: SizedBox.expand(
-                    child: Center(
-                      child: AspectRatio(
-                        key: ValueKey(asset),
-                        aspectRatio: aspectRatio.value!,
-                        child: isCurrent
-                            ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController)
-                            : null,
-                      ),
-                    ),
-                  ),
+    return SizedBox(
+      width: context.width,
+      height: context.height,
+      child: Stack(
+        children: [
+          Center(key: ValueKey(asset.heroTag), child: image),
+          if (aspectRatio.value != null && !isCasting)
+            Visibility.maintain(
+              key: ValueKey(asset),
+              visible: isVisible.value,
+              child: PhotoView.customChild(
+                key: ValueKey(asset),
+                enableRotation: false,
+                childSize: Size(renderedWidth, renderedHeight),
+                child: AspectRatio(
+                  key: ValueKey(asset),
+                  aspectRatio: aspectRatio.value!,
+                  child: isCurrent ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController) : null,
                 ),
-            ],
-          ),
-        ),
-        // if (showControls) const Center(child: VideoViewerControls()),
-      ],
+              ),
+            ),
+          if (showControls) const Center(child: VideoViewerControls()),
+        ],
+      ),
     );
   }
 

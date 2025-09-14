@@ -323,25 +323,24 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       onTapUp: _onTapUp,
       heroAttributes: heroAttributes,
       filterQuality: FilterQuality.high,
-      // maxScale: 1.0,
       basePosition: Alignment.center,
       disableScaleGestures: true,
-      scaleStateChangedCallback: _onScaleStateChanged,
+      minScale: PhotoViewComputedScale.contained,
+      initialScale: PhotoViewComputedScale.contained,
+      tightMode: true,
       onPageBuild: _onPageBuild,
       enablePanAlways: true,
       backgroundDecoration: backgroundDecoration,
-      child: SizedBox(
-        width: context.width,
-        height: context.height,
-        child: NativeVideoViewer(
-          key: ValueKey(displayAsset.heroTag),
-          asset: displayAsset,
-          image: Image(
-            key: ValueKey(displayAsset),
-            image: getFullImageProvider(displayAsset, size: context.sizeData),
-            fit: BoxFit.contain,
-            alignment: Alignment.center,
-          ),
+      child: NativeVideoViewer(
+        key: ValueKey(displayAsset.heroTag),
+        asset: displayAsset,
+        image: Image(
+          key: ValueKey(displayAsset),
+          image: getFullImageProvider(displayAsset, size: context.sizeData),
+          height: context.height,
+          width: context.width,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
         ),
       ),
     );
