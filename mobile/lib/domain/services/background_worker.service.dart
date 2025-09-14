@@ -181,6 +181,8 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           // Discard any errors on the dispose call
           return;
         }),
+        LogService.I.dispose(),
+        Store.dispose(),
         _drift.close(),
         _driftLogger.close(),
         backgroundSyncManager.cancel(),

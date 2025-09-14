@@ -61,6 +61,7 @@ Cancelable<T?> runInIsolateGentle<T>({
           try {
             ref.dispose();
 
+            await Store.dispose();
             await LogService.I.dispose();
             await logDb.close();
             await drift.close();
