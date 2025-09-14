@@ -307,6 +307,7 @@
                     weekday: 'short',
                     hour: 'numeric',
                     minute: '2-digit',
+                    second: '2-digit',
                     timeZoneName: timeZone ? 'longOffset' : undefined,
                   },
                   { locale: $locale },
