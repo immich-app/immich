@@ -28,7 +28,7 @@ FROM dev AS dev-container-server
 
 RUN apt-get update --allow-releaseinfo-change && \
   apt-get install sudo inetutils-ping openjdk-21-jre-headless \
-  vim nano \
+  vim nano curl \
   -y --no-install-recommends --fix-missing
 
 RUN usermod -aG sudo node && \
