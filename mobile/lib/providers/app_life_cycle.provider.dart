@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
@@ -20,7 +19,6 @@ import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background.service.dart';

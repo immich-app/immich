@@ -345,7 +345,6 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> handleBackupResume(String userId) async {
-    print("Resuming backup tasks...");
     _logger.info("Resuming backup tasks...");
     final tasks = await _uploadService.getActiveTasks(kBackupGroup);
     _logger.info("Found ${tasks.length} tasks");

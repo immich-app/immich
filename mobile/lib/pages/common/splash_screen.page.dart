@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -12,7 +11,6 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 
 @RoutePage()
@@ -116,9 +114,9 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   }
 
   Future<void> _resumeBackup(DriftBackupNotifier notifier) async {
-    final isEnableBackup = Store.tryGet(StoreKey.enableBackup);
+    final isEnableBackup = Store.get(StoreKey.enableBackup, false);
 
-    if (isEnableBackup != null && isEnableBackup) {
+    if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
         notifier.handleBackupResume(currentUser.id);
