@@ -1,9 +1,6 @@
 ---
 sidebar_position: 85
 ---
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
-
 # Synology [Community]
 
 :::note
@@ -76,55 +73,56 @@ Click "**Edit Rules**" and add the following firewall rules:
 
 Read the [Post Installation](/docs/install/post-install.mdx) steps and [upgrade instructions](/docs/install/upgrading.md).
 
-## Upgrading Immich using Container Manager
 <details>
-  <summary>Updating Immich using Container Manager</summary>
-Ensure to review the post installation and general upgrade instructions above before proceeding with this section.
+  <summary><H2>Updating Immich using Container Manager</H2></summary>
+Check the post installation and upgrade instructions at the links above before proceeding with this section.
 
 ## Step 1. Backup
 Ensure your photos and videos are backed up. Your `.env` settings will define where they are stored. It is recommended you maintain a copy of your current `docker-compose.yml` and `.env` files so that you can compare them with the newer release files. There is no need to delete any files or folders within the `docker` folder when doing a release upgrade unless instructed in the release notes, or you know what you are doing.
 
 ## Step 2. Check release notes
-We recommend you always check the [release notes](https://github.com/immich-app/immich/releases) before proceeding with an upgrade.
+Always check the [release notes](https://github.com/immich-app/immich/releases) before proceeding with an update!
 
 ## Step 3. Download files
-Download the latest versions of [docker-compose.yml](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [example.env.](https://github.com/immich-app/immich/releases/latest/download/example.env) from Github. If you want to upgrade to a release prior to the latest, go to the [Immich releases page](https://github.com/immich-app/immich/releases), and scroll down to find the required release and associated files.
+Download the latest versions of [docker-compose.yml](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [example.env.](https://github.com/immich-app/immich/releases/latest/download/example.env). If you want to move to a specific release, go to the [Immich releases page](https://github.com/immich-app/immich/releases), and scroll down to find the release you want and associated files.
 
-During a release upgrade, `.env` usually does not change unless specified in the release notes. Likewise, depending on what releases you are moving between, there may be no changes to `docker-compose.yml` either. Using a text comparison tool is useful to see any changes.
+During a release upgrade, `.env` usually does not change unless specified in the release notes. Likewise, depending on which releases you are moving between, there may be no changes to `docker-compose.yml` either. A text comparison tool is useful for seeing the changes.
 
 ## Step 4. Stop containers & clean up
-Open `Container Manager`. Select `Project`, select your Immich app and click `Stop`. 
+Open **Container Manager**. Select **Project** then your Immich app
 
 ![Select project](../../static/img/synology-select-proj.png)
 
-Select `Action` and `Clean`. This removes the containers.
+Select **Stop**
 
 ![Stop project](../../static/img/synology-project-stop.png)
 
+Select **Action** then **Clean**. This removes the containers.
+
 ![Clean project](../../static/img/synology-action-clean.png)
 
-Go to the `Image` section, and select `Remove Unused Images`.
+Go to **Image** and select **Remove Unused Images**.
+
 ![Remove unused](../../static/img/synology-remove-unused.png)
 
 ## Step 5. Build
-If you need to upload a new `docker-compose.yml` and/or `.env`, upload to overwrite the existing files under the `docker` folder using Synology File Station, and check whether you need to un-comment `# DB_STORAGE_TYPE:'HDD'` in `docker-compose.yml` for your NAS setup. 
+If you need to upload a new `docker-compose.yml` and/or `.env`, upload them to overwrite the existing files under the `docker` folder using Synology File Station. Check whether you need to un-comment `# DB_STORAGE_TYPE:'HDD'` in `docker-compose.yml` for your NAS setup.
 
-After finishing the cleanup and any uploads, go to the `Project` section, select `Action` then `Build`. This will download, unpack, install and start the containers.
+After finishing the cleanup and any uploads, go to **Project**, select **Action** then **Build**. This will download, unpack, install and start the containers.
 
 ![Build](../../static/img/synology-build.png)
 
 ## Step 6. Update firewall rule
 The default option is to automatically start the containers once installed. This can cause `immich_server` to run for a few seconds and stop/restart with errors because the firewall rule no longer matches the server IP address.
 
-Go to the `Container` section. Click on `immich_server` and scroll down on the `General` section to find the IP address. It will be something like 172.x.0.x
-
+Go to the **Container** section. Click on `immich_server` and scroll down on **General** to find the IP address.
 ![Container IP](../../static/img/synology-container-ip.png)
 
-Go to Synology `Control Panel`. Click on `Security` and select  `Firewall`.
+Go to Synology **Control Panel**. Select **Security** and **Firewall**.
 
 ![Firewall](../../static/img/synology-fw-rules.png)
 
-Check/edit the firewall rule to match above.
+In this example the IP addresses mismatch and the firewall rule needs to be edited to match above.
 
 ![Edit IP](../../static/img/synology-fw-ipedit.png)
 </details>
