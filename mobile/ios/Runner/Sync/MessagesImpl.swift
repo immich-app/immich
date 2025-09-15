@@ -17,23 +17,6 @@ struct AssetWrapper: Hashable, Equatable {
   }
 }
 
-extension PHAsset {
-  func toPlatformAsset() -> PlatformAsset {
-    return PlatformAsset(
-      id: localIdentifier,
-      name: title,
-      type: Int64(mediaType.rawValue),
-      createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
-      updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
-      width: Int64(pixelWidth),
-      height: Int64(pixelHeight),
-      durationInSeconds: Int64(duration),
-      orientation: 0,
-      isFavorite: isFavorite
-    )
-  }
-}
-
 class NativeSyncApiImpl: NativeSyncApi {
   private let defaults: UserDefaults
   private let changeTokenKey = "immich:changeToken"

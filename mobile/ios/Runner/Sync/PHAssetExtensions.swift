@@ -1,6 +1,20 @@
 import Photos
 
 extension PHAsset {
+  func toPlatformAsset() -> PlatformAsset {
+    return PlatformAsset(
+      id: localIdentifier,
+      name: title,
+      type: Int64(mediaType.rawValue),
+      createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
+      updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
+      width: Int64(pixelWidth),
+      height: Int64(pixelHeight),
+      durationInSeconds: Int64(duration),
+      orientation: 0,
+      isFavorite: isFavorite
+    )
+  }
 
   var title: String {
     return filename ?? originalFilename ?? "<unknown>"
@@ -33,32 +47,18 @@ extension PHAsset {
       }
     }
     
-    return bestResource ?? resources.first
+    return bestResource
   }
   
   private func getPriority(for resource: PHAssetResource) -> Int {
-    if (mediaType == .image && resource.type == .photo) ||
-       (mediaType == .video && resource.type == .video) {
-      return 0
+    switch (mediaType, resource.type) {
+    case (.image, .photo), (.video, .video): return 0
+    case (.image, .alternatePhoto): return 1
+    case (_, .fullSizePhoto): return 2
+    default:
+      if (resource.isCurrent) { return 3 }
+      if (resource.isMediaResource) { return 4 }
+      return 5
     }
-    
-    if mediaType == .image && resource.type == .alternatePhoto {
-      return 1
-    }
-    
-    if (mediaType == .image && resource.type == .fullSizePhoto) ||
-        (mediaType == .video && resource.type == .fullSizeVideo) {
-      return 2
-    }
-    
-    if resource.isCurrent {
-      return 3
-    }
-    
-    if resource.isMediaResource {
-      return 4
-    }
-    
-    return 5
   }
 }
