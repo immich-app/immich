@@ -84,7 +84,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
-  final ValueNotifier<PhotoViewScaleState> scaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
+  final ValueNotifier<PhotoViewScaleState> videoScaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
 
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
@@ -129,7 +129,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    scaleStateNotifier.dispose();
+    videoScaleStateNotifier.dispose();
     super.dispose();
   }
 
@@ -242,7 +242,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
-    scaleStateNotifier.value = PhotoViewScaleState.initial; // reset video zoom state
+    videoScaleStateNotifier.value = PhotoViewScaleState.initial; // reset video zoom state
   }
 
   void _onDragStart(
@@ -258,8 +258,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final isZoomed =
         scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
         scaleStateController.scaleState == PhotoViewScaleState.covering ||
-        scaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
-        scaleStateNotifier.value == PhotoViewScaleState.covering;
+        videoScaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
+        videoScaleStateNotifier.value == PhotoViewScaleState.covering;
 
     if (!showingBottomSheet && isZoomed) {
       blockGestures = true;
@@ -578,7 +578,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       child: NativeVideoViewer(
         key: _getVideoPlayerKey(asset.heroTag),
         asset: asset,
-        scaleStateNotifier: scaleStateNotifier,
+        scaleStateNotifier: videoScaleStateNotifier,
         disableScaleGestures: showingBottomSheet,
         image: Image(
           key: ValueKey(asset),
