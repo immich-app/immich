@@ -205,6 +205,45 @@ class SyncDelta {
   int get hashCode => Object.hashAll(_toList());
 }
 
+class HashResult {
+  HashResult({required this.assetId, this.error, this.hash});
+
+  String assetId;
+
+  String? error;
+
+  String? hash;
+
+  List<Object?> _toList() {
+    return <Object?>[assetId, error, hash];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static HashResult decode(Object result) {
+    result as List<Object?>;
+    return HashResult(assetId: result[0]! as String, error: result[1] as String?, hash: result[2] as String?);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! HashResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -221,6 +260,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is SyncDelta) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
+    } else if (value is HashResult) {
+      buffer.putUint8(132);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -235,6 +277,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return PlatformAlbum.decode(readValue(buffer)!);
       case 131:
         return SyncDelta.decode(readValue(buffer)!);
+      case 132:
+        return HashResult.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -468,15 +512,15 @@ class NativeSyncApi {
     }
   }
 
-  Future<List<Uint8List?>> hashPaths(List<String> paths) async {
+  Future<List<HashResult>> hashAssets(List<String> assetIds, {bool allowNetworkAccess = false}) async {
     final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashAssets$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[paths]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[assetIds, allowNetworkAccess]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -492,7 +536,7 @@ class NativeSyncApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<Uint8List?>();
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<HashResult>();
     }
   }
 }

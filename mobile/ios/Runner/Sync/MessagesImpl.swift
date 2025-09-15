@@ -21,7 +21,7 @@ extension PHAsset {
   func toPlatformAsset() -> PlatformAsset {
     return PlatformAsset(
       id: localIdentifier,
-      name: title(),
+      name: title,
       type: Int64(mediaType.rawValue),
       createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
       updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
@@ -41,6 +41,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let recoveredAlbumSubType = 1000000219
   
   private let hashBufferSize = 2 * 1024 * 1024
+
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
@@ -267,23 +268,69 @@ class NativeSyncApiImpl: NativeSyncApi {
     return assets
   }
   
-  func hashPaths(paths: [String]) throws -> [FlutterStandardTypedData?] {
-      return paths.map { path in
-          guard let file = FileHandle(forReadingAtPath: path) else {
-              print("Cannot open file: \(path)")
-              return nil
+  func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void) {
+    Task {
+      await withTaskGroup(of: HashResult.self) { taskGroup in
+        for assetId in assetIds {
+          taskGroup.addTask { [weak self] in
+            guard let self = self else {
+              return HashResult(assetId: assetId, error: "NativeSyncApiImpl deallocated", hash: nil)
+            }
+            return await self.hashAsset(assetId, allowNetworkAccess: allowNetworkAccess)
           }
-          
-          var hasher = Insecure.SHA1()
-          while autoreleasepool(invoking: {
-              let chunk = file.readData(ofLength: hashBufferSize)
-              guard !chunk.isEmpty else { return false }
-              hasher.update(data: chunk)
-              return true
-          }) { }
-          
-          let digest = hasher.finalize()
-          return FlutterStandardTypedData(bytes: Data(digest))
+        }
+        
+        var results: [HashResult] = []
+        for await result in taskGroup {
+          results.append(result)
+        }
+        
+        completion(.success(results))
       }
+    }
+  }
+  
+  private func hashAsset(_ assetId: String, allowNetworkAccess: Bool) async -> HashResult {
+    guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject else {
+      return HashResult(assetId: assetId, error: "Cannot get asset for id", hash: nil)
+    }
+  
+    guard let resource = asset.getResource() else {
+      return HashResult(assetId: assetId, error: "Cannot get asset resource", hash: nil)
+    }
+
+    let options = PHAssetResourceRequestOptions()
+    options.isNetworkAccessAllowed = allowNetworkAccess
+
+    return await withCheckedContinuation { continuation in
+      var hasher = Insecure.SHA1()
+      
+      PHAssetResourceManager.default().requestData(
+          for: resource,
+          options: options,
+          dataReceivedHandler: { data in
+              hasher.update(data: data)
+          },
+          completionHandler: { error in
+              if let error = error {
+                continuation.resume(returning: HashResult(
+                  assetId: assetId, 
+                  error: "Failed to hash asset: \(error.localizedDescription)", 
+                  hash: nil
+                ))
+              } else {
+                  let digest = hasher.finalize()
+                  let hashData = Data(digest)
+                  let hashString = hashData.base64EncodedString()
+                  
+                  continuation.resume(returning: HashResult(
+                    assetId: assetId, 
+                    error: nil, 
+                    hash: hashString
+                  ))
+              }
+          }
+      )
+    }
   }
 }
