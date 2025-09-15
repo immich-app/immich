@@ -417,6 +417,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       height: context.height,
       child: Stack(
         children: [
+          // Hide thumbnail once video is visible to avoid it showing in background when zooming out on video.
           if (!isVisible.value || controller.value == null) Center(key: ValueKey(asset.heroTag), child: image),
           if (aspectRatio.value != null && !isCasting)
             Visibility.maintain(
@@ -426,6 +427,7 @@ class NativeVideoViewer extends HookConsumerWidget {
                 key: ValueKey(asset),
                 enableRotation: false,
                 disableScaleGestures: disableScaleGestures,
+                // Transparent to avoid a black flash when viewer becomes visible but video isn't loaded yet.
                 backgroundDecoration: const BoxDecoration(color: Colors.transparent),
                 scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
                 childSize: videoContextSize,
