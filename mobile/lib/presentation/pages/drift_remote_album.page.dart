@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/remote_album_bot
 import 'package:immich_mobile/presentation/widgets/remote_album/drift_album_option.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -28,13 +29,15 @@ class RemoteAlbumPage extends ConsumerStatefulWidget {
 }
 
 class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
+  late RemoteAlbum _album;
   @override
   void initState() {
     super.initState();
+    _album = widget.album;
   }
 
   Future<void> addAssets(BuildContext context) async {
-    final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(widget.album.id);
+    final albumAssets = await ref.read(remoteAlbumProvider.notifier).getAssets(_album.id);
 
     final newAssets = await context.pushRoute<Set<BaseAsset>>(
       DriftAssetSelectionTimelineRoute(lockedSelectionAssets: albumAssets.toSet()),
@@ -47,7 +50,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final added = await ref
         .read(remoteAlbumProvider.notifier)
         .addAssets(
-          widget.album.id,
+          _album.id,
           newAssets.map((asset) {
             final remoteAsset = asset as RemoteAsset;
             return remoteAsset.id;
@@ -64,14 +67,14 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> addUsers(BuildContext context) async {
-    final newUsers = await context.pushRoute<List<String>>(DriftUserSelectionRoute(album: widget.album));
+    final newUsers = await context.pushRoute<List<String>>(DriftUserSelectionRoute(album: _album));
 
     if (newUsers == null || newUsers.isEmpty) {
       return;
     }
 
     try {
-      await ref.read(remoteAlbumProvider.notifier).addUsers(widget.album.id, newUsers);
+      await ref.read(remoteAlbumProvider.notifier).addUsers(_album.id, newUsers);
 
       if (newUsers.isNotEmpty) {
         ImmichToast.show(
@@ -81,7 +84,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
         );
       }
 
-      ref.invalidate(remoteAlbumSharedUsersProvider(widget.album.id));
+      ref.invalidate(remoteAlbumSharedUsersProvider(_album.id));
     } catch (e) {
       ImmichToast.show(
         context: context,
@@ -92,7 +95,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> toggleAlbumOrder() async {
-    await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(widget.album.id);
+    await ref.read(remoteAlbumProvider.notifier).toggleAlbumOrder(_album.id);
 
     ref.invalidate(timelineServiceProvider);
   }
@@ -106,7 +109,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('album_delete_confirmation'.t(context: context, args: {'album': widget.album.name})),
+              Text('album_delete_confirmation'.t(context: context, args: {'album': _album.name})),
               const SizedBox(height: 8),
               Text('album_delete_confirmation_description'.t(context: context)),
             ],
@@ -128,7 +131,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
     if (confirmed == true) {
       try {
-        await ref.read(remoteAlbumProvider.notifier).deleteAlbum(widget.album.id);
+        await ref.read(remoteAlbumProvider.notifier).deleteAlbum(_album.id);
 
         ImmichToast.show(
           context: context,
@@ -151,17 +154,24 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final result = await showDialog<_EditAlbumData?>(
       context: context,
       barrierDismissible: true,
-      builder: (context) => _EditAlbumDialog(album: widget.album),
+      builder: (context) => _EditAlbumDialog(album: _album),
     );
 
     if (result != null && context.mounted) {
+      setState(() {
+        _album = _album.copyWith(name: result.name, description: result.description ?? '');
+      });
       HapticFeedback.mediumImpact();
     }
   }
 
+  Future<void> showActivity(BuildContext context) async {
+    context.pushRoute(const DriftActivitiesRoute());
+  }
+
   void showOptionSheet(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-    final isOwner = user != null ? user.id == widget.album.ownerId : false;
+    final isOwner = user != null ? user.id == _album.ownerId : false;
 
     showModalBottomSheet(
       context: context,
@@ -195,6 +205,14 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             context.pop();
             await showEditTitleAndDescription(context);
           },
+          onCreateSharedLink: () async {
+            context.pop();
+            context.pushRoute(SharedLinkEditRoute(albumId: _album.id));
+          },
+          onShowOptions: () {
+            context.pop();
+            context.pushRoute(const DriftAlbumOptionsRoute());
+          },
         );
       },
     );
@@ -202,22 +220,35 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      overrides: [
-        timelineServiceProvider.overrideWith((ref) {
-          final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: widget.album.id);
-          ref.onDispose(timelineService.dispose);
-          return timelineService;
-        }),
-      ],
-      child: Timeline(
-        appBar: RemoteAlbumSliverAppBar(
-          icon: Icons.photo_album_outlined,
-          onShowOptions: () => showOptionSheet(context),
-          onToggleAlbumOrder: () => toggleAlbumOrder(),
-          onEditTitle: () => showEditTitleAndDescription(context),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          Future.microtask(() {
+            if (mounted) {
+              ref.read(currentRemoteAlbumProvider.notifier).dispose();
+              ref.read(remoteAlbumProvider.notifier).refresh();
+            }
+          });
+        }
+      },
+      child: ProviderScope(
+        overrides: [
+          timelineServiceProvider.overrideWith((ref) {
+            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
+            ref.onDispose(timelineService.dispose);
+            return timelineService;
+          }),
+        ],
+        child: Timeline(
+          appBar: RemoteAlbumSliverAppBar(
+            icon: Icons.photo_album_outlined,
+            onShowOptions: () => showOptionSheet(context),
+            onToggleAlbumOrder: () => toggleAlbumOrder(),
+            onEditTitle: () => showEditTitleAndDescription(context),
+            onActivity: () => showActivity(context),
+          ),
+          bottomSheet: RemoteAlbumBottomSheet(album: _album),
         ),
-        bottomSheet: RemoteAlbumBottomSheet(album: widget.album),
       ),
     );
   }

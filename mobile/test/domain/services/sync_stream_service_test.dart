@@ -30,8 +30,9 @@ void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
   late SyncApiRepository mockSyncApiRepo;
-  late Function(List<SyncEvent>, Function()) handleEventsCallback;
+  late Future<void> Function(List<SyncEvent>, Function(), Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
+  late _MockAbortCallbackWrapper mockResetCallbackWrapper;
 
   successHandler(Invocation _) async => true;
 
@@ -39,10 +40,15 @@ void main() {
     mockSyncStreamRepo = MockSyncStreamRepository();
     mockSyncApiRepo = MockSyncApiRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
+    mockResetCallbackWrapper = _MockAbortCallbackWrapper();
 
     when(() => mockAbortCallbackWrapper()).thenReturn(false);
 
     when(() => mockSyncApiRepo.streamChanges(any())).thenAnswer((invocation) async {
+      handleEventsCallback = invocation.positionalArguments.first;
+    });
+
+    when(() => mockSyncApiRepo.streamChanges(any(), onReset: any(named: 'onReset'))).thenAnswer((invocation) async {
       handleEventsCallback = invocation.positionalArguments.first;
     });
 
@@ -86,7 +92,7 @@ void main() {
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
     await sut.sync();
-    await handleEventsCallback(events, mockAbortCallbackWrapper.call);
+    await handleEventsCallback(events, mockAbortCallbackWrapper.call, mockResetCallbackWrapper.call);
   }
 
   group("SyncStreamService - _handleEvents", () {
@@ -156,7 +162,7 @@ void main() {
         when(() => cancellationChecker()).thenReturn(true);
       });
 
-      await handleEventsCallback(events, mockAbortCallbackWrapper.call);
+      await handleEventsCallback(events, mockAbortCallbackWrapper.call, mockResetCallbackWrapper.call);
 
       verify(() => mockSyncStreamRepo.deleteUsersV1(any())).called(1);
       verifyNever(() => mockSyncStreamRepo.updateUsersV1(any()));
@@ -188,7 +194,11 @@ void main() {
 
       final events = [SyncStreamStub.userDeleteV1, SyncStreamStub.userV1Admin, SyncStreamStub.partnerDeleteV1];
 
-      final processingFuture = handleEventsCallback(events, mockAbortCallbackWrapper.call);
+      final processingFuture = handleEventsCallback(
+        events,
+        mockAbortCallbackWrapper.call,
+        mockResetCallbackWrapper.call,
+      );
       await pumpEventQueue();
 
       expect(handler1Started, isTrue);

@@ -1,21 +1,22 @@
 import 'dart:async';
-import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
-import 'package:immich_mobile/providers/image/cache/image_loader.dart';
+import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/providers/image/cache/remote_image_cache_manager.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
-class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
+class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
+    with CancellableImageProviderMixin<RemoteThumbProvider> {
+  static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
-  final CacheManager? cacheManager;
 
-  const RemoteThumbProvider({required this.assetId, this.cacheManager});
+  RemoteThumbProvider({required this.assetId});
 
   @override
   Future<RemoteThumbProvider> obtainKey(ImageConfiguration configuration) {
@@ -24,33 +25,23 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
 
   @override
   ImageStreamCompleter loadImage(RemoteThumbProvider key, ImageDecoderCallback decode) {
-    final cache = cacheManager ?? RemoteImageCacheManager();
-    final chunkController = StreamController<ImageChunkEvent>();
-    return MultiFrameImageStreamCompleter(
-      codec: _codec(key, cache, decode, chunkController),
-      scale: 1.0,
-      chunkEvents: chunkController.stream,
+    return OneFramePlaceholderImageStreamCompleter(
+      _codec(key, decode),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
+      onDispose: cancel,
     );
   }
 
-  Future<Codec> _codec(
-    RemoteThumbProvider key,
-    CacheManager cache,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkController,
-  ) async {
-    final preview = getThumbnailUrlForRemoteId(key.assetId);
-
-    return ImageLoader.loadImageFromCache(
-      preview,
-      cache: cache,
-      decode: decode,
-      chunkEvents: chunkController,
-    ).whenComplete(chunkController.close);
+  Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) {
+    final request = this.request = RemoteImageRequest(
+      uri: getThumbnailUrlForRemoteId(key.assetId),
+      headers: ApiService.getRequestHeaders(),
+      cacheManager: cacheManager,
+    );
+    return loadRequest(request, decode);
   }
 
   @override
@@ -67,11 +58,12 @@ class RemoteThumbProvider extends ImageProvider<RemoteThumbProvider> {
   int get hashCode => assetId.hashCode;
 }
 
-class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
+class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
+    with CancellableImageProviderMixin<RemoteFullImageProvider> {
+  static final cacheManager = RemoteThumbnailCacheManager();
   final String assetId;
-  final CacheManager? cacheManager;
 
-  const RemoteFullImageProvider({required this.assetId, this.cacheManager});
+  RemoteFullImageProvider({required this.assetId});
 
   @override
   Future<RemoteFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -80,37 +72,42 @@ class RemoteFullImageProvider extends ImageProvider<RemoteFullImageProvider> {
 
   @override
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
-    final cache = cacheManager ?? RemoteImageCacheManager();
-    final chunkEvents = StreamController<ImageChunkEvent>();
-    return MultiImageStreamCompleter(
-      codec: _codec(key, cache, decode, chunkEvents),
-      scale: 1.0,
-      chunkEvents: chunkEvents.stream,
+    return OneFramePlaceholderImageStreamCompleter(
+      _codec(key, decode),
+      initialImage: getInitialImage(RemoteThumbProvider(assetId: key.assetId)),
+      informationCollector: () => <DiagnosticsNode>[
+        DiagnosticsProperty<ImageProvider>('Image provider', this),
+        DiagnosticsProperty<String>('Asset Id', key.assetId),
+      ],
+      onDispose: cancel,
     );
   }
 
-  Stream<Codec> _codec(
-    RemoteFullImageProvider key,
-    CacheManager cache,
-    ImageDecoderCallback decode,
-    StreamController<ImageChunkEvent> chunkController,
-  ) async* {
-    yield await ImageLoader.loadImageFromCache(
-      getPreviewUrlForRemoteId(key.assetId),
-      cache: cache,
-      decode: decode,
-      chunkEvents: chunkController,
+  Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
+    yield* initialImageStream();
+
+    if (isCancelled) {
+      evict();
+      return;
+    }
+
+    final headers = ApiService.getRequestHeaders();
+    final request = this.request = RemoteImageRequest(
+      uri: getPreviewUrlForRemoteId(key.assetId),
+      headers: headers,
+      cacheManager: cacheManager,
     );
+    yield* loadRequest(request, decode);
+
+    if (isCancelled) {
+      evict();
+      return;
+    }
 
     if (AppSetting.get(Setting.loadOriginal)) {
-      yield await ImageLoader.loadImageFromCache(
-        getOriginalUrlForRemoteId(key.assetId),
-        cache: cache,
-        decode: decode,
-        chunkEvents: chunkController,
-      );
+      final request = this.request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+      yield* loadRequest(request, decode);
     }
-    await chunkController.close();
   }
 
   @override

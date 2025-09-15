@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
@@ -18,10 +19,11 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Index;
 
 import 'db.repository.drift.dart';
 
@@ -42,6 +44,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 
 @DriftDatabase(
   tables: [
+    AuthUserEntity,
     UserEntity,
     UserMetadataEntity,
     PartnerEntity,
@@ -58,6 +61,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     StackEntity,
     PersonEntity,
     AssetFaceEntity,
+    StoreEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -65,8 +69,31 @@ class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
+  Future<void> reset() async {
+    // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
+    await exclusively(() async {
+      // https://stackoverflow.com/a/65743498/25690041
+      await customStatement('PRAGMA writable_schema = 1;');
+      await customStatement('DELETE FROM sqlite_master;');
+      await customStatement('VACUUM;');
+      await customStatement('PRAGMA writable_schema = 0;');
+      await customStatement('PRAGMA integrity_check');
+
+      await customStatement('PRAGMA user_version = 0');
+      await beforeOpen(
+        // ignore: invalid_use_of_internal_member
+        resolvedEngine.executor,
+        OpeningDetails(null, schemaVersion),
+      );
+      await customStatement('PRAGMA user_version = $schemaVersion');
+
+      // Refresh all stream queries
+      notifyUpdates({for (final table in allTables) TableUpdate.onTable(table)});
+    });
+  }
+
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -94,6 +121,41 @@ class Drift extends $Drift implements IDatabaseRepository {
             // asset_face_entity is added
             await m.create(v4.assetFaceEntity);
           },
+          from4To5: (m, v5) async {
+            await m.alterTable(
+              TableMigration(
+                v5.userEntity,
+                newColumns: [v5.userEntity.hasProfileImage, v5.userEntity.profileChangedAt],
+                columnTransformer: {v5.userEntity.profileChangedAt: currentDateAndTime},
+              ),
+            );
+          },
+          from5To6: (m, v6) async {
+            // Drops the (checksum, ownerId) and adds it back as (ownerId, checksum)
+            await customStatement('DROP INDEX IF EXISTS UQ_remote_asset_owner_checksum');
+            await m.drop(v6.idxRemoteAssetOwnerChecksum);
+            await m.create(v6.idxRemoteAssetOwnerChecksum);
+            // Adds libraryId to remote_asset_entity
+            await m.addColumn(v6.remoteAssetEntity, v6.remoteAssetEntity.libraryId);
+            await m.drop(v6.uQRemoteAssetsOwnerChecksum);
+            await m.create(v6.uQRemoteAssetsOwnerChecksum);
+            await m.drop(v6.uQRemoteAssetsOwnerLibraryChecksum);
+            await m.create(v6.uQRemoteAssetsOwnerLibraryChecksum);
+          },
+          from6To7: (m, v7) async {
+            await m.createIndex(v7.idxLatLng);
+          },
+          from7To8: (m, v8) async {
+            await m.create(v8.storeEntity);
+          },
+          from8To9: (m, v9) async {
+            await m.addColumn(v9.localAlbumEntity, v9.localAlbumEntity.linkedRemoteAlbumId);
+          },
+          from9To10: (m, v10) async {
+            await m.createTable(v10.authUserEntity);
+            await m.addColumn(v10.userEntity, v10.userEntity.avatarColor);
+            await m.alterTable(TableMigration(v10.userEntity));
+          },
         ),
       );
 
@@ -109,7 +171,7 @@ class Drift extends $Drift implements IDatabaseRepository {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 500');
+      await customStatement('PRAGMA busy_timeout = 30000');
     },
   );
 }

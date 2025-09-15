@@ -35,7 +35,7 @@ export const stackStub = (stackId: string, assets: (MapAsset & { exifInfo: Exif 
     primaryAssetId: assets[0].id,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    updateId: 'uuid-v7',
+    updateId: expect.any(String),
   };
 };
 
@@ -65,7 +65,7 @@ export const assetStub = {
     owner: userStub.user1,
     ownerId: 'user-id',
     deviceId: 'device-id',
-    originalPath: 'upload/library/IMG_123.jpg',
+    originalPath: '/data/library/IMG_123.jpg',
     files: [thumbnailFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.Image,
@@ -101,7 +101,7 @@ export const assetStub = {
     owner: userStub.user1,
     ownerId: 'user-id',
     deviceId: 'device-id',
-    originalPath: 'upload/library/IMG_456.jpg',
+    originalPath: '/data/library/IMG_456.jpg',
     files: [previewFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.Image,

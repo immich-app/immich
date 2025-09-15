@@ -55,22 +55,10 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     return _assetSelectable(id).getSingleOrNull();
   }
 
-  Stream<RemoteAsset?> watchAsset(String id) {
-    final query =
-        _db.remoteAssetEntity.select().addColumns([_db.localAssetEntity.id]).join([
-            leftOuterJoin(
-              _db.localAssetEntity,
-              _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-              useColumns: false,
-            ),
-          ])
-          ..where(_db.remoteAssetEntity.id.equals(id))
-          ..limit(1);
+  Future<RemoteAsset?> getByChecksum(String checksum) {
+    final query = _db.remoteAssetEntity.select()..where((row) => row.checksum.equals(checksum));
 
-    return query.map((row) {
-      final asset = row.readTable(_db.remoteAssetEntity).toDto();
-      return asset.copyWith(localId: row.read(_db.localAssetEntity.id));
-    }).watchSingleOrNull();
+    return query.map((row) => row.toDto()).getSingleOrNull();
   }
 
   Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {
@@ -186,6 +174,23 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> updateDateTime(List<String> ids, DateTime dateTime) {
+    return _db.batch((batch) async {
+      for (final id in ids) {
+        batch.update(
+          _db.remoteExifEntity,
+          RemoteExifEntityCompanion(dateTimeOriginal: Value(dateTime)),
+          where: (e) => e.assetId.equals(id),
+        );
+        batch.update(
+          _db.remoteAssetEntity,
+          RemoteAssetEntityCompanion(createdAt: Value(dateTime)),
+          where: (e) => e.id.equals(id),
+        );
+      }
+    });
+  }
+
   Future<void> stack(String userId, StackResponse stack) {
     return _db.transaction(() async {
       final stackIds = await _db.managers.stackEntity
@@ -224,6 +229,12 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         );
       });
     });
+  }
+
+  Future<void> updateDescription(String assetId, String description) async {
+    await (_db.remoteExifEntity.update()..where((row) => row.assetId.equals(assetId))).write(
+      RemoteExifEntityCompanion(description: Value(description)),
+    );
   }
 
   Future<int> getCount() {

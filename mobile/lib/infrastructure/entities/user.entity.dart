@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
@@ -44,13 +43,13 @@ class User {
 
   static User fromDto(UserDto dto) => User(
     id: dto.id,
-    updatedAt: dto.updatedAt,
+    updatedAt: dto.updatedAt ?? DateTime(2025),
     email: dto.email,
     name: dto.name,
     isAdmin: dto.isAdmin,
     isPartnerSharedBy: dto.isPartnerSharedBy,
     isPartnerSharedWith: dto.isPartnerSharedWith,
-    profileImagePath: dto.profileImagePath ?? "",
+    profileImagePath: dto.hasProfileImage ? "HAS_PROFILE_IMAGE" : "",
     avatarColor: dto.avatarColor,
     memoryEnabled: dto.memoryEnabled,
     inTimeline: dto.inTimeline,
@@ -64,12 +63,13 @@ class User {
     name: name,
     isAdmin: isAdmin,
     updatedAt: updatedAt,
-    profileImagePath: profileImagePath.isEmpty ? null : profileImagePath,
     avatarColor: avatarColor,
     memoryEnabled: memoryEnabled,
     inTimeline: inTimeline,
     isPartnerSharedBy: isPartnerSharedBy,
     isPartnerSharedWith: isPartnerSharedWith,
+    hasProfileImage: profileImagePath.isNotEmpty,
+    profileChangedAt: updatedAt,
     quotaUsageInBytes: quotaUsageInBytes,
     quotaSizeInBytes: quotaSizeInBytes,
   );
@@ -80,13 +80,12 @@ class UserEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
   TextColumn get name => text()();
-  BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
   TextColumn get email => text()();
-  TextColumn get profileImagePath => text().nullable()();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
-  // Quota
-  IntColumn get quotaSizeInBytes => integer().nullable()();
-  IntColumn get quotaUsageInBytes => integer().withDefault(const Constant(0))();
+
+  // Profile image
+  BoolColumn get hasProfileImage => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get profileChangedAt => dateTime().withDefault(currentDateAndTime)();
+  IntColumn get avatarColor => intEnum<AvatarColor>().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};

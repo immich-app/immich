@@ -126,6 +126,15 @@ export class RandomSearchDto extends BaseSearchWithResultsDto {
   withPeople?: boolean;
 }
 
+export class LargeAssetSearchDto extends BaseSearchWithResultsDto {
+  @Optional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  minFileSize?: number;
+}
+
 export class MetadataSearchDto extends RandomSearchDto {
   @ValidateUUID({ optional: true })
   id?: string;
@@ -190,7 +199,12 @@ export class StatisticsSearchDto extends BaseSearchDto {
 export class SmartSearchDto extends BaseSearchWithResultsDto {
   @IsString()
   @IsNotEmpty()
-  query!: string;
+  @Optional()
+  query?: string;
+
+  @ValidateUUID({ optional: true })
+  @Optional()
+  queryAssetId?: string;
 
   @IsString()
   @IsNotEmpty()

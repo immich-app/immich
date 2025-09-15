@@ -13,6 +13,7 @@
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -29,12 +30,7 @@
   import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import {
-    getTimes,
-    toTimelineAsset,
-    type ScrubberListener,
-    type TimelinePlainYearMonth,
-  } from '$lib/utils/timeline-util';
+  import { getTimes, toTimelineAsset, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
@@ -70,6 +66,18 @@
     onEscape?: () => void;
     children?: Snippet;
     empty?: Snippet;
+    customLayout?: Snippet<[TimelineAsset]>;
+    onThumbnailClick?: (
+      asset: TimelineAsset,
+      timelineManager: TimelineManager,
+      dayGroup: DayGroup,
+      onClick: (
+        timelineManager: TimelineManager,
+        assets: TimelineAsset[],
+        groupTitle: string,
+        asset: TimelineAsset,
+      ) => void,
+    ) => void;
   }
 
   let {
@@ -89,6 +97,8 @@
     onEscape = () => {},
     children,
     empty,
+    customLayout,
+    onThumbnailClick,
   }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
@@ -154,12 +164,28 @@
     return height;
   };
 
+  const assetIsVisible = (assetTop: number): boolean => {
+    if (!element) {
+      return false;
+    }
+
+    const { clientHeight, scrollTop } = element;
+    return assetTop >= scrollTop && assetTop < scrollTop + clientHeight;
+  };
+
   const scrollToAssetId = async (assetId: string) => {
     const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
     if (!monthGroup) {
       return false;
     }
+
     const height = getAssetHeight(assetId, monthGroup);
+
+    // If the asset is already visible, then don't scroll.
+    if (assetIsVisible(height)) {
+      return true;
+    }
+
     scrollTo(height);
     updateSlidingWindow();
     return true;
@@ -343,7 +369,7 @@
 
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
-        let monthGroup: TimelinePlainYearMonth | undefined;
+        let monthGroup: TimelineYearMonth | undefined;
         let monthGroupHeight = 0;
         if (i === -1) {
           // lead-in
@@ -929,6 +955,8 @@
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
             onScrollCompensation={handleScrollCompensation}
+            {customLayout}
+            {onThumbnailClick}
           />
         </div>
       {/if}

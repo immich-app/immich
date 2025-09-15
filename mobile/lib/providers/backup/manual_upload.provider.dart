@@ -30,6 +30,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final manualUploadProvider = StateNotifierProvider<ManualUploadNotifier, ManualUploadState>((ref) {
   return ManualUploadNotifier(
@@ -216,7 +217,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         );
 
         if (uploadAssets.isEmpty) {
-          debugPrint("[_startUpload] No Assets to upload - Abort Process");
+          dPrint(() => "[_startUpload] No Assets to upload - Abort Process");
           _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
           return false;
         }
@@ -294,10 +295,10 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         }
       } else {
         openAppSettings();
-        debugPrint("[_startUpload] Do not have permission to the gallery");
+        dPrint(() => "[_startUpload] Do not have permission to the gallery");
       }
     } catch (e) {
-      debugPrint("ERROR _startUpload: ${e.toString()}");
+      dPrint(() => "ERROR _startUpload: ${e.toString()}");
       hasErrors = true;
     } finally {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
@@ -340,7 +341,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
     // waits until it has stopped to start the backup.
     final bool hasLock = await ref.read(backgroundServiceProvider).acquireLock();
     if (!hasLock) {
-      debugPrint("[uploadAssets] could not acquire lock, exiting");
+      dPrint(() => "[uploadAssets] could not acquire lock, exiting");
       ImmichToast.show(
         context: context,
         msg: "failed".tr(),
@@ -355,18 +356,18 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
 
     // check if backup is already in process - then return
     if (_backupProvider.backupProgress == BackUpProgressEnum.manualInProgress) {
-      debugPrint("[uploadAssets] Manual upload is already running - abort");
+      dPrint(() => "[uploadAssets] Manual upload is already running - abort");
       showInProgress = true;
     }
 
     if (_backupProvider.backupProgress == BackUpProgressEnum.inProgress) {
-      debugPrint("[uploadAssets] Auto Backup is already in progress - abort");
+      dPrint(() => "[uploadAssets] Auto Backup is already in progress - abort");
       showInProgress = true;
       return false;
     }
 
     if (_backupProvider.backupProgress == BackUpProgressEnum.inBackground) {
-      debugPrint("[uploadAssets] Background backup is running - abort");
+      dPrint(() => "[uploadAssets] Background backup is running - abort");
       showInProgress = true;
     }
 

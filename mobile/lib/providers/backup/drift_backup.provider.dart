@@ -4,11 +4,16 @@ import 'dart:convert';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -187,12 +192,12 @@ class DriftBackupState {
   }
 }
 
-final driftBackupProvider = StateNotifierProvider<ExpBackupNotifier, DriftBackupState>((ref) {
-  return ExpBackupNotifier(ref.watch(uploadServiceProvider));
+final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
+  return DriftBackupNotifier(ref.watch(uploadServiceProvider));
 });
 
-class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
-  ExpBackupNotifier(this._uploadService)
+class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
+  DriftBackupNotifier(this._uploadService)
     : super(
         const DriftBackupState(
           totalCount: 0,
@@ -213,6 +218,7 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   final UploadService _uploadService;
   StreamSubscription<TaskStatusUpdate>? _statusSubscription;
   StreamSubscription<TaskProgressUpdate>? _progressSubscription;
+  final _logger = Logger("DriftBackupNotifier");
 
   /// Remove upload item from state
   void _removeUploadItem(String taskId) {
@@ -240,6 +246,12 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
         }
 
       case TaskStatus.failed:
+        // Ignore retry errors to avoid confusing users
+        if (update.exception?.description == 'Delayed or retried enqueue failed') {
+          _removeUploadItem(taskId);
+          return;
+        }
+
         final currentItem = state.uploadItems[taskId];
         if (currentItem == null) {
           return;
@@ -317,34 +329,34 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> cancel() async {
-    debugPrint("Canceling backup tasks...");
+    dPrint(() => "Canceling backup tasks...");
     state = state.copyWith(enqueueCount: 0, enqueueTotalCount: 0, isCanceling: true);
 
     final activeTaskCount = await _uploadService.cancelBackup();
 
     if (activeTaskCount > 0) {
-      debugPrint("$activeTaskCount tasks left, continuing to cancel...");
+      dPrint(() => "$activeTaskCount tasks left, continuing to cancel...");
       await cancel();
     } else {
-      debugPrint("All tasks canceled successfully.");
+      dPrint(() => "All tasks canceled successfully.");
       // Clear all upload items when cancellation is complete
       state = state.copyWith(isCanceling: false, uploadItems: {});
     }
   }
 
   Future<void> handleBackupResume(String userId) async {
-    debugPrint("handleBackupResume");
+    _logger.info("Resuming backup tasks...");
     final tasks = await _uploadService.getActiveTasks(kBackupGroup);
-    debugPrint("Found ${tasks.length} tasks");
+    _logger.info("Found ${tasks.length} tasks");
 
     if (tasks.isEmpty) {
       // Start a new backup queue
-      debugPrint("Start a new backup queue");
-      await startBackup(userId);
+      _logger.info("Start a new backup queue");
+      return startBackup(userId);
     }
 
-    debugPrint("Tasks to resume: ${tasks.length}");
-    await _uploadService.resumeBackup();
+    _logger.info("Tasks to resume: ${tasks.length}");
+    return _uploadService.resumeBackup();
   }
 
   @override
@@ -354,3 +366,19 @@ class ExpBackupNotifier extends StateNotifier<DriftBackupState> {
     super.dispose();
   }
 }
+
+final driftBackupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>>((ref) async {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) {
+    return [];
+  }
+
+  return ref.read(backupRepositoryProvider).getCandidates(user.id);
+});
+
+final driftCandidateBackupAlbumInfoProvider = FutureProvider.autoDispose.family<List<LocalAlbum>, String>((
+  ref,
+  assetId,
+) {
+  return ref.read(localAssetRepository).getSourceAlbums(assetId, backupSelection: BackupSelection.selected);
+});

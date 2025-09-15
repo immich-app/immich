@@ -1,7 +1,36 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'dart:ui';
 
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+enum AvatarColor {
+  // do not change this order or reuse indices for other purposes, adding is OK
+  primary("primary"),
+  pink("pink"),
+  red("red"),
+  yellow("yellow"),
+  blue("blue"),
+  green("green"),
+  purple("purple"),
+  orange("orange"),
+  gray("gray"),
+  amber("amber");
+
+  final String value;
+  const AvatarColor(this.value);
+
+  Color toColor({bool isDarkTheme = false}) => switch (this) {
+    AvatarColor.primary => isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF),
+    AvatarColor.pink => const Color.fromARGB(255, 244, 114, 182),
+    AvatarColor.red => const Color.fromARGB(255, 239, 68, 68),
+    AvatarColor.yellow => const Color.fromARGB(255, 234, 179, 8),
+    AvatarColor.blue => const Color.fromARGB(255, 59, 130, 246),
+    AvatarColor.green => const Color.fromARGB(255, 22, 163, 74),
+    AvatarColor.purple => const Color.fromARGB(255, 147, 51, 234),
+    AvatarColor.orange => const Color.fromARGB(255, 234, 88, 12),
+    AvatarColor.gray => const Color.fromARGB(255, 75, 85, 99),
+    AvatarColor.amber => const Color.fromARGB(255, 217, 119, 6),
+  };
+}
 
 // TODO: Rename to User once Isar is removed
 class UserDto {
@@ -9,9 +38,8 @@ class UserDto {
   final String email;
   final String name;
   final bool isAdmin;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
-  final String? profileImagePath;
   final AvatarColor avatarColor;
 
   final bool memoryEnabled;
@@ -25,18 +53,22 @@ class UserDto {
 
   bool get hasQuota => quotaSizeInBytes > 0;
 
+  final bool hasProfileImage;
+  final DateTime profileChangedAt;
+
   const UserDto({
     required this.id,
     required this.email,
     required this.name,
-    required this.isAdmin,
-    required this.updatedAt,
-    this.profileImagePath,
+    this.isAdmin = false,
+    this.updatedAt,
+    required this.profileChangedAt,
     this.avatarColor = AvatarColor.primary,
     this.memoryEnabled = true,
     this.inTimeline = false,
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
+    this.hasProfileImage = false,
     this.quotaUsageInBytes = 0,
     this.quotaSizeInBytes = 0,
   });
@@ -49,14 +81,13 @@ email: $email,
 name: $name,
 isAdmin: $isAdmin,
 updatedAt: $updatedAt,
-profileImagePath: ${profileImagePath ?? '<NA>'},
 avatarColor: $avatarColor,
 memoryEnabled: $memoryEnabled,
 inTimeline: $inTimeline,
 isPartnerSharedBy: $isPartnerSharedBy,
 isPartnerSharedWith: $isPartnerSharedWith,
-quotaUsageInBytes: $quotaUsageInBytes,
-quotaSizeInBytes: $quotaSizeInBytes,
+hasProfileImage: $hasProfileImage
+profileChangedAt: $profileChangedAt
 }''';
   }
 
@@ -66,28 +97,30 @@ quotaSizeInBytes: $quotaSizeInBytes,
     String? name,
     bool? isAdmin,
     DateTime? updatedAt,
-    String? profileImagePath,
     AvatarColor? avatarColor,
     bool? memoryEnabled,
     bool? inTimeline,
     bool? isPartnerSharedBy,
     bool? isPartnerSharedWith,
-    int? quotaUsageInBytes,
+    bool? hasProfileImage,
+    DateTime? profileChangedAt,
     int? quotaSizeInBytes,
+    int? quotaUsageInBytes,
   }) => UserDto(
     id: id ?? this.id,
     email: email ?? this.email,
     name: name ?? this.name,
     isAdmin: isAdmin ?? this.isAdmin,
     updatedAt: updatedAt ?? this.updatedAt,
-    profileImagePath: profileImagePath ?? this.profileImagePath,
     avatarColor: avatarColor ?? this.avatarColor,
     memoryEnabled: memoryEnabled ?? this.memoryEnabled,
     inTimeline: inTimeline ?? this.inTimeline,
     isPartnerSharedBy: isPartnerSharedBy ?? this.isPartnerSharedBy,
     isPartnerSharedWith: isPartnerSharedWith ?? this.isPartnerSharedWith,
-    quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
+    hasProfileImage: hasProfileImage ?? this.hasProfileImage,
+    profileChangedAt: profileChangedAt ?? this.profileChangedAt,
     quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
+    quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
   );
 
   @override
@@ -95,18 +128,20 @@ quotaSizeInBytes: $quotaSizeInBytes,
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        other.updatedAt.isAtSameMomentAs(updatedAt) &&
+        ((updatedAt == null && other.updatedAt == null) ||
+            (updatedAt != null && other.updatedAt != null && other.updatedAt!.isAtSameMomentAs(updatedAt!))) &&
         other.avatarColor == avatarColor &&
         other.email == email &&
         other.name == name &&
         other.isPartnerSharedBy == isPartnerSharedBy &&
         other.isPartnerSharedWith == isPartnerSharedWith &&
-        other.profileImagePath == profileImagePath &&
         other.isAdmin == isAdmin &&
         other.memoryEnabled == memoryEnabled &&
         other.inTimeline == inTimeline &&
-        other.quotaUsageInBytes == quotaUsageInBytes &&
-        other.quotaSizeInBytes == quotaSizeInBytes;
+        other.hasProfileImage == hasProfileImage &&
+        other.profileChangedAt.isAtSameMomentAs(profileChangedAt) &&
+        other.quotaSizeInBytes == quotaSizeInBytes &&
+        other.quotaUsageInBytes == quotaUsageInBytes;
   }
 
   @override
@@ -116,14 +151,15 @@ quotaSizeInBytes: $quotaSizeInBytes,
       email.hashCode ^
       updatedAt.hashCode ^
       isAdmin.hashCode ^
-      profileImagePath.hashCode ^
       avatarColor.hashCode ^
       memoryEnabled.hashCode ^
       inTimeline.hashCode ^
       isPartnerSharedBy.hashCode ^
       isPartnerSharedWith.hashCode ^
-      quotaUsageInBytes.hashCode ^
-      quotaSizeInBytes.hashCode;
+      hasProfileImage.hashCode ^
+      profileChangedAt.hashCode ^
+      quotaSizeInBytes.hashCode ^
+      quotaUsageInBytes.hashCode;
 }
 
 class PartnerUserDto {

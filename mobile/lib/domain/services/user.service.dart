@@ -45,7 +45,7 @@ class UserService {
   Future<String?> createProfileImage(String name, Uint8List image) async {
     try {
       final path = await _userApiRepository.createProfileImage(name: name, data: image);
-      final updatedUser = getMyUser().copyWith(profileImagePath: path);
+      final updatedUser = getMyUser();
       await _storeService.put(StoreKey.currentUser, updatedUser);
       await _isarUserRepository.update(updatedUser);
       return path;

@@ -1,10 +1,15 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
+import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 import 'package:logging/logging.dart';
@@ -30,6 +35,7 @@ class ActionNotifier extends Notifier<void> {
   final Logger _logger = Logger('ActionNotifier');
   late ActionService _service;
   late UploadService _uploadService;
+  late DownloadService _downloadService;
 
   ActionNotifier() : super();
 
@@ -37,6 +43,29 @@ class ActionNotifier extends Notifier<void> {
   void build() {
     _uploadService = ref.watch(uploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
+    _downloadService = ref.watch(downloadServiceProvider);
+    _downloadService.onImageDownloadStatus = _downloadImageCallback;
+    _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
+    _downloadService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
+  }
+
+  void _downloadImageCallback(TaskStatusUpdate update) {
+    if (update.status == TaskStatus.complete) {
+      _downloadService.saveImageWithPath(update.task);
+    }
+  }
+
+  void _downloadVideoCallback(TaskStatusUpdate update) {
+    if (update.status == TaskStatus.complete) {
+      _downloadService.saveVideo(update.task);
+    }
+  }
+
+  void _downloadLivePhotoCallback(TaskStatusUpdate update) async {
+    if (update.status == TaskStatus.complete) {
+      final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
+      _downloadService.saveLivePhotos(update.task, livePhotosId);
+    }
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
@@ -86,6 +115,16 @@ class ActionNotifier extends Notifier<void> {
         null => const {},
       },
     };
+  }
+
+  Future<ActionResult> troubleshoot(ActionSource source, BuildContext context) async {
+    final assets = _getAssets(source);
+    if (assets.length > 1) {
+      return ActionResult(count: assets.length, success: false, error: 'Cannot troubleshoot multiple assets');
+    }
+    context.pushRoute(AssetTroubleshootRoute(asset: assets.first));
+
+    return ActionResult(count: assets.length, success: true);
   }
 
   Future<ActionResult> shareLink(ActionSource source, BuildContext context) async {
@@ -239,6 +278,21 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
+  Future<ActionResult?> editDateTime(ActionSource source, BuildContext context) async {
+    final ids = _getOwnedRemoteIdsForSource(source);
+    try {
+      final isEdited = await _service.editDateTime(ids, context);
+      if (!isEdited) {
+        return null;
+      }
+
+      return ActionResult(count: ids.length, success: true);
+    } catch (error, stack) {
+      _logger.severe('Failed to edit date and time for assets', error, stack);
+      return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
     final ids = _getRemoteIdsForSource(source);
     try {
@@ -247,6 +301,22 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to remove assets from album', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());
+    }
+  }
+
+  Future<ActionResult> updateDescription(ActionSource source, String description) async {
+    final ids = _getRemoteIdsForSource(source);
+    if (ids.length != 1) {
+      _logger.warning('updateDescription called with multiple assets, expected single asset');
+      return ActionResult(count: ids.length, success: false, error: 'Expected single asset for description update');
+    }
+
+    try {
+      final isUpdated = await _service.updateDescription(ids.first, description);
+      return ActionResult(count: 1, success: isUpdated);
+    } catch (error, stack) {
+      _logger.severe('Failed to update description for asset', error, stack);
+      return ActionResult(count: 1, success: false, error: error.toString());
     }
   }
 
@@ -276,8 +346,8 @@ class ActionNotifier extends Notifier<void> {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      final count = await _service.shareAssets(ids);
-      return ActionResult(count: count, success: true);
+      await _service.shareAssets(ids);
+      return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());

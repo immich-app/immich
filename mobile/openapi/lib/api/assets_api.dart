@@ -18,7 +18,7 @@ class AssetsApi {
 
   /// checkBulkUpload
   ///
-  /// Checks if assets exist by checksums
+  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -52,7 +52,7 @@ class AssetsApi {
 
   /// checkBulkUpload
   ///
-  /// Checks if assets exist by checksums
+  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
   ///
   /// Parameters:
   ///
@@ -128,7 +128,60 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<Response> deleteAssetMetadataWithHttpInfo(String id, AssetMetadataKey key,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata/{key}'
+      .replaceAll('{id}', id)
+      .replaceAll('{key}', key.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<void> deleteAssetMetadata(String id, AssetMetadataKey key,) async {
+    final response = await deleteAssetMetadataWithHttpInfo(id, key,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// This endpoint requires the `asset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
@@ -157,6 +210,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkDeleteDto] assetBulkDeleteDto (required):
@@ -167,7 +222,10 @@ class AssetsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /assets/{id}/original' operation and returns the [Response].
+  /// This endpoint requires the `asset.download` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -208,6 +266,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.download` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -290,7 +350,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/{id}' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -331,6 +394,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -353,7 +418,124 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/statistics' operation and returns the [Response].
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getAssetMetadataWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<AssetMetadataResponseDto>?> getAssetMetadata(String id,) async {
+    final response = await getAssetMetadataWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetMetadataResponseDto>') as List)
+        .cast<AssetMetadataResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<Response> getAssetMetadataByKeyWithHttpInfo(String id, AssetMetadataKey key,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata/{key}'
+      .replaceAll('{id}', id)
+      .replaceAll('{key}', key.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataKey] key (required):
+  Future<AssetMetadataResponseDto?> getAssetMetadataByKey(String id, AssetMetadataKey key,) async {
+    final response = await getAssetMetadataByKeyWithHttpInfo(id, key,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetMetadataResponseDto',) as AssetMetadataResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `asset.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [bool] isFavorite:
@@ -396,6 +578,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.statistics` permission.
+  ///
   /// Parameters:
   ///
   /// * [bool] isFavorite:
@@ -418,7 +602,7 @@ class AssetsApi {
     return null;
   }
 
-  /// This property was deprecated in v1.116.0
+  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -454,7 +638,7 @@ class AssetsApi {
     );
   }
 
-  /// This property was deprecated in v1.116.0
+  /// This property was deprecated in v1.116.0. This endpoint requires the `asset.read` permission.
   ///
   /// Parameters:
   ///
@@ -477,7 +661,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/{id}/video/playback' operation and returns the [Response].
+  /// This endpoint requires the `asset.view` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -518,6 +705,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.view` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -540,9 +729,9 @@ class AssetsApi {
     return null;
   }
 
-  /// replaceAsset
-  ///
   /// Replace the asset with new file, without changing its id
+  ///
+  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -634,9 +823,9 @@ class AssetsApi {
     );
   }
 
-  /// replaceAsset
-  ///
   /// Replace the asset with new file, without changing its id
+  ///
+  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
   ///
   /// Parameters:
   ///
@@ -713,7 +902,10 @@ class AssetsApi {
     }
   }
 
-  /// Performs an HTTP 'PUT /assets/{id}' operation and returns the [Response].
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -745,6 +937,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -765,7 +959,70 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataUpsertDto] assetMetadataUpsertDto (required):
+  Future<Response> updateAssetMetadataWithHttpInfo(String id, AssetMetadataUpsertDto assetMetadataUpsertDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/metadata'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetMetadataUpsertDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetMetadataUpsertDto] assetMetadataUpsertDto (required):
+  Future<List<AssetMetadataResponseDto>?> updateAssetMetadata(String id, AssetMetadataUpsertDto assetMetadataUpsertDto,) async {
+    final response = await updateAssetMetadataWithHttpInfo(id, assetMetadataUpsertDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetMetadataResponseDto>') as List)
+        .cast<AssetMetadataResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `asset.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
@@ -794,6 +1051,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [AssetBulkUpdateDto] assetBulkUpdateDto (required):
@@ -804,7 +1063,10 @@ class AssetsApi {
     }
   }
 
-  /// Performs an HTTP 'POST /assets' operation and returns the [Response].
+  /// This endpoint requires the `asset.upload` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
@@ -816,6 +1078,8 @@ class AssetsApi {
   /// * [DateTime] fileCreatedAt (required):
   ///
   /// * [DateTime] fileModifiedAt (required):
+  ///
+  /// * [List<AssetMetadataUpsertItemDto>] metadata (required):
   ///
   /// * [String] key:
   ///
@@ -835,7 +1099,7 @@ class AssetsApi {
   /// * [MultipartFile] sidecarData:
   ///
   /// * [AssetVisibility] visibility:
-  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+  Future<Response> uploadAssetWithHttpInfo(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, List<AssetMetadataUpsertItemDto> metadata, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets';
 
@@ -898,6 +1162,10 @@ class AssetsApi {
       hasFields = true;
       mp.fields[r'livePhotoVideoId'] = parameterToString(livePhotoVideoId);
     }
+    if (metadata != null) {
+      hasFields = true;
+      mp.fields[r'metadata'] = parameterToString(metadata);
+    }
     if (sidecarData != null) {
       hasFields = true;
       mp.fields[r'sidecarData'] = sidecarData.field;
@@ -922,6 +1190,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.upload` permission.
+  ///
   /// Parameters:
   ///
   /// * [MultipartFile] assetData (required):
@@ -933,6 +1203,8 @@ class AssetsApi {
   /// * [DateTime] fileCreatedAt (required):
   ///
   /// * [DateTime] fileModifiedAt (required):
+  ///
+  /// * [List<AssetMetadataUpsertItemDto>] metadata (required):
   ///
   /// * [String] key:
   ///
@@ -952,8 +1224,8 @@ class AssetsApi {
   /// * [MultipartFile] sidecarData:
   ///
   /// * [AssetVisibility] visibility:
-  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
-    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, visibility: visibility, );
+  Future<AssetMediaResponseDto?> uploadAsset(MultipartFile assetData, String deviceAssetId, String deviceId, DateTime fileCreatedAt, DateTime fileModifiedAt, List<AssetMetadataUpsertItemDto> metadata, { String? key, String? slug, String? xImmichChecksum, String? duration, String? filename, bool? isFavorite, String? livePhotoVideoId, MultipartFile? sidecarData, AssetVisibility? visibility, }) async {
+    final response = await uploadAssetWithHttpInfo(assetData, deviceAssetId, deviceId, fileCreatedAt, fileModifiedAt, metadata,  key: key, slug: slug, xImmichChecksum: xImmichChecksum, duration: duration, filename: filename, isFavorite: isFavorite, livePhotoVideoId: livePhotoVideoId, sidecarData: sidecarData, visibility: visibility, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -967,7 +1239,10 @@ class AssetsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /assets/{id}/thumbnail' operation and returns the [Response].
+  /// This endpoint requires the `asset.view` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -1013,6 +1288,8 @@ class AssetsApi {
     );
   }
 
+  /// This endpoint requires the `asset.view` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

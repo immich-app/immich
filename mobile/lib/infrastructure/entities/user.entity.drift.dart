@@ -3,30 +3,27 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart'
     as i1;
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as i2;
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i3;
+import 'package:immich_mobile/domain/models/user.model.dart' as i2;
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as i3;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
 
 typedef $$UserEntityTableCreateCompanionBuilder =
     i1.UserEntityCompanion Function({
       required String id,
       required String name,
-      i0.Value<bool> isAdmin,
       required String email,
-      i0.Value<String?> profileImagePath,
-      i0.Value<DateTime> updatedAt,
-      i0.Value<int?> quotaSizeInBytes,
-      i0.Value<int> quotaUsageInBytes,
+      i0.Value<bool> hasProfileImage,
+      i0.Value<DateTime> profileChangedAt,
+      i0.Value<i2.AvatarColor> avatarColor,
     });
 typedef $$UserEntityTableUpdateCompanionBuilder =
     i1.UserEntityCompanion Function({
       i0.Value<String> id,
       i0.Value<String> name,
-      i0.Value<bool> isAdmin,
       i0.Value<String> email,
-      i0.Value<String?> profileImagePath,
-      i0.Value<DateTime> updatedAt,
-      i0.Value<int?> quotaSizeInBytes,
-      i0.Value<int> quotaUsageInBytes,
+      i0.Value<bool> hasProfileImage,
+      i0.Value<DateTime> profileChangedAt,
+      i0.Value<i2.AvatarColor> avatarColor,
     });
 
 class $$UserEntityTableFilterComposer
@@ -48,34 +45,25 @@ class $$UserEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<bool> get isAdmin => $composableBuilder(
-    column: $table.isAdmin,
-    builder: (column) => i0.ColumnFilters(column),
-  );
-
   i0.ColumnFilters<String> get email => $composableBuilder(
     column: $table.email,
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<String> get profileImagePath => $composableBuilder(
-    column: $table.profileImagePath,
+  i0.ColumnFilters<bool> get hasProfileImage => $composableBuilder(
+    column: $table.hasProfileImage,
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  i0.ColumnFilters<DateTime> get profileChangedAt => $composableBuilder(
+    column: $table.profileChangedAt,
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i0.ColumnFilters<int> get quotaSizeInBytes => $composableBuilder(
-    column: $table.quotaSizeInBytes,
-    builder: (column) => i0.ColumnFilters(column),
-  );
-
-  i0.ColumnFilters<int> get quotaUsageInBytes => $composableBuilder(
-    column: $table.quotaUsageInBytes,
-    builder: (column) => i0.ColumnFilters(column),
+  i0.ColumnWithTypeConverterFilters<i2.AvatarColor, i2.AvatarColor, int>
+  get avatarColor => $composableBuilder(
+    column: $table.avatarColor,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
   );
 }
 
@@ -98,33 +86,23 @@ class $$UserEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<bool> get isAdmin => $composableBuilder(
-    column: $table.isAdmin,
-    builder: (column) => i0.ColumnOrderings(column),
-  );
-
   i0.ColumnOrderings<String> get email => $composableBuilder(
     column: $table.email,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<String> get profileImagePath => $composableBuilder(
-    column: $table.profileImagePath,
+  i0.ColumnOrderings<bool> get hasProfileImage => $composableBuilder(
+    column: $table.hasProfileImage,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
+  i0.ColumnOrderings<DateTime> get profileChangedAt => $composableBuilder(
+    column: $table.profileChangedAt,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<int> get quotaSizeInBytes => $composableBuilder(
-    column: $table.quotaSizeInBytes,
-    builder: (column) => i0.ColumnOrderings(column),
-  );
-
-  i0.ColumnOrderings<int> get quotaUsageInBytes => $composableBuilder(
-    column: $table.quotaUsageInBytes,
+  i0.ColumnOrderings<int> get avatarColor => $composableBuilder(
+    column: $table.avatarColor,
     builder: (column) => i0.ColumnOrderings(column),
   );
 }
@@ -144,29 +122,24 @@ class $$UserEntityTableAnnotationComposer
   i0.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
-  i0.GeneratedColumn<bool> get isAdmin =>
-      $composableBuilder(column: $table.isAdmin, builder: (column) => column);
-
   i0.GeneratedColumn<String> get email =>
       $composableBuilder(column: $table.email, builder: (column) => column);
 
-  i0.GeneratedColumn<String> get profileImagePath => $composableBuilder(
-    column: $table.profileImagePath,
+  i0.GeneratedColumn<bool> get hasProfileImage => $composableBuilder(
+    column: $table.hasProfileImage,
     builder: (column) => column,
   );
 
-  i0.GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-
-  i0.GeneratedColumn<int> get quotaSizeInBytes => $composableBuilder(
-    column: $table.quotaSizeInBytes,
+  i0.GeneratedColumn<DateTime> get profileChangedAt => $composableBuilder(
+    column: $table.profileChangedAt,
     builder: (column) => column,
   );
 
-  i0.GeneratedColumn<int> get quotaUsageInBytes => $composableBuilder(
-    column: $table.quotaUsageInBytes,
-    builder: (column) => column,
-  );
+  i0.GeneratedColumnWithTypeConverter<i2.AvatarColor, int> get avatarColor =>
+      $composableBuilder(
+        column: $table.avatarColor,
+        builder: (column) => column,
+      );
 }
 
 class $$UserEntityTableTableManager
@@ -208,41 +181,33 @@ class $$UserEntityTableTableManager
               ({
                 i0.Value<String> id = const i0.Value.absent(),
                 i0.Value<String> name = const i0.Value.absent(),
-                i0.Value<bool> isAdmin = const i0.Value.absent(),
                 i0.Value<String> email = const i0.Value.absent(),
-                i0.Value<String?> profileImagePath = const i0.Value.absent(),
-                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-                i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
-                i0.Value<int> quotaUsageInBytes = const i0.Value.absent(),
+                i0.Value<bool> hasProfileImage = const i0.Value.absent(),
+                i0.Value<DateTime> profileChangedAt = const i0.Value.absent(),
+                i0.Value<i2.AvatarColor> avatarColor = const i0.Value.absent(),
               }) => i1.UserEntityCompanion(
                 id: id,
                 name: name,
-                isAdmin: isAdmin,
                 email: email,
-                profileImagePath: profileImagePath,
-                updatedAt: updatedAt,
-                quotaSizeInBytes: quotaSizeInBytes,
-                quotaUsageInBytes: quotaUsageInBytes,
+                hasProfileImage: hasProfileImage,
+                profileChangedAt: profileChangedAt,
+                avatarColor: avatarColor,
               ),
           createCompanionCallback:
               ({
                 required String id,
                 required String name,
-                i0.Value<bool> isAdmin = const i0.Value.absent(),
                 required String email,
-                i0.Value<String?> profileImagePath = const i0.Value.absent(),
-                i0.Value<DateTime> updatedAt = const i0.Value.absent(),
-                i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
-                i0.Value<int> quotaUsageInBytes = const i0.Value.absent(),
+                i0.Value<bool> hasProfileImage = const i0.Value.absent(),
+                i0.Value<DateTime> profileChangedAt = const i0.Value.absent(),
+                i0.Value<i2.AvatarColor> avatarColor = const i0.Value.absent(),
               }) => i1.UserEntityCompanion.insert(
                 id: id,
                 name: name,
-                isAdmin: isAdmin,
                 email: email,
-                profileImagePath: profileImagePath,
-                updatedAt: updatedAt,
-                quotaSizeInBytes: quotaSizeInBytes,
-                quotaUsageInBytes: quotaUsageInBytes,
+                hasProfileImage: hasProfileImage,
+                profileChangedAt: profileChangedAt,
+                avatarColor: avatarColor,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -274,7 +239,7 @@ typedef $$UserEntityTableProcessedTableManager =
       i0.PrefetchHooks Function()
     >;
 
-class $UserEntityTable extends i2.UserEntity
+class $UserEntityTable extends i3.UserEntity
     with i0.TableInfo<$UserEntityTable, i1.UserEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
@@ -300,21 +265,6 @@ class $UserEntityTable extends i2.UserEntity
     type: i0.DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const i0.VerificationMeta _isAdminMeta = const i0.VerificationMeta(
-    'isAdmin',
-  );
-  @override
-  late final i0.GeneratedColumn<bool> isAdmin = i0.GeneratedColumn<bool>(
-    'is_admin',
-    aliasedName,
-    false,
-    type: i0.DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_admin" IN (0, 1))',
-    ),
-    defaultValue: const i3.Constant(false),
-  );
   static const i0.VerificationMeta _emailMeta = const i0.VerificationMeta(
     'email',
   );
@@ -326,62 +276,51 @@ class $UserEntityTable extends i2.UserEntity
     type: i0.DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const i0.VerificationMeta _profileImagePathMeta =
-      const i0.VerificationMeta('profileImagePath');
+  static const i0.VerificationMeta _hasProfileImageMeta =
+      const i0.VerificationMeta('hasProfileImage');
   @override
-  late final i0.GeneratedColumn<String> profileImagePath =
-      i0.GeneratedColumn<String>(
-        'profile_image_path',
+  late final i0.GeneratedColumn<bool> hasProfileImage =
+      i0.GeneratedColumn<bool>(
+        'has_profile_image',
         aliasedName,
-        true,
-        type: i0.DriftSqlType.string,
+        false,
+        type: i0.DriftSqlType.bool,
         requiredDuringInsert: false,
+        defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+          'CHECK ("has_profile_image" IN (0, 1))',
+        ),
+        defaultValue: const i4.Constant(false),
       );
-  static const i0.VerificationMeta _updatedAtMeta = const i0.VerificationMeta(
-    'updatedAt',
-  );
+  static const i0.VerificationMeta _profileChangedAtMeta =
+      const i0.VerificationMeta('profileChangedAt');
   @override
-  late final i0.GeneratedColumn<DateTime> updatedAt =
+  late final i0.GeneratedColumn<DateTime> profileChangedAt =
       i0.GeneratedColumn<DateTime>(
-        'updated_at',
+        'profile_changed_at',
         aliasedName,
         false,
         type: i0.DriftSqlType.dateTime,
         requiredDuringInsert: false,
-        defaultValue: i3.currentDateAndTime,
+        defaultValue: i4.currentDateAndTime,
       );
-  static const i0.VerificationMeta _quotaSizeInBytesMeta =
-      const i0.VerificationMeta('quotaSizeInBytes');
   @override
-  late final i0.GeneratedColumn<int> quotaSizeInBytes = i0.GeneratedColumn<int>(
-    'quota_size_in_bytes',
+  late final i0.GeneratedColumnWithTypeConverter<i2.AvatarColor, int>
+  avatarColor = i0.GeneratedColumn<int>(
+    'avatar_color',
     aliasedName,
-    true,
+    false,
     type: i0.DriftSqlType.int,
     requiredDuringInsert: false,
-  );
-  static const i0.VerificationMeta _quotaUsageInBytesMeta =
-      const i0.VerificationMeta('quotaUsageInBytes');
-  @override
-  late final i0.GeneratedColumn<int> quotaUsageInBytes =
-      i0.GeneratedColumn<int>(
-        'quota_usage_in_bytes',
-        aliasedName,
-        false,
-        type: i0.DriftSqlType.int,
-        requiredDuringInsert: false,
-        defaultValue: const i3.Constant(0),
-      );
+    defaultValue: const i4.Constant(0),
+  ).withConverter<i2.AvatarColor>(i1.$UserEntityTable.$converteravatarColor);
   @override
   List<i0.GeneratedColumn> get $columns => [
     id,
     name,
-    isAdmin,
     email,
-    profileImagePath,
-    updatedAt,
-    quotaSizeInBytes,
-    quotaUsageInBytes,
+    hasProfileImage,
+    profileChangedAt,
+    avatarColor,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -408,12 +347,6 @@ class $UserEntityTable extends i2.UserEntity
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('is_admin')) {
-      context.handle(
-        _isAdminMeta,
-        isAdmin.isAcceptableOrUnknown(data['is_admin']!, _isAdminMeta),
-      );
-    }
     if (data.containsKey('email')) {
       context.handle(
         _emailMeta,
@@ -422,36 +355,21 @@ class $UserEntityTable extends i2.UserEntity
     } else if (isInserting) {
       context.missing(_emailMeta);
     }
-    if (data.containsKey('profile_image_path')) {
+    if (data.containsKey('has_profile_image')) {
       context.handle(
-        _profileImagePathMeta,
-        profileImagePath.isAcceptableOrUnknown(
-          data['profile_image_path']!,
-          _profileImagePathMeta,
+        _hasProfileImageMeta,
+        hasProfileImage.isAcceptableOrUnknown(
+          data['has_profile_image']!,
+          _hasProfileImageMeta,
         ),
       );
     }
-    if (data.containsKey('updated_at')) {
+    if (data.containsKey('profile_changed_at')) {
       context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    if (data.containsKey('quota_size_in_bytes')) {
-      context.handle(
-        _quotaSizeInBytesMeta,
-        quotaSizeInBytes.isAcceptableOrUnknown(
-          data['quota_size_in_bytes']!,
-          _quotaSizeInBytesMeta,
-        ),
-      );
-    }
-    if (data.containsKey('quota_usage_in_bytes')) {
-      context.handle(
-        _quotaUsageInBytesMeta,
-        quotaUsageInBytes.isAcceptableOrUnknown(
-          data['quota_usage_in_bytes']!,
-          _quotaUsageInBytesMeta,
+        _profileChangedAtMeta,
+        profileChangedAt.isAcceptableOrUnknown(
+          data['profile_changed_at']!,
+          _profileChangedAtMeta,
         ),
       );
     }
@@ -472,30 +390,24 @@ class $UserEntityTable extends i2.UserEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
-      isAdmin: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.bool,
-        data['${effectivePrefix}is_admin'],
-      )!,
       email: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
         data['${effectivePrefix}email'],
       )!,
-      profileImagePath: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.string,
-        data['${effectivePrefix}profile_image_path'],
-      ),
-      updatedAt: attachedDatabase.typeMapping.read(
+      hasProfileImage: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}has_profile_image'],
+      )!,
+      profileChangedAt: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
+        data['${effectivePrefix}profile_changed_at'],
       )!,
-      quotaSizeInBytes: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.int,
-        data['${effectivePrefix}quota_size_in_bytes'],
+      avatarColor: i1.$UserEntityTable.$converteravatarColor.fromSql(
+        attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.int,
+          data['${effectivePrefix}avatar_color'],
+        )!,
       ),
-      quotaUsageInBytes: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.int,
-        data['${effectivePrefix}quota_usage_in_bytes'],
-      )!,
     );
   }
 
@@ -504,6 +416,8 @@ class $UserEntityTable extends i2.UserEntity
     return $UserEntityTable(attachedDatabase, alias);
   }
 
+  static i0.JsonTypeConverter2<i2.AvatarColor, int, int> $converteravatarColor =
+      const i0.EnumIndexConverter<i2.AvatarColor>(i2.AvatarColor.values);
   @override
   bool get withoutRowId => true;
   @override
@@ -514,37 +428,31 @@ class UserEntityData extends i0.DataClass
     implements i0.Insertable<i1.UserEntityData> {
   final String id;
   final String name;
-  final bool isAdmin;
   final String email;
-  final String? profileImagePath;
-  final DateTime updatedAt;
-  final int? quotaSizeInBytes;
-  final int quotaUsageInBytes;
+  final bool hasProfileImage;
+  final DateTime profileChangedAt;
+  final i2.AvatarColor avatarColor;
   const UserEntityData({
     required this.id,
     required this.name,
-    required this.isAdmin,
     required this.email,
-    this.profileImagePath,
-    required this.updatedAt,
-    this.quotaSizeInBytes,
-    required this.quotaUsageInBytes,
+    required this.hasProfileImage,
+    required this.profileChangedAt,
+    required this.avatarColor,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['id'] = i0.Variable<String>(id);
     map['name'] = i0.Variable<String>(name);
-    map['is_admin'] = i0.Variable<bool>(isAdmin);
     map['email'] = i0.Variable<String>(email);
-    if (!nullToAbsent || profileImagePath != null) {
-      map['profile_image_path'] = i0.Variable<String>(profileImagePath);
+    map['has_profile_image'] = i0.Variable<bool>(hasProfileImage);
+    map['profile_changed_at'] = i0.Variable<DateTime>(profileChangedAt);
+    {
+      map['avatar_color'] = i0.Variable<int>(
+        i1.$UserEntityTable.$converteravatarColor.toSql(avatarColor),
+      );
     }
-    map['updated_at'] = i0.Variable<DateTime>(updatedAt);
-    if (!nullToAbsent || quotaSizeInBytes != null) {
-      map['quota_size_in_bytes'] = i0.Variable<int>(quotaSizeInBytes);
-    }
-    map['quota_usage_in_bytes'] = i0.Variable<int>(quotaUsageInBytes);
     return map;
   }
 
@@ -556,12 +464,12 @@ class UserEntityData extends i0.DataClass
     return UserEntityData(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      isAdmin: serializer.fromJson<bool>(json['isAdmin']),
       email: serializer.fromJson<String>(json['email']),
-      profileImagePath: serializer.fromJson<String?>(json['profileImagePath']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      quotaSizeInBytes: serializer.fromJson<int?>(json['quotaSizeInBytes']),
-      quotaUsageInBytes: serializer.fromJson<int>(json['quotaUsageInBytes']),
+      hasProfileImage: serializer.fromJson<bool>(json['hasProfileImage']),
+      profileChangedAt: serializer.fromJson<DateTime>(json['profileChangedAt']),
+      avatarColor: i1.$UserEntityTable.$converteravatarColor.fromJson(
+        serializer.fromJson<int>(json['avatarColor']),
+      ),
     );
   }
   @override
@@ -570,54 +478,44 @@ class UserEntityData extends i0.DataClass
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
-      'isAdmin': serializer.toJson<bool>(isAdmin),
       'email': serializer.toJson<String>(email),
-      'profileImagePath': serializer.toJson<String?>(profileImagePath),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'quotaSizeInBytes': serializer.toJson<int?>(quotaSizeInBytes),
-      'quotaUsageInBytes': serializer.toJson<int>(quotaUsageInBytes),
+      'hasProfileImage': serializer.toJson<bool>(hasProfileImage),
+      'profileChangedAt': serializer.toJson<DateTime>(profileChangedAt),
+      'avatarColor': serializer.toJson<int>(
+        i1.$UserEntityTable.$converteravatarColor.toJson(avatarColor),
+      ),
     };
   }
 
   i1.UserEntityData copyWith({
     String? id,
     String? name,
-    bool? isAdmin,
     String? email,
-    i0.Value<String?> profileImagePath = const i0.Value.absent(),
-    DateTime? updatedAt,
-    i0.Value<int?> quotaSizeInBytes = const i0.Value.absent(),
-    int? quotaUsageInBytes,
+    bool? hasProfileImage,
+    DateTime? profileChangedAt,
+    i2.AvatarColor? avatarColor,
   }) => i1.UserEntityData(
     id: id ?? this.id,
     name: name ?? this.name,
-    isAdmin: isAdmin ?? this.isAdmin,
     email: email ?? this.email,
-    profileImagePath: profileImagePath.present
-        ? profileImagePath.value
-        : this.profileImagePath,
-    updatedAt: updatedAt ?? this.updatedAt,
-    quotaSizeInBytes: quotaSizeInBytes.present
-        ? quotaSizeInBytes.value
-        : this.quotaSizeInBytes,
-    quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
+    hasProfileImage: hasProfileImage ?? this.hasProfileImage,
+    profileChangedAt: profileChangedAt ?? this.profileChangedAt,
+    avatarColor: avatarColor ?? this.avatarColor,
   );
   UserEntityData copyWithCompanion(i1.UserEntityCompanion data) {
     return UserEntityData(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
-      isAdmin: data.isAdmin.present ? data.isAdmin.value : this.isAdmin,
       email: data.email.present ? data.email.value : this.email,
-      profileImagePath: data.profileImagePath.present
-          ? data.profileImagePath.value
-          : this.profileImagePath,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      quotaSizeInBytes: data.quotaSizeInBytes.present
-          ? data.quotaSizeInBytes.value
-          : this.quotaSizeInBytes,
-      quotaUsageInBytes: data.quotaUsageInBytes.present
-          ? data.quotaUsageInBytes.value
-          : this.quotaUsageInBytes,
+      hasProfileImage: data.hasProfileImage.present
+          ? data.hasProfileImage.value
+          : this.hasProfileImage,
+      profileChangedAt: data.profileChangedAt.present
+          ? data.profileChangedAt.value
+          : this.profileChangedAt,
+      avatarColor: data.avatarColor.present
+          ? data.avatarColor.value
+          : this.avatarColor,
     );
   }
 
@@ -626,12 +524,10 @@ class UserEntityData extends i0.DataClass
     return (StringBuffer('UserEntityData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('isAdmin: $isAdmin, ')
           ..write('email: $email, ')
-          ..write('profileImagePath: $profileImagePath, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('quotaSizeInBytes: $quotaSizeInBytes, ')
-          ..write('quotaUsageInBytes: $quotaUsageInBytes')
+          ..write('hasProfileImage: $hasProfileImage, ')
+          ..write('profileChangedAt: $profileChangedAt, ')
+          ..write('avatarColor: $avatarColor')
           ..write(')'))
         .toString();
   }
@@ -640,12 +536,10 @@ class UserEntityData extends i0.DataClass
   int get hashCode => Object.hash(
     id,
     name,
-    isAdmin,
     email,
-    profileImagePath,
-    updatedAt,
-    quotaSizeInBytes,
-    quotaUsageInBytes,
+    hasProfileImage,
+    profileChangedAt,
+    avatarColor,
   );
   @override
   bool operator ==(Object other) =>
@@ -653,86 +547,70 @@ class UserEntityData extends i0.DataClass
       (other is i1.UserEntityData &&
           other.id == this.id &&
           other.name == this.name &&
-          other.isAdmin == this.isAdmin &&
           other.email == this.email &&
-          other.profileImagePath == this.profileImagePath &&
-          other.updatedAt == this.updatedAt &&
-          other.quotaSizeInBytes == this.quotaSizeInBytes &&
-          other.quotaUsageInBytes == this.quotaUsageInBytes);
+          other.hasProfileImage == this.hasProfileImage &&
+          other.profileChangedAt == this.profileChangedAt &&
+          other.avatarColor == this.avatarColor);
 }
 
 class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
   final i0.Value<String> id;
   final i0.Value<String> name;
-  final i0.Value<bool> isAdmin;
   final i0.Value<String> email;
-  final i0.Value<String?> profileImagePath;
-  final i0.Value<DateTime> updatedAt;
-  final i0.Value<int?> quotaSizeInBytes;
-  final i0.Value<int> quotaUsageInBytes;
+  final i0.Value<bool> hasProfileImage;
+  final i0.Value<DateTime> profileChangedAt;
+  final i0.Value<i2.AvatarColor> avatarColor;
   const UserEntityCompanion({
     this.id = const i0.Value.absent(),
     this.name = const i0.Value.absent(),
-    this.isAdmin = const i0.Value.absent(),
     this.email = const i0.Value.absent(),
-    this.profileImagePath = const i0.Value.absent(),
-    this.updatedAt = const i0.Value.absent(),
-    this.quotaSizeInBytes = const i0.Value.absent(),
-    this.quotaUsageInBytes = const i0.Value.absent(),
+    this.hasProfileImage = const i0.Value.absent(),
+    this.profileChangedAt = const i0.Value.absent(),
+    this.avatarColor = const i0.Value.absent(),
   });
   UserEntityCompanion.insert({
     required String id,
     required String name,
-    this.isAdmin = const i0.Value.absent(),
     required String email,
-    this.profileImagePath = const i0.Value.absent(),
-    this.updatedAt = const i0.Value.absent(),
-    this.quotaSizeInBytes = const i0.Value.absent(),
-    this.quotaUsageInBytes = const i0.Value.absent(),
+    this.hasProfileImage = const i0.Value.absent(),
+    this.profileChangedAt = const i0.Value.absent(),
+    this.avatarColor = const i0.Value.absent(),
   }) : id = i0.Value(id),
        name = i0.Value(name),
        email = i0.Value(email);
   static i0.Insertable<i1.UserEntityData> custom({
     i0.Expression<String>? id,
     i0.Expression<String>? name,
-    i0.Expression<bool>? isAdmin,
     i0.Expression<String>? email,
-    i0.Expression<String>? profileImagePath,
-    i0.Expression<DateTime>? updatedAt,
-    i0.Expression<int>? quotaSizeInBytes,
-    i0.Expression<int>? quotaUsageInBytes,
+    i0.Expression<bool>? hasProfileImage,
+    i0.Expression<DateTime>? profileChangedAt,
+    i0.Expression<int>? avatarColor,
   }) {
     return i0.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (isAdmin != null) 'is_admin': isAdmin,
       if (email != null) 'email': email,
-      if (profileImagePath != null) 'profile_image_path': profileImagePath,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (quotaSizeInBytes != null) 'quota_size_in_bytes': quotaSizeInBytes,
-      if (quotaUsageInBytes != null) 'quota_usage_in_bytes': quotaUsageInBytes,
+      if (hasProfileImage != null) 'has_profile_image': hasProfileImage,
+      if (profileChangedAt != null) 'profile_changed_at': profileChangedAt,
+      if (avatarColor != null) 'avatar_color': avatarColor,
     });
   }
 
   i1.UserEntityCompanion copyWith({
     i0.Value<String>? id,
     i0.Value<String>? name,
-    i0.Value<bool>? isAdmin,
     i0.Value<String>? email,
-    i0.Value<String?>? profileImagePath,
-    i0.Value<DateTime>? updatedAt,
-    i0.Value<int?>? quotaSizeInBytes,
-    i0.Value<int>? quotaUsageInBytes,
+    i0.Value<bool>? hasProfileImage,
+    i0.Value<DateTime>? profileChangedAt,
+    i0.Value<i2.AvatarColor>? avatarColor,
   }) {
     return i1.UserEntityCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      isAdmin: isAdmin ?? this.isAdmin,
       email: email ?? this.email,
-      profileImagePath: profileImagePath ?? this.profileImagePath,
-      updatedAt: updatedAt ?? this.updatedAt,
-      quotaSizeInBytes: quotaSizeInBytes ?? this.quotaSizeInBytes,
-      quotaUsageInBytes: quotaUsageInBytes ?? this.quotaUsageInBytes,
+      hasProfileImage: hasProfileImage ?? this.hasProfileImage,
+      profileChangedAt: profileChangedAt ?? this.profileChangedAt,
+      avatarColor: avatarColor ?? this.avatarColor,
     );
   }
 
@@ -745,23 +623,19 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
     if (name.present) {
       map['name'] = i0.Variable<String>(name.value);
     }
-    if (isAdmin.present) {
-      map['is_admin'] = i0.Variable<bool>(isAdmin.value);
-    }
     if (email.present) {
       map['email'] = i0.Variable<String>(email.value);
     }
-    if (profileImagePath.present) {
-      map['profile_image_path'] = i0.Variable<String>(profileImagePath.value);
+    if (hasProfileImage.present) {
+      map['has_profile_image'] = i0.Variable<bool>(hasProfileImage.value);
     }
-    if (updatedAt.present) {
-      map['updated_at'] = i0.Variable<DateTime>(updatedAt.value);
+    if (profileChangedAt.present) {
+      map['profile_changed_at'] = i0.Variable<DateTime>(profileChangedAt.value);
     }
-    if (quotaSizeInBytes.present) {
-      map['quota_size_in_bytes'] = i0.Variable<int>(quotaSizeInBytes.value);
-    }
-    if (quotaUsageInBytes.present) {
-      map['quota_usage_in_bytes'] = i0.Variable<int>(quotaUsageInBytes.value);
+    if (avatarColor.present) {
+      map['avatar_color'] = i0.Variable<int>(
+        i1.$UserEntityTable.$converteravatarColor.toSql(avatarColor.value),
+      );
     }
     return map;
   }
@@ -771,12 +645,10 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.UserEntityData> {
     return (StringBuffer('UserEntityCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('isAdmin: $isAdmin, ')
           ..write('email: $email, ')
-          ..write('profileImagePath: $profileImagePath, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('quotaSizeInBytes: $quotaSizeInBytes, ')
-          ..write('quotaUsageInBytes: $quotaUsageInBytes')
+          ..write('hasProfileImage: $hasProfileImage, ')
+          ..write('profileChangedAt: $profileChangedAt, ')
+          ..write('avatarColor: $avatarColor')
           ..write(')'))
         .toString();
   }

@@ -7,6 +7,45 @@ set
 where
   "assetId" in ($2)
 
+-- AssetRepository.updateDateTimeOriginal
+update "asset_exif"
+set
+  "dateTimeOriginal" = "dateTimeOriginal" + $1::interval,
+  "timeZone" = $2
+where
+  "assetId" in ($3)
+returning
+  "assetId",
+  "dateTimeOriginal",
+  "timeZone"
+
+-- AssetRepository.getMetadata
+select
+  "key",
+  "value",
+  "updatedAt"
+from
+  "asset_metadata"
+where
+  "assetId" = $1
+
+-- AssetRepository.getMetadataByKey
+select
+  "key",
+  "value",
+  "updatedAt"
+from
+  "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+
+-- AssetRepository.deleteMetadataByKey
+delete from "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (
@@ -170,27 +209,10 @@ where
 
 -- AssetRepository.getFileSamples
 select
-  "asset"."id",
-  "asset"."originalPath",
-  "asset"."sidecarPath",
-  "asset"."encodedVideoPath",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "path"
-        from
-          "asset_file"
-        where
-          "asset"."id" = "asset_file"."assetId"
-      ) as agg
-  ) as "files"
+  "assetId",
+  "path"
 from
-  "asset"
-where
-  "asset"."libraryId" is null
+  "asset_file"
 limit
   3
 
@@ -282,7 +304,7 @@ with
         epoch
         from
           (
-            asset."localDateTime" - asset."fileCreatedAt" at time zone 'UTC'
+            asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'
           )
       )::real / 3600 as "localOffsetHours",
       "asset"."ownerId",

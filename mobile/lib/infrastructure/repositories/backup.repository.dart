@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import "package:immich_mobile/utils/database.utils.dart";
 
 final backupRepositoryProvider = Provider<DriftBackupRepository>(
   (ref) => DriftBackupRepository(ref.watch(driftProvider)),
@@ -113,6 +115,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     final query = _db.localAssetEntity.select()
       ..where(
         (lae) =>
+            lae.checksum.isNotNull() &
             existsQuery(
               _db.localAlbumAssetEntity.selectOnly()
                 ..addColumns([_db.localAlbumAssetEntity.assetId])
@@ -125,9 +128,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
               _db.remoteAssetEntity.selectOnly()
                 ..addColumns([_db.remoteAssetEntity.checksum])
                 ..where(
-                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) &
-                      _db.remoteAssetEntity.ownerId.equals(userId) &
-                      lae.checksum.isNotNull(),
+                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
                 ),
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),

@@ -16,7 +16,10 @@ class APIKeysApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /api-keys' operation and returns the [Response].
+  /// This endpoint requires the `apiKey.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
@@ -45,6 +48,8 @@ class APIKeysApi {
     );
   }
 
+  /// This endpoint requires the `apiKey.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
@@ -63,7 +68,10 @@ class APIKeysApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /api-keys/{id}' operation and returns the [Response].
+  /// This endpoint requires the `apiKey.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -93,6 +101,8 @@ class APIKeysApi {
     );
   }
 
+  /// This endpoint requires the `apiKey.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -103,7 +113,10 @@ class APIKeysApi {
     }
   }
 
-  /// Performs an HTTP 'GET /api-keys/{id}' operation and returns the [Response].
+  /// This endpoint requires the `apiKey.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -133,6 +146,8 @@ class APIKeysApi {
     );
   }
 
+  /// This endpoint requires the `apiKey.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -151,7 +166,9 @@ class APIKeysApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /api-keys' operation and returns the [Response].
+  /// This endpoint requires the `apiKey.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getApiKeysWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/api-keys';
@@ -177,6 +194,7 @@ class APIKeysApi {
     );
   }
 
+  /// This endpoint requires the `apiKey.read` permission.
   Future<List<APIKeyResponseDto>?> getApiKeys() async {
     final response = await getApiKeysWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -195,7 +213,51 @@ class APIKeysApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /api-keys/{id}' operation and returns the [Response].
+  /// Performs an HTTP 'GET /api-keys/me' operation and returns the [Response].
+  Future<Response> getMyApiKeyWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/api-keys/me';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<APIKeyResponseDto?> getMyApiKey() async {
+    final response = await getMyApiKeyWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'APIKeyResponseDto',) as APIKeyResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `apiKey.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -227,6 +289,8 @@ class APIKeysApi {
     );
   }
 
+  /// This endpoint requires the `apiKey.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

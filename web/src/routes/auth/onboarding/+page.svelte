@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import OnboardingBackup from '$lib/components/onboarding-page/onboarding-backup.svelte';
   import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
   import OnboardingLocale from '$lib/components/onboarding-page/onboarding-language.svelte';
@@ -13,7 +14,7 @@
   import { retrieveServerConfig, retrieveSystemConfig, serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
-  import { mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
+  import { mdiCloudCheckOutline, mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -67,6 +68,13 @@
       role: OnboardingRole.SERVER,
       title: $t('admin.storage_template_settings'),
       icon: mdiHarddisk,
+    },
+    {
+      name: 'backup',
+      component: OnboardingBackup,
+      role: OnboardingRole.SERVER,
+      title: $t('admin.backup_onboarding_title'),
+      icon: mdiCloudCheckOutline,
     },
   ]);
 
