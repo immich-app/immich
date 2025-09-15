@@ -319,6 +319,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     return PhotoView.customChild(
+      key: ValueKey(displayAsset.heroTag),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
@@ -339,7 +340,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         scaleStateNotifier: _videoScaleStateNotifier,
         disableScaleGestures: showingDetails,
         image: Image(
-          key: ValueKey(displayAsset),
+          key: ValueKey(displayAsset.heroTag),
           image: getFullImageProvider(displayAsset, size: context.sizeData),
           height: context.height,
           width: context.width,
