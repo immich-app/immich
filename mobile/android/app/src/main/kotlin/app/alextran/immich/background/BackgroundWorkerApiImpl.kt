@@ -56,7 +56,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
         .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
         .build()
       WorkManager.getInstance(ctx)
-        .enqueueUniqueWork(BACKGROUND_WORKER_NAME, ExistingWorkPolicy.REPLACE, work)
+        .enqueueUniqueWork(BACKGROUND_WORKER_NAME, ExistingWorkPolicy.KEEP, work)
 
       Log.i(TAG, "Enqueued background worker with name: $BACKGROUND_WORKER_NAME")
     }
