@@ -15,13 +15,16 @@ const probeStubDefaultVideoStream: VideoStreamInfo[] = [
     codecName: 'hevc',
     frameCount: 100,
     rotation: 0,
+    level: 4,
+    fps: 30,
     isHDR: false,
     bitrate: 0,
     pixelFormat: 'yuv420p',
   },
 ];
 
-const probeStubDefaultAudioStream: AudioStreamInfo[] = [{ index: 3, codecName: 'mp3', bitrate: 100 }];
+
+const probeStubDefaultAudioStream: AudioStreamInfo[] = [{ index: 3, codecName: 'mp3', bitrate: 100, frameCount: 100 }];
 
 const probeStubDefault: VideoInfo = {
   format: probeStubDefaultFormat,
@@ -40,42 +43,23 @@ export const probeStub = {
         height: 1080,
         width: 400,
         codecName: 'hevc',
-        frameCount: 1,
+        frameCount: 100,
         rotation: 0,
         isHDR: false,
-        bitrate: 100,
+        bitrate: 0,
         pixelFormat: 'yuv420p',
       },
       {
         index: 1,
         height: 1080,
         width: 400,
-        codecName: 'hevc',
-        frameCount: 2,
-        rotation: 0,
-        isHDR: false,
-        bitrate: 101,
-        pixelFormat: 'yuv420p',
-      },
-      {
-        index: 2,
-        height: 1080,
-        width: 400,
         codecName: 'h7000',
-        frameCount: 3,
+        frameCount: 99,
         rotation: 0,
         isHDR: false,
-        bitrate: 99,
+        bitrate: 0,
         pixelFormat: 'yuv420p',
       },
-    ],
-  }),
-  multipleAudioStreams: Object.freeze<VideoInfo>({
-    ...probeStubDefault,
-    audioStreams: [
-      { index: 0, codecName: 'mp3', bitrate: 100 },
-      { index: 1, codecName: 'mp3', bitrate: 101 },
-      { index: 2, codecName: 'mp3', bitrate: 102 },
     ],
   }),
   noHeight: Object.freeze<VideoInfo>({
@@ -219,13 +203,13 @@ export const probeStub = {
   }),
   audioStreamAac: Object.freeze<VideoInfo>({
     ...probeStubDefault,
-    audioStreams: [{ index: 1, codecName: 'aac', bitrate: 100 }],
+    audioStreams: [{ index: 1, codecName: 'aac', frameCount: 100 }],
   }),
   audioStreamUnknown: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [
-      { index: 0, codecName: 'aac', bitrate: 100 },
-      { index: 1, codecName: 'unknown', bitrate: 200 },
+      { index: 0, codecName: 'aac', frameCount: 100 },
+      { index: 1, codecName: 'unknown', frameCount: 200 },
     ],
   }),
   matroskaContainer: Object.freeze<VideoInfo>({

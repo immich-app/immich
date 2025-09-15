@@ -35,6 +35,7 @@ import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetMetadataAuditTable } from 'src/schema/tables/asset-metadata-audit.table';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
+import { AssetVodMetadataTable } from 'src/schema/tables/asset-vod-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { AuditTable } from 'src/schema/tables/audit.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -89,6 +90,7 @@ export class ImmichDatabase {
     AssetJobStatusTable,
     AssetTable,
     AssetFileTable,
+    AssetVodMetadataTable,
     AuditTable,
     AssetExifTable,
     FaceSearchTable,
@@ -174,6 +176,7 @@ export interface DB {
   asset_metadata: AssetMetadataTable;
   asset_metadata_audit: AssetMetadataAuditTable;
   asset_job_status: AssetJobStatusTable;
+  asset_vod_metadata: AssetVodMetadataTable;
 
   audit: AuditTable;
 
