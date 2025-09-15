@@ -54,6 +54,8 @@ class NativeVideoViewer extends HookConsumerWidget {
   final bool showControls;
   final int playbackDelayFactor;
   final Widget image;
+  final ValueNotifier<PhotoViewScaleState>? scaleStateNotifier;
+  final bool disableScaleGestures;
 
   const NativeVideoViewer({
     super.key,
@@ -61,6 +63,8 @@ class NativeVideoViewer extends HookConsumerWidget {
     required this.image,
     this.showControls = true,
     this.playbackDelayFactor = 1,
+    this.scaleStateNotifier,
+    this.disableScaleGestures = false,
   });
 
   @override
@@ -396,16 +400,16 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
     });
 
-    final contextAspectRatio = context.width / context.height;
-    double renderedWidth = 0.0;
-    double renderedHeight = 0.0;
+    Size? videoContextSize;
 
-    if (aspectRatio.value != null && (aspectRatio.value! > contextAspectRatio)) {
-      renderedWidth = context.width;
-      renderedHeight = context.width / aspectRatio.value!;
-    } else if (aspectRatio.value != null) {
-      renderedHeight = context.height;
-      renderedWidth = context.height * aspectRatio.value!;
+    if (aspectRatio.value != null) {
+      final contextAspectRatio = context.width / context.height;
+
+      if (aspectRatio.value! > contextAspectRatio) {
+        videoContextSize = Size(context.width, context.width / aspectRatio.value!);
+      } else {
+        videoContextSize = Size(context.height * aspectRatio.value!, context.height);
+      }
     }
 
     return SizedBox(
@@ -421,8 +425,10 @@ class NativeVideoViewer extends HookConsumerWidget {
               child: PhotoView.customChild(
                 key: ValueKey(asset),
                 enableRotation: false,
+                disableScaleGestures: disableScaleGestures,
                 backgroundDecoration: const BoxDecoration(color: Colors.transparent),
-                childSize: Size(renderedWidth, renderedHeight),
+                scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
+                childSize: videoContextSize,
                 child: AspectRatio(
                   key: ValueKey(asset),
                   aspectRatio: aspectRatio.value!,

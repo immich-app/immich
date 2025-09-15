@@ -50,6 +50,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   final _scrollController = ScrollController();
   late final _proxyScrollController = ProxyScrollController(scrollController: _scrollController);
+  final ValueNotifier<PhotoViewScaleState> _scaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
 
   double _snapOffset = 0.0;
   double _lastScrollOffset = 0.0;
@@ -78,6 +79,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _proxyScrollController.dispose();
     _scaleBoundarySub?.cancel();
     _eventSubscription?.cancel();
+    _scaleStateNotifier.dispose();
     super.dispose();
   }
 
@@ -231,10 +233,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
 
   void _onScaleStateChanged(PhotoViewScaleState scaleState) {
-    _isZoomed = switch (scaleState) {
-      PhotoViewScaleState.zoomedIn || PhotoViewScaleState.covering => true,
-      _ => false,
-    };
+    _isZoomed =
+        scaleState == PhotoViewScaleState.zoomedIn ||
+        scaleState == PhotoViewScaleState.covering ||
+        _scaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
+        _scaleStateNotifier.value == PhotoViewScaleState.covering;
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
@@ -334,6 +337,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       child: NativeVideoViewer(
         key: ValueKey(displayAsset.heroTag),
         asset: displayAsset,
+        scaleStateNotifier: _scaleStateNotifier,
+        disableScaleGestures: showingDetails,
         image: Image(
           key: ValueKey(displayAsset),
           image: getFullImageProvider(displayAsset, size: context.sizeData),
