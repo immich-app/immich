@@ -24,7 +24,7 @@ services:
     user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
-      dockerfile: server/Dockerfile
+      dockerfile: server/Dockerfile.dev
       target: dev
     restart: unless-stopped
     volumes:
@@ -85,7 +85,7 @@ services:
     user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
-      dockerfile: server/Dockerfile
+      dockerfile: server/Dockerfile.dev
       target: dev
     command: ['immich-web']
     env_file:
