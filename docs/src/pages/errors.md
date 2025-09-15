@@ -8,7 +8,7 @@ In order to update to Immich `v1.137.0` or above, the application must be starte
 
 We recommend users upgrade to `1.132.3` since it does not have any breaking changes or bugs on this upgrade path.
 
-Note: avoid v1.136.0 if upgrading from v1.131.* (or earlier) due to a bug blocking this upgrade in some installations.
+Note: avoid v1.136.0 if upgrading from v1.131 (or earlier) due to a bug blocking this upgrade in some installations.
 
 ## Inconsistent Media Location
 
