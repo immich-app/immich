@@ -27,7 +27,7 @@ export class GCastDestination implements ICastDestination {
 
   async initialize(): Promise<boolean> {
     const preferencesStore = get(preferences);
-    if (!preferencesStore.cast.gCastEnabled) {
+    if (!preferencesStore || !preferencesStore.cast.gCastEnabled) {
       this.isAvailable = false;
       return false;
     }

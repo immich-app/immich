@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -13,6 +12,7 @@ import 'package:immich_mobile/services/etag.service.dart';
 import 'package:immich_mobile/services/exif.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
   return AssetNotifier(
@@ -68,7 +68,7 @@ class AssetNotifier extends StateNotifier<bool> {
       }
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
-      debugPrint("changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal");
+      dPrint(() => "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal");
       if (newRemote) {
         _ref.invalidate(memoryFutureProvider);
       }

@@ -77,7 +77,9 @@ enum StoreKey<T> {
   enableBackup<bool>._(1003),
   useWifiForUploadVideos<bool>._(1004),
   useWifiForUploadPhotos<bool>._(1005),
-  needBetaMigration<bool>._(1006);
+  needBetaMigration<bool>._(1006),
+  // TODO: Remove this after patching open-api
+  shouldResetSync<bool>._(1007);
 
   const StoreKey._(this.id);
   final int id;

@@ -1,22 +1,20 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:platform/platform.dart';
 
 enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount, newestAsset }
 
 class DriftLocalAlbumRepository extends DriftDatabaseRepository {
   final Drift _db;
-  final Platform _platform;
-  const DriftLocalAlbumRepository(this._db, {Platform? platform})
-    : _platform = platform ?? const LocalPlatform(),
-      super(_db);
+
+  const DriftLocalAlbumRepository(this._db) : super(_db);
 
   Future<List<LocalAlbum>> getAll({Set<SortLocalAlbumsBy> sortBy = const {}}) {
     final assetCount = _db.localAlbumAssetEntity.assetId.count();
@@ -61,7 +59,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
     // Remove all assets that are only in this particular album
     // We cannot remove all assets in the album because they might be in other albums in iOS
     // That is not the case on Android since asset <-> album has one:one mapping
-    final assetsToDelete = _platform.isIOS ? await _getUniqueAssetsInAlbum(albumId) : await getAssetIds(albumId);
+    final assetsToDelete = CurrentPlatform.isIOS ? await _getUniqueAssetsInAlbum(albumId) : await getAssetIds(albumId);
     await _deleteAssets(assetsToDelete);
 
     await _db.managers.localAlbumEntity
@@ -144,7 +142,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
         }
       });
 
-      if (_platform.isAndroid) {
+      if (CurrentPlatform.isAndroid) {
         // On Android, an asset can only be in one album
         // So, get the albums that are marked for deletion
         // and delete all the assets that are in those albums
@@ -265,7 +263,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return Future.value();
     }
 
-    if (_platform.isAndroid) {
+    if (CurrentPlatform.isAndroid) {
       return _deleteAssets(assetIds);
     }
 

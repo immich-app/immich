@@ -3,12 +3,12 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class UploadTaskWithFile {
   final File file;
@@ -79,14 +79,17 @@ class UploadRepository {
       FileDownloader().database.allRecordsWithStatus(TaskStatus.paused, group: kBackupGroup),
     ]);
 
-    debugPrint("""
+    dPrint(
+      () =>
+          """
       Upload Info:
       Enqueued: ${enqueuedTasks.length}
       Running: ${runningTasks.length}
       Canceled: ${canceledTasks.length}
       Waiting: ${waitingTasks.length}
       Paused: ${pausedTasks.length}
-    """);
+    """,
+    );
   }
 
   Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {

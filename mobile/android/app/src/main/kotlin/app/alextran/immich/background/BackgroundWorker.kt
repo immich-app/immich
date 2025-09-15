@@ -54,12 +54,6 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
   private var foregroundFuture: ListenableFuture<Void>? = null
 
-  init {
-    if (!loader.initialized()) {
-      loader.startInitialization(ctx)
-    }
-  }
-
   companion object {
     private const val NOTIFICATION_CHANNEL_ID = "immich::background_worker::notif"
     private const val NOTIFICATION_ID = 100
@@ -67,6 +61,10 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
   override fun startWork(): ListenableFuture<Result> {
     Log.i(TAG, "Starting background upload worker")
+
+    if (!loader.initialized()) {
+      loader.startInitialization(ctx)
+    }
 
     val notificationChannel = NotificationChannel(
       NOTIFICATION_CHANNEL_ID,

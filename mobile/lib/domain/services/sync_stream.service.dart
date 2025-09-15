@@ -29,6 +29,7 @@ class SyncStreamService {
     bool shouldReset = false;
     await _syncApiRepository.streamChanges(_handleEvents, onReset: () => shouldReset = true);
     if (shouldReset) {
+      _logger.info("Resetting sync state as requested by server");
       await _syncApiRepository.streamChanges(_handleEvents);
     }
   }

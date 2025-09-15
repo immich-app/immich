@@ -134,6 +134,13 @@ custom_lint:
 
 dart_code_metrics:
   rules:
+    - banned-usage:
+        entries:
+          - name: debugPrint
+            description: Use dPrint instead of debugPrint for proper tree-shaking in release builds.
+            exclude-paths:
+              - 'lib/utils/debug_print.dart'
+            severity: perf
     # All rules from "recommended" preset
     # Show potential errors
   #  - avoid-cascade-after-if-null

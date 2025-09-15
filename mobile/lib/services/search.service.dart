@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/search_api.repository.dart';
@@ -10,6 +9,7 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final searchServiceProvider = Provider(
   (ref) => SearchService(
@@ -43,7 +43,7 @@ class SearchService {
         model: model,
       );
     } catch (e) {
-      debugPrint("[ERROR] [getSearchSuggestions] ${e.toString()}");
+      dPrint(() => "[ERROR] [getSearchSuggestions] ${e.toString()}");
       return [];
     }
   }

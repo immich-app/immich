@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class DriftPersonNameEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -34,7 +35,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
         context.pop<String>(newName);
       }
     } catch (error) {
-      debugPrint('Error updating name: $error');
+      dPrint(() => 'Error updating name: $error');
 
       if (!context.mounted) {
         return;

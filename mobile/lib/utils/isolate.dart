@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -37,7 +38,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         DartPluginRegistrant.ensureInitialized();
 
         final (isar, drift, logDb) = await Bootstrap.initDB();
-        await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false);
+        await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false, listenStoreUpdates: false);
         final ref = ProviderContainer(
           overrides: [
             // TODO: Remove once isar is removed
@@ -61,6 +62,7 @@ Cancelable<T?> runInIsolateGentle<T>({
           try {
             ref.dispose();
 
+            await Store.dispose();
             await LogService.I.dispose();
             await logDb.close();
             await drift.close();
@@ -71,10 +73,10 @@ Cancelable<T?> runInIsolateGentle<T>({
                 await isar.close();
               }
             } catch (e) {
-              debugPrint("Error closing Isar: $e");
+              dPrint(() => "Error closing Isar: $e");
             }
           } catch (error, stack) {
-            debugPrint("Error closing resources in isolate: $error, $stack");
+            dPrint(() => "Error closing resources in isolate: $error, $stack");
           } finally {
             ref.dispose();
             // Delay to ensure all resources are released
@@ -84,7 +86,7 @@ Cancelable<T?> runInIsolateGentle<T>({
         return null;
       },
       (error, stack) {
-        debugPrint("Error in isolate zone: $error, $stack");
+        dPrint(() => "Error in isolate $debugLabel zone: $error, $stack");
       },
     );
     return null;

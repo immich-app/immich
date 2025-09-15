@@ -100,8 +100,14 @@ class BackgroundSyncManager {
     // We use a ternary operator to avoid [_deviceAlbumSyncTask] from being
     // captured by the closure passed to [runInIsolateGentle].
     _deviceAlbumSyncTask = full
-        ? runInIsolateGentle(computation: (ref) => ref.read(localSyncServiceProvider).sync(full: true))
-        : runInIsolateGentle(computation: (ref) => ref.read(localSyncServiceProvider).sync(full: false));
+        ? runInIsolateGentle(
+            computation: (ref) => ref.read(localSyncServiceProvider).sync(full: true),
+            debugLabel: 'local-sync-full-true',
+          )
+        : runInIsolateGentle(
+            computation: (ref) => ref.read(localSyncServiceProvider).sync(full: false),
+            debugLabel: 'local-sync-full-false',
+          );
 
     return _deviceAlbumSyncTask!
         .whenComplete(() {
@@ -122,7 +128,10 @@ class BackgroundSyncManager {
 
     onHashingStart?.call();
 
-    _hashTask = runInIsolateGentle(computation: (ref) => ref.read(hashServiceProvider).hashAssets());
+    _hashTask = runInIsolateGentle(
+      computation: (ref) => ref.read(hashServiceProvider).hashAssets(),
+      debugLabel: 'hash-assets',
+    );
 
     return _hashTask!
         .whenComplete(() {
@@ -142,7 +151,10 @@ class BackgroundSyncManager {
 
     onRemoteSyncStart?.call();
 
-    _syncTask = runInIsolateGentle(computation: (ref) => ref.read(syncStreamServiceProvider).sync());
+    _syncTask = runInIsolateGentle(
+      computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
+      debugLabel: 'remote-sync',
+    );
     return _syncTask!
         .whenComplete(() {
           onRemoteSyncComplete?.call();
@@ -169,7 +181,7 @@ class BackgroundSyncManager {
       return _linkedAlbumSyncTask!.future;
     }
 
-    _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated);
+    _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated, debugLabel: 'linked-album-sync');
     return _linkedAlbumSyncTask!.whenComplete(() {
       _linkedAlbumSyncTask = null;
     });
@@ -178,4 +190,5 @@ class BackgroundSyncManager {
 
 Cancelable<void> _handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) => runInIsolateGentle(
   computation: (ref) => ref.read(syncStreamServiceProvider).handleWsAssetUploadReadyV1Batch(batchData),
+  debugLabel: 'websocket-batch',
 );

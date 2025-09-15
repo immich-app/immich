@@ -14,6 +14,7 @@ import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custome_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
@@ -91,7 +92,7 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_prefer_remote_title".tr(),
         subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
       ),
-      const LocalStorageSettings(),
+      if (!Store.isBetaTimelineEnabled) const LocalStorageSettings(),
       SettingsSwitchListTile(
         enabled: !isLoggedIn,
         valueNotifier: allowSelfSignedSSLCert,
@@ -101,12 +102,13 @@ class AdvancedSettings extends HookConsumerWidget {
       ),
       const CustomeProxyHeaderSettings(),
       SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
-      SettingsSwitchListTile(
-        valueNotifier: useAlternatePMFilter,
-        title: "advanced_settings_enable_alternate_media_filter_title".tr(),
-        subtitle: "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
-      ),
-      // TODO: Remove this check when beta timeline goes stable
+      if (!Store.isBetaTimelineEnabled)
+        SettingsSwitchListTile(
+          valueNotifier: useAlternatePMFilter,
+          title: "advanced_settings_enable_alternate_media_filter_title".tr(),
+          subtitle: "advanced_settings_enable_alternate_media_filter_subtitle".tr(),
+        ),
+      const BetaTimelineListTile(),
       if (Store.isBetaTimelineEnabled)
         SettingsSwitchListTile(
           valueNotifier: readonlyModeEnabled,

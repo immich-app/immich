@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -22,6 +21,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final uploadServiceProvider = Provider((ref) {
   final service = UploadService(
@@ -253,7 +253,7 @@ class UploadService {
 
       enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
-      debugPrint("Error handling live photo upload task: $error $stackTrace");
+      dPrint(() => "Error handling live photo upload task: $error $stackTrace");
     }
   }
 

@@ -40,6 +40,8 @@
   // of zero when starting the 'slide' animation.
   let height: number = $state(0);
 
+  let isTransitioned = $state(false);
+
   $effect(() => {
     if (menuElement) {
       let layoutDirection = direction;
@@ -64,6 +66,12 @@
   style:top="{top}px"
   transition:slide={{ duration: 250, easing: quintOut }}
   use:clickOutside={{ onOutclick: onClose }}
+  onintroend={() => {
+    isTransitioned = true;
+  }}
+  onoutrostart={() => {
+    isTransitioned = false;
+  }}
 >
   <ul
     {id}
@@ -73,7 +81,9 @@
     bind:this={menuElement}
     class="{isVisible
       ? 'max-h-dvh'
-      : 'max-h-0'} flex flex-col transition-all duration-250 ease-in-out outline-none overflow-auto"
+      : 'max-h-0'} flex flex-col transition-all duration-250 ease-in-out outline-none {isTransitioned
+      ? 'overflow-auto'
+      : ''}"
     role="menu"
     tabindex="-1"
   >

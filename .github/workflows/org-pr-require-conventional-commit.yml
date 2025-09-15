@@ -1,0 +1,12 @@
+name: PR Conventional Commit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  validate-pr-title:
+    name: Validate PR Title (conventional commit)
+    uses: immich-app/devtools/.github/workflows/shared-pr-require-conventional-commit.yml@main
+    permissions:
+      pull-requests: write

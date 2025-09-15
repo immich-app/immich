@@ -48,7 +48,7 @@
         aria-label={$t('show_album_options')}
         icon={mdiDotsVertical}
         shape="round"
-        variant="ghost"
+        variant="filled"
         size="medium"
         class="icon-white-drop-shadow"
         onclick={showAlbumContextMenu}
