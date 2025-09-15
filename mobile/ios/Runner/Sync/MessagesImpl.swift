@@ -24,7 +24,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let recoveredAlbumSubType = 1000000219
   
   private let maxConcurrentHashOperations = 16
-
+  
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
@@ -80,7 +80,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
       for i in 0..<collections.count {
         let album = collections.object(at: i)
-      
+        
         // Ignore recovered album
         if(album.assetCollectionSubtype.rawValue == self.recoveredAlbumSubType) {
           continue;
@@ -238,7 +238,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       let date = NSDate(timeIntervalSince1970: TimeInterval(updatedTimeCond!))
       options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
     }
-
+    
     let result = PHAsset.fetchAssets(in: album, options: options)
     if(result.count == 0) {
       return []
@@ -253,15 +253,23 @@ class NativeSyncApiImpl: NativeSyncApi {
   
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void) {
     Task {
+      var missingAssetIds = Set(assetIds)
+      var assets = [PHAsset]()
+      assets.reserveCapacity(assetIds.count)
+      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: nil).enumerateObjects { (asset, _, _) in
+        missingAssetIds.remove(asset.localIdentifier)
+        assets.append(asset)
+      }
       await withTaskGroup(of: HashResult.self) { taskGroup in
-        var results: [HashResult] = []
-        let maxConcurrentTasks = min(maxConcurrentHashOperations, assetIds.count)
+        var results = [HashResult]()
+        results.reserveCapacity(assets.count)
+        let maxConcurrentTasks = min(maxConcurrentHashOperations, assets.count)
         for index in 0..<maxConcurrentTasks {
           taskGroup.addTask { [weak self] in
             guard let self = self else {
-              return HashResult(assetId: assetIds[index], error: "NativeSyncApiImpl deallocated", hash: nil)
+              return HashResult(assetId: assets[index].localIdentifier, error: "NativeSyncApiImpl deallocated", hash: nil)
             }
-            return await self.hashAsset(assetIds[index], allowNetworkAccess: allowNetworkAccess)
+            return await self.hashAsset(assets[index], allowNetworkAccess: allowNetworkAccess)
           }
         }
         
@@ -269,16 +277,20 @@ class NativeSyncApiImpl: NativeSyncApi {
         for await result in taskGroup {
           results.append(result)
           
-          if nextIndex < assetIds.count {
+          if nextIndex < assets.count {
             let currentIndex = nextIndex
             taskGroup.addTask { [weak self] in
               guard let self = self else {
-                return HashResult(assetId: assetIds[currentIndex], error: "NativeSyncApiImpl deallocated", hash: nil)
+                return HashResult(assetId: assets[currentIndex].localIdentifier, error: "NativeSyncApiImpl deallocated", hash: nil)
               }
-              return await self.hashAsset(assetIds[currentIndex], allowNetworkAccess: allowNetworkAccess)
+              return await self.hashAsset(assets[currentIndex], allowNetworkAccess: allowNetworkAccess)
             }
             nextIndex += 1
           }
+        }
+        
+        for missing in missingAssetIds {
+          results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
         }
         
         completion(.success(results))
@@ -286,46 +298,44 @@ class NativeSyncApiImpl: NativeSyncApi {
     }
   }
   
-  private func hashAsset(_ assetId: String, allowNetworkAccess: Bool) async -> HashResult {
-    guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [assetId], options: nil).firstObject else {
-      return HashResult(assetId: assetId, error: "Cannot get asset for id", hash: nil)
-    }
-  
+  private func hashAsset(_ asset: PHAsset, allowNetworkAccess: Bool) async -> HashResult {
     guard let resource = asset.getResource() else {
-      return HashResult(assetId: assetId, error: "Cannot get asset resource", hash: nil)
+      return HashResult(assetId: asset.localIdentifier, error: "Cannot get asset resource", hash: nil)
     }
-
+    
     let options = PHAssetResourceRequestOptions()
     options.isNetworkAccessAllowed = allowNetworkAccess
-
+    
     return await withCheckedContinuation { continuation in
       var hasher = Insecure.SHA1()
       
       PHAssetResourceManager.default().requestData(
-          for: resource,
-          options: options,
-          dataReceivedHandler: { data in
-              hasher.update(data: data)
-          },
-          completionHandler: { error in
-              if let error = error {
-                continuation.resume(returning: HashResult(
-                  assetId: assetId, 
-                  error: "Failed to hash asset: \(error.localizedDescription)", 
-                  hash: nil
-                ))
-              } else {
-                  let digest = hasher.finalize()
-                  let hashData = Data(digest)
-                  let hashString = hashData.base64EncodedString()
-                  
-                  continuation.resume(returning: HashResult(
-                    assetId: assetId, 
-                    error: nil, 
-                    hash: hashString
-                  ))
-              }
+        for: resource,
+        options: options,
+        dataReceivedHandler: { data in
+          autoreleasepool {
+            hasher.update(data: data)
           }
+        },
+        completionHandler: { error in
+          if let error = error {
+            continuation.resume(returning: HashResult(
+              assetId: asset.localIdentifier,
+              error: "Failed to hash asset: \(error.localizedDescription)",
+              hash: nil
+            ))
+          } else {
+            let digest = hasher.finalize()
+            let hashData = Data(digest)
+            let hashString = hashData.base64EncodedString()
+            
+            continuation.resume(returning: HashResult(
+              assetId: asset.localIdentifier,
+              error: nil,
+              hash: hashString
+            ))
+          }
+        }
       )
     }
   }
