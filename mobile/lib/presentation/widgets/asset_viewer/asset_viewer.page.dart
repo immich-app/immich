@@ -85,6 +85,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
+  final ValueNotifier<PhotoViewScaleState> scaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
 
   late Platform platform;
   late final int heroOffset;
@@ -131,6 +132,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    scaleStateNotifier.dispose();
     super.dispose();
   }
 
@@ -243,6 +245,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
+    scaleStateNotifier.value = PhotoViewScaleState.initial; // reset video zoom state
   }
 
   void _onDragStart(
@@ -254,9 +257,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     viewController = controller;
     dragDownPosition = details.localPosition;
     initialPhotoViewState = controller.value;
+
     final isZoomed =
         scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
-        scaleStateController.scaleState == PhotoViewScaleState.covering;
+        scaleStateController.scaleState == PhotoViewScaleState.covering ||
+        scaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
+        scaleStateNotifier.value == PhotoViewScaleState.covering;
+
     if (!showingBottomSheet && isZoomed) {
       blockGestures = true;
     }
@@ -570,12 +577,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
       basePosition: Alignment.center,
-      minScale: PhotoViewComputedScale.contained,
-      initialScale: PhotoViewComputedScale.contained,
       tightMode: true,
       child: NativeVideoViewer(
         key: _getVideoPlayerKey(asset.heroTag),
         asset: asset,
+        scaleStateNotifier: scaleStateNotifier,
+        disableScaleGestures: showingBottomSheet,
         image: Image(
           key: ValueKey(asset),
           image: getFullImageProvider(asset, size: ctx.sizeData),
