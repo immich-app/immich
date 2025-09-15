@@ -59,6 +59,7 @@
     type AssetGridRouteSearchParams,
   } from '$lib/utils/navigation';
   import {
+    AccessHint,
     AlbumUserRole,
     AssetOrder,
     AssetVisibility,
@@ -328,7 +329,7 @@
     }
   });
 
-  let timelineManager = new TimelineManager();
+  let timelineManager = new TimelineManager({ hint: AccessHint.Album });
 
   $effect(() => {
     if (viewMode === AlbumPageViewMode.VIEW) {

@@ -10,7 +10,7 @@
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetVisibility } from '@immich/sdk';
+  import { AccessHint, AssetVisibility } from '@immich/sdk';
   import { mdiArrowLeft, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -22,7 +22,7 @@
 
   let { data }: Props = $props();
 
-  const timelineManager = new TimelineManager();
+  const timelineManager = new TimelineManager({ hint: AccessHint.Partner });
   $effect(
     () =>
       void timelineManager.updateOptions({

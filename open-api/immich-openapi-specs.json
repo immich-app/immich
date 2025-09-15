@@ -2584,6 +2584,14 @@
         "operationId": "viewAsset",
         "parameters": [
           {
+            "name": "hint",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/AccessHint"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -9966,6 +9974,15 @@
           }
         },
         "type": "object"
+      },
+      "AccessHint": {
+        "enum": [
+          "owner",
+          "album",
+          "partner",
+          "sharedLink"
+        ],
+        "type": "string"
       },
       "ActivityCreateDto": {
         "properties": {

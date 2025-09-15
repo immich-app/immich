@@ -233,6 +233,7 @@
             disabled={dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
+            hint={timelineManager.hint}
           />
           {#if customLayout}
             {@render customLayout(asset)}

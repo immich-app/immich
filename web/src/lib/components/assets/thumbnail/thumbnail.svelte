@@ -5,7 +5,7 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { AssetMediaSize, AssetVisibility } from '@immich/sdk';
+  import { AccessHint, AssetMediaSize, AssetVisibility } from '@immich/sdk';
   import {
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
@@ -20,6 +20,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { user } from '$lib/stores/user.store';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -45,6 +46,7 @@
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
+    hint?: AccessHint;
     onClick?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
@@ -69,6 +71,7 @@
     imageClass = '',
     brokenAssetClass = '',
     dimmed = false,
+    hint,
   }: Props = $props();
 
   let {
@@ -313,7 +316,12 @@
       <ImageThumbnail
         class={imageClass}
         {brokenAssetClass}
-        url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
+        url={getAssetThumbnailUrl({
+          id: asset.id,
+          size: AssetMediaSize.Thumbnail,
+          cacheKey: asset.thumbhash,
+          hint: asset.ownerId === $user.id ? undefined : hint,
+        })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"

@@ -753,3 +753,10 @@ export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
 }
+
+export enum AccessHint {
+  Owner = 'owner',
+  Album = 'album',
+  Partner = 'partner',
+  SharedLink = 'sharedLink',
+}
