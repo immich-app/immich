@@ -559,13 +559,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
-  GlobalKey _getVideoPlayerKey(String id) {
-    videoPlayerKeys.putIfAbsent(id, () => GlobalKey());
-    return videoPlayerKeys[id]!;
-  }
-
   PhotoViewGalleryPageOptions _videoBuilder(BuildContext ctx, BaseAsset asset) {
     return PhotoViewGalleryPageOptions.customChild(
+      key: ValueKey(asset.heroTag),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
@@ -575,7 +571,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       basePosition: Alignment.center,
       tightMode: true,
       child: NativeVideoViewer(
-        key: _getVideoPlayerKey(asset.heroTag),
+        key: ValueKey(asset.heroTag),
         asset: asset,
         scaleStateNotifier: videoScaleStateNotifier,
         disableScaleGestures: showingBottomSheet,
