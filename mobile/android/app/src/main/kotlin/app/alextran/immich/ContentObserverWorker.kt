@@ -27,7 +27,7 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
             return Result.failure()
         }
         if (triggeredContentUris.size > 0) {
-            startBackupWorker(applicationContext, delayMilliseconds = 0, debugLabel = "do-work")
+            startBackupWorker(applicationContext, delayMilliseconds = 0)
         }
         enqueueObserverWorker(applicationContext, ExistingWorkPolicy.REPLACE)
         return Result.success()
@@ -51,7 +51,7 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
             enqueueObserverWorker(context, ExistingWorkPolicy.KEEP)
             Log.d(TAG, "enabled ContentObserverWorker")
             if (immediate) {
-                startBackupWorker(context, delayMilliseconds = 5000, debugLabel = "enable-immediate")
+                startBackupWorker(context, delayMilliseconds = 5000)
             }
         }
 
@@ -128,8 +128,7 @@ class ContentObserverWorker(ctx: Context, params: WorkerParameters) : Worker(ctx
             WorkManager.getInstance(context).enqueueUniqueWork(TASK_NAME_OBSERVER, policy, work)
         }
 
-        fun startBackupWorker(context: Context, delayMilliseconds: Long, debugLabel: String) {
-            Log.d(TAG, "startBackupWorker (debugLabel=$debugLabel, delayMilliseconds=$delayMilliseconds)")
+        fun startBackupWorker(context: Context, delayMilliseconds: Long) {
             val sp = context.getSharedPreferences(BackupWorker.SHARED_PREF_NAME, Context.MODE_PRIVATE)
             if (!sp.getBoolean(SHARED_PREF_SERVICE_ENABLED, false))
                 return

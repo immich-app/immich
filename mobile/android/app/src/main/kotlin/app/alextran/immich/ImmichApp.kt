@@ -16,7 +16,7 @@ class ImmichApp : Application() {
     // (because of low memory etc.), the backup is never performed.
     // As a workaround, we also run a backup check when initializing the application
 
-    ContentObserverWorker.startBackupWorker(context = this, delayMilliseconds = 0, debugLabel = "backup-worker")
+    ContentObserverWorker.startBackupWorker(context = this, delayMilliseconds = 0)
     BackgroundWorkerApiImpl.enqueueBackgroundWorker(this)
   }
 }
