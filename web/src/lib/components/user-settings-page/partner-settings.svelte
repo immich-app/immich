@@ -158,8 +158,8 @@
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">
-              {$t('shared_with_partner', { values: { partner: partner.user.name } }).toUpperCase()}
+            <p class="uppercase text-xs font-medium my-4">
+              {$t('shared_with_partner', { values: { partner: partner.user.name } })}
             </p>
             <p class="text-md">{$t('partner_can_access', { values: { partner: partner.user.name } })}</p>
             <ul class="text-sm">
@@ -177,8 +177,8 @@
           <!-- this user is sharing assets with me -->
           {#if partner.sharedWithMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
-            <p class="text-xs font-medium my-4">
-              {$t('shared_from_partner', { values: { partner: partner.user.name } }).toUpperCase()}
+            <p class="uppercase text-xs font-medium my-4">
+              {$t('shared_from_partner', { values: { partner: partner.user.name } })}
             </p>
             <SettingSwitch
               title={$t('show_in_timeline')}

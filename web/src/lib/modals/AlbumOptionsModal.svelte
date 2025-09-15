@@ -119,7 +119,7 @@
   <ModalBody>
     <div class="items-center justify-center">
       <div class="py-2">
-        <h2 class="text-gray text-sm mb-2">{$t('settings').toUpperCase()}</h2>
+        <h2 class="uppercase text-gray text-sm mb-2">{$t('settings')}</h2>
         <div class="grid p-2 gap-y-2">
           {#if order}
             <SettingDropdown
@@ -138,7 +138,7 @@
         </div>
       </div>
       <div class="py-2">
-        <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
+        <div class="uppercase text-gray text-sm mb-3">{$t('people')}</div>
         <div class="p-2">
           <button type="button" class="flex items-center gap-2" onclick={() => onClose({ action: 'shareUser' })}>
             <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">

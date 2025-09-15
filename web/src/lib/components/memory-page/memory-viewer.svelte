@@ -469,7 +469,7 @@
 
             {#if current.previousMemory}
               <div class="absolute bottom-4 end-4 text-start text-white">
-                <p class="text-xs font-semibold text-gray-200">{$t('previous').toUpperCase()}</p>
+                <p class="uppercase text-xs font-semibold text-gray-200">{$t('previous')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.previousMemory)}</p>
               </div>
             {/if}
@@ -618,7 +618,7 @@
 
             {#if current.nextMemory}
               <div class="absolute bottom-4 start-4 text-start text-white">
-                <p class="text-xs font-semibold text-gray-200">{$t('up_next').toUpperCase()}</p>
+                <p class="uppercase text-xs font-semibold text-gray-200">{$t('up_next')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.nextMemory)}</p>
               </div>
             {/if}

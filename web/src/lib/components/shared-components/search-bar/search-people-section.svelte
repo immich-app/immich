@@ -64,7 +64,7 @@
 
     <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="immich-form-label py-3">{$t('people').toUpperCase()}</p>
+        <p class="uppercase immich-form-label py-3">{$t('people')}</p>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 

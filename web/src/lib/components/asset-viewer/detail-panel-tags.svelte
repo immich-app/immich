@@ -39,7 +39,7 @@
 {#if isOwner && !authManager.isSharedLink}
   <section class="px-4 mt-4">
     <div class="flex h-10 w-full items-center justify-between text-sm">
-      <h2>{$t('tags').toUpperCase()}</h2>
+      <h2 class="uppercase">{$t('tags')}</h2>
     </div>
     <section class="flex flex-wrap pt-2 gap-1" data-testid="detail-panel-tags">
       {#each tags as tag (tag.id)}
