@@ -323,7 +323,6 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
       onDragCancel: _onDragCancel,
-      onTapUp: _onTapUp,
       heroAttributes: heroAttributes,
       filterQuality: FilterQuality.high,
       basePosition: Alignment.center,
