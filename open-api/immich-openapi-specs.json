@@ -10096,6 +10096,12 @@
             },
             "type": "array"
           },
+          "contributorCounts": {
+            "items": {
+              "$ref": "#/components/schemas/ContributorCountResponseDto"
+            },
+            "type": "array"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -11470,6 +11476,21 @@
           "p3"
         ],
         "type": "string"
+      },
+      "ContributorCountResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "userId"
+        ],
+        "type": "object"
       },
       "CreateAlbumDto": {
         "properties": {
