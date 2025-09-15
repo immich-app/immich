@@ -102,9 +102,11 @@
       <div></div>
     {/snippet}
     {#snippet trailing()}
-      <Button leadingIcon={mdiMerge} size="small" shape="round" disabled={!hasSelection} onclick={handleMerge}>
-        {$t('merge')}
-      </Button>
+      {#if !allPeopleViewShown}
+        <Button leadingIcon={mdiMerge} size="small" shape="round" disabled={!hasSelection} onclick={handleMerge}>
+          {$t('merge')}
+        </Button>
+      {/if}
     {/snippet}
   </ControlAppBar>
   <section class="px-17.5 pt-25">
