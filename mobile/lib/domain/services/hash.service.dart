@@ -3,7 +3,6 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:logging/logging.dart';
 
@@ -11,7 +10,6 @@ class HashService {
   final int _batchSize;
   final DriftLocalAlbumRepository _localAlbumRepository;
   final DriftLocalAssetRepository _localAssetRepository;
-  final StorageRepository _storageRepository;
   final NativeSyncApi _nativeSyncApi;
   final bool Function()? _cancelChecker;
   final _log = Logger('HashService');
@@ -19,13 +17,11 @@ class HashService {
   HashService({
     required DriftLocalAlbumRepository localAlbumRepository,
     required DriftLocalAssetRepository localAssetRepository,
-    required StorageRepository storageRepository,
     required NativeSyncApi nativeSyncApi,
     bool Function()? cancelChecker,
     int batchSize = kBatchHashFileLimit,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
-       _storageRepository = storageRepository,
        _cancelChecker = cancelChecker,
        _nativeSyncApi = nativeSyncApi,
        _batchSize = batchSize;
@@ -69,7 +65,7 @@ class HashService {
       }
 
       toHash.add(asset.id);
-      if (toHash.length >= _batchSize) {
+      if (toHash.length == _batchSize) {
         await _processBatch(album, toHash, allowNetworkAccess);
         toHash.clear();
       }
@@ -112,6 +108,5 @@ class HashService {
     _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
-    await _storageRepository.clearCache();
   }
 }
