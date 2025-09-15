@@ -19,7 +19,7 @@ class HashService {
     required DriftLocalAssetRepository localAssetRepository,
     required NativeSyncApi nativeSyncApi,
     bool Function()? cancelChecker,
-    int batchSize = kBatchHashFileLimit,
+    int batchSize = kHashBatchLimit,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
        _cancelChecker = cancelChecker,

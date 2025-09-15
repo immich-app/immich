@@ -11,6 +11,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
@@ -25,6 +27,9 @@ open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
   companion object {
+    private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
+    private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
+
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
     val MEDIA_SELECTION_ARGS = arrayOf(
@@ -232,7 +237,14 @@ open class NativeSyncApiImplBase(context: Context) {
     CoroutineScope(Dispatchers.IO).launch {
       try {
         val idToPathMap = getAssetPaths(assetIds)
-        val results = assetIds.map { async { hashAsset(it, idToPathMap[it]) } }.awaitAll()
+        val results = assetIds.map { assetId ->
+          async {
+            hashSemaphore.withPermit {
+              hashAsset(assetId, idToPathMap[assetId])
+            }
+          }
+        }.awaitAll()
+
         callback(Result.success(results))
       } catch (e: Exception) {
         callback(Result.failure(e))

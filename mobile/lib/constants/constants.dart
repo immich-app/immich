@@ -12,6 +12,7 @@ const int kFetchLocalAssetsBatchSize = 40000;
 // Hash batch limits
 const int kBatchHashFileLimit = 256;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
+const int kHashBatchLimit = 1024;
 
 // Secure storage keys
 const String kSecuredPinCode = "secured_pin_code";

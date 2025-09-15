@@ -40,7 +40,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
   
-  private let hashBufferSize = 2 * 1024 * 1024
+  private let maxConcurrentHashOperations = 16
 
   
   init(with defaults: UserDefaults = .standard) {
@@ -271,18 +271,31 @@ class NativeSyncApiImpl: NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void) {
     Task {
       await withTaskGroup(of: HashResult.self) { taskGroup in
-        for assetId in assetIds {
+        var results: [HashResult] = []
+        let maxConcurrentTasks = min(maxConcurrentHashOperations, assetIds.count)
+        for index in 0..<maxConcurrentTasks {
           taskGroup.addTask { [weak self] in
             guard let self = self else {
-              return HashResult(assetId: assetId, error: "NativeSyncApiImpl deallocated", hash: nil)
+              return HashResult(assetId: assetIds[index], error: "NativeSyncApiImpl deallocated", hash: nil)
             }
-            return await self.hashAsset(assetId, allowNetworkAccess: allowNetworkAccess)
+            return await self.hashAsset(assetIds[index], allowNetworkAccess: allowNetworkAccess)
           }
         }
         
-        var results: [HashResult] = []
+        var nextIndex = maxConcurrentTasks
         for await result in taskGroup {
           results.append(result)
+          
+          if nextIndex < assetIds.count {
+            let currentIndex = nextIndex
+            taskGroup.addTask { [weak self] in
+              guard let self = self else {
+                return HashResult(assetId: assetIds[currentIndex], error: "NativeSyncApiImpl deallocated", hash: nil)
+              }
+              return await self.hashAsset(assetIds[currentIndex], allowNetworkAccess: allowNetworkAccess)
+            }
+            nextIndex += 1
+          }
         }
         
         completion(.success(results))
