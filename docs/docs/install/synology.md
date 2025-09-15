@@ -12,11 +12,11 @@ Community support can be found in the dedicated channel on the [Discord Server](
 **Please report app issues to the corresponding [Github Repository](https://github.com/truenas/charts/tree/master/community/immich).**
 :::
 
-Immich can easily be installed on a Synology NAS using Container Manager within DSM. If you have not installed Container Manager already, you can install it in the Packages Center. Refer to the [Container Manager docs](https://kb.synology.com/en-us/DSM/help/ContainerManager/docker_desc?version=7) for more information on using Container Manager.
+Immich can easily be installed on a Synology NAS using Container Manager within DSM. If you have not installed Container Manager already, you can install it in the Packages Center. Refer to the [Container Manager docs](https://kb.synology.com/en-us/DSM/help/ContainerManager/docker_desc?version=7) for more information on using Container Manager. If you wish to install Immich using Portainer on Synology, see [Marius Hosting](https://mariushosting.com/how-to-install-immich-on-your-synology-nas/) for more information.
 
 ## Step 1 - Download the required files
 
-Create a directory of your choice (e.g. `./immich-app`) to house Immich. In general, it's a best practice to have all Docker-based applications running under the `./docker` directory, so in this case, your directory structure will look like `./docker/immich-app`.
+Create a directory of your choice (e.g. `./immich-app`) to house Immich. In general, it's best practice to have all Docker-based applications running under the `./docker` directory, so in this case, your directory structure will look like `./docker/immich-app`.
 
 Now create a `./postgres` and `./library` directory as sub-directories of the `./docker/immich-app`.
 
@@ -25,7 +25,7 @@ When you're all done, you should have the following:
 - `./docker/immich-app/postgres`
 - `./docker/immich-app/library`
 
-Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/immich-app/immich/releases/latest/download/example.env) to your computer. Upload the files to the `./docker/immich-app` directory, and rename `example.env` to `.env`.
+Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/immich-app/immich/releases/latest/download/example.env) to your computer. Upload the files to the `./docker/immich-app` directory, and rename `example.env` to `.env`. Note: If you plan to use the Synology Text editor to edit the `.env` file on the NAS within File Station, you will need to rename it to a temporary name (e.g. `example.txt`) in order to see 'Open with Text Editor' in the file context menu. Once saved, rename it back to `.env`.
 
 ## Step 2 - Populate the .env file with custom values
 
@@ -40,9 +40,9 @@ In the settings of your new project, set "**Project name**" to a name you'll rem
 
 ![Set Path](../../static/img/synology-container-manager-set-path.png)
 
-The following screen will give you the option to further customize your `docker-compose.yml` file, giving you a warning regarding the `start_interval` property. Under the `healthcheck` heading, remove the `start_interval: 30s` completely and click "**Next**".
+The following screen will give you the option to further customize your `docker-compose.yml` file. Take note of `DB_STORAGE_TYPE: 'HDD'`and uncomment if applicable for your Synology setup.
 
-![start interval](../../static/img/synology-container-manager-customize-docker-compose.png)
+![DB Storage](../../static/img/synology-container-manager-customize-docker-compose.png)
 
 Skip the section asking to set-up a portal for Web Station, and then complete the wizard which will build and start the containers for your project.
 
@@ -63,7 +63,12 @@ Open "**Control Panel**" on your Synology NAS, and select "**Security**". Naviga
 Click "**Edit Rules**" and add the following firewall rules:
 
 - Add a "**Source IP**" rule for the IP address of your container that you obtained in Step 3 above
+  
+![IP address rule](../../static/img/synology-ipaddress-firewall-rule.png)
+
 - Add a "**Ports**" rule for the port specified in the `docker-compose.yml`, which should be `2283`
+  
+![custom Port rule](../../static/img/synology-custom-port-firewall-rule.png)
 
 ## Next Steps
 
