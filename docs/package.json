@@ -24,8 +24,6 @@
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
     "autoprefixer": "^10.4.17",
-    "classnames": "^2.3.2",
-    "clsx": "^2.0.0",
     "docusaurus-lunr-search": "^3.3.2",
     "docusaurus-preset-openapi": "^0.7.5",
     "lunr": "^2.3.9",
@@ -60,6 +58,6 @@
     "node": ">=20"
   },
   "volta": {
-    "node": "22.18.0"
+    "node": "22.19.0"
   }
 }

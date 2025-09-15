@@ -204,7 +204,7 @@
 <div
   class={[
     'focus-visible:outline-none flex overflow-hidden',
-    disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
+    disabled ? 'bg-gray-300' : 'dark:bg-neutral-700 bg-neutral-200',
   ]}
   style:width="{width}px"
   style:height="{height}px"
@@ -328,7 +328,7 @@
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.isVideo}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -338,7 +338,7 @@
           />
         </div>
       {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}

@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -24,6 +23,7 @@ import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final albumServiceProvider = Provider(
   (ref) => AlbumService(
@@ -124,7 +124,7 @@ class AlbumService {
     } finally {
       _localCompleter.complete(changes);
     }
-    debugPrint("refreshDeviceAlbums took ${sw.elapsedMilliseconds}ms");
+    dPrint(() => "refreshDeviceAlbums took ${sw.elapsedMilliseconds}ms");
     return changes;
   }
 
@@ -172,7 +172,7 @@ class AlbumService {
     } finally {
       _remoteCompleter.complete(changes);
     }
-    debugPrint("refreshRemoteAlbums took ${sw.elapsedMilliseconds}ms");
+    dPrint(() => "refreshRemoteAlbums took ${sw.elapsedMilliseconds}ms");
     return changes;
   }
 
@@ -220,7 +220,7 @@ class AlbumService {
 
       return AlbumAddAssetsResponse(alreadyInAlbum: result.duplicates, successfullyAdded: addedAssets.length);
     } catch (e) {
-      debugPrint("Error addAssets  ${e.toString()}");
+      dPrint(() => "Error addAssets  ${e.toString()}");
     }
     return null;
   }
@@ -242,7 +242,7 @@ class AlbumService {
       await _albumRepository.update(album);
       return true;
     } catch (e) {
-      debugPrint("Error setActivityEnabled  ${e.toString()}");
+      dPrint(() => "Error setActivityEnabled  ${e.toString()}");
     }
     return false;
   }
@@ -271,7 +271,7 @@ class AlbumService {
       }
       return true;
     } catch (e) {
-      debugPrint("Error deleteAlbum  ${e.toString()}");
+      dPrint(() => "Error deleteAlbum  ${e.toString()}");
     }
     return false;
   }
@@ -281,7 +281,7 @@ class AlbumService {
       await _albumApiRepository.removeUser(album.remoteId!, userId: "me");
       return true;
     } catch (e) {
-      debugPrint("Error leaveAlbum ${e.toString()}");
+      dPrint(() => "Error leaveAlbum ${e.toString()}");
       return false;
     }
   }
@@ -293,7 +293,7 @@ class AlbumService {
       await _updateAssets(album.id, remove: toRemove.toList());
       return true;
     } catch (e) {
-      debugPrint("Error removeAssetFromAlbum ${e.toString()}");
+      dPrint(() => "Error removeAssetFromAlbum ${e.toString()}");
     }
     return false;
   }
@@ -310,7 +310,7 @@ class AlbumService {
 
       return true;
     } catch (error) {
-      debugPrint("Error removeUser  ${error.toString()}");
+      dPrint(() => "Error removeUser  ${error.toString()}");
       return false;
     }
   }
@@ -327,7 +327,7 @@ class AlbumService {
 
       return true;
     } catch (error) {
-      debugPrint("Error addUsers ${error.toString()}");
+      dPrint(() => "Error addUsers ${error.toString()}");
     }
     return false;
   }
@@ -340,7 +340,7 @@ class AlbumService {
       await _albumRepository.update(album);
       return true;
     } catch (e) {
-      debugPrint("Error changeTitleAlbum  ${e.toString()}");
+      dPrint(() => "Error changeTitleAlbum  ${e.toString()}");
       return false;
     }
   }
@@ -353,7 +353,7 @@ class AlbumService {
       await _albumRepository.update(album);
       return true;
     } catch (e) {
-      debugPrint("Error changeDescriptionAlbum  ${e.toString()}");
+      dPrint(() => "Error changeDescriptionAlbum  ${e.toString()}");
       return false;
     }
   }

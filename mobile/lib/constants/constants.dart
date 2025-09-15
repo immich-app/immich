@@ -26,7 +26,7 @@ const String kDownloadGroupLivePhoto = 'group_livephoto';
 
 // Timeline constants
 const int kTimelineNoneSegmentSize = 120;
-const int kTimelineAssetLoadBatchSize = 256;
+const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 
 // Widget keys
@@ -45,3 +45,5 @@ const List<(String, String)> kWidgetNames = [
 
 const double kUploadStatusFailed = -1.0;
 const double kUploadStatusCanceled = -2.0;
+
+const int kMinMonthsToEnableScrubberSnap = 12;

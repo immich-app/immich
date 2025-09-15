@@ -67,6 +67,9 @@ String parameterToString(dynamic value) {
   if (value is AssetMediaStatus) {
     return AssetMediaStatusTypeTransformer().encode(value).toString();
   }
+  if (value is AssetMetadataKey) {
+    return AssetMetadataKeyTypeTransformer().encode(value).toString();
+  }
   if (value is AssetOrder) {
     return AssetOrderTypeTransformer().encode(value).toString();
   }
@@ -78,6 +81,9 @@ String parameterToString(dynamic value) {
   }
   if (value is AudioCodec) {
     return AudioCodecTypeTransformer().encode(value).toString();
+  }
+  if (value is BulkIdErrorReason) {
+    return BulkIdErrorReasonTypeTransformer().encode(value).toString();
   }
   if (value is CQMode) {
     return CQModeTypeTransformer().encode(value).toString();

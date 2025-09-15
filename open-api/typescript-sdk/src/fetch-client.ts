@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.137.3
+ * 1.142.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -317,6 +317,8 @@ export type TagResponseDto = {
 export type AssetResponseDto = {
     /** base64 encoded sha1 hash */
     checksum: string;
+    /** The UTC timestamp when the asset was originally uploaded to Immich. */
+    createdAt: string;
     deviceAssetId: string;
     deviceId: string;
     duplicateId?: string | null;
@@ -384,6 +386,14 @@ export type CreateAlbumDto = {
     assetIds?: string[];
     description?: string;
 };
+export type AlbumsAddAssetsDto = {
+    albumIds: string[];
+    assetIds: string[];
+};
+export type AlbumsAddAssetsResponseDto = {
+    error?: BulkIdErrorReason;
+    success: boolean;
+};
 export type AlbumStatisticsResponseDto = {
     notShared: number;
     owned: number;
@@ -437,6 +447,10 @@ export type AssetBulkDeleteDto = {
     force?: boolean;
     ids: string[];
 };
+export type AssetMetadataUpsertItemDto = {
+    key: AssetMetadataKey;
+    value: object;
+};
 export type AssetMediaCreateDto = {
     assetData: Blob;
     deviceAssetId: string;
@@ -447,6 +461,7 @@ export type AssetMediaCreateDto = {
     filename?: string;
     isFavorite?: boolean;
     livePhotoVideoId?: string;
+    metadata: AssetMetadataUpsertItemDto[];
     sidecarData?: Blob;
     visibility?: AssetVisibility;
 };
@@ -505,6 +520,14 @@ export type UpdateAssetDto = {
     longitude?: number;
     rating?: number;
     visibility?: AssetVisibility;
+};
+export type AssetMetadataResponseDto = {
+    key: AssetMetadataKey;
+    updatedAt: string;
+    value: object;
+};
+export type AssetMetadataUpsertDto = {
+    items: AssetMetadataUpsertItemDto[];
 };
 export type AssetMediaReplaceDto = {
     assetData: Blob;
@@ -788,7 +811,10 @@ export type PartnerResponseDto = {
     profileChangedAt: string;
     profileImagePath: string;
 };
-export type UpdatePartnerDto = {
+export type PartnerCreateDto = {
+    sharedWithId: string;
+};
+export type PartnerUpdateDto = {
     inTimeline: boolean;
 };
 export type PeopleResponseDto = {
@@ -991,7 +1017,8 @@ export type SmartSearchDto = {
     model?: string | null;
     page?: number;
     personIds?: string[];
-    query: string;
+    query?: string;
+    queryAssetId?: string;
     rating?: number;
     size?: number;
     state?: string | null;
@@ -1534,10 +1561,14 @@ export type TimeBucketAssetResponseDto = {
     isImage: boolean[];
     /** Array indicating whether each asset is in the trash */
     isTrashed: boolean[];
+    /** Array of latitude coordinates extracted from EXIF GPS data */
+    latitude?: (number | null)[];
     /** Array of live photo video asset IDs (null for non-live photos) */
     livePhotoVideoId: (string | null)[];
     /** Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective. */
     localOffsetHours: number[];
+    /** Array of longitude coordinates extracted from EXIF GPS data */
+    longitude?: (number | null)[];
     /** Array of owner IDs for each asset */
     ownerId: string[];
     /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
@@ -1644,6 +1675,15 @@ export function deleteActivity({ id }: {
     return oazapfts.ok(oazapfts.fetchText(`/activities/${encodeURIComponent(id)}`, {
         ...opts,
         method: "DELETE"
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission.
+ */
+export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/auth/unlink-all", {
+        ...opts,
+        method: "POST"
     }));
 }
 export function createNotification({ notificationCreateDto }: {
@@ -1856,6 +1896,26 @@ export function createAlbum({ createAlbumDto }: {
     })));
 }
 /**
+ * This endpoint requires the `albumAsset.create` permission.
+ */
+export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
+    key?: string;
+    slug?: string;
+    albumsAddAssetsDto: AlbumsAddAssetsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumsAddAssetsResponseDto;
+    }>(`/albums/assets${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: albumsAddAssetsDto
+    })));
+}
+/**
  * This endpoint requires the `album.statistics` permission.
  */
 export function getAlbumStatistics(opts?: Oazapfts.RequestOpts) {
@@ -2017,6 +2077,14 @@ export function createApiKey({ apiKeyCreateDto }: {
         method: "POST",
         body: apiKeyCreateDto
     })));
+}
+export function getMyApiKey(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ApiKeyResponseDto;
+    }>("/api-keys/me", {
+        ...opts
+    }));
 }
 /**
  * This endpoint requires the `apiKey.delete` permission.
@@ -2227,6 +2295,61 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetMetadata({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/metadata`, {
+        ...opts
+    }));
+}
+/**
+ * This endpoint requires the `asset.update` permission.
+ */
+export function updateAssetMetadata({ id, assetMetadataUpsertDto }: {
+    id: string;
+    assetMetadataUpsertDto: AssetMetadataUpsertDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto[];
+    }>(`/assets/${encodeURIComponent(id)}/metadata`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetMetadataUpsertDto
+    })));
+}
+/**
+ * This endpoint requires the `asset.update` permission.
+ */
+export function deleteAssetMetadata({ id, key }: {
+    id: string;
+    key: AssetMetadataKey;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `asset.read` permission.
+ */
+export function getAssetMetadataByKey({ id, key }: {
+    id: string;
+    key: AssetMetadataKey;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMetadataResponseDto;
+    }>(`/assets/${encodeURIComponent(id)}/metadata/${encodeURIComponent(key)}`, {
+        ...opts
+    }));
+}
+/**
  * This endpoint requires the `asset.download` permission.
  */
 export function downloadAsset({ id, key, slug }: {
@@ -2245,7 +2368,7 @@ export function downloadAsset({ id, key, slug }: {
     }));
 }
 /**
- * replaceAsset
+ * Replace the asset with new file, without changing its id
  */
 export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;
@@ -2969,7 +3092,7 @@ export function linkOAuthAccount({ oAuthCallbackDto }: {
     oAuthCallbackDto: OAuthCallbackDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: UserAdminResponseDto;
     }>("/oauth/link", oazapfts.json({
         ...opts,
@@ -3007,6 +3130,21 @@ export function getPartners({ direction }: {
     }));
 }
 /**
+ * This endpoint requires the `partner.create` permission.
+ */
+export function createPartner({ partnerCreateDto }: {
+    partnerCreateDto: PartnerCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PartnerResponseDto;
+    }>("/partners", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: partnerCreateDto
+    })));
+}
+/**
  * This endpoint requires the `partner.delete` permission.
  */
 export function removePartner({ id }: {
@@ -3018,9 +3156,9 @@ export function removePartner({ id }: {
     }));
 }
 /**
- * This endpoint requires the `partner.create` permission.
+ * This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.
  */
-export function createPartner({ id }: {
+export function createPartnerDeprecated({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3034,9 +3172,9 @@ export function createPartner({ id }: {
 /**
  * This endpoint requires the `partner.update` permission.
  */
-export function updatePartner({ id, updatePartnerDto }: {
+export function updatePartner({ id, partnerUpdateDto }: {
     id: string;
-    updatePartnerDto: UpdatePartnerDto;
+    partnerUpdateDto: PartnerUpdateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3044,7 +3182,7 @@ export function updatePartner({ id, updatePartnerDto }: {
     }>(`/partners/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
         method: "PUT",
-        body: updatePartnerDto
+        body: partnerUpdateDto
     })));
 }
 /**
@@ -3160,7 +3298,7 @@ export function mergePerson({ id, mergePersonDto }: {
     mergePersonDto: MergePersonDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: BulkIdResponseDto[];
     }>(`/people/${encodeURIComponent(id)}/merge`, oazapfts.json({
         ...opts,
@@ -4159,7 +4297,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -4171,6 +4309,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
     timeBucket: string;
     userId?: string;
     visibility?: AssetVisibility;
+    withCoordinates?: boolean;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4189,6 +4328,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         timeBucket,
         userId,
         visibility,
+        withCoordinates,
         withPartners,
         withStacked
     }))}`, {
@@ -4198,7 +4338,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -4209,6 +4349,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
+    withCoordinates?: boolean;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4226,6 +4367,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         tagId,
         userId,
         visibility,
+        withCoordinates,
         withPartners,
         withStacked
     }))}`, {
@@ -4536,6 +4678,12 @@ export enum AssetTypeEnum {
     Audio = "AUDIO",
     Other = "OTHER"
 }
+export enum BulkIdErrorReason {
+    Duplicate = "duplicate",
+    NoPermission = "no_permission",
+    NotFound = "not_found",
+    Unknown = "unknown"
+}
 export enum Error {
     Duplicate = "duplicate",
     NoPermission = "no_permission",
@@ -4669,7 +4817,11 @@ export enum Permission {
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
-    AdminUserDelete = "adminUser.delete"
+    AdminUserDelete = "adminUser.delete",
+    AdminAuthUnlinkAll = "adminAuth.unlinkAll"
+}
+export enum AssetMetadataKey {
+    MobileApp = "mobile-app"
 }
 export enum AssetMediaStatus {
     Created = "created",
@@ -4757,6 +4909,8 @@ export enum SyncEntityType {
     AssetV1 = "AssetV1",
     AssetDeleteV1 = "AssetDeleteV1",
     AssetExifV1 = "AssetExifV1",
+    AssetMetadataV1 = "AssetMetadataV1",
+    AssetMetadataDeleteV1 = "AssetMetadataDeleteV1",
     PartnerV1 = "PartnerV1",
     PartnerDeleteV1 = "PartnerDeleteV1",
     PartnerAssetV1 = "PartnerAssetV1",
@@ -4794,7 +4948,8 @@ export enum SyncEntityType {
     UserMetadataV1 = "UserMetadataV1",
     UserMetadataDeleteV1 = "UserMetadataDeleteV1",
     SyncAckV1 = "SyncAckV1",
-    SyncResetV1 = "SyncResetV1"
+    SyncResetV1 = "SyncResetV1",
+    SyncCompleteV1 = "SyncCompleteV1"
 }
 export enum SyncRequestType {
     AlbumsV1 = "AlbumsV1",
@@ -4804,6 +4959,7 @@ export enum SyncRequestType {
     AlbumAssetExifsV1 = "AlbumAssetExifsV1",
     AssetsV1 = "AssetsV1",
     AssetExifsV1 = "AssetExifsV1",
+    AssetMetadataV1 = "AssetMetadataV1",
     AuthUsersV1 = "AuthUsersV1",
     MemoriesV1 = "MemoriesV1",
     MemoryToAssetsV1 = "MemoryToAssetsV1",

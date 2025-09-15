@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 import 'package:platform/platform.dart';
@@ -285,7 +286,7 @@ extension on Iterable<PlatformAlbum> {
       (e) => LocalAlbum(
         id: e.id,
         name: e.name,
-        updatedAt: e.updatedAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
+        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt) ?? DateTime.now(),
         assetCount: e.assetCount,
       ),
     ).toList();
@@ -300,8 +301,8 @@ extension on Iterable<PlatformAsset> {
         name: e.name,
         checksum: null,
         type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
-        createdAt: e.createdAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.createdAt! * 1000),
-        updatedAt: e.updatedAt == null ? DateTime.now() : DateTime.fromMillisecondsSinceEpoch(e.updatedAt! * 1000),
+        createdAt: tryFromSecondsSinceEpoch(e.createdAt) ?? DateTime.now(),
+        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt) ?? DateTime.now(),
         width: e.width,
         height: e.height,
         durationInSeconds: e.durationInSeconds,

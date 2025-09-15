@@ -21,7 +21,6 @@
 
   const handleAddTag = async () => {
     const success = await modalManager.show(AssetTagModal, { assetIds: [asset.id] });
-
     if (success) {
       asset = await getAssetInfo({ id: asset.id });
     }

@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
@@ -74,9 +76,11 @@ List<_Segment> _buildSegments({required List<Segment> layoutSegments, required d
 }
 
 class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixin {
+  String? _lastLabel;
   double _thumbTopOffset = 0.0;
   bool _isDragging = false;
   List<_Segment> _segments = [];
+  int _monthCount = 0;
 
   late AnimationController _thumbAnimationController;
   Timer? _fadeOutTimer;
@@ -103,6 +107,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     _thumbAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
     _thumbAnimation = CurvedAnimation(parent: _thumbAnimationController, curve: Curves.fastEaseInToSlowEaseOut);
     _labelAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
+    _monthCount = getMonthCount();
 
     _labelAnimation = CurvedAnimation(parent: _labelAnimationController, curve: Curves.fastOutSlowIn);
   }
@@ -119,6 +124,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
 
     if (oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
       _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
+      _monthCount = getMonthCount();
     }
   }
 
@@ -136,6 +142,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       _thumbAnimationController.reverse();
       _fadeOutTimer = null;
     });
+  }
+
+  int getMonthCount() {
+    return _segments.map((e) => "${e.date.month}_${e.date.year}").toSet().length;
   }
 
   bool _onScrollNotification(ScrollNotification notification) {
@@ -167,11 +177,15 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragStart(DragStartDetails _) {
-    ref.read(timelineStateProvider.notifier).setScrubbing(true);
+    if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+      ref.read(timelineStateProvider.notifier).setScrubbing(true);
+    }
+
     setState(() {
       _isDragging = true;
       _labelAnimationController.forward();
       _fadeOutTimer?.cancel();
+      _lastLabel = null;
     });
   }
 
@@ -188,6 +202,20 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     final nearestMonthSegment = _findNearestMonthSegment(dragPosition);
 
     if (nearestMonthSegment != null) {
+      final label = nearestMonthSegment.scrollLabel;
+      if (_lastLabel != label) {
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
+        _lastLabel = label;
+      }
+    }
+
+    if (_monthCount < kMinMonthsToEnableScrubberSnap) {
+      // If there are less than kMinMonthsToEnableScrubberSnap months, we don't need to snap to segments
+      setState(() {
+        _thumbTopOffset = dragPosition;
+        _scrollController.jumpTo((dragPosition / _scrubberHeight) * _scrollController.position.maxScrollExtent);
+      });
+    } else if (nearestMonthSegment != null) {
       _snapToSegment(nearestMonthSegment);
     }
   }

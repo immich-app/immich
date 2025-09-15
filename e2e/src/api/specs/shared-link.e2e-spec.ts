@@ -485,7 +485,7 @@ describe('/shared-links', () => {
         .delete(`/shared-links/${linkWithAlbum.id}`)
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
-      expect(status).toBe(200);
+      expect(status).toBe(204);
     });
   });
 });

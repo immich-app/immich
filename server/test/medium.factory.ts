@@ -33,6 +33,7 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
@@ -257,6 +258,12 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     return stream.getResponse();
   }
 
+  async assertSyncIsComplete(auth: AuthDto, types: SyncRequestType[]) {
+    await expect(this.syncStream(auth, types)).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  }
+
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {
     const acks: Record<string, string> = {};
     const syncAcks: string[] = [];
@@ -286,6 +293,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case PersonRepository:
     case SearchRepository:
     case SessionRepository:
+    case SharedLinkRepository:
     case StackRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
@@ -391,7 +399,7 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     checksum: randomBytes(32),
     type: AssetType.Image,
     originalPath: '/path/to/something.jpg',
-    ownerId: '@immich.cloud',
+    ownerId: 'not-a-valid-uuid',
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
