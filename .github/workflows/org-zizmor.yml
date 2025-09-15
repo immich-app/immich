@@ -10,4 +10,6 @@ jobs:
     name: Zizmor
     uses: immich-app/devtools/.github/workflows/shared-zizmor.yml@main
     permissions:
-      pull-requests: write
+      actions: read
+      contents: read
+      security-events: write
