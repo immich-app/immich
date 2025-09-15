@@ -569,7 +569,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
-      onTapDown: _onTapDown,
       disableScaleGestures: true,
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
