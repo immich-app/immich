@@ -5,13 +5,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
-import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -83,7 +82,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
               ),
               TextButton(
                 onPressed: () async {
-                  await resetDriftDatabase(ref.read(driftProvider));
+                  await ref.read(driftProvider).reset();
                   context.pop();
                   context.scaffoldMessenger.showSnackBar(
                     SnackBar(content: Text("reset_sqlite_success".t(context: context))),
