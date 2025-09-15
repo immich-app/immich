@@ -1,0 +1,12 @@
+name: Zizmor
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  zizmor:
+    name: Zizmor
+    uses: immich-app/devtools/.github/workflows/shared-zizmor.yml@main
+    permissions:
+      pull-requests: write
