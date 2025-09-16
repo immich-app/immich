@@ -16,7 +16,7 @@ class BackgroundEngineLock : FlutterPlugin {
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     // work manager task is running while the main app is opened, cancel the worker
-    if (engineCount.incrementAndGet() == 2 && FlutterEngineCache.getInstance()
+    if (engineCount.incrementAndGet() > 1 && FlutterEngineCache.getInstance()
         .get(ENGINE_CACHE_KEY) != null
     ) {
       WorkManager.getInstance(binding.applicationContext)
