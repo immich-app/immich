@@ -32,7 +32,7 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
-    this.showStorageIndicator,
+    this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
     this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.18),
@@ -42,7 +42,7 @@ class Timeline extends StatelessWidget {
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
-  final bool? showStorageIndicator;
+  final bool showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withStack;
