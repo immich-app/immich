@@ -64,6 +64,8 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     if taskSemaphore.wait(timeout: .now()) == .success {
       // Restrict the refresh task to run only for a maximum of (maxSeconds) seconds
       runBackgroundWorker(task: task, taskType: .refresh, maxSeconds: 20)
+    } else {
+      task.setTaskCompleted(success: false)
     }
   }
   
