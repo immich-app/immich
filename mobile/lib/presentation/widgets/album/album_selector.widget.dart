@@ -504,9 +504,9 @@ class _AlbumList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (albums.isEmpty) {
-      return const SliverToBoxAdapter(
+      return SliverToBoxAdapter(
         child: Center(
-          child: Padding(padding: EdgeInsets.all(20.0), child: Text('No albums found')),
+          child: Padding(padding: const EdgeInsets.all(20.0), child: Text('album_search_not_found'.tr())),
         ),
       );
     }
@@ -599,9 +599,9 @@ class _AlbumGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (albums.isEmpty) {
-      return const SliverToBoxAdapter(
+      return SliverToBoxAdapter(
         child: Center(
-          child: Padding(padding: EdgeInsets.all(20.0), child: Text('No albums found')),
+          child: Padding(padding: const EdgeInsets.all(20.0), child: Text('album_search_not_found'.tr())),
         ),
       );
     }
