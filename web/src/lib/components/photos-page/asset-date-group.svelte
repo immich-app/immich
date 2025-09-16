@@ -75,8 +75,9 @@
     assets: TimelineAsset[],
     groupTitle: string,
     asset: TimelineAsset,
+    forceView: boolean = false,
   ) => {
-    if (isSelectionMode || assetInteraction.selectionActive) {
+    if (!forceView && (isSelectionMode || assetInteraction.selectionActive)) {
       assetSelectHandler(timelineManager, asset, assets, groupTitle);
       return;
     }
@@ -218,11 +219,11 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            onClick={(asset) => {
+            onClick={(asset, forceView:boolean = false) => {
               if (typeof onThumbnailClick === 'function') {
                 onThumbnailClick(asset, timelineManager, dayGroup, _onClick);
               } else {
-                _onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+                _onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset, forceView);
               }
             }}
             onSelect={(asset) => assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
@@ -230,6 +231,7 @@
             selected={assetInteraction.hasSelectedAsset(asset.id) ||
               dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
+            selectionActive={assetInteraction.selectionActive}
             disabled={dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}

@@ -11,6 +11,7 @@
     mdiCameraBurst,
     mdiCheckCircle,
     mdiHeart,
+    mdiMagnifyPlusOutline,
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
@@ -37,6 +38,7 @@
     thumbnailHeight?: number;
     selected?: boolean;
     selectionCandidate?: boolean;
+    selectionActive?: boolean;
     disabled?: boolean;
     disableLinkMouseOver?: boolean;
     readonly?: boolean;
@@ -45,7 +47,7 @@
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
-    onClick?: (asset: TimelineAsset) => void;
+    onClick?: (asset: TimelineAsset, forceView?: boolean) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
   }
@@ -58,6 +60,7 @@
     thumbnailHeight = undefined,
     selected = false,
     selectionCandidate = false,
+    selectionActive = false,
     disabled = false,
     disableLinkMouseOver = false,
     readonly = false,
@@ -90,6 +93,12 @@
     if (!disabled) {
       onSelect?.($state.snapshot(asset));
     }
+  };
+
+  const onViewerIconClickedHandler = (e?: MouseEvent) => {
+    e?.stopPropagation();
+    e?.preventDefault();
+    onClick?.($state.snapshot(asset), true);
   };
 
   const callClickHandlers = () => {
@@ -308,6 +317,19 @@
           aria-label="Thumbnail URL"
         >
         </a>
+      {/if}
+
+      <!-- View Asset while selecting -->
+      {#if mouseOver && selectionActive}
+        <button
+          type="button"
+          onclick={onViewerIconClickedHandler}
+          class={['absolute focus:outline-none bottom-2 end-2', { 'cursor-not-allowed': disabled }]}
+          tabindex={-1}
+          {disabled}
+        >
+          <Icon path={mdiMagnifyPlusOutline} size="24" class="text-white/80 hover:text-white" />
+        </button>
       {/if}
 
       <ImageThumbnail
