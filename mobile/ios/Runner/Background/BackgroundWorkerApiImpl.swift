@@ -16,6 +16,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   
   private static let refreshTaskID = "app.alextran.immich.background.refreshUpload"
   private static let processingTaskID = "app.alextran.immich.background.processingUpload"
+  private static let taskSemaphore = DispatchSemaphore(value: 1)
 
   public static func registerBackgroundWorkers() {
       BGTaskScheduler.shared.register(
@@ -59,12 +60,18 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   
   private static func handleBackgroundRefresh(task: BGAppRefreshTask) {
     scheduleRefreshWorker()
-    // Restrict the refresh task to run only for a maximum of (maxSeconds) seconds
-    runBackgroundWorker(task: task, taskType: .refresh, maxSeconds: 20)
+    // If another task is running, cede the background time back to the OS
+    if taskSemaphore.wait(timeout: .now()) == .success {
+      // Restrict the refresh task to run only for a maximum of (maxSeconds) seconds
+      runBackgroundWorker(task: task, taskType: .refresh, maxSeconds: 20)
+    } else {
+      task.setTaskCompleted(success: false)
+    }
   }
   
   private static func handleBackgroundProcessing(task: BGProcessingTask) {
     scheduleProcessingWorker()
+    taskSemaphore.wait()
     // There are no restrictions for processing tasks. Although, the OS could signal expiration at any time
     runBackgroundWorker(task: task, taskType: .processing, maxSeconds: nil)
   }
@@ -80,6 +87,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
    *   - maxSeconds: Optional timeout for the operation in seconds
    */
   private static func runBackgroundWorker(task: BGTask, taskType: BackgroundTaskType, maxSeconds: Int?) {
+    defer { taskSemaphore.signal() }
     let semaphore = DispatchSemaphore(value: 0)
     var isSuccess = true
     
