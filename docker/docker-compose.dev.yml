@@ -21,7 +21,6 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
       dockerfile: server/Dockerfile.dev
@@ -30,7 +29,6 @@ services:
     volumes:
       - ..:/usr/src/app
       - ${UPLOAD_LOCATION}/photos:/data
-      - ${UPLOAD_LOCATION}/photos/upload:/data/upload
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
@@ -78,9 +76,6 @@ services:
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
-    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
-    # user: 0:0
-    user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
       dockerfile: server/Dockerfile.dev
