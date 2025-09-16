@@ -30,7 +30,8 @@ const guides: CommunityGuidesProps[] = [
   },
   {
     title: 'Immich Podman Quadlets Handbook',
-    description: 'A rewrite of the original Immich Docker Compose file using Podman Quadlets, with a set of extra guides in the repository’s wiki.',
+    description:
+      'A rewrite of the original Immich Docker Compose file using Podman Quadlets, with a set of extra guides in the repository’s wiki.',
     url: 'https://github.com/linux-universe/immich-podman-quadlets/blob/main/README.md',
   },
   {
