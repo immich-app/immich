@@ -182,7 +182,7 @@
               />
 
               <SettingInputField
-                inputType={SettingInputFieldType.TEXT}
+                inputType={SettingInputFieldType.NUMBER}
                 label={$t('admin.oauth_timeout')}
                 description={$t('admin.oauth_timeout_description')}
                 required={true}
