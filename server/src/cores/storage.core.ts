@@ -122,13 +122,21 @@ export class StorageCore {
   }
 
   static isImmichPath(path: string) {
+    const base = StorageCore.getMediaLocation();
+
+    // If media location is an S3 URI, perform a simple prefix comparison on strings
+    if (base.startsWith('s3://')) {
+      const norm = (p: string) => (p.endsWith('/') ? p : p + '/');
+      const normalizedBase = norm(base);
+      const normalizedPath = norm(path);
+      return normalizedPath.startsWith(normalizedBase);
+    }
+
+    // Default: treat both as local filesystem paths
     const resolvedPath = resolve(path);
-    const resolvedAppMediaLocation = StorageCore.getMediaLocation();
     const normalizedPath = resolvedPath.endsWith('/') ? resolvedPath : resolvedPath + '/';
-    const normalizedAppMediaLocation = resolvedAppMediaLocation.endsWith('/')
-      ? resolvedAppMediaLocation
-      : resolvedAppMediaLocation + '/';
-    return normalizedPath.startsWith(normalizedAppMediaLocation);
+    const normalizedBase = base.endsWith('/') ? base : base + '/';
+    return normalizedPath.startsWith(normalizedBase);
   }
 
   async moveAssetImage(asset: StorageAsset, pathType: GeneratedImageType, format: ImageFormat) {
