@@ -3,12 +3,12 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     album: AlbumResponseDto;

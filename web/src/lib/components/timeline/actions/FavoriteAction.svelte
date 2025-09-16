@@ -4,13 +4,13 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import type { OnFavorite } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     onFavorite?: OnFavorite;

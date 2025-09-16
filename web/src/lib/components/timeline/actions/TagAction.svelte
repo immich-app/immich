@@ -1,11 +1,11 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiTagMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     menuItem?: boolean;

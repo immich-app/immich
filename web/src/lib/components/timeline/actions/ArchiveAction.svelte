@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import type { OnArchive } from '$lib/utils/actions';
   import { archiveAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
@@ -6,7 +7,6 @@
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     onArchive?: OnArchive;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';

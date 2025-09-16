@@ -3,13 +3,13 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import type { OnRestore } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreAssets } from '@immich/sdk';
-  import { mdiHistory } from '@mdi/js';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import { t } from 'svelte-i18n';
   import { Button } from '@immich/ui';
+  import { mdiHistory } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     onRestore: OnRestore | undefined;
