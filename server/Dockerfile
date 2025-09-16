@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202509021104@sha256:47d38c94775332000a93fbbeca1c796687b2d2919e3c75b6e26ab8a65d1864f3 AS dev
+FROM ghcr.io/immich-app/base-server-dev:202509091104@sha256:4f9275330f1e49e7ce9840758ea91839052fe6ed40972d5bb97a9af857fa956a AS dev
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
@@ -77,7 +77,7 @@ RUN apt-get update \
 RUN dart --disable-analytics
 
 # production-builder-base image
-FROM ghcr.io/immich-app/base-server-dev:202509021104@sha256:47d38c94775332000a93fbbeca1c796687b2d2919e3c75b6e26ab8a65d1864f3 AS prod-builder-base
+FROM ghcr.io/immich-app/base-server-dev:202509091104@sha256:4f9275330f1e49e7ce9840758ea91839052fe6ed40972d5bb97a9af857fa956a AS prod-builder-base
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp
@@ -115,7 +115,7 @@ RUN pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && 
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
 # prod base image
-FROM ghcr.io/immich-app/base-server-prod:202509021104@sha256:84f3727cff75c623f79236cdd9a2b72c84f7665057f474851016f702c67157af
+FROM ghcr.io/immich-app/base-server-prod:202509091104@sha256:d1ccbac24c84f2f8277cf85281edfca62d85d7daed6a62b8efd3a81bcd3c5e0e
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -125,7 +125,7 @@ ENV NODE_ENV=production \
 COPY --from=server-prod /output/server-pruned ./server
 COPY --from=web-prod /usr/src/app/web/build /build/www
 COPY --from=cli-prod /output/cli-pruned ./cli
-RUN ln -s ./cli/bin/immich server/bin/immich
+RUN ln -s ../../cli/bin/immich server/bin/immich
 COPY LICENSE /licenses/LICENSE.txt
 COPY LICENSE /LICENSE
 

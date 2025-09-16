@@ -17,9 +17,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
@@ -39,6 +39,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:worker_manager/worker_manager.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 void main() async {
   ImmichWidgetsBinding();
@@ -69,9 +70,9 @@ Future<void> initApp() async {
   if (kReleaseMode && Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
-      debugPrint("Enabled high refresh mode");
+      dPrint(() => "Enabled high refresh mode");
     } catch (e) {
-      debugPrint("Error setting high refresh rate: $e");
+      dPrint(() => "Error setting high refresh rate: $e");
     }
   }
 
@@ -126,23 +127,23 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        debugPrint("[APP STATE] resumed");
+        dPrint(() => "[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
         break;
       case AppLifecycleState.inactive:
-        debugPrint("[APP STATE] inactive");
+        dPrint(() => "[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
         break;
       case AppLifecycleState.paused:
-        debugPrint("[APP STATE] paused");
+        dPrint(() => "[APP STATE] paused");
         ref.read(appStateProvider.notifier).handleAppPause();
         break;
       case AppLifecycleState.detached:
-        debugPrint("[APP STATE] detached");
+        dPrint(() => "[APP STATE] detached");
         ref.read(appStateProvider.notifier).handleAppDetached();
         break;
       case AppLifecycleState.hidden:
-        debugPrint("[APP STATE] hidden");
+        dPrint(() => "[APP STATE] hidden");
         ref.read(appStateProvider.notifier).handleAppHidden();
         break;
     }
@@ -200,14 +201,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   initState() {
     super.initState();
-    initApp().then((_) => debugPrint("App Init Completed"));
+    initApp().then((_) => dPrint(() => "App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
       if (Store.isBetaTimelineEnabled) {
         ref.read(backgroundServiceProvider).disableService();
-        ref.read(driftBackgroundUploadFgService).enable();
+        ref.read(backgroundWorkerFgServiceProvider).enable();
       } else {
-        ref.read(driftBackgroundUploadFgService).disable();
+        ref.read(backgroundWorkerFgServiceProvider).disable();
         ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
       }
     });
@@ -239,7 +240,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () => [AppNavigationObserver(ref: ref), HeroController()],
+          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
         ),
       ),
     );
