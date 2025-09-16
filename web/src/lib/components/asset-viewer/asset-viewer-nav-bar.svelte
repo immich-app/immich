@@ -134,14 +134,14 @@
     {#if !!onSelectAsset && assetInteraction?.selectionActive}
       <p class="text-lg text-immich-fg dark:text-immich-dark-fg">
         {#if selected}
-        {$t('selected')}
+          {$t('selected')}
         {:else}
-        {$t('select')}
+          {$t('select')}
         {/if}
       </p>
       <button
         type="button"
-        onclick={()=>onSelectAsset(toTimelineAsset(asset))}
+        onclick={() => onSelectAsset(toTimelineAsset(asset))}
         class={['focus:outline-none']}
         role="checkbox"
         tabindex={-1}

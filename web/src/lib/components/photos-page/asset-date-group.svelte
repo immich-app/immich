@@ -219,7 +219,7 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            onClick={(asset, forceView:boolean = false) => {
+            onClick={(asset, forceView: boolean = false) => {
               if (typeof onThumbnailClick === 'function') {
                 onThumbnailClick(asset, timelineManager, dayGroup, _onClick);
               } else {
