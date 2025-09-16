@@ -1,6 +1,5 @@
 <script lang="ts">
   import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     NotificationType,
     notificationController,
@@ -13,7 +12,7 @@
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { sendTestEmailAdmin, type SystemConfigDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, LoadingSpinner } from '@immich/ui';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';

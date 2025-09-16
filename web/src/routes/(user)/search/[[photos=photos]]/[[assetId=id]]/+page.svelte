@@ -6,7 +6,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
@@ -44,7 +43,7 @@
     searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
-  import { Icon, IconButton } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -398,7 +397,7 @@
 
     {#if isLoading}
       <div class="flex justify-center py-16 items-center">
-        <LoadingSpinner size="48" />
+        <LoadingSpinner size="giant" />
       </div>
     {/if}
   </section>

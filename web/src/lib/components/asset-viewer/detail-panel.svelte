@@ -23,7 +23,7 @@
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, IconButton } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -40,7 +40,6 @@
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 

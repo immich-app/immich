@@ -11,7 +11,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     NotificationType,
     notificationController,
@@ -50,7 +49,7 @@
     updatePerson,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiAccountBoxOutline,
     mdiAccountMultipleCheckOutline,
