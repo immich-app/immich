@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { discordPath, discordViewBox } from '$lib/assets/svg-paths';
   import { type ServerAboutResponseDto } from '@immich/sdk';
   import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
+  import { siDiscord } from 'simple-icons';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -43,7 +43,7 @@
 
       <div>
         <a href="https://discord.immich.app" target="_blank" rel="noreferrer">
-          <Icon icon={discordPath} viewBox={discordViewBox} class="inline-block" size="1.5em" />
+          <Icon icon={siDiscord} class="inline-block" size="1.5em" />
           <p
             class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
             id="github-label"

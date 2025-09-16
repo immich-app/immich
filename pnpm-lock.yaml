@@ -758,6 +758,9 @@ importers:
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
+      simple-icons:
+        specifier: ^15.15.0
+        version: 15.15.0
       socket.io-client:
         specifier: ~4.8.0
         version: 4.8.1
@@ -13114,7 +13117,7 @@ snapshots:
 
   '@docusaurus/react-loadable@6.0.0(react@18.3.1)':
     dependencies:
-      '@types/react': 19.1.12
+      '@types/react': 19.1.13
       react: 18.3.1
 
   '@docusaurus/theme-classic@3.8.1(@types/react@19.1.13)(acorn@8.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.2)':
@@ -15622,7 +15625,7 @@ snapshots:
   '@types/react-router@5.1.20':
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 19.1.12
+      '@types/react': 19.1.13
 
   '@types/react@19.1.12':
     dependencies:
