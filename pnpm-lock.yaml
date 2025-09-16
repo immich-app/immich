@@ -684,8 +684,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.27.2
-        version: 0.27.2(@internationalized/date@3.8.2)(svelte@5.35.5)
+        specifier: ^0.28.0
+        version: 0.28.0(@internationalized/date@3.8.2)(svelte@5.35.5)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2589,8 +2589,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@immich/ui@0.27.2':
-    resolution: {integrity: sha512-woPBYtuKFYApOwI9KS6Zj/6p9KkzPJLfzu4zSH7nF7lxVguk8DakHxR08ENnVq34lJHlIjl4PEv7jo69CJkE6w==}
+  '@immich/ui@0.28.0':
+    resolution: {integrity: sha512-plQedwUbAu6FqbkYxYdzTigTQU5GfsIW287VO/EIOjd9hODEZYMfIuS0eiBivWtFmSA/lR+kuNoV6JAAw84PuQ==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -13114,7 +13114,7 @@ snapshots:
 
   '@docusaurus/react-loadable@6.0.0(react@18.3.1)':
     dependencies:
-      '@types/react': 19.1.12
+      '@types/react': 19.1.13
       react: 18.3.1
 
   '@docusaurus/theme-classic@3.8.1(@types/react@19.1.13)(acorn@8.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.2)':
@@ -13706,7 +13706,7 @@ snapshots:
   '@img/sharp-win32-x64@0.34.3':
     optional: true
 
-  '@immich/ui@0.27.2(@internationalized/date@3.8.2)(svelte@5.35.5)':
+  '@immich/ui@0.28.0(@internationalized/date@3.8.2)(svelte@5.35.5)':
     dependencies:
       '@mdi/js': 7.4.47
       bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.35.5)
