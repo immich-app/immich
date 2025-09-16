@@ -6,8 +6,7 @@
     type ComponentNotification,
     type Notification,
   } from '$lib/components/shared-components/notification/notification';
-  import Icon from '$lib/elements/Icon.svelte';
-  import { Button, IconButton, type Color } from '@immich/ui';
+  import { Button, Icon, IconButton, type Color } from '@immich/ui';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -81,7 +80,7 @@
 >
   <div class="flex justify-between">
     <div class="flex place-items-center gap-2">
-      <Icon path={icon} color={primaryColor[notification.type]} size="20" />
+      <Icon {icon} color={primaryColor[notification.type]} size="20" />
       <h2 style:color={primaryColor[notification.type]} class="font-medium" data-testid="title">
         {#if notification.type == NotificationType.Error}{$t('error')}
         {:else if notification.type == NotificationType.Warning}{$t('warning')}

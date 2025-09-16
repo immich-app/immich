@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/elements/Icon.svelte';
-  import { Button } from '@immich/ui';
+  import { Button, Icon } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiCheck } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -37,7 +36,7 @@
   {#if title || icon}
     <div class="flex gap-2 items-center justify-center w-fit">
       {#if icon}
-        <Icon path={icon} size="30" class="text-immich-primary dark:text-immich-dark-primary" />
+        <Icon {icon} size="30" class="text-immich-primary dark:text-immich-dark-primary" />
       {/if}
       {#if title}
         <p class="uppercase text-xl text-immich-primary dark:text-immich-dark-primary">

@@ -32,7 +32,6 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
-  import Icon from '$lib/elements/Icon.svelte';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -69,7 +68,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -535,8 +534,8 @@
                   onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
                   class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                 >
-                  <span class="text-text-immich-primary dark:text-immich-dark-primary"
-                    ><Icon path={mdiPlus} size="24" />
+                  <span class="text-text-immich-primary dark:text-immich-dark-primary">
+                    <Icon icon={mdiPlus} size="24" />
                   </span>
                   <span class="text-lg">{$t('select_photos')}</span>
                 </button>

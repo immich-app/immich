@@ -3,7 +3,6 @@
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
   import { AppRoute } from '$lib/constants';
-  import Icon from '$lib/elements/Icon.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
@@ -12,7 +11,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
   import { updateMyPreferences } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteDate } from 'svelte/reactivity';
@@ -104,7 +103,7 @@
 
         <div>
           <Icon
-            path={mdiInformationOutline}
+            icon={mdiInformationOutline}
             class="hidden sidebar:flex text-immich-primary dark:text-immich-dark-primary font-medium"
             size="18"
           />

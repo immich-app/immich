@@ -1,8 +1,8 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import Icon from '$lib/elements/Icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
+  import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -83,12 +83,12 @@
       >
         <span class="sr-only">{$t('rating_count', { values: { count: value } })}</span>
         <Icon
-          path={starIcon}
+          icon={starIcon}
           size="1.5em"
           strokeWidth={1}
           color={filled ? 'currentcolor' : 'transparent'}
           strokeColor={filled ? 'currentcolor' : '#c1cce8'}
-          ariaHidden
+          aria-hidden
         />
       </label>
       <input

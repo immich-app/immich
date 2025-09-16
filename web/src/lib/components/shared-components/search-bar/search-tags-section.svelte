@@ -1,9 +1,8 @@
 <script lang="ts">
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import Icon from '$lib/elements/Icon.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Checkbox, Label } from '@immich/ui';
+  import { Checkbox, Icon, Label } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -89,7 +88,7 @@
               title={$t('remove_tag')}
               onclick={() => handleRemove(tagId)}
             >
-              <Icon path={mdiClose} />
+              <Icon icon={mdiClose} />
             </button>
           </div>
         {/if}

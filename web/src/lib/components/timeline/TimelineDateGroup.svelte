@@ -1,6 +1,5 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
-  import Icon from '$lib/elements/Icon.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -14,6 +13,7 @@
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
+  import { Icon } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { scale } from 'svelte/transition';
@@ -178,9 +178,9 @@
           onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
         >
           {#if assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
-            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
           {:else}
-            <Icon path={mdiCircleOutline} size="24" color="#757575" />
+            <Icon icon={mdiCircleOutline} size="24" color="#757575" />
           {/if}
         </div>
       {/if}

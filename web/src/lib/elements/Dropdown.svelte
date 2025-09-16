@@ -12,11 +12,10 @@
 
 <script lang="ts" generics="T">
   import { clickOutside } from '$lib/actions/click-outside';
-  import { Button, Text } from '@immich/ui';
+  import { Button, Icon, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { fly } from 'svelte/transition';
-  import Icon from './Icon.svelte';
 
   interface Props {
     class?: string;
@@ -99,7 +98,7 @@
   <!-- BUTTON TITLE -->
   <Button onclick={() => (showMenu = true)} fullWidth {title} variant="ghost" color="secondary" size="small">
     {#if renderedSelectedOption?.icon}
-      <Icon path={renderedSelectedOption.icon} />
+      <Icon icon={renderedSelectedOption.icon} />
     {/if}
     <Text class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</Text>
   </Button>
@@ -123,7 +122,7 @@
         >
           {#if isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">
-              <Icon path={mdiCheck} />
+              <Icon icon={mdiCheck} />
             </div>
             <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary">
               {renderedOption.title}

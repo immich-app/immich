@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/elements/Icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import StatsCard from './stats-card.svelte';
@@ -47,7 +47,7 @@
       <div class="flex flex-col justify-between rounded-3xl bg-subtle p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-            <Icon path={mdiCameraIris} size="25" />
+            <Icon icon={mdiCameraIris} size="25" />
             <p class="uppercase">{$t('photos')}</p>
           </div>
 
@@ -59,7 +59,7 @@
         </div>
         <div class="flex flex-wrap gap-x-12">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-            <Icon path={mdiPlayCircle} size="25" />
+            <Icon icon={mdiPlayCircle} size="25" />
             <p class="uppercase">{$t('videos')}</p>
           </div>
 
@@ -71,7 +71,7 @@
         </div>
         <div class="flex flex-wrap gap-x-7">
           <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
-            <Icon path={mdiChartPie} size="25" />
+            <Icon icon={mdiChartPie} size="25" />
             <p class="uppercase">{$t('storage')}</p>
           </div>
 

@@ -7,7 +7,6 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
-  import Icon from '$lib/elements/Icon.svelte';
   import {
     AudioCodec,
     CQMode,
@@ -18,6 +17,7 @@
     VideoContainer,
     type SystemConfigDto,
   } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiHelpCircleOutline } from '@mdi/js';
   import { isEqual, sortBy } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -45,7 +45,7 @@
     <form autocomplete="off" {onsubmit}>
       <div class="ms-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
-          <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
+          <Icon icon={mdiHelpCircleOutline} class="inline" size="15" />
           <FormatMessage key="admin.transcoding_codecs_learn_more">
             {#snippet children({ tag, message })}
               {#if tag === 'h264-link'}

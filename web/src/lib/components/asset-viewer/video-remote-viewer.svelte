@@ -1,9 +1,8 @@
 <script lang="ts">
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import Icon from '$lib/elements/Icon.svelte';
   import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -72,7 +71,7 @@
 </script>
 
 <span class="flex items-center space-x-2 text-gray-200 text-2xl font-bold">
-  <Icon path={mdiCastConnected} class="text-primary" size="36" />
+  <Icon icon={mdiCastConnected} class="text-primary" size="36" />
   <span>{$t('connected_to')} {castManager.receiverName}</span>
 </span>
 

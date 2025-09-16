@@ -4,7 +4,6 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
-  import Icon from '$lib/elements/Icon.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     AlbumUserRole,
@@ -15,7 +14,7 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Modal, ModalBody, modalManager } from '@immich/ui';
+  import { Icon, Modal, ModalBody, modalManager } from '@immich/ui';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { findKey } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -142,7 +141,7 @@
         <div class="p-2">
           <button type="button" class="flex items-center gap-2" onclick={() => onClose({ action: 'shareUser' })}>
             <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
-              <div><Icon path={mdiPlus} size="25" /></div>
+              <div><Icon icon={mdiPlus} size="25" /></div>
             </div>
             <div>{$t('invite_people')}</div>
           </button>
