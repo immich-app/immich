@@ -22,6 +22,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
+  private var hashTask: Task<Void, Error>?
   
   
   init(with defaults: UserDefaults = .standard) {
@@ -250,7 +251,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   }
   
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void) {
-    Task {
+    hashTask = Task {
       var missingAssetIds = Set(assetIds)
       var assets = [PHAsset]()
       assets.reserveCapacity(assetIds.count)
@@ -262,7 +263,7 @@ class NativeSyncApiImpl: NativeSyncApi {
         var results = [HashResult]()
         results.reserveCapacity(assets.count)
         for asset in assets {
-          taskGroup.addTask { [self] in
+          taskGroup.addTask { 
             return await self.hashAsset(asset, allowNetworkAccess: allowNetworkAccess)
           }
         }
@@ -280,45 +281,56 @@ class NativeSyncApiImpl: NativeSyncApi {
     }
   }
   
+  func cancelHashing() throws {
+    hashTask?.cancel()
+  }
+  
   private func hashAsset(_ asset: PHAsset, allowNetworkAccess: Bool) async -> HashResult {
-    guard let resource = asset.getResource() else {
-      return HashResult(assetId: asset.localIdentifier, error: "Cannot get asset resource", hash: nil)
-    }
-    
-    let options = PHAssetResourceRequestOptions()
-    options.isNetworkAccessAllowed = allowNetworkAccess
-    
-    return await withCheckedContinuation { continuation in
-      var hasher = Insecure.SHA1()
+    var requestId: PHAssetResourceDataRequestID?
+    return await withTaskCancellationHandler(operation: {
+      guard let resource = asset.getResource() else {
+        return HashResult(assetId: asset.localIdentifier, error: "Cannot get asset resource", hash: nil)
+      }
       
-      PHAssetResourceManager.default().requestData(
-        for: resource,
-        options: options,
-        dataReceivedHandler: { data in
-          autoreleasepool {
-            hasher.update(data: data)
+      let options = PHAssetResourceRequestOptions()
+      options.isNetworkAccessAllowed = allowNetworkAccess
+      
+      return await withCheckedContinuation { continuation in
+        var hasher = Insecure.SHA1()
+        
+        requestId = PHAssetResourceManager.default().requestData(
+          for: resource,
+          options: options,
+          dataReceivedHandler: { data in
+            autoreleasepool {
+              hasher.update(data: data)
+            }
+          },
+          completionHandler: { error in
+            if let error = error {
+              continuation.resume(returning: HashResult(
+                assetId: asset.localIdentifier,
+                error: "Failed to hash asset: \(error.localizedDescription)",
+                hash: nil
+              ))
+            } else {
+              let digest = hasher.finalize()
+              let hashData = Data(digest)
+              let hashString = hashData.base64EncodedString()
+              
+              continuation.resume(returning: HashResult(
+                assetId: asset.localIdentifier,
+                error: nil,
+                hash: hashString
+              ))
+            }
           }
-        },
-        completionHandler: { error in
-          if let error = error {
-            continuation.resume(returning: HashResult(
-              assetId: asset.localIdentifier,
-              error: "Failed to hash asset: \(error.localizedDescription)",
-              hash: nil
-            ))
-          } else {
-            let digest = hasher.finalize()
-            let hashData = Data(digest)
-            let hashString = hashData.base64EncodedString()
-            
-            continuation.resume(returning: HashResult(
-              assetId: asset.localIdentifier,
-              error: nil,
-              hash: hashString
-            ))
-          }
-        }
-      )
-    }
+        )
+      }
+    }, onCancel: { [requestId] in
+      if(requestId != nil) {
+        PHAssetResourceManager.default().cancelDataRequest(requestId!)
+      }
+    })
   }
 }

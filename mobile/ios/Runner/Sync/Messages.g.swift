@@ -363,6 +363,7 @@ protocol NativeSyncApi {
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
+  func cancelHashing() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -517,6 +518,19 @@ class NativeSyncApiSetup {
       }
     } else {
       hashAssetsChannel.setMessageHandler(nil)
+    }
+    let cancelHashingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelHashing\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      cancelHashingChannel.setMessageHandler { _, reply in
+        do {
+          try api.cancelHashing()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      cancelHashingChannel.setMessageHandler(nil)
     }
   }
 }

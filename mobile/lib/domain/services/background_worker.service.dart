@@ -184,6 +184,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
     try {
       final backgroundSyncManager = _ref.read(backgroundSyncProvider);
+      final nativeSyncApi = _ref.read(nativeSyncApiProvider);
       _isCleanedUp = true;
       _ref.dispose();
 
@@ -200,6 +201,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _driftLogger.close(),
         backgroundSyncManager.cancel(),
         backgroundSyncManager.cancelLocal(),
+        nativeSyncApi.cancelHashing(),
       ];
 
       if (_isar.isOpen) {

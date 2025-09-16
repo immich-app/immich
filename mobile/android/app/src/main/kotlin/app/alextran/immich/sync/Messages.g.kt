@@ -304,6 +304,7 @@ interface NativeSyncApi {
   fun getAssetsCountSince(albumId: String, timestamp: Long): Long
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
+  fun cancelHashing()
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -461,6 +462,22 @@ interface NativeSyncApi {
                 reply.reply(MessagesPigeonUtils.wrapResult(data))
               }
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelHashing$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.cancelHashing()
+              listOf(null)
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

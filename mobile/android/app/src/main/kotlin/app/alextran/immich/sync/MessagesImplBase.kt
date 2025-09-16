@@ -9,6 +9,7 @@ import android.util.Base64
 import androidx.core.database.getStringOrNull
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
@@ -25,6 +26,8 @@ sealed class AssetResult {
 @SuppressLint("InlinedApi")
 open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
+
+  private var hashTask: Job? = null
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
@@ -234,7 +237,7 @@ open class NativeSyncApiImplBase(context: Context) {
       return
     }
 
-    CoroutineScope(Dispatchers.IO).launch {
+    hashTask = CoroutineScope(Dispatchers.IO).launch {
       try {
         val results = assetIds.map { assetId ->
           async {
@@ -274,5 +277,9 @@ open class NativeSyncApiImplBase(context: Context) {
     } catch (e: Exception) {
       HashResult(assetId, "Failed to hash asset: ${e.message}", null)
     }
+  }
+
+  fun cancelHashing() {
+    hashTask?.cancel()
   }
 }
