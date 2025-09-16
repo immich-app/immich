@@ -63,14 +63,14 @@
 
   interface Props {
     asset: AssetResponseDto;
-    assetInteraction: AssetInteraction;
+    assetInteraction?: AssetInteraction | null;
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
     showCloseButton?: boolean;
     showDetailButton: boolean;
     showSlideshow?: boolean;
-    onSelectAsset: (asset: TimelineAsset) => void;
+    onSelectAsset?: (asset: TimelineAsset) => void;
     onZoomImage: () => void;
     onCopyImage?: () => Promise<void>;
     preAction: PreAction;
@@ -110,7 +110,7 @@
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
   let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
 
-  let selected = $derived(assetInteraction.hasSelectedAsset(asset.id));
+  let selected = $derived(assetInteraction?.hasSelectedAsset(asset.id));
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -131,7 +131,7 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
-    {#if assetInteraction.selectionActive}
+    {#if !!onSelectAsset && assetInteraction?.selectionActive}
       <p class="text-lg text-immich-fg dark:text-immich-dark-fg">
         {#if selected}
         {$t('selected')}

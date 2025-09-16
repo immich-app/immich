@@ -528,10 +528,12 @@
   <Portal target="body">
     <AssetViewer
       asset={$viewingAsset}
+      {assetInteraction}
       onAction={handleAction}
       onPrevious={handlePrevious}
       onNext={handleNext}
       onRandom={handleRandom}
+      onSelectAsset={handleSelectAssets}
       onClose={() => {
         assetViewingStore.showAssetViewer(false);
         handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

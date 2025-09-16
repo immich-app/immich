@@ -50,7 +50,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    assetInteraction: AssetInteraction;
+    assetInteraction?: AssetInteraction;
     preloadAssets?: TimelineAsset[];
     showNavigation?: boolean;
     withStacked?: boolean;
@@ -60,7 +60,7 @@
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     showCloseButton?: boolean;
-    onSelectAsset: (asset: TimelineAsset) => void;
+    onSelectAsset?: (asset: TimelineAsset) => void;
     onClose: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
@@ -536,7 +536,7 @@
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor && !assetInteraction.selectionActive}
+  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor && !assetInteraction?.selectionActive}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
