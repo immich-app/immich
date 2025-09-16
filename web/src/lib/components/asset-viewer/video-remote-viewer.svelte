@@ -1,8 +1,7 @@
 <script lang="ts">
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { castManager, CastState } from '$lib/managers/cast-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { Icon, IconButton } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiCastConnected, mdiPause, mdiPlay } from '@mdi/js';
   import { t } from 'svelte-i18n';
 

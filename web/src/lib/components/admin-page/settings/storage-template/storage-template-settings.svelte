@@ -1,5 +1,4 @@
 <script lang="ts">
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -11,6 +10,7 @@
     type SystemConfigDto,
     type SystemConfigTemplateStorageOptionDto,
   } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import handlebar from 'handlebars';
   import { isEqual } from 'lodash-es';
   import * as luxon from 'luxon';

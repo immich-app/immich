@@ -1,12 +1,11 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, LoadingSpinner } from '@immich/ui';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { SvelteSet } from 'svelte/reactivity';
@@ -54,7 +53,7 @@
 
 {#await peoplePromise}
   <div id="spinner" class="flex h-[217px] items-center justify-center -mb-4">
-    <LoadingSpinner size="24" />
+    <LoadingSpinner size="large" />
   </div>
 {:then people}
   {#if people && people.length > 0}

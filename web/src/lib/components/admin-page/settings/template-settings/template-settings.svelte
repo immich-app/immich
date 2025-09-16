@@ -1,12 +1,11 @@
 <script lang="ts">
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';
-  import { Button, Icon, modalManager } from '@immich/ui';
+  import { Button, Icon, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';

@@ -11,11 +11,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
-  import { Icon, IconButton } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
