@@ -40,11 +40,7 @@
   <ModalBody>
     <form onsubmit={handleEdit} autocomplete="off" id="edit-tag-form">
       <div class="my-4 flex flex-col gap-2">
-        <SettingInputField
-          inputType={SettingInputFieldType.COLOR}
-          label={$t('color').toUpperCase()}
-          bind:value={tagColor}
-        />
+        <SettingInputField inputType={SettingInputFieldType.COLOR} label={$t('color')} bind:value={tagColor} />
       </div>
     </form>
   </ModalBody>

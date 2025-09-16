@@ -368,11 +368,11 @@
 >
   {#if searchResultAlbums.length > 0}
     <section>
-      <div class="ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
+      <div class="uppercase ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums')}</div>
       <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
-      <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
-        {$t('photos_and_videos').toUpperCase()}
+      <div class="uppercase m-6 text-4xl font-medium text-black/70 dark:text-white/80">
+        {$t('photos_and_videos')}
       </div>
     </section>
   {/if}

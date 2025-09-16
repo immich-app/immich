@@ -9,6 +9,7 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/photos-page/actions/focus-actions';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import type { AbsoluteResult, RelativeResult } from '$lib/components/shared-components/change-date.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
@@ -36,16 +37,16 @@
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
+  import AssetDateGroup from '../photos-page/asset-date-group.svelte';
+  import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
-  import AssetDateGroup from './asset-date-group.svelte';
-  import DeleteAssetDialog from './delete-asset-dialog.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
     singleSelect?: boolean;
     /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
-     additionally, update the page location/url with the asset as the asset-grid is scrolled */
+     additionally, update the page location/url with the asset as the timeline is scrolled */
     enableRouting: boolean;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
@@ -224,14 +225,14 @@
 
   const hmrSupport = () => {
     // when hmr happens, skeleton is initialized to true by default
-    // normally, loading asset-grid is part of a navigation event, and the completion of
+    // normally, loading timeline is part of a navigation event, and the completion of
     // that event triggers a scroll-to-asset, if necessary, when then clears the skeleton.
     // this handler will run the navigation/scroll-to-asset handler when hmr is performed,
     // preventing skeleton from showing after hmr
     if (import.meta && import.meta.hot) {
       const afterApdate = (payload: UpdatePayload) => {
         const assetGridUpdate = payload.updates.some(
-          (update) => update.path.endsWith('asset-grid.svelte') || update.path.endsWith('assets-store.ts'),
+          (update) => update.path.endsWith('Timeline.svelte') || update.path.endsWith('assets-store.ts'),
         );
 
         if (assetGridUpdate) {
@@ -252,7 +253,7 @@
       };
       import.meta.hot?.on('vite:afterUpdate', afterApdate);
       import.meta.hot?.on('vite:beforeUpdate', (payload) => {
-        const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('asset-grid.svelte'));
+        const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));
         if (assetGridUpdate) {
           timelineManager.destroy();
         }
@@ -845,13 +846,15 @@
     title="Navigate to Time"
     initialDate={DateTime.now()}
     timezoneInput={false}
-    onConfirm={async (dateString: string) => {
+    onConfirm={async (dateString: AbsoluteResult | RelativeResult) => {
       isShowSelectDate = false;
-      const asset = await timelineManager.getClosestAssetToDate(
-        (DateTime.fromISO(dateString) as DateTime<true>).toObject(),
-      );
-      if (asset) {
-        setFocusAsset(asset);
+      if (dateString.mode == 'absolute') {
+        const asset = await timelineManager.getClosestAssetToDate(
+          (DateTime.fromISO(dateString.date) as DateTime<true>).toObject(),
+        );
+        if (asset) {
+          setFocusAsset(asset);
+        }
       }
     }}
     onCancel={() => (isShowSelectDate = false)}
