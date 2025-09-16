@@ -147,7 +147,7 @@ describe(NotificationService.name, () => {
       await sut.onUserSignup({ id: '', notify: true });
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NotifyUserSignup,
-        data: { id: '', tempPassword: undefined },
+        data: { id: '', password: undefined },
       });
     });
   });

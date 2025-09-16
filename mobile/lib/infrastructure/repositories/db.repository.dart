@@ -5,6 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
@@ -43,6 +44,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
 
 @DriftDatabase(
   tables: [
+    AuthUserEntity,
     UserEntity,
     UserMetadataEntity,
     PartnerEntity,
@@ -67,8 +69,31 @@ class Drift extends $Drift implements IDatabaseRepository {
   Drift([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'immich', native: const DriftNativeOptions(shareAcrossIsolates: true)));
 
+  Future<void> reset() async {
+    // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
+    await exclusively(() async {
+      // https://stackoverflow.com/a/65743498/25690041
+      await customStatement('PRAGMA writable_schema = 1;');
+      await customStatement('DELETE FROM sqlite_master;');
+      await customStatement('VACUUM;');
+      await customStatement('PRAGMA writable_schema = 0;');
+      await customStatement('PRAGMA integrity_check');
+
+      await customStatement('PRAGMA user_version = 0');
+      await beforeOpen(
+        // ignore: invalid_use_of_internal_member
+        resolvedEngine.executor,
+        OpeningDetails(null, schemaVersion),
+      );
+      await customStatement('PRAGMA user_version = $schemaVersion');
+
+      // Refresh all stream queries
+      notifyUpdates({for (final table in allTables) TableUpdate.onTable(table)});
+    });
+  }
+
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -126,6 +151,11 @@ class Drift extends $Drift implements IDatabaseRepository {
           from8To9: (m, v9) async {
             await m.addColumn(v9.localAlbumEntity, v9.localAlbumEntity.linkedRemoteAlbumId);
           },
+          from9To10: (m, v10) async {
+            await m.createTable(v10.authUserEntity);
+            await m.addColumn(v10.userEntity, v10.userEntity.avatarColor);
+            await m.alterTable(TableMigration(v10.userEntity));
+          },
         ),
       );
 
@@ -141,7 +171,7 @@ class Drift extends $Drift implements IDatabaseRepository {
       await customStatement('PRAGMA foreign_keys = ON');
       await customStatement('PRAGMA synchronous = NORMAL');
       await customStatement('PRAGMA journal_mode = WAL');
-      await customStatement('PRAGMA busy_timeout = 500');
+      await customStatement('PRAGMA busy_timeout = 30000');
     },
   );
 }

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -6,6 +7,7 @@ import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
@@ -113,6 +115,16 @@ class ActionNotifier extends Notifier<void> {
         null => const {},
       },
     };
+  }
+
+  Future<ActionResult> troubleshoot(ActionSource source, BuildContext context) async {
+    final assets = _getAssets(source);
+    if (assets.length > 1) {
+      return ActionResult(count: assets.length, success: false, error: 'Cannot troubleshoot multiple assets');
+    }
+    context.pushRoute(AssetTroubleshootRoute(asset: assets.first));
+
+    return ActionResult(count: assets.length, success: true);
   }
 
   Future<ActionResult> shareLink(ActionSource source, BuildContext context) async {

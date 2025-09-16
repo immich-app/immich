@@ -42,14 +42,10 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
     }
 
-    return _db.mergedAssetDrift
-        .mergedBucket(userIds: userIds, groupBy: groupBy.index)
-        .map((row) {
-          final date = row.bucketDate.dateFmt(groupBy);
-          return TimeBucket(date: date, assetCount: row.assetCount);
-        })
-        .watch()
-        .throttle(const Duration(seconds: 3), trailing: true);
+    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
+      final date = row.bucketDate.dateFmt(groupBy);
+      return TimeBucket(date: date, assetCount: row.assetCount);
+    }).watch();
   }
 
   Future<List<BaseAsset>> _getMainBucketAssets(List<String> userIds, {required int offset, required int count}) {
@@ -595,7 +591,7 @@ extension on String {
       GroupAssetsBy.none => throw ArgumentError("GroupAssetsBy.none is not supported for date formatting"),
     };
     try {
-      return DateFormat(format).parse(this);
+      return DateFormat(format, 'en').parse(this);
     } catch (e) {
       throw FormatException("Invalid date format: $this", e);
     }
