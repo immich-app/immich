@@ -107,7 +107,7 @@ dev_dependencies:
     sdk: flutter
   custom_lint: ^0.7.5
   riverpod_lint: ^2.6.1
-  riverpod_generator: ^2.6.1
+  riverpod_generator: ^3.0.0
   mocktail: ^1.0.4
   immich_mobile_immich_lint:
     path: './immich_lint'
