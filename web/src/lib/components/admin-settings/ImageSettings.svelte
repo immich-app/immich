@@ -1,16 +1,16 @@
 <script lang="ts">
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { Colorspace, ImageFormat, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { t } from 'svelte-i18n';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     savedConfig: SystemConfigDto;

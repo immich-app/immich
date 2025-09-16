@@ -1,5 +1,4 @@
 <script lang="ts">
-  import FeatureSetting from '$lib/components/admin-page/user/feature-setting.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import {
@@ -7,6 +6,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
   import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
   import UserEditModal from '$lib/modals/UserEditModal.svelte';

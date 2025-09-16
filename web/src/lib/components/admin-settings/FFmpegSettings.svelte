@@ -22,7 +22,7 @@
   import { isEqual, sortBy } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;

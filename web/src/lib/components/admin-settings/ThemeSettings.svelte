@@ -1,11 +1,11 @@
 <script lang="ts">
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;

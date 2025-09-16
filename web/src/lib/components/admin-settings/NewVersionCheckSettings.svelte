@@ -1,11 +1,11 @@
 <script lang="ts">
-  import type { SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import type { SystemConfigDto } from '@immich/sdk';
+  import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;
