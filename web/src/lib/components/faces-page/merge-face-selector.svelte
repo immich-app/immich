@@ -6,7 +6,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
-  import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
+  import { mdiCallMerge, mdiMerge, mdiPlus, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
@@ -28,6 +28,7 @@
   let people: PersonResponseDto[] = $state([]);
   let selectedPeople: PersonResponseDto[] = $state([]);
   let screenHeight: number = $state(0);
+  let allPeopleViewShown: boolean = $state(false);
 
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
@@ -45,17 +46,17 @@
     await goto(`${AppRoute.PEOPLE}/${person.id}?${page.url.searchParams.toString()}`);
   };
 
+  const openAllPeopleView = () => {
+    allPeopleViewShown = true;
+  };
+
+  const closeAllPeopleView = () => {
+    allPeopleViewShown = false;
+  };
+
   const onSelect = async (selected: PersonResponseDto) => {
     if (selectedPeople.includes(selected)) {
       selectedPeople = selectedPeople.filter((person) => person.id !== selected.id);
-      return;
-    }
-
-    if (selectedPeople.length >= 5) {
-      notificationController.show({
-        message: $t('merge_people_limit'),
-        type: NotificationType.Info,
-      });
       return;
     }
 
@@ -96,7 +97,7 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute start-0 top-0 h-full w-full bg-light"
 >
-  <ControlAppBar onClose={onBack}>
+  <ControlAppBar onClose={allPeopleViewShown ? closeAllPeopleView : onBack}>
     {#snippet leading()}
       {#if hasSelection}
         {$t('selected_count', { values: { count: selectedPeople.length } })}
@@ -106,20 +107,24 @@
       <div></div>
     {/snippet}
     {#snippet trailing()}
-      <Button leadingIcon={mdiMerge} size="small" shape="round" disabled={!hasSelection} onclick={handleMerge}>
-        {$t('merge')}
-      </Button>
+      {#if !allPeopleViewShown}
+        <Button leadingIcon={mdiMerge} size="small" shape="round" disabled={!hasSelection} onclick={handleMerge}>
+          {$t('merge')}
+        </Button>
+      {/if}
     {/snippet}
   </ControlAppBar>
   <section class="px-[70px] pt-[100px]">
-    <section id="merge-face-selector">
+    <section id="merge-face-selector" hidden="{allPeopleViewShown}">
       <div class="mb-10 h-[200px] place-content-center place-items-center">
         <p class="mb-4 text-center uppercase dark:text-white">{$t('choose_matching_people_to_merge')}</p>
 
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
-          {#each selectedPeople as person (person.id)}
+          {#each selectedPeople as person, i (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
-              <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
+              {#if i < 5}
+                <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
+              {/if}
             </div>
           {/each}
 
@@ -127,6 +132,18 @@
             <div class="relative h-full">
               <div class="flex flex-col h-full justify-between">
                 <div class="flex h-full items-center justify-center">
+                  {#if selectedPeople.length > 5}
+                    <div class="absolute top-2">
+                      <IconButton
+                        shape="round"
+                        color="secondary"
+                        aria-label={$t('show_all_selected_people')}
+                        icon={mdiPlus}
+                        size="large"
+                        onclick={openAllPeopleView}
+                      />
+                    </div>
+                  {/if}
                   <Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
                 </div>
                 {#if selectedPeople.length === 1}
@@ -149,6 +166,9 @@
         </div>
       </div>
       <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} {handleSearch} />
+    </section>
+    <section id="merge-face-selector-expanded" hidden="{!allPeopleViewShown}">
+      <PeopleList people={peopleToNotShow} peopleToNotShow={[person]} {screenHeight} {onSelect} {handleSearch} />
     </section>
   </section>
 </section>

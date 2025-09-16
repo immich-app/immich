@@ -16,7 +16,7 @@
 
   let { screenHeight, people, peopleToNotShow, onSelect, handleSearch }: Props = $props();
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
-  let sortBySimilarirty = $state(false);
+  let sortBySimilarity = $state(false);
   let name = $state('');
 
   const showPeople = $derived(
@@ -38,8 +38,8 @@
       variant="ghost"
       icon={mdiSwapVertical}
       onclick={() => {
-        sortBySimilarirty = !sortBySimilarirty;
-        handleSearch(sortBySimilarirty);
+        sortBySimilarity = !sortBySimilarity;
+        handleSearch(sortBySimilarity);
       }}
       aria-label={$t('sort_people_by_similarity')}
     />
