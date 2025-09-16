@@ -1,11 +1,11 @@
 <script lang="ts">
+  import StatsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiPlayCircle } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import StatsCard from './stats-card.svelte';
 
   interface Props {
     stats?: ServerStatsResponseDto;
