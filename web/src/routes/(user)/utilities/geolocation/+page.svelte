@@ -1,6 +1,6 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
@@ -110,17 +110,7 @@
     return !!asset.latitude && !!asset.longitude;
   };
 
-  const handleThumbnailClick = (
-    asset: TimelineAsset,
-    timelineManager: TimelineManager,
-    dayGroup: DayGroup,
-    onClick: (
-      timelineManager: TimelineManager,
-      assets: TimelineAsset[],
-      groupTitle: string,
-      asset: TimelineAsset,
-    ) => void,
-  ) => {
+  const handleThumbnailClick = (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => {
     if (hasGps(asset)) {
       locationUpdated = true;
       setTimeout(() => {
@@ -129,7 +119,7 @@
       location = { latitude: asset.latitude!, longitude: asset.longitude! };
       void setQueryValue('at', asset.id);
     } else {
-      onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+      defaultAssetOpen();
     }
   };
 </script>
@@ -185,7 +175,7 @@
     </div>
   {/if}
 
-  <AssetGrid
+  <Timeline
     isSelectionMode={true}
     enableRouting={true}
     {timelineManager}
@@ -193,9 +183,9 @@
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
-    onThumbnailClick={handleThumbnailClick}
+    onAssetOpen={handleThumbnailClick}
   >
-    {#snippet customLayout(asset: TimelineAsset)}
+    {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}
         <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-success text-black">
           {asset.city || $t('gps')}
@@ -209,5 +199,5 @@
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} />
     {/snippet}
-  </AssetGrid>
+  </Timeline>
 </UserPageLayout>

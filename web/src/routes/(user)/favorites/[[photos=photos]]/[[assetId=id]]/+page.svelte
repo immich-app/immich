@@ -12,7 +12,7 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
@@ -51,7 +51,7 @@
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid
+  <Timeline
     enableRouting={true}
     withStacked={true}
     {timelineManager}
@@ -62,7 +62,7 @@
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_favorites_message')} />
     {/snippet}
-  </AssetGrid>
+  </Timeline>
 </UserPageLayout>
 
 <!-- Multiselection mode app bar -->
