@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
@@ -6,7 +7,6 @@
   import { mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { NotificationType, notificationController } from '../../shared-components/notification/notification';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;

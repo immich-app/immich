@@ -1,6 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
 
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
   import { getAssetInfo } from '@immich/sdk';
@@ -8,7 +9,6 @@
   import { mdiDownload } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     filename?: string;
