@@ -19,9 +19,12 @@
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
@@ -41,6 +44,7 @@
   import { IconButton } from '@immich/ui';
   import {
     mdiAlertOutline,
+    mdiCheckCircle,
     mdiCogRefreshOutline,
     mdiCompare,
     mdiContentCopy,
@@ -59,12 +63,14 @@
 
   interface Props {
     asset: AssetResponseDto;
+    assetInteraction: AssetInteraction;
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     stack?: StackResponseDto | null;
     showCloseButton?: boolean;
     showDetailButton: boolean;
     showSlideshow?: boolean;
+    onSelectAsset: (asset: TimelineAsset) => void;
     onZoomImage: () => void;
     onCopyImage?: () => Promise<void>;
     preAction: PreAction;
@@ -79,12 +85,14 @@
 
   let {
     asset,
+    assetInteraction,
     album = null,
     person = null,
     stack = null,
     showCloseButton = true,
     showDetailButton,
     showSlideshow = false,
+    onSelectAsset,
     onZoomImage,
     onCopyImage,
     preAction,
@@ -102,6 +110,7 @@
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
   let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
 
+  let selected = $derived(assetInteraction.hasSelectedAsset(asset.id));
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -122,149 +131,182 @@
     {/if}
   </div>
   <div class="flex gap-2 overflow-x-auto dark" data-testid="asset-viewer-navbar-actions">
-    <CastButton />
-
-    {#if !asset.isTrashed && $user && !isLocked}
-      <ShareAction {asset} />
-    {/if}
-    {#if asset.isOffline}
-      <IconButton
-        shape="round"
-        color="danger"
-        icon={mdiAlertOutline}
-        onclick={onShowDetail}
-        aria-label={$t('asset_offline')}
-      />
-    {/if}
-    {#if asset.livePhotoVideoId}
-      {@render motionPhoto?.()}
-    {/if}
-    {#if asset.type === AssetTypeEnum.Image}
-      <IconButton
-        class="hidden sm:flex"
-        color="secondary"
-        variant="ghost"
-        shape="round"
-        icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
-        aria-label={$t('zoom_image')}
-        onclick={onZoomImage}
-      />
-    {/if}
-    {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
-      <IconButton
-        color="secondary"
-        variant="ghost"
-        shape="round"
-        icon={mdiContentCopy}
-        aria-label={$t('copy_image')}
-        onclick={() => onCopyImage?.()}
-      />
-    {/if}
-
-    {#if !isOwner && showDownloadButton}
-      <DownloadAction asset={toTimelineAsset(asset)} />
-    {/if}
-
-    {#if showDetailButton}
-      <ShowDetailAction {onShowDetail} />
-    {/if}
-
-    {#if isOwner}
-      <FavoriteAction {asset} {onAction} />
-    {/if}
-
-    {#if isOwner}
-      <DeleteAction {asset} {onAction} {preAction} />
-
-      <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
-        {#if showSlideshow && !isLocked}
-          <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
+    {#if assetInteraction.selectionActive}
+      <p class="text-lg text-immich-fg dark:text-immich-dark-fg">
+        {#if selected}
+        {$t('selected')}
+        {:else}
+        {$t('select')}
         {/if}
-        {#if showDownloadButton}
-          <DownloadAction asset={toTimelineAsset(asset)} menuItem />
+      </p>
+      <button
+        type="button"
+        onclick={()=>onSelectAsset(toTimelineAsset(asset))}
+        class={['focus:outline-none']}
+        role="checkbox"
+        tabindex={-1}
+        aria-checked={selected}
+      >
+        {#if selected}
+          <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+          </div>
+        {:else}
+          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
+      </button>
+    {:else}
+      <CastButton />
 
-        {#if !isLocked}
-          {#if asset.isTrashed}
-            <RestoreAction {asset} {onAction} />
-          {:else}
-            <AddToAlbumAction {asset} {onAction} />
-            <AddToAlbumAction {asset} {onAction} shared />
-          {/if}
-        {/if}
+      {#if !asset.isTrashed && $user && !isLocked}
+        <ShareAction {asset} />
+      {/if}
+      {#if asset.isOffline}
+        <IconButton
+          shape="round"
+          color="danger"
+          icon={mdiAlertOutline}
+          onclick={onShowDetail}
+          aria-label={$t('asset_offline')}
+        />
+      {/if}
+      {#if asset.livePhotoVideoId}
+        {@render motionPhoto?.()}
+      {/if}
+      {#if asset.type === AssetTypeEnum.Image}
+        <IconButton
+          class="hidden sm:flex"
+          color="secondary"
+          variant="ghost"
+          shape="round"
+          icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
+          aria-label={$t('zoom_image')}
+          onclick={onZoomImage}
+        />
+      {/if}
+      {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
+        <IconButton
+          color="secondary"
+          variant="ghost"
+          shape="round"
+          icon={mdiContentCopy}
+          aria-label={$t('copy_image')}
+          onclick={() => onCopyImage?.()}
+        />
+      {/if}
 
-        {#if isOwner}
-          {#if stack}
-            <UnstackAction {stack} {onAction} />
-            <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
-            {#if stack?.primaryAssetId !== asset.id}
-              <SetStackPrimaryAsset {stack} {asset} {onAction} />
-              {#if stack?.assets?.length > 2}
-                <RemoveAssetFromStack {asset} {stack} {onAction} />
-              {/if}
-            {/if}
+      {#if !isOwner && showDownloadButton}
+        <DownloadAction asset={toTimelineAsset(asset)} />
+      {/if}
+
+      {#if showDetailButton}
+        <ShowDetailAction {onShowDetail} />
+      {/if}
+
+      {#if isOwner}
+        <FavoriteAction {asset} {onAction} />
+      {/if}
+
+      {#if isOwner}
+        <DeleteAction {asset} {onAction} {preAction} />
+
+        <ButtonContextMenu
+          direction="left"
+          align="top-right"
+          color="secondary"
+          title={$t('more')}
+          icon={mdiDotsVertical}
+        >
+          {#if showSlideshow && !isLocked}
+            <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
           {/if}
-          {#if album}
-            <SetAlbumCoverAction {asset} {album} />
-          {/if}
-          {#if person}
-            <SetFeaturedPhotoAction {asset} {person} />
-          {/if}
-          {#if asset.type === AssetTypeEnum.Image && !isLocked}
-            <SetProfilePictureAction {asset} />
+          {#if showDownloadButton}
+            <DownloadAction asset={toTimelineAsset(asset)} menuItem />
           {/if}
 
           {#if !isLocked}
-            <ArchiveAction {asset} {onAction} {preAction} />
-            <MenuOption
-              icon={mdiUpload}
-              onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
-              text={$t('replace_with_upload')}
-            />
-            {#if !asset.isArchived && !asset.isTrashed}
-              <MenuOption
-                icon={mdiImageSearch}
-                onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
-                text={$t('view_in_timeline')}
-              />
-            {/if}
-            {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
-              <MenuOption
-                icon={mdiCompare}
-                onClick={() => goto(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`)}
-                text={$t('view_similar_photos')}
-              />
+            {#if asset.isTrashed}
+              <RestoreAction {asset} {onAction} />
+            {:else}
+              <AddToAlbumAction {asset} {onAction} />
+              <AddToAlbumAction {asset} {onAction} shared />
             {/if}
           {/if}
 
-          {#if !asset.isTrashed}
-            <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
-          {/if}
-          <hr />
-          <MenuOption
-            icon={mdiHeadSyncOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
-            text={$getAssetJobName(AssetJobName.RefreshFaces)}
-          />
-          <MenuOption
-            icon={mdiDatabaseRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
-            text={$getAssetJobName(AssetJobName.RefreshMetadata)}
-          />
-          <MenuOption
-            icon={mdiImageRefreshOutline}
-            onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
-            text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
-          />
-          {#if asset.type === AssetTypeEnum.Video}
+          {#if isOwner}
+            {#if stack}
+              <UnstackAction {stack} {onAction} />
+              <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
+              {#if stack?.primaryAssetId !== asset.id}
+                <SetStackPrimaryAsset {stack} {asset} {onAction} />
+                {#if stack?.assets?.length > 2}
+                  <RemoveAssetFromStack {asset} {stack} {onAction} />
+                {/if}
+              {/if}
+            {/if}
+            {#if album}
+              <SetAlbumCoverAction {asset} {album} />
+            {/if}
+            {#if person}
+              <SetFeaturedPhotoAction {asset} {person} />
+            {/if}
+            {#if asset.type === AssetTypeEnum.Image && !isLocked}
+              <SetProfilePictureAction {asset} />
+            {/if}
+
+            {#if !isLocked}
+              <ArchiveAction {asset} {onAction} {preAction} />
+              <MenuOption
+                icon={mdiUpload}
+                onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
+                text={$t('replace_with_upload')}
+              />
+              {#if !asset.isArchived && !asset.isTrashed}
+                <MenuOption
+                  icon={mdiImageSearch}
+                  onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
+                  text={$t('view_in_timeline')}
+                />
+              {/if}
+              {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
+                <MenuOption
+                  icon={mdiCompare}
+                  onClick={() =>
+                    goto(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`)}
+                  text={$t('view_similar_photos')}
+                />
+              {/if}
+            {/if}
+
+            {#if !asset.isTrashed}
+              <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
+            {/if}
+            <hr />
             <MenuOption
-              icon={mdiCogRefreshOutline}
-              onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
-              text={$getAssetJobName(AssetJobName.TranscodeVideo)}
+              icon={mdiHeadSyncOutline}
+              onClick={() => onRunJob(AssetJobName.RefreshFaces)}
+              text={$getAssetJobName(AssetJobName.RefreshFaces)}
             />
+            <MenuOption
+              icon={mdiDatabaseRefreshOutline}
+              onClick={() => onRunJob(AssetJobName.RefreshMetadata)}
+              text={$getAssetJobName(AssetJobName.RefreshMetadata)}
+            />
+            <MenuOption
+              icon={mdiImageRefreshOutline}
+              onClick={() => onRunJob(AssetJobName.RegenerateThumbnail)}
+              text={$getAssetJobName(AssetJobName.RegenerateThumbnail)}
+            />
+            {#if asset.type === AssetTypeEnum.Video}
+              <MenuOption
+                icon={mdiCogRefreshOutline}
+                onClick={() => onRunJob(AssetJobName.TranscodeVideo)}
+                text={$getAssetJobName(AssetJobName.TranscodeVideo)}
+              />
+            {/if}
           {/if}
-        {/if}
-      </ButtonContextMenu>
+        </ButtonContextMenu>
+      {/if}
     {/if}
   </div>
 </div>

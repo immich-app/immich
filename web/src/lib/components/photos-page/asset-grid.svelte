@@ -988,6 +988,8 @@
         onNext={handleNext}
         onRandom={handleRandom}
         onClose={handleClose}
+        onSelectAsset={handleSelectAssets}
+        {assetInteraction}
       />
     {/await}
   {/if}
