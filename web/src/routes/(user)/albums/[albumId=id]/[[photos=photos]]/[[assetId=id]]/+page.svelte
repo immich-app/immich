@@ -22,7 +22,6 @@
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -32,6 +31,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -443,7 +443,7 @@
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">
     <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-      <AssetGrid
+      <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
         {timelineManager}
@@ -544,7 +544,7 @@
             </section>
           {/if}
         {/if}
-      </AssetGrid>
+      </Timeline>
 
       {#if showActivityStatus && !activityManager.isLoading}
         <div class="absolute z-2 bottom-0 end-0 mb-6 me-6 justify-self-end">
