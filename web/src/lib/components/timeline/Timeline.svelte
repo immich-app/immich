@@ -4,14 +4,14 @@
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
-  import {
-    setFocusToAsset as setFocusAssetInit,
-    setFocusTo as setFocusToInit,
-  } from '$lib/components/photos-page/actions/focus-actions';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import type { AbsoluteResult, RelativeResult } from '$lib/components/shared-components/change-date.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
+  import {
+    setFocusToAsset as setFocusAssetInit,
+    setFocusTo as setFocusToInit,
+  } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';

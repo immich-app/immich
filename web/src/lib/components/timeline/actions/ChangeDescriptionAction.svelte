@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetUpdateDescriptionConfirmModal from '$lib/modals/AssetUpdateDescriptionConfirmModal.svelte';
   import { user } from '$lib/stores/user.store';
   import { getSelectedAssets } from '$lib/utils/asset-utils';
@@ -8,7 +9,6 @@
   import { mdiText } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     menuItem?: boolean;

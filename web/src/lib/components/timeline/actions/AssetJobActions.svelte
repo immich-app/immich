@@ -4,11 +4,11 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { getAssetJobIcon, getAssetJobMessage, getAssetJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetJobName, runAssetJobs } from '@immich/sdk';
   import { t } from 'svelte-i18n';
-  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
   interface Props {
     jobs?: AssetJobName[];

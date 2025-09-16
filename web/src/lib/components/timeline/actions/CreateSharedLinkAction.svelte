@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { makeSharedLinkUrl } from '$lib/utils';
