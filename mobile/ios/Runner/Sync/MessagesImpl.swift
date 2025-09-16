@@ -23,8 +23,6 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
   
-  private let maxConcurrentHashOperations = 16
-  
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
@@ -263,30 +261,17 @@ class NativeSyncApiImpl: NativeSyncApi {
       await withTaskGroup(of: HashResult.self) { taskGroup in
         var results = [HashResult]()
         results.reserveCapacity(assets.count)
-        let maxConcurrentTasks = min(maxConcurrentHashOperations, assets.count)
-        for index in 0..<maxConcurrentTasks {
+        for asset in assets {
           taskGroup.addTask { [weak self] in
             guard let self = self else {
-              return HashResult(assetId: assets[index].localIdentifier, error: "NativeSyncApiImpl deallocated", hash: nil)
+              return HashResult(assetId: asset.localIdentifier, error: "NativeSyncApiImpl deallocated", hash: nil)
             }
-            return await self.hashAsset(assets[index], allowNetworkAccess: allowNetworkAccess)
+            return await self.hashAsset(asset, allowNetworkAccess: allowNetworkAccess)
           }
         }
         
-        var nextIndex = maxConcurrentTasks
         for await result in taskGroup {
           results.append(result)
-          
-          if nextIndex < assets.count {
-            let currentIndex = nextIndex
-            taskGroup.addTask { [weak self] in
-              guard let self = self else {
-                return HashResult(assetId: assets[currentIndex].localIdentifier, error: "NativeSyncApiImpl deallocated", hash: nil)
-              }
-              return await self.hashAsset(assets[currentIndex], allowNetworkAccess: allowNetworkAccess)
-            }
-            nextIndex += 1
-          }
         }
         
         for missing in missingAssetIds {
