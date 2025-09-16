@@ -9,6 +9,7 @@
     type AbsoluteResult,
     type RelativeResult,
   } from '$lib/components/shared-components/change-date.svelte';
+  import DeleteAssetDialog from '$lib/components/timeline/actions/delete-asset-dialog.svelte';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -26,7 +27,6 @@
   import { mdiCalendarBlankOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
-  import DeleteAssetDialog from './delete-asset-dialog.svelte';
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   interface Props {

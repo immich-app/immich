@@ -16,7 +16,7 @@
   import SetVisibilityAction from '$lib/components/photos-page/actions/set-visibility-action.svelte';
   import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -89,7 +89,7 @@
 </script>
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} showUploadButton scrollbar={false}>
-  <AssetGrid
+  <Timeline
     enableRouting={true}
     {timelineManager}
     {assetInteraction}
@@ -103,7 +103,7 @@
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
     {/snippet}
-  </AssetGrid>
+  </Timeline>
 </UserPageLayout>
 
 {#if assetInteraction.selectionActive}

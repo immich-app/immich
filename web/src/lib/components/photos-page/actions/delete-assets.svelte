@@ -1,12 +1,12 @@
 <script lang="ts">
+  import DeleteAssetDialog from '$lib/components/timeline/actions/delete-asset-dialog.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
+  import { IconButton } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
-  import DeleteAssetDialog from '../delete-asset-dialog.svelte';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     onAssetDelete: OnDelete;

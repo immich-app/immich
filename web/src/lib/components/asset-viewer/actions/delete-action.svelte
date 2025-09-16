@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
+  import DeleteAssetDialog from '$lib/components/timeline/actions/delete-asset-dialog.svelte';
   import {
     NotificationType,
     notificationController,

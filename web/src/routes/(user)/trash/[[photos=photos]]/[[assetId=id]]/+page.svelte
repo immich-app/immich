@@ -5,7 +5,7 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import RestoreAssets from '$lib/components/photos-page/actions/restore-assets.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+  import Timeline from '$lib/components/timeline/timeline.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
@@ -116,14 +116,14 @@
       </HStack>
     {/snippet}
 
-    <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
+    <Timeline enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
       {#snippet empty()}
         <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
       {/snippet}
-    </AssetGrid>
+    </Timeline>
   </UserPageLayout>
 {/if}
 

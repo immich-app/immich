@@ -3,6 +3,7 @@
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import DeleteAssetDialog from '$lib/components/timeline/actions/delete-asset-dialog.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
@@ -23,7 +24,6 @@
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
   import Portal from '../portal/portal.svelte';
 
   interface Props {
