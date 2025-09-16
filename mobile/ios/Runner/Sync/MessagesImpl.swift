@@ -262,10 +262,7 @@ class NativeSyncApiImpl: NativeSyncApi {
         var results = [HashResult]()
         results.reserveCapacity(assets.count)
         for asset in assets {
-          taskGroup.addTask { [weak self] in
-            guard let self = self else {
-              return HashResult(assetId: asset.localIdentifier, error: "NativeSyncApiImpl deallocated", hash: nil)
-            }
+          taskGroup.addTask { [self] in
             return await self.hashAsset(asset, allowNetworkAccess: allowNetworkAccess)
           }
         }

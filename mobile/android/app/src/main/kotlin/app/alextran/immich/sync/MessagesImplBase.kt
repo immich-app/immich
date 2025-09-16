@@ -1,6 +1,7 @@
 package app.alextran.immich.sync
 
 import android.annotation.SuppressLint
+import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
@@ -14,7 +15,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
-import java.io.FileInputStream
 import java.security.MessageDigest
 
 sealed class AssetResult {
@@ -236,11 +236,10 @@ open class NativeSyncApiImplBase(context: Context) {
 
     CoroutineScope(Dispatchers.IO).launch {
       try {
-        val idToPathMap = getAssetPaths(assetIds)
         val results = assetIds.map { assetId ->
           async {
             hashSemaphore.withPermit {
-              hashAsset(assetId, idToPathMap[assetId])
+              hashAsset(assetId)
             }
           }
         }.awaitAll()
@@ -252,44 +251,26 @@ open class NativeSyncApiImplBase(context: Context) {
     }
   }
 
-  private fun getAssetPaths(assetIds: List<String>): Map<String, String?> {
-    val selection = "${MediaStore.MediaColumns._ID} IN (${assetIds.joinToString(",") { "?" }})"
-    val projection = arrayOf(MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DATA)
-
-    return getCursor(
-      MediaStore.VOLUME_EXTERNAL,
-      selection,
-      assetIds.toTypedArray(),
-      projection
-    )?.use { cursor ->
-      val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
-      val dataColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
-
-      generateSequence {
-        if (cursor.moveToNext()) {
-          cursor.getLong(idColumn).toString() to cursor.getString(dataColumn)
-        } else null
-      }.toMap()
-    } ?: emptyMap()
-  }
-
-  private fun hashAsset(assetId: String, path: String?): HashResult {
-    if (path.isNullOrBlank() || !File(path).exists()) {
-      return HashResult(assetId, "Cannot get asset path or file does not exist", null)
-    }
-
+  private fun hashAsset(assetId: String): HashResult {
     return try {
+      val assetUri = ContentUris.withAppendedId(
+        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+        assetId.toLong()
+      )
+
       val digest = MessageDigest.getInstance("SHA-1")
-      FileInputStream(path).use { file ->
+      ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
         var bytesRead: Int
         val buffer = ByteArray(HASH_BUFFER_SIZE)
-        while (file.read(buffer).also { bytesRead = it } > 0) {
+        while (inputStream.read(buffer).also { bytesRead = it } > 0) {
           digest.update(buffer, 0, bytesRead)
         }
-      }
+      } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
 
       val hashString = Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
       HashResult(assetId, null, hashString)
+    } catch (e: SecurityException) {
+      HashResult(assetId, "Permission denied accessing asset: ${e.message}", null)
     } catch (e: Exception) {
       HashResult(assetId, "Failed to hash asset: ${e.message}", null)
     }
