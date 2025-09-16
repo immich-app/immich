@@ -281,6 +281,7 @@ export class JobService extends BaseService {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.AuditTableCleanup },
         { name: JobName.AuditLogCleanup },
       );
     }
@@ -309,8 +310,7 @@ export class JobService extends BaseService {
    */
   private async onDone(item: JobItem) {
     switch (item.name) {
-      case JobName.SidecarSync:
-      case JobName.SidecarDiscovery: {
+      case JobName.SidecarCheck: {
         await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: item.data });
         break;
       }

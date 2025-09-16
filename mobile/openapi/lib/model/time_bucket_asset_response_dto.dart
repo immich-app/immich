@@ -21,8 +21,10 @@ class TimeBucketAssetResponseDto {
     this.isFavorite = const [],
     this.isImage = const [],
     this.isTrashed = const [],
+    this.latitude = const [],
     this.livePhotoVideoId = const [],
     this.localOffsetHours = const [],
+    this.longitude = const [],
     this.ownerId = const [],
     this.projectionType = const [],
     this.ratio = const [],
@@ -55,11 +57,17 @@ class TimeBucketAssetResponseDto {
   /// Array indicating whether each asset is in the trash
   List<bool> isTrashed;
 
+  /// Array of latitude coordinates extracted from EXIF GPS data
+  List<num?> latitude;
+
   /// Array of live photo video asset IDs (null for non-live photos)
   List<String?> livePhotoVideoId;
 
   /// Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.
   List<num> localOffsetHours;
+
+  /// Array of longitude coordinates extracted from EXIF GPS data
+  List<num?> longitude;
 
   /// Array of owner IDs for each asset
   List<String> ownerId;
@@ -89,8 +97,10 @@ class TimeBucketAssetResponseDto {
     _deepEquality.equals(other.isFavorite, isFavorite) &&
     _deepEquality.equals(other.isImage, isImage) &&
     _deepEquality.equals(other.isTrashed, isTrashed) &&
+    _deepEquality.equals(other.latitude, latitude) &&
     _deepEquality.equals(other.livePhotoVideoId, livePhotoVideoId) &&
     _deepEquality.equals(other.localOffsetHours, localOffsetHours) &&
+    _deepEquality.equals(other.longitude, longitude) &&
     _deepEquality.equals(other.ownerId, ownerId) &&
     _deepEquality.equals(other.projectionType, projectionType) &&
     _deepEquality.equals(other.ratio, ratio) &&
@@ -109,8 +119,10 @@ class TimeBucketAssetResponseDto {
     (isFavorite.hashCode) +
     (isImage.hashCode) +
     (isTrashed.hashCode) +
+    (latitude.hashCode) +
     (livePhotoVideoId.hashCode) +
     (localOffsetHours.hashCode) +
+    (longitude.hashCode) +
     (ownerId.hashCode) +
     (projectionType.hashCode) +
     (ratio.hashCode) +
@@ -119,7 +131,7 @@ class TimeBucketAssetResponseDto {
     (visibility.hashCode);
 
   @override
-  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, fileCreatedAt=$fileCreatedAt, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, livePhotoVideoId=$livePhotoVideoId, localOffsetHours=$localOffsetHours, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
+  String toString() => 'TimeBucketAssetResponseDto[city=$city, country=$country, duration=$duration, fileCreatedAt=$fileCreatedAt, id=$id, isFavorite=$isFavorite, isImage=$isImage, isTrashed=$isTrashed, latitude=$latitude, livePhotoVideoId=$livePhotoVideoId, localOffsetHours=$localOffsetHours, longitude=$longitude, ownerId=$ownerId, projectionType=$projectionType, ratio=$ratio, stack=$stack, thumbhash=$thumbhash, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -131,8 +143,10 @@ class TimeBucketAssetResponseDto {
       json[r'isFavorite'] = this.isFavorite;
       json[r'isImage'] = this.isImage;
       json[r'isTrashed'] = this.isTrashed;
+      json[r'latitude'] = this.latitude;
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
       json[r'localOffsetHours'] = this.localOffsetHours;
+      json[r'longitude'] = this.longitude;
       json[r'ownerId'] = this.ownerId;
       json[r'projectionType'] = this.projectionType;
       json[r'ratio'] = this.ratio;
@@ -175,11 +189,17 @@ class TimeBucketAssetResponseDto {
         isTrashed: json[r'isTrashed'] is Iterable
             ? (json[r'isTrashed'] as Iterable).cast<bool>().toList(growable: false)
             : const [],
+        latitude: json[r'latitude'] is Iterable
+            ? (json[r'latitude'] as Iterable).cast<num>().toList(growable: false)
+            : const [],
         livePhotoVideoId: json[r'livePhotoVideoId'] is Iterable
             ? (json[r'livePhotoVideoId'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         localOffsetHours: json[r'localOffsetHours'] is Iterable
             ? (json[r'localOffsetHours'] as Iterable).cast<num>().toList(growable: false)
+            : const [],
+        longitude: json[r'longitude'] is Iterable
+            ? (json[r'longitude'] as Iterable).cast<num>().toList(growable: false)
             : const [],
         ownerId: json[r'ownerId'] is Iterable
             ? (json[r'ownerId'] as Iterable).cast<String>().toList(growable: false)

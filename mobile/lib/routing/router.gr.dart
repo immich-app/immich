@@ -404,6 +404,43 @@ class ArchiveRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [AssetTroubleshootPage]
+class AssetTroubleshootRoute extends PageRouteInfo<AssetTroubleshootRouteArgs> {
+  AssetTroubleshootRoute({
+    Key? key,
+    required BaseAsset asset,
+    List<PageRouteInfo>? children,
+  }) : super(
+         AssetTroubleshootRoute.name,
+         args: AssetTroubleshootRouteArgs(key: key, asset: asset),
+         initialChildren: children,
+       );
+
+  static const String name = 'AssetTroubleshootRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<AssetTroubleshootRouteArgs>();
+      return AssetTroubleshootPage(key: args.key, asset: args.asset);
+    },
+  );
+}
+
+class AssetTroubleshootRouteArgs {
+  const AssetTroubleshootRouteArgs({this.key, required this.asset});
+
+  final Key? key;
+
+  final BaseAsset asset;
+
+  @override
+  String toString() {
+    return 'AssetTroubleshootRouteArgs{key: $key, asset: $asset}';
+  }
+}
+
+/// generated route for
 /// [AssetViewerPage]
 class AssetViewerRoute extends PageRouteInfo<AssetViewerRouteArgs> {
   AssetViewerRoute({
@@ -505,22 +542,6 @@ class BackupOptionsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const BackupOptionsPage();
-    },
-  );
-}
-
-/// generated route for
-/// [BetaSyncSettingsPage]
-class BetaSyncSettingsRoute extends PageRouteInfo<void> {
-  const BetaSyncSettingsRoute({List<PageRouteInfo>? children})
-    : super(BetaSyncSettingsRoute.name, initialChildren: children);
-
-  static const String name = 'BetaSyncSettingsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const BetaSyncSettingsPage();
     },
   );
 }
@@ -2625,6 +2646,22 @@ class SplashScreenRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const SplashScreenPage();
+    },
+  );
+}
+
+/// generated route for
+/// [SyncStatusPage]
+class SyncStatusRoute extends PageRouteInfo<void> {
+  const SyncStatusRoute({List<PageRouteInfo>? children})
+    : super(SyncStatusRoute.name, initialChildren: children);
+
+  static const String name = 'SyncStatusRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SyncStatusPage();
     },
   );
 }

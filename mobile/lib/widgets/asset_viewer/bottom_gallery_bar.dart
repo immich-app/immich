@@ -98,7 +98,12 @@ class BottomGalleryBar extends ConsumerWidget {
         if (isDeleted) {
           // Can only trash assets stored in server. Local assets are always permanently removed for now
           if (context.mounted && asset.isRemote && isStackPrimaryAsset) {
-            ImmichToast.show(durationInSecond: 1, context: context, msg: 'Asset trashed', gravity: ToastGravity.BOTTOM);
+            ImmichToast.show(
+              durationInSecond: 1,
+              context: context,
+              msg: 'asset_trashed'.tr(),
+              gravity: ToastGravity.BOTTOM,
+            );
           }
           removeAssetFromStack();
         }

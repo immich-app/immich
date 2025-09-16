@@ -40,8 +40,8 @@
         <Icon path={icon} size="30" class="text-immich-primary dark:text-immich-dark-primary" />
       {/if}
       {#if title}
-        <p class="text-xl text-immich-primary dark:text-immich-dark-primary">
-          {title.toUpperCase()}
+        <p class="uppercase text-xl text-immich-primary dark:text-immich-dark-primary">
+          {title}
         </p>
       {/if}
     </div>

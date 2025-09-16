@@ -77,10 +77,10 @@ packages:
     dependency: "direct main"
     description:
       name: background_downloader
-      sha256: "2d4c2b7438e7643585880f9cc00ace16a52d778088751f1bfbf714627b315462"
+      sha256: "9ed74c55750932178f6989ba8a659687c2a102e05b70f561a1b3f047a5dda790"
       url: "https://pub.dev"
     source: hosted
-    version: "9.2.0"
+    version: "9.2.5"
   bonsoir:
     dependency: transitive
     description:
@@ -1429,7 +1429,7 @@ packages:
     source: hosted
     version: "5.0.1"
   platform:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: platform
       sha256: "5d6b1b0036a5f331ebc77c850ebc8506cbc1e9416c27e59b439f917a902a4984"

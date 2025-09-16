@@ -87,7 +87,7 @@
     bind:isSelected={isSharingSelected}
   ></SideBarLink>
 
-  <p class="text-xs p-6 dark:text-immich-dark-fg">{$t('library').toUpperCase()}</p>
+  <p class="text-xs p-6 dark:text-immich-dark-fg uppercase">{$t('library')}</p>
 
   <SideBarLink
     title={$t('favorites')}

@@ -43,7 +43,9 @@ export class StorageCore {
     private storageRepository: StorageRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private logger: LoggingRepository,
-  ) {}
+  ) {
+    this.logger.setContext(StorageCore.name);
+  }
 
   static create(
     assetRepository: AssetRepository,

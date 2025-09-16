@@ -491,7 +491,7 @@
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
               {sharedLink}
-              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
+              haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
             />
           {/if}
         {:else}

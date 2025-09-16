@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
@@ -29,6 +32,65 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   SyncStreamRepository(super.db) : _db = db;
 
+  Future<void> reset() async {
+    _logger.fine("SyncResetV1 received. Resetting remote entities");
+    try {
+      await _db.exclusively(() async {
+        // foreign_keys PRAGMA is no-op within transactions
+        // https://www.sqlite.org/pragma.html#pragma_foreign_keys
+        await _db.customStatement('PRAGMA foreign_keys = OFF');
+        await transaction(() async {
+          await _db.assetFaceEntity.deleteAll();
+          await _db.memoryAssetEntity.deleteAll();
+          await _db.memoryEntity.deleteAll();
+          await _db.partnerEntity.deleteAll();
+          await _db.personEntity.deleteAll();
+          await _db.remoteAlbumAssetEntity.deleteAll();
+          await _db.remoteAlbumEntity.deleteAll();
+          await _db.remoteAlbumUserEntity.deleteAll();
+          await _db.remoteAssetEntity.deleteAll();
+          await _db.remoteExifEntity.deleteAll();
+          await _db.stackEntity.deleteAll();
+          await _db.userEntity.deleteAll();
+          await _db.userMetadataEntity.deleteAll();
+        });
+        await _db.customStatement('PRAGMA foreign_keys = ON');
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncResetV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updateAuthUsersV1(Iterable<SyncAuthUserV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final user in data) {
+          final companion = AuthUserEntityCompanion(
+            name: Value(user.name),
+            email: Value(user.email),
+            hasProfileImage: Value(user.hasProfileImage),
+            profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
+            isAdmin: Value(user.isAdmin),
+            pinCode: Value(user.pinCode),
+            quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
+            quotaUsageInBytes: Value(user.quotaUsageInBytes),
+          );
+
+          batch.insert(
+            _db.authUserEntity,
+            companion.copyWith(id: Value(user.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncAuthUserV1', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
       await _db.userEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.userId)));
@@ -47,6 +109,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             email: Value(user.email),
             hasProfileImage: Value(user.hasProfileImage),
             profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
           );
 
           batch.insert(_db.userEntity, companion.copyWith(id: Value(user.id)), onConflict: DoUpdate((_) => companion));
@@ -572,4 +635,8 @@ extension on String {
       return null;
     }
   }
+}
+
+extension on UserAvatarColor {
+  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == value);
 }

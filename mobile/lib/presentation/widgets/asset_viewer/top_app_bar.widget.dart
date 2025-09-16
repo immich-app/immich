@@ -15,7 +15,9 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -34,10 +36,12 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final previousRouteName = ref.watch(previousRouteNameProvider);
+    final tabRoute = ref.watch(tabProvider);
     final showViewInTimelineButton =
-        previousRouteName != TabShellRoute.name &&
+        (previousRouteName != TabShellRoute.name || tabRoute == TabEnum.search) &&
         previousRouteName != AssetViewerRoute.name &&
         previousRouteName != null;
 
@@ -94,7 +98,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
-          actions: isShowingSheet
+          actions: isShowingSheet || isReadonlyModeEnabled
               ? null
               : isInLockedView
               ? lockedViewActions

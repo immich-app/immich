@@ -1,0 +1,15 @@
+name: Zizmor
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  zizmor:
+    name: Zizmor
+    uses: immich-app/devtools/.github/workflows/shared-zizmor.yml@main
+    permissions:
+      actions: read
+      contents: read
+      security-events: write

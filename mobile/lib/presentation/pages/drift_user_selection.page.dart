@@ -3,9 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -26,11 +25,9 @@ final driftUsersProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async
           id: entity.id,
           name: entity.name,
           email: entity.email,
-          isAdmin: entity.isAdmin,
-          updatedAt: entity.updatedAt,
           isPartnerSharedBy: false,
           isPartnerSharedWith: false,
-          avatarColor: AvatarColor.primary,
+          avatarColor: entity.avatarColor,
           memoryEnabled: true,
           inTimeline: true,
           profileChangedAt: entity.profileChangedAt,

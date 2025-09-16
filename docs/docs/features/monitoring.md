@@ -66,7 +66,7 @@ The provided file is just a starting point. There are a ton of ways to configure
 After bringing down the containers with `docker compose down` and back up with `docker compose up -d`, a Prometheus instance will now collect metrics from the immich server and microservices containers. Note that we didn't need to expose any new ports for these containers - the communication is handled in the internal Docker network.
 
 :::note
-To see exactly what metrics are made available, you can additionally add `8081:8081` to the server container's ports and `8082:8082` to the microservices container's ports.
+To see exactly what metrics are made available, you can additionally add `8081:8081` (API metrics) and `8082:8082` (microservices metrics) to the immich_server container's ports.
 Visiting the `/metrics` endpoint for these services will show the same raw data that Prometheus collects.
 To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](/docs/install/environment-variables/#general).
 :::

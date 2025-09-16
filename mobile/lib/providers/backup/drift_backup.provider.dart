@@ -4,16 +4,16 @@ import 'dart:convert';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -329,16 +329,16 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> cancel() async {
-    debugPrint("Canceling backup tasks...");
+    dPrint(() => "Canceling backup tasks...");
     state = state.copyWith(enqueueCount: 0, enqueueTotalCount: 0, isCanceling: true);
 
     final activeTaskCount = await _uploadService.cancelBackup();
 
     if (activeTaskCount > 0) {
-      debugPrint("$activeTaskCount tasks left, continuing to cancel...");
+      dPrint(() => "$activeTaskCount tasks left, continuing to cancel...");
       await cancel();
     } else {
-      debugPrint("All tasks canceled successfully.");
+      dPrint(() => "All tasks canceled successfully.");
       // Clear all upload items when cancellation is complete
       state = state.copyWith(isCanceling: false, uploadItems: {});
     }
@@ -380,5 +380,5 @@ final driftCandidateBackupAlbumInfoProvider = FutureProvider.autoDispose.family<
   ref,
   assetId,
 ) {
-  return ref.read(backupRepositoryProvider).getSourceAlbums(assetId);
+  return ref.read(localAssetRepository).getSourceAlbums(assetId, backupSelection: BackupSelection.selected);
 });

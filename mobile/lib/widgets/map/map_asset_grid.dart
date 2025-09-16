@@ -275,7 +275,7 @@ class _MapSheetDragRegion extends StatelessWidget {
                   child: IconButton(
                     icon: Icon(Icons.map_outlined, color: context.textTheme.displayLarge?.color),
                     iconSize: 24,
-                    tooltip: 'Zoom to bounds',
+                    tooltip: 'zoom_to_bounds'.tr(),
                     onPressed: () => onZoomToAsset?.call(value!),
                   ),
                 ),

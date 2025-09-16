@@ -65,7 +65,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   pnpm install --frozen-lockfile --prefix server
   pnpm --prefix server run build
 
-  make open-api
+  ( cd ./open-api && bash ./bin/generate-open-api.sh )
 
   jq --arg version "$NEXT_SERVER" '.version = $version' open-api/typescript-sdk/package.json > open-api/typescript-sdk/package.json.tmp && mv open-api/typescript-sdk/package.json.tmp open-api/typescript-sdk/package.json
 

@@ -36,7 +36,7 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
   }
 
   Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) {
-    final request = RemoteImageRequest(
+    final request = this.request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId),
       headers: ApiService.getRequestHeaders(),
       cacheManager: cacheManager,
@@ -92,16 +92,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     final headers = ApiService.getRequestHeaders();
-    try {
-      final request = RemoteImageRequest(
-        uri: getPreviewUrlForRemoteId(key.assetId),
-        headers: headers,
-        cacheManager: cacheManager,
-      );
-      yield* loadRequest(request, decode);
-    } finally {
-      request = null;
-    }
+    final request = this.request = RemoteImageRequest(
+      uri: getPreviewUrlForRemoteId(key.assetId),
+      headers: headers,
+      cacheManager: cacheManager,
+    );
+    yield* loadRequest(request, decode);
 
     if (isCancelled) {
       evict();
@@ -109,12 +105,8 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     if (AppSetting.get(Setting.loadOriginal)) {
-      try {
-        final request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
-        yield* loadRequest(request, decode);
-      } finally {
-        request = null;
-      }
+      final request = this.request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+      yield* loadRequest(request, decode);
     }
   }
 

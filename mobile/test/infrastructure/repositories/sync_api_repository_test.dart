@@ -4,12 +4,15 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
 import '../../api.mocks.dart';
 import '../../service.mocks.dart';
+import '../../test_utils.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
 
@@ -32,6 +35,10 @@ void main() {
   late MockStreamedResponse mockStreamedResponse;
   late StreamController<List<int>> responseStreamController;
   late int testBatchSize = 3;
+
+  setUpAll(() async {
+    await StoreService.init(storeRepository: IsarStoreRepository(await TestUtils.initIsar()));
+  });
 
   setUp(() {
     mockApiService = MockApiService();
@@ -63,7 +70,9 @@ void main() {
     }
   });
 
-  Future<void> streamChanges(Function(List<SyncEvent>, Function() abort) onDataCallback) {
+  Future<void> streamChanges(
+    Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onDataCallback,
+  ) {
     return sut.streamChanges(onDataCallback, batchSize: testBatchSize, httpClient: mockHttpClient);
   }
 
@@ -72,7 +81,7 @@ void main() {
     bool abortWasCalledInCallback = false;
     List<SyncEvent> receivedEventsBatch1 = [];
 
-    onDataCallback(List<SyncEvent> events, Function() abort) {
+    Future<void> onDataCallback(List<SyncEvent> events, Function() abort, Function() _) async {
       onDataCallCount++;
       if (onDataCallCount == 1) {
         receivedEventsBatch1 = events;
@@ -116,7 +125,7 @@ void main() {
     int onDataCallCount = 0;
     bool abortWasCalledInCallback = false;
 
-    onDataCallback(List<SyncEvent> events, Function() abort) {
+    Future<void> onDataCallback(List<SyncEvent> events, Function() abort, Function() _) async {
       onDataCallCount++;
       if (onDataCallCount == 1) {
         abort();
@@ -158,7 +167,7 @@ void main() {
     List<SyncEvent> receivedEventsBatch1 = [];
     List<SyncEvent> receivedEventsBatch2 = [];
 
-    onDataCallback(List<SyncEvent> events, Function() _) {
+    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() __) async {
       onDataCallCount++;
       if (onDataCallCount == 1) {
         receivedEventsBatch1 = events;
@@ -202,7 +211,7 @@ void main() {
     final streamError = Exception("Network Error");
     int onDataCallCount = 0;
 
-    onDataCallback(List<SyncEvent> events, Function() _) {
+    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() __) async {
       onDataCallCount++;
     }
 
@@ -229,8 +238,7 @@ void main() {
     when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(errorBodyController.stream));
 
     int onDataCallCount = 0;
-
-    onDataCallback(List<SyncEvent> events, Function() _) {
+    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() __) async {
       onDataCallCount++;
     }
 

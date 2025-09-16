@@ -85,7 +85,7 @@
         {/if}
 
         {#if link.showMetadata}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('exif').toUpperCase()}</span></Badge>
+          <Badge rounded="full"><span class="uppercase text-xs px-1">{$t('exif')}</span></Badge>
         {/if}
 
         {#if link.password}

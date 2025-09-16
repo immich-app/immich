@@ -53,7 +53,7 @@ describe(PartnerService.name, () => {
       mocks.partner.get.mockResolvedValue(void 0);
       mocks.partner.create.mockResolvedValue(partner);
 
-      await expect(sut.create(auth, user2.id)).resolves.toBeDefined();
+      await expect(sut.create(auth, { sharedWithId: user2.id })).resolves.toBeDefined();
 
       expect(mocks.partner.create).toHaveBeenCalledWith({
         sharedById: partner.sharedById,
@@ -69,7 +69,7 @@ describe(PartnerService.name, () => {
 
       mocks.partner.get.mockResolvedValue(partner);
 
-      await expect(sut.create(auth, user2.id)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.create(auth, { sharedWithId: user2.id })).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.partner.create).not.toHaveBeenCalled();
     });

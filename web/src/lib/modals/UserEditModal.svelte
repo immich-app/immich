@@ -83,6 +83,7 @@
           name="quotaSize"
           placeholder={$t('unlimited')}
           type="number"
+          step="1"
           min="0"
           bind:value={quotaSize}
         />

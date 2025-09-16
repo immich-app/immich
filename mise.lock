@@ -1,0 +1,34 @@
+[tools.dart]
+version = "3.8.2"
+backend = "asdf:dart"
+
+[tools.flutter]
+version = "3.32.8-stable"
+backend = "asdf:flutter"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.31.4"
+backend = "github:CQLabs/homebrew-dcm"
+
+[tools."github:CQLabs/homebrew-dcm".platforms.linux-x64]
+checksum = "blake3:e9df5b765df327e1248fccf2c6165a89d632a065667f99c01765bf3047b94955"
+size = 8821083
+url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.31.4/dcm-linux-x64-release.zip"
+
+[tools.node]
+version = "22.18.0"
+backend = "core:node"
+
+[tools.node.platforms.linux-x64]
+checksum = "sha256:a2e703725d8683be86bb5da967bf8272f4518bdaf10f21389e2b2c9eaeae8c8a"
+size = 54824343
+url = "https://nodejs.org/dist/v22.18.0/node-v22.18.0-linux-x64.tar.gz"
+
+[tools.pnpm]
+version = "10.14.0"
+backend = "aqua:pnpm/pnpm"
+
+[tools.pnpm.platforms.linux-x64]
+checksum = "blake3:13dfa46b7173d3cad3bad60a756a492ecf0bce48b23eb9f793e7ccec5a09b46d"
+size = 66231525
+url = "https://github.com/pnpm/pnpm/releases/download/v10.14.0/pnpm-linux-x64"

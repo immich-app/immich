@@ -403,6 +403,7 @@
   const handleShareLink = async () => {
     const sharedLink = await modalManager.show(SharedLinkCreateModal, { albumId: album.id });
     if (sharedLink) {
+      await refreshAlbum();
       await modalManager.show(QrCodeModal, { title: $t('view_link'), value: makeSharedLinkUrl(sharedLink) });
     }
   };
@@ -411,7 +412,7 @@
     const changed = await modalManager.show(AlbumUsersModal, { album });
 
     if (changed) {
-      album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+      await refreshAlbum();
     }
   };
 
@@ -528,7 +529,7 @@
           {#if album.assetCount === 0}
             <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
               <div class="w-[300px]">
-                <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
+                <p class="uppercase text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
                 <button
                   type="button"
                   onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}

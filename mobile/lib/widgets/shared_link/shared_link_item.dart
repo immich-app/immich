@@ -16,6 +16,7 @@ import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class SharedLinkItem extends ConsumerWidget {
   final SharedLink sharedLink;
@@ -36,7 +37,7 @@ class SharedLinkItem extends ConsumerWidget {
         return Text("expired", style: TextStyle(color: Colors.red[300])).tr();
       }
       final difference = sharedLink.expiresAt!.difference(DateTime.now());
-      debugPrint("Difference: $difference");
+      dPrint(() => "Difference: $difference");
       if (difference.inDays > 0) {
         var dayDifference = difference.inDays;
         if (difference.inHours % 24 > 12) {

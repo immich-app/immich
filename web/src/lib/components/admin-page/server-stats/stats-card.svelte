@@ -24,7 +24,7 @@
 <div class="flex h-[140px] w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
   <div class="flex place-items-center gap-4">
     <Icon path={icon} size="40" />
-    <Text size="large" fontWeight="bold">{title}</Text>
+    <Text size="large" fontWeight="bold" class="uppercase">{title}</Text>
   </div>
 
   <div class="relative mx-auto font-mono text-2xl font-semibold">

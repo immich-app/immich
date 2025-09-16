@@ -86,7 +86,16 @@ export class SharedLinkRepository {
               (join) => join.onTrue(),
             )
             .select((eb) =>
-              eb.fn.coalesce(eb.fn.jsonAgg('assets').filterWhere('assets.id', 'is not', null), sql`'[]'`).as('assets'),
+              eb.fn
+                .coalesce(
+                  eb.fn
+                    .jsonAgg('assets')
+                    .orderBy('assets.fileCreatedAt', 'asc')
+                    .filterWhere('assets.id', 'is not', null),
+
+                  sql`'[]'`,
+                )
+                .as('assets'),
             )
             .select((eb) => eb.fn.toJson('owner').as('owner'))
             .groupBy(['album.id', sql`"owner".*`])

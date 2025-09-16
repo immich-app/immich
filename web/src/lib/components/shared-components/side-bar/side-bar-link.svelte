@@ -28,7 +28,7 @@
   }: Props = $props();
 
   $effect(() => {
-    isSelected = (page.url.pathname.match(/^\/(admin|user)\/[^/]*/) || [])[0] === href;
+    isSelected = page.url.pathname.startsWith(href);
   });
 </script>
 

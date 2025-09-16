@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Partner } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { PartnerResponseDto, PartnerSearchDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
+import { PartnerCreateDto, PartnerResponseDto, PartnerSearchDto, PartnerUpdateDto } from 'src/dtos/partner.dto';
 import { mapUser } from 'src/dtos/user.dto';
 import { Permission } from 'src/enum';
 import { PartnerDirection, PartnerIds } from 'src/repositories/partner.repository';
@@ -9,7 +9,7 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class PartnerService extends BaseService {
-  async create(auth: AuthDto, sharedWithId: string): Promise<PartnerResponseDto> {
+  async create(auth: AuthDto, { sharedWithId }: PartnerCreateDto): Promise<PartnerResponseDto> {
     const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId };
     const exists = await this.partnerRepository.get(partnerId);
     if (exists) {
@@ -39,7 +39,7 @@ export class PartnerService extends BaseService {
       .map((partner) => this.mapPartner(partner, direction));
   }
 
-  async update(auth: AuthDto, sharedById: string, dto: UpdatePartnerDto): Promise<PartnerResponseDto> {
+  async update(auth: AuthDto, sharedById: string, dto: PartnerUpdateDto): Promise<PartnerResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PartnerUpdate, ids: [sharedById] });
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 

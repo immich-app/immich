@@ -12,6 +12,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_acti
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
@@ -26,6 +27,7 @@ class ViewerBottomBar extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isSheetOpen = ref.watch(assetViewerProvider.select((s) => s.showingBottomSheet));
@@ -70,14 +72,14 @@ class ViewerBottomBar extends ConsumerWidget {
                     ),
                   ),
                   child: Container(
-                    height: context.padding.bottom + (asset.isVideo ? 160 : 90),
                     color: Colors.black.withAlpha(125),
-                    padding: EdgeInsets.only(bottom: context.padding.bottom),
+                    padding: EdgeInsets.only(bottom: context.padding.bottom, top: 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        if (!isInLockedView) Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                        if (!isInLockedView && !isReadonlyModeEnabled)
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
                     ),
                   ),

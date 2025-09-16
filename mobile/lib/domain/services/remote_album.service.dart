@@ -26,6 +26,10 @@ class RemoteAlbumService {
     return _repository.get(albumId);
   }
 
+  Future<RemoteAlbum?> getByName(String albumName, String ownerId) {
+    return _repository.getByName(albumName, ownerId);
+  }
+
   Future<List<RemoteAlbum>> sortAlbums(
     List<RemoteAlbum> albums,
     RemoteAlbumSortMode sortMode, {
@@ -80,7 +84,6 @@ class RemoteAlbumService {
 
   Future<RemoteAlbum> createAlbum({required String title, required List<String> assetIds, String? description}) async {
     final album = await _albumApiRepository.createDriftAlbum(title, description: description, assetIds: assetIds);
-
     await _repository.create(album, assetIds);
 
     return album;

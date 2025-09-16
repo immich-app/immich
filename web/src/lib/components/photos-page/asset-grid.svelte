@@ -9,10 +9,12 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/photos-page/actions/focus-actions';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
+  import type { AbsoluteResult, RelativeResult } from '$lib/components/shared-components/change-date.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -65,6 +67,18 @@
     onEscape?: () => void;
     children?: Snippet;
     empty?: Snippet;
+    customLayout?: Snippet<[TimelineAsset]>;
+    onThumbnailClick?: (
+      asset: TimelineAsset,
+      timelineManager: TimelineManager,
+      dayGroup: DayGroup,
+      onClick: (
+        timelineManager: TimelineManager,
+        assets: TimelineAsset[],
+        groupTitle: string,
+        asset: TimelineAsset,
+      ) => void,
+    ) => void;
   }
 
   let {
@@ -84,6 +98,8 @@
     onEscape = () => {},
     children,
     empty,
+    customLayout,
+    onThumbnailClick,
   }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget, mutex } = assetViewingStore;
@@ -830,13 +846,15 @@
     title="Navigate to Time"
     initialDate={DateTime.now()}
     timezoneInput={false}
-    onConfirm={async (dateString: string) => {
+    onConfirm={async (dateString: AbsoluteResult | RelativeResult) => {
       isShowSelectDate = false;
-      const asset = await timelineManager.getClosestAssetToDate(
-        (DateTime.fromISO(dateString) as DateTime<true>).toObject(),
-      );
-      if (asset) {
-        setFocusAsset(asset);
+      if (dateString.mode == 'absolute') {
+        const asset = await timelineManager.getClosestAssetToDate(
+          (DateTime.fromISO(dateString.date) as DateTime<true>).toObject(),
+        );
+        if (asset) {
+          setFocusAsset(asset);
+        }
       }
     }}
     onCancel={() => (isShowSelectDate = false)}
@@ -940,6 +958,8 @@
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
             onScrollCompensation={handleScrollCompensation}
+            {customLayout}
+            {onThumbnailClick}
           />
         </div>
       {/if}

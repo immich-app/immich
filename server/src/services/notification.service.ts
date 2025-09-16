@@ -191,9 +191,9 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'UserSignup' })
-  async onUserSignup({ notify, id, tempPassword }: ArgOf<'UserSignup'>) {
+  async onUserSignup({ notify, id, password: password }: ArgOf<'UserSignup'>) {
     if (notify) {
-      await this.jobRepository.queue({ name: JobName.NotifyUserSignup, data: { id, tempPassword } });
+      await this.jobRepository.queue({ name: JobName.NotifyUserSignup, data: { id, password } });
     }
   }
 
@@ -251,70 +251,8 @@ export class NotificationService extends BaseService {
     return { messageId };
   }
 
-  async getTemplate(name: EmailTemplate, customTemplate: string) {
-    const { server, templates } = await this.getConfig({ withCache: false });
-
-    let templateResponse = '';
-
-    switch (name) {
-      case EmailTemplate.WELCOME: {
-        const { html: _welcomeHtml } = await this.emailRepository.renderEmail({
-          template: EmailTemplate.WELCOME,
-          data: {
-            baseUrl: getExternalDomain(server),
-            displayName: 'John Doe',
-            username: 'john@doe.com',
-            password: 'thisIsAPassword123',
-          },
-          customTemplate: customTemplate || templates.email.welcomeTemplate,
-        });
-
-        templateResponse = _welcomeHtml;
-        break;
-      }
-      case EmailTemplate.ALBUM_UPDATE: {
-        const { html: _updateAlbumHtml } = await this.emailRepository.renderEmail({
-          template: EmailTemplate.ALBUM_UPDATE,
-          data: {
-            baseUrl: getExternalDomain(server),
-            albumId: '1',
-            albumName: 'Favorite Photos',
-            recipientName: 'Jane Doe',
-            cid: undefined,
-          },
-          customTemplate: customTemplate || templates.email.albumInviteTemplate,
-        });
-        templateResponse = _updateAlbumHtml;
-        break;
-      }
-
-      case EmailTemplate.ALBUM_INVITE: {
-        const { html } = await this.emailRepository.renderEmail({
-          template: EmailTemplate.ALBUM_INVITE,
-          data: {
-            baseUrl: getExternalDomain(server),
-            albumId: '1',
-            albumName: "John Doe's Favorites",
-            senderName: 'John Doe',
-            recipientName: 'Jane Doe',
-            cid: undefined,
-          },
-          customTemplate: customTemplate || templates.email.albumInviteTemplate,
-        });
-        templateResponse = html;
-        break;
-      }
-      default: {
-        templateResponse = '';
-        break;
-      }
-    }
-
-    return { name, html: templateResponse };
-  }
-
   @OnJob({ name: JobName.NotifyUserSignup, queue: QueueName.Notification })
-  async handleUserSignup({ id, tempPassword }: JobOf<JobName.NotifyUserSignup>) {
+  async handleUserSignup({ id, password }: JobOf<JobName.NotifyUserSignup>) {
     const user = await this.userRepository.get(id, { withDeleted: false });
     if (!user) {
       return JobStatus.Skipped;
@@ -327,7 +265,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server),
         displayName: user.name,
         username: user.email,
-        password: tempPassword,
+        password,
       },
       customTemplate: templates.email.welcomeTemplate,
     });

@@ -67,7 +67,7 @@
       <div class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
         <span class="flex items-center gap-2">
           <Icon path={icon} size="1.25em" class="hidden shrink-0 sm:block" />
-          {title.toUpperCase()}
+          <span class="uppercase">{title}</span>
         </span>
         <div class="flex gap-2">
           {#if jobCounts.failed > 0}
@@ -137,7 +137,7 @@
         onClick={() => onCommand({ command: JobCommand.Start, force: false })}
       >
         <Icon path={mdiAlertCircle} size="36" />
-        {$t('disabled').toUpperCase()}
+        <span class="uppercase">{$t('disabled')}</span>
       </JobTileButton>
     {/if}
 
@@ -145,7 +145,7 @@
       {#if waitingCount > 0}
         <JobTileButton color="gray" onClick={() => onCommand({ command: JobCommand.Empty, force: false })}>
           <Icon path={mdiClose} size="24" />
-          {$t('clear').toUpperCase()}
+          <span class="uppercase">{$t('clear')}</span>
         </JobTileButton>
       {/if}
       {#if queueStatus.isPaused}
@@ -153,12 +153,12 @@
         <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Resume, force: false })}>
           <!-- size property is not reactive, so have to use width and height -->
           <Icon path={mdiFastForward} {size} />
-          {$t('resume').toUpperCase()}
+          <span class="uppercase">{$t('resume')}</span>
         </JobTileButton>
       {:else}
         <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Pause, force: false })}>
           <Icon path={mdiPause} size="24" />
-          {$t('pause').toUpperCase()}
+          <span class="uppercase">{$t('pause')}</span>
         </JobTileButton>
       {/if}
     {/if}
@@ -167,25 +167,25 @@
       {#if allText}
         <JobTileButton color="dark-gray" onClick={() => onCommand({ command: JobCommand.Start, force: true })}>
           <Icon path={mdiAllInclusive} size="24" />
-          {allText}
+          <span class="uppercase">{allText}</span>
         </JobTileButton>
       {/if}
       {#if refreshText}
         <JobTileButton color="gray" onClick={() => onCommand({ command: JobCommand.Start, force: undefined })}>
           <Icon path={mdiImageRefreshOutline} size="24" />
-          {refreshText}
+          <span class="uppercase">{refreshText}</span>
         </JobTileButton>
       {/if}
       <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Start, force: false })}>
         <Icon path={mdiSelectionSearch} size="24" />
-        {missingText}
+        <span class="uppercase">{missingText}</span>
       </JobTileButton>
     {/if}
 
     {#if !disabled && !multipleButtons && isIdle}
       <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Start, force: false })}>
         <Icon path={mdiPlay} size="48" />
-        {missingText}
+        <span class="uppercase">{missingText}</span>
       </JobTileButton>
     {/if}
   </div>

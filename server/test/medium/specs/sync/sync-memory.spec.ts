@@ -23,7 +23,6 @@ describe(SyncEntityType.MemoryV1, () => {
     const { memory } = await ctx.newMemory({ ownerId: user1.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.MemoriesV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -43,10 +42,11 @@ describe(SyncEntityType.MemoryV1, () => {
         },
         type: 'MemoryV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.MemoriesV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoriesV1]);
   });
 
   it('should detect and sync a deleted memory', async () => {
@@ -56,7 +56,6 @@ describe(SyncEntityType.MemoryV1, () => {
     await memoryRepo.delete(memory.id);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.MemoriesV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -65,10 +64,11 @@ describe(SyncEntityType.MemoryV1, () => {
         },
         type: 'MemoryDeleteV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.MemoriesV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoriesV1]);
   });
 
   it('should sync a memory and then an update to that same memory', async () => {
@@ -77,29 +77,29 @@ describe(SyncEntityType.MemoryV1, () => {
     const { memory } = await ctx.newMemory({ ownerId: user.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.MemoriesV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({ id: memory.id }),
         type: 'MemoryV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
     await memoryRepo.update(memory.id, { seenAt: new Date() });
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.MemoriesV1]);
-    expect(newResponse).toHaveLength(1);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
         data: expect.objectContaining({ id: memory.id }),
         type: 'MemoryV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, newResponse);
-    await expect(ctx.syncStream(auth, [SyncRequestType.MemoriesV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoriesV1]);
   });
 
   it('should not sync a memory or a memory delete for an unrelated user', async () => {
@@ -108,8 +108,8 @@ describe(SyncEntityType.MemoryV1, () => {
     const { user: user2 } = await ctx.newUser();
     const { memory } = await ctx.newMemory({ ownerId: user2.id });
 
-    await expect(ctx.syncStream(auth, [SyncRequestType.MemoriesV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoriesV1]);
     await memoryRepo.delete(memory.id);
-    await expect(ctx.syncStream(auth, [SyncRequestType.MemoriesV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.MemoriesV1]);
   });
 });

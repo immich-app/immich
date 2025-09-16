@@ -1,5 +1,7 @@
 import { get, put } from './cache';
 
+const pendingRequests = new Map<string, AbortController>();
+
 const isURL = (request: URL | RequestInfo): request is URL => (request as URL).href !== undefined;
 const isRequest = (request: RequestInfo): request is Request => (request as Request).url !== undefined;
 
@@ -21,11 +23,16 @@ const getCacheKey = (request: URL | Request) => {
   throw new Error(`Invalid request: ${request}`);
 };
 
-const pendingRequests = new Map<string, AbortController>();
+export const handlePreload = async (request: URL | Request) => {
+  try {
+    return await handleRequest(request);
+  } catch (error) {
+    console.error(`Preload failed: ${error}`);
+  }
+};
 
 export const handleRequest = async (request: URL | Request) => {
   const cacheKey = getCacheKey(request);
-
   const cachedResponse = await get(cacheKey);
   if (cachedResponse) {
     return cachedResponse;
@@ -41,23 +48,26 @@ export const handleRequest = async (request: URL | Request) => {
 
     return response;
   } catch (error) {
-    console.log(error);
-    return new Response(undefined, {
-      status: 499,
-      statusText: `Request canceled: Instructions unclear, accidentally interrupted myself (${error})`,
-    });
+    if (error.name === 'AbortError') {
+      // dummy response avoids network errors in the console for these requests
+      return new Response(undefined, { status: 204 });
+    }
+
+    console.log('Not an abort error', error);
+
+    throw error;
   } finally {
     pendingRequests.delete(cacheKey);
   }
 };
 
-export const cancelRequest = (url: URL) => {
+export const handleCancel = (url: URL) => {
   const cacheKey = getCacheKey(url);
-  const pending = pendingRequests.get(cacheKey);
-  if (!pending) {
+  const pendingRequest = pendingRequests.get(cacheKey);
+  if (!pendingRequest) {
     return;
   }
 
-  pending.abort();
+  pendingRequest.abort();
   pendingRequests.delete(cacheKey);
 };

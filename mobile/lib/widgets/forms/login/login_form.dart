@@ -10,9 +10,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
@@ -161,6 +163,18 @@ class LoginForm extends HookConsumerWidget {
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
+    Future<void> handleSyncFlow() async {
+      final backgroundManager = ref.read(backgroundSyncProvider);
+
+      await backgroundManager.syncLocal(full: true);
+      await backgroundManager.syncRemote();
+      await backgroundManager.hashAssets();
+
+      if (Store.get(StoreKey.syncAlbums, false)) {
+        await backgroundManager.syncLinkedAlbum();
+      }
+    }
+
     login() async {
       TextInput.finishAutofillContext();
 
@@ -178,7 +192,7 @@ class LoginForm extends HookConsumerWidget {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-
+            handleSyncFlow();
             context.replaceRoute(const TabShellRoute());
             return;
           }
@@ -276,6 +290,7 @@ class LoginForm extends HookConsumerWidget {
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+              handleSyncFlow();
               context.replaceRoute(const TabShellRoute());
               return;
             }

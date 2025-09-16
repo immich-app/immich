@@ -1,6 +1,6 @@
 # Tags
 
-Immich supports hierarchical tags, with the ability to read existing tags from the `TagList` and `Keywords` EXIF properties. Any changes to tags made through Immich are also written back to a [sidecar](/docs/features/xmp-sidecars) file. You can re-run the metadata extraction jobs for all assets to import your existing tags.
+Immich supports hierarchical tags, with the ability to read existing tags from the XMP `TagsList` field and IPTC `Keywords` field. Any changes to tags made through Immich are also written back to a [sidecar](/docs/features/xmp-sidecars) file. You can re-run the metadata extraction jobs for all assets to import your existing tags.
 
 ## Enable tags feature
 

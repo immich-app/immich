@@ -94,8 +94,11 @@ export const fromTimelinePlainYearMonth = (timelineYearMonth: TimelineYearMonth)
     { zone: 'local', locale: get(locale) },
   ) as DateTime<true>;
 
-export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string =>
-  `${year}-${month.toString().padStart(2, '0')}-01T00:00:00.000Z`;
+export const toISOYearMonthUTC = ({ year, month }: TimelineYearMonth): string => {
+  const yearFull = `${year}`.padStart(4, '0');
+  const monthFull = `${month}`.padStart(2, '0');
+  return `${yearFull}-${monthFull}-01T00:00:00.000Z`;
+};
 
 export function formatMonthGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
@@ -190,6 +193,8 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     city: city || null,
     country: country || null,
     people,
+    latitude: assetResponse.exifInfo?.latitude || null,
+    longitude: assetResponse.exifInfo?.longitude || null,
   };
 };
 

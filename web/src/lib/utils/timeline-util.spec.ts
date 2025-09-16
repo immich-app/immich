@@ -1,6 +1,6 @@
 import { locale } from '$lib/stores/preferences.store';
 import { parseUtcDate } from '$lib/utils/date-time';
-import { formatGroupTitle } from '$lib/utils/timeline-util';
+import { formatGroupTitle, toISOYearMonthUTC } from '$lib/utils/timeline-util';
 import { DateTime } from 'luxon';
 
 describe('formatGroupTitle', () => {
@@ -75,5 +75,15 @@ describe('formatGroupTitle', () => {
     expect(formatGroupTitle(date)).toBe('Invalid DateTime');
     locale.set('es');
     expect(formatGroupTitle(date)).toBe('Invalid DateTime');
+  });
+});
+
+describe('toISOYearMonthUTC', () => {
+  it('should prefix year with 0s', () => {
+    expect(toISOYearMonthUTC({ year: 28, month: 1 })).toBe('0028-01-01T00:00:00.000Z');
+  });
+
+  it('should prefix month with 0s', () => {
+    expect(toISOYearMonthUTC({ year: 2025, month: 1 })).toBe('2025-01-01T00:00:00.000Z');
   });
 });

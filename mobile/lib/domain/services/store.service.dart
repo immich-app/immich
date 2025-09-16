@@ -10,7 +10,7 @@ class StoreService {
 
   /// In-memory cache. Keys are [StoreKey.id]
   final Map<int, Object?> _cache = {};
-  late final StreamSubscription<List<StoreDto>> _storeUpdateSubscription;
+  StreamSubscription<List<StoreDto>>? _storeUpdateSubscription;
 
   StoreService._({required IStoreRepository isarStoreRepository}) : _storeRepository = isarStoreRepository;
 
@@ -24,15 +24,17 @@ class StoreService {
   }
 
   // TODO: Replace the implementation with the one from create after removing the typedef
-  static Future<StoreService> init({required IStoreRepository storeRepository}) async {
-    _instance ??= await create(storeRepository: storeRepository);
+  static Future<StoreService> init({required IStoreRepository storeRepository, bool listenUpdates = true}) async {
+    _instance ??= await create(storeRepository: storeRepository, listenUpdates: listenUpdates);
     return _instance!;
   }
 
-  static Future<StoreService> create({required IStoreRepository storeRepository}) async {
+  static Future<StoreService> create({required IStoreRepository storeRepository, bool listenUpdates = true}) async {
     final instance = StoreService._(isarStoreRepository: storeRepository);
     await instance.populateCache();
-    instance._storeUpdateSubscription = instance._listenForChange();
+    if (listenUpdates) {
+      instance._storeUpdateSubscription = instance._listenForChange();
+    }
     return instance;
   }
 
@@ -50,8 +52,8 @@ class StoreService {
   });
 
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
-  void dispose() async {
-    await _storeUpdateSubscription.cancel();
+  Future<void> dispose() async {
+    await _storeUpdateSubscription?.cancel();
     _cache.clear();
   }
 
@@ -90,7 +92,7 @@ class StoreService {
     _cache.clear();
   }
 
-  bool get isBetaTimelineEnabled => tryGet(StoreKey.betaTimeline) ?? false;
+  bool get isBetaTimelineEnabled => tryGet(StoreKey.betaTimeline) ?? true;
 }
 
 class StoreKeyNotFoundException implements Exception {

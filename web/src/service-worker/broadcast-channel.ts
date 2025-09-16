@@ -1,4 +1,4 @@
-import { cancelRequest, handleRequest } from './request';
+import { handleCancel, handlePreload } from './request';
 
 export const installBroadcastChannelListener = () => {
   const broadcast = new BroadcastChannel('immich');
@@ -7,12 +7,19 @@ export const installBroadcastChannelListener = () => {
     if (!event.data) {
       return;
     }
-    const urlString = event.data.url;
-    const url = new URL(urlString, event.origin);
-    if (event.data.type === 'cancel') {
-      cancelRequest(url);
-    } else if (event.data.type === 'preload') {
-      handleRequest(url);
+
+    const url = new URL(event.data.url, event.origin);
+
+    switch (event.data.type) {
+      case 'preload': {
+        handlePreload(url);
+        break;
+      }
+
+      case 'cancel': {
+        handleCancel(url);
+        break;
+      }
     }
   };
 };

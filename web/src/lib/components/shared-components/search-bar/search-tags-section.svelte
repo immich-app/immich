@@ -45,15 +45,17 @@
   <div id="location-selection">
     <form autocomplete="off" id="create-tag-form">
       <div class="my-4 flex flex-col gap-2">
-        <Combobox
-          disabled={selectedTags === null}
-          onSelect={handleSelect}
-          label={$t('tags').toUpperCase()}
-          defaultFirstOption
-          options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
-          bind:selectedOption
-          placeholder={$t('search_tags')}
-        />
+        <div class="[&_label]:uppercase">
+          <Combobox
+            disabled={selectedTags === null}
+            onSelect={handleSelect}
+            label={$t('tags')}
+            defaultFirstOption
+            options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
+            bind:selectedOption
+            placeholder={$t('search_tags')}
+          />
+        </div>
       </div>
       <div class="flex items-center gap-2">
         <Checkbox

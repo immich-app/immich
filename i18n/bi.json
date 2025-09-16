@@ -14,5 +14,10 @@
   "add_exclusion_pattern": "Putem wan paten wae hemi karem aot",
   "add_import_path": "Putem wan pat blo import",
   "add_location": "Putem wan place blo hem",
-  "add_more_users": "Putem mor man"
+  "add_more_users": "Putem mor man",
+  "readonly_mode_enabled": "Mod blo yu no save janjem i on",
+  "reassigned_assets_to_new_person": "Janjem{count, plural, one {# asset} other {# assets}} blo nu man",
+  "reassing_hint": "janjem ol sumtin yu bin joos i go blo wan man",
+  "recent-albums": "album i no old tu mas",
+  "recent_searches": "lukabout wea i no old tu mas"
 }

@@ -98,7 +98,7 @@
       class="absolute w-full rounded-b-3xl border-2 border-t-0 border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-700 dark:bg-immich-dark-gray dark:text-gray-300 z-1"
     >
       <div class="flex items-center justify-between px-5 pt-5 text-xs">
-        <p class="py-2" aria-hidden={true}>{$t('recent_searches').toUpperCase()}</p>
+        <p class="uppercase py-2" aria-hidden={true}>{$t('recent_searches')}</p>
         {#if showClearAll}
           <button
             id={getId(0)}

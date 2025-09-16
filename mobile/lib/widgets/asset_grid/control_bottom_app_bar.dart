@@ -8,12 +8,14 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_sliverlist.dart';
+import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/models/asset_selection_state.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/widgets/asset_grid/upload_dialog.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/widgets/common/drag_sheet.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/utils/draggable_scroll_controller.dart';
 
 final controlBottomAppBarNotifier = ControlBottomAppBarNotifier();
@@ -45,6 +47,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
   final bool unfavorite;
   final bool unarchive;
   final AssetSelectionState selectionAssetState;
+  final List<Asset> selectedAssets;
 
   const ControlBottomAppBar({
     super.key,
@@ -64,6 +67,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
     this.onRemoveFromAlbum,
     this.onToggleLocked,
     this.selectionAssetState = const AssetSelectionState(),
+    this.selectedAssets = const [],
     this.enabled = true,
     this.unarchive = false,
     this.unfavorite = false,
@@ -100,6 +104,18 @@ class ControlBottomAppBar extends HookConsumerWidget {
       );
     }
 
+    /// Show existing AddToAlbumBottomSheet
+    void showAddToAlbumBottomSheet() {
+      showModalBottomSheet(
+        elevation: 0,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
+        context: context,
+        builder: (BuildContext _) {
+          return AddToAlbumBottomSheet(assets: selectedAssets);
+        },
+      );
+    }
+
     void handleRemoteDelete(bool force, Function(bool) deleteCb, {String? alertMsg}) {
       if (!force) {
         deleteCb(force);
@@ -120,6 +136,15 @@ class ControlBottomAppBar extends HookConsumerWidget {
             iconData: Icons.link_rounded,
             label: "share_link".tr(),
             onPressed: enabled ? () => onShare(false) : null,
+          ),
+        if (!isInLockedView && hasRemote && albums.isNotEmpty)
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 100),
+            child: ControlBoxButton(
+              iconData: Icons.photo_album,
+              label: "add_to_album".tr(),
+              onPressed: enabled ? showAddToAlbumBottomSheet : null,
+            ),
           ),
         if (hasRemote && onArchive != null)
           ControlBoxButton(

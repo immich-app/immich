@@ -12,6 +12,8 @@ where
   and "fileCreatedAt" is not null
   and "fileModifiedAt" is not null
   and "localDateTime" is not null
+order by
+  "directoryPath" asc
 
 -- ViewRepository.getAssetsByOriginalPath
 select

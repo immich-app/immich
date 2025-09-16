@@ -569,7 +569,8 @@ jobs:
       - name: Build the app
         run: pnpm --filter immich build
       - name: Run API generation
-        run: make open-api
+        run: ./bin/generate-open-api.sh
+        working-directory: open-api
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
         id: verify-changed-files
@@ -593,7 +594,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:ec713143dca1a426eba2e03707c319e2ec3cc9d304ef767f777f8e297dee820c
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:4f7ee144d4738ad02f6d9376defed7a767b748d185d47eba241578c26a63064b
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

@@ -16,7 +16,7 @@
 </script>
 
 <div class="mt-2 text-sm">
-  <h4>{$t('date_and_time').toUpperCase()}</h4>
+  <h4 class="uppercase">{$t('date_and_time')}</h4>
 </div>
 
 <!-- eslint-disable svelte/no-useless-mustaches -->
@@ -27,7 +27,7 @@
   </div>
   <div class="flex gap-[40px]">
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('year').toUpperCase()}</p>
+      <p class="uppercase font-medium text-immich-primary dark:text-immich-dark-primary">{$t('year')}</p>
       <ul>
         {#each options.yearOptions as yearFormat, index (index)}
           <li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
@@ -36,7 +36,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('month').toUpperCase()}</p>
+      <p class="uppercase font-medium text-immich-primary dark:text-immich-dark-primary">{$t('month')}</p>
       <ul>
         {#each options.monthOptions as monthFormat, index (index)}
           <li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
@@ -45,7 +45,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('week').toUpperCase()}</p>
+      <p class="uppercase font-medium text-immich-primary dark:text-immich-dark-primary">{$t('week')}</p>
       <ul>
         {#each options.weekOptions as weekFormat, index (index)}
           <li>{'{{'}{weekFormat}{'}}'} - {getLuxonExample(weekFormat)}</li>
@@ -54,7 +54,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('day').toUpperCase()}</p>
+      <p class="uppercase font-medium text-immich-primary dark:text-immich-dark-primary">{$t('day')}</p>
       <ul>
         {#each options.dayOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -63,7 +63,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('hour').toUpperCase()}</p>
+      <p class="uppercase font-medium text-immich-primary dark:text-immich-dark-primary">{$t('hour')}</p>
       <ul>
         {#each options.hourOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -72,7 +72,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('minute').toUpperCase()}</p>
+      <p class="uppercase font-medium text-immich-primary dark:text-immich-dark-primary">{$t('minute')}</p>
       <ul>
         {#each options.minuteOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -81,7 +81,7 @@
     </div>
 
     <div>
-      <p class="font-medium text-immich-primary dark:text-immich-dark-primary">{$t('second').toUpperCase()}</p>
+      <p class="uppercase font-medium text-immich-primary dark:text-immich-dark-primary">{$t('second')}</p>
       <ul>
         {#each options.secondOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>

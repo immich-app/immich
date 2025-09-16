@@ -34,7 +34,7 @@ export class DuplicateRepository {
           qb
             .selectFrom('asset')
             .$call(withDefaultVisibility)
-            .leftJoinLateral(
+            .innerJoinLateral(
               (qb) =>
                 qb
                   .selectFrom('asset_exif')

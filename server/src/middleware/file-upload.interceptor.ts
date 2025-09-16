@@ -12,7 +12,7 @@ import { AuthRequest } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
-import { asRequest, mapToUploadFile } from 'src/utils/asset.util';
+import { asUploadRequest, mapToUploadFile } from 'src/utils/asset.util';
 
 export function getFile(files: UploadFiles, property: 'assetData' | 'sidecarData') {
   const file = files[property]?.[0];
@@ -99,18 +99,21 @@ export class FileUploadInterceptor implements NestInterceptor {
   }
 
   private fileFilter(request: AuthRequest, file: Express.Multer.File, callback: multer.FileFilterCallback) {
-    return callbackify(() => this.assetService.canUploadFile(asRequest(request, file)), callback);
+    return callbackify(() => this.assetService.canUploadFile(asUploadRequest(request, file)), callback);
   }
 
   private filename(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
     return callbackify(
-      () => this.assetService.getUploadFilename(asRequest(request, file)),
+      () => this.assetService.getUploadFilename(asUploadRequest(request, file)),
       callback as Callback<string>,
     );
   }
 
   private destination(request: AuthRequest, file: Express.Multer.File, callback: DiskStorageCallback) {
-    return callbackify(() => this.assetService.getUploadFolder(asRequest(request, file)), callback as Callback<string>);
+    return callbackify(
+      () => this.assetService.getUploadFolder(asUploadRequest(request, file)),
+      callback as Callback<string>,
+    );
   }
 
   private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {

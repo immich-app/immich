@@ -68,7 +68,7 @@
 
   const assetInteraction = new AssetInteraction();
 
-  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
+  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
   let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
   let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
@@ -164,7 +164,7 @@
 
     try {
       const { albums, assets } =
-        'query' in searchDto && smartSearchEnabled
+        ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
           ? await searchSmart({ smartSearchDto: searchDto })
           : await searchAssets({ metadataSearchDto: searchDto });
 
@@ -210,6 +210,7 @@
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),
+      queryAssetId: $t('query_asset_id'),
     };
     return keyMap[key] || key;
   }
@@ -367,11 +368,11 @@
 >
   {#if searchResultAlbums.length > 0}
     <section>
-      <div class="ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
+      <div class="uppercase ms-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums')}</div>
       <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
-      <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
-        {$t('photos_and_videos').toUpperCase()}
+      <div class="uppercase m-6 text-4xl font-medium text-black/70 dark:text-white/80">
+        {$t('photos_and_videos')}
       </div>
     </section>
   {/if}

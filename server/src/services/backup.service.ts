@@ -118,7 +118,7 @@ export class BackupService extends BaseService {
           {
             env: {
               PATH: process.env.PATH,
-              PGPASSWORD: isUrlConnection ? undefined : config.password,
+              PGPASSWORD: isUrlConnection ? new URL(config.url).password : config.password,
             },
           },
         );

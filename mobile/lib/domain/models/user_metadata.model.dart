@@ -1,40 +1,10 @@
-import 'dart:ui';
+import 'package:immich_mobile/domain/models/user.model.dart';
 
 enum UserMetadataKey {
   // do not change this order!
   onboarding,
   preferences,
   license,
-}
-
-enum AvatarColor {
-  // do not change this order or reuse indices for other purposes, adding is OK
-  primary("primary"),
-  pink("pink"),
-  red("red"),
-  yellow("yellow"),
-  blue("blue"),
-  green("green"),
-  purple("purple"),
-  orange("orange"),
-  gray("gray"),
-  amber("amber");
-
-  final String value;
-  const AvatarColor(this.value);
-
-  Color toColor({bool isDarkTheme = false}) => switch (this) {
-    AvatarColor.primary => isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF),
-    AvatarColor.pink => const Color.fromARGB(255, 244, 114, 182),
-    AvatarColor.red => const Color.fromARGB(255, 239, 68, 68),
-    AvatarColor.yellow => const Color.fromARGB(255, 234, 179, 8),
-    AvatarColor.blue => const Color.fromARGB(255, 59, 130, 246),
-    AvatarColor.green => const Color.fromARGB(255, 22, 163, 74),
-    AvatarColor.purple => const Color.fromARGB(255, 147, 51, 234),
-    AvatarColor.orange => const Color.fromARGB(255, 234, 88, 12),
-    AvatarColor.gray => const Color.fromARGB(255, 75, 85, 99),
-    AvatarColor.amber => const Color.fromARGB(255, 217, 119, 6),
-  };
 }
 
 class Onboarding {
