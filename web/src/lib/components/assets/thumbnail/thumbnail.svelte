@@ -354,7 +354,7 @@
       {/if}
 
       <!-- View Asset while selecting -->
-      {#if mouseOver && selectionActive}
+      {#if selectionActive && (usingMobileDevice || mouseOver)}
         <button
           type="button"
           onclick={onViewerIconClickedHandler}
