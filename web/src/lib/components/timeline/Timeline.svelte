@@ -7,7 +7,7 @@
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import type { AbsoluteResult, RelativeResult } from '$lib/components/shared-components/change-date.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
-  import Scrubber from '$lib/components/shared-components/scrubber/scrubber.svelte';
+  import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import {
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
@@ -37,7 +37,7 @@
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
-  import AssetDateGroup from '../photos-page/asset-date-group.svelte';
+  import TimelineDateGroup from './TimelineDateGroup.svelte';
   import DeleteAssetDialog from '../photos-page/delete-asset-dialog.svelte';
   import Portal from '../shared-components/portal/portal.svelte';
 
@@ -946,7 +946,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <AssetDateGroup
+          <TimelineDateGroup
             {withStacked}
             {showArchiveIcon}
             {assetInteraction}
