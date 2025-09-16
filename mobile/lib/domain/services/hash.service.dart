@@ -32,9 +32,7 @@ class HashService {
     _log.info("Starting hashing of assets");
     final Stopwatch stopwatch = Stopwatch()..start();
     // Sorted by backupSelection followed by isCloud
-    final localAlbums = await _localAlbumRepository.getAll(
-      sortBy: {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum},
-    );
+    final localAlbums = await _localAlbumRepository.getBackupAlbums();
 
     for (final album in localAlbums) {
       if (isCancelled) {
@@ -44,7 +42,7 @@ class HashService {
 
       final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
       if (assetsToHash.isNotEmpty) {
-        await _hashAssets(album, assetsToHash, album.backupSelection == BackupSelection.selected);
+        await _hashAssets(album, assetsToHash);
       }
     }
 
@@ -55,7 +53,7 @@ class HashService {
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB
   /// with hash for those that were successfully hashed. Hashes are looked up in a table
   /// [LocalAssetHashEntity] by local id. Only missing entries are newly hashed and added to the DB.
-  Future<void> _hashAssets(LocalAlbum album, List<LocalAsset> assetsToHash, bool allowNetworkAccess) async {
+  Future<void> _hashAssets(LocalAlbum album, List<LocalAsset> assetsToHash) async {
     final toHash = <String>[];
 
     for (final asset in assetsToHash) {
@@ -66,16 +64,16 @@ class HashService {
 
       toHash.add(asset.id);
       if (toHash.length == _batchSize) {
-        await _processBatch(album, toHash, allowNetworkAccess);
+        await _processBatch(album, toHash);
         toHash.clear();
       }
     }
 
-    await _processBatch(album, toHash, allowNetworkAccess);
+    await _processBatch(album, toHash);
   }
 
   /// Processes a batch of assets.
-  Future<void> _processBatch(LocalAlbum album, List<String> toHash, bool allowNetworkAccess) async {
+  Future<void> _processBatch(LocalAlbum album, List<String> toHash) async {
     if (toHash.isEmpty) {
       return;
     }
@@ -83,7 +81,10 @@ class HashService {
     _log.fine("Hashing ${toHash.length} files");
 
     final hashed = <String, String>{};
-    final hashResults = await _nativeSyncApi.hashAssets(toHash, allowNetworkAccess: allowNetworkAccess);
+    final hashResults = await _nativeSyncApi.hashAssets(
+      toHash,
+      allowNetworkAccess: album.backupSelection == BackupSelection.selected,
+    );
     assert(
       hashResults.length == toHash.length,
       "Hashes length does not match toHash length: ${hashResults.length} != ${toHash.length}",

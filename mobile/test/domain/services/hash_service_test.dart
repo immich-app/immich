@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -15,7 +14,6 @@ void main() {
   late MockLocalAlbumRepository mockAlbumRepo;
   late MockLocalAssetRepository mockAssetRepo;
   late MockNativeSyncApi mockNativeApi;
-  final sortBy = {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum};
 
   setUp(() {
     mockAlbumRepo = MockLocalAlbumRepository();
@@ -38,7 +36,7 @@ void main() {
   group('HashService hashAssets', () {
     test('skips albums with no assets to hash', () async {
       when(
-        () => mockAlbumRepo.getAll(sortBy: sortBy),
+        () => mockAlbumRepo.getBackupAlbums(),
       ).thenAnswer((_) async => [LocalAlbumStub.recent.copyWith(assetCount: 0)]);
       when(() => mockAlbumRepo.getAssetsToHash(LocalAlbumStub.recent.id)).thenAnswer((_) async => []);
 
@@ -51,7 +49,7 @@ void main() {
   group('HashService _hashAssets', () {
     test('skips empty batches', () async {
       final album = LocalAlbumStub.recent;
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id)).thenAnswer((_) async => []);
 
       await sut.hashAssets();
@@ -63,7 +61,7 @@ void main() {
       final album = LocalAlbumStub.recent;
       final asset = LocalAssetStub.image1;
 
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
       when(
         () => mockNativeApi.hashAssets([asset.id], allowNetworkAccess: false),
@@ -81,7 +79,7 @@ void main() {
       final album = LocalAlbumStub.recent;
       final asset = LocalAssetStub.image1;
 
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
       when(
         () => mockNativeApi.hashAssets([asset.id], allowNetworkAccess: false),
@@ -97,7 +95,7 @@ void main() {
       final album = LocalAlbumStub.recent;
       final asset = LocalAssetStub.image1;
 
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset]);
       when(
         () => mockNativeApi.hashAssets([asset.id], allowNetworkAccess: false),
@@ -126,7 +124,7 @@ void main() {
       final capturedCalls = <List<String>>[];
 
       when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset1, asset2, asset3]);
       when(() => mockNativeApi.hashAssets(any(), allowNetworkAccess: any(named: 'allowNetworkAccess'))).thenAnswer((
         invocation,
@@ -150,7 +148,7 @@ void main() {
       final asset1 = LocalAssetStub.image1;
       final asset2 = LocalAssetStub.image2;
 
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [album]);
+      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
       when(() => mockAlbumRepo.getAssetsToHash(album.id)).thenAnswer((_) async => [asset1, asset2]);
       when(() => mockNativeApi.hashAssets([asset1.id, asset2.id], allowNetworkAccess: false)).thenAnswer(
         (_) async => [
@@ -172,7 +170,7 @@ void main() {
       final asset1 = LocalAssetStub.image1;
       final asset2 = LocalAssetStub.image2;
 
-      when(() => mockAlbumRepo.getAll(sortBy: sortBy)).thenAnswer((_) async => [selectedAlbum, nonSelectedAlbum]);
+      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [selectedAlbum, nonSelectedAlbum]);
       when(() => mockAlbumRepo.getAssetsToHash(selectedAlbum.id)).thenAnswer((_) async => [asset1]);
       when(() => mockAlbumRepo.getAssetsToHash(nonSelectedAlbum.id)).thenAnswer((_) async => [asset2]);
       when(() => mockNativeApi.hashAssets(any(), allowNetworkAccess: any(named: 'allowNetworkAccess'))).thenAnswer((
