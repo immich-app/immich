@@ -656,6 +656,8 @@
   "change_pin_code": "Change PIN code",
   "change_your_password": "Change your password",
   "changed_visibility_successfully": "Changed visibility successfully",
+  "charging": "Charging",
+  "charging_requirement_mobile_backup": "Background backup requires the device to be charging",
   "check_corrupt_asset_backup": "Check for corrupt asset backups",
   "check_corrupt_asset_backup_button": "Perform check",
   "check_corrupt_asset_backup_description": "Run this check only over Wi-Fi and once all assets have been backed-up. The procedure might take a few minutes.",
