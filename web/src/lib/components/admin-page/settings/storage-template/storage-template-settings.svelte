@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { AppRoute, SettingInputFieldType } from '$lib/constants';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { user } from '$lib/stores/user.store';
   import {
     getStorageTemplateOptions,
@@ -13,16 +14,13 @@
   import handlebar from 'handlebars';
   import { isEqual } from 'lodash-es';
   import * as luxon from 'luxon';
+  import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SupportedDatetimePanel from './supported-datetime-panel.svelte';
   import SupportedVariablesPanel from './supported-variables-panel.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import type { Snippet } from 'svelte';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -48,6 +46,7 @@
     children,
   }: Props = $props();
 
+  const bubble = createBubbler();
   let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
   let selectedPreset = $state('');
 

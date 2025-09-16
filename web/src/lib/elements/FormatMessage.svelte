@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { IntlMessageFormat, type FormatXMLElementFn } from 'intl-messageformat';
+  import type { InterpolationValues } from '$lib/elements/format-message';
   import {
     TYPE,
     type MessageFormatElement,
     type PluralElement,
     type SelectElement,
   } from '@formatjs/icu-messageformat-parser';
+  import { IntlMessageFormat, type FormatXMLElementFn } from 'intl-messageformat';
   import { locale as i18nLocale, json, type Translations } from 'svelte-i18n';
-  import type { InterpolationValues } from '$lib/components/i18n/format-message';
 
   type MessagePart = {
     message: string;

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { Translations } from 'svelte-i18n';
-  import FormatMessage from '../format-message.svelte';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import type { ComponentProps } from 'svelte';
+  import type { Translations } from 'svelte-i18n';
 
   interface Props {
     key: Translations;

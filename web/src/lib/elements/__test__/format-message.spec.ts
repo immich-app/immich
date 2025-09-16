@@ -1,5 +1,5 @@
-import FormatTagB from '$lib/components/i18n/__test__/format-tag-b.svelte';
-import FormatMessage from '$lib/components/i18n/format-message.svelte';
+import FormatTagB from '$lib/elements/__test__/format-tag-b.svelte';
+import FormatMessage from '$lib/elements/FormatMessage.svelte';
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/svelte';
 import { init, locale, register, waitLocale, type Translations } from 'svelte-i18n';

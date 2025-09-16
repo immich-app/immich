@@ -1,16 +1,16 @@
 <script lang="ts">
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import { t } from 'svelte-i18n';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     savedConfig: SystemConfigDto;
