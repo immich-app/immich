@@ -1,5 +1,4 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
@@ -7,6 +6,7 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import Icon from '$lib/elements/Icon.svelte';
   import {
     AudioCodec,

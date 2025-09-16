@@ -1,5 +1,4 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import {
     notificationController,
     NotificationType,
@@ -10,6 +9,7 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin, type SystemConfigDto } from '@immich/sdk';

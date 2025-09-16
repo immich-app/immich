@@ -1,4 +1,4 @@
-import StarRating from '$lib/components/shared-components/star-rating.svelte';
+import StarRating from '$lib/elements/StarRating.svelte';
 import { render } from '@testing-library/svelte';
 
 describe('StarRating component', () => {

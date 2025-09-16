@@ -1,11 +1,11 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import type { SystemConfigDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';

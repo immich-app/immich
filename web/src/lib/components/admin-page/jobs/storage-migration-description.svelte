@@ -1,6 +1,6 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { AppRoute, OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { t } from 'svelte-i18n';
 </script>
 
