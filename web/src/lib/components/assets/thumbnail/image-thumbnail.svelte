@@ -1,6 +1,6 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { mdiEyeOffOutline } from '@mdi/js';
   import type { ActionReturn } from 'svelte/action';

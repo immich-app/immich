@@ -1,7 +1,7 @@
 <script lang="ts">
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { type AlbumGroup, isAlbumGroupCollapsed, toggleAlbumGroupCollapsing } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';

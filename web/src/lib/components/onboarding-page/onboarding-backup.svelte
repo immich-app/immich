@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
   import type { Translations } from 'svelte-i18n';

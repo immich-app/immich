@@ -1,8 +1,8 @@
 <script lang="ts">
   import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import Dropdown from '$lib/elements/Dropdown.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import { makeSharedLinkUrl } from '$lib/utils';
   import {

@@ -1,8 +1,8 @@
 <script lang="ts">
+  import Icon from '$lib/elements/Icon.svelte';
   import { mdiEyeOffOutline, mdiEyeOutline } from '@mdi/js';
-  import type { HTMLInputAttributes } from 'svelte/elements';
-  import Icon from '../elements/icon.svelte';
   import { t } from 'svelte-i18n';
+  import type { HTMLInputAttributes } from 'svelte/elements';
 
   interface Props extends HTMLInputAttributes {
     password: string;

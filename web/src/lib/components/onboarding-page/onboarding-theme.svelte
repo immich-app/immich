@@ -1,7 +1,7 @@
 <script lang="ts">
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import { t } from 'svelte-i18n';
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';

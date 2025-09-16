@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import Icon from '$lib/elements/Icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { mergePerson, type PersonResponseDto } from '@immich/sdk';

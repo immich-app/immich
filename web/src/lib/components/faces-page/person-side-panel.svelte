@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';

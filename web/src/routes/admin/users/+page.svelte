@@ -1,12 +1,12 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import Icon from '$lib/components/elements/icon.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
   import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';

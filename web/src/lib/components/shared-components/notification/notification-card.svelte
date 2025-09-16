@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import {
     isComponentNotification,
     notificationController,
@@ -7,6 +6,7 @@
     type ComponentNotification,
     type Notification,
   } from '$lib/components/shared-components/notification/notification';
+  import Icon from '$lib/elements/Icon.svelte';
   import { Button, IconButton, type Color } from '@immich/ui';
   import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
   import { onMount } from 'svelte';

@@ -16,7 +16,7 @@
   import { mdiCheck } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { fly } from 'svelte/transition';
-  import Icon from './icon.svelte';
+  import Icon from './Icon.svelte';
 
   interface Props {
     class?: string;

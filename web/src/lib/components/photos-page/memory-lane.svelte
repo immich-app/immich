@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resizeObserver } from '$lib/actions/resize-observer';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';

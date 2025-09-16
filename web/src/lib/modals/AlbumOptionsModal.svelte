@@ -1,9 +1,10 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import type { RenderedOption } from '$lib/elements/Dropdown.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     AlbumUserRole,
@@ -18,7 +19,6 @@
   import { mdiArrowDownThin, mdiArrowUpThin, mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { findKey } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import type { RenderedOption } from '../components/elements/dropdown.svelte';
   import { notificationController, NotificationType } from '../components/shared-components/notification/notification';
   import SettingDropdown from '../components/shared-components/settings/setting-dropdown.svelte';
 

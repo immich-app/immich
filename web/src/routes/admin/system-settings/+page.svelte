@@ -19,11 +19,11 @@
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { QueryParameter } from '$lib/constants';
+  import SearchBar from '$lib/elements/SearchBar.svelte';
   import { downloadManager } from '$lib/managers/download-manager.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { copyToClipboard } from '$lib/utils';

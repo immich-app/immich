@@ -1,6 +1,6 @@
 <script lang="ts">
   import { discordPath, discordViewBox } from '$lib/assets/svg-paths';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { type ServerAboutResponseDto } from '@immich/sdk';
   import { Modal, ModalBody } from '@immich/ui';
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';

@@ -4,7 +4,6 @@
   import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
@@ -15,6 +14,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { locale } from '$lib/stores/preferences.store';

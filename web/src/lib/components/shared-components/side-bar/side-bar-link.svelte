@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';

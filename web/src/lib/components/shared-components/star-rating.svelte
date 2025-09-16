@@ -1,7 +1,7 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
   import { t } from 'svelte-i18n';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
+  import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';

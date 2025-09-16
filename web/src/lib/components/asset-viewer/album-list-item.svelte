@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import Icon from '$lib/elements/Icon.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';

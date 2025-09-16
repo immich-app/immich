@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
@@ -8,6 +7,7 @@
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute, AssetAction, QueryParameter } from '$lib/constants';
+  import SkipLink from '$lib/elements/SkipLink.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import TagCreateModal from '$lib/modals/TagCreateModal.svelte';
   import TagEditModal from '$lib/modals/TagEditModal.svelte';

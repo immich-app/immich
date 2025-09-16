@@ -1,7 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
   import { removeTag } from '$lib/utils/asset-utils';

@@ -1,8 +1,8 @@
 <script lang="ts">
+  import Icon from '$lib/elements/Icon.svelte';
   import { Modal, ModalBody } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import Icon from '../components/elements/icon.svelte';
 
   interface Shortcuts {
     general: ExplainedShortcut[];

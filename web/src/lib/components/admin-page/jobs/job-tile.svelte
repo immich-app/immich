@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Badge from '$lib/components/elements/badge.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Badge from '$lib/elements/Badge.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { JobCommand, type JobCommandDto, type JobCountsDto, type QueueStatusDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';

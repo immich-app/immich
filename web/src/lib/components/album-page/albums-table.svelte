@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition';
-  import type { AlbumResponseDto } from '@immich/sdk';
-  import { AlbumGroupBy, albumViewSettings } from '$lib/stores/preferences.store';
-  import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { mdiChevronRight } from '@mdi/js';
   import AlbumTableHeader from '$lib/components/album-page/albums-table-header.svelte';
   import AlbumTableRow from '$lib/components/album-page/albums-table-row.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
+  import { AlbumGroupBy, albumViewSettings } from '$lib/stores/preferences.store';
   import {
     isAlbumGroupCollapsed,
-    toggleAlbumGroupCollapsing,
     sortOptionsMetadata,
+    toggleAlbumGroupCollapsing,
     type AlbumGroup,
   } from '$lib/utils/album-utils';
+  import type { ContextMenuPosition } from '$lib/utils/context-menu';
+  import type { AlbumResponseDto } from '@immich/sdk';
+  import { mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { slide } from 'svelte/transition';
 
   interface Props {
     groupedAlbums: AlbumGroup[];

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { user } from '$lib/stores/user.store';

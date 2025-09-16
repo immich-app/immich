@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';

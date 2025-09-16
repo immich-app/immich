@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import NavigationArea from '../navigation-area.svelte';

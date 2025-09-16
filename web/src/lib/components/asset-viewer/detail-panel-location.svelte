@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
   import { mdiMapMarkerOutline, mdiPencil } from '@mdi/js';

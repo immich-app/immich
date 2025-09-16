@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import type { UploadAsset } from '$lib/models/upload-asset';
   import { UploadState } from '$lib/models/upload-asset';
   import { locale } from '$lib/stores/preferences.store';

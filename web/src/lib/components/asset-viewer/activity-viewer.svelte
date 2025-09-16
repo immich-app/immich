@@ -1,10 +1,10 @@
 <script lang="ts">
   import { autoGrowHeight } from '$lib/actions/autogrow';
   import { shortcut } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';

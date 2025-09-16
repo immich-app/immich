@@ -1,8 +1,8 @@
 <script lang="ts">
+  import Icon from '$lib/elements/Icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import type { ActivityResponseDto } from '@immich/sdk';
   import { mdiCommentOutline, mdiHeart, mdiHeartOutline } from '@mdi/js';
-  import Icon from '../elements/icon.svelte';
 
   interface Props {
     isLiked: ActivityResponseDto | null;

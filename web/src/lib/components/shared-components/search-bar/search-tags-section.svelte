@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
   import { Checkbox, Label } from '@immich/ui';
