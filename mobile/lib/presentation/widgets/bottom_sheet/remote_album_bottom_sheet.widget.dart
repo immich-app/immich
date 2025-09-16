@@ -84,7 +84,8 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
 
     return BaseBottomSheet(
       controller: sheetController,
-      initialChildSize: 0.45,
+      initialChildSize: 0.18,
+      minChildSize: 0.18,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: [
