@@ -46,7 +46,7 @@ class Scrubber extends ConsumerStatefulWidget {
 }
 
 List<_Segment> _buildSegments({required List<Segment> layoutSegments, required double timelineHeight}) {
-  const double offsetThreshold = 20.0;
+  const double offsetThreshold = 40.0;
 
   final segments = <_Segment>[];
   if (layoutSegments.isEmpty || layoutSegments.first.bucket is! TimeBucket) {
@@ -390,7 +390,7 @@ class _SegmentWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: Container(
-        margin: const EdgeInsets.only(right: 12.0),
+        margin: const EdgeInsets.only(right: 36.0),
         child: Material(
           color: context.colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
