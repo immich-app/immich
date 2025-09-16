@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/utils/background_lock.dart';
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
+import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 typedef SyncCallback = void Function();
@@ -26,6 +28,8 @@ class BackgroundSyncManager {
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _linkedAlbumSyncTask;
   Cancelable<void>? _hashTask;
+
+  final Logger _log = Logger("BackgroundSyncManager");
 
   BackgroundSyncManager({
     this.onRemoteSyncStart,
@@ -90,12 +94,18 @@ class BackgroundSyncManager {
   }
 
   // No need to cancel the task, as it can also be run when the user logs out
-  Future<void> syncLocal({bool full = false}) {
+  Future<void> syncLocal({bool full = false}) async {
     if (_deviceAlbumSyncTask != null) {
       return _deviceAlbumSyncTask!.future;
     }
 
     onLocalSyncStart?.call();
+    if (!await acquireLock(BackgroundLock.localSync, timeout: const Duration(seconds: 20))) {
+      _log.warning("Failed to acquire local sync lock");
+      onLocalSyncError?.call("Failed to acquire local sync lock");
+      return;
+    }
+    _log.info("Acquired local sync lock");
 
     // We use a ternary operator to avoid [_deviceAlbumSyncTask] from being
     // captured by the closure passed to [runInIsolateGentle].
@@ -113,20 +123,30 @@ class BackgroundSyncManager {
         .whenComplete(() {
           _deviceAlbumSyncTask = null;
           onLocalSyncComplete?.call();
+          _log.info("Released local sync lock");
+          releaseLock(BackgroundLock.localSync);
         })
         .catchError((error) {
           onLocalSyncError?.call(error.toString());
           _deviceAlbumSyncTask = null;
+          _log.info("Released local sync lock");
+          releaseLock(BackgroundLock.localSync);
         });
   }
 
   // No need to cancel the task, as it can also be run when the user logs out
-  Future<void> hashAssets() {
+  Future<void> hashAssets() async {
     if (_hashTask != null) {
       return _hashTask!.future;
     }
 
     onHashingStart?.call();
+    if (!await acquireLock(BackgroundLock.hash, timeout: const Duration(seconds: 20))) {
+      _log.warning("Failed to acquire hashing lock");
+      onHashingError?.call("Failed to acquire hashing lock");
+      return;
+    }
+    _log.info("Acquired hashing lock");
 
     _hashTask = runInIsolateGentle(
       computation: (ref) => ref.read(hashServiceProvider).hashAssets(),
@@ -137,19 +157,29 @@ class BackgroundSyncManager {
         .whenComplete(() {
           onHashingComplete?.call();
           _hashTask = null;
+          _log.info("Released hashing lock");
+          releaseLock(BackgroundLock.hash);
         })
         .catchError((error) {
           onHashingError?.call(error.toString());
           _hashTask = null;
+          _log.info("Released hashing lock");
+          releaseLock(BackgroundLock.hash);
         });
   }
 
-  Future<void> syncRemote() {
+  Future<void> syncRemote() async {
     if (_syncTask != null) {
       return _syncTask!.future;
     }
 
     onRemoteSyncStart?.call();
+    if (!await acquireLock(BackgroundLock.remoteSync, timeout: const Duration(seconds: 30))) {
+      _log.warning("Failed to acquire remote sync lock");
+      onRemoteSyncError?.call("Failed to acquire remote sync lock");
+      return;
+    }
+    _log.info("Acquired remote sync lock");
 
     _syncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
@@ -159,10 +189,14 @@ class BackgroundSyncManager {
         .whenComplete(() {
           onRemoteSyncComplete?.call();
           _syncTask = null;
+          _log.info("Released remote sync lock");
+          releaseLock(BackgroundLock.remoteSync);
         })
         .catchError((error) {
           onRemoteSyncError?.call(error.toString());
           _syncTask = null;
+          _log.info("Released remote sync lock");
+          releaseLock(BackgroundLock.remoteSync);
         });
   }
 
@@ -176,14 +210,22 @@ class BackgroundSyncManager {
     });
   }
 
-  Future<void> syncLinkedAlbum() {
+  Future<void> syncLinkedAlbum() async {
     if (_linkedAlbumSyncTask != null) {
       return _linkedAlbumSyncTask!.future;
     }
 
+    if (!await acquireLock(BackgroundLock.albumSync, timeout: const Duration(seconds: 10))) {
+      _log.warning("Failed to acquire album sync lock");
+      return;
+    }
+    _log.info("Acquired album sync lock");
+
     _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated, debugLabel: 'linked-album-sync');
     return _linkedAlbumSyncTask!.whenComplete(() {
       _linkedAlbumSyncTask = null;
+      _log.info("Released album sync lock");
+      releaseLock(BackgroundLock.albumSync);
     });
   }
 }
