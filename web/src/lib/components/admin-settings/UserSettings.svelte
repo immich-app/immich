@@ -2,12 +2,12 @@
   import { type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { t } from 'svelte-i18n';
   import { SettingInputFieldType } from '$lib/constants';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     savedConfig: SystemConfigDto;

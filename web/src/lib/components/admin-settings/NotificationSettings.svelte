@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
+  import TemplateSettings from '$lib/components/admin-settings/TemplateSettings.svelte';
   import {
     NotificationType,
     notificationController,
@@ -16,7 +16,7 @@
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
+  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;

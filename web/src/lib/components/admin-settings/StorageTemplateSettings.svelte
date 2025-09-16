@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
+  import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -18,9 +20,7 @@
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SupportedDatetimePanel from './supported-datetime-panel.svelte';
-  import SupportedVariablesPanel from './supported-variables-panel.svelte';
+  import type { SettingsResetEvent, SettingsSaveEvent } from './admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;
