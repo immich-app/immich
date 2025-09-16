@@ -22,8 +22,8 @@
   } from '@mdi/js';
   import type { Component } from 'svelte';
   import { t } from 'svelte-i18n';
-  import JobTile from './job-tile.svelte';
-  import StorageMigrationDescription from './storage-migration-description.svelte';
+  import JobTile from './JobTile.svelte';
+  import StorageMigrationDescription from './StorageMigrationDescription.svelte';
 
   interface Props {
     jobs: AllJobStatusResponseDto;

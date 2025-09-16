@@ -15,8 +15,8 @@
   } from '@mdi/js';
   import { type Component } from 'svelte';
   import { t } from 'svelte-i18n';
-  import JobTileButton from './job-tile-button.svelte';
-  import JobTileStatus from './job-tile-status.svelte';
+  import JobTileButton from './JobTileButton.svelte';
+  import JobTileStatus from './JobTileStatus.svelte';
 
   interface Props {
     title: string;
