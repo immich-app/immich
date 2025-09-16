@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
   import { AppRoute } from '$lib/constants';
   import Icon from '$lib/elements/Icon.svelte';
+  import Portal from '$lib/elements/Portal.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences } from '$lib/stores/user.store';
