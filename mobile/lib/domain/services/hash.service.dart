@@ -54,7 +54,7 @@ class HashService {
   /// with hash for those that were successfully hashed. Hashes are looked up in a table
   /// [LocalAssetHashEntity] by local id. Only missing entries are newly hashed and added to the DB.
   Future<void> _hashAssets(LocalAlbum album, List<LocalAsset> assetsToHash) async {
-    final toHash = <String>[];
+    final toHash = <String, LocalAsset>{};
 
     for (final asset in assetsToHash) {
       if (isCancelled) {
@@ -62,7 +62,7 @@ class HashService {
         return;
       }
 
-      toHash.add(asset.id);
+      toHash[asset.id] = asset;
       if (toHash.length == _batchSize) {
         await _processBatch(album, toHash);
         toHash.clear();
@@ -73,7 +73,7 @@ class HashService {
   }
 
   /// Processes a batch of assets.
-  Future<void> _processBatch(LocalAlbum album, List<String> toHash) async {
+  Future<void> _processBatch(LocalAlbum album, Map<String, LocalAsset> toHash) async {
     if (toHash.isEmpty) {
       return;
     }
@@ -82,7 +82,7 @@ class HashService {
 
     final hashed = <String, String>{};
     final hashResults = await _nativeSyncApi.hashAssets(
-      toHash,
+      toHash.keys.toList(),
       allowNetworkAccess: album.backupSelection == BackupSelection.selected,
     );
     assert(
@@ -100,8 +100,9 @@ class HashService {
       if (hashResult.hash != null) {
         hashed[hashResult.assetId] = hashResult.hash!;
       } else {
+        final asset = toHash[hashResult.assetId];
         _log.warning(
-          "Failed to hash file for ${hashResult.assetId} from album: ${album.name}. Error: ${hashResult.error ?? "unknown"}",
+          "Failed to hash asset with id: ${hashResult.assetId}, name: ${asset?.name}, createdAt: ${asset?.createdAt}, from album: ${album.name}. Error: ${hashResult.error ?? "unknown"}",
         );
       }
     }
