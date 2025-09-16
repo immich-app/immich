@@ -168,7 +168,7 @@
   {#if !authManager.isSharedLink && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
-        <h2>{$t('people').toUpperCase()}</h2>
+        <h2 class="uppercase">{$t('people')}</h2>
         <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <IconButton
@@ -269,10 +269,10 @@
   <div class="px-4 py-4">
     {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
-        <h2>{$t('details').toUpperCase()}</h2>
+        <h2 class="uppercase">{$t('details')}</h2>
       </div>
     {:else}
-      <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
+      <p class="uppercase text-sm">{$t('no_exif_info_available')}</p>
     {/if}
 
     {#if dateTime}
@@ -503,7 +503,7 @@
 
 {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
-    <p class="text-sm">{$t('shared_by').toUpperCase()}</p>
+    <p class="uppercase text-sm">{$t('shared_by')}</p>
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />
@@ -520,7 +520,7 @@
 
 {#if albums.length > 0}
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
-    <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
+    <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
       <a href="{AppRoute.ALBUMS}/{album.id}">
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">

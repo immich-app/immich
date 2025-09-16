@@ -242,14 +242,9 @@
         </div>
         <div class="col-span-full">
           <div class="flex flex-col lg:flex-row gap-4 w-full">
-            <StatsCard icon={mdiCameraIris} title={$t('photos').toUpperCase()} value={userStatistics.images} />
-            <StatsCard icon={mdiPlayCircle} title={$t('videos').toUpperCase()} value={userStatistics.videos} />
-            <StatsCard
-              icon={mdiChartPie}
-              title={$t('storage').toUpperCase()}
-              value={statsUsage}
-              unit={statsUsageUnit}
-            />
+            <StatsCard icon={mdiCameraIris} title={$t('photos')} value={userStatistics.images} />
+            <StatsCard icon={mdiPlayCircle} title={$t('videos')} value={userStatistics.videos} />
+            <StatsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
           </div>
         </div>
         <div>

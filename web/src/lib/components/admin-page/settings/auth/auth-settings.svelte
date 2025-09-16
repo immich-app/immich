@@ -183,7 +183,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_timeout').toUpperCase()}
+                label={$t('admin.oauth_timeout')}
                 description={$t('admin.oauth_timeout_description')}
                 required={true}
                 bind:value={config.oauth.timeout}
@@ -193,7 +193,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_storage_label_claim').toUpperCase()}
+                label={$t('admin.oauth_storage_label_claim')}
                 description={$t('admin.oauth_storage_label_claim_description')}
                 bind:value={config.oauth.storageLabelClaim}
                 required={true}
@@ -203,7 +203,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_role_claim').toUpperCase()}
+                label={$t('admin.oauth_role_claim')}
                 description={$t('admin.oauth_role_claim_description')}
                 bind:value={config.oauth.roleClaim}
                 required={true}
@@ -213,7 +213,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_storage_quota_claim').toUpperCase()}
+                label={$t('admin.oauth_storage_quota_claim')}
                 description={$t('admin.oauth_storage_quota_claim_description')}
                 bind:value={config.oauth.storageQuotaClaim}
                 required={true}
@@ -223,7 +223,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.NUMBER}
-                label={$t('admin.oauth_storage_quota_default').toUpperCase()}
+                label={$t('admin.oauth_storage_quota_default')}
                 description={$t('admin.oauth_storage_quota_default_description')}
                 bind:value={config.oauth.defaultStorageQuota}
                 required={false}
@@ -233,7 +233,7 @@
 
               <SettingInputField
                 inputType={SettingInputFieldType.TEXT}
-                label={$t('admin.oauth_button_text').toUpperCase()}
+                label={$t('admin.oauth_button_text')}
                 bind:value={config.oauth.buttonText}
                 required={false}
                 disabled={disabled || !config.oauth.enabled}
@@ -241,21 +241,21 @@
               />
 
               <SettingSwitch
-                title={$t('admin.oauth_auto_register').toUpperCase()}
+                title={$t('admin.oauth_auto_register')}
                 subtitle={$t('admin.oauth_auto_register_description')}
                 bind:checked={config.oauth.autoRegister}
                 disabled={disabled || !config.oauth.enabled}
               />
 
               <SettingSwitch
-                title={$t('admin.oauth_auto_launch').toUpperCase()}
+                title={$t('admin.oauth_auto_launch')}
                 subtitle={$t('admin.oauth_auto_launch_description')}
                 disabled={disabled || !config.oauth.enabled}
                 bind:checked={config.oauth.autoLaunch}
               />
 
               <SettingSwitch
-                title={$t('admin.oauth_mobile_redirect_uri_override').toUpperCase()}
+                title={$t('admin.oauth_mobile_redirect_uri_override')}
                 subtitle={$t('admin.oauth_mobile_redirect_uri_override_description', {
                   values: { callback: 'app.immich:///oauth-callback' },
                 })}
@@ -267,7 +267,7 @@
               {#if config.oauth.mobileOverrideEnabled}
                 <SettingInputField
                   inputType={SettingInputFieldType.TEXT}
-                  label={$t('admin.oauth_mobile_redirect_uri').toUpperCase()}
+                  label={$t('admin.oauth_mobile_redirect_uri')}
                   bind:value={config.oauth.mobileRedirectUri}
                   required={true}
                   disabled={disabled || !config.oauth.enabled}

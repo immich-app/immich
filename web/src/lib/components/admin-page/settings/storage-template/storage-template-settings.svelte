@@ -184,7 +184,7 @@
           <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('template')}</h3>
 
           <div class="my-2 text-sm">
-            <h4>{$t('preview').toUpperCase()}</h4>
+            <h4 class="uppercase">{$t('preview')}</h4>
           </div>
 
           <p class="text-sm">

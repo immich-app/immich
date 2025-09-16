@@ -177,9 +177,9 @@
       {disabled}
       {subtitle}
       {description}
-      allText={allText?.toUpperCase()}
-      refreshText={refreshText?.toUpperCase()}
-      missingText={missingText.toUpperCase()}
+      {allText}
+      {refreshText}
+      {missingText}
       {jobCounts}
       {queueStatus}
       onCommand={(command) => (handleCommandOverride || handleCommand)(jobName, command)}
