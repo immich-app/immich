@@ -494,8 +494,8 @@
         >
           <Thumbnail
             readonly={disableAssetSelect}
-            onClick={() => {
-              if (assetInteraction.selectionActive) {
+            onClick={(asset, forceView: boolean = false) => {
+              if (assetInteraction.selectionActive && !forceView) {
                 handleSelectAssets(toTimelineAsset(currentAsset));
                 return;
               }
@@ -507,6 +507,7 @@
             asset={toTimelineAsset(currentAsset)}
             selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
+            selectionActive={assetInteraction.selectionActive}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />
@@ -528,10 +529,12 @@
   <Portal target="body">
     <AssetViewer
       asset={$viewingAsset}
+      {assetInteraction}
       onAction={handleAction}
       onPrevious={handlePrevious}
       onNext={handleNext}
       onRandom={handleRandom}
+      onSelectAsset={handleSelectAssets}
       onClose={() => {
         assetViewingStore.showAssetViewer(false);
         handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

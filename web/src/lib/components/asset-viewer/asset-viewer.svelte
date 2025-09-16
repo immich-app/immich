@@ -10,6 +10,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -49,6 +50,7 @@
 
   interface Props {
     asset: AssetResponseDto;
+    assetInteraction?: AssetInteraction;
     preloadAssets?: TimelineAsset[];
     showNavigation?: boolean;
     withStacked?: boolean;
@@ -58,6 +60,7 @@
     preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     showCloseButton?: boolean;
+    onSelectAsset?: (asset: TimelineAsset) => void;
     onClose: (asset: AssetResponseDto) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
@@ -67,6 +70,7 @@
 
   let {
     asset = $bindable(),
+    assetInteraction,
     preloadAssets = $bindable([]),
     showNavigation = true,
     withStacked = false,
@@ -76,6 +80,7 @@
     preAction = undefined,
     onAction = undefined,
     showCloseButton,
+    onSelectAsset,
     onClose,
     onNext,
     onPrevious,
@@ -391,12 +396,14 @@
     <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
+        {assetInteraction}
         {album}
         {person}
         {stack}
         {showCloseButton}
         showDetailButton={enableDetailPanel}
         showSlideshow={true}
+        {onSelectAsset}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
         preAction={handlePreAction}
@@ -529,7 +536,7 @@
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
+  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor && !assetInteraction?.selectionActive}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
