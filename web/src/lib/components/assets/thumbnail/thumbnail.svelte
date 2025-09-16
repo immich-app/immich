@@ -319,19 +319,6 @@
         </a>
       {/if}
 
-      <!-- View Asset while selecting -->
-      {#if mouseOver && selectionActive}
-        <button
-          type="button"
-          onclick={onViewerIconClickedHandler}
-          class={['absolute focus:outline-none bottom-2 end-2', { 'cursor-not-allowed': disabled }]}
-          tabindex={-1}
-          {disabled}
-        >
-          <Icon path={mdiMagnifyPlusOutline} size="24" class="text-white/80 hover:text-white" />
-        </button>
-      {/if}
-
       <ImageThumbnail
         class={imageClass}
         {brokenAssetClass}
@@ -364,6 +351,19 @@
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
+      {/if}
+
+      <!-- View Asset while selecting -->
+      {#if mouseOver && selectionActive}
+        <button
+          type="button"
+          onclick={onViewerIconClickedHandler}
+          class={['absolute focus:outline-none bottom-2 end-2', { 'cursor-not-allowed': disabled }]}
+          tabindex={-1}
+          {disabled}
+        >
+          <Icon path={mdiMagnifyPlusOutline} size="24" class="text-white/80 hover:text-white" />
+        </button>
       {/if}
 
       {#if (!loaded || thumbError) && asset.thumbhash}

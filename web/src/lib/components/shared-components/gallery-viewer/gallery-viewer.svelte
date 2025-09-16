@@ -494,8 +494,8 @@
         >
           <Thumbnail
             readonly={disableAssetSelect}
-            onClick={() => {
-              if (assetInteraction.selectionActive) {
+            onClick={(asset, forceView: boolean = false) => {
+              if (assetInteraction.selectionActive && !forceView) {
                 handleSelectAssets(toTimelineAsset(currentAsset));
                 return;
               }
@@ -507,6 +507,7 @@
             asset={toTimelineAsset(currentAsset)}
             selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
+            selectionActive={assetInteraction.selectionActive}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />
