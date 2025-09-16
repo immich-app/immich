@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Icon from '$lib/elements/Icon.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { ScrubberMonth } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
+  import { Icon } from '@immich/ui';
   import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';
   import { onMount } from 'svelte';
@@ -490,8 +490,8 @@
       in:fade={{ duration: 200 }}
       out:fade={{ duration: 200 }}
     >
-      <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
-      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-px -end-[2px]" />
+      <Icon icon={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -end-[2px]" />
+      <Icon icon={mdiPlay} size="20" class="rotate-90 relative top-px -end-[2px]" />
       {#if (timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}

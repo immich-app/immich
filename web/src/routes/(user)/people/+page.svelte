@@ -14,7 +14,6 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import Icon from '$lib/elements/Icon.svelte';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
@@ -23,7 +22,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, modalManager } from '@immich/ui';
+  import { Button, Icon, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -389,7 +388,7 @@
   {:else}
     <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
-        <Icon path={mdiAccountOff} size="3.5em" />
+        <Icon icon={mdiAccountOff} size="3.5em" />
         <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
           {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>

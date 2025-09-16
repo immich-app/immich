@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/elements/Icon.svelte';
+  import { Icon } from '@immich/ui';
   import { mdiEyeOffOutline, mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { HTMLInputAttributes } from 'svelte/elements';
@@ -37,7 +37,7 @@
       onclick={() => (showPassword = !showPassword)}
       title={showPassword ? $t('hide_password') : $t('show_password')}
     >
-      <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size="1.25em" />
+      <Icon icon={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size="1.25em" />
     </button>
   {/if}
 </div>

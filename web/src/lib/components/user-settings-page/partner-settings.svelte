@@ -1,7 +1,6 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import Icon from '$lib/elements/Icon.svelte';
   import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
   import {
     createPartner,
@@ -12,7 +11,7 @@
     type PartnerResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiCheck, mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -164,11 +163,11 @@
             <p class="text-md">{$t('partner_can_access', { values: { partner: partner.user.name } })}</p>
             <ul class="text-sm">
               <li class="flex gap-2 place-items-center py-1 mt-2">
-                <Icon path={mdiCheck} />
+                <Icon icon={mdiCheck} />
                 {$t('partner_can_access_assets')}
               </li>
               <li class="flex gap-2 place-items-center py-1">
-                <Icon path={mdiCheck} />
+                <Icon icon={mdiCheck} />
                 {$t('partner_can_access_location')}
               </li>
             </ul>

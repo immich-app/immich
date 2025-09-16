@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/elements/Icon.svelte';
-  import { Modal, ModalBody } from '@immich/ui';
+  import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -91,7 +90,7 @@
                 <div class="flex items-center gap-2">
                   <p class="mb-1 mt-1 flex">{shortcut.action}</p>
                   {#if shortcut.info}
-                    <Icon path={mdiInformationOutline} title={shortcut.info} />
+                    <Icon icon={mdiInformationOutline} title={shortcut.info} />
                   {/if}
                 </div>
               </div>

@@ -9,7 +9,6 @@
     type RelativeResult,
   } from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
-  import Icon from '$lib/elements/Icon.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
@@ -24,7 +23,7 @@
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -286,7 +285,7 @@
       >
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
 
           <div>
@@ -318,7 +317,7 @@
 
         {#if isOwner}
           <div class="p-1">
-            <Icon path={mdiPencil} size="20" />
+            <Icon icon={mdiPencil} size="20" />
           </div>
         {/if}
       </button>
@@ -326,11 +325,11 @@
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
         </div>
         <div class="p-1">
-          <Icon path={mdiPencil} size="20" />
+          <Icon icon={mdiPencil} size="20" />
         </div>
       </div>
     {/if}
@@ -346,7 +345,7 @@
     {/if}
 
     <div class="flex gap-4 py-4">
-      <div><Icon path={mdiImageOutline} size="24" /></div>
+      <div><Icon icon={mdiImageOutline} size="24" /></div>
 
       <div>
         <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
@@ -394,7 +393,7 @@
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
-        <div><Icon path={mdiCameraIris} size="24" /></div>
+        <div><Icon icon={mdiCameraIris} size="24" /></div>
 
         <div>
           {#if asset.exifInfo?.make || asset.exifInfo?.model}

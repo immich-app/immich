@@ -22,7 +22,6 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import Icon from '$lib/elements/Icon.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -45,7 +44,7 @@
     searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -390,7 +389,7 @@
     {:else if !isLoading}
       <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
         <div class="flex flex-col content-center items-center text-center">
-          <Icon path={mdiImageOffOutline} size="3.5em" />
+          <Icon icon={mdiImageOffOutline} size="3.5em" />
           <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
           <p class="text-base font-normal">{$t('no_results_description')}</p>
         </div>

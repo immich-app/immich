@@ -1,7 +1,6 @@
 <script lang="ts">
   import AlbumTableHeader from '$lib/components/album-page/albums-table-header.svelte';
   import AlbumTableRow from '$lib/components/album-page/albums-table-row.svelte';
-  import Icon from '$lib/elements/Icon.svelte';
   import { AlbumGroupBy, albumViewSettings } from '$lib/stores/preferences.store';
   import {
     isAlbumGroupCollapsed,
@@ -11,6 +10,7 @@
   } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import type { AlbumResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
@@ -54,7 +54,7 @@
         >
           <td class="text-md text-start -mb-1">
             <Icon
-              path={mdiChevronRight}
+              icon={mdiChevronRight}
               size="20"
               class="inline-block -mt-2 transition-all duration-250 {iconRotation}"
             />

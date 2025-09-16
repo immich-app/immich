@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/elements/Icon.svelte';
   import { ByteUnit } from '$lib/utils/byte-units';
-  import { Code, Text } from '@immich/ui';
+  import { Code, Icon, Text } from '@immich/ui';
 
   interface Props {
     icon: string;
@@ -23,7 +22,7 @@
 
 <div class="flex h-[140px] w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
   <div class="flex place-items-center gap-4">
-    <Icon path={icon} size="40" />
+    <Icon {icon} size="40" />
     <Text size="large" fontWeight="bold" class="uppercase">{title}</Text>
   </div>
 
