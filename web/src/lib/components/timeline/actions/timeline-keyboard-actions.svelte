@@ -23,6 +23,7 @@
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
+  import { mdiCalendarBlankOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
@@ -203,6 +204,7 @@
 {#if isShowSelectDate}
   <ChangeDate
     withDuration={false}
+    icon={mdiCalendarBlankOutline}
     confirmText={$t('navigate')}
     title={$t('navigate_to_time')}
     initialDate={DateTime.now()}
