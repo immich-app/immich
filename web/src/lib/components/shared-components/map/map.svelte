@@ -8,8 +8,8 @@
 
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';

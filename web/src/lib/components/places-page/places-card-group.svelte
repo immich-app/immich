@@ -1,13 +1,13 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
+  import Icon from '$lib/elements/Icon.svelte';
   import { placesViewSettings } from '$lib/stores/preferences.store';
-  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
-  import { mdiChevronRight } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { t } from 'svelte-i18n';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
+  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
+  import { mdiChevronRight } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     places: AssetResponseDto[];

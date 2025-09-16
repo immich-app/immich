@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';

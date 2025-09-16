@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { copyToClipboard } from '$lib/utils';
   import { IconButton } from '@immich/ui';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';

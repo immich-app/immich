@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import EmailTemplatePreviewModal from '$lib/modals/EmailTemplatePreviewModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplateAdmin } from '@immich/sdk';

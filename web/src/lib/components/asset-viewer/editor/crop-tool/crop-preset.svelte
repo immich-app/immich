@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import type { CropAspectRatio } from '$lib/stores/asset-editor.store';
   import { Button, type Color } from '@immich/ui';
 

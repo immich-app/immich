@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { ScrubberMonth } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';

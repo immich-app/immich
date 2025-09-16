@@ -1,8 +1,8 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
   import {

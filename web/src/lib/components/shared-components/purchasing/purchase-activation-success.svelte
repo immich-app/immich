@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   import { Button } from '@immich/ui';

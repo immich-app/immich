@@ -1,10 +1,10 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
 
-  import Icon from '$lib/components/elements/icon.svelte';
   import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { dateFormats } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences, user } from '$lib/stores/user.store';

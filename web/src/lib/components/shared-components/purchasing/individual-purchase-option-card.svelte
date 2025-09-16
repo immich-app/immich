@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { ImmichProduct } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { getLicenseLink as getProductLink } from '$lib/utils/license-utils';
   import { Button } from '@immich/ui';
   import { mdiAccount, mdiCheckCircleOutline } from '@mdi/js';

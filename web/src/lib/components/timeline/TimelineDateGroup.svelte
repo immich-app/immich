@@ -1,6 +1,6 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';

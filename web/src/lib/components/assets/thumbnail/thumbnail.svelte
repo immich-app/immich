@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';

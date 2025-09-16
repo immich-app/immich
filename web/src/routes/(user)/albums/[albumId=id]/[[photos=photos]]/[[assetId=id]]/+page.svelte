@@ -8,7 +8,6 @@
   import AlbumTitle from '$lib/components/album-page/album-title.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/activity-status.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/activity-viewer.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -33,6 +32,7 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';

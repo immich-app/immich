@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import Icon from '$lib/elements/Icon.svelte';
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { Action } from 'svelte/action';

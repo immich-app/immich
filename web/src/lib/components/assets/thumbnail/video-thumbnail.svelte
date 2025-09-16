@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import { Duration } from 'luxon';
 

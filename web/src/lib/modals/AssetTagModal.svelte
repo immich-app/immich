@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';

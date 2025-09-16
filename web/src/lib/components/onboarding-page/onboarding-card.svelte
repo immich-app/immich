@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { Button } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiCheck } from '@mdi/js';
   import type { Snippet } from 'svelte';

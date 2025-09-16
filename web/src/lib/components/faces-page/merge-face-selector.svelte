@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';

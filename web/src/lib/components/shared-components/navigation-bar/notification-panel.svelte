@@ -1,11 +1,11 @@
 <script lang="ts">
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Icon from '$lib/components/elements/icon.svelte';
   import NotificationItem from '$lib/components/shared-components/navigation-bar/notification-item.svelte';
   import {
     notificationController,
     NotificationType as WebNotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import Icon from '$lib/elements/Icon.svelte';
 
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';

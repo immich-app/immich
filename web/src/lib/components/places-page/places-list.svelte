@@ -1,11 +1,11 @@
 <script lang="ts">
-  import PlacesCardGroup from './places-card-group.svelte';
-  import { groupBy } from 'lodash-es';
+  import Icon from '$lib/elements/Icon.svelte';
+  import { PlacesGroupBy, type PlacesViewSettings } from '$lib/stores/preferences.store';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { type AssetResponseDto } from '@immich/sdk';
   import { mdiMapMarkerOff } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { PlacesGroupBy, type PlacesViewSettings } from '$lib/stores/preferences.store';
+  import { groupBy } from 'lodash-es';
+  import PlacesCardGroup from './places-card-group.svelte';
 
   import { type PlacesGroup, getSelectedPlacesGroupOption } from '$lib/utils/places-utils';
   import { t } from 'svelte-i18n';

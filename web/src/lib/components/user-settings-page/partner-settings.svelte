@@ -1,6 +1,7 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
   import {
     createPartner,
@@ -16,7 +17,6 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
-  import Icon from '../elements/icon.svelte';
 
   interface PartnerSharing {
     user: UserResponseDto;

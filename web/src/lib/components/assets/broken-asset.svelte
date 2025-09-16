@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { mdiImageBrokenVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 

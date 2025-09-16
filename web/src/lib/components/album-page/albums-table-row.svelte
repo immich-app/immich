@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';

@@ -4,12 +4,12 @@
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate, {
     type AbsoluteResult,
     type RelativeResult,
   } from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
+  import Icon from '$lib/elements/Icon.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';

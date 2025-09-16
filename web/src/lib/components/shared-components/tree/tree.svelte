@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { TreeNode } from '$lib/utils/tree-utils';
   import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 

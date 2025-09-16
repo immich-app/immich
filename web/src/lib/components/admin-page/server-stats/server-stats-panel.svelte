@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { getByteUnitString, getBytesWithUnit } from '$lib/utils/byte-units';
   import type { ServerStatsResponseDto } from '@immich/sdk';

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Shortcut } from '$lib/actions/shortcut';
   import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import { generateId } from '$lib/utils/generate-id';
 

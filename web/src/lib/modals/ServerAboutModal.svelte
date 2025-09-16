@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
   import { Modal, ModalBody } from '@immich/ui';

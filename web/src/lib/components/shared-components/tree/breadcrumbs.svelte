@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import Icon from '$lib/elements/Icon.svelte';
   import { TreeNode } from '$lib/utils/tree-utils';
   import { IconButton } from '@immich/ui';
   import { mdiArrowUpLeft, mdiChevronRight } from '@mdi/js';

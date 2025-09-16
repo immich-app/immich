@@ -1,6 +1,5 @@
 <script lang="ts">
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
-  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -21,6 +20,7 @@
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import SkipLink from '$lib/elements/SkipLink.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { foldersStore } from '$lib/stores/folders.svelte';
