@@ -81,6 +81,7 @@
     mdiPlus,
     mdiPresentationPlay,
     mdiShareVariantOutline,
+    mdiUpload,
   } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -534,7 +535,7 @@
                   onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
                   class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                 >
-                  <span class="text-text-immich-primary dark:text-immich-dark-primary">
+                  <span class="text-primary">
                     <Icon icon={mdiPlus} size="24" />
                   </span>
                   <span class="text-lg">{$t('select_photos')}</span>
@@ -710,16 +711,10 @@
           {/snippet}
 
           {#snippet trailing()}
-            <button
-              type="button"
-              onclick={handleSelectFromComputer}
-              class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
+            <Button variant="ghost" leadingIcon={mdiUpload} onclick={handleSelectFromComputer}
+              >{$t('select_from_computer')}</Button
             >
-              {$t('select_from_computer')}
-            </button>
-            <Button size="small" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
-              >{$t('done')}</Button
-            >
+            <Button disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}>{$t('done')}</Button>
           {/snippet}
         </ControlAppBar>
       {/if}
