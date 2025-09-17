@@ -66,12 +66,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
     }
 
     // Refresh the backup status to get the updated total count
-    print("Refreshing backup status to get updated total count");
     await ref.read(driftBackupProvider.notifier).getBackupStatus(user.id);
 
     // Restart backup if total count changed and backup is enabled
     final currentTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
-    print("Current total asset count: $currentTotalAssetCount");
     final totalChanged = currentTotalAssetCount != _initialTotalAssetCount;
     final isBackupEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
 
