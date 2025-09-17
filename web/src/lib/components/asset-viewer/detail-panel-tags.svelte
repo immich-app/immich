@@ -1,12 +1,11 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
   import { removeTag } from '$lib/utils/asset-utils';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { Icon, modalManager } from '@immich/ui';
   import { mdiClose, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -59,7 +58,7 @@
             title="Remove tag"
             onclick={() => handleRemove(tag.id)}
           >
-            <Icon path={mdiClose} />
+            <Icon icon={mdiClose} />
           </button>
         </div>
       {/each}
@@ -70,7 +69,7 @@
         onclick={handleAddTag}
       >
         <span class="text-sm px-1 flex place-items-center place-content-center gap-1"
-          ><Icon path={mdiPlus} />{$t('add')}</span
+          ><Icon icon={mdiPlus} />{$t('add')}</span
         >
       </button>
     </section>

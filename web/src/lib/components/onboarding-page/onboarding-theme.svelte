@@ -1,8 +1,8 @@
 <script lang="ts">
   import { moonPath, moonViewBox, sunPath, sunViewBox } from '$lib/assets/svg-paths';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
+  import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
 </script>
 
@@ -18,7 +18,7 @@
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
       >
-        <Icon path={sunPath} viewBox={sunViewBox} size="96" />
+        <Icon icon={sunPath} viewBox={sunViewBox} size="96" />
         <p class="uppercase font-semibold text-4xl">{$t('light')}</p>
       </div>
     </button>
@@ -30,7 +30,7 @@
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
       >
-        <Icon path={moonPath} viewBox={moonViewBox} size="96" />
+        <Icon icon={moonPath} viewBox={moonViewBox} size="96" />
         <p class="uppercase font-semibold text-4xl">{$t('dark')}</p>
       </div>
     </button>

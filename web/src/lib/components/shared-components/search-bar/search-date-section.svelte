@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  import DateInput from '$lib/components/elements/date-input.svelte';
+  import DateInput from '$lib/elements/DateInput.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {

@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
@@ -129,7 +128,7 @@
               aria-selected={selectedIndex === index}
               aria-label={savedSearchTerm}
             >
-              <Icon path={mdiMagnify} size="1.5em" ariaHidden={true} />
+              <Icon icon={mdiMagnify} size="1.5em" aria-hidden />
               {savedSearchTerm}
             </div>
             <div aria-hidden={true} class="absolute end-5 top-0 items-center justify-center py-3">

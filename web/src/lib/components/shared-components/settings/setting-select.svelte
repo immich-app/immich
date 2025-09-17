@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { Icon } from '@immich/ui';
   import { mdiChevronDown } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
@@ -62,9 +62,9 @@
 
   <div class="grid">
     <Icon
-      path={mdiChevronDown}
+      icon={mdiChevronDown}
       size="1.2em"
-      ariaHidden={true}
+      aria-hidden
       class="pointer-events-none end-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
         ? 'text-immich-bg'
         : 'text-immich-fg dark:text-immich-bg'}"
