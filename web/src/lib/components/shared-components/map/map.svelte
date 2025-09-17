@@ -8,7 +8,6 @@
 
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
@@ -16,7 +15,7 @@
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { Icon, modalManager } from '@immich/ui';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -319,9 +318,9 @@
     {#if showSettings}
       <Control>
         <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}
-            ><Icon path={mdiCog} size="100%" class="text-black/80" /></ControlButton
-          >
+          <ControlButton onclick={handleSettingsClick}>
+            <Icon icon={mdiCog} size="100%" class="text-black/80" />
+          </ControlButton>
         </ControlGroup>
       </Control>
     {/if}
@@ -330,7 +329,7 @@
       <Control position="top-right">
         <ControlGroup>
           <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" class="text-black/80" />
+            <Icon title={$t('open_in_map_view')} icon={mdiMap} size="100%" class="text-black/80" />
           </ControlButton>
         </ControlGroup>
       </Control>
@@ -353,7 +352,7 @@
           <div
             class="rounded-full w-[40px] h-[40px] bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
           >
-            {feature.properties?.point_count}
+            {feature.properties?.point_count?.toLocaleString()}
           </div>
         {/snippet}
       </MarkerLayer>
@@ -369,7 +368,7 @@
         {#snippet children({ feature }: { feature: Feature<Geometry, GeoJsonProperties> })}
           {#if useLocationPin}
             <Icon
-              path={mdiMapMarker}
+              icon={mdiMapMarker}
               size="50px"
               class="dark:text-immich-dark-primary text-immich-primary -translate-y-[50%]"
             />

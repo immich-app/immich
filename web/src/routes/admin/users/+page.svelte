@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import Icon from '$lib/components/elements/icon.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import {
     NotificationType,
@@ -16,7 +15,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton, Text, modalManager } from '@immich/ui';
+  import { Button, HStack, Icon, IconButton, Text, modalManager } from '@immich/ui';
   import { mdiDeleteRestore, mdiEyeOutline, mdiInfinity, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
@@ -116,7 +115,7 @@
                     {#if immichUser.quotaSizeInBytes !== null && immichUser.quotaSizeInBytes >= 0}
                       {getByteUnitString(immichUser.quotaSizeInBytes, $locale)}
                     {:else}
-                      <Icon path={mdiInfinity} size="16" />
+                      <Icon icon={mdiInfinity} size="16" />
                     {/if}
                   </div>
                 </td>

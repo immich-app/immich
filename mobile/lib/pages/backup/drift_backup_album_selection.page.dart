@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -249,7 +250,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             const CircularProgressIndicator(strokeWidth: 4),
-                            Text("Creating linked albums...", style: context.textTheme.labelLarge),
+                            Text('creating_linked_albums'.tr(), style: context.textTheme.labelLarge),
                           ],
                         ),
                       ),

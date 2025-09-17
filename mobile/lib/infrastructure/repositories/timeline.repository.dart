@@ -42,14 +42,10 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
     }
 
-    return _db.mergedAssetDrift
-        .mergedBucket(userIds: userIds, groupBy: groupBy.index)
-        .map((row) {
-          final date = row.bucketDate.dateFmt(groupBy);
-          return TimeBucket(date: date, assetCount: row.assetCount);
-        })
-        .watch()
-        .throttle(const Duration(seconds: 3), trailing: true);
+    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
+      final date = row.bucketDate.dateFmt(groupBy);
+      return TimeBucket(date: date, assetCount: row.assetCount);
+    }).watch();
   }
 
   Future<List<BaseAsset>> _getMainBucketAssets(List<String> userIds, {required int offset, required int count}) {

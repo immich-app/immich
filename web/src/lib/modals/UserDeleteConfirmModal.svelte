@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';

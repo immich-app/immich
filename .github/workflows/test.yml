@@ -594,7 +594,7 @@ jobs:
       contents: read
     services:
       postgres:
-        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:4f7ee144d4738ad02f6d9376defed7a767b748d185d47eba241578c26a63064b
+        image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3@sha256:da52bbead5d818adaa8077c8dcdaad0aaf93038c31ad8348b51f9f0ec1310a4d
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
