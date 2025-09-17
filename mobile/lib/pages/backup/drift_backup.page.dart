@@ -37,7 +37,10 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
       await ref.read(backgroundSyncProvider).syncRemote();
-      await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+
+      if (mounted) {
+        await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+      }
     });
   }
 
