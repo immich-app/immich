@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
@@ -178,7 +179,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                   onAlbumSelected: (album) async {
                     final prevAlbum = ref.read(currentRemoteAlbumProvider);
                     ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
-                    await context.router.push(RemoteAlbumRoute(album: album));
+                    ref.invalidate(assetViewerProvider);
+                    context.router.popAndPush(RemoteAlbumRoute(album: album));
                     if (prevAlbum != null) {
                       ref.read(currentRemoteAlbumProvider.notifier).setAlbum(prevAlbum);
                     }
