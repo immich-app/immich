@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.security.MessageDigest
+import kotlin.coroutines.cancellation.CancellationException
 
 sealed class AssetResult {
   data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
@@ -28,10 +29,12 @@ open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
+  private var hashCancelled: Boolean = false
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
     private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
+    private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
 
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
@@ -237,6 +240,7 @@ open class NativeSyncApiImplBase(context: Context) {
       return
     }
 
+    hashCancelled = false
     hashTask = CoroutineScope(Dispatchers.IO).launch {
       try {
         val results = assetIds.map { assetId ->
@@ -248,6 +252,16 @@ open class NativeSyncApiImplBase(context: Context) {
         }.awaitAll()
 
         callback(Result.success(results))
+      } catch (e: CancellationException) {
+        callback(
+          Result.failure(
+            FlutterError(
+              HASHING_CANCELLED_CODE,
+              "Hashing operation was cancelled",
+              null
+            )
+          )
+        )
       } catch (e: Exception) {
         callback(Result.failure(e))
       }
@@ -281,5 +295,7 @@ open class NativeSyncApiImplBase(context: Context) {
 
   fun cancelHashing() {
     hashTask?.cancel()
+    hashCancelled = true
+    hashTask = null
   }
 }

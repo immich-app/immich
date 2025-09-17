@@ -24,6 +24,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let recoveredAlbumSubType = 1000000219
   private var hashTask: Task<Void, Error>?
   private var hashCancelled: Bool
+  private let hashCancelledCode = "HASH_CANCELLED"
   
   
   init(with defaults: UserDefaults = .standard) {
@@ -264,7 +265,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       }
       
       if hashCancelled {
-        completion(.failure(PigeonError(code: "HASH_CANCELLED", message: "Hashing cancelled", details: nil)))
+        completion(.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil)))
       }
       
       await withTaskGroup(of: HashResult.self) { taskGroup in
@@ -285,7 +286,7 @@ class NativeSyncApiImpl: NativeSyncApi {
         }
         
         if hashCancelled {
-          completion(.failure(PigeonError(code: "HASH_CANCELLED", message: "Hashing cancelled", details: nil)))
+          completion(.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil)))
         } else {
           completion(.success(results))
         }

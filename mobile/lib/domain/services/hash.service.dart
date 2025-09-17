@@ -7,6 +7,8 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:logging/logging.dart';
 
+const String _kHashCancelledCode = "HASH_CANCELLED";
+
 class HashService {
   final int _batchSize;
   final DriftLocalAlbumRepository _localAlbumRepository;
@@ -48,7 +50,7 @@ class HashService {
         }
       }
     } on PlatformException catch (e) {
-      if (e.code == "HASH_CANCELLED") {
+      if (e.code == _kHashCancelledCode) {
         _log.warning("Hashing cancelled by platform");
         return;
       }
