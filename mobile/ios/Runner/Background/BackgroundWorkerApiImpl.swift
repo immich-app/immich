@@ -5,7 +5,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   func enable() throws {
     BackgroundWorkerApiImpl.scheduleRefreshWorker()
     BackgroundWorkerApiImpl.scheduleProcessingWorker()
-    print("BackgroundUploadImpl:enbale Background worker scheduled")
+    print("BackgroundWorkerApiImpl:enable Background worker scheduled")
   }
   
   func configure(settings: BackgroundWorkerSettings) throws {
@@ -15,7 +15,7 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   func disable() throws {
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);
-    print("BackgroundUploadImpl:disableUploadWorker Disabled background workers")
+    print("BackgroundWorkerApiImpl:disableUploadWorker Disabled background workers")
   }
   
   private static let refreshTaskID = "app.alextran.immich.background.refreshUpload"

@@ -200,7 +200,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _drift.close(),
         _driftLogger.close(),
         backgroundSyncManager.cancel(),
-        backgroundSyncManager.cancelLocal(),
         nativeSyncApi.cancelHashing(),
       ];
 

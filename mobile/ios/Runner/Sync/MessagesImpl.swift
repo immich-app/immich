@@ -23,10 +23,12 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
   private var hashTask: Task<Void, Error>?
+  private var hashCancelled: Bool
   
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
+    self.hashCancelled = false
   }
   
   @available(iOS 16, *)
@@ -251,6 +253,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   }
   
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void) {
+    hashCancelled = false
     hashTask = Task {
       var missingAssetIds = Set(assetIds)
       var assets = [PHAsset]()
@@ -259,6 +262,11 @@ class NativeSyncApiImpl: NativeSyncApi {
         missingAssetIds.remove(asset.localIdentifier)
         assets.append(asset)
       }
+      
+      if hashCancelled {
+        completion(.failure(PigeonError(code: "HASH_CANCELLED", message: "Hashing cancelled", details: nil)))
+      }
+      
       await withTaskGroup(of: HashResult.self) { taskGroup in
         var results = [HashResult]()
         results.reserveCapacity(assets.count)
@@ -276,13 +284,19 @@ class NativeSyncApiImpl: NativeSyncApi {
           results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
         }
         
-        completion(.success(results))
+        if hashCancelled {
+          completion(.failure(PigeonError(code: "HASH_CANCELLED", message: "Hashing cancelled", details: nil)))
+        } else {
+          completion(.success(results))
+        }
       }
     }
   }
   
   func cancelHashing() throws {
     hashTask?.cancel()
+    hashCancelled = true
+    hashTask = nil
   }
   
   private func hashAsset(_ asset: PHAsset, allowNetworkAccess: Bool) async -> HashResult {

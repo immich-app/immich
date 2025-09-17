@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -31,19 +32,28 @@ class HashService {
   Future<void> hashAssets() async {
     _log.info("Starting hashing of assets");
     final Stopwatch stopwatch = Stopwatch()..start();
-    // Sorted by backupSelection followed by isCloud
-    final localAlbums = await _localAlbumRepository.getBackupAlbums();
+    try {
+      // Sorted by backupSelection followed by isCloud
+      final localAlbums = await _localAlbumRepository.getBackupAlbums();
 
-    for (final album in localAlbums) {
-      if (isCancelled) {
-        _log.warning("Hashing cancelled. Stopped processing albums.");
-        break;
-      }
+      for (final album in localAlbums) {
+        if (isCancelled) {
+          _log.warning("Hashing cancelled. Stopped processing albums.");
+          break;
+        }
 
-      final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
-      if (assetsToHash.isNotEmpty) {
-        await _hashAssets(album, assetsToHash);
+        final assetsToHash = await _localAlbumRepository.getAssetsToHash(album.id);
+        if (assetsToHash.isNotEmpty) {
+          await _hashAssets(album, assetsToHash);
+        }
       }
+    } on PlatformException catch (e) {
+      if (e.code == "HASH_CANCELLED") {
+        _log.warning("Hashing cancelled by platform");
+        return;
+      }
+    } catch (e, s) {
+      _log.severe("Error during hashing", e, s);
     }
 
     stopwatch.stop();
