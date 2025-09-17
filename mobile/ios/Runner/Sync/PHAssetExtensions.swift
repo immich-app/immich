@@ -15,7 +15,7 @@ extension PHAsset {
       isFavorite: isFavorite
     )
   }
-
+  
   var title: String {
     return filename ?? originalFilename ?? "<unknown>"
   }
@@ -32,33 +32,46 @@ extension PHAsset {
   func getResource() -> PHAssetResource? {
     let resources = PHAssetResource.assetResources(for: self)
     
-    var bestResource: PHAssetResource?
-    var bestPriority = Int.max
-    
-    for resource in resources {
-      let priority = getPriority(for: resource)
-      if priority == 0 {
-        return resource
+    let filteredResources = resources.filter { resource in
+      guard resource.isMediaResource else {
+        return false
       }
       
-      if priority < bestPriority {
-        bestResource = resource
-        bestPriority = priority
+      switch self.mediaType {
+      case .image:
+        return resource.type == .photo || resource.type == .alternatePhoto || resource.type == .fullSizePhoto
+      case .video:
+        return resource.type == .video || resource.type == .fullSizeVideo || resource.type == .fullSizePairedVideo
+      case .audio:
+        return resource.type == .audio
+      case .unknown:
+        return false
+      @unknown default:
+        return false
       }
     }
     
-    return bestResource
-  }
-  
-  private func getPriority(for resource: PHAssetResource) -> Int {
-    switch (mediaType, resource.type) {
-    case (.image, .photo), (.video, .video): return 0
-    case (.image, .alternatePhoto): return 1
-    case (_, .fullSizePhoto): return 2
-    default:
-      if (resource.isCurrent) { return 3 }
-      if (resource.isMediaResource) { return 4 }
-      return 5
+    guard !filteredResources.isEmpty else {
+      return nil
     }
+    
+    if filteredResources.count == 1 {
+      return filteredResources.first
+    }
+    
+    if let currentResource = filteredResources.first(where: {
+      ($0.value(forKey: "isCurrent") as? Bool) ?? false
+    }) {
+      return currentResource
+    }
+    
+    if let fullSizeResource = filteredResources.first(where: {
+      (self.mediaType == .image && $0.type == .fullSizePhoto) ||
+      (self.mediaType == .video && $0.type == .fullSizeVideo)
+    }) {
+      return fullSizeResource
+    }
+    
+    return nil
   }
 }
