@@ -40,9 +40,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex h-[26px] place-items-center gap-1">
-    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="{name}-select"
-      >{label}</label
-    >
+    <label class="font-medium text-primary text-sm" for="{name}-select">{label}</label>
 
     {#if isEdited}
       <div

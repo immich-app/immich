@@ -163,7 +163,7 @@
       {#if config.storageTemplate.enabled}
         <hr />
 
-        <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('variables')}</h3>
+        <h3 class="text-base font-medium text-primary">{$t('variables')}</h3>
 
         <section class="support-date">
           {#await getSupportDateTimeFormat()}
@@ -180,7 +180,7 @@
         </section>
 
         <div class="flex flex-col mt-4">
-          <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('template')}</h3>
+          <h3 class="text-base font-medium text-primary">{$t('template')}</h3>
 
           <div class="my-2 text-sm">
             <h4 class="uppercase">{$t('preview')}</h4>
@@ -192,7 +192,7 @@
               values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
             >
               {#snippet children({ message })}
-                <span class="font-semibold text-immich-primary dark:text-immich-dark-primary">{message}</span>
+                <span class="font-semibold text-primary">{message}</span>
               {/snippet}
             </FormatMessage>
           </p>
@@ -200,7 +200,7 @@
           <p class="text-sm">
             <FormatMessage key="admin.storage_template_user_label" values={{ label: $user.storageLabel || $user.id }}>
               {#snippet children({ message })}
-                <code class="text-immich-primary dark:text-immich-dark-primary">{message}</code>
+                <code class="text-primary">{message}</code>
               {/snippet}
             </FormatMessage>
           </p>
@@ -214,10 +214,7 @@
           <form autocomplete="off" class="flex flex-col" onsubmit={preventDefault(bubble('submit'))}>
             <div class="flex flex-col my-2">
               {#if templateOptions}
-                <label
-                  class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm"
-                  for="preset-select"
-                >
+                <label class="font-medium text-primary text-sm" for="preset-select">
                   {$t('preset')}
                 </label>
                 <select
@@ -257,7 +254,7 @@
 
             {#if !minified}
               <div id="migration-info" class="mt-2 text-sm">
-                <h3 class="text-base font-medium text-immich-primary dark:text-immich-dark-primary">{$t('notes')}</h3>
+                <h3 class="text-base font-medium text-primary">{$t('notes')}</h3>
                 <section class="flex flex-col gap-2">
                   <p>
                     <FormatMessage
@@ -265,7 +262,7 @@
                       values={{ job: $t('admin.storage_template_migration_job') }}
                     >
                       {#snippet children({ message })}
-                        <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
+                        <a href={AppRoute.ADMIN_JOBS} class="text-primary">
                           {message}
                         </a>
                       {/snippet}

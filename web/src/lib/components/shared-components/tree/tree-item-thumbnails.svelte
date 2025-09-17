@@ -23,7 +23,7 @@
         title={item.value}
         type="button"
       >
-        <Icon {icon} class="text-immich-primary dark:text-immich-dark-primary" size="64" />
+        <Icon {icon} class="text-primary" size="64" />
         <p class="text-sm dark:text-gray-200 text-nowrap text-ellipsis overflow-clip w-full whitespace-pre-wrap">
           {item.value}
         </p>

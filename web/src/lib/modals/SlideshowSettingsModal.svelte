@@ -75,7 +75,7 @@
 
 <Modal size="small" title={$t('slideshow_settings')} onClose={() => onClose()}>
   <ModalBody>
-    <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
+    <div class="flex flex-col gap-4 text-primary">
       <SettingDropdown
         title={$t('direction')}
         options={Object.values(navigationOptions)}

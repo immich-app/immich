@@ -31,7 +31,7 @@
 </script>
 
 <div class="flex w-full flex-row">
-  <div class="hidden items-center justify-center pe-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
+  <div class="hidden items-center justify-center pe-2 text-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Icon icon={mdiAndroid} size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'macOS'}

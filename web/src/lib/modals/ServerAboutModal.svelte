@@ -17,11 +17,9 @@
 
 <Modal title={$t('about')} {onClose}>
   <ModalBody>
-    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-1 text-immich-primary dark:text-immich-dark-primary">
+    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-1 text-primary">
       <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-desc"
-          >Immich</label
-        >
+        <label class="font-medium text-primary text-sm" for="version-desc">Immich</label>
         <div>
           <a
             href={info.versionUrl}
@@ -36,45 +34,35 @@
       </div>
 
       <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="ffmpeg-desc"
-          >ExifTool</label
-        >
+        <label class="font-medium text-primary text-sm" for="ffmpeg-desc">ExifTool</label>
         <p class="immich-form-label pb-2 text-sm" id="ffmpeg-desc">
           {info.exiftool}
         </p>
       </div>
 
       <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="nodejs-desc"
-          >Node.js</label
-        >
+        <label class="font-medium text-primary text-sm" for="nodejs-desc">Node.js</label>
         <p class="immich-form-label pb-2 text-sm" id="nodejs-desc">
           {info.nodejs}
         </p>
       </div>
 
       <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="vips-desc"
-          >Libvips</label
-        >
+        <label class="font-medium text-primary text-sm" for="vips-desc">Libvips</label>
         <p class="immich-form-label pb-2 text-sm" id="vips-desc">
           {info.libvips}
         </p>
       </div>
 
       <div class={(info.imagemagick?.length || 0) > 10 ? 'col-span-2' : ''}>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="imagemagick-desc"
-          >ImageMagick</label
-        >
+        <label class="font-medium text-primary text-sm" for="imagemagick-desc">ImageMagick</label>
         <p class="immich-form-label pb-2 text-sm" id="imagemagick-desc">
           {info.imagemagick}
         </p>
       </div>
 
       <div class={(info.ffmpeg?.length || 0) > 10 ? 'col-span-2' : ''}>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="ffmpeg-desc"
-          >FFmpeg</label
-        >
+        <label class="font-medium text-primary text-sm" for="ffmpeg-desc">FFmpeg</label>
         <p class="immich-form-label pb-2 text-sm" id="ffmpeg-desc">
           {info.ffmpeg}
         </p>
@@ -82,9 +70,7 @@
 
       {#if info.repository && info.repositoryUrl}
         <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-desc"
-            >{$t('repository')}</label
-          >
+          <label class="font-medium text-primary text-sm" for="version-desc">{$t('repository')}</label>
           <div>
             <a
               href={info.repositoryUrl}
@@ -101,9 +87,7 @@
 
       {#if info.sourceRef && info.sourceCommit && info.sourceUrl}
         <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="git-desc"
-            >{$t('source')}</label
-          >
+          <label class="font-medium text-primary text-sm" for="git-desc">{$t('source')}</label>
           <div>
             <a
               href={info.sourceUrl}
@@ -120,9 +104,7 @@
 
       {#if info.build && info.buildUrl}
         <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="build-desc"
-            >{$t('build')}</label
-          >
+          <label class="font-medium text-primary text-sm" for="build-desc">{$t('build')}</label>
           <div>
             <a
               href={info.buildUrl}
@@ -139,9 +121,7 @@
 
       {#if info.buildImage && info.buildImage}
         <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="build-image-desc"
-            >{$t('build_image')}</label
-          >
+          <label class="font-medium text-primary text-sm" for="build-image-desc">{$t('build_image')}</label>
           <div>
             <a
               href={info.buildImageUrl}
@@ -166,9 +146,7 @@
       {/if}
 
       <div class="col-span-full">
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-history"
-          >{$t('version_history')}</label
-        >
+        <label class="font-medium text-primary text-sm" for="version-history">{$t('version_history')}</label>
         <ul id="version-history" class="list-none">
           {#each versions.slice(0, 5) as item (item.id)}
             {@const createdAt = DateTime.fromISO(item.createdAt)}

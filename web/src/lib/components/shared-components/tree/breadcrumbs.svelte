@@ -51,9 +51,7 @@
         />
       </li>
       {#each parents as parent (parent)}
-        <li
-          class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"
-        >
+        <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-primary">
           <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
           <a class="underline hover:font-semibold whitespace-pre-wrap" href={getLink(parent.path)}>
             {parent.value}
@@ -61,9 +59,7 @@
         </li>
       {/each}
 
-      <li
-        class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"
-      >
+      <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-primary">
         <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
         <p class="cursor-default whitespace-pre-wrap">{node.value}</p>
       </li>
