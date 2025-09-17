@@ -50,11 +50,119 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   return value as! T?
 }
 
+func deepEqualsBackgroundWorker(_ lhs: Any?, _ rhs: Any?) -> Bool {
+  let cleanLhs = nilOrValue(lhs) as Any?
+  let cleanRhs = nilOrValue(rhs) as Any?
+  switch (cleanLhs, cleanRhs) {
+  case (nil, nil):
+    return true
+
+  case (nil, _), (_, nil):
+    return false
+
+  case is (Void, Void):
+    return true
+
+  case let (cleanLhsHashable, cleanRhsHashable) as (AnyHashable, AnyHashable):
+    return cleanLhsHashable == cleanRhsHashable
+
+  case let (cleanLhsArray, cleanRhsArray) as ([Any?], [Any?]):
+    guard cleanLhsArray.count == cleanRhsArray.count else { return false }
+    for (index, element) in cleanLhsArray.enumerated() {
+      if !deepEqualsBackgroundWorker(element, cleanRhsArray[index]) {
+        return false
+      }
+    }
+    return true
+
+  case let (cleanLhsDictionary, cleanRhsDictionary) as ([AnyHashable: Any?], [AnyHashable: Any?]):
+    guard cleanLhsDictionary.count == cleanRhsDictionary.count else { return false }
+    for (key, cleanLhsValue) in cleanLhsDictionary {
+      guard cleanRhsDictionary.index(forKey: key) != nil else { return false }
+      if !deepEqualsBackgroundWorker(cleanLhsValue, cleanRhsDictionary[key]!) {
+        return false
+      }
+    }
+    return true
+
+  default:
+    // Any other type shouldn't be able to be used with pigeon. File an issue if you find this to be untrue.
+    return false
+  }
+}
+
+func deepHashBackgroundWorker(value: Any?, hasher: inout Hasher) {
+  if let valueList = value as? [AnyHashable] {
+     for item in valueList { deepHashBackgroundWorker(value: item, hasher: &hasher) }
+     return
+  }
+
+  if let valueDict = value as? [AnyHashable: AnyHashable] {
+    for key in valueDict.keys { 
+      hasher.combine(key)
+      deepHashBackgroundWorker(value: valueDict[key]!, hasher: &hasher)
+    }
+    return
+  }
+
+  if let hashableValue = value as? AnyHashable {
+    hasher.combine(hashableValue.hashValue)
+  }
+
+  return hasher.combine(String(describing: value))
+}
+
+    
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct BackgroundWorkerSettings: Hashable {
+  var requiresCharging: Bool
+  var minimumDelaySeconds: Int64
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> BackgroundWorkerSettings? {
+    let requiresCharging = pigeonVar_list[0] as! Bool
+    let minimumDelaySeconds = pigeonVar_list[1] as! Int64
+
+    return BackgroundWorkerSettings(
+      requiresCharging: requiresCharging,
+      minimumDelaySeconds: minimumDelaySeconds
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      requiresCharging,
+      minimumDelaySeconds,
+    ]
+  }
+  static func == (lhs: BackgroundWorkerSettings, rhs: BackgroundWorkerSettings) -> Bool {
+    return deepEqualsBackgroundWorker(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashBackgroundWorker(value: toList(), hasher: &hasher)
+  }
+}
 
 private class BackgroundWorkerPigeonCodecReader: FlutterStandardReader {
+  override func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+    case 129:
+      return BackgroundWorkerSettings.fromList(self.readValue() as! [Any?])
+    default:
+      return super.readValue(ofType: type)
+    }
+  }
 }
 
 private class BackgroundWorkerPigeonCodecWriter: FlutterStandardWriter {
+  override func writeValue(_ value: Any) {
+    if let value = value as? BackgroundWorkerSettings {
+      super.writeByte(129)
+      super.writeValue(value.toList())
+    } else {
+      super.writeValue(value)
+    }
+  }
 }
 
 private class BackgroundWorkerPigeonCodecReaderWriter: FlutterStandardReaderWriter {
@@ -74,6 +182,7 @@ class BackgroundWorkerPigeonCodec: FlutterStandardMessageCodec, @unchecked Senda
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerFgHostApi {
   func enable() throws
+  func configure(settings: BackgroundWorkerSettings) throws
   func disable() throws
 }
 
@@ -95,6 +204,21 @@ class BackgroundWorkerFgHostApiSetup {
       }
     } else {
       enableChannel.setMessageHandler(nil)
+    }
+    let configureChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.configure\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      configureChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let settingsArg = args[0] as! BackgroundWorkerSettings
+        do {
+          try api.configure(settings: settingsArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      configureChannel.setMessageHandler(nil)
     }
     let disableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
