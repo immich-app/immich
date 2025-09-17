@@ -12,8 +12,8 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -234,6 +234,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     switch (update.status) {
       case TaskStatus.complete:
+        if (update.task.group == kBackupGroup) {
+          state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
+        }
+
         // Remove the completed task from the upload items
         if (state.uploadItems.containsKey(taskId)) {
           Future.delayed(const Duration(milliseconds: 1000), () {
