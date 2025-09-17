@@ -765,7 +765,7 @@ importers:
         specifier: ~4.8.0
         version: 4.8.1
       svelte-gestures:
-        specifier: ^5.1.3
+        specifier: 5.1.4
         version: 5.1.4
       svelte-i18n:
         specifier: ^4.0.1
