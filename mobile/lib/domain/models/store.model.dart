@@ -70,6 +70,9 @@ enum StoreKey<T> {
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
 
+  // Album grid/list view settings
+  albumGridView<bool>._(139),
+
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
   betaPromptShown<bool>._(1001),

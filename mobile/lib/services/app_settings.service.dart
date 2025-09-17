@@ -50,7 +50,8 @@ enum AppSettingsEnum<T> {
   enableBackup<bool>(StoreKey.enableBackup, null, false),
   useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
   useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
-  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
+  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false),
+  albumGridView<bool>(StoreKey.albumGridView, "albumGridView", false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

@@ -59,6 +59,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       final appSettings = ref.read(appSettingsServiceProvider);
       final savedSortMode = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortOrder);
       final savedIsReverse = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortReverse);
+      final savedIsGrid = appSettings.getSetting(AppSettingsEnum.albumGridView);
 
       final albumSortMode = AlbumSortMode.values.firstWhere(
         (e) => e.storeIndex == savedSortMode,
@@ -67,6 +68,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
       setState(() {
         sort = AlbumSort(mode: toRemoteAlbumSortMode(albumSortMode), isReverse: savedIsReverse);
+        isGrid = savedIsGrid;
       });
 
       ref.read(remoteAlbumProvider.notifier).refresh();
@@ -98,6 +100,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       isGrid = !isGrid;
     });
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.albumGridView, isGrid);
   }
 
   void changeFilter(QuickFilterMode mode) {
