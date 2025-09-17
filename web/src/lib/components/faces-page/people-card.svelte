@@ -1,10 +1,10 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import {
     mdiAccountMultipleCheckOutline,
     mdiCalendarEditOutline,
@@ -55,7 +55,7 @@
       />
       {#if person.isFavorite}
         <div class="absolute top-4 start-4">
-          <Icon path={mdiHeart} size="24" class="text-white" />
+          <Icon icon={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
     </div>

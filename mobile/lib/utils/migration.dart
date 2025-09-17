@@ -21,13 +21,14 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
-const int targetVersion = 15;
+const int targetVersion = 16;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -64,7 +65,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   // Handle migration only for this version
   // TODO: remove when old timeline is removed
   final needBetaMigration = Store.tryGet(StoreKey.needBetaMigration);
-  if (version == 15 && needBetaMigration == null) {
+  if (version >= 15 && needBetaMigration == null) {
     // Check both databases directly instead of relying on cache
 
     final isBeta = Store.tryGet(StoreKey.betaTimeline);
@@ -72,13 +73,18 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
     // For new installations, no migration needed
     // For existing installations, only migrate if beta timeline is not enabled (null or false)
-    if (isNewInstallation || isBeta == true) {
+    if (isNewInstallation || isBeta == true || (version > 15 && isBeta == null)) {
       await Store.put(StoreKey.needBetaMigration, false);
       await Store.put(StoreKey.betaTimeline, true);
     } else {
-      await resetDriftDatabase(drift);
+      await drift.reset();
       await Store.put(StoreKey.needBetaMigration, true);
     }
+  }
+
+  if (version < 16) {
+    await SyncStreamRepository(drift).reset();
+    await Store.put(StoreKey.shouldResetSync, true);
   }
 
   if (targetVersion >= 12) {
@@ -297,28 +303,4 @@ class _DeviceAsset {
   final DateTime? dateTime;
 
   const _DeviceAsset({required this.assetId, this.hash, this.dateTime});
-}
-
-Future<void> resetDriftDatabase(Drift drift) async {
-  // https://github.com/simolus3/drift/commit/bd80a46264b6dd833ef4fd87fffc03f5a832ab41#diff-3f879e03b4a35779344ef16170b9353608dd9c42385f5402ec6035aac4dd8a04R76-R94
-  final database = drift.attachedDatabase;
-  await database.exclusively(() async {
-    // https://stackoverflow.com/a/65743498/25690041
-    await database.customStatement('PRAGMA writable_schema = 1;');
-    await database.customStatement('DELETE FROM sqlite_master;');
-    await database.customStatement('VACUUM;');
-    await database.customStatement('PRAGMA writable_schema = 0;');
-    await database.customStatement('PRAGMA integrity_check');
-
-    await database.customStatement('PRAGMA user_version = 0');
-    await database.beforeOpen(
-      // ignore: invalid_use_of_internal_member
-      database.resolvedEngine.executor,
-      OpeningDetails(null, database.schemaVersion),
-    );
-    await database.customStatement('PRAGMA user_version = ${database.schemaVersion}');
-
-    // Refresh all stream queries
-    database.notifyUpdates({for (final table in database.allTables) TableUpdate.onTable(table)});
-  });
 }

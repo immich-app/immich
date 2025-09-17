@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { TreeNode } from '$lib/utils/tree-utils';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiArrowUpLeft, mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -55,7 +54,7 @@
         <li
           class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"
         >
-          <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} ariaHidden />
+          <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
           <a class="underline hover:font-semibold whitespace-pre-wrap" href={getLink(parent.path)}>
             {parent.value}
           </a>
@@ -65,7 +64,7 @@
       <li
         class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"
       >
-        <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} ariaHidden />
+        <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
         <p class="cursor-default whitespace-pre-wrap">{node.value}</p>
       </li>
     </ol>

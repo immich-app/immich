@@ -40,6 +40,7 @@ class AlbumSelector extends ConsumerStatefulWidget {
 class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
   bool isGrid = false;
   final searchController = TextEditingController();
+  final menuController = MenuController();
   final searchFocusNode = FocusNode();
   List<RemoteAlbum> sortedAlbums = [];
   List<RemoteAlbum> shownAlbums = [];
@@ -157,34 +158,45 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       await sortAlbums();
     });
 
-    return MultiSliver(
-      children: [
-        _SearchBar(
-          searchController: searchController,
-          searchFocusNode: searchFocusNode,
-          onSearch: onSearch,
-          filterMode: filter.mode,
-          onClearSearch: clearSearch,
-        ),
-        _QuickFilterButtonRow(
-          filterMode: filter.mode,
-          onChangeFilter: changeFilter,
-          onSearch: onSearch,
-          searchController: searchController,
-        ),
-        _QuickSortAndViewMode(isGrid: isGrid, onToggleViewMode: toggleViewMode, onSortChanged: changeSort),
-        isGrid
-            ? _AlbumGrid(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
-            : _AlbumList(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
-      ],
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        menuController.close();
+      },
+      child: MultiSliver(
+        children: [
+          _SearchBar(
+            searchController: searchController,
+            searchFocusNode: searchFocusNode,
+            onSearch: onSearch,
+            filterMode: filter.mode,
+            onClearSearch: clearSearch,
+          ),
+          _QuickFilterButtonRow(
+            filterMode: filter.mode,
+            onChangeFilter: changeFilter,
+            onSearch: onSearch,
+            searchController: searchController,
+          ),
+          _QuickSortAndViewMode(
+            isGrid: isGrid,
+            onToggleViewMode: toggleViewMode,
+            onSortChanged: changeSort,
+            controller: menuController,
+          ),
+          isGrid
+              ? _AlbumGrid(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected)
+              : _AlbumList(albums: shownAlbums, userId: userId, onAlbumSelected: widget.onAlbumSelected),
+        ],
+      ),
     );
   }
 }
 
 class _SortButton extends ConsumerStatefulWidget {
-  const _SortButton(this.onSortChanged);
+  const _SortButton(this.onSortChanged, {this.controller});
 
   final Future<void> Function(AlbumSort) onSortChanged;
+  final MenuController? controller;
 
   @override
   ConsumerState<_SortButton> createState() => _SortButtonState();
@@ -220,6 +232,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
   @override
   Widget build(BuildContext context) {
     return MenuAnchor(
+      controller: widget.controller,
       style: MenuStyle(
         elevation: const WidgetStatePropertyAll(1),
         shape: WidgetStateProperty.all(
@@ -449,10 +462,16 @@ class _QuickFilterButton extends StatelessWidget {
 }
 
 class _QuickSortAndViewMode extends StatelessWidget {
-  const _QuickSortAndViewMode({required this.isGrid, required this.onToggleViewMode, required this.onSortChanged});
+  const _QuickSortAndViewMode({
+    required this.isGrid,
+    required this.onToggleViewMode,
+    required this.onSortChanged,
+    this.controller,
+  });
 
   final bool isGrid;
   final VoidCallback onToggleViewMode;
+  final MenuController? controller;
   final Future<void> Function(AlbumSort) onSortChanged;
 
   @override
@@ -463,7 +482,7 @@ class _QuickSortAndViewMode extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _SortButton(onSortChanged),
+            _SortButton(onSortChanged, controller: controller),
             IconButton(
               icon: Icon(isGrid ? Icons.view_list_outlined : Icons.grid_view_outlined, size: 24),
               onPressed: onToggleViewMode,
@@ -485,9 +504,9 @@ class _AlbumList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (albums.isEmpty) {
-      return const SliverToBoxAdapter(
+      return SliverToBoxAdapter(
         child: Center(
-          child: Padding(padding: EdgeInsets.all(20.0), child: Text('No albums found')),
+          child: Padding(padding: const EdgeInsets.all(20.0), child: Text('album_search_not_found'.tr())),
         ),
       );
     }
@@ -580,9 +599,9 @@ class _AlbumGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (albums.isEmpty) {
-      return const SliverToBoxAdapter(
+      return SliverToBoxAdapter(
         child: Center(
-          child: Padding(padding: EdgeInsets.all(20.0), child: Text('No albums found')),
+          child: Padding(padding: const EdgeInsets.all(20.0), child: Text('album_search_not_found'.tr())),
         ),
       );
     }

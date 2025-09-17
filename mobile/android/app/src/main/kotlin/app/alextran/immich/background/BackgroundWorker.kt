@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import java.util.concurrent.TimeUnit
@@ -54,12 +55,6 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
   private var foregroundFuture: ListenableFuture<Void>? = null
 
-  init {
-    if (!loader.initialized()) {
-      loader.startInitialization(ctx)
-    }
-  }
-
   companion object {
     private const val NOTIFICATION_CHANNEL_ID = "immich::background_worker::notif"
     private const val NOTIFICATION_ID = 100
@@ -67,6 +62,10 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
   override fun startWork(): ListenableFuture<Result> {
     Log.i(TAG, "Starting background upload worker")
+
+    if (!loader.initialized()) {
+      loader.startInitialization(ctx)
+    }
 
     val notificationChannel = NotificationChannel(
       NOTIFICATION_CHANNEL_ID,
@@ -77,6 +76,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
+      FlutterEngineCache.getInstance().remove(BackgroundEngineLock.ENGINE_CACHE_KEY);
+      FlutterEngineCache.getInstance()
+        .put(BackgroundEngineLock.ENGINE_CACHE_KEY, engine!!)
 
       // Register custom plugins
       MainActivity.registerPlugins(ctx, engine!!)
@@ -190,6 +192,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     isComplete = true
     engine?.destroy()
     engine = null
+    FlutterEngineCache.getInstance().remove(BackgroundEngineLock.ENGINE_CACHE_KEY);
     flutterApi = null
     notificationManager.cancel(NOTIFICATION_ID)
     waitForForegroundPromotion()

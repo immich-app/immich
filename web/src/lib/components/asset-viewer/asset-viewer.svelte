@@ -22,6 +22,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
+    getAssetInfo,
     getAllAlbums,
     getStack,
     runAssetJobs,
@@ -337,6 +338,11 @@
       }
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
+        break;
+      }
+      case AssetAction.SET_PERSON_FEATURED_PHOTO: {
+        const assetInfo = await getAssetInfo({ id: asset.id });
+        asset = { ...asset, people: assetInfo.people };
         break;
       }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:

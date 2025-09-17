@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  import DateInput from '$lib/components/elements/date-input.svelte';
+  import DateInput from '$lib/elements/DateInput.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -18,7 +18,7 @@
 
 <div id="date-range-selection" class="grid grid-auto-fit-40 gap-5">
   <label class="immich-form-label" for="start-date">
-    <span>{$t('start_date').toUpperCase()}</span>
+    <span class="uppercase">{$t('start_date')}</span>
     <DateInput
       class="immich-form-input w-full mt-1 hover:cursor-pointer"
       type="date"
@@ -30,7 +30,7 @@
   </label>
 
   <label class="immich-form-label" for="end-date">
-    <span>{$t('end_date').toUpperCase()}</span>
+    <span class="uppercase">{$t('end_date')}</span>
     <DateInput
       class="immich-form-input w-full mt-1 hover:cursor-pointer"
       type="date"

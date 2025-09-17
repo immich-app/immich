@@ -28,11 +28,11 @@ import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
-import 'package:immich_mobile/utils/debug_print.dart';
 
 final backgroundServiceProvider = Provider((ref) => BackgroundService());
 
@@ -331,7 +331,7 @@ class BackgroundService {
 
   Future<bool> _onAssetsChanged() async {
     final (isar, drift, logDb) = await Bootstrap.initDB();
-    await Bootstrap.initDomain(isar, drift, logDb);
+    await Bootstrap.initDomain(isar, drift, logDb, shouldBufferLogs: false, listenStoreUpdates: false);
 
     final ref = ProviderContainer(
       overrides: [

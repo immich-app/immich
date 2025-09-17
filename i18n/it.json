@@ -1515,7 +1515,7 @@
   "profile_drawer_client_out_of_date_minor": "L'applicazione non è aggiornata. Aggiorna all'ultima versione minore.",
   "profile_drawer_client_server_up_to_date": "Client e server sono aggiornati",
   "profile_drawer_github": "GitHub",
-  "profile_drawer_readonly_mode": "Modalità di sola lettura abilitata. Tocca due volte l'icona dell'avatar dell'utente per disabilitarla.",
+  "profile_drawer_readonly_mode": "Modalità di sola lettura abilitata. Tieni premuto sull'avatar dell'utente per disabilitarla.",
   "profile_drawer_server_out_of_date_major": "Il server non è aggiornato. Aggiorna all'ultima versione principale.",
   "profile_drawer_server_out_of_date_minor": "Il server non è aggiornato. Aggiorna all'ultima versione minore.",
   "profile_image_of_user": "Immagine profilo di {user}",

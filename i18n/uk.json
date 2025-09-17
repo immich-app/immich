@@ -1640,7 +1640,7 @@
   "restore_user": "Відновити користувача",
   "restored_asset": "Відновлений ресурс",
   "resume": "Продовжити",
-  "resume_paused_jobs": "Резюме {count, plural, one {# призупинене завдання} other {# призупинені завдання}}",
+  "resume_paused_jobs": "Відновити {count, plural, one {# призупинене завдання} other {# призупинені завдання}}",
   "retry_upload": "Повторити завантаження",
   "review_duplicates": "Переглянути дублікати",
   "review_large_files": "Перегляд великих файлів",

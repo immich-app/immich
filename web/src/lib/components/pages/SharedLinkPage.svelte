@@ -3,7 +3,6 @@
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
-  import PasswordField from '$lib/components/shared-components/password-field.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { user } from '$lib/stores/user.store';
@@ -11,7 +10,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { getMySharedLink, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, PasswordInput } from '@immich/ui';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -79,7 +78,7 @@
       </div>
       <div class="mt-4">
         <form class="flex gap-x-2" novalidate {onsubmit}>
-          <PasswordField autocomplete="off" bind:password placeholder="Password" />
+          <PasswordInput autocomplete="off" bind:value={password} placeholder="Password" />
           <Button type="submit">{$t('submit')}</Button>
         </form>
       </div>
