@@ -26,7 +26,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
   }
 
   companion object {
-    private const val BACKGROUND_WORKER_NAME = "immich/BackgroundWorkerV1"
+    const val BACKGROUND_WORKER_NAME = "immich/BackgroundWorkerV1"
     private const val OBSERVER_WORKER_NAME = "immich/MediaObserverV1"
 
     fun enqueueMediaObserver(ctx: Context) {
