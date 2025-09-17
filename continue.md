@@ -164,6 +164,7 @@ Notes & Tips
   - Alternative: in-app CLI to iterate DB and copy+verify per-asset, then update paths; can implement on request
   - Recommended sequence: copy while server runs → brief stop → delta sync → switch engine → restart → verify → optional cleanup of local data
 
+<<<<<<< HEAD
 - 2025-09-17 — Resolve pnpm-lock conflict after merging origin/main
   - Regenerated `pnpm-lock.yaml` from scratch to eliminate merge markers and incorporate both sets of changes
   - Installed `pnpm@10.14.0` globally (sudo) due to missing corepack; current Node is v18.19.1 in this shell
@@ -187,3 +188,12 @@ Next steps
   - `pnpm --filter immich-web run build` (web)
 - If API surfaces changed, regenerate OpenAPI (`make open-api-typescript`)
 - If SES is actually used on main, confirm corresponding code paths compile with the new lock
+=======
+- 2025-09-16 — In-app migration CLI (Option B)
+  - Added `migrate-to-s3` command (server admin CLI) to copy local → S3 and update DB paths per asset
+  - Originals + sidecars by default; `--include-derivatives` migrates thumbnails/previews/fullsize/encodes
+  - Verifies by size via S3 HEAD; skips when dest matches; supports `--dry-run` and `--concurrency`
+  - Files:
+    - `server/src/commands/migrate-to-s3.command.ts`
+    - wired into CLI in `server/src/commands/index.ts`
+>>>>>>> 8d9b998bd (add a migrate-to-s3 run feature to migrate from local disk to s3)
