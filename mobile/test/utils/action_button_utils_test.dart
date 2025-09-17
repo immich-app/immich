@@ -503,7 +503,7 @@ void main() {
         expect(ActionButtonType.deleteLocal.shouldShow(context), isFalse);
       });
 
-      test('should not show when asset is merged', () {
+      test('should show when asset is merged', () {
         final context = ActionButtonContext(
           asset: mergedAsset,
           isOwner: true,
