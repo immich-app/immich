@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Badge from '$lib/components/elements/badge.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import SharedLinkCopy from '$lib/components/sharedlinks-page/actions/shared-link-copy.svelte';
   import SharedLinkDelete from '$lib/components/sharedlinks-page/actions/shared-link-delete.svelte';
   import SharedLinkEdit from '$lib/components/sharedlinks-page/actions/shared-link-edit.svelte';
   import ShareCover from '$lib/components/sharedlinks-page/covers/share-cover.svelte';
   import { AppRoute } from '$lib/constants';
+  import Badge from '$lib/elements/Badge.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
@@ -85,7 +85,7 @@
         {/if}
 
         {#if link.showMetadata}
-          <Badge rounded="full"><span class="text-xs px-1">{$t('exif').toUpperCase()}</span></Badge>
+          <Badge rounded="full"><span class="uppercase text-xs px-1">{$t('exif')}</span></Badge>
         {/if}
 
         {#if link.password}

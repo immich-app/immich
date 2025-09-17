@@ -1,7 +1,6 @@
 <script lang="ts">
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
@@ -13,6 +12,7 @@
   } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { swipe } from 'svelte-gestures';

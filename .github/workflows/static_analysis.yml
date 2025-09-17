@@ -100,36 +100,10 @@ jobs:
       - name: Run dart format
         run: make format
 
-      - name: Run dart custom_lint
-        run: dart run custom_lint
+      # TODO: Re-enable after upgrading custom_lint
+      # - name: Run dart custom_lint
+      #   run: dart run custom_lint
 
       # TODO: Use https://github.com/CQLabs/dcm-action
       - name: Run DCM
         run: dcm analyze lib --fatal-style --fatal-warnings
-
-  zizmor:
-    name: zizmor
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write
-      contents: read
-      actions: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-        with:
-          persist-credentials: false
-
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
-
-      - name: Run zizmor 🌈
-        run: uvx zizmor --format=sarif . > results.sarif
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@df559355d593797519d70b90fc8edd5db049e7a2 # v3.29.9
-        with:
-          sarif_file: results.sarif
-          category: zizmor

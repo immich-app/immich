@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
-import path from 'node:path';
+import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AssetFace } from 'src/database';
@@ -39,9 +39,9 @@ const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecCreateDate',
   'SubSecMediaCreateDate',
   'DateTimeOriginal',
+  'CreationDate',
   'CreateDate',
   'MediaCreateDate',
-  'CreationDate',
   'DateTimeCreated',
   'GPSDateTime',
   'DateTimeUTC',
@@ -331,7 +331,7 @@ export class MetadataService extends BaseService {
 
     const assets = this.assetJobRepository.streamForSidecar(force);
     for await (const asset of assets) {
-      jobs.push({ name: force ? JobName.SidecarSync : JobName.SidecarDiscovery, data: { id: asset.id } });
+      jobs.push({ name: JobName.SidecarCheck, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -342,14 +342,37 @@ export class MetadataService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.SidecarSync, queue: QueueName.Sidecar })
-  handleSidecarSync({ id }: JobOf<JobName.SidecarSync>): Promise<JobStatus> {
-    return this.processSidecar(id, true);
-  }
+  @OnJob({ name: JobName.SidecarCheck, queue: QueueName.Sidecar })
+  async handleSidecarCheck({ id }: JobOf<JobName.SidecarCheck>): Promise<JobStatus | undefined> {
+    const asset = await this.assetJobRepository.getForSidecarCheckJob(id);
+    if (!asset) {
+      return;
+    }
 
-  @OnJob({ name: JobName.SidecarDiscovery, queue: QueueName.Sidecar })
-  handleSidecarDiscovery({ id }: JobOf<JobName.SidecarDiscovery>): Promise<JobStatus> {
-    return this.processSidecar(id, false);
+    let sidecarPath = null;
+    for (const candidate of this.getSidecarCandidates(asset)) {
+      const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
+      if (!exists) {
+        continue;
+      }
+
+      sidecarPath = candidate;
+      break;
+    }
+
+    const isChanged = sidecarPath !== asset.sidecarPath;
+
+    this.logger.debug(
+      `Sidecar check found old=${asset.sidecarPath}, new=${sidecarPath} will ${isChanged ? 'update' : 'do nothing for'}  asset ${asset.id}: ${asset.originalPath}`,
+    );
+
+    if (!isChanged) {
+      return JobStatus.Skipped;
+    }
+
+    await this.assetRepository.update({ id: asset.id, sidecarPath });
+
+    return JobStatus.Success;
   }
 
   @OnEvent({ name: 'AssetTag' })
@@ -397,6 +420,25 @@ export class MetadataService extends BaseService {
     }
 
     return JobStatus.Success;
+  }
+
+  private getSidecarCandidates({ sidecarPath, originalPath }: { sidecarPath: string | null; originalPath: string }) {
+    const candidates: string[] = [];
+
+    if (sidecarPath) {
+      candidates.push(sidecarPath);
+    }
+
+    const assetPath = parse(originalPath);
+
+    candidates.push(
+      // IMG_123.jpg.xmp
+      `${originalPath}.xmp`,
+      // IMG_123.xmp
+      `${join(assetPath.dir, assetPath.name)}.xmp`,
+    );
+
+    return candidates;
   }
 
   private getImageDimensions(exifTags: ImmichTags): { width?: number; height?: number } {
@@ -564,7 +606,7 @@ export class MetadataService extends BaseService {
             checksum,
             ownerId: asset.ownerId,
             originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
-            originalFileName: `${path.parse(asset.originalFileName).name}.mp4`,
+            originalFileName: `${parse(asset.originalFileName).name}.mp4`,
             visibility: AssetVisibility.Hidden,
             deviceAssetId: 'NONE',
             deviceId: 'NONE',
@@ -793,7 +835,11 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: { id: string; originalPath: string }, exifTags: ImmichTags, stats: Stats) {
+  private getDates(
+    asset: { id: string; originalPath: string; fileCreatedAt: Date },
+    exifTags: ImmichTags,
+    stats: Stats,
+  ) {
     const result = firstDateTime(exifTags);
     const tag = result?.tag;
     const dateTime = result?.dateTime;
@@ -822,7 +868,12 @@ export class MetadataService extends BaseService {
     if (!localDateTime || !dateTimeOriginal) {
       // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
       // birthtime is not available in Docker on macOS, so it appears as 0
-      const earliestDate = stats.birthtimeMs ? new Date(Math.min(stats.mtimeMs, stats.birthtimeMs)) : stats.mtime;
+      const earliestDate = new Date(
+        Math.min(
+          asset.fileCreatedAt.getTime(),
+          stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
+        ),
+      );
       this.logger.debug(
         `No exif date time found, falling back on ${earliestDate.toISOString()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
       );
@@ -904,61 +955,5 @@ export class MetadataService extends BaseService {
     }
 
     return tags;
-  }
-
-  private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
-
-    if (!asset) {
-      return JobStatus.Failed;
-    }
-
-    if (isSync && !asset.sidecarPath) {
-      return JobStatus.Failed;
-    }
-
-    if (!isSync && (asset.visibility === AssetVisibility.Hidden || asset.sidecarPath) && !asset.isExternal) {
-      return JobStatus.Failed;
-    }
-
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
-    const assetPath = path.parse(asset.originalPath);
-    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
-    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
-    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
-
-    const [sidecarPathWithExtExists, sidecarPathWithoutExtExists] = await Promise.all([
-      this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK),
-      this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
-    ]);
-
-    let sidecarPath = null;
-    if (sidecarPathWithExtExists) {
-      sidecarPath = sidecarPathWithExt;
-    } else if (sidecarPathWithoutExtExists) {
-      sidecarPath = sidecarPathWithoutExt;
-    }
-
-    if (asset.isExternal) {
-      if (sidecarPath !== asset.sidecarPath) {
-        await this.assetRepository.update({ id: asset.id, sidecarPath });
-      }
-      return JobStatus.Success;
-    }
-
-    if (sidecarPath) {
-      this.logger.debug(`Detected sidecar at '${sidecarPath}' for asset ${asset.id}: ${asset.originalPath}`);
-      await this.assetRepository.update({ id: asset.id, sidecarPath });
-      return JobStatus.Success;
-    }
-
-    if (!isSync) {
-      return JobStatus.Failed;
-    }
-
-    this.logger.debug(`No sidecar found for asset ${asset.id}: ${asset.originalPath}`);
-    await this.assetRepository.update({ id: asset.id, sidecarPath: null });
-
-    return JobStatus.Success;
   }
 }

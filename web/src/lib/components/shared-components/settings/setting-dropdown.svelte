@@ -1,9 +1,9 @@
 <script lang="ts">
+  import Dropdown, { type RenderedOption } from '$lib/elements/Dropdown.svelte';
+  import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import Dropdown, { type RenderedOption } from '$lib/components/elements/dropdown.svelte';
-  import { t } from 'svelte-i18n';
-  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;

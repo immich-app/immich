@@ -22,7 +22,6 @@ describe(SyncEntityType.AuthUserV1, () => {
     const { auth, user, ctx } = await setup(await getKyselyDB());
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -43,10 +42,11 @@ describe(SyncEntityType.AuthUserV1, () => {
         },
         type: 'AuthUserV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AuthUsersV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AuthUsersV1]);
   });
 
   it('should sync a change and then another change to that same user', async () => {
@@ -55,7 +55,6 @@ describe(SyncEntityType.AuthUserV1, () => {
     const userRepo = ctx.get(UserRepository);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -65,6 +64,7 @@ describe(SyncEntityType.AuthUserV1, () => {
         }),
         type: 'AuthUserV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
@@ -72,7 +72,6 @@ describe(SyncEntityType.AuthUserV1, () => {
     await userRepo.update(user.id, { isAdmin: true });
 
     const newResponse = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
-    expect(newResponse).toHaveLength(1);
     expect(newResponse).toEqual([
       {
         ack: expect.any(String),
@@ -82,6 +81,26 @@ describe(SyncEntityType.AuthUserV1, () => {
         }),
         type: 'AuthUserV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  });
+
+  it('should only sync the auth user', async () => {
+    const { auth, user, ctx } = await setup(await getKyselyDB());
+
+    await ctx.newUser();
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AuthUsersV1]);
+    expect(response).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          id: user.id,
+          isAdmin: false,
+        }),
+        type: 'AuthUserV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
   });
 });

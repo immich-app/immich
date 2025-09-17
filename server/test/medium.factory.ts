@@ -258,6 +258,12 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     return stream.getResponse();
   }
 
+  async assertSyncIsComplete(auth: AuthDto, types: SyncRequestType[]) {
+    await expect(this.syncStream(auth, types)).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  }
+
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {
     const acks: Record<string, string> = {};
     const syncAcks: string[] = [];

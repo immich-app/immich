@@ -530,6 +530,7 @@ export enum JobName {
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
   AuditLogCleanup = 'AuditLogCleanup',
+  AuditTableCleanup = 'AuditTableCleanup',
 
   DatabaseBackup = 'DatabaseBackup',
 
@@ -570,8 +571,7 @@ export enum JobName {
   SendMail = 'SendMail',
 
   SidecarQueueAll = 'SidecarQueueAll',
-  SidecarDiscovery = 'SidecarDiscovery',
-  SidecarSync = 'SidecarSync',
+  SidecarCheck = 'SidecarCheck',
   SidecarWrite = 'SidecarWrite',
 
   SmartSearchQueueAll = 'SmartSearchQueueAll',
@@ -708,6 +708,7 @@ export enum SyncEntityType {
 
   SyncAckV1 = 'SyncAckV1',
   SyncResetV1 = 'SyncResetV1',
+  SyncCompleteV1 = 'SyncCompleteV1',
 }
 
 export enum NotificationLevel {

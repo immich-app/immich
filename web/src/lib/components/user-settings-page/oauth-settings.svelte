@@ -3,13 +3,12 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { oauth } from '$lib/utils';
   import { type UserAdminResponseDto } from '@immich/sdk';
+  import { Button, LoadingSpinner } from '@immich/ui';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
-  import { t } from 'svelte-i18n';
-  import { Button } from '@immich/ui';
 
   interface Props {
     user: UserAdminResponseDto;

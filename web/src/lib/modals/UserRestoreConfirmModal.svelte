@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { restoreUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';

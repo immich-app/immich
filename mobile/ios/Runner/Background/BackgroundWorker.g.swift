@@ -50,11 +50,119 @@ private func nilOrValue<T>(_ value: Any?) -> T? {
   return value as! T?
 }
 
+func deepEqualsBackgroundWorker(_ lhs: Any?, _ rhs: Any?) -> Bool {
+  let cleanLhs = nilOrValue(lhs) as Any?
+  let cleanRhs = nilOrValue(rhs) as Any?
+  switch (cleanLhs, cleanRhs) {
+  case (nil, nil):
+    return true
+
+  case (nil, _), (_, nil):
+    return false
+
+  case is (Void, Void):
+    return true
+
+  case let (cleanLhsHashable, cleanRhsHashable) as (AnyHashable, AnyHashable):
+    return cleanLhsHashable == cleanRhsHashable
+
+  case let (cleanLhsArray, cleanRhsArray) as ([Any?], [Any?]):
+    guard cleanLhsArray.count == cleanRhsArray.count else { return false }
+    for (index, element) in cleanLhsArray.enumerated() {
+      if !deepEqualsBackgroundWorker(element, cleanRhsArray[index]) {
+        return false
+      }
+    }
+    return true
+
+  case let (cleanLhsDictionary, cleanRhsDictionary) as ([AnyHashable: Any?], [AnyHashable: Any?]):
+    guard cleanLhsDictionary.count == cleanRhsDictionary.count else { return false }
+    for (key, cleanLhsValue) in cleanLhsDictionary {
+      guard cleanRhsDictionary.index(forKey: key) != nil else { return false }
+      if !deepEqualsBackgroundWorker(cleanLhsValue, cleanRhsDictionary[key]!) {
+        return false
+      }
+    }
+    return true
+
+  default:
+    // Any other type shouldn't be able to be used with pigeon. File an issue if you find this to be untrue.
+    return false
+  }
+}
+
+func deepHashBackgroundWorker(value: Any?, hasher: inout Hasher) {
+  if let valueList = value as? [AnyHashable] {
+     for item in valueList { deepHashBackgroundWorker(value: item, hasher: &hasher) }
+     return
+  }
+
+  if let valueDict = value as? [AnyHashable: AnyHashable] {
+    for key in valueDict.keys { 
+      hasher.combine(key)
+      deepHashBackgroundWorker(value: valueDict[key]!, hasher: &hasher)
+    }
+    return
+  }
+
+  if let hashableValue = value as? AnyHashable {
+    hasher.combine(hashableValue.hashValue)
+  }
+
+  return hasher.combine(String(describing: value))
+}
+
+    
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct BackgroundWorkerSettings: Hashable {
+  var requiresCharging: Bool
+  var minimumDelaySeconds: Int64
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> BackgroundWorkerSettings? {
+    let requiresCharging = pigeonVar_list[0] as! Bool
+    let minimumDelaySeconds = pigeonVar_list[1] as! Int64
+
+    return BackgroundWorkerSettings(
+      requiresCharging: requiresCharging,
+      minimumDelaySeconds: minimumDelaySeconds
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      requiresCharging,
+      minimumDelaySeconds,
+    ]
+  }
+  static func == (lhs: BackgroundWorkerSettings, rhs: BackgroundWorkerSettings) -> Bool {
+    return deepEqualsBackgroundWorker(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashBackgroundWorker(value: toList(), hasher: &hasher)
+  }
+}
 
 private class BackgroundWorkerPigeonCodecReader: FlutterStandardReader {
+  override func readValue(ofType type: UInt8) -> Any? {
+    switch type {
+    case 129:
+      return BackgroundWorkerSettings.fromList(self.readValue() as! [Any?])
+    default:
+      return super.readValue(ofType: type)
+    }
+  }
 }
 
 private class BackgroundWorkerPigeonCodecWriter: FlutterStandardWriter {
+  override func writeValue(_ value: Any) {
+    if let value = value as? BackgroundWorkerSettings {
+      super.writeByte(129)
+      super.writeValue(value.toList())
+    } else {
+      super.writeValue(value)
+    }
+  }
 }
 
 private class BackgroundWorkerPigeonCodecReaderWriter: FlutterStandardReaderWriter {
@@ -73,9 +181,9 @@ class BackgroundWorkerPigeonCodec: FlutterStandardMessageCodec, @unchecked Senda
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerFgHostApi {
-  func enableSyncWorker() throws
-  func enableUploadWorker(callbackHandle: Int64) throws
-  func disableUploadWorker() throws
+  func enable() throws
+  func configure(settings: BackgroundWorkerSettings) throws
+  func disable() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -84,52 +192,54 @@ class BackgroundWorkerFgHostApiSetup {
   /// Sets up an instance of `BackgroundWorkerFgHostApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: BackgroundWorkerFgHostApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    let enableSyncWorkerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableSyncWorker\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let enableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      enableSyncWorkerChannel.setMessageHandler { _, reply in
+      enableChannel.setMessageHandler { _, reply in
         do {
-          try api.enableSyncWorker()
+          try api.enable()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      enableSyncWorkerChannel.setMessageHandler(nil)
+      enableChannel.setMessageHandler(nil)
     }
-    let enableUploadWorkerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enableUploadWorker\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let configureChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.configure\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      enableUploadWorkerChannel.setMessageHandler { message, reply in
+      configureChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let callbackHandleArg = args[0] as! Int64
+        let settingsArg = args[0] as! BackgroundWorkerSettings
         do {
-          try api.enableUploadWorker(callbackHandle: callbackHandleArg)
+          try api.configure(settings: settingsArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      enableUploadWorkerChannel.setMessageHandler(nil)
+      configureChannel.setMessageHandler(nil)
     }
-    let disableUploadWorkerChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disableUploadWorker\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let disableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      disableUploadWorkerChannel.setMessageHandler { _, reply in
+      disableChannel.setMessageHandler { _, reply in
         do {
-          try api.disableUploadWorker()
+          try api.disable()
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      disableUploadWorkerChannel.setMessageHandler(nil)
+      disableChannel.setMessageHandler(nil)
     }
   }
 }
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerBgHostApi {
   func onInitialized() throws
+  func showNotification(title: String, content: String) throws
+  func close() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -151,11 +261,39 @@ class BackgroundWorkerBgHostApiSetup {
     } else {
       onInitializedChannel.setMessageHandler(nil)
     }
+    let showNotificationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.showNotification\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      showNotificationChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let titleArg = args[0] as! String
+        let contentArg = args[1] as! String
+        do {
+          try api.showNotification(title: titleArg, content: contentArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      showNotificationChannel.setMessageHandler(nil)
+    }
+    let closeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.close\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      closeChannel.setMessageHandler { _, reply in
+        do {
+          try api.close()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      closeChannel.setMessageHandler(nil)
+    }
   }
 }
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol BackgroundWorkerFlutterApiProtocol {
-  func onLocalSync(maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func onIosUpload(isRefresh isRefreshArg: Bool, maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func onAndroidUpload(completion: @escaping (Result<Void, PigeonError>) -> Void)
   func cancel(completion: @escaping (Result<Void, PigeonError>) -> Void)
@@ -169,24 +307,6 @@ class BackgroundWorkerFlutterApi: BackgroundWorkerFlutterApiProtocol {
   }
   var codec: BackgroundWorkerPigeonCodec {
     return BackgroundWorkerPigeonCodec.shared
-  }
-  func onLocalSync(maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onLocalSync\(messageChannelSuffix)"
-    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage([maxSecondsArg] as [Any?]) { response in
-      guard let listResponse = response as? [Any?] else {
-        completion(.failure(createConnectionError(withChannelName: channelName)))
-        return
-      }
-      if listResponse.count > 1 {
-        let code: String = listResponse[0] as! String
-        let message: String? = nilOrValue(listResponse[1])
-        let details: String? = nilOrValue(listResponse[2])
-        completion(.failure(PigeonError(code: code, message: message, details: details)))
-      } else {
-        completion(.success(()))
-      }
-    }
   }
   func onIosUpload(isRefresh isRefreshArg: Bool, maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onIosUpload\(messageChannelSuffix)"

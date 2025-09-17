@@ -4,9 +4,9 @@ import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import "package:immich_mobile/utils/database.utils.dart";
 
 final backupRepositoryProvider = Provider<DriftBackupRepository>(
   (ref) => DriftBackupRepository(ref.watch(driftProvider)),
@@ -136,23 +136,5 @@ class DriftBackupRepository extends DriftDatabaseRepository {
       ..orderBy([(localAsset) => OrderingTerm.desc(localAsset.createdAt)]);
 
     return query.map((localAsset) => localAsset.toDto()).get();
-  }
-
-  FutureOr<List<LocalAlbum>> getSourceAlbums(String localAssetId) {
-    final query = _db.localAlbumEntity.select()
-      ..where(
-        (lae) =>
-            existsQuery(
-              _db.localAlbumAssetEntity.selectOnly()
-                ..addColumns([_db.localAlbumAssetEntity.albumId])
-                ..where(
-                  _db.localAlbumAssetEntity.albumId.equalsExp(lae.id) &
-                      _db.localAlbumAssetEntity.assetId.equals(localAssetId),
-                ),
-            ) &
-            lae.backupSelection.equalsValue(BackupSelection.selected),
-      )
-      ..orderBy([(lae) => OrderingTerm.asc(lae.name)]);
-    return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 }

@@ -31,7 +31,8 @@ class SmartSearchDto {
     this.model,
     this.page,
     this.personIds = const [],
-    required this.query,
+    this.query,
+    this.queryAssetId,
     this.rating,
     this.size,
     this.state,
@@ -151,7 +152,21 @@ class SmartSearchDto {
 
   List<String> personIds;
 
-  String query;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? query;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? queryAssetId;
 
   /// Minimum value: -1
   /// Maximum value: 5
@@ -278,6 +293,7 @@ class SmartSearchDto {
     other.page == page &&
     _deepEquality.equals(other.personIds, personIds) &&
     other.query == query &&
+    other.queryAssetId == queryAssetId &&
     other.rating == rating &&
     other.size == size &&
     other.state == state &&
@@ -314,7 +330,8 @@ class SmartSearchDto {
     (model == null ? 0 : model!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
-    (query.hashCode) +
+    (query == null ? 0 : query!.hashCode) +
+    (queryAssetId == null ? 0 : queryAssetId!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
@@ -331,7 +348,7 @@ class SmartSearchDto {
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, queryAssetId=$queryAssetId, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -417,7 +434,16 @@ class SmartSearchDto {
     //  json[r'page'] = null;
     }
       json[r'personIds'] = this.personIds;
+    if (this.query != null) {
       json[r'query'] = this.query;
+    } else {
+    //  json[r'query'] = null;
+    }
+    if (this.queryAssetId != null) {
+      json[r'queryAssetId'] = this.queryAssetId;
+    } else {
+    //  json[r'queryAssetId'] = null;
+    }
     if (this.rating != null) {
       json[r'rating'] = this.rating;
     } else {
@@ -522,7 +548,8 @@ class SmartSearchDto {
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        query: mapValueOfType<String>(json, r'query')!,
+        query: mapValueOfType<String>(json, r'query'),
+        queryAssetId: mapValueOfType<String>(json, r'queryAssetId'),
         rating: num.parse('${json[r'rating']}'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
@@ -586,7 +613,6 @@ class SmartSearchDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'query',
   };
 }
 
