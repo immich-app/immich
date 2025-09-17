@@ -81,16 +81,16 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
       pinned: true,
       snap: false,
       elevation: 0,
-      leading: !isMultiSelectEnabled
-          ? IconButton(
+      leading: isMultiSelectEnabled
+          ? const SizedBox.shrink()
+          : IconButton(
               icon: Icon(
                 Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
                 color: actionIconColor,
                 shadows: actionIconShadows,
               ),
               onPressed: () => context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()])),
-            )
-          : const SizedBox.shrink(),
+            ),
       actions: [
         if (widget.onToggleAlbumOrder != null)
           IconButton(
