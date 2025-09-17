@@ -17,6 +17,7 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/remote_album_shared_user_icons.dart';
 
@@ -58,6 +59,8 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
 
   @override
   Widget build(BuildContext context) {
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     if (currentAlbum == null) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -78,14 +81,16 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
       pinned: true,
       snap: false,
       elevation: 0,
-      leading: IconButton(
-        icon: Icon(
-          Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-          color: actionIconColor,
-          shadows: actionIconShadows,
-        ),
-        onPressed: () => context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()])),
-      ),
+      leading: !isMultiSelectEnabled
+          ? IconButton(
+              icon: Icon(
+                Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
+                color: actionIconColor,
+                shadows: actionIconShadows,
+              ),
+              onPressed: () => context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()])),
+            )
+          : const SizedBox.shrink(),
       actions: [
         if (widget.onToggleAlbumOrder != null)
           IconButton(
