@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
-import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 
 class AssetStackRow extends ConsumerWidget {
@@ -79,45 +79,40 @@ class _StackItemState extends ConsumerState<_StackItem> {
 
   @override
   Widget build(BuildContext context) {
-    Widget thumbnail = Image(
-      fit: BoxFit.cover,
-      image: getThumbnailImageProvider(remoteId: widget.asset.id, size: const Size(60, 40)),
-      width: 60,
-      height: 40,
+    const playIcon = Center(
+      child: Icon(
+        Icons.play_circle_outline_rounded,
+        color: Colors.white,
+        size: 16,
+        shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+      ),
     );
+    const selectedDecoration = BoxDecoration(
+      border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+    );
+    const unselectedDecoration = BoxDecoration(
+      border: Border.fromBorderSide(BorderSide(color: Colors.grey, width: 0.5)),
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+    );
+
+    Widget thumbnail = Thumbnail.fromAsset(asset: widget.asset, size: const Size(60, 40));
     if (widget.asset.isVideo) {
-      thumbnail = Stack(
-        children: [
-          thumbnail,
-          const Center(
-            child: Icon(
-              Icons.play_circle_outline_rounded,
-              color: Colors.white,
-              size: 16,
-              shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
-            ),
-          ),
-        ],
-      );
+      thumbnail = Stack(children: [thumbnail, playIcon]);
     }
     thumbnail = ClipRRect(borderRadius: const BorderRadius.all(Radius.circular(10)), child: thumbnail);
-
     final isSelected = ref.watch(assetViewerProvider.select((s) => s.stackIndex == widget.index));
-    if (isSelected) {
-      thumbnail = DecoratedBox(
-        decoration: const BoxDecoration(
-          border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        position: DecorationPosition.foreground,
-        child: thumbnail,
-      );
-    }
-
     return SizedBox(
       width: 60,
       height: 40,
-      child: GestureDetector(onTap: _onTap, child: thumbnail),
+      child: GestureDetector(
+        onTap: _onTap,
+        child: DecoratedBox(
+          decoration: isSelected ? selectedDecoration : unselectedDecoration,
+          position: DecorationPosition.foreground,
+          child: thumbnail,
+        ),
+      ),
     );
   }
 }
