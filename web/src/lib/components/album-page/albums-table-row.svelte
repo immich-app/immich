@@ -1,11 +1,11 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, dateFormats } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
   import type { AlbumResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -39,7 +39,7 @@
     {album.albumName}
     {#if album.shared}
       <Icon
-        path={mdiShareVariantOutline}
+        icon={mdiShareVariantOutline}
         size="16"
         class="inline ms-1 opacity-70"
         title={album.ownerId === $user.id

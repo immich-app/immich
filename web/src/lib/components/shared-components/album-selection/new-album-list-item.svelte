@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
+  import { Icon } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { Action } from 'svelte/action';
@@ -31,7 +31,7 @@
   class:dark:bg-gray-700={selected}
 >
   <div class="flex h-12 w-12 items-center justify-center">
-    <Icon path={mdiPlus} size="30" />
+    <Icon icon={mdiPlus} size="30" />
   </div>
   <p class="">
     {$t('new_album')}

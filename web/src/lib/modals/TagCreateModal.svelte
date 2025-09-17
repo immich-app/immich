@@ -48,7 +48,7 @@
       <div class="my-4 flex flex-col gap-2">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
-          label={$t('tag').toUpperCase()}
+          label={$t('tag')}
           bind:value={tagValue}
           required={true}
           autofocus={true}

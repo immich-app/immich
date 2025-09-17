@@ -100,8 +100,9 @@ jobs:
       - name: Run dart format
         run: make format
 
-      - name: Run dart custom_lint
-        run: dart run custom_lint
+      # TODO: Re-enable after upgrading custom_lint
+      # - name: Run dart custom_lint
+      #   run: dart run custom_lint
 
       # TODO: Use https://github.com/CQLabs/dcm-action
       - name: Run DCM

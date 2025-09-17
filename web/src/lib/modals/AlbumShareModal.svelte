@@ -1,8 +1,7 @@
 <script lang="ts">
   import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
+  import Dropdown from '$lib/elements/Dropdown.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import { makeSharedLinkUrl } from '$lib/utils';
   import {
@@ -14,7 +13,7 @@
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Link, Modal, ModalBody, Stack, Text } from '@immich/ui';
+  import { Button, Icon, Link, Modal, ModalBody, Stack, Text } from '@immich/ui';
   import { mdiCheck, mdiEye, mdiLink, mdiPencil } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -87,7 +86,7 @@
                   <div
                     class="flex h-10 w-10 items-center justify-center rounded-full border bg-green-600 text-3xl text-white"
                   >
-                    <Icon path={mdiCheck} size={24} />
+                    <Icon icon={mdiCheck} size="24" />
                   </div>
 
                   <!-- <UserAvatar {user} size="md" /> -->
