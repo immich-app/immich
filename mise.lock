@@ -3,7 +3,7 @@ version = "3.8.2"
 backend = "asdf:dart"
 
 [tools.flutter]
-version = "3.32.8-stable"
+version = "3.35.3-stable"
 backend = "asdf:flutter"
 
 [tools."github:CQLabs/homebrew-dcm"]

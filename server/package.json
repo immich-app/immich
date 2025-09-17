@@ -130,7 +130,7 @@
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
     "@types/node": "^22.18.1",
-    "@types/nodemailer": "^6.4.14",
+    "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
     "@types/react": "^19.0.0",

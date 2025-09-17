@@ -43,6 +43,17 @@ class BackgroundWorkerFgService {
   // TODO: Move this call to native side once old timeline is removed
   Future<void> enable() => _foregroundHostApi.enable();
 
+  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
+    BackgroundWorkerSettings(
+      minimumDelaySeconds:
+          minimumDelaySeconds ??
+          Store.get(AppSettingsEnum.backupTriggerDelay.storeKey, AppSettingsEnum.backupTriggerDelay.defaultValue),
+      requiresCharging:
+          requireCharging ??
+          Store.get(AppSettingsEnum.backupRequireCharging.storeKey, AppSettingsEnum.backupRequireCharging.defaultValue),
+    ),
+  );
+
   Future<void> disable() => _foregroundHostApi.disable();
 }
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { TreeNode } from '$lib/utils/tree-utils';
+  import { Icon } from '@immich/ui';
   import { mdiChevronDown, mdiChevronRight } from '@mdi/js';
 
   interface Props {
@@ -31,15 +31,15 @@
 >
   {#if node.size > 0}
     <button type="button" {onclick}>
-      <Icon path={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size={20} />
+      <Icon icon={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size="20" />
     </button>
   {/if}
   <div class={node.size === 0 ? 'ml-[1.5em] ' : ''}>
     <Icon
-      path={isActive ? icons.active : icons.default}
+      icon={isActive ? icons.active : icons.default}
       class={isActive ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400'}
       color={node.color}
-      size={20}
+      size="20"
     />
   </div>
   <span class="text-nowrap overflow-hidden text-ellipsis font-mono ps-1 pt-1 whitespace-pre-wrap">{node.value}</span>

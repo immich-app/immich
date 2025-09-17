@@ -4,7 +4,6 @@
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate, {
     type AbsoluteResult,
     type RelativeResult,
@@ -24,7 +23,7 @@
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -41,7 +40,6 @@
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
@@ -286,7 +284,7 @@
       >
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
 
           <div>
@@ -318,7 +316,7 @@
 
         {#if isOwner}
           <div class="p-1">
-            <Icon path={mdiPencil} size="20" />
+            <Icon icon={mdiPencil} size="20" />
           </div>
         {/if}
       </button>
@@ -326,11 +324,11 @@
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
         </div>
         <div class="p-1">
-          <Icon path={mdiPencil} size="20" />
+          <Icon icon={mdiPencil} size="20" />
         </div>
       </div>
     {/if}
@@ -346,7 +344,7 @@
     {/if}
 
     <div class="flex gap-4 py-4">
-      <div><Icon path={mdiImageOutline} size="24" /></div>
+      <div><Icon icon={mdiImageOutline} size="24" /></div>
 
       <div>
         <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
@@ -394,7 +392,7 @@
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
-        <div><Icon path={mdiCameraIris} size="24" /></div>
+        <div><Icon icon={mdiCameraIris} size="24" /></div>
 
         <div>
           {#if asset.exifInfo?.make || asset.exifInfo?.model}

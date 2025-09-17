@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
-  import { Modal, ModalBody } from '@immich/ui';
+  import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiAlert } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -159,7 +158,7 @@
 
       {#if info.sourceRef === 'main' && info.repository === 'immich-app/immich'}
         <div class="col-span-full p-4 flex gap-1">
-          <Icon path={mdiAlert} size="2em" color="#ffcc4d" />
+          <Icon icon={mdiAlert} size="2em" color="#ffcc4d" />
           <p class="immich-form-label text-sm" id="main-warning">
             {$t('main_branch_warning')}
           </p>
