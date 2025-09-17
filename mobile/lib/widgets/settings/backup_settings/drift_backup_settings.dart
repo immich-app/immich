@@ -25,14 +25,37 @@ class DriftBackupSettings extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SettingsSubPageScaffold(
       settings: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Text(
+            "network_requirements".t(context: context).toUpperCase(),
+            style: context.textTheme.labelSmall?.copyWith(color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
+          ),
+        ),
         const _UseWifiForUploadVideosButton(),
         const _UseWifiForUploadPhotosButton(),
-        if (CurrentPlatform.isAndroid) ...const [
-          Divider(indent: 16, endIndent: 16),
-          _BackupOnlyWhenChargingButton(),
-          _BackupDelaySlider(),
+        if (CurrentPlatform.isAndroid) ...[
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Text(
+              "background_options".t(context: context).toUpperCase(),
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+          const _BackupOnlyWhenChargingButton(),
+          const _BackupDelaySlider(),
         ],
-        const Divider(indent: 16, endIndent: 16),
+        const Divider(),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Text(
+            "backup_albums_sync".t(context: context).toUpperCase(),
+            style: context.textTheme.labelSmall?.copyWith(color: context.colorScheme.onSurface.withValues(alpha: 0.7)),
+          ),
+        ),
         const _AlbumSyncActionButton(),
       ],
     );
@@ -322,32 +345,35 @@ class _BackupDelaySliderState extends ConsumerState<_BackupDelaySlider> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-      dense: true,
-      title: Text(
-        'backup_controller_page_background_delay'.tr(
-          namedArgs: {'duration': formatBackupDelaySliderValue(currentValue)},
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 8.0),
+          child: Text(
+            'backup_controller_page_background_delay'.tr(
+              namedArgs: {'duration': formatBackupDelaySliderValue(currentValue)},
+            ),
+            style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor),
+          ),
         ),
-        style: context.textTheme.titleMedium?.copyWith(color: context.primaryColor),
-      ),
-      subtitle: Slider(
-        value: currentValue.toDouble(),
-        onChanged: (double v) {
-          setState(() {
-            currentValue = v.toInt();
-          });
-        },
-        onChangeEnd: (double v) async {
-          final milliseconds = backupDelayToSeconds(v.toInt());
-          await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.backupTriggerDelay, milliseconds);
-        },
-        max: 3.0,
-        min: 0.0,
-        divisions: 3,
-        label: formatBackupDelaySliderValue(currentValue),
-        activeColor: context.primaryColor,
-      ),
+        Slider(
+          value: currentValue.toDouble(),
+          onChanged: (double v) {
+            setState(() {
+              currentValue = v.toInt();
+            });
+          },
+          onChangeEnd: (double v) async {
+            final milliseconds = backupDelayToSeconds(v.toInt());
+            await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.backupTriggerDelay, milliseconds);
+          },
+          max: 3.0,
+          min: 0.0,
+          divisions: 3,
+          label: formatBackupDelaySliderValue(currentValue),
+        ),
+      ],
     );
   }
 }
