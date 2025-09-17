@@ -3,6 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -34,27 +36,30 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
   }
 
-  Future<void> startBackup() async {
-    final currentUser = ref.read(currentUserProvider);
-    if (currentUser == null) {
-      return;
-    }
-
-    await ref.read(backgroundSyncProvider).syncRemote();
-    await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
-    await ref.read(driftBackupProvider.notifier).startBackup(currentUser.id);
-  }
-
-  Future<void> stopBackup() async {
-    await ref.read(driftBackupProvider.notifier).cancel();
-  }
-
   @override
   Widget build(BuildContext context) {
     final selectedAlbum = ref
         .watch(backupAlbumProvider)
         .where((album) => album.backupSelection == BackupSelection.selected)
         .toList();
+
+    final backupNotifier = ref.read(driftBackupProvider.notifier);
+    final backgroundManager = ref.read(backgroundSyncProvider);
+
+    Future<void> startBackup() async {
+      final currentUser = Store.tryGet(StoreKey.currentUser);
+      if (currentUser == null) {
+        return;
+      }
+
+      await backgroundManager.syncRemote();
+      await backupNotifier.getBackupStatus(currentUser.id);
+      await backupNotifier.startBackup(currentUser.id);
+    }
+
+    Future<void> stopBackup() async {
+      await backupNotifier.cancel();
+    }
 
     return Scaffold(
       appBar: AppBar(

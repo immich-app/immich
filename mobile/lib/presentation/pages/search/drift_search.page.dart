@@ -444,7 +444,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     }
                   },
                   icon: const Icon(Icons.more_vert_rounded),
-                  tooltip: 'Show text search menu',
+                  tooltip: 'show_text_search_menu'.tr(),
                 );
               },
               menuChildren: [
@@ -655,6 +655,7 @@ class _SearchResultGrid extends ConsumerWidget {
             groupBy: GroupAssetsBy.none,
             appBar: null,
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
+            withScrubber: false,
           ),
         ),
       ),
