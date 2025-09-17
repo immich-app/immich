@@ -1,6 +1,6 @@
 [tools]
 node = "22.19.0"
-flutter = "3.35.3"
+flutter = "3.35.4"
 pnpm = "10.14.0"
 dart = "3.8.2"
 
