@@ -1,13 +1,13 @@
-dev: prepare-volumes
+dev:
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --remove-orphans
 
 dev-down:
 	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
 
-dev-update: prepare-volumes
+dev-update:
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
-dev-scale: prepare-volumes
+dev-scale:
 	@trap 'make dev-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.dev.yml up --build -V --scale immich-server=3 --remove-orphans
 
 dev-docs:
@@ -23,7 +23,7 @@ e2e-update:
 e2e-down:
 	docker compose -f ./e2e/docker-compose.yml down --remove-orphans
 
-prod: 
+prod:
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
 prod-down:
@@ -33,16 +33,16 @@ prod-scale:
 	@trap 'make prod-down' EXIT; COMPOSE_BAKE=true docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
 .PHONY: open-api
-open-api: prepare-volumes
+open-api:
 	cd ./open-api && bash ./bin/generate-open-api.sh
 
-open-api-dart: prepare-volumes
+open-api-dart:
 	cd ./open-api && bash ./bin/generate-open-api.sh dart
 
-open-api-typescript: prepare-volumes
+open-api-typescript:
 	cd ./open-api && bash ./bin/generate-open-api.sh typescript
 
-sql: prepare-volumes
+sql:
 	pnpm --filter immich run sync:sql
 
 attach-server:
@@ -67,32 +67,6 @@ VOLUME_DIRS = \
 
 # Include .env file if it exists
 -include docker/.env
-
-# Helper function to chown, on error suggest remediation and exit
-define safe_chown
-	CURRENT_OWNER=$$(stat -c '%u:%g' "$(1)" 2>/dev/null || echo "none"); \
-	DESIRED_OWNER="$(or $(UID),0):$(or $(GID),0)"; \
-	if [ "$$CURRENT_OWNER" != "$$DESIRED_OWNER" ] && ! chown -v $(2) $$DESIRED_OWNER "$(1)" 2>/dev/null; then \
-		echo "Permission denied when changing owner of volumes and upload location. Try running 'sudo make prepare-volumes' first."; \
-		exit 1; \
-	fi;
-endef
-# create empty directories and chown
-prepare-volumes:
-	@$(foreach dir,$(VOLUME_DIRS),mkdir -p $(dir);)
-	@$(foreach dir,$(VOLUME_DIRS),$(call safe_chown,$(dir),-R))
-ifneq ($(UPLOAD_LOCATION),)
-ifeq ($(filter /%,$(UPLOAD_LOCATION)),)
-	@mkdir -p "docker/$(UPLOAD_LOCATION)/photos/upload"
-	@$(call safe_chown,docker/$(UPLOAD_LOCATION),)
-	@$(call safe_chown,docker/$(UPLOAD_LOCATION)/photos,-R)
-else
-	@mkdir -p "$(UPLOAD_LOCATION)/photos/upload"
-	@$(call safe_chown,$(UPLOAD_LOCATION),)
-	@$(call safe_chown,$(UPLOAD_LOCATION)/photos,-R)
-endif
-endif
-
 
 MODULES = e2e server web cli sdk docs .github
 

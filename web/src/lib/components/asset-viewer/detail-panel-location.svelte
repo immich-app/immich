@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import Portal from '$lib/elements/Portal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -44,7 +44,7 @@
     class:hover:text-immich-primary={isOwner}
   >
     <div class="flex gap-4">
-      <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+      <div><Icon icon={mdiMapMarkerOutline} size="24" /></div>
 
       <div>
         {#if asset.exifInfo?.city}
@@ -65,7 +65,7 @@
 
     {#if isOwner}
       <div>
-        <Icon path={mdiPencil} size="20" />
+        <Icon icon={mdiPencil} size="20" />
       </div>
     {/if}
   </button>
@@ -77,12 +77,12 @@
     title={$t('add_location')}
   >
     <div class="flex gap-4">
-      <div><Icon path={mdiMapMarkerOutline} size="24" /></div>
+      <div><Icon icon={mdiMapMarkerOutline} size="24" /></div>
 
       <p>{$t('add_a_location')}</p>
     </div>
     <div class="focus:outline-none p-1">
-      <Icon path={mdiPencil} size="20" />
+      <Icon icon={mdiPencil} size="20" />
     </div>
   </button>
 {/if}

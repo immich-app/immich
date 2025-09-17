@@ -8,8 +8,7 @@ services:
       - IMMICH_SERVER_URL=http://127.0.0.1:2283/
     volumes: !override
       - ..:/workspaces/immich
-      - ${UPLOAD_LOCATION:-upload1-devcontainer-volume}${UPLOAD_LOCATION:+/photos}:/data
-      - ${UPLOAD_LOCATION:-upload2-devcontainer-volume}${UPLOAD_LOCATION:+/photos/upload}:/data/upload
+      - ${UPLOAD_LOCATION:-upload-devcontainer-volume}${UPLOAD_LOCATION:+/photos}:/data
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
@@ -24,9 +23,6 @@ services:
       - coverage:/usr/src/app/web/coverage
   immich-web:
     env_file: !reset []
-  init:
-    env_file: !reset []
-    command: sh -c 'find /data -maxdepth 1 ! -path "/data/postgres" -type d -exec chown ${UID:-0}:${GID:-0} {} + 2>/dev/null || true; for path in /usr/src/app/.pnpm-store /usr/src/app/server/node_modules /usr/src/app/server/dist /usr/src/app/.github/node_modules /usr/src/app/cli/node_modules /usr/src/app/docs/node_modules /usr/src/app/e2e/node_modules /usr/src/app/open-api/typescript-sdk/node_modules /usr/src/app/web/.svelte-kit /usr/src/app/web/coverage /usr/src/app/node_modules /usr/src/app/web/node_modules; do [ -e "$$path" ] && chown -R ${UID:-0}:${GID:-0} "$$path" || true; done'
   immich-machine-learning:
     env_file: !reset []
   database:
@@ -42,7 +38,5 @@ services:
   redis:
     env_file: !reset []
 volumes:
-  # Node modules for each service to avoid conflicts and ensure consistent dependencies
-  upload1-devcontainer-volume:
-  upload2-devcontainer-volume:
+  upload-devcontainer-volume:
   postgres-devcontainer-volume:
