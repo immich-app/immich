@@ -277,7 +277,7 @@
       {#if libraries.length > 0}
         <table class="w-full text-start">
           <thead
-            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
           >
             <tr class="grid grid-cols-6 w-full place-items-center">
               <th class="text-center text-sm font-medium">{$t('name')}</th>

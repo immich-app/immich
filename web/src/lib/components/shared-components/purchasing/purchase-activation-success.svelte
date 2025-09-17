@@ -14,7 +14,7 @@
 </script>
 
 <div class="m-auto w-3/4 text-center flex flex-col place-content-center place-items-center my-6">
-  <Icon icon={mdiPartyPopper} class="text-immich-primary dark:text-immich-dark-primary" size="96" />
+  <Icon icon={mdiPartyPopper} class="text-primary" size="96" />
   <p class="text-4xl mt-8 font-bold">{$t('purchase_activated_title')}</p>
   <p class="text-lg mt-6">{$t('purchase_activated_subtitle')}</p>
 

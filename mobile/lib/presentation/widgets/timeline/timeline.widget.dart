@@ -356,7 +356,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   children: [
                     timeline,
                     if (!isSelectionMode && isMultiSelectEnabled) ...[
-                      const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
+                      Positioned(
+                        top: MediaQuery.paddingOf(context).top,
+                        left: 25,
+                        child: const SizedBox(
+                          height: kToolbarHeight,
+                          child: Center(child: _MultiSelectStatusButton()),
+                        ),
+                      ),
                       if (widget.bottomSheet != null) widget.bottomSheet!,
                     ],
                   ],

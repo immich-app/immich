@@ -57,7 +57,7 @@
 
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <fieldset
-  class="text-immich-primary dark:text-immich-dark-primary w-fit cursor-default"
+  class="text-primary w-fit cursor-default"
   onmouseleave={() => setHoverRating(0)}
   use:focusOutside={{ onFocusOut: reset }}
   use:shortcuts={[
@@ -114,7 +114,7 @@
       ratingSelection = 0;
       handleSelect(ratingSelection);
     }}
-    class="cursor-pointer text-xs text-immich-primary dark:text-immich-dark-primary"
+    class="cursor-pointer text-xs text-primary"
   >
     {$t('rating_clear')}
   </button>

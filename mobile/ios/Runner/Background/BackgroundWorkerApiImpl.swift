@@ -8,6 +8,10 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     print("BackgroundUploadImpl:enbale Background worker scheduled")
   }
   
+  func configure(settings: BackgroundWorkerSettings) throws {
+    // Android only
+  }
+  
   func disable() throws {
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);

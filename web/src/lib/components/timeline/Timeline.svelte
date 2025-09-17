@@ -12,6 +12,7 @@
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -223,45 +224,33 @@
     complete.then(completeNav, completeNav);
   });
 
-  const hmrSupport = () => {
-    // when hmr happens, skeleton is initialized to true by default
-    // normally, loading timeline is part of a navigation event, and the completion of
-    // that event triggers a scroll-to-asset, if necessary, when then clears the skeleton.
-    // this handler will run the navigation/scroll-to-asset handler when hmr is performed,
-    // preventing skeleton from showing after hmr
-    if (import.meta && import.meta.hot) {
-      const afterApdate = (payload: UpdatePayload) => {
-        const assetGridUpdate = payload.updates.some(
-          (update) => update.path.endsWith('Timeline.svelte') || update.path.endsWith('assets-store.ts'),
-        );
+  const handleAfterUpdate = (payload: UpdatePayload) => {
+    const timelineUpdate = payload.updates.some(
+      (update) => update.path.endsWith('Timeline.svelte') || update.path.endsWith('assets-store.ts'),
+    );
 
-        if (assetGridUpdate) {
-          setTimeout(() => {
-            const asset = $page.url.searchParams.get('at');
-            if (asset) {
-              $gridScrollTarget = { at: asset };
-              void navigate(
-                { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
-                { replaceState: true, forceNavigate: true },
-              );
-            } else {
-              scrollToTop();
-            }
-            showSkeleton = false;
-          }, 500);
+    if (timelineUpdate) {
+      setTimeout(() => {
+        const asset = $page.url.searchParams.get('at');
+        if (asset) {
+          $gridScrollTarget = { at: asset };
+          void navigate(
+            { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
+            { replaceState: true, forceNavigate: true },
+          );
+        } else {
+          scrollToTop();
         }
-      };
-      import.meta.hot?.on('vite:afterUpdate', afterApdate);
-      import.meta.hot?.on('vite:beforeUpdate', (payload) => {
-        const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));
-        if (assetGridUpdate) {
-          timelineManager.destroy();
-        }
-      });
-
-      return () => import.meta.hot?.off('vite:afterUpdate', afterApdate);
+        showSkeleton = false;
+      }, 500);
     }
-    return () => void 0;
+  };
+
+  const handleBeforeUpdate = (payload: UpdatePayload) => {
+    const timelineUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));
+    if (timelineUpdate) {
+      timelineManager.destroy();
+    }
   };
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
@@ -287,10 +276,6 @@
     if (!enableRouting) {
       showSkeleton = false;
     }
-    const disposeHmr = hmrSupport();
-    return () => {
-      disposeHmr();
-    };
   });
 
   const getMaxScrollPercent = () => {
@@ -832,6 +817,8 @@
 </script>
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+
+<HotModuleReload onAfterUpdate={handleAfterUpdate} onBeforeUpdate={handleBeforeUpdate} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog

@@ -140,7 +140,7 @@
               <button
                 type="button"
                 onclick={() => handleRemoveUser(user)}
-                class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
+                class="text-sm font-medium text-primary transition-colors hover:text-immich-primary/75"
                 >{$t('leave')}</button
               >
             {/if}

@@ -10,7 +10,7 @@
 <div
   class="border border-gray-300 dark:border-gray-800 w-[min(375px,100%)] p-8 rounded-3xl bg-gray-100 dark:bg-gray-900"
 >
-  <div class="text-immich-primary dark:text-immich-dark-primary">
+  <div class="text-primary">
     <Icon icon={mdiServer} size="56" />
     <p class="font-semibold text-lg mt-1">{$t('purchase_server_title')}</p>
   </div>
