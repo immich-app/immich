@@ -114,10 +114,10 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       configureFileDownloaderNotifications();
 
       // Notify the host that the background worker service has been initialized and is ready to use
-      _backgroundHostApi.onInitialized();
+      unawaited(_backgroundHostApi.onInitialized());
     } catch (error, stack) {
       _logger.severe("Failed to initialize background worker", error, stack);
-      await _backgroundHostApi.close();
+      unawaited(_backgroundHostApi.close());
     }
   }
 

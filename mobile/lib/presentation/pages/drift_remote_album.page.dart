@@ -177,56 +177,58 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final canAddPhotos =
         await ref.read(remoteAlbumServiceProvider).getUserRole(_album.id, user?.id ?? '') == AlbumUserRole.editor;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: context.colorScheme.surface,
-      isScrollControlled: false,
-      builder: (context) {
-        return DriftRemoteAlbumOption(
-          onDeleteAlbum: isOwner
-              ? () async {
-                  await deleteAlbum(context);
-                  if (context.mounted) {
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: context.colorScheme.surface,
+        isScrollControlled: false,
+        builder: (context) {
+          return DriftRemoteAlbumOption(
+            onDeleteAlbum: isOwner
+                ? () async {
+                    await deleteAlbum(context);
+                    if (context.mounted) {
+                      context.pop();
+                    }
+                  }
+                : null,
+            onAddUsers: isOwner
+                ? () async {
+                    await addUsers(context);
                     context.pop();
                   }
-                }
-              : null,
-          onAddUsers: isOwner
-              ? () async {
-                  await addUsers(context);
-                  context.pop();
-                }
-              : null,
-          onAddPhotos: isOwner || canAddPhotos
-              ? () async {
-                  await addAssets(context);
-                  context.pop();
-                }
-              : null,
-          onToggleAlbumOrder: isOwner
-              ? () async {
-                  await toggleAlbumOrder();
-                  context.pop();
-                }
-              : null,
-          onEditAlbum: isOwner
-              ? () async {
-                  context.pop();
-                  await showEditTitleAndDescription(context);
-                }
-              : null,
-          onCreateSharedLink: isOwner
-              ? () async {
-                  context.pop();
-                  context.pushRoute(SharedLinkEditRoute(albumId: _album.id));
-                }
-              : null,
-          onShowOptions: () {
-            context.pop();
-            context.pushRoute(const DriftAlbumOptionsRoute());
-          },
-        );
-      },
+                : null,
+            onAddPhotos: isOwner || canAddPhotos
+                ? () async {
+                    await addAssets(context);
+                    context.pop();
+                  }
+                : null,
+            onToggleAlbumOrder: isOwner
+                ? () async {
+                    await toggleAlbumOrder();
+                    context.pop();
+                  }
+                : null,
+            onEditAlbum: isOwner
+                ? () async {
+                    context.pop();
+                    await showEditTitleAndDescription(context);
+                  }
+                : null,
+            onCreateSharedLink: isOwner
+                ? () async {
+                    context.pop();
+                    unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id)));
+                  }
+                : null,
+            onShowOptions: () {
+              context.pop();
+              context.pushRoute(const DriftAlbumOptionsRoute());
+            },
+          );
+        },
+      ),
     );
   }
 

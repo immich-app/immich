@@ -55,43 +55,45 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final backgroundManager = ref.read(backgroundSyncProvider);
       final backupProvider = ref.read(driftBackupProvider.notifier);
 
-      ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-        (_) async {
-          try {
-            wsProvider.connect();
-            infoProvider.getServerInfo();
+      unawaited(
+        ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
+          (_) async {
+            try {
+              wsProvider.connect();
+              unawaited(infoProvider.getServerInfo());
 
-            if (Store.isBetaTimelineEnabled) {
-              bool syncSuccess = false;
-              await Future.wait([
-                backgroundManager.syncLocal(),
-                backgroundManager.syncRemote().then((success) => syncSuccess = success),
-              ]);
-
-              if (syncSuccess) {
+              if (Store.isBetaTimelineEnabled) {
+                bool syncSuccess = false;
                 await Future.wait([
-                  backgroundManager.hashAssets().then((_) {
-                    _resumeBackup(backupProvider);
-                  }),
-                  _resumeBackup(backupProvider),
+                  backgroundManager.syncLocal(),
+                  backgroundManager.syncRemote().then((success) => syncSuccess = success),
                 ]);
-              } else {
-                await backgroundManager.hashAssets();
-              }
 
-              if (Store.get(StoreKey.syncAlbums, false)) {
-                await backgroundManager.syncLinkedAlbum();
+                if (syncSuccess) {
+                  await Future.wait([
+                    backgroundManager.hashAssets().then((_) {
+                      _resumeBackup(backupProvider);
+                    }),
+                    _resumeBackup(backupProvider),
+                  ]);
+                } else {
+                  await backgroundManager.hashAssets();
+                }
+
+                if (Store.get(StoreKey.syncAlbums, false)) {
+                  await backgroundManager.syncLinkedAlbum();
+                }
               }
+            } catch (e) {
+              log.severe('Failed establishing connection to the server: $e');
             }
-          } catch (e) {
-            log.severe('Failed establishing connection to the server: $e');
-          }
-        },
-        onError: (exception) => {
-          log.severe('Failed to update auth info with access token: $accessToken'),
-          ref.read(authProvider.notifier).logout(),
-          context.replaceRoute(const LoginRoute()),
-        },
+          },
+          onError: (exception) => {
+            log.severe('Failed to update auth info with access token: $accessToken'),
+            ref.read(authProvider.notifier).logout(),
+            context.replaceRoute(const LoginRoute()),
+          },
+        ),
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
@@ -106,11 +108,11 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
       if (needBetaMigration) {
         await Store.put(StoreKey.needBetaMigration, false);
-        context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]);
+        unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]));
         return;
       }
 
-      context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
+      unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
     }
 
     if (Store.isBetaTimelineEnabled) {
@@ -130,7 +132,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
-        notifier.handleBackupResume(currentUser.id);
+        unawaited(notifier.handleBackupResume(currentUser.id));
       }
     }
   }

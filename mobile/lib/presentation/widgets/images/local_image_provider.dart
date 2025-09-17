@@ -103,7 +103,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     }
 
     if (isCancelled) {
-      evict();
+      unawaited(evict());
       return;
     }
 

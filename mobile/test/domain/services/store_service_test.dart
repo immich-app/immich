@@ -53,7 +53,7 @@ void main() {
   });
 
   tearDown(() async {
-    sut.dispose();
+    unawaited(sut.dispose());
     await controller.close();
   });
 

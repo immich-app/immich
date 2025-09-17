@@ -209,7 +209,7 @@ class UploadService {
   void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     switch (update.status) {
       case TaskStatus.complete:
-        _handleLivePhoto(update);
+        unawaited(_handleLivePhoto(update));
 
         if (CurrentPlatform.isIOS) {
           try {
