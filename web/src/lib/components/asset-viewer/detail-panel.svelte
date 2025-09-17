@@ -279,8 +279,7 @@
         class="flex w-full text-start justify-between place-items-start gap-4 py-4"
         onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
-        class:hover:dark:text-immich-dark-primary={isOwner}
-        class:hover:text-immich-primary={isOwner}
+        class:hover:text-primary={isOwner}
       >
         <div class="flex gap-4">
           <div>
@@ -362,10 +361,7 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p
-            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
-            transition:slide={{ duration: 250 }}
-          >
+          <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
               {asset.originalPath}
             </a>
@@ -403,7 +399,7 @@
                   ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
                 })}"
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
-                class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+                class="hover:text-primary"
               >
                 {asset.exifInfo.make || ''}
                 {asset.exifInfo.model || ''}
@@ -417,7 +413,7 @@
                 <a
                   href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
+                  class="hover:text-primary line-clamp-1"
                 >
                   {asset.exifInfo.lensModel}
                 </a>

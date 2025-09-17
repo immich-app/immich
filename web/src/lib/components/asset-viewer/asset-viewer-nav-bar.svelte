@@ -208,7 +208,7 @@
             <SetAlbumCoverAction {asset} {album} />
           {/if}
           {#if person}
-            <SetFeaturedPhotoAction {asset} {person} />
+            <SetFeaturedPhotoAction {asset} {person} {onAction} />
           {/if}
           {#if asset.type === AssetTypeEnum.Image && !isLocked}
             <SetProfilePictureAction {asset} />

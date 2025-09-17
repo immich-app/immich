@@ -121,10 +121,10 @@
           onclick={() => !renderedOption.disabled && handleSelectOption(option)}
         >
           {#if isEqual(selectedOption, option)}
-            <div class="text-immich-primary dark:text-immich-dark-primary">
+            <div class="text-primary">
               <Icon icon={mdiCheck} />
             </div>
-            <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary">
+            <p class="justify-self-start text-primary">
               {renderedOption.title}
             </p>
           {:else}

@@ -81,9 +81,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex place-items-center gap-1">
-    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm min-h-6 uppercase" for={label}
-      >{label}</label
-    >
+    <label class="font-medium text-primary text-sm min-h-6 uppercase" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
