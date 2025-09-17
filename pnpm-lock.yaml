@@ -684,8 +684,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.28.1
-        version: 0.28.1(@internationalized/date@3.8.2)(svelte@5.35.5)
+        specifier: ^0.29.0
+        version: 0.29.0(@internationalized/date@3.8.2)(svelte@5.35.5)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2717,8 +2717,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@immich/ui@0.28.1':
-    resolution: {integrity: sha512-FAQBPsbPaLtTYsEH+/wQxPbUI19ZPuOEScSHgSqteI601qVZNQcfU7YuinKqK94iva2RNhvUgrNGHweIBentZg==}
+  '@immich/ui@0.29.0':
+    resolution: {integrity: sha512-An9cf1L4nMO6+C1Tkktd+qjGmZvyGz/Un33cGsKQa2I7IdZHd67KbbC2v3wN3bQMiTjxtFJ8YR9EONohJ8jDtQ==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -4570,6 +4570,9 @@ packages:
   '@types/node@22.18.4':
     resolution: {integrity: sha512-UJdblFqXymSBhmZf96BnbisoFIr8ooiiBRMolQgg77Ea+VM37jXw76C2LQr9n8wm9+i/OvlUlW6xSvqwzwqznw==}
 
+  '@types/node@22.18.5':
+    resolution: {integrity: sha512-g9BpPfJvxYBXUWI9bV37j6d6LTMNQ88hPwdWWUeYZnMhlo66FIg9gCc1/DZb15QylJSKwOZjwrckvOTWpOiChg==}
+
   '@types/node@24.3.0':
     resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
 
@@ -5225,8 +5228,8 @@ packages:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
-  bits-ui@2.9.8:
-    resolution: {integrity: sha512-oVAqdhLSuGIgEiT0yu3ShSI7AxncCxX26Gv6Lul94BuKHV2uzHoKfIodtnMQSq+udJ54svuCIRqA58whsv7vaA==}
+  bits-ui@2.9.9:
+    resolution: {integrity: sha512-U8qsCQ/5rwXAzUBn8lCLFUeHBoXsA54Lb4uFuurXu6VEszVXLCedZRnhHOQsTc1I+2Js5l4iLiBtPUG7WjNbOA==}
     engines: {node: '>=20'}
     peerDependencies:
       '@internationalized/date': ^3.8.1
@@ -14395,10 +14398,10 @@ snapshots:
   '@img/sharp-win32-x64@0.34.3':
     optional: true
 
-  '@immich/ui@0.28.1(@internationalized/date@3.8.2)(svelte@5.35.5)':
+  '@immich/ui@0.29.0(@internationalized/date@3.8.2)(svelte@5.35.5)':
     dependencies:
       '@mdi/js': 7.4.47
-      bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.35.5)
+      bits-ui: 2.9.9(@internationalized/date@3.8.2)(svelte@5.35.5)
       simple-icons: 15.15.0
       svelte: 5.35.5
       tailwind-merge: 3.3.1
@@ -16524,6 +16527,10 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/node@22.18.5':
+    dependencies:
+      undici-types: 6.21.0
+
   '@types/node@24.3.0':
     dependencies:
       undici-types: 7.10.0
@@ -16670,7 +16677,7 @@ snapshots:
 
   '@types/through@0.0.33':
     dependencies:
-      '@types/node': 22.18.4
+      '@types/node': 22.18.5
 
   '@types/ua-parser-js@0.7.39': {}
 
@@ -17339,7 +17346,7 @@ snapshots:
 
   binary-extensions@2.3.0: {}
 
-  bits-ui@2.9.8(@internationalized/date@3.8.2)(svelte@5.35.5):
+  bits-ui@2.9.9(@internationalized/date@3.8.2)(svelte@5.35.5):
     dependencies:
       '@floating-ui/core': 1.7.3
       '@floating-ui/dom': 1.7.4
