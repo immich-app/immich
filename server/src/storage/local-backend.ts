@@ -38,10 +38,16 @@ export class LocalAppStorageBackend implements IAppStorageBackend {
     return createReadStream(path, { start, end });
   }
 
-  async writeStream(key: string): Promise<Writable> {
+  async writeStream(key: string): Promise<{ stream: Writable; done: () => Promise<void> }> {
     const path = this.toPath(key);
     await fs.mkdir(dirname(path), { recursive: true });
-    return createWriteStream(path);
+    const ws = createWriteStream(path);
+    const done = () =>
+      new Promise<void>((resolve, reject) => {
+        ws.once('error', reject);
+        ws.once('finish', () => resolve());
+      });
+    return { stream: ws, done };
   }
 
   async putObject(key: string, buffer: Buffer): Promise<void> {
@@ -77,4 +83,3 @@ export class LocalAppStorageBackend implements IAppStorageBackend {
     await fs.mkdir(this.toPath(prefix || '.'), { recursive: true });
   }
 }
-

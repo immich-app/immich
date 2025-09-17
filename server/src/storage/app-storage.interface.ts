@@ -20,11 +20,10 @@ export interface IAppStorageBackend {
   exists(key: string): Promise<boolean>;
   head(key: string): Promise<AppStorageHead>;
   readStream(key: string, range?: AppStorageRange): Promise<Readable>;
-  writeStream(key: string): Promise<Writable>;
+  writeStream(key: string): Promise<{ stream: Writable; done: () => Promise<void> }>;
   putObject(key: string, buffer: Buffer, metadata?: Record<string, string>): Promise<void>;
   copyObject(srcKey: string, dstKey: string): Promise<void>;
   moveObject(srcKey: string, dstKey: string): Promise<void>;
   deleteObject(key: string): Promise<void>;
   ensurePrefix(prefix: string): Promise<void>;
 }
-

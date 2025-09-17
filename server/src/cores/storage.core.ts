@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { StorageAsset } from 'src/database';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -34,6 +35,35 @@ let instance: StorageCore | null;
 let mediaLocation: string | undefined;
 
 export class StorageCore {
+  private static joinPaths(base: string, ...parts: string[]): string {
+    if (base.startsWith('s3://')) {
+      const trim = (s: string) => s.replace(/^\/+|\/+$/g, '');
+      const head = base.replace(/\/+$/g, '');
+      const tail = parts.map((p) => trim(p)).filter(Boolean).join('/');
+      return tail ? `${head}/${tail}` : head;
+    }
+    return join(base, ...parts);
+  }
+
+  private getS3(): S3AppStorageBackend | null {
+    const env = this.configRepository.getEnv();
+    const s3c = env.storage.s3;
+    if (env.storage.engine === 's3' && s3c && s3c.bucket) {
+      return new S3AppStorageBackend({
+        endpoint: s3c.endpoint,
+        region: s3c.region || 'us-east-1',
+        bucket: s3c.bucket,
+        prefix: s3c.prefix,
+        forcePathStyle: s3c.forcePathStyle,
+        useAccelerate: s3c.useAccelerate,
+        accessKeyId: s3c.accessKeyId,
+        secretAccessKey: s3c.secretAccessKey,
+        sse: s3c.sse as any,
+        sseKmsKeyId: s3c.sseKmsKeyId,
+      });
+    }
+    return null;
+  }
   private constructor(
     private assetRepository: AssetRepository,
     private configRepository: ConfigRepository,
@@ -90,15 +120,15 @@ export class StorageCore {
   }
 
   static getFolderLocation(folder: StorageFolder, userId: string) {
-    return join(StorageCore.getBaseFolder(folder), userId);
+    return this.joinPaths(StorageCore.getBaseFolder(folder), userId);
   }
 
   static getLibraryFolder(user: { storageLabel: string | null; id: string }) {
-    return join(StorageCore.getBaseFolder(StorageFolder.Library), user.storageLabel || user.id);
+    return this.joinPaths(StorageCore.getBaseFolder(StorageFolder.Library), user.storageLabel || user.id);
   }
 
   static getBaseFolder(folder: StorageFolder) {
-    return join(StorageCore.getMediaLocation(), folder);
+    return this.joinPaths(StorageCore.getMediaLocation(), folder);
   }
 
   static getPersonThumbnailPath(person: ThumbnailPathEntity) {
@@ -180,6 +210,38 @@ export class StorageCore {
     }
 
     this.ensureFolders(newPath);
+
+    const s3 = this.getS3();
+    if (s3 && (oldPath.startsWith('s3://') || StorageCore.isImmichPath(oldPath))) {
+      let move = await this.moveRepository.getByEntity(entityId, pathType);
+      if (!move) {
+        move = await this.moveRepository.create({ entityId, pathType, oldPath, newPath });
+      }
+
+      // If new already exists and appears valid, finalize move
+      const newExists = await s3.exists(newPath);
+      if (newExists) {
+        await this.savePath(pathType, entityId, newPath);
+        await this.moveRepository.delete(move.id);
+        return;
+      }
+
+      // Copy -> verify size if provided -> delete old
+      await s3.copyObject(oldPath, newPath);
+      if (assetInfo) {
+        const head = await s3.head(newPath);
+        const expected = assetInfo.sizeInBytes;
+        if (Number(head.size) !== Number(expected)) {
+          this.logger.warn(`S3 move verification failed: size ${head.size} !== ${expected}`);
+          await s3.deleteObject(newPath).catch(() => {});
+          return;
+        }
+      }
+      await s3.deleteObject(oldPath).catch(() => {});
+      await this.savePath(pathType, entityId, newPath);
+      await this.moveRepository.delete(move.id);
+      return;
+    }
 
     let move = await this.moveRepository.getByEntity(entityId, pathType);
     if (move) {
@@ -288,10 +350,19 @@ export class StorageCore {
   }
 
   ensureFolders(input: string) {
+    const base = StorageCore.getMediaLocation();
+    if (base.startsWith('s3://')) {
+      // S3: no local folders to create
+      return;
+    }
     this.storageRepository.mkdirSync(dirname(input));
   }
 
   removeEmptyDirs(folder: StorageFolder) {
+    const base = StorageCore.getMediaLocation();
+    if (base.startsWith('s3://')) {
+      return Promise.resolve();
+    }
     return this.storageRepository.removeEmptyDirs(StorageCore.getBaseFolder(folder));
   }
 
@@ -322,11 +393,15 @@ export class StorageCore {
   }
 
   static getNestedFolder(folder: StorageFolder, ownerId: string, filename: string): string {
-    return join(StorageCore.getFolderLocation(folder, ownerId), filename.slice(0, 2), filename.slice(2, 4));
+    return this.joinPaths(
+      StorageCore.getFolderLocation(folder, ownerId),
+      filename.slice(0, 2),
+      filename.slice(2, 4),
+    );
   }
 
   static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
-    return join(this.getNestedFolder(folder, ownerId, filename), filename);
+    return this.joinPaths(this.getNestedFolder(folder, ownerId, filename), filename);
   }
 
   static getTempPathInDir(dir: string): string {

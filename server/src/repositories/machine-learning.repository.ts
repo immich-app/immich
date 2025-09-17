@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME, MACHINE_LEARNING_PING_TIMEOUT } from 'src/constants';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -69,7 +71,7 @@ export class MachineLearningRepository {
       | undefined;
   };
 
-  constructor(private logger: LoggingRepository) {
+  constructor(private logger: LoggingRepository, private configRepository: ConfigRepository) {
     this.logger.setContext(MachineLearningRepository.name);
     this.urlAvailability = {};
   }
@@ -182,7 +184,34 @@ export class MachineLearningRepository {
     formData.append('entries', JSON.stringify(config));
 
     if ('imagePath' in payload) {
-      const fileBuffer = await readFile(payload.imagePath);
+      let fileBuffer: Buffer;
+      if (payload.imagePath.startsWith('s3://')) {
+        const env = this.configRepository.getEnv();
+        const s3c = env.storage.s3;
+        if (!s3c?.bucket) {
+          throw new Error('S3 storage not configured');
+        }
+        const s3 = new S3AppStorageBackend({
+          endpoint: s3c.endpoint,
+          region: s3c.region || 'us-east-1',
+          bucket: s3c.bucket,
+          prefix: s3c.prefix,
+          forcePathStyle: s3c.forcePathStyle,
+          useAccelerate: s3c.useAccelerate,
+          accessKeyId: s3c.accessKeyId,
+          secretAccessKey: s3c.secretAccessKey,
+          sse: s3c.sse as any,
+          sseKmsKeyId: s3c.sseKmsKeyId,
+        });
+        const stream = await s3.readStream(payload.imagePath);
+        const chunks: Buffer[] = [];
+        for await (const chunk of stream) {
+          chunks.push(Buffer.from(chunk));
+        }
+        fileBuffer = Buffer.concat(chunks);
+      } else {
+        fileBuffer = await readFile(payload.imagePath);
+      }
       formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);

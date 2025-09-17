@@ -104,8 +104,11 @@ export class AssetMediaService extends BaseService {
     if (fieldName === UploadFieldName.PROFILE_DATA) {
       folder = StorageCore.getFolderLocation(StorageFolder.Profile, auth.user.id);
     }
-
-    this.storageRepository.mkdirSync(folder);
+    // For S3 engine, folders are logical and do not need local creation
+    const env = this.configRepository.getEnv();
+    if ((env.storage.engine || 'local') !== 's3') {
+      this.storageRepository.mkdirSync(folder);
+    }
 
     return folder;
   }
@@ -357,7 +360,10 @@ export class AssetMediaService extends BaseService {
       sidecarPath: sidecarPath || null,
     });
 
-    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    const isS3 = (this.configRepository.getEnv().storage.engine || 'local') === 's3';
+    if (!file.originalPath.startsWith('s3://') && !isS3) {
+      await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    }
     await this.assetRepository.upsertExif({ assetId, fileSizeInByte: file.size });
     await this.jobRepository.queue({
       name: JobName.AssetExtractMetadata,
@@ -421,10 +427,13 @@ export class AssetMediaService extends BaseService {
       await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
     }
 
-    if (sidecarFile) {
+    const isS3 = (this.configRepository.getEnv().storage.engine || 'local') === 's3';
+    if (sidecarFile && !sidecarFile.originalPath.startsWith('s3://') && !isS3) {
       await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
     }
-    await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    if (!file.originalPath.startsWith('s3://') && !isS3) {
+      await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+    }
     await this.assetRepository.upsertExif({ assetId: asset.id, fileSizeInByte: file.size });
     await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
 

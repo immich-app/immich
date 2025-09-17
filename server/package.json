@@ -34,6 +34,8 @@
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.645.0",
+    "@aws-sdk/lib-storage": "^3.645.0",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",
