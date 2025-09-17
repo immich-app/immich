@@ -48,7 +48,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         .toList();
 
     final backupNotifier = ref.read(driftBackupProvider.notifier);
-    final backgroundManager = ref.read(backgroundSyncProvider);
 
     Future<void> startBackup() async {
       final currentUser = Store.tryGet(StoreKey.currentUser);
@@ -56,7 +55,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         return;
       }
 
-      await backgroundManager.syncRemote();
       await backupNotifier.getBackupStatus(currentUser.id);
       await backupNotifier.startBackup(currentUser.id);
     }
