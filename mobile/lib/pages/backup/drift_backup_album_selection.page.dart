@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
@@ -108,10 +109,15 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
           final backupNotifier = ref.read(driftBackupProvider.notifier);
           final backgroundSync = ref.read(backgroundSyncProvider);
           final nativeSync = ref.read(nativeSyncApiProvider);
+          final syncStatus = ref.read(syncStatusProvider);
           if (totalChanged) {
             unawaited(nativeSync.cancelHashing());
-            // Waits for hashing to be cancelled before starting a new one
-            unawaited(backgroundSync.hashAssets().whenComplete(() => backgroundSync.hashAssets()));
+            if (syncStatus.isHashing) {
+              // Waits for hashing to be cancelled before starting a new one
+              unawaited(backgroundSync.hashAssets().whenComplete(() => backgroundSync.hashAssets()));
+            } else {
+              unawaited(backgroundSync.hashAssets());
+            }
 
             if (isBackupEnabled) {
               unawaited(backupNotifier.cancel().whenComplete(() => backupNotifier.startBackup(user.id)));
