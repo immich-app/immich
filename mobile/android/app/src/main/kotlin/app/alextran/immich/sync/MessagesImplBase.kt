@@ -12,12 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.coroutines.coroutineContext
 
 sealed class AssetResult {
   data class ValidAsset(val asset: PlatformAsset, val albumId: String) : AssetResult()
@@ -29,7 +31,6 @@ open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
-  private var hashCancelled: Boolean = false
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
@@ -240,12 +241,12 @@ open class NativeSyncApiImplBase(context: Context) {
       return
     }
 
-    hashCancelled = false
     hashTask = CoroutineScope(Dispatchers.IO).launch {
       try {
         val results = assetIds.map { assetId ->
           async {
             hashSemaphore.withPermit {
+              ensureActive()
               hashAsset(assetId)
             }
           }
@@ -268,7 +269,7 @@ open class NativeSyncApiImplBase(context: Context) {
     }
   }
 
-  private fun hashAsset(assetId: String): HashResult {
+  private suspend fun hashAsset(assetId: String): HashResult {
     return try {
       val assetUri = ContentUris.withAppendedId(
         MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
@@ -280,6 +281,7 @@ open class NativeSyncApiImplBase(context: Context) {
         var bytesRead: Int
         val buffer = ByteArray(HASH_BUFFER_SIZE)
         while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+          coroutineContext.ensureActive()
           digest.update(buffer, 0, bytesRead)
         }
       } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
@@ -295,7 +297,6 @@ open class NativeSyncApiImplBase(context: Context) {
 
   fun cancelHashing() {
     hashTask?.cancel()
-    hashCancelled = true
     hashTask = null
   }
 }
