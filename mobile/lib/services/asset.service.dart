@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -26,6 +25,7 @@ import 'package:immich_mobile/services/sync.service.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(
@@ -87,7 +87,7 @@ class AssetService {
       getChangedAssets: _getRemoteAssetChanges,
       loadAssets: _getRemoteAssets,
     );
-    debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
+    dPrint(() => "refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
   }
 
@@ -156,7 +156,7 @@ class AssetService {
             if (a.isInDb) {
               await _assetRepository.transaction(() => _assetRepository.update(a));
             } else {
-              debugPrint("[loadExif] parameter Asset is not from DB!");
+              dPrint(() => "[loadExif] parameter Asset is not from DB!");
             }
           }
         }

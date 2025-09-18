@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
@@ -30,7 +31,6 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view_gallery.dart';
-import 'package:platform/platform.dart';
 
 @RoutePage()
 class AssetViewerPage extends StatelessWidget {
@@ -53,15 +53,23 @@ class AssetViewerPage extends StatelessWidget {
 
 class AssetViewer extends ConsumerStatefulWidget {
   final int initialIndex;
-  final Platform? platform;
   final int? heroOffset;
 
-  const AssetViewer({super.key, required this.initialIndex, this.platform, this.heroOffset});
+  const AssetViewer({super.key, required this.initialIndex, this.heroOffset});
 
   @override
   ConsumerState createState() => _AssetViewerState();
 
   static void setAsset(WidgetRef ref, BaseAsset asset) {
+    ref.read(assetViewerProvider.notifier).reset();
+    _setAsset(ref, asset);
+  }
+
+  void changeAsset(WidgetRef ref, BaseAsset asset) {
+    _setAsset(ref, asset);
+  }
+
+  static void _setAsset(WidgetRef ref, BaseAsset asset) {
     // Always holds the current asset from the timeline
     ref.read(assetViewerProvider.notifier).setAsset(asset);
     // The currentAssetNotifier actually holds the current asset that is displayed
@@ -86,7 +94,6 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
 
-  late Platform platform;
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
   bool? hasDraggedDown;
@@ -109,17 +116,22 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   ImageStream? _prevPreCacheStream;
   ImageStream? _nextPreCacheStream;
 
+  KeepAliveLink? _stackChildrenKeepAlive;
+
   @override
   void initState() {
     super.initState();
     assert(ref.read(currentAssetNotifier) != null, "Current asset should not be null when opening the AssetViewer");
     pageController = PageController(initialPage: widget.initialIndex);
-    platform = widget.platform ?? const LocalPlatform();
     totalAssets = ref.read(timelineServiceProvider).totalAssets;
     bottomSheetController = DraggableScrollableController();
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
     reloadSubscription = EventStream.shared.listen(_onEvent);
     heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final asset = ref.read(currentAssetNotifier);
+    if (asset != null) {
+      _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
   }
 
   @override
@@ -131,6 +143,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _stackChildrenKeepAlive?.close();
     super.dispose();
   }
 
@@ -191,9 +204,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    AssetViewer.setAsset(ref, asset);
+    widget.changeAsset(ref, asset);
     _precacheAssets(index);
     _handleCasting();
+    _stackChildrenKeepAlive?.close();
+    _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
   }
 
   void _handleCasting() {
@@ -521,7 +536,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider).stackIndex);
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);
@@ -638,7 +653,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
           gaplessPlayback: true,
           loadingBuilder: _placeholderBuilder,
           pageController: pageController,
-          scrollPhysics: platform.isIOS
+          scrollPhysics: CurrentPlatform.isIOS
               ? const FastScrollPhysics() // Use bouncing physics for iOS
               : const FastClampingScrollPhysics(), // Use heavy physics for Android
           itemCount: totalAssets,

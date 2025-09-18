@@ -1,22 +1,20 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
-import 'package:platform/platform.dart';
 
 class AssetService {
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftLocalAssetRepository _localAssetRepository;
-  final Platform _platform;
 
   const AssetService({
     required RemoteAssetRepository remoteAssetRepository,
     required DriftLocalAssetRepository localAssetRepository,
   }) : _remoteAssetRepository = remoteAssetRepository,
-       _localAssetRepository = localAssetRepository,
-       _platform = const LocalPlatform();
+       _localAssetRepository = localAssetRepository;
 
   Future<BaseAsset?> getAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
@@ -42,13 +40,12 @@ class AssetService {
 
   Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
     if (asset.stackId == null) {
-      return [];
+      return const [];
     }
 
-    return _remoteAssetRepository.getStackChildren(asset).then((assets) {
-      // Include the primary asset in the stack as the first item
-      return [asset, ...assets];
-    });
+    final stack = await _remoteAssetRepository.getStackChildren(asset);
+    // Include the primary asset in the stack as the first item
+    return [asset, ...stack];
   }
 
   Future<ExifInfo?> getExif(BaseAsset asset) async {
@@ -71,7 +68,7 @@ class AssetService {
       width = exif?.width ?? asset.width?.toDouble();
       height = exif?.height ?? asset.height?.toDouble();
     } else if (asset is LocalAsset) {
-      isFlipped = _platform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
+      isFlipped = CurrentPlatform.isAndroid && (asset.orientation == 90 || asset.orientation == 270);
       width = asset.width?.toDouble();
       height = asset.height?.toDouble();
     } else {

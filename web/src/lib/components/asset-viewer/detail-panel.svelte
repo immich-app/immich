@@ -4,7 +4,6 @@
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate, {
     type AbsoluteResult,
     type RelativeResult,
@@ -24,7 +23,7 @@
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
   import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -41,7 +40,6 @@
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
@@ -168,7 +166,7 @@
   {#if !authManager.isSharedLink && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
-        <h2>{$t('people').toUpperCase()}</h2>
+        <h2 class="uppercase">{$t('people')}</h2>
         <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <IconButton
@@ -269,10 +267,10 @@
   <div class="px-4 py-4">
     {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
-        <h2>{$t('details').toUpperCase()}</h2>
+        <h2 class="uppercase">{$t('details')}</h2>
       </div>
     {:else}
-      <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
+      <p class="uppercase text-sm">{$t('no_exif_info_available')}</p>
     {/if}
 
     {#if dateTime}
@@ -281,12 +279,11 @@
         class="flex w-full text-start justify-between place-items-start gap-4 py-4"
         onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
-        class:hover:dark:text-immich-dark-primary={isOwner}
-        class:hover:text-immich-primary={isOwner}
+        class:hover:text-primary={isOwner}
       >
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
 
           <div>
@@ -318,7 +315,7 @@
 
         {#if isOwner}
           <div class="p-1">
-            <Icon path={mdiPencil} size="20" />
+            <Icon icon={mdiPencil} size="20" />
           </div>
         {/if}
       </button>
@@ -326,11 +323,11 @@
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
         </div>
         <div class="p-1">
-          <Icon path={mdiPencil} size="20" />
+          <Icon icon={mdiPencil} size="20" />
         </div>
       </div>
     {/if}
@@ -346,7 +343,7 @@
     {/if}
 
     <div class="flex gap-4 py-4">
-      <div><Icon path={mdiImageOutline} size="24" /></div>
+      <div><Icon icon={mdiImageOutline} size="24" /></div>
 
       <div>
         <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
@@ -364,10 +361,7 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p
-            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
-            transition:slide={{ duration: 250 }}
-          >
+          <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
               {asset.originalPath}
             </a>
@@ -394,7 +388,7 @@
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
-        <div><Icon path={mdiCameraIris} size="24" /></div>
+        <div><Icon icon={mdiCameraIris} size="24" /></div>
 
         <div>
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
@@ -405,7 +399,7 @@
                   ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
                 })}"
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
-                class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+                class="hover:text-primary"
               >
                 {asset.exifInfo.make || ''}
                 {asset.exifInfo.model || ''}
@@ -419,7 +413,7 @@
                 <a
                   href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
+                  class="hover:text-primary line-clamp-1"
                 >
                   {asset.exifInfo.lensModel}
                 </a>
@@ -503,7 +497,7 @@
 
 {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
-    <p class="text-sm">{$t('shared_by').toUpperCase()}</p>
+    <p class="uppercase text-sm">{$t('shared_by')}</p>
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />
@@ -520,7 +514,7 @@
 
 {#if albums.length > 0}
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
-    <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
+    <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
       <a href="{AppRoute.ALBUMS}/{album.id}">
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">

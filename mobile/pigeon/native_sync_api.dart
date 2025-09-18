@@ -73,9 +73,16 @@ class SyncDelta {
   });
 }
 
+class HashResult {
+  final String assetId;
+  final String? error;
+  final String? hash;
+
+  const HashResult({required this.assetId, this.error, this.hash});
+}
+
 class TrashedAssetParams {
   final String id;
-    // Follows AssetType enum from base_asset.model.dart
   final int type;
   final String? albumId;
 
@@ -109,13 +116,15 @@ abstract class NativeSyncApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<PlatformAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
 
+  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<Uint8List?> hashPaths(List<String> paths);
+  List<HashResult> hashAssets(List<String> assetIds, {bool allowNetworkAccess = false});
+
+  void cancelHashing();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<PlatformAsset> getTrashedAssetsForAlbum(String albumId, {int? updatedTimeCond});
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<Uint8List?> hashTrashedAssets(List<TrashedAssetParams> trashedAssets);
-
 }

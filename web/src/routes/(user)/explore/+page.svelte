@@ -1,18 +1,18 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import { AppRoute } from '$lib/constants';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
-  import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
-  import type { PageData } from './$types';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { t } from 'svelte-i18n';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { onMount } from 'svelte';
-  import { websocketEvents } from '$lib/stores/websocket';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -65,7 +65,7 @@
               />
               {#if person.isFavorite}
                 <div class="absolute top-2 start-2">
-                  <Icon path={mdiHeart} size="24" class="text-white" />
+                  <Icon icon={mdiHeart} size="24" class="text-white" />
                 </div>
               {/if}
               <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
@@ -102,7 +102,7 @@
                 />
               </div>
               <span
-                class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
+                class="absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
               >
                 {item.value}
               </span>

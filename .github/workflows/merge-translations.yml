@@ -1,8 +1,15 @@
 name: Merge translations
 
 on:
-  workflow_call:
   workflow_dispatch:
+  workflow_call:
+    secrets:
+      PUSH_O_MATIC_APP_ID:
+        required: true
+      PUSH_O_MATIC_APP_KEY:
+        required: true
+      WEBLATE_TOKEN:
+        required: true
 
 permissions: {}
 
@@ -84,7 +91,7 @@ jobs:
           # So we clean up no matter what
           set +e
 
-          for i in {1..10}; do
+          for i in {1..100}; do
             if gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state | jq -e '.state == "MERGED"'; then
               echo "PR merged"
               exit 0

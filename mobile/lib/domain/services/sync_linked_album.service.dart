@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -6,6 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/remote_album.repositor
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final syncLinkedAlbumServiceProvider = Provider(
   (ref) => SyncLinkedAlbumService(
@@ -100,7 +100,7 @@ class SyncLinkedAlbumService {
 
   /// Creates a new remote album and links it to the local album
   Future<void> _createAndLinkNewRemoteAlbum(LocalAlbum localAlbum) async {
-    debugPrint("Creating new remote album for local album: ${localAlbum.name}");
+    dPrint(() => "Creating new remote album for local album: ${localAlbum.name}");
     final newRemoteAlbum = await _albumApiRepository.createDriftAlbum(localAlbum.name, assetIds: []);
     await _remoteAlbumRepository.create(newRemoteAlbum, []);
     return _localAlbumRepository.linkRemoteAlbum(localAlbum.id, newRemoteAlbum.id);

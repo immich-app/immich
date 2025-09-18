@@ -32,17 +32,17 @@ class Timeline extends StatelessWidget {
     super.key,
     this.topSliverWidget,
     this.topSliverWidgetHeight,
-    this.showStorageIndicator,
+    this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    this.bottomSheet = const GeneralBottomSheet(),
+    this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.18),
     this.groupBy,
     this.withScrubber = true,
   });
 
   final Widget? topSliverWidget;
   final double? topSliverWidgetHeight;
-  final bool? showStorageIndicator;
+  final bool showStorageIndicator;
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withStack;
@@ -129,7 +129,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void _onEvent(Event event) {
     switch (event) {
       case ScrollToTopEvent():
-        _scrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+        ref.read(timelineStateProvider.notifier).setScrubbing(true);
+        _scrollController
+            .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
+            .whenComplete(() => ref.read(timelineStateProvider.notifier).setScrubbing(false));
+
       case ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
@@ -356,7 +360,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   children: [
                     timeline,
                     if (!isSelectionMode && isMultiSelectEnabled) ...[
-                      const Positioned(top: 60, left: 25, child: _MultiSelectStatusButton()),
+                      Positioned(
+                        top: MediaQuery.paddingOf(context).top,
+                        left: 25,
+                        child: const SizedBox(
+                          height: kToolbarHeight,
+                          child: Center(child: _MultiSelectStatusButton()),
+                        ),
+                      ),
                       if (widget.bottomSheet != null) widget.bottomSheet!,
                     ],
                   ],
