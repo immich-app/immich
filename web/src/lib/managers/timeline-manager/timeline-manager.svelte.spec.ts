@@ -1,7 +1,7 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { AbortError } from '$lib/utils';
-import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
+import { fromISODateTimeUTCToObject, getSegmentIdentifier } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { TimelineManager } from './timeline-manager.svelte';
@@ -129,46 +129,46 @@ describe('TimelineManager', () => {
 
     it('loads a month', async () => {
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
-      await timelineManager.loadSegment({ year: 2024, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
     it('ignores invalid months', async () => {
-      await timelineManager.loadSegment({ year: 2023, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2023, month: 1 }));
       expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
     });
 
     it('cancels month loading', async () => {
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })!;
-      void timelineManager.loadSegment({ year: 2024, month: 1 });
+      void timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       const abortSpy = vi.spyOn(month!.loader!.cancelToken!, 'abort');
       month?.cancel();
       expect(abortSpy).toBeCalledTimes(1);
-      await timelineManager.loadSegment({ year: 2024, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
     it('prevents loading months multiple times', async () => {
       await Promise.all([
-        timelineManager.loadSegment({ year: 2024, month: 1 }),
-        timelineManager.loadSegment({ year: 2024, month: 1 }),
+        timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 })),
+        timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 })),
       ]);
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
 
-      await timelineManager.loadSegment({ year: 2024, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
     });
 
     it('allows loading a canceled month', async () => {
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })!;
-      const loadPromise = timelineManager.loadSegment({ year: 2024, month: 1 });
+      const loadPromise = timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
 
       month.cancel();
       await loadPromise;
       expect(month?.getAssets().length).toEqual(0);
 
-      await timelineManager.loadSegment({ year: 2024, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       expect(month!.getAssets().length).toEqual(3);
     });
   });
@@ -477,7 +477,7 @@ describe('TimelineManager', () => {
     });
 
     it('returns previous assetId', async () => {
-      await timelineManager.loadSegment({ year: 2024, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 });
 
       const a = month!.getAssets()[0];
@@ -487,8 +487,8 @@ describe('TimelineManager', () => {
     });
 
     it('returns previous assetId spanning multiple months', async () => {
-      await timelineManager.loadSegment({ year: 2024, month: 2 });
-      await timelineManager.loadSegment({ year: 2024, month: 3 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 2 }));
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 3 }));
 
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 2 });
       const previousMonth = getMonthGroupByDate(timelineManager, { year: 2024, month: 3 });
@@ -499,7 +499,7 @@ describe('TimelineManager', () => {
     });
 
     it('loads previous month', async () => {
-      await timelineManager.loadSegment({ year: 2024, month: 2 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 2 }));
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 2 });
       const previousMonth = getMonthGroupByDate(timelineManager, { year: 2024, month: 3 });
       const a = month!.getFirstAsset();
@@ -513,9 +513,9 @@ describe('TimelineManager', () => {
     });
 
     it('skips removed assets', async () => {
-      await timelineManager.loadSegment({ year: 2024, month: 1 });
-      await timelineManager.loadSegment({ year: 2024, month: 2 });
-      await timelineManager.loadSegment({ year: 2024, month: 3 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 2 }));
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 3 }));
 
       const [assetOne, assetTwo, assetThree] = await getAssets(timelineManager);
       timelineManager.removeAssets([assetTwo.id]);
@@ -523,7 +523,7 @@ describe('TimelineManager', () => {
     });
 
     it('returns null when no more assets', async () => {
-      await timelineManager.loadSegment({ year: 2024, month: 3 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 3 }));
       expect(await timelineManager.getLaterAsset(timelineManager.months[0].getFirstAsset())).toBeUndefined();
     });
   });

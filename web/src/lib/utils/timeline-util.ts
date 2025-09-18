@@ -30,6 +30,12 @@ export type ScrubberListener = (scrubberData: {
   scrollToFunction?: (top: number) => void;
 }) => void | Promise<void>;
 
+export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDateTime) => ({
+  matches(segment: any) {
+    return segment.yearMonth && segment.yearMonth.year === yearMonth.year && segment.yearMonth.month === yearMonth.month;
+  },
+});
+
 // used for AssetResponseDto.dateTimeOriginal, amongst others
 export const fromISODateTime = (isoDateTime: string, timeZone: string): DateTime<true> =>
   DateTime.fromISO(isoDateTime, { zone: timeZone, locale: get(locale) }) as DateTime<true>;
