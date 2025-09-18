@@ -36,17 +36,17 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Stream<LocalAsset?> watch(String id) => _assetSelectable(id).watchSingleOrNull();
 
-  Future<void> updateHashes(Iterable<LocalAsset> hashes) {
+  Future<void> updateHashes(Map<String, String> hashes) {
     if (hashes.isEmpty) {
       return Future.value();
     }
 
     return _db.batch((batch) async {
-      for (final asset in hashes) {
+      for (final entry in hashes.entries) {
         batch.update(
           _db.localAssetEntity,
-          LocalAssetEntityCompanion(checksum: Value(asset.checksum)),
-          where: (e) => e.id.equals(asset.id),
+          LocalAssetEntityCompanion(checksum: Value(entry.value)),
+          where: (e) => e.id.equals(entry.key),
         );
       }
     });
