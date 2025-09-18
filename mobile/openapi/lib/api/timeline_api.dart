@@ -61,7 +61,10 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
+  ///
+  /// * [bool] withoutGps:
+  ///   Exclude assets with GPS data
+  Future<Response> getTimeBucketWithHttpInfo(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, bool? withoutGps}) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/bucket';
 
@@ -111,6 +114,9 @@ class TimelineApi {
     }
     if (withStacked != null) {
       queryParams.addAll(_queryParams('', 'withStacked', withStacked));
+    }
+    if (withoutGps != null) {
+      queryParams.addAll(_queryParams('', 'withoutGps', withoutGps));
     }
 
     const contentTypes = <String>[];
@@ -170,8 +176,11 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, );
+  ///
+  /// * [bool] withoutGps:
+  ///   Exclude assets with GPS data
+  Future<TimeBucketAssetResponseDto?> getTimeBucket(String timeBucket, { String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, bool? withoutGps }) async {
+    final response = await getTimeBucketWithHttpInfo(timeBucket,  albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, withoutGps: withoutGps );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -227,7 +236,10 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
+  ///
+  /// * [bool] withoutGps:
+  ///   Exclude assets with GPS data
+  Future<Response> getTimeBucketsWithHttpInfo({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, bool? withoutGps }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/timeline/buckets';
 
@@ -276,6 +288,9 @@ class TimelineApi {
     }
     if (withStacked != null) {
       queryParams.addAll(_queryParams('', 'withStacked', withStacked));
+    }
+    if (withoutGps != null) {
+      queryParams.addAll(_queryParams('', 'withoutGps', withoutGps));
     }
 
     const contentTypes = <String>[];
@@ -332,8 +347,11 @@ class TimelineApi {
   ///
   /// * [bool] withStacked:
   ///   Include stacked assets in the response. When true, only primary assets from stacks are returned.
-  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, }) async {
-    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, );
+  ///
+  /// * [bool] withoutGps:
+  ///   Exclude assets with GPS data
+  Future<List<TimeBucketsResponseDto>?> getTimeBuckets({ String? albumId, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? slug, String? tagId, String? userId, AssetVisibility? visibility, bool? withCoordinates, bool? withPartners, bool? withStacked, bool? withoutGps }) async {
+    final response = await getTimeBucketsWithHttpInfo( albumId: albumId, isFavorite: isFavorite, isTrashed: isTrashed, key: key, order: order, personId: personId, slug: slug, tagId: tagId, userId: userId, visibility: visibility, withCoordinates: withCoordinates, withPartners: withPartners, withStacked: withStacked, withoutGps: withoutGps);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
