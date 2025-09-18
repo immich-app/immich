@@ -21,6 +21,7 @@ void main() {
   late MockLocalAssetRepository mockAssetRepo;
   late MockStorageRepository mockStorageRepo;
   late MockNativeSyncApi mockNativeApi;
+  late MockTrashSyncService mockTrashSyncService;
   final sortBy = {SortLocalAlbumsBy.backupSelection, SortLocalAlbumsBy.isIosSharedAlbum};
 
   setUp(() {
@@ -28,12 +29,14 @@ void main() {
     mockAssetRepo = MockLocalAssetRepository();
     mockStorageRepo = MockStorageRepository();
     mockNativeApi = MockNativeSyncApi();
+    mockTrashSyncService = MockTrashSyncService();
 
     sut = HashService(
       localAlbumRepository: mockAlbumRepo,
       localAssetRepository: mockAssetRepo,
       storageRepository: mockStorageRepo,
       nativeSyncApi: mockNativeApi,
+      trashSyncService: mockTrashSyncService,
     );
 
     registerFallbackValue(LocalAlbumStub.recent);
@@ -138,6 +141,7 @@ void main() {
         localAssetRepository: mockAssetRepo,
         storageRepository: mockStorageRepo,
         nativeSyncApi: mockNativeApi,
+        trashSyncService: mockTrashSyncService,
         batchFileLimit: 1,
       );
 
@@ -173,6 +177,7 @@ void main() {
         localAssetRepository: mockAssetRepo,
         storageRepository: mockStorageRepo,
         nativeSyncApi: mockNativeApi,
+        trashSyncService: mockTrashSyncService,
         batchSizeLimit: 80,
       );
 

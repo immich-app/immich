@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
@@ -14,14 +15,17 @@ import 'package:platform/platform.dart';
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
   final NativeSyncApi _nativeSyncApi;
+  final TrashSyncService _trashSyncService;
   final Platform _platform;
   final Logger _log = Logger("DeviceSyncService");
 
   LocalSyncService({
     required DriftLocalAlbumRepository localAlbumRepository,
+    required TrashSyncService trashSyncService,
     required NativeSyncApi nativeSyncApi,
     Platform? platform,
   }) : _localAlbumRepository = localAlbumRepository,
+       _trashSyncService = trashSyncService,
        _nativeSyncApi = nativeSyncApi,
        _platform = platform ?? const LocalPlatform();
 
@@ -74,7 +78,10 @@ class LocalSyncService {
           await updateAlbum(dbAlbum, album);
         }
       }
-
+      if (_trashSyncService.isAutoSyncMode) {
+        // On Android we need to sync trashed assets
+        await _trashSyncService.updateLocalTrashFromDevice();
+      }
       await _nativeSyncApi.checkpointSync();
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
@@ -99,6 +106,9 @@ class LocalSyncService {
         onlyFirst: removeAlbum,
         onlySecond: addAlbum,
       );
+      if (_trashSyncService.isAutoSyncMode) {
+        await _trashSyncService.updateLocalTrashFromDevice();
+      }
 
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();

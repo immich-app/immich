@@ -24,6 +24,7 @@ class PlatformAsset {
   final int durationInSeconds;
   final int orientation;
   final bool isFavorite;
+  final int? size;
 
   const PlatformAsset({
     required this.id,
@@ -36,6 +37,7 @@ class PlatformAsset {
     this.durationInSeconds = 0,
     this.orientation = 0,
     this.isFavorite = false,
+    this.size,
   });
 }
 
@@ -71,6 +73,19 @@ class SyncDelta {
   });
 }
 
+class TrashedAssetParams {
+  final String id;
+    // Follows AssetType enum from base_asset.model.dart
+  final int type;
+  final String? albumId;
+
+  const TrashedAssetParams({
+    required this.id,
+    required this.type,
+    this.albumId,
+  });
+}
+
 @HostApi()
 abstract class NativeSyncApi {
   bool shouldFullSync();
@@ -96,4 +111,11 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<Uint8List?> hashPaths(List<String> paths);
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<PlatformAsset> getTrashedAssetsForAlbum(String albumId, {int? updatedTimeCond});
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<Uint8List?> hashTrashedAssets(List<TrashedAssetParams> trashedAssets);
+
 }

@@ -3,14 +3,12 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/domain/models/local_trashed_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_trashed_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_trashed_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-typedef LocalRemoteIds = ({String localId, String remoteId});
+typedef AssetsByAlbums = Map<String, List<LocalAsset>>;
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -58,7 +56,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> delete(Iterable<String> ids) {
+  Future<void> delete(List<String> ids) {
     if (ids.isEmpty) {
       return Future.value();
     }
@@ -70,27 +68,37 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> trash(Iterable<LocalRemoteIds> ids) async {
-    if (ids.isEmpty) return;
+  Future<void> trash(AssetsByAlbums assetsByAlbums) async {
+    if (assetsByAlbums.isEmpty) {
+      return;
+    }
 
-    final Map<String, String> idToRemote = {for (final e in ids) e.localId: e.remoteId};
+    final companions = <TrashedLocalAssetEntityCompanion>[];
+    final idToDelete = <String>{};
 
-    final localRows = await (_db.localAssetEntity.select()..where((t) => t.id.isIn(idToRemote.keys))).get();
-
-    await _db.batch((batch) {
-      for (final row in localRows) {
-        final remoteId = idToRemote[row.id];
-        if (remoteId == null) {
-          continue;
-        }
-        batch.insert(
-          _db.localTrashedAssetEntity,
-          LocalTrashedAssetEntityCompanion(id: Value(row.id), remoteId: Value(remoteId)),
-          mode: InsertMode.insertOrReplace,
+    assetsByAlbums.forEach((albumId, assets) {
+      for (final asset in assets) {
+        idToDelete.add(asset.id);
+        companions.add(
+          TrashedLocalAssetEntityCompanion(
+            id: Value(asset.id),
+            name: Value(asset.name),
+            albumId: Value(albumId),
+            checksum: asset.checksum == null ? const Value.absent() : Value(asset.checksum),
+            type: Value(asset.type),
+          ),
         );
       }
-      for (final slice in idToRemote.keys.slices(32000)) {
-        batch.deleteWhere(_db.localAssetEntity, (e) => e.id.isIn(slice));
+    });
+
+    await _db.transaction(() async {
+      for (final slice in companions.slices(200)) {
+        await _db.batch((batch) {
+          batch.insertAllOnConflictUpdate(_db.trashedLocalAssetEntity, slice);
+        });
+      }
+      for (final slice in idToDelete.slices(800)) {
+        await (_db.delete(_db.localAssetEntity)..where((e) => e.id.isIn(slice))).go();
       }
     });
   }
@@ -128,41 +136,30 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<List<LocalAsset>> getBackupSelectedAssets(Iterable<String> checksums) {
+  Future<AssetsByAlbums> getBackupSelectedAssetsByAlbum(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
-      return Future.value([]);
+      return {};
     }
-    final backedUpAssetIds = _db.localAlbumAssetEntity.selectOnly()
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
-      ..join([
-        innerJoin(
-          _db.localAlbumEntity,
-          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
-          useColumns: false,
-        ),
-      ])
-      ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
-    final query = _db.localAssetEntity.select()
-      ..where((la) => la.checksum.isIn(checksums) & la.id.isInQuery(backedUpAssetIds));
-    return query.map((row) => row.toDto()).get();
-  }
 
-  Future<List<LocalTrashedAsset>> getLocalTrashedAssets(Iterable<String> remoteIds) {
-    if (remoteIds.isEmpty) {
-      return Future.value([]);
-    }
-    final query = _db.localTrashedAssetEntity.select()..where((t) => t.remoteId.isIn(remoteIds));
-    return query.map((row) => row.toDto()).get();
-  }
+    final lAlbumAsset = _db.localAlbumAssetEntity;
+    final lAlbum = _db.localAlbumEntity;
+    final lAsset = _db.localAssetEntity;
 
-  Future<void> deleteLocalTrashedAssets(Iterable<String> remoteIds) {
-    if (remoteIds.isEmpty) {
-      return Future.value();
-    }
-    return _db.batch((batch) {
-      for (final slice in remoteIds.slices(32000)) {
-        batch.deleteWhere(_db.localTrashedAssetEntity, (e) => e.remoteId.isIn(slice));
+    final result = <String, List<LocalAsset>>{};
+
+    for (final slice in checksums.toSet().slices(800)) {
+      final rows = await (_db.select(lAlbumAsset).join([
+        innerJoin(lAlbum, lAlbumAsset.albumId.equalsExp(lAlbum.id)),
+        innerJoin(lAsset, lAlbumAsset.assetId.equalsExp(lAsset.id)),
+      ])..where(lAlbum.backupSelection.equalsValue(BackupSelection.selected) & lAsset.checksum.isIn(slice))).get();
+
+      for (final row in rows) {
+        final albumId = row.readTable(lAlbumAsset).albumId;
+        final assetData = row.readTable(lAsset);
+        final asset = assetData.toDto();
+        (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
-    });
+    }
+    return result;
   }
 }

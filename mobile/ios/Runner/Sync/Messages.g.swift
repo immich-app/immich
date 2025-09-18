@@ -140,6 +140,7 @@ struct PlatformAsset: Hashable {
   var durationInSeconds: Int64
   var orientation: Int64
   var isFavorite: Bool
+  var size: Int64? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -154,6 +155,7 @@ struct PlatformAsset: Hashable {
     let durationInSeconds = pigeonVar_list[7] as! Int64
     let orientation = pigeonVar_list[8] as! Int64
     let isFavorite = pigeonVar_list[9] as! Bool
+    let size: Int64? = nilOrValue(pigeonVar_list[10])
 
     return PlatformAsset(
       id: id,
@@ -165,7 +167,8 @@ struct PlatformAsset: Hashable {
       height: height,
       durationInSeconds: durationInSeconds,
       orientation: orientation,
-      isFavorite: isFavorite
+      isFavorite: isFavorite,
+      size: size
     )
   }
   func toList() -> [Any?] {
@@ -180,6 +183,7 @@ struct PlatformAsset: Hashable {
       durationInSeconds,
       orientation,
       isFavorite,
+      size,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
@@ -267,6 +271,39 @@ struct SyncDelta: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct TrashedAssetParams: Hashable {
+  var id: String
+  var type: Int64
+  var albumId: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> TrashedAssetParams? {
+    let id = pigeonVar_list[0] as! String
+    let type = pigeonVar_list[1] as! Int64
+    let albumId: String? = nilOrValue(pigeonVar_list[2])
+
+    return TrashedAssetParams(
+      id: id,
+      type: type,
+      albumId: albumId
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      id,
+      type,
+      albumId,
+    ]
+  }
+  static func == (lhs: TrashedAssetParams, rhs: TrashedAssetParams) -> Bool {
+    return deepEqualsMessages(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashMessages(value: toList(), hasher: &hasher)
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -276,6 +313,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformAlbum.fromList(self.readValue() as! [Any?])
     case 131:
       return SyncDelta.fromList(self.readValue() as! [Any?])
+    case 132:
+      return TrashedAssetParams.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -292,6 +331,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? SyncDelta {
       super.writeByte(131)
+      super.writeValue(value.toList())
+    } else if let value = value as? TrashedAssetParams {
+      super.writeByte(132)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -324,6 +366,8 @@ protocol NativeSyncApi {
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashPaths(paths: [String]) throws -> [FlutterStandardTypedData?]
+  func getTrashedAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
+  func hashTrashedAssets(trashedAssets: [TrashedAssetParams]) throws -> [FlutterStandardTypedData?]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -475,6 +519,41 @@ class NativeSyncApiSetup {
       }
     } else {
       hashPathsChannel.setMessageHandler(nil)
+    }
+    let getTrashedAssetsForAlbumChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      getTrashedAssetsForAlbumChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let albumIdArg = args[0] as! String
+        let updatedTimeCondArg: Int64? = nilOrValue(args[1])
+        do {
+          let result = try api.getTrashedAssetsForAlbum(albumId: albumIdArg, updatedTimeCond: updatedTimeCondArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getTrashedAssetsForAlbumChannel.setMessageHandler(nil)
+    }
+    let hashTrashedAssetsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    if let api = api {
+      hashTrashedAssetsChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let trashedAssetsArg = args[0] as! [TrashedAssetParams]
+        do {
+          let result = try api.hashTrashedAssets(trashedAssets: trashedAssetsArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      hashTrashedAssetsChannel.setMessageHandler(nil)
     }
   }
 }

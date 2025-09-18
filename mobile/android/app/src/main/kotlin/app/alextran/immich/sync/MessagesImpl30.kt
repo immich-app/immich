@@ -1,11 +1,18 @@
 package app.alextran.immich.sync
 
+import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.Context
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
 import kotlinx.serialization.json.Json
+import java.io.BufferedInputStream
+import java.security.DigestInputStream
+import java.security.MessageDigest
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @RequiresExtension(extension = Build.VERSION_CODES.R, version = 1)
@@ -31,6 +38,56 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
       remove(SHARED_PREF_MEDIA_STORE_GEN_KEY)
       apply()
     }
+  }
+
+  @RequiresExtension(extension = Build.VERSION_CODES.R, version = 1)
+  @RequiresApi(Build.VERSION_CODES.R)
+  override fun getTrashedAssetsForAlbum(
+    albumId: String,
+    updatedTimeCond: Long?
+  ): List<PlatformAsset> {
+    val trashed = mutableListOf<PlatformAsset>()
+    val volumes = MediaStore.getExternalVolumeNames(ctx)
+
+    var selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
+    val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
+
+    if (updatedTimeCond != null) {
+      selection += " AND (${MediaStore.Files.FileColumns.DATE_MODIFIED} > ? OR ${MediaStore.Files.FileColumns.DATE_ADDED} > ?)"
+      selectionArgs.addAll(listOf(updatedTimeCond.toString(), updatedTimeCond.toString()))
+    }
+
+    for (volume in volumes) {
+      val uri = MediaStore.Files.getContentUri(volume)
+      val queryArgs = Bundle().apply {
+        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
+        putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
+      }
+
+      ctx.contentResolver.query(uri, ASSET_PROJECTION, queryArgs, null).use { cursor ->
+        getAssets(cursor).forEach { res ->
+          if (res is AssetResult.ValidAsset) trashed += res.asset
+        }
+      }
+    }
+    return trashed
+  }
+
+  override fun hashTrashedAssets(trashedAssets: List<TrashedAssetParams>): List<ByteArray?> {
+    val result = ArrayList<ByteArray?>(trashedAssets.size)
+    for (item in trashedAssets) {
+      val digest = try {
+        val id = item.id.toLong()
+        val mediaType = item.type.toInt()
+        val uri = contentUriForType(id, mediaType)
+        sha1OfUri(ctx, uri)
+      } catch (_: Throwable) {
+        null
+      }
+      result.add(digest)
+    }
+    return result
   }
 
   override fun shouldFullSync(): Boolean =
@@ -85,5 +142,32 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
     // Unmounted volumes are handled in dart when the album is removed
     return SyncDelta(hasChanges, changed, deleted, assetAlbums)
+  }
+
+  private fun contentUriForType(id: Long, mediaType: Int): Uri {
+    val vol = MediaStore.VOLUME_EXTERNAL
+    val base = when (mediaType) {
+      MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> MediaStore.Images.Media.getContentUri(vol)
+      MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> MediaStore.Video.Media.getContentUri(vol)
+      MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO -> MediaStore.Audio.Media.getContentUri(vol)
+      else -> MediaStore.Files.getContentUri(vol)
+    }
+    return ContentUris.withAppendedId(base, id)
+  }
+
+  private fun sha1OfUri(ctx: Context, uri: Uri): ByteArray? {
+    return try {
+      val md = MessageDigest.getInstance("SHA-1")
+      ctx.contentResolver.openInputStream(uri)?.use { input ->
+        DigestInputStream(BufferedInputStream(input), md).use { dis ->
+          val buf = ByteArray(DEFAULT_BUFFER_SIZE)
+          while (dis.read(buf) != -1) { /* pump */
+          }
+        }
+      } ?: return null
+      md.digest()
+    } catch (_: Exception) {
+      null
+    }
   }
 }
