@@ -11,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/utils/debounce.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
@@ -81,6 +82,8 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   bool _isDragging = false;
   List<_Segment> _segments = [];
   int _monthCount = 0;
+  DateTime? _currentScrubberDate;
+  Debouncer? _scrubberDebouncer;
 
   late AnimationController _thumbAnimationController;
   Timer? _fadeOutTimer;
@@ -133,6 +136,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     _thumbAnimationController.dispose();
     _labelAnimationController.dispose();
     _fadeOutTimer?.cancel();
+    _scrubberDebouncer?.dispose();
     super.dispose();
   }
 
@@ -176,11 +180,25 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     return false;
   }
 
-  void _onDragStart(DragStartDetails _) {
-    if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+  void _onScrubberDateChanged(DateTime date) {
+    if (_currentScrubberDate != date) {
+      // Date changed, immediately set scrubbing to true
+      _currentScrubberDate = date;
       ref.read(timelineStateProvider.notifier).setScrubbing(true);
-    }
 
+      // Initialize debouncer if needed
+      _scrubberDebouncer ??= Debouncer(interval: const Duration(milliseconds: 50));
+
+      // Debounce setting scrubbing to false
+      _scrubberDebouncer!.run(() {
+        if (_currentScrubberDate == date) {
+          ref.read(timelineStateProvider.notifier).setScrubbing(false);
+        }
+      });
+    }
+  }
+
+  void _onDragStart(DragStartDetails _) {
     setState(() {
       _isDragging = true;
       _labelAnimationController.forward();
@@ -206,6 +224,11 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       if (_lastLabel != label) {
         ref.read(hapticFeedbackProvider.notifier).selectionClick();
         _lastLabel = label;
+
+        // Notify timeline state of the new scrubber date position
+        if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+          _onScrubberDateChanged(nearestMonthSegment.date);
+        }
       }
     }
 
@@ -294,11 +317,15 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragEnd(DragEndDetails _) {
-    ref.read(timelineStateProvider.notifier).setScrubbing(false);
     _labelAnimationController.reverse();
     setState(() {
       _isDragging = false;
     });
+
+    // Reset scrubber tracking when drag ends
+    _currentScrubberDate = null;
+    _scrubberDebouncer?.dispose();
+    _scrubberDebouncer = null;
 
     _resetThumbTimer();
   }

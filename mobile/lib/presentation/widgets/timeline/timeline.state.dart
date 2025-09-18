@@ -72,8 +72,6 @@ class TimelineState {
 }
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
-  TimelineStateNotifier();
-
   void setScrubbing(bool isScrubbing) {
     state = state.copyWith(isScrubbing: isScrubbing);
   }
