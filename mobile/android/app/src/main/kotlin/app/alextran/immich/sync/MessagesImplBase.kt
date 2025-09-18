@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.net.Uri
 import android.provider.MediaStore
 import android.util.Base64
 import androidx.core.database.getStringOrNull
@@ -30,12 +31,12 @@ sealed class AssetResult {
 open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
-  private var hashTask: Job? = null
+  internal var hashTask: Job? = null
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
-    private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
-    private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
+    internal val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
+    internal const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
 
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
@@ -274,12 +275,15 @@ open class NativeSyncApiImplBase(context: Context) {
   }
 
   private suspend fun hashAsset(assetId: String): HashResult {
-    return try {
-      val assetUri = ContentUris.withAppendedId(
-        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-        assetId.toLong()
-      )
+    val assetUri = ContentUris.withAppendedId(
+      MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+      assetId.toLong()
+    )
+    return hashAssetFromUri(assetId, assetUri)
+  }
 
+  protected suspend fun hashAssetFromUri(assetId: String, assetUri: Uri): HashResult {
+    return try {
       val digest = MessageDigest.getInstance("SHA-1")
       ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
         var bytesRead: Int

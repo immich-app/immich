@@ -31,7 +31,7 @@ class HashService {
        _localAssetRepository = localAssetRepository,
        _cancelChecker = cancelChecker,
        _nativeSyncApi = nativeSyncApi,
-       _batchSize = batchSize ?? kBatchHashFileLimit;
+       _batchSize = batchSize ?? kBatchHashFileLimit,
        _trashSyncService = trashSyncService;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
@@ -144,7 +144,6 @@ class HashService {
   }
 
   Future<void> _hashTrashedAssets(LocalAlbum album, Iterable<TrashedAsset> assetsToHash) async {
-    int bytesProcessed = 0;
     final toHash = <TrashedAsset>[];
 
     for (final asset in assetsToHash) {
@@ -160,13 +159,11 @@ class HashService {
         continue;
       }
 
-      bytesProcessed += asset.size!;
       toHash.add(asset);
 
-      if (toHash.length >= batchFileLimit || bytesProcessed >= batchSizeLimit) {
+      if (toHash.length == _batchSize) {
         await _processTrashedBatch(album, toHash);
         toHash.clear();
-        bytesProcessed = 0;
       }
     }
 
@@ -181,27 +178,27 @@ class HashService {
     _log.fine("Hashing ${toHash.length} trashed files");
 
     final params = toHash.map((e) => TrashedAssetParams(id: e.id, type: e.type.index, albumId: album.id)).toList();
-    final hashes = await _nativeSyncApi.hashTrashedAssets(params);
+    final hashResults = await _nativeSyncApi.hashTrashedAssets(params);
 
     assert(
-      hashes.length == toHash.length,
-      "Trashed Assets, Hashes length does not match toHash length: ${hashes.length} != ${toHash.length}",
+      hashResults.length == toHash.length,
+      "Trashed Assets, Hashes length does not match toHash length: ${hashResults.length} != ${toHash.length}",
     );
     final hashed = <TrashedAsset>[];
 
-    for (int i = 0; i < hashes.length; i++) {
+    for (int i = 0; i < hashResults.length; i++) {
       if (isCancelled) {
         _log.warning("Hashing cancelled. Stopped processing batch.");
         return;
       }
 
-      final hash = hashes[i];
+      final hashResult = hashResults[i];
       final asset = toHash[i];
-      if (hash?.length == 20) {
-        hashed.add(asset.copyWith(checksum: base64.encode(hash!)));
+      if (hashResult.hash != null) {
+        hashed.add(asset.copyWith(checksum: hashResult.hash!));
       } else {
         _log.warning(
-          "Failed to hash trashed file for ${asset.id}: ${asset.name} created at ${asset.createdAt} from album: ${album.name}",
+          "Failed to hash trashed asset with id: ${hashResult.assetId}, name: ${asset.name}, createdAt: ${asset.createdAt}, from album: ${album.name}. Error: ${hashResult.error ?? "unknown"}",
         );
       }
     }
@@ -209,61 +206,4 @@ class HashService {
     _log.fine("Hashed ${hashed.length}/${toHash.length} trashed assets");
     await _trashSyncService.updateChecksums(hashed);
   }
-
-  // Future<void> _hashTrashedAssets(LocalAlbum album, Iterable<TrashedAsset> assetsToHash) async {
-  //   final trashedAssets = assetsToHash
-  //       .map((e) => TrashedAssetParams(id: e.id, type: e.type.index, albumId: album.id))
-  //       .toList();
-  //
-  //   final byId = <String, LocalAsset>{for (final a in assetsToHash) a.id: a};
-  //
-  //   final hashed = <LocalAsset>[];
-  //   const chunkSize = 10;
-  //
-  //   for (int i = 0; i < trashedAssets.length; i += chunkSize) {
-  //     if (isCancelled) {
-  //       _log.warning("Hashing cancelled. Stopped processing assets.");
-  //       return;
-  //     }
-  //     final end = (i + chunkSize <= trashedAssets.length) ? i + chunkSize : trashedAssets.length;
-  //     final batch = trashedAssets.sublist(i, end);
-  //
-  //     List<Uint8List?> hashes;
-  //     try {
-  //       hashes = await _nativeSyncApi.hashTrashedAssets(batch);
-  //     } catch (e, s) {
-  //       _log.severe("hashTrashedAssets failed for batch [$i..${end - 1}]: $e", e, s);
-  //       continue;
-  //     }
-  //
-  //     if (hashes.length != batch.length) {
-  //       _log.warning(
-  //         "hashTrashedAssets returned ${hashes.length} hashes for ${batch.length} assets (batch [$i..${end - 1}]).",
-  //       );
-  //     }
-  //
-  //     final limit = hashes.length < batch.length ? hashes.length : batch.length;
-  //     for (int j = 0; j < limit; j++) {
-  //       if (isCancelled) {
-  //         _log.warning("Hashing cancelled. Stopped processing assets.");
-  //         return;
-  //       }
-  //       final asset = batch[j];
-  //       final hash = hashes[j];
-  //
-  //       if (hash != null && hash.length == 20) {
-  //         final localAsset = byId[asset.id];
-  //         if (localAsset != null) {
-  //           hashed.add(localAsset.copyWith(checksum: base64.encode(hash)));
-  //         }
-  //       } else {
-  //         _log.warning("Failed to hash file for ${asset.id} from album: ${album.name}");
-  //       }
-  //     }
-  //   }
-  //
-  //   _log.warning("updateHashes for album: ${album.name}, assets: ${hashed.map((e) => '${e.name}-${e.checksum}')}");
-  //
-  //   await _trashSyncService.updateHashes(hashed);
-  // }
 }

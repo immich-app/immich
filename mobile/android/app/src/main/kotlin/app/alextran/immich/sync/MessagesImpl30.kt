@@ -9,10 +9,15 @@ import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
-import java.io.BufferedInputStream
-import java.security.DigestInputStream
-import java.security.MessageDigest
+import kotlin.coroutines.cancellation.CancellationException
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @RequiresExtension(extension = Build.VERSION_CODES.R, version = 1)
@@ -74,20 +79,41 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     return trashed
   }
 
-  override fun hashTrashedAssets(trashedAssets: List<TrashedAssetParams>): List<ByteArray?> {
-    val result = ArrayList<ByteArray?>(trashedAssets.size)
-    for (item in trashedAssets) {
-      val digest = try {
-        val id = item.id.toLong()
-        val mediaType = item.type.toInt()
-        val uri = contentUriForType(id, mediaType)
-        sha1OfUri(ctx, uri)
-      } catch (_: Throwable) {
-        null
-      }
-      result.add(digest)
+  override fun hashTrashedAssets(
+    trashedAssets: List<TrashedAssetParams>,
+    callback: (Result<List<HashResult>>) -> Unit
+  ) {
+    if (trashedAssets.isEmpty()) {
+      callback(Result.success(emptyList()))
+      return
     }
-    return result
+    hashTask?.cancel()
+    hashTask = CoroutineScope(Dispatchers.IO).launch {
+      try {
+        val results = trashedAssets.map { assetParams ->
+          async {
+            hashSemaphore.withPermit {
+              ensureActive()
+              hashTrashedAsset(assetParams)
+            }
+          }
+        }.awaitAll()
+
+        callback(Result.success(results))
+      } catch (e: CancellationException) {
+        callback(
+          Result.failure(
+            FlutterError(
+              HASHING_CANCELLED_CODE,
+              "Hashing operation was cancelled",
+              null
+            )
+          )
+        )
+      } catch (e: Exception) {
+        callback(Result.failure(e))
+      }
+    }
   }
 
   override fun shouldFullSync(): Boolean =
@@ -144,6 +170,13 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     return SyncDelta(hasChanges, changed, deleted, assetAlbums)
   }
 
+  suspend fun hashTrashedAsset(assetParams: TrashedAssetParams): HashResult {
+    val id = assetParams.id.toLong()
+    val mediaType = assetParams.type.toInt()
+    val assetUri = contentUriForType(id, mediaType)
+    return hashAssetFromUri(assetParams.id, assetUri)
+  }
+
   private fun contentUriForType(id: Long, mediaType: Int): Uri {
     val vol = MediaStore.VOLUME_EXTERNAL
     val base = when (mediaType) {
@@ -153,21 +186,5 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
       else -> MediaStore.Files.getContentUri(vol)
     }
     return ContentUris.withAppendedId(base, id)
-  }
-
-  private fun sha1OfUri(ctx: Context, uri: Uri): ByteArray? {
-    return try {
-      val md = MessageDigest.getInstance("SHA-1")
-      ctx.contentResolver.openInputStream(uri)?.use { input ->
-        DigestInputStream(BufferedInputStream(input), md).use { dis ->
-          val buf = ByteArray(DEFAULT_BUFFER_SIZE)
-          while (dis.read(buf) != -1) { /* pump */
-          }
-        }
-      } ?: return null
-      md.digest()
-    } catch (_: Exception) {
-      null
-    }
   }
 }

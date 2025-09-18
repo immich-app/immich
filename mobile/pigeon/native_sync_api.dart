@@ -125,6 +125,7 @@ abstract class NativeSyncApi {
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<PlatformAsset> getTrashedAssetsForAlbum(String albumId, {int? updatedTimeCond});
 
+  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<Uint8List?> hashTrashedAssets(List<TrashedAssetParams> trashedAssets);
+  List<HashResult> hashTrashedAssets(List<TrashedAssetParams> trashedAssets);
 }

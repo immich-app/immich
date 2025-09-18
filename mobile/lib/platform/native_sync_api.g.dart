@@ -41,6 +41,7 @@ class PlatformAsset {
     required this.durationInSeconds,
     required this.orientation,
     required this.isFavorite,
+    this.size,
   });
 
   String id;
@@ -63,8 +64,22 @@ class PlatformAsset {
 
   bool isFavorite;
 
+  int? size;
+
   List<Object?> _toList() {
-    return <Object?>[id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite];
+    return <Object?>[
+      id,
+      name,
+      type,
+      createdAt,
+      updatedAt,
+      width,
+      height,
+      durationInSeconds,
+      orientation,
+      isFavorite,
+      size,
+    ];
   }
 
   Object encode() {
@@ -84,6 +99,7 @@ class PlatformAsset {
       durationInSeconds: result[7]! as int,
       orientation: result[8]! as int,
       isFavorite: result[9]! as bool,
+      size: result[10] as int?,
     );
   }
 
@@ -244,6 +260,45 @@ class HashResult {
   int get hashCode => Object.hashAll(_toList());
 }
 
+class TrashedAssetParams {
+  TrashedAssetParams({required this.id, required this.type, this.albumId});
+
+  String id;
+
+  int type;
+
+  String? albumId;
+
+  List<Object?> _toList() {
+    return <Object?>[id, type, albumId];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static TrashedAssetParams decode(Object result) {
+    result as List<Object?>;
+    return TrashedAssetParams(id: result[0]! as String, type: result[1]! as int, albumId: result[2] as String?);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! TrashedAssetParams || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList());
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -263,6 +318,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is HashResult) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
+    } else if (value is TrashedAssetParams) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -279,6 +337,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return SyncDelta.decode(readValue(buffer)!);
       case 132:
         return HashResult.decode(readValue(buffer)!);
+      case 133:
+        return TrashedAssetParams.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -560,6 +620,62 @@ class NativeSyncApi {
       );
     } else {
       return;
+    }
+  }
+
+  Future<List<PlatformAsset>> getTrashedAssetsForAlbum(String albumId, {int? updatedTimeCond}) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId, updatedTimeCond]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<PlatformAsset>();
+    }
+  }
+
+  Future<List<HashResult>> hashTrashedAssets(List<TrashedAssetParams> trashedAssets) async {
+    final String pigeonVar_channelName =
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashTrashedAssets$pigeonVar_messageChannelSuffix';
+    final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[trashedAssets]);
+    final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<HashResult>();
     }
   }
 }
