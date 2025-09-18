@@ -63,7 +63,7 @@
       <JobTileStatus color="success">{$t('active')}</JobTileStatus>
     {/if}
     <div class="flex flex-col gap-2 p-5 sm:p-7 md:p-9">
-      <div class="flex items-center gap-4 text-xl font-semibold text-immich-primary dark:text-immich-dark-primary">
+      <div class="flex items-center gap-4 text-xl font-semibold text-primary">
         <span class="flex items-center gap-2">
           <Icon {icon} size="1.25em" class="hidden shrink-0 sm:block" />
           <span class="uppercase">{title}</span>

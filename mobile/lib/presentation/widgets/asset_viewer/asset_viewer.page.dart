@@ -61,6 +61,15 @@ class AssetViewer extends ConsumerStatefulWidget {
   ConsumerState createState() => _AssetViewerState();
 
   static void setAsset(WidgetRef ref, BaseAsset asset) {
+    ref.read(assetViewerProvider.notifier).reset();
+    _setAsset(ref, asset);
+  }
+
+  void changeAsset(WidgetRef ref, BaseAsset asset) {
+    _setAsset(ref, asset);
+  }
+
+  static void _setAsset(WidgetRef ref, BaseAsset asset) {
     // Always holds the current asset from the timeline
     ref.read(assetViewerProvider.notifier).setAsset(asset);
     // The currentAssetNotifier actually holds the current asset that is displayed
@@ -107,6 +116,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   ImageStream? _prevPreCacheStream;
   ImageStream? _nextPreCacheStream;
 
+  KeepAliveLink? _stackChildrenKeepAlive;
+
   @override
   void initState() {
     super.initState();
@@ -117,6 +128,10 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
     reloadSubscription = EventStream.shared.listen(_onEvent);
     heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
+    final asset = ref.read(currentAssetNotifier);
+    if (asset != null) {
+      _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
   }
 
   @override
@@ -128,6 +143,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _stackChildrenKeepAlive?.close();
     super.dispose();
   }
 
@@ -188,9 +204,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    AssetViewer.setAsset(ref, asset);
+    widget.changeAsset(ref, asset);
     _precacheAssets(index);
     _handleCasting();
+    _stackChildrenKeepAlive?.close();
+    _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
   }
 
   void _handleCasting() {
@@ -518,7 +536,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     BaseAsset displayAsset = asset;
     final stackChildren = ref.read(stackChildrenNotifier(asset)).valueOrNull;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider.select((s) => s.stackIndex)));
+      displayAsset = stackChildren.elementAt(ref.read(assetViewerProvider).stackIndex);
     }
 
     final isPlayingMotionVideo = ref.read(isPlayingMotionVideoProvider);

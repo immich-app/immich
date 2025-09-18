@@ -26,7 +26,7 @@
 <a
   href={getLink(node.path)}
   title={node.value}
-  class={`flex grow place-items-center ps-2 py-1 text-sm rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:font-semibold ${isTarget ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-immich-primary dark:text-immich-dark-primary' : 'dark:text-gray-200'}`}
+  class={`flex grow place-items-center ps-2 py-1 text-sm rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 hover:font-semibold ${isTarget ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-primary' : 'dark:text-gray-200'}`}
   data-sveltekit-keepfocus
 >
   {#if node.size > 0}
@@ -37,7 +37,7 @@
   <div class={node.size === 0 ? 'ml-[1.5em] ' : ''}>
     <Icon
       icon={isActive ? icons.active : icons.default}
-      class={isActive ? 'text-immich-primary dark:text-immich-dark-primary' : 'text-gray-400'}
+      class={isActive ? 'text-primary' : 'text-gray-400'}
       color={node.color}
       size="20"
     />

@@ -267,6 +267,39 @@ struct SyncDelta: Hashable {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct HashResult: Hashable {
+  var assetId: String
+  var error: String? = nil
+  var hash: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> HashResult? {
+    let assetId = pigeonVar_list[0] as! String
+    let error: String? = nilOrValue(pigeonVar_list[1])
+    let hash: String? = nilOrValue(pigeonVar_list[2])
+
+    return HashResult(
+      assetId: assetId,
+      error: error,
+      hash: hash
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      assetId,
+      error,
+      hash,
+    ]
+  }
+  static func == (lhs: HashResult, rhs: HashResult) -> Bool {
+    return deepEqualsMessages(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashMessages(value: toList(), hasher: &hasher)
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -276,6 +309,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return PlatformAlbum.fromList(self.readValue() as! [Any?])
     case 131:
       return SyncDelta.fromList(self.readValue() as! [Any?])
+    case 132:
+      return HashResult.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -292,6 +327,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? SyncDelta {
       super.writeByte(131)
+      super.writeValue(value.toList())
+    } else if let value = value as? HashResult {
+      super.writeByte(132)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -313,6 +351,7 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
   static let shared = MessagesPigeonCodec(readerWriter: MessagesPigeonCodecReaderWriter())
 }
 
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NativeSyncApi {
   func shouldFullSync() throws -> Bool
@@ -323,7 +362,8 @@ protocol NativeSyncApi {
   func getAlbums() throws -> [PlatformAlbum]
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
-  func hashPaths(paths: [String]) throws -> [FlutterStandardTypedData?]
+  func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
+  func cancelHashing() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -459,22 +499,38 @@ class NativeSyncApiSetup {
     } else {
       getAssetsForAlbumChannel.setMessageHandler(nil)
     }
-    let hashPathsChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    let hashAssetsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
-      hashPathsChannel.setMessageHandler { message, reply in
+      hashAssetsChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let pathsArg = args[0] as! [String]
+        let assetIdsArg = args[0] as! [String]
+        let allowNetworkAccessArg = args[1] as! Bool
+        api.hashAssets(assetIds: assetIdsArg, allowNetworkAccess: allowNetworkAccessArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      hashAssetsChannel.setMessageHandler(nil)
+    }
+    let cancelHashingChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelHashing\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      cancelHashingChannel.setMessageHandler { _, reply in
         do {
-          let result = try api.hashPaths(paths: pathsArg)
-          reply(wrapResult(result))
+          try api.cancelHashing()
+          reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      hashPathsChannel.setMessageHandler(nil)
+      cancelHashingChannel.setMessageHandler(nil)
     }
   }
 }
