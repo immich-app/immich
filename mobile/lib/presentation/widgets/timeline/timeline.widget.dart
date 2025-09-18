@@ -129,7 +129,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void _onEvent(Event event) {
     switch (event) {
       case ScrollToTopEvent():
-        _scrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+        _scrollController.jumpTo(0);
       case ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
