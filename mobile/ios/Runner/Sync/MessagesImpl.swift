@@ -281,9 +281,7 @@ class NativeSyncApiImpl: NativeSyncApi {
             return completion(Self.hashCancelled)
           }
           taskGroup.addTask {
-            guard let self = self else {
-              return HashResult(assetId: asset.localIdentifier, error: "Instance deallocated", hash: nil)
-            }
+            guard let self = self else { return nil }
             return await self.hashAsset(asset, allowNetworkAccess: allowNetworkAccess)
           }
         }
