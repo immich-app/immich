@@ -15,6 +15,7 @@ import {
 } from '$lib/utils/timeline-util';
 
 import { layoutMonthGroup, updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
+import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
 import { PhotostreamSegment, type SegmentIdentifier } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
 import { SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
@@ -64,10 +65,9 @@ export class MonthGroup extends PhotostreamSegment {
     return this.#yearMonth;
   }
 
-  load(): Promise<void> {
-    return this.timelineManager.loadSegment(this.#identifier);
+  fetch(signal: AbortSignal): Promise<void> {
+    return loadFromTimeBuckets(this.timelineManager, this, this.timelineManager.options, signal);
   }
-
 
   get lastDayGroup() {
     return this.dayGroups.at(-1);
@@ -77,9 +77,9 @@ export class MonthGroup extends PhotostreamSegment {
     return this.dayGroups[0]?.getFirstAsset();
   }
 
-  getAssets() {
+  get viewerAssets() {
     // eslint-disable-next-line unicorn/no-array-reduce
-    return this.dayGroups.reduce((accumulator: TimelineAsset[], g: DayGroup) => accumulator.concat(g.getAssets()), []);
+    return this.dayGroups.reduce((accumulator: ViewerAsset[], g: DayGroup) => accumulator.concat(g.viewerAssets), []);
   }
 
   sortDayGroups() {
@@ -221,11 +221,14 @@ export class MonthGroup extends PhotostreamSegment {
     return this.getRandomDayGroup()?.getRandomAsset()?.asset;
   }
 
+  get id() {
+    return this.viewId;
+  }
+
   get viewId() {
     const { year, month } = this.yearMonth;
     return year + '-' + month;
   }
-
 
   findDayGroupForAsset(asset: TimelineAsset) {
     for (const group of this.dayGroups) {

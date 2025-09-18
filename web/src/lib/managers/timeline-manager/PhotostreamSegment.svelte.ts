@@ -5,6 +5,7 @@ import { get } from 'svelte/store';
 
 import type { PhotostreamManager } from '$lib/managers/timeline-manager/PhotostreamManager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 
 export type SegmentIdentifier = {
   matches(segment: PhotostreamSegment): boolean;
@@ -16,10 +17,12 @@ export abstract class PhotostreamSegment {
 
   #height = $state(0);
   #top = $state(0);
+  #assets = $derived.by(() => this.viewerAssets.map((viewerAsset) => viewerAsset.asset));
 
   initialCount = $state(0);
   percent = $state(0);
-  assetsCount = $derived(this.isLoaded ? this.getAssets().length : this.initialCount);
+
+  assetsCount = $derived.by(() => (this.isLoaded ? this.viewerAssets.length : this.initialCount));
   loader = new CancellableTask(
     () => this.markLoaded(),
     () => this.markCanceled,
@@ -30,6 +33,8 @@ export abstract class PhotostreamSegment {
   abstract get timelineManager(): PhotostreamManager;
 
   abstract get identifier(): SegmentIdentifier;
+
+  abstract get id(): string;
 
   get isLoaded() {
     return this.#isLoaded;
@@ -50,7 +55,7 @@ export abstract class PhotostreamSegment {
     }
     this.#intersecting = newValue;
     if (newValue) {
-      this.load();
+      this.load(true);
     } else {
       this.cancel();
     }
@@ -60,9 +65,19 @@ export abstract class PhotostreamSegment {
     return this.#intersecting;
   }
 
-  abstract load(): Promise<void>;
+  async load(cancelable: boolean): Promise<'DONE' | 'WAITED' | 'CANCELED' | 'LOADED' | 'ERRORED'> {
+    return await this.loader?.execute(async (signal: AbortSignal) => {
+      await this.fetch(signal);
+    }, cancelable);
+  }
 
-  abstract getAssets(): TimelineAsset[];
+  protected abstract fetch(signal: AbortSignal): Promise<void>;
+
+  get assets(): TimelineAsset[] {
+    return this.#assets;
+  }
+
+  abstract get viewerAssets(): ViewerAsset[];
 
   set height(height: number) {
     if (this.#height === height) {
@@ -130,4 +145,6 @@ export abstract class PhotostreamSegment {
     this.intersecting = intersecting;
     this.actuallyIntersecting = actuallyIntersecting;
   }
+
+  abstract findAssetAbsolutePosition(assetId: string): number;
 }

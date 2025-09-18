@@ -96,6 +96,7 @@
             >
               <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
                 <img
+                  style:filter="blur(10px)"
                   src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
                   alt={item.value}
                   class="object-cover aspect-square w-full"

@@ -88,6 +88,7 @@
         >
           <img
             class="h-full w-full rounded-xl object-cover"
+            style:filter="blur(5px)"
             src={getAssetThumbnailUrl(memory.assets[0].id)}
             alt={$t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } })}
             draggable="false"

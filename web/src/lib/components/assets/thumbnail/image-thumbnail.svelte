@@ -85,8 +85,8 @@
     onerror={setErrored}
     style:width={widthStyle}
     style:height={heightStyle}
-    style:filter={hidden ? 'grayscale(50%)' : 'none'}
     style:opacity={hidden ? '0.5' : '1'}
+    style:filter="blur(7px)"
     src={url}
     alt={loaded || errored ? altText : ''}
     {title}

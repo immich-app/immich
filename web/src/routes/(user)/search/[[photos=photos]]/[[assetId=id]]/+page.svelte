@@ -5,7 +5,6 @@
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
@@ -20,6 +19,7 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import Gallery from '$lib/components/timeline/Gallery.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
@@ -31,20 +31,16 @@
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { parseUtcDate } from '$lib/utils/date-time';
-  import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
     getPerson,
     getTagById,
     type MetadataSearchDto,
-    searchAssets,
-    searchSmart,
     type SmartSearchDto,
   } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { IconButton } from '@immich/ui';
+  import { mdiArrowLeft, mdiDotsVertical, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -139,43 +135,51 @@
   };
 
   async function onSearchQueryUpdate() {
+    debugger;
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
-    await loadNextPage(true);
+    // await loadNextPage(true);
   }
 
-  // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
-  export const loadNextPage = async (force?: boolean) => {
-    if (!nextPage || (isLoading && !force)) {
-      return;
-    }
-    isLoading = true;
+  const searchTerms = $derived.by(() => ({
+    withExif: true,
+    isVisible: true,
+    language: $lang,
+    ...terms,
+  }));
 
-    const searchDto: SearchTerms = {
-      page: nextPage,
-      withExif: true,
-      isVisible: true,
-      language: $lang,
-      ...terms,
-    };
+  // // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
+  // export const loadNextPage = async (force?: boolean) => {
+  //   if (!nextPage || (isLoading && !force)) {
+  //     return;
+  //   }
+  //   isLoading = true;
 
-    try {
-      const { albums, assets } =
-        ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
-          ? await searchSmart({ smartSearchDto: searchDto })
-          : await searchAssets({ metadataSearchDto: searchDto });
+  //   const searchDto: SearchTerms = {
+  //     page: nextPage,
+  //     withExif: true,
+  //     isVisible: true,
+  //     language: $lang,
+  //     ...terms,
+  //   };
 
-      searchResultAlbums.push(...albums.items);
-      searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
+  //   try {
+  //     const { albums, assets } =
+  //       ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
+  //         ? await searchSmart({ smartSearchDto: searchDto })
+  //         : await searchAssets({ metadataSearchDto: searchDto });
 
-      nextPage = Number(assets.nextPage) || 0;
-    } catch (error) {
-      handleError(error, $t('loading_search_results_failed'));
-    } finally {
-      isLoading = false;
-    }
-  };
+  //     searchResultAlbums.push(...albums.items);
+  //     searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
+
+  //     nextPage = Number(assets.nextPage) || 0;
+  //   } catch (error) {
+  //     handleError(error, $t('loading_search_results_failed'));
+  //   } finally {
+  //     isLoading = false;
+  //   }
+  // };
 
   function getHumanReadableDate(dateString: string) {
     const date = parseUtcDate(dateString).startOf('day');
@@ -359,7 +363,7 @@
 {/if}
 
 <section
-  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4 max-h-screen"
+  class="mb-0 bg-immich-bg dark:bg-immich-dark-bg m-4 max-h-screen"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
   bind:this={searchResultsElement}
@@ -374,8 +378,12 @@
       </div>
     </section>
   {/if}
-  <section id="search-content">
-    {#if searchResultAssets.length > 0}
+  <section id="search-content" class="h-[calc(100dvh-144px)]">
+    {#key searchTerms}
+      <Gallery {searchTerms}></Gallery>
+    {/key}
+    <!-- {#if searchResultAssets.length > 0}
+      <Gallery {searchTerms}></Gallery>
       <GalleryViewer
         assets={searchResultAssets}
         {assetInteraction}
@@ -399,7 +407,7 @@
       <div class="flex justify-center py-16 items-center">
         <LoadingSpinner size="giant" />
       </div>
-    {/if}
+    {/if} -->
   </section>
 
   <section>

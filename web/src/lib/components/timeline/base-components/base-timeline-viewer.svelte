@@ -2,37 +2,43 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import Skeleton from '$lib/components/timeline/base-components/skeleton.svelte';
-  import SelectableTimelineMonth from '$lib/components/timeline/internal-components/selectable-timeline-month.svelte';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
-  import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import type { PhotostreamManager } from '$lib/managers/timeline-manager/PhotostreamManager.svelte';
+  import type { PhotostreamSegment } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
 
   interface Props {
-    customThumbnailLayout?: Snippet<[TimelineAsset]>;
+    segment: Snippet<
+      [
+        {
+          segment: PhotostreamSegment;
+          scrollToFunction: (top: number) => void;
+          onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+        },
+      ]
+    >;
+    skeleton: Snippet<
+      [
+        {
+          segment: PhotostreamSegment;
+        },
+      ]
+    >;
 
-    isSelectionMode?: boolean;
-    singleSelect?: boolean;
+    showScrollbar?: boolean;
     /** `true` if this asset grid responds to navigation events; if `true`, then look at the
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
-    timelineManager: TimelineManager;
-    assetInteraction: AssetInteraction;
-    withStacked?: boolean;
-    showArchiveIcon?: boolean;
+    timelineManager: PhotostreamManager;
+
     showSkeleton?: boolean;
     isShowDeleteConfirmation?: boolean;
     styleMarginRightOverride?: string;
-    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
-    onSelect?: (asset: TimelineAsset) => void;
+
     header?: Snippet<[scrollToFunction: (top: number) => void]>;
     children?: Snippet;
     empty?: Snippet;
@@ -40,22 +46,16 @@
   }
 
   let {
-    customThumbnailLayout,
+    segment,
 
-    isSelectionMode = false,
-    singleSelect = false,
     enableRouting,
     timelineManager = $bindable(),
-    assetInteraction,
-    withStacked = false,
     showSkeleton = $bindable(true),
-    showArchiveIcon = false,
     styleMarginRightOverride,
     isShowDeleteConfirmation = $bindable(false),
-
-    onAssetOpen,
-    onSelect,
+    showScrollbar,
     children,
+    skeleton,
     empty,
     header,
     handleTimelineScroll = () => {},
@@ -96,7 +96,7 @@
     updateSlidingWindow();
   };
 
-  const scrollCompensation = (compensation: { heightDelta?: number; scrollTop?: number }) => {
+  const handleTriggeredScrollCompensation = (compensation: { heightDelta?: number; scrollTop?: number }) => {
     const { heightDelta, scrollTop } = compensation;
     if (heightDelta !== undefined) {
       scrollBy(heightDelta);
@@ -106,16 +106,16 @@
     timelineManager.clearScrollCompensation();
   };
 
-  const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
+  const getAssetHeight = (assetId: string, monthGroup: PhotostreamSegment) => {
     // the following method may trigger any layouts, so need to
     // handle any scroll compensation that may have been set
-    const height = monthGroup!.findAssetAbsolutePosition(assetId);
+    const height = monthGroup.findAssetAbsolutePosition(assetId);
 
     // this is in a while loop, since scrollCompensations invoke scrolls
     // which may load months, triggering more scrollCompensations. Call
     // this in a loop, until no more layouts occur.
     while (timelineManager.scrollCompensation.monthGroup) {
-      scrollCompensation(timelineManager.scrollCompensation);
+      handleTriggeredScrollCompensation(timelineManager.scrollCompensation);
     }
     return height;
   };
@@ -129,8 +129,8 @@
     return assetTop >= scrollTop && assetTop < scrollTop + clientHeight;
   };
 
-  const scrollToAssetId = async (assetId: string) => {
-    const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
+  export const scrollToAssetId = (assetId: string) => {
+    const monthGroup = timelineManager.getSegmentForAssetId(assetId);
     if (!monthGroup) {
       return false;
     }
@@ -141,16 +141,6 @@
       return true;
     }
 
-    scrollTo(height);
-    return true;
-  };
-
-  export const scrollToAsset = (asset: TimelineAsset) => {
-    const monthGroup = timelineManager.getMonthGroupByAssetId(asset.id);
-    if (!monthGroup) {
-      return false;
-    }
-    const height = getAssetHeight(asset.id, monthGroup);
     scrollTo(height);
     return true;
   };
@@ -219,8 +209,14 @@
 <!-- Right margin MUST be equal to the width of scrubber -->
 <section
   id="asset-grid"
-  class={['scrollbar-hidden h-full overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  class={[
+    'h-full overflow-y-auto outline-none',
+    { 'scrollbar-hidden': !showScrollbar },
+    { 'm-0': isEmpty },
+    { 'ms-0': !isEmpty },
+  ]}
   style:margin-right={styleMarginRightOverride}
+  style:scrollbar-width={showScrollbar ? 'auto' : 'none'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
@@ -247,50 +243,26 @@
       {/if}
     </section>
 
-    {#each timelineManager.months as monthGroup (monthGroup.viewId)}
-      {@const display = monthGroup.intersecting}
+    {#each timelineManager.months as monthGroup (monthGroup.id)}
+      {@const shouldDisplay = monthGroup.intersecting}
       {@const absoluteHeight = monthGroup.top}
-
-      {#if !monthGroup.isLoaded}
-        <div
-          style:height={monthGroup.height + 'px'}
-          style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
-          style:width="100%"
-        >
-          <Skeleton
-            height={monthGroup.height - monthGroup.timelineManager.headerHeight}
-            title={monthGroup.monthGroupTitle}
-          />
-        </div>
-      {:else if display}
-        <div
-          class="month-group"
-          style:height={monthGroup.height + 'px'}
-          style:position="absolute"
-          style:transform={`translate3d(0,${absoluteHeight}px,0)`}
-          style:width="100%"
-        >
-          <SelectableTimelineMonth
-            {customThumbnailLayout}
-            {withStacked}
-            {showArchiveIcon}
-            {assetInteraction}
-            {timelineManager}
-            {isSelectionMode}
-            {singleSelect}
-            {monthGroup}
-            {onAssetOpen}
-            onSelect={(isSingleSelect: boolean, asset: TimelineAsset) => {
-              if (isSingleSelect) {
-                scrollTo(0);
-              }
-              onSelect?.(asset);
-            }}
-            onScrollCompensationMonthInDOM={scrollCompensation}
-          />
-        </div>
-      {/if}
+      <div
+        class="month-group"
+        style:height={monthGroup.height + 'px'}
+        style:position="absolute"
+        style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+        style:width="100%"
+      >
+        {#if !shouldDisplay}
+          {@render skeleton({ segment: monthGroup })}
+        {:else}
+          {@render segment({
+            segment: monthGroup,
+            scrollToFunction: scrollTo,
+            onScrollCompensationMonthInDOM: handleTriggeredScrollCompensation,
+          })}
+        {/if}
+      </div>
     {/each}
     <!-- spacer for lead-out -->
     <div
@@ -308,7 +280,6 @@
     contain: strict;
     scrollbar-width: none;
   }
-
   .month-group {
     contain: layout size paint;
     transform-style: flat;

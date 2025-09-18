@@ -1,52 +1,50 @@
 <script lang="ts">
   import BaseTimelineViewer from '$lib/components/timeline/base-components/base-timeline-viewer.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
+  import type { PhotostreamSegment } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { findMonthAtScrollPosition, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import type { Snippet } from 'svelte';
 
   interface Props {
-    customThumbnailLayout?: Snippet<[TimelineAsset]>;
-
-    isSelectionMode?: boolean;
-    singleSelect?: boolean;
     /** `true` if this timeline responds to navigation events; if `true`, then look at the
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
     timelineManager: TimelineManager;
-    assetInteraction: AssetInteraction;
 
-    withStacked?: boolean;
-    showArchiveIcon?: boolean;
     showSkeleton?: boolean;
-
     isShowDeleteConfirmation?: boolean;
-    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset, defaultAssetOpen: () => void) => void;
-    onSelect?: (asset: TimelineAsset) => void;
 
+    segment: Snippet<
+      [
+        {
+          segment: PhotostreamSegment;
+          onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
+        },
+      ]
+    >;
+    skeleton: Snippet<
+      [
+        {
+          segment: PhotostreamSegment;
+        },
+      ]
+    >;
     children?: Snippet;
     empty?: Snippet;
   }
 
   let {
-    customThumbnailLayout,
-    isSelectionMode = false,
-    singleSelect = false,
     enableRouting,
     timelineManager = $bindable(),
-    assetInteraction,
 
-    withStacked = false,
-    showArchiveIcon = false,
     showSkeleton = $bindable(true),
     isShowDeleteConfirmation = $bindable(false),
-    onAssetOpen,
-    onSelect = () => {},
+    segment,
+    skeleton,
     children,
     empty,
   }: Props = $props();
@@ -160,27 +158,21 @@
     handleScrollTop?.(scrollToTop);
   };
   let baseTimelineViewer: BaseTimelineViewer | undefined = $state();
-  export const scrollToAsset = (asset: TimelineAsset) => baseTimelineViewer?.scrollToAsset(asset) ?? false;
+  export const scrollToAsset = (asset: TimelineAsset) => baseTimelineViewer?.scrollToAssetId(asset.id) ?? false;
 </script>
 
 <BaseTimelineViewer
   bind:this={baseTimelineViewer}
-  {customThumbnailLayout}
-  {isSelectionMode}
-  {singleSelect}
   {enableRouting}
   {timelineManager}
-  {assetInteraction}
-  {withStacked}
-  {showArchiveIcon}
   {showSkeleton}
   {isShowDeleteConfirmation}
   styleMarginRightOverride={scrubberWidth + 'px'}
-  {onAssetOpen}
-  {onSelect}
+  {handleTimelineScroll}
+  {segment}
+  {skeleton}
   {children}
   {empty}
-  {handleTimelineScroll}
 >
   {#snippet header(scrollToFunction)}
     {#if timelineManager.months.length > 0}

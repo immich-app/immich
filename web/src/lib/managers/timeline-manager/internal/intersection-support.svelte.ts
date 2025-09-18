@@ -1,7 +1,6 @@
 import type { PhotostreamManager } from '$lib/managers/timeline-manager/PhotostreamManager.svelte';
 import type { PhotostreamSegment } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
 import { TUNABLES } from '$lib/utils/tunables';
-import type { TimelineManager } from '../timeline-manager.svelte';
 
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
@@ -55,7 +54,7 @@ export function calculateSegmentIntersecting(
  * Calculate intersection for viewer assets with additional parameters like header height and scroll compensation
  */
 export function calculateViewerAssetIntersecting(
-  timelineManager: TimelineManager,
+  timelineManager: PhotostreamManager,
   positionTop: number,
   positionHeight: number,
   expandTop: number = INTERSECTION_EXPAND_TOP,

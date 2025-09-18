@@ -1,64 +1,42 @@
 <script lang="ts">
-  import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
+  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { Icon } from '@immich/ui';
-
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
-  import { flip } from 'svelte/animate';
-  import { fly, scale } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
 
+  import AssetLayout from '$lib/components/timeline/base-components/AssetLayout.svelte';
   import { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import type { CommonPosition } from '$lib/utils/layout-utils';
   import type { Snippet } from 'svelte';
 
   let { isUploading } = uploadAssetsStore;
 
   interface Props {
+    thumbnail: Snippet<[{ asset: TimelineAsset; position: CommonPosition; dayGroup: DayGroup; groupIndex: number }]>;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
 
     singleSelect: boolean;
-    withStacked: boolean;
-    showArchiveIcon: boolean;
+    assetInteraction: AssetInteraction;
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
 
-    onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
-
-    onHover: (dayGroup: DayGroup, asset: TimelineAsset) => void;
-    onAssetOpen?: (dayGroup: DayGroup, asset: TimelineAsset) => void;
-    onAssetSelect: (dayGroup: DayGroup, asset: TimelineAsset) => void;
-    onDayGroupSelect: (dayGroup: DayGroup, assets: TimelineAsset[]) => void;
-
-    // these should be replaced with reactive properties in timeline-manager.svelte.ts
-    isDayGroupSelected: (dayGroup: DayGroup) => boolean;
-    isAssetSelected: (asset: TimelineAsset) => boolean;
-    isAssetSelectionCandidate: (asset: TimelineAsset) => boolean;
-    isAssetDisabled: (asset: TimelineAsset) => boolean;
+    onDayGroupSelect: (daygroup: DayGroup, assets: TimelineAsset[]) => void;
   }
 
   let {
+    thumbnail: thumbnailWithGroup,
     customThumbnailLayout,
-
     singleSelect,
-    withStacked,
-    showArchiveIcon,
+    assetInteraction,
     monthGroup,
     timelineManager,
-    onScrollCompensationMonthInDOM,
-
-    onHover,
-    onAssetOpen,
-    onAssetSelect,
     onDayGroupSelect,
-
-    isDayGroupSelected,
-    isAssetSelected,
-    isAssetSelectionCandidate,
-    isAssetDisabled,
   }: Props = $props();
 
   let isMouseOverGroup = $state(false);
@@ -67,22 +45,15 @@
   const transitionDuration = $derived.by(() =>
     monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150,
   );
-  const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
 
   function filterIntersecting<R extends { intersecting: boolean }>(intersectables: R[]) {
     return intersectables.filter((intersectable) => intersectable.intersecting);
   }
-
-  $effect.root(() => {
-    if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
-      onScrollCompensationMonthInDOM(timelineManager.scrollCompensation);
-    }
-  });
 </script>
 
 {#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}
   {@const absoluteWidth = dayGroup.left}
-
+  {@const isDayGroupSelected = assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
     class={[
@@ -106,14 +77,14 @@
       class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
       style:width={dayGroup.width + 'px'}
     >
-      {#if !singleSelect && ((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || isDayGroupSelected(dayGroup))}
+      {#if !singleSelect && ((hoveredDayGroup === dayGroup.groupTitle && isMouseOverGroup) || isDayGroupSelected)}
         <div
           transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
           class="inline-block pe-2 hover:cursor-pointer"
           onclick={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
           onkeydown={() => onDayGroupSelect(dayGroup, assetsSnapshot(dayGroup.getAssets()))}
         >
-          {#if isDayGroupSelected(dayGroup)}
+          {#if isDayGroupSelected}
             <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
           {:else}
             <Icon icon={mdiCircleOutline} size="24" color="#757575" />
@@ -126,56 +97,22 @@
       </span>
     </div>
 
-    <!-- Image grid -->
-    <div
-      data-image-grid
-      class="relative overflow-clip"
-      style:height={dayGroup.height + 'px'}
-      style:width={dayGroup.width + 'px'}
+    <AssetLayout
+      photostreamManager={timelineManager}
+      viewerAssets={dayGroup.viewerAssets}
+      height={dayGroup.height}
+      width={dayGroup.width}
+      {customThumbnailLayout}
     >
-      {#each filterIntersecting(dayGroup.viewerAssets) as viewerAsset (viewerAsset.id)}
-        {@const position = viewerAsset.position!}
-        {@const asset = viewerAsset.asset!}
-
-        <!-- note: don't remove data-asset-id - its used by web e2e tests -->
-        <div
-          data-asset-id={asset.id}
-          class="absolute"
-          style:top={position.top + 'px'}
-          style:left={position.left + 'px'}
-          style:width={position.width + 'px'}
-          style:height={position.height + 'px'}
-          out:scale|global={{ start: 0.1, duration: scaleDuration }}
-          animate:flip={{ duration: transitionDuration }}
-        >
-          <Thumbnail
-            showStackedIcon={withStacked}
-            {showArchiveIcon}
-            {asset}
-            {groupIndex}
-            onClick={() => onAssetOpen?.(dayGroup, assetSnapshot(asset))}
-            onSelect={() => onAssetSelect(dayGroup, assetSnapshot(asset))}
-            onMouseEvent={() => onHover(dayGroup, assetSnapshot(asset))}
-            selected={isAssetSelected(asset)}
-            selectionCandidate={isAssetSelectionCandidate(asset)}
-            disabled={isAssetDisabled(asset)}
-            thumbnailWidth={position.width}
-            thumbnailHeight={position.height}
-          />
-          {#if customThumbnailLayout}
-            {@render customThumbnailLayout(asset)}
-          {/if}
-        </div>
-      {/each}
-    </div>
+      {#snippet thumbnail({ asset, position })}
+        {@render thumbnailWithGroup({ asset, position, dayGroup, groupIndex })}
+      {/snippet}
+    </AssetLayout>
   </section>
 {/each}
 
 <style>
   section {
     contain: layout paint style;
-  }
-  [data-image-grid] {
-    user-select: none;
   }
 </style>

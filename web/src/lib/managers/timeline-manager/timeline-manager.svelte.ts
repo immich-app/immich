@@ -14,7 +14,6 @@ import { isEqual } from 'lodash-es';
 import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
-import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
 import {
   addAssetsToMonthGroups,
   runAssetOperation,
@@ -28,7 +27,6 @@ import {
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { PhotostreamManager } from '$lib/managers/timeline-manager/PhotostreamManager.svelte';
-import { PhotostreamSegment } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
 import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
@@ -69,6 +67,10 @@ export class TimelineManager extends PhotostreamManager {
 
   get months() {
     return this.#months;
+  }
+
+  get options() {
+    return this.#options;
   }
 
   async *assetsIterator(options?: {
@@ -144,16 +146,17 @@ export class TimelineManager extends PhotostreamManager {
       return;
     }
     await this.initTask.reset();
-    await this.init(options);
+    this.#options = options;
+    await this.init();
     this.updateViewportGeometry(false);
   }
 
-  async init(options: TimelineManagerOptions) {
+  async init() {
+
     this.isInitialized = false;
     this.#months = [];
     this.albumAssets.clear();
     await this.initTask.execute(async () => {
-      this.#options = options;
       await this.#initializeMonthGroups();
     }, true);
   }
@@ -177,10 +180,6 @@ export class TimelineManager extends PhotostreamManager {
       height: month.height,
     }));
     this.scrubberTimelineHeight = this.timelineHeight;
-  }
-
-  protected fetchSegment(segment: PhotostreamSegment, signal: AbortSignal): Promise<void> {
-    return loadFromTimeBuckets(this, segment as MonthGroup, this.#options, signal);
   }
 
   addAssets(assets: TimelineAsset[]) {

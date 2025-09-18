@@ -4,8 +4,7 @@ import { CancellableTask } from '$lib/utils/cancellable-task';
 import { clamp, debounce } from 'lodash-es';
 
 import type { PhotostreamSegment, SegmentIdentifier } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
-import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
-import type { TimelineManagerLayoutOptions, TimelineManagerOptions, Viewport } from './types';
+import type { AssetDescriptor, TimelineAsset, TimelineManagerLayoutOptions, Viewport } from './types';
 
 export abstract class PhotostreamManager {
   isInitialized = $state(false);
@@ -29,8 +28,6 @@ export abstract class PhotostreamManager {
     () => (this.isInitialized = false),
     () => void 0,
   );
-
-  protected options: TimelineManagerOptions = {};
 
   #viewportHeight = $state(0);
   #viewportWidth = $state(0);
@@ -188,10 +185,8 @@ export abstract class PhotostreamManager {
     }
   }
 
-  protected async init(options: TimelineManagerOptions) {
-    this.isInitialized = true;
-    // this.months = [];
-
+  async init() {
+    this.isInitialized = false;
     await this.initTask.execute(async () => undefined, true);
   }
 
@@ -209,7 +204,7 @@ export abstract class PhotostreamManager {
     }
 
     if (!this.initTask.executed) {
-      await (this.initTask.loading ? this.initTask.waitUntilCompletion() : this.init(this.options));
+      await (this.initTask.loading ? this.initTask.waitUntilCompletion() : this.init());
     }
 
     const changedWidth = viewport.width !== this.viewportWidth;
@@ -252,28 +247,24 @@ export abstract class PhotostreamManager {
       return;
     }
 
-    if (segment.loader?.executed) {
-      return;
-    }
-
-    const result = await segment.loader?.execute(async (signal: AbortSignal) => {
-      await this.fetchSegment(segment, signal);
-    }, cancelable);
+    const result = await segment.load(cancelable);
     if (result === 'LOADED') {
       updateIntersectionMonthGroup(this, segment);
     }
   }
 
-  getSegmentMatcher(identifier: SegmentIdentifier) {
-    return (segment: MonthGroup) => {
-      return identifier;
-    };
-  }
   getSegmentByIdentifier(identifier: SegmentIdentifier) {
     return this.months.find((segment) => identifier.matches(segment));
   }
 
-  protected abstract fetchSegment(segment: PhotostreamSegment, signal: AbortSignal): Promise<void>;
+  getSegmentForAssetId(assetId: String) {
+    for (const month of this.months) {
+      const asset = month.assets.find((asset) => asset.id === assetId);
+      if (asset) {
+        return month;
+      }
+    }
+  }
 
   refreshLayout() {
     for (const month of this.months) {
@@ -289,5 +280,19 @@ export abstract class PhotostreamManager {
 
   getMaxScroll() {
     return this.topSectionHeight + this.bottomSectionHeight + (this.timelineHeight - this.viewportHeight);
+  }
+
+  async retrieveRange(start: AssetDescriptor, end: AssetDescriptor) {
+    const range: TimelineAsset[] = [];
+    let collecting = false;
+
+    for (const month of this.months) {
+      for (const asset of month.assets) {
+        if (asset.id === start.id) collecting = true;
+        if (collecting) range.push(asset);
+        if (asset.id === end.id) return range;
+      }
+    }
+    return range;
   }
 }
