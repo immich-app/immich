@@ -30,6 +30,8 @@ class Scrubber extends ConsumerStatefulWidget {
 
   final double? monthSegmentSnappingOffset;
 
+  final bool snapToMonth;
+
   Scrubber({
     super.key,
     Key? scrollThumbKey,
@@ -38,6 +40,7 @@ class Scrubber extends ConsumerStatefulWidget {
     this.topPadding = 0,
     this.bottomPadding = 0,
     this.monthSegmentSnappingOffset,
+    this.snapToMonth = true,
     required this.child,
   }) : assert(child.scrollDirection == Axis.vertical);
 
@@ -177,7 +180,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragStart(DragStartDetails _) {
-    if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+    if (widget.snapToMonth && _monthCount >= kMinMonthsToEnableScrubberSnap) {
       ref.read(timelineStateProvider.notifier).setScrubbing(true);
     }
 
