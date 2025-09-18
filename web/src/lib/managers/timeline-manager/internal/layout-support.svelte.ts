@@ -1,8 +1,13 @@
+import type { PhotostreamManager } from '$lib/managers/timeline-manager/PhotostreamManager.svelte';
+import type { PhotostreamSegment } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
 import type { MonthGroup } from '../month-group.svelte';
-import type { TimelineManager } from '../timeline-manager.svelte';
 import type { UpdateGeometryOptions } from '../types';
 
-export function updateGeometry(timelineManager: TimelineManager, month: MonthGroup, options: UpdateGeometryOptions) {
+export function updateGeometry(
+  timelineManager: PhotostreamManager,
+  month: PhotostreamSegment,
+  options: UpdateGeometryOptions,
+) {
   const { invalidateHeight, noDefer = false } = options;
   if (invalidateHeight) {
     month.isHeightActual = false;
@@ -17,10 +22,10 @@ export function updateGeometry(timelineManager: TimelineManager, month: MonthGro
     }
     return;
   }
-  layoutMonthGroup(timelineManager, month, noDefer);
+  month.layout(noDefer);
 }
 
-export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthGroup, noDefer: boolean = false) {
+export function layoutMonthGroup(timelineManager: PhotostreamManager, month: MonthGroup, noDefer: boolean = false) {
   let cumulativeHeight = 0;
   let cumulativeWidth = 0;
   let currentRowHeight = 0;
