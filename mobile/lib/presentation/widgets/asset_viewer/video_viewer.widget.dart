@@ -322,14 +322,9 @@ class NativeVideoViewer extends HookConsumerWidget {
       if (value != asset) {
         if (playerController != null) {
           removeListeners(playerController);
-          // Pause/stop safely; don't await to keep listener synchronous
-          if (context.mounted) {
-            playerController.stop().catchError((_) {});
-          }
-          // Reset controller so re-entry can re-init listeners cleanly
-          controller.value = null;
+          playerController.stop().catchError((_) {});
         }
-        // Mark as not current immediately and optionally hide overlay
+        // Mark as not current immediately
         if (currentAsset.value != value) {
           currentAsset.value = value;
         }
