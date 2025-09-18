@@ -322,6 +322,8 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       _isDragging = false;
     });
 
+    ref.read(timelineStateProvider.notifier).setScrubbing(false);
+
     // Reset scrubber tracking when drag ends
     _currentScrubberDate = null;
     _scrubberDebouncer?.dispose();
