@@ -2,7 +2,7 @@
 
 This file captures durable context, decisions, and next steps so work can resume smoothly after restarts.
 
-Last updated: 2025-09-16
+Last updated: 2025-09-18
 
 Repository Map (high level)
 
@@ -197,6 +197,25 @@ Notes & Tips
   - Pinned `svelte-gestures` to `5.1.4` (pre-attachments API) in `web/package.json` to match current imports (`swipe`, `SwipeCustomEvent`)
   - Aligned `sharp` with base image libvips by pinning to `0.34.3` via `server/package.json` overrides + root `package.json` pnpm.overrides
   - Rebuilt lock; verified Docker server/web stages progress
+
+- 2025-09-18 — Session bootstrap & guidelines review
+  - Read `AGENTS.md`, `codex.md`, and this `continue.md` to rehydrate context
+  - Key rules to follow: small, surgical changes; preserve style; validate smallest scope first; preambles for grouped tool calls; maintain one in-progress plan step; avoid unrelated diffs; don’t commit/branch in this environment; regenerate OpenAPI on API changes; avoid destructive ops unless requested
+  - Environment context: cwd `/workspace`, approvals `never`, sandbox `danger-full-access`, network `enabled`, shell `bash`
+  - Memory protocol: append session notes to `continue.md` after meaningful work (decisions, commands, next steps)
+  - Status: awaiting next task/direction from user
+
+- 2025-09-18 — Fix broken pnpm-lock.yaml (duplicated mapping key)
+  - Symptom: Docker build failed on `--frozen-lockfile` with `ERR_PNPM_BROKEN_LOCKFILE` (duplicate key `@types/node@22.18.5` under snapshots)
+  - Approach: regenerate lock cleanly using repo’s pnpm version, ignoring scripts for Node 18 environment compatibility
+  - Commands:
+    - `sudo npm i -g pnpm@10.14.0`
+    - `pnpm -r --filter '!documentation' install --ignore-scripts` (initial attempt)
+    - `cp pnpm-lock.yaml pnpm-lock.yaml.backup-2025-09-18 && rm pnpm-lock.yaml && pnpm -r --filter '!documentation' install --ignore-scripts` (force fresh lock)
+    - Sanity checks:
+      - `pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile --ignore-scripts` (OK)
+      - `pnpm --filter @immich/sdk --filter immich-web install --frozen-lockfile --ignore-scripts` (OK)
+  - Outcome: duplicate mapping removed; lock validates with `--frozen-lockfile`. Ready to retry Docker build.
 
 Commands run
 - sudo npm i -g pnpm@10.14.0
