@@ -17,11 +17,7 @@ export function updateIntersectionMonthGroup(timelineManager: TimelineManager, m
       INTERSECTION_EXPAND_BOTTOM,
     );
   }
-  month.intersecting = actuallyIntersecting || preIntersecting;
-  month.actuallyIntersecting = actuallyIntersecting;
-  if (preIntersecting || actuallyIntersecting) {
-    timelineManager.clearDeferredLayout(month);
-  }
+  month.updateIntersection({ intersecting: actuallyIntersecting || preIntersecting, actuallyIntersecting });
 }
 
 /**

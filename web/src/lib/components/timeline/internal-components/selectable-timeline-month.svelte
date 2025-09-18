@@ -200,7 +200,7 @@
           break;
         }
         if (started) {
-          await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+          await timelineManager.loadSegment(monthGroup.yearMonth);
           for (const asset of monthGroup.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
