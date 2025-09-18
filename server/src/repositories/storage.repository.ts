@@ -26,6 +26,7 @@ export interface ImmichReadStream {
 
 export interface ImmichZipStream extends ImmichReadStream {
   addFile: (inputPath: string, filename: string) => void;
+  addStream: (input: Readable, filename: string) => void;
   finalize: () => Promise<void>;
 }
 
@@ -88,9 +89,13 @@ export class StorageRepository {
       archive.file(input, { name: filename, mode: 0o644 });
     };
 
+    const addStream = (input: Readable, filename: string) => {
+      archive.append(input, { name: filename, mode: 0o644 });
+    };
+
     const finalize = () => archive.finalize();
 
-    return { stream: archive, addFile, finalize };
+    return { stream: archive, addFile, addStream, finalize };
   }
 
   async createReadStream(filepath: string, mimeType?: string | null): Promise<ImmichReadStream> {

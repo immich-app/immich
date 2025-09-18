@@ -7,6 +7,8 @@ import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { isConnectionAborted } from 'src/utils/misc';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 
 export function getFileNameWithoutExtension(path: string): string {
   return basename(path, extname(path));
@@ -62,8 +64,40 @@ export const sendFile = async (
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
     }
 
-    await access(file.path, constants.R_OK);
+    // S3 streaming path
+    if (file.path.startsWith('s3://')) {
+      const env = new ConfigRepository().getEnv();
+      const s3c = env.storage.s3;
+      if (!s3c || !s3c.bucket) {
+        throw new Error('S3 storage not configured');
+      }
+      const s3 = new S3AppStorageBackend({
+        endpoint: s3c.endpoint,
+        region: s3c.region || 'us-east-1',
+        bucket: s3c.bucket,
+        prefix: s3c.prefix,
+        forcePathStyle: s3c.forcePathStyle,
+        useAccelerate: s3c.useAccelerate,
+        accessKeyId: s3c.accessKeyId,
+        secretAccessKey: s3c.secretAccessKey,
+        sse: s3c.sse as any,
+        sseKmsKeyId: s3c.sseKmsKeyId,
+      });
+      const head = await s3.head(file.path).catch(() => undefined);
+      const stream = await s3.readStream(file.path);
+      if (head?.size) {
+        res.header('Content-Length', String(head.size));
+      }
+      await new Promise<void>((resolve, reject) => {
+        stream.on('error', reject);
+        stream.on('end', () => resolve());
+        stream.pipe(res);
+      });
+      return;
+    }
 
+    // Local filesystem path
+    await access(file.path, constants.R_OK);
     return await _sendFile(file.path, { dotfiles: 'allow' });
   } catch (error: Error | any) {
     // ignore client-closed connection

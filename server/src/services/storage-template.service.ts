@@ -175,7 +175,9 @@ export class StorageTemplateService extends BaseService {
 
     this.logger.debug('Cleaning up empty directories...');
     const libraryFolder = StorageCore.getBaseFolder(StorageFolder.Library);
-    await this.storageRepository.removeEmptyDirs(libraryFolder);
+    if (!StorageCore.getMediaLocation().startsWith('s3://')) {
+      await this.storageRepository.removeEmptyDirs(libraryFolder);
+    }
 
     this.logger.log('Finished storage template migration');
 
@@ -290,7 +292,17 @@ export class StorageTemplateService extends BaseService {
         albumStartDate,
         albumEndDate,
       });
-      const fullPath = path.normalize(path.join(rootPath, storagePath));
+      // Join paths safely for both local FS and S3 URIs
+      const joinPaths = (base: string, rel: string) => {
+        if (base.startsWith('s3://')) {
+          const b = base.replace(/\/+$/g, '');
+          const r = rel.replace(/^\/+/, '');
+          return `${b}/${r}`;
+        }
+        return path.normalize(path.join(base, rel));
+      };
+
+      const fullPath = joinPaths(rootPath, storagePath);
       let destination = `${fullPath}.${extension}`;
 
       if (!fullPath.startsWith(rootPath)) {

@@ -195,4 +195,49 @@ export class EnvDto {
   @IsString()
   @Optional()
   REDIS_URL?: string;
+
+  // Storage Engine and S3 configuration
+  @IsString()
+  @Optional()
+  @Matches(/^(local|s3)$/)
+  IMMICH_STORAGE_ENGINE?: string;
+
+  @IsString()
+  @Optional()
+  S3_ENDPOINT?: string;
+
+  @IsString()
+  @Optional()
+  S3_REGION?: string;
+
+  @IsString()
+  @Optional()
+  S3_BUCKET?: string;
+
+  @IsString()
+  @Optional()
+  S3_PREFIX?: string;
+
+  @IsString()
+  @Optional()
+  S3_ACCESS_KEY_ID?: string;
+
+  @IsString()
+  @Optional()
+  S3_SECRET_ACCESS_KEY?: string;
+
+  @ValidateBoolean({ optional: true })
+  S3_FORCE_PATH_STYLE?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  S3_USE_ACCELERATE?: boolean;
+
+  @IsString()
+  @Optional()
+  @Matches(/^(AES256|aws:kms|S3|KMS)$/i, { message: 'S3_SSE must be AES256, aws:kms, S3, or KMS' })
+  S3_SSE?: string;
+
+  @IsString()
+  @Optional()
+  S3_SSE_KMS_KEY_ID?: string;
 }

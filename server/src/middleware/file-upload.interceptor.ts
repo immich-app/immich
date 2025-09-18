@@ -5,14 +5,18 @@ import { transformException } from '@nestjs/platform-express/multer/multer/multe
 import { NextFunction, RequestHandler } from 'express';
 import multer, { StorageEngine, diskStorage } from 'multer';
 import { createHash, randomUUID } from 'node:crypto';
+import { PassThrough } from 'node:stream';
 import { Observable } from 'rxjs';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { RouteKey } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
 import { asUploadRequest, mapToUploadFile } from 'src/utils/asset.util';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 
 export function getFile(files: UploadFiles, property: 'assetData' | 'sidecarData') {
   const file = files[property]?.[0];
@@ -55,6 +59,8 @@ export class FileUploadInterceptor implements NestInterceptor {
     private reflect: Reflector,
     private assetService: AssetMediaService,
     private logger: LoggingRepository,
+    private configRepository: ConfigRepository,
+    private cryptoRepository: CryptoRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
 
@@ -124,21 +130,73 @@ export class FileUploadInterceptor implements NestInterceptor {
       this.assetService.onUploadError(request, file).catch(this.logger.error);
     });
 
-    if (!this.isAssetUploadFile(file)) {
-      this.defaultStorage._handleFile(request, file, callback);
+    const env = this.configRepository.getEnv();
+    const useS3 = (env.storage.engine || 'local') === 's3' && !!env.storage.s3?.bucket;
+
+    if (!useS3) {
+      const isAssetData = file.fieldname === UploadFieldName.ASSET_DATA;
+      this.defaultStorage._handleFile(request, file, (err, result: any) => {
+        if (err) return callback(err);
+        if (!isAssetData) {
+          return callback(null, result as Partial<ImmichFile>);
+        }
+        // compute checksum for local uploads after file is written
+        this.cryptoRepository
+          .hashFile(result.path)
+          .then((checksum) => callback(null, { ...(result as any), checksum } as Partial<ImmichFile>))
+          .catch((error) => callback(error as Error));
+      });
       return;
     }
 
-    const hash = createHash('sha1');
-    file.stream.on('data', (chunk) => hash.update(chunk));
-    this.defaultStorage._handleFile(request, file, (error, info) => {
-      if (error) {
-        hash.destroy();
-        callback(error);
-      } else {
-        callback(null, { ...info, checksum: hash.digest() });
-      }
+    // Stream directly to S3 and compute checksum
+    const uploadReq = asUploadRequest(request, file);
+    const uploadFilename = this.assetService.getUploadFilename(uploadReq);
+    const uploadFolder = this.assetService.getUploadFolder(uploadReq);
+    const uploadPath = `${uploadFolder}/${uploadFilename}`;
+
+    const s3c = env.storage.s3!;
+    const s3 = new S3AppStorageBackend({
+      endpoint: s3c.endpoint,
+      region: s3c.region || 'us-east-1',
+      bucket: s3c.bucket!,
+      prefix: s3c.prefix,
+      forcePathStyle: s3c.forcePathStyle,
+      useAccelerate: s3c.useAccelerate,
+      accessKeyId: s3c.accessKeyId,
+      secretAccessKey: s3c.secretAccessKey,
+      sse: s3c.sse as any,
+      sseKmsKeyId: s3c.sseKmsKeyId,
     });
+
+    const hash = createHash('sha1');
+    let bytes = 0;
+    const monitor = new PassThrough();
+    monitor.on('data', (chunk) => {
+      hash.update(chunk as Buffer);
+      bytes += (chunk as Buffer).length;
+    });
+
+    s3
+      .writeStream(uploadPath)
+      .then(({ stream, done }) => {
+        file.stream.pipe(monitor).pipe(stream);
+        stream.on('error', (err) => {
+          hash.destroy();
+          callback(err as Error);
+        });
+        stream.on('finish', async () => {
+          try {
+            await done();
+            const checksum = hash.digest();
+            callback(null, { path: uploadPath, size: bytes, checksum } as Partial<ImmichFile>);
+          } catch (err) {
+            hash.destroy();
+            callback(err as Error);
+          }
+        });
+      })
+      .catch((err) => callback(err as Error));
   }
 
   private removeFile(request: AuthRequest, file: Express.Multer.File, callback: (error: Error | null) => void) {
@@ -148,6 +206,9 @@ export class FileUploadInterceptor implements NestInterceptor {
   private isAssetUploadFile(file: Express.Multer.File) {
     switch (file.fieldname as UploadFieldName) {
       case UploadFieldName.ASSET_DATA: {
+        return true;
+      }
+      case UploadFieldName.SIDECAR_DATA: {
         return true;
       }
     }

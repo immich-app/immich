@@ -44,7 +44,8 @@ const imports = [
   BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(cls.config),
   OpenTelemetryModule.forRoot(otel),
-  KyselyModule.forRoot(getKyselyConfig(database.config)),
+  // Cast to align CJS/ESM KyselyConfig types across loaders
+  KyselyModule.forRoot(getKyselyConfig(database.config) as any),
 ];
 
 class BaseModule implements OnModuleInit, OnModuleDestroy {

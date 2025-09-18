@@ -6,6 +6,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { Permission } from 'src/enum';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 import { BaseService } from 'src/services/base.service';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { getPreferences } from 'src/utils/preferences';
@@ -88,6 +89,22 @@ export class DownloadService extends BaseService {
     const assetMap = new Map(assets.map((asset) => [asset.id, asset]));
     const paths: Record<string, number> = {};
 
+    const env = this.configRepository.getEnv();
+    const engine = env.storage.engine || 'local';
+    const s3Config = env.storage.s3;
+    const s3 = engine === 's3' && s3Config && s3Config.bucket ? new S3AppStorageBackend({
+      endpoint: s3Config.endpoint,
+      region: s3Config.region || 'us-east-1',
+      bucket: s3Config.bucket,
+      prefix: s3Config.prefix,
+      forcePathStyle: s3Config.forcePathStyle,
+      useAccelerate: s3Config.useAccelerate,
+      accessKeyId: s3Config.accessKeyId,
+      secretAccessKey: s3Config.secretAccessKey,
+      sse: s3Config.sse as any,
+      sseKmsKeyId: s3Config.sseKmsKeyId,
+    }) : null;
+
     for (const assetId of dto.assetIds) {
       const asset = assetMap.get(assetId);
       if (!asset) {
@@ -104,14 +121,22 @@ export class DownloadService extends BaseService {
         filename = `${parsedFilename.name}+${count}${parsedFilename.ext}`;
       }
 
-      let realpath = originalPath;
-      try {
-        realpath = await this.storageRepository.realpath(originalPath);
-      } catch {
-        this.logger.warn('Unable to resolve realpath', { originalPath });
+      if (originalPath.startsWith('s3://') || (s3 && StorageCore.isImmichPath(originalPath))) {
+        if (!s3) {
+          this.logger.warn('S3 path detected but S3 is not configured; skipping', { originalPath });
+          continue;
+        }
+        const stream = await s3.readStream(originalPath);
+        zip.addStream(stream, filename);
+      } else {
+        let realpath = originalPath;
+        try {
+          realpath = await this.storageRepository.realpath(originalPath);
+        } catch {
+          this.logger.warn('Unable to resolve realpath', { originalPath });
+        }
+        zip.addFile(realpath, filename);
       }
-
-      zip.addFile(realpath, filename);
     }
 
     void zip.finalize();

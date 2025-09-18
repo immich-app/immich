@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "node16",
+    "module": "nodenext",
     "strict": true,
     "declaration": true,
     "removeComments": true,
@@ -9,7 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "target": "es2022",
-    "moduleResolution": "node16",
+    "moduleResolution": "nodenext",
     "lib": ["dom", "es2023"],
     "sourceMap": true,
     "outDir": "./dist",
