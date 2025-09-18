@@ -179,6 +179,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onAssetInit(Duration _) {
     _precacheAssets(widget.initialIndex);
     _handleCasting();
+    ref.read(assetViewerProvider.notifier).setOpacity(255);
   }
 
   void _onAssetChanged(int index) async {
