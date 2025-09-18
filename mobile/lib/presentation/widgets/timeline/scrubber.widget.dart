@@ -187,9 +187,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       ref.read(timelineStateProvider.notifier).setScrubbing(true);
 
       // Initialize debouncer if needed
-      _scrubberDebouncer ??= Debouncer(
-        interval: const Duration(milliseconds: 500),
-      );
+      _scrubberDebouncer ??= Debouncer(interval: const Duration(milliseconds: 50));
 
       // Debounce setting scrubbing to false
       _scrubberDebouncer!.run(() {
