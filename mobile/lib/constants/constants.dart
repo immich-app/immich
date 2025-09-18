@@ -1,3 +1,5 @@
+import 'dart:io';
+
 const int noDbId = -9223372036854775808; // from Isar
 const double downloadCompleted = -1;
 const double downloadFailed = -2;
@@ -10,7 +12,7 @@ const int kSyncEventBatchSize = 5000;
 const int kFetchLocalAssetsBatchSize = 40000;
 
 // Hash batch limits
-const int kBatchHashFileLimit = 256;
+final int kBatchHashFileLimit = Platform.isIOS ? 32 : 512;
 const int kBatchHashSizeLimit = 1024 * 1024 * 1024; // 1GB
 
 // Secure storage keys
