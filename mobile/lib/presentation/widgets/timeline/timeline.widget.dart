@@ -320,6 +320,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
               topPadding: topPadding,
               bottomPadding: bottomPadding,
               monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+              hasAppBar: widget.appBar != null,
               child: grid,
             );
           } else {
