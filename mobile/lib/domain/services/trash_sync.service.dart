@@ -1,5 +1,6 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -9,7 +10,6 @@ import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:logging/logging.dart';
-import 'package:platform/platform.dart';
 
 typedef TrashSyncItem = ({String remoteId, String checksum, DateTime? deletedAt});
 
@@ -21,7 +21,6 @@ class TrashSyncService {
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final LocalFilesManagerRepository _localFilesManager;
   final StorageRepository _storageRepository;
-  final Platform _platform;
   final Logger _logger = Logger('TrashService');
 
   TrashSyncService({
@@ -38,11 +37,10 @@ class TrashSyncService {
        _localAlbumRepository = localAlbumRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _localFilesManager = localFilesManager,
-       _storageRepository = storageRepository,
-       _platform = const LocalPlatform();
+       _storageRepository = storageRepository;
 
   bool get isAutoSyncMode =>
-      _platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid);
+      CurrentPlatform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid);
 
   Future<void> updateChecksums(Iterable<TrashedAsset> assets) async =>
       _trashedLocalAssetRepository.updateChecksums(assets);

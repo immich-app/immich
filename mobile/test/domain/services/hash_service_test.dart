@@ -34,6 +34,7 @@ void main() {
     registerFallbackValue(<String, String>{});
 
     when(() => mockAssetRepo.updateHashes(any())).thenAnswer((_) async => {});
+    when(() => mockTrashSyncService.isAutoSyncMode).thenReturn(false);
   });
 
   group('HashService hashAssets', () {
