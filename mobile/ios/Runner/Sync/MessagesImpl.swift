@@ -23,13 +23,14 @@ class NativeSyncApiImpl: NativeSyncApi {
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
   private var hashTask: Task<Void, Error>?
-  private var hashCancelled: Bool
-  private let hashCancelledCode = "HASH_CANCELLED"
+  
+  private static let hashCancelledCode = "HASH_CANCELLED"
+  private static let hashCancelled = Result<[HashResult], Error>.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil))
+  
   
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
-    self.hashCancelled = false
   }
   
   @available(iOS 16, *)
@@ -254,30 +255,43 @@ class NativeSyncApiImpl: NativeSyncApi {
   }
   
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void) {
-    hashCancelled = false
-    hashTask = Task {
+    hashTask?.cancel()
+    hashTask = Task { [weak self] in
       var missingAssetIds = Set(assetIds)
       var assets = [PHAsset]()
       assets.reserveCapacity(assetIds.count)
-      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: nil).enumerateObjects { (asset, _, _) in
+      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: nil).enumerateObjects { (asset, _, stop) in
+        if Task.isCancelled {
+          stop.pointee = true
+          return
+        }
         missingAssetIds.remove(asset.localIdentifier)
         assets.append(asset)
       }
       
-      if hashCancelled {
-        completion(.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil)))
+      if Task.isCancelled {
+        return completion(Self.hashCancelled)
       }
       
-      await withTaskGroup(of: HashResult.self) { taskGroup in
+      await withTaskGroup(of: HashResult?.self) { taskGroup in
         var results = [HashResult]()
         results.reserveCapacity(assets.count)
         for asset in assets {
-          taskGroup.addTask { 
+          if Task.isCancelled {
+            return completion(Self.hashCancelled)
+          }
+          taskGroup.addTask {
+            guard let self = self else {
+              return HashResult(assetId: asset.localIdentifier, error: "Instance deallocated", hash: nil)
+            }
             return await self.hashAsset(asset, allowNetworkAccess: allowNetworkAccess)
           }
         }
         
         for await result in taskGroup {
+          guard let result = result else {
+            return completion(Self.hashCancelled)
+          }
           results.append(result)
         }
         
@@ -285,26 +299,29 @@ class NativeSyncApiImpl: NativeSyncApi {
           results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
         }
         
-        if hashCancelled {
-          completion(.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil)))
-        } else {
-          completion(.success(results))
-        }
+        completion(.success(results))
       }
     }
   }
   
   func cancelHashing() throws {
     hashTask?.cancel()
-    hashCancelled = true
     hashTask = nil
   }
   
-  private func hashAsset(_ asset: PHAsset, allowNetworkAccess: Bool) async -> HashResult {
+  private func hashAsset(_ asset: PHAsset, allowNetworkAccess: Bool) async -> HashResult? {
     var requestId: PHAssetResourceDataRequestID?
     return await withTaskCancellationHandler(operation: {
+      if Task.isCancelled {
+        return nil
+      }
+      
       guard let resource = asset.getResource() else {
         return HashResult(assetId: asset.localIdentifier, error: "Cannot get asset resource", hash: nil)
+      }
+      
+      if Task.isCancelled {
+        return nil
       }
       
       let options = PHAssetResourceRequestOptions()
@@ -317,12 +334,14 @@ class NativeSyncApiImpl: NativeSyncApi {
           for: resource,
           options: options,
           dataReceivedHandler: { data in
-            autoreleasepool {
-              hasher.update(data: data)
-            }
+            hasher.update(data: data)
           },
           completionHandler: { error in
             if let error = error {
+              if Task.isCancelled {
+                continuation.resume(returning: nil)
+                return
+              }
               continuation.resume(returning: HashResult(
                 assetId: asset.localIdentifier,
                 error: "Failed to hash asset: \(error.localizedDescription)",
