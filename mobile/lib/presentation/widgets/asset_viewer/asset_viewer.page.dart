@@ -61,6 +61,8 @@ class AssetViewer extends ConsumerStatefulWidget {
   ConsumerState createState() => _AssetViewerState();
 
   static void setAsset(WidgetRef ref, BaseAsset asset) {
+    // Always dim the background
+    ref.read(assetViewerProvider.notifier).setOpacity(255);
     // Always holds the current asset from the timeline
     ref.read(assetViewerProvider.notifier).setAsset(asset);
     // The currentAssetNotifier actually holds the current asset that is displayed
