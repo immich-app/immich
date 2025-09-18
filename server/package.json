@@ -87,7 +87,7 @@
     "multer": "^2.0.2",
     "nest-commander": "^3.16.0",
     "nestjs-cls": "^5.0.0",
-    "nestjs-kysely": "^3.0.0",
+    "nestjs-kysely": "^1.2.0",
     "nestjs-otel": "^7.0.0",
     "nodemailer": "^7.0.0",
     "openid-client": "^6.3.3",
@@ -103,7 +103,7 @@
     "sanitize-filename": "^1.6.3",
     "sanitize-html": "^2.14.0",
     "semver": "^7.6.2",
-    "sharp": "^0.34.3",
+    "sharp": "0.34.3",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",
     "tailwindcss-preset-email": "^1.4.0",
@@ -166,6 +166,6 @@
     "node": "22.19.0"
   },
   "overrides": {
-    "sharp": "^0.34.3"
+    "sharp": "0.34.3"
   }
 }

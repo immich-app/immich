@@ -164,7 +164,14 @@ Notes & Tips
   - Alternative: in-app CLI to iterate DB and copy+verify per-asset, then update paths; can implement on request
   - Recommended sequence: copy while server runs → brief stop → delta sync → switch engine → restart → verify → optional cleanup of local data
 
-<<<<<<< HEAD
+- 2025-09-16 — In-app migration CLI (Option B)
+  - Added `migrate-to-s3` command (server admin CLI) to copy local → S3 and update DB paths per asset
+  - Originals + sidecars by default; `--include-derivatives` migrates thumbnails/previews/fullsize/encodes
+  - Verifies by size via S3 HEAD; skips when dest matches; supports `--dry-run` and `--concurrency`
+  - Files:
+    - `server/src/commands/migrate-to-s3.command.ts`
+    - wired into CLI in `server/src/commands/index.ts`
+
 - 2025-09-17 — Resolve pnpm-lock conflict after merging origin/main
   - Regenerated `pnpm-lock.yaml` from scratch to eliminate merge markers and incorporate both sets of changes
   - Installed `pnpm@10.14.0` globally (sudo) due to missing corepack; current Node is v18.19.1 in this shell
@@ -173,6 +180,23 @@ Notes & Tips
     - `@aws-sdk/client-s3@3.890.0`, `@aws-sdk/lib-storage@3.890.0`, and `@aws-sdk/client-sesv2@3.890.0`
   - Marked conflict as resolved (`git add pnpm-lock.yaml`); no other merge conflicts reported
   - Note: Server build in this environment failed due to ESM/CJS mismatch (nestjs-kysely) and Node version; use Node 22.19.0 via Volta/mise for local build and run server checks
+
+- 2025-09-17 — Fix server build (nestjs-kysely ESM mismatch)
+  - Root cause: `nestjs-kysely@3.x` is ESM-first; with `module: node16` and no `type: module`, TS raised TS1479 and types mismatch
+  - Surgical fix:
+    - Pin `nestjs-kysely` to CJS-compatible `^1.2.0` in `server/package.json` (runtime fix)
+    - Switch TS to `module: nodenext` + `moduleResolution: nodenext` in `server/tsconfig.json` for better conditional exports handling
+    - Cast Kysely config where required to satisfy dual ESM/CJS types:
+      - `server/src/app.module.ts` → `KyselyModule.forRoot(getKyselyConfig(...) as any)`
+      - `server/src/bin/sync-sql.ts` → `...(getKyselyConfig(...) as any)`
+  - Verified: `pnpm --filter immich run build` succeeds locally and runtime works in Docker
+  - Docker build path uses `--no-frozen-lockfile`, so the pin applies during image build
+  - Follow-up: When ready to adopt full ESM, remove casts, restore `nestjs-kysely@^3`, and add a safe ESM migration (avoid `require()` usages)
+
+- 2025-09-17 — Web gesture fix + sharp/libvips alignment
+  - Pinned `svelte-gestures` to `5.1.4` (pre-attachments API) in `web/package.json` to match current imports (`swipe`, `SwipeCustomEvent`)
+  - Aligned `sharp` with base image libvips by pinning to `0.34.3` via `server/package.json` overrides + root `package.json` pnpm.overrides
+  - Rebuilt lock; verified Docker server/web stages progress
 
 Commands run
 - sudo npm i -g pnpm@10.14.0
@@ -188,12 +212,3 @@ Next steps
   - `pnpm --filter immich-web run build` (web)
 - If API surfaces changed, regenerate OpenAPI (`make open-api-typescript`)
 - If SES is actually used on main, confirm corresponding code paths compile with the new lock
-=======
-- 2025-09-16 — In-app migration CLI (Option B)
-  - Added `migrate-to-s3` command (server admin CLI) to copy local → S3 and update DB paths per asset
-  - Originals + sidecars by default; `--include-derivatives` migrates thumbnails/previews/fullsize/encodes
-  - Verifies by size via S3 HEAD; skips when dest matches; supports `--dry-run` and `--concurrency`
-  - Files:
-    - `server/src/commands/migrate-to-s3.command.ts`
-    - wired into CLI in `server/src/commands/index.ts`
->>>>>>> 8d9b998bd (add a migrate-to-s3 run feature to migrate from local disk to s3)

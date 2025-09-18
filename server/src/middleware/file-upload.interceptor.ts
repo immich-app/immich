@@ -13,6 +13,7 @@ import { AuthRequest } from 'src/middleware/auth.guard';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
+import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
 import { asUploadRequest, mapToUploadFile } from 'src/utils/asset.util';
 import { S3AppStorageBackend } from 'src/storage/s3-backend';
@@ -59,6 +60,7 @@ export class FileUploadInterceptor implements NestInterceptor {
     private assetService: AssetMediaService,
     private logger: LoggingRepository,
     private configRepository: ConfigRepository,
+    private cryptoRepository: CryptoRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
 
@@ -131,8 +133,19 @@ export class FileUploadInterceptor implements NestInterceptor {
     const env = this.configRepository.getEnv();
     const useS3 = (env.storage.engine || 'local') === 's3' && !!env.storage.s3?.bucket;
 
-    if (!this.isAssetUploadFile(file) || !useS3) {
-      this.defaultStorage._handleFile(request, file, callback);
+    if (!useS3) {
+      const isAssetData = file.fieldname === UploadFieldName.ASSET_DATA;
+      this.defaultStorage._handleFile(request, file, (err, result: any) => {
+        if (err) return callback(err);
+        if (!isAssetData) {
+          return callback(null, result as Partial<ImmichFile>);
+        }
+        // compute checksum for local uploads after file is written
+        this.cryptoRepository
+          .hashFile(result.path)
+          .then((checksum) => callback(null, { ...(result as any), checksum } as Partial<ImmichFile>))
+          .catch((error) => callback(error as Error));
+      });
       return;
     }
 
