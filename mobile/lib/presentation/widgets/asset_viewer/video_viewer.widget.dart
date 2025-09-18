@@ -313,7 +313,7 @@ class NativeVideoViewer extends HookConsumerWidget {
     ref.listen(currentAssetNotifier, (_, value) {
       final playerController = controller.value;
 
-      if (currentAsset.value == asset) {
+      if (currentAsset.value == value) {
         return;
       }
 
