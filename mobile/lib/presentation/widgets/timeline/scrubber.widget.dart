@@ -177,10 +177,6 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragStart(DragStartDetails _) {
-    if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
-      ref.read(timelineStateProvider.notifier).setScrubbing(true);
-    }
-
     setState(() {
       _isDragging = true;
       _labelAnimationController.forward();
@@ -206,6 +202,11 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       if (_lastLabel != label) {
         ref.read(hapticFeedbackProvider.notifier).selectionClick();
         _lastLabel = label;
+
+        // Notify timeline state of the new scrubber date position
+        if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+          ref.read(timelineStateProvider.notifier).onScrubberDateChanged(nearestMonthSegment.date);
+        }
       }
     }
 
@@ -294,7 +295,6 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragEnd(DragEndDetails _) {
-    ref.read(timelineStateProvider.notifier).setScrubbing(false);
     _labelAnimationController.reverse();
     setState(() {
       _isDragging = false;

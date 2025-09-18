@@ -1,9 +1,7 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -82,7 +80,7 @@ class FixedSegment extends Segment {
   }
 }
 
-class _FixedSegmentRow extends HookConsumerWidget {
+class _FixedSegmentRow extends ConsumerWidget {
   final int assetIndex;
   final int assetCount;
   final double tileHeight;
@@ -100,47 +98,9 @@ class _FixedSegmentRow extends HookConsumerWidget {
     final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
     final timelineService = ref.read(timelineServiceProvider);
 
-    // State to track whether we should show actual assets during scrubbing
-    final showAssetsWhileScrubbing = useState(false);
-    final debounceTimer = useRef<Timer?>(null);
-
-    // Track the previous assetIndex to detect changes
-    final previousAssetIndex = useRef<int?>(null);
-
-    // Effect to handle assetIndex stability during scrubbing
-    useEffect(() {
-      if (isScrubbing) {
-        // Check if assetIndex has changed
-        if (previousAssetIndex.value != assetIndex) {
-          // AssetIndex changed, reset timer and show placeholder
-          debounceTimer.value?.cancel();
-          showAssetsWhileScrubbing.value = false;
-          previousAssetIndex.value = assetIndex;
-
-          // Start a new timer for this assetIndex
-          debounceTimer.value = Timer(const Duration(milliseconds: 150), () {
-            if (context.mounted && isScrubbing) {
-              showAssetsWhileScrubbing.value = true;
-            }
-          });
-        }
-      } else {
-        // Not scrubbing, reset everything
-        debounceTimer.value?.cancel();
-        showAssetsWhileScrubbing.value = false;
-        previousAssetIndex.value = null;
-      }
-
-      return () {
-        debounceTimer.value?.cancel();
-      };
-    }, [isScrubbing, assetIndex]);
-
-    // Show placeholder during scrubbing unless assetIndex has been stable for 500ms
-    if (isScrubbing && !showAssetsWhileScrubbing.value) {
+    if (isScrubbing) {
       return _buildPlaceholder(context);
     }
-
     if (timelineService.hasRange(assetIndex, assetCount)) {
       return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
     }
