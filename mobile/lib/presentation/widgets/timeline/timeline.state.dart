@@ -8,7 +8,6 @@ import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment_builde
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/utils/debounce.dart';
 
 class TimelineArgs {
   final double maxWidth;
@@ -54,54 +53,31 @@ class TimelineArgs {
 class TimelineState {
   final bool isScrubbing;
   final bool isScrolling;
-  final DateTime? currentScrubberDate;
 
-  const TimelineState({this.isScrubbing = false, this.isScrolling = false, this.currentScrubberDate});
+  const TimelineState({this.isScrubbing = false, this.isScrolling = false});
 
   bool get isInteracting => isScrubbing || isScrolling;
 
   @override
   bool operator ==(covariant TimelineState other) {
-    return isScrubbing == other.isScrubbing &&
-        isScrolling == other.isScrolling &&
-        currentScrubberDate == other.currentScrubberDate;
+    return isScrubbing == other.isScrubbing && isScrolling == other.isScrolling;
   }
 
   @override
-  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode ^ currentScrubberDate.hashCode;
+  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode;
 
-  TimelineState copyWith({bool? isScrubbing, bool? isScrolling, DateTime? currentScrubberDate}) {
-    return TimelineState(
-      isScrubbing: isScrubbing ?? this.isScrubbing,
-      isScrolling: isScrolling ?? this.isScrolling,
-      currentScrubberDate: currentScrubberDate ?? this.currentScrubberDate,
-    );
+  TimelineState copyWith({bool? isScrubbing, bool? isScrolling}) {
+    return TimelineState(isScrubbing: isScrubbing ?? this.isScrubbing, isScrolling: isScrolling ?? this.isScrolling);
   }
 }
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
-  Debouncer? _scrubberDebouncer;
-
   void setScrubbing(bool isScrubbing) {
     state = state.copyWith(isScrubbing: isScrubbing);
   }
 
   void setScrolling(bool isScrolling) {
     state = state.copyWith(isScrolling: isScrolling);
-  }
-
-  void onScrubberDateChanged(DateTime date) {
-    if (state.currentScrubberDate != date) {
-      state = state.copyWith(isScrubbing: true, currentScrubberDate: date);
-
-      _scrubberDebouncer ??= Debouncer(interval: const Duration(milliseconds: 150));
-
-      _scrubberDebouncer!.run(() {
-        if (state.currentScrubberDate == date) {
-          state = state.copyWith(isScrubbing: false);
-        }
-      });
-    }
   }
 
   @override
