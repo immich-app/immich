@@ -313,6 +313,10 @@ class NativeVideoViewer extends HookConsumerWidget {
     ref.listen(currentAssetNotifier, (_, value) {
       final playerController = controller.value;
 
+      if (currentAsset.value == asset) {
+        return;
+      }
+
       // Cancel any pending delayed playback timer before handling new asset
       timerRef.value?.cancel();
       timerRef.value = null;
@@ -328,7 +332,6 @@ class NativeVideoViewer extends HookConsumerWidget {
         if (currentAsset.value != value) {
           currentAsset.value = value;
         }
-        // isVisible.value = false; // uncomment if an extra guard is needed
         // We're leaving this video; stop processing entry logic below.
         return;
       }
@@ -362,12 +365,7 @@ class NativeVideoViewer extends HookConsumerWidget {
           if (!context.mounted) {
             return;
           }
-          // Read latest selection; only proceed if this asset is still current
-          final latest = ref.read(currentAssetNotifier);
-          if (!_isCurrentAsset(asset, latest)) {
-            return;
-          }
-          currentAsset.value = latest;
+          currentAsset.value = value;
           onPlaybackReady();
           // Clear after firing
           timerRef.value = null;
@@ -389,12 +387,10 @@ class NativeVideoViewer extends HookConsumerWidget {
           return;
         }
         removeListeners(playerController);
-        // Only attempt to stop if still mounted to avoid errors on disposed widgets
-        // if (context.mounted) {
-        /*  playerController.stop().catchError((error) {
+
+        playerController.stop().catchError((error) {
           log.fine('Error stopping video: $error');
-        }); */
-        //  }
+        });
 
         WakelockPlus.disable();
       };
