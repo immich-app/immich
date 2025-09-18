@@ -81,7 +81,7 @@ export class MonthGroup {
     }
     this.#intersecting = newValue;
     if (newValue) {
-      void this.timelineManager.loadMonthGroup(this.yearMonth);
+      void this.timelineManager.loadSegment(this.yearMonth);
     } else {
       this.cancel();
     }
@@ -373,5 +373,13 @@ export class MonthGroup {
 
   cancel() {
     this.loader?.cancel();
+  }
+
+  updateIntersection({ intersecting, actuallyIntersecting }: { intersecting: boolean; actuallyIntersecting: boolean }) {
+    this.intersecting = intersecting;
+    this.actuallyIntersecting = actuallyIntersecting;
+    if (intersecting) {
+      this.timelineManager.clearDeferredLayout(this);
+    }
   }
 }

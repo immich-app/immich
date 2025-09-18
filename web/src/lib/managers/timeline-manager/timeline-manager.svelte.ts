@@ -198,7 +198,7 @@ export class TimelineManager {
     const direction = options?.direction ?? 'earlier';
     let { startDayGroup, startAsset } = options ?? {};
     for (const monthGroup of this.monthGroupIterator({ direction, startMonthGroup: options?.startMonthGroup })) {
-      await this.loadMonthGroup(monthGroup.yearMonth, { cancelable: false });
+      await this.loadSegment(monthGroup.yearMonth, { cancelable: false });
       yield* monthGroup.assetsIterator({ startDayGroup, startAsset, direction });
       startDayGroup = startAsset = undefined;
     }
@@ -387,7 +387,7 @@ export class TimelineManager {
     };
   }
 
-  async loadMonthGroup(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
+  async loadSegment(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
     if (options) {
       cancelable = options.cancelable;
@@ -442,7 +442,7 @@ export class TimelineManager {
   }
 
   async #loadMonthGroupAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
-    await this.loadMonthGroup(yearMonth, options);
+    await this.loadSegment(yearMonth, options);
     return getMonthGroupByDate(this, yearMonth);
   }
 
@@ -454,7 +454,7 @@ export class TimelineManager {
   async getRandomMonthGroup() {
     const random = Math.floor(Math.random() * this.months.length);
     const month = this.months[random];
-    await this.loadMonthGroup(month.yearMonth, { cancelable: false });
+    await this.loadSegment(month.yearMonth, { cancelable: false });
     return month;
   }
 
@@ -527,7 +527,7 @@ export class TimelineManager {
     if (!monthGroup) {
       return;
     }
-    await this.loadMonthGroup(dateTime, { cancelable: false });
+    await this.loadSegment(dateTime, { cancelable: false });
     const asset = monthGroup.findClosest(dateTime);
     if (asset) {
       return asset;
