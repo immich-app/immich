@@ -105,7 +105,7 @@
   {/if}
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
-    <div class="flex place-items-center place-content-center">
+    <div class="flex place-items-center place-content-center gap-2">
       {#if inputType === SettingInputFieldType.COLOR}
         <input
           bind:this={input}
