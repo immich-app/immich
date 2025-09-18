@@ -241,6 +241,7 @@ open class NativeSyncApiImplBase(context: Context) {
       return
     }
 
+    hashTask?.cancel()
     hashTask = CoroutineScope(Dispatchers.IO).launch {
       try {
         val results = assetIds.map { assetId ->
