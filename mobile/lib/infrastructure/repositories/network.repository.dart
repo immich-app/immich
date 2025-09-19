@@ -28,12 +28,14 @@ class NetworkRepository {
 
   const NetworkRepository();
 
+  /// Note: when disk caching is enabled, only one client may use a given directory at a time.
+  /// Different isolates or engines must use different directories.
   http.Client getHttpClient(
     String directoryName, {
-    int diskCapacity = 100 << 20,
-    int memoryCapacity = 10 << 20,
+    CacheMode cacheMode = CacheMode.memory,
+    int diskCapacity = 0,
     int maxConnections = 6,
-    CacheMode cacheMode = CacheMode.disk,
+    int memoryCapacity = 10 << 20,
   }) {
     final cachedClient = _clients[directoryName];
     if (cachedClient != null) {
