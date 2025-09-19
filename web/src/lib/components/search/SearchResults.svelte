@@ -9,8 +9,10 @@
   import StreamWithViewer from '$lib/components/timeline/StreamWithViewer.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import { SearchResultsManager } from '$lib/managers/searchresults-manager/SearchResultsManager.svelte';
+  import { SearchResultsSegment } from '$lib/managers/searchresults-manager/SearchResultsSegment.svelte';
 
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { LoadingSpinner } from '@immich/ui';
   import type { Snippet } from 'svelte';
 
   interface Props {
@@ -91,6 +93,13 @@
           </AssetLayout>
         {/snippet}
       </SelectableSegment>
+    {/snippet}
+    {#snippet segmentFooter({ segment })}
+      {#if (segment as SearchResultsSegment).hasNextPage}
+        <div class="w-full flex justify-center items-center h-50">
+          <LoadingSpinner size="giant" />
+        </div>
+      {/if}
     {/snippet}
   </Photostream>
 </StreamWithViewer>

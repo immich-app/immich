@@ -21,7 +21,7 @@ export class SearchResultsSegment extends PhotostreamSegment {
   #id: string;
   #searchTerms: SearchTerms;
   #currentPage: string | null = null;
-  #nextPage: string | null = null;
+  #nextPage: string | null = $state(null);
 
   #viewerAssets: ViewerAsset[] = $state([]);
 
@@ -74,6 +74,10 @@ export class SearchResultsSegment extends PhotostreamSegment {
 
   get viewerAssets(): ViewerAsset[] {
     return this.#viewerAssets;
+  }
+
+  get hasNextPage() {
+    return this.#nextPage !== null;
   }
 
   findAssetAbsolutePosition(assetId: string) {

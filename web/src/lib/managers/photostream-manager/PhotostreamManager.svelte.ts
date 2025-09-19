@@ -133,7 +133,7 @@ export abstract class PhotostreamManager {
     const changed = value !== this.#viewportWidth;
     this.#viewportWidth = value;
     this.suspendTransitions = true;
-    void this.updateViewportGeometry(changed);
+    this.updateViewportGeometry(changed);
   }
 
   get viewportWidth() {
@@ -143,7 +143,7 @@ export abstract class PhotostreamManager {
   set viewportHeight(value: number) {
     this.#viewportHeight = value;
     this.#suspendTransitions = true;
-    void this.updateViewportGeometry(false);
+    this.updateViewportGeometry(false);
   }
 
   get viewportHeight() {
@@ -151,10 +151,8 @@ export abstract class PhotostreamManager {
   }
 
   updateSlidingWindow(scrollTop: number) {
-    if (this.#scrollTop !== scrollTop) {
-      this.#scrollTop = scrollTop;
-      this.updateIntersections();
-    }
+    this.#scrollTop = scrollTop;
+    this.updateIntersections();
   }
 
   updateIntersections() {

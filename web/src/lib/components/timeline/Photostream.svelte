@@ -18,6 +18,13 @@
         },
       ]
     >;
+    segmentFooter: Snippet<
+      [
+        {
+          segment: PhotostreamSegment;
+        },
+      ]
+    >;
     skeleton: Snippet<
       [
         {
@@ -59,6 +66,8 @@
 
   let {
     segment,
+    segmentFooter,
+    skeleton,
 
     enableRouting,
     timelineManager = $bindable(),
@@ -72,7 +81,7 @@
     isShowDeleteConfirmation = $bindable(false),
 
     children,
-    skeleton,
+
     empty,
     header,
     handleTimelineScroll = () => {},
@@ -89,7 +98,6 @@
   let { gridScrollTarget } = assetViewingStore;
 
   let element: HTMLElement | undefined = $state();
-  let timelineElement: HTMLElement | undefined = $state();
 
   const maxMd = $derived(mobileDevice.maxMd);
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
@@ -97,6 +105,9 @@
   $effect(() => {
     const layoutOptions = maxMd ? smallHeaderHeight : largeHeaderHeight;
     timelineManager.setLayoutOptions(layoutOptions);
+    // this next line is important in order to ensure that the reactive signals of ViewerAsset.#intersecting
+    // are marked as dependencies of timeline.#scrollTop.
+    updateSlidingWindow();
   });
 
   const scrollTo = (top: number) => {
@@ -205,7 +216,6 @@
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
   <section
-    bind:this={timelineElement}
     id="virtual-timeline"
     class:relative={true}
     class:invisible={showSkeleton}
@@ -245,6 +255,15 @@
           })}
         {/if}
       </div>
+      {#if segmentFooter}
+        <div
+          style:position="absolute"
+          style:transform={`translate3d(0,${absoluteHeight + monthGroup.height}px,0)`}
+          style:width="100%"
+        >
+          {@render segmentFooter?.({ segment: monthGroup })}
+        </div>
+      {/if}
     {/each}
     <!-- spacer for lead-out -->
     <div
