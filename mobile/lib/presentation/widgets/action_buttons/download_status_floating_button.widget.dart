@@ -19,38 +19,44 @@ class DownloadStatusFloatingButton extends ConsumerWidget {
         .isNotEmpty;
 
     return shouldShow
-        ? FloatingActionButton(
-            shape: RoundedRectangleBorder(
-              borderRadius: const BorderRadius.all(Radius.circular(16)),
-              side: BorderSide(color: context.colorScheme.outlineVariant),
-            ),
-            backgroundColor: context.colorScheme.surfaceBright,
-            onPressed: () {
-              context.pushRoute(const DownloadInfoRoute());
-            },
-            child: Stack(
-              alignment: AlignmentDirectional.center,
-              children: [
-                Badge.count(
-                  count: itemCount,
-                  backgroundColor: context.colorScheme.primary.withValues(alpha: 1),
-                  child: Icon(
-                    Icons.downloading_rounded,
-                    color: isDownloading ? context.colorScheme.primary : context.logoGreen,
-                    size: 28,
-                  ),
-                ),
-                if (isDownloading)
-                  const SizedBox(
-                    height: 31,
-                    width: 31,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      backgroundColor: Colors.transparent,
-                      value: null, // Indeterminate progress
+        ? Badge.count(
+            count: itemCount,
+            textColor: context.colorScheme.onPrimary,
+            backgroundColor: context.colorScheme.primary,
+            child: FloatingActionButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(20)),
+                side: BorderSide(color: context.colorScheme.outlineVariant, width: 1),
+              ),
+              backgroundColor: context.isDarkTheme
+                  ? context.colorScheme.surfaceContainer
+                  : context.colorScheme.surfaceBright,
+              elevation: 2,
+              onPressed: () {
+                context.pushRoute(const DownloadInfoRoute());
+              },
+              child: Stack(
+                alignment: AlignmentDirectional.center,
+                children: [
+                  isDownloading
+                      ? Icon(Icons.downloading_rounded, color: context.colorScheme.primary, size: 28)
+                      : Icon(
+                          Icons.download_done,
+                          color: context.isDarkTheme ? Colors.green[200] : Colors.green[400],
+                          size: 28,
+                        ),
+                  if (isDownloading)
+                    const SizedBox(
+                      height: 31,
+                      width: 31,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        backgroundColor: Colors.transparent,
+                        value: null, // Indeterminate progress
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           )
         : const SizedBox.shrink();
