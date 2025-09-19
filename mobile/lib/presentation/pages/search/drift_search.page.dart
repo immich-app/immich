@@ -633,7 +633,7 @@ class _SearchResultGrid extends ConsumerWidget {
             groupBy: GroupAssetsBy.none,
             appBar: null,
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
-            withScrubber: false,
+            snapToMonth: false,
           ),
         ),
       ),

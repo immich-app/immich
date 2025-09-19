@@ -14,6 +14,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
@@ -38,6 +39,7 @@ class Timeline extends StatelessWidget {
     this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.18),
     this.groupBy,
     this.withScrubber = true,
+    this.snapToMonth = true,
   });
 
   final Widget? topSliverWidget;
@@ -48,11 +50,13 @@ class Timeline extends StatelessWidget {
   final bool withStack;
   final GroupAssetsBy? groupBy;
   final bool withScrubber;
+  final bool snapToMonth;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      floatingActionButton: const DownloadStatusFloatingButton(),
       body: LayoutBuilder(
         builder: (_, constraints) => ProviderScope(
           overrides: [
@@ -73,6 +77,7 @@ class Timeline extends StatelessWidget {
             appBar: appBar,
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
+            snapToMonth: snapToMonth,
           ),
         ),
       ),
@@ -87,6 +92,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.appBar,
     this.bottomSheet,
     this.withScrubber = true,
+    this.snapToMonth = true,
   });
 
   final Widget? topSliverWidget;
@@ -94,6 +100,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final Widget? appBar;
   final Widget? bottomSheet;
   final bool withScrubber;
+  final bool snapToMonth;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -309,11 +316,13 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
           final Widget timeline;
           if (widget.withScrubber) {
             timeline = Scrubber(
+              snapToMonth: widget.snapToMonth,
               layoutSegments: segments,
               timelineHeight: maxHeight,
               topPadding: topPadding,
               bottomPadding: bottomPadding,
               monthSegmentSnappingOffset: widget.topSliverWidgetHeight ?? 0 + appBarExpandedHeight,
+              hasAppBar: widget.appBar != null,
               child: grid,
             );
           } else {
