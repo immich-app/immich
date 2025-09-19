@@ -123,6 +123,7 @@ class DriftBackupState {
   final int totalCount;
   final int backupCount;
   final int remainderCount;
+  final int processingCount;
 
   final int enqueueCount;
   final int enqueueTotalCount;
@@ -135,6 +136,7 @@ class DriftBackupState {
     required this.totalCount,
     required this.backupCount,
     required this.remainderCount,
+    required this.processingCount,
     required this.enqueueCount,
     required this.enqueueTotalCount,
     required this.isCanceling,
@@ -145,6 +147,7 @@ class DriftBackupState {
     int? totalCount,
     int? backupCount,
     int? remainderCount,
+    int? processingCount,
     int? enqueueCount,
     int? enqueueTotalCount,
     bool? isCanceling,
@@ -154,6 +157,7 @@ class DriftBackupState {
       totalCount: totalCount ?? this.totalCount,
       backupCount: backupCount ?? this.backupCount,
       remainderCount: remainderCount ?? this.remainderCount,
+      processingCount: processingCount ?? this.processingCount,
       enqueueCount: enqueueCount ?? this.enqueueCount,
       enqueueTotalCount: enqueueTotalCount ?? this.enqueueTotalCount,
       isCanceling: isCanceling ?? this.isCanceling,
@@ -163,7 +167,7 @@ class DriftBackupState {
 
   @override
   String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isCanceling: $isCanceling, uploadItems: $uploadItems)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isCanceling: $isCanceling, uploadItems: $uploadItems)';
   }
 
   @override
@@ -174,6 +178,7 @@ class DriftBackupState {
     return other.totalCount == totalCount &&
         other.backupCount == backupCount &&
         other.remainderCount == remainderCount &&
+        other.processingCount == processingCount &&
         other.enqueueCount == enqueueCount &&
         other.enqueueTotalCount == enqueueTotalCount &&
         other.isCanceling == isCanceling &&
@@ -185,6 +190,7 @@ class DriftBackupState {
     return totalCount.hashCode ^
         backupCount.hashCode ^
         remainderCount.hashCode ^
+        processingCount.hashCode ^
         enqueueCount.hashCode ^
         enqueueTotalCount.hashCode ^
         isCanceling.hashCode ^
@@ -203,6 +209,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           totalCount: 0,
           backupCount: 0,
           remainderCount: 0,
+          processingCount: 0,
           enqueueCount: 0,
           enqueueTotalCount: 0,
           isCanceling: false,
@@ -313,13 +320,19 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> getBackupStatus(String userId) async {
-    final [totalCount, backupCount, remainderCount] = await Future.wait([
+    final [totalCount, backupCount, remainderCount, processingCount] = await Future.wait([
       _uploadService.getBackupTotalCount(),
       _uploadService.getBackupFinishedCount(userId),
       _uploadService.getBackupRemainderCount(userId),
+      _uploadService.getBackupProcessingCount(),
     ]);
 
-    state = state.copyWith(totalCount: totalCount, backupCount: backupCount, remainderCount: remainderCount);
+    state = state.copyWith(
+      totalCount: totalCount,
+      backupCount: backupCount,
+      remainderCount: remainderCount,
+      processingCount: processingCount,
+    );
   }
 
   Future<void> startBackup(String userId) {

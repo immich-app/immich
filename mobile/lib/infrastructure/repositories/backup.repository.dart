@@ -107,6 +107,30 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     return query.get().then((rows) => rows.length);
   }
 
+  Future<int> getProcessingCount() async {
+    final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id),
+          useColumns: false,
+        ),
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+          useColumns: false,
+        ),
+      ])
+      ..where(
+        _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+            _db.localAssetEntity.checksum.isNull() &
+            _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
+      );
+
+    return query.get().then((rows) => rows.length);
+  }
+
   Future<List<LocalAsset>> getCandidates(String userId) async {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])

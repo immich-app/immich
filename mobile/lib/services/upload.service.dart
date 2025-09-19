@@ -101,6 +101,10 @@ class UploadService {
     return _backupRepository.getBackupCount(userId);
   }
 
+  Future<int> getBackupProcessingCount() {
+    return _backupRepository.getProcessingCount();
+  }
+
   Future<void> manualBackup(List<LocalAsset> localAssets) async {
     await _storageRepository.clearCache();
     List<UploadTask> tasks = [];
