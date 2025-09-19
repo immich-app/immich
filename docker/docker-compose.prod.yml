@@ -73,7 +73,7 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     shm_size: 128mb
@@ -104,3 +104,5 @@ volumes:
   model-cache:
   prometheus-data:
   grafana-data:
+  postgres-data:
+

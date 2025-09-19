@@ -16,3 +16,27 @@ Immich can store media in S3-compatible object storage instead of the local `/da
 - You do not need to set `IMMICH_MEDIA_LOCATION` — the server derives `s3://<bucket>/<prefix>`.
 
 For MinIO, use an HTTP endpoint (e.g., `http://minio:9000`) and set `S3_FORCE_PATH_STYLE=true`.
+
+### Migration (Option B: aws s3 sync)
+
+Copy existing local data to S3, then switch the engine to `s3`.
+
+1) Bulk sync while Immich runs
+
+```bash
+aws s3 sync /path/to/upload s3://<bucket>/<optional-prefix>/
+```
+
+2) Stop Immich, delta sync, and cut over
+
+```bash
+aws s3 sync /path/to/upload s3://<bucket>/<optional-prefix>/ [--delete]
+```
+
+3) Set `IMMICH_STORAGE_ENGINE=s3` (and `S3_*` variables) in `.env`, then `docker compose up -d` to restart.
+
+Notes:
+
+- Do not set `IMMICH_MEDIA_LOCATION` when using S3; Immich derives `s3://<bucket>/<prefix>` automatically.
+- Database dumps are written under `<prefix>/backups/` in the bucket when S3 is enabled.
+- See the full guide: `/docs/administration/s3-storage`.

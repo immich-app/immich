@@ -65,6 +65,32 @@ Session Log
   - Notes:
     - Skipped full installs/builds; Node here is v18.19.1, while some packages want >=20 — will validate builds on request or under Node 22.19.0 per repo standard
 
+- 2025-09-19 — Fix DB backup to support S3
+  - Root cause: `BackupService` wrote gzip output via local FS only (`StorageRepository.createWriteStream`) and used local-only cleanup (`readdir`, `unlink`, `rename`). Under `IMMICH_STORAGE_ENGINE=s3`, backups path is an S3 prefix, so writes and cleanup failed.
+  - Changes:
+    - `server/src/services/backup.service.ts`:
+      - Added S3 helpers (`getS3`) and S3-aware write path
+      - For S3 destinations, stream gzip output to S3 via `s3.writeStream()` and finalize multipart upload before completing
+      - Replace local rename with S3 copy+delete (`copyObject` → `deleteObject`)
+      - Cleanup uses S3 listing/deletion when backups folder is on S3; otherwise uses local `readdir`/`unlink`
+      - Fixed path joining bug: avoid `path.join` on `s3://...` (which produced `s3:/...`). Added `joinPaths()` to build correct keys
+    - `server/src/storage/s3-backend.ts`:
+      - Added `list(prefixPath)` using `ListObjectsV2` with `Delimiter: '/'` to emulate `readdir` on a prefix
+  - Verification suggestions:
+    - Trigger backup job: `POST /jobs` with `{ "name": "backup-database" }` as admin
+    - Expect object at `s3://<bucket>/<prefix>/backups/immich-db-backup-<timestamp>-v<version>-pg<pg>.sql.gz`
+    - Old `.tmp` object should be removed after copy
+  - Notes:
+    - Web build failed locally on Node 18 (needs >=20); server build/testing should be done with Node 22.19.0 per repo standard
+
+- 2025-09-19 — Docs: S3/MinIO support and migration
+  - Added admin docs page: `docs/docs/administration/s3-storage.md` (purpose, enable/disable, migration via `aws s3 sync`, backups on S3, MinIO tips, rollback)
+  - Updated `docs/docs/install/environment-variables.md` with S3 variables table and notes
+  - Updated `docs/docs/administration/backup-and-restore.md` to note S3 backups path under `backups/`
+  - Updated `docs/docs/administration/system-integrity.md` to explain mount checks are skipped in S3 mode
+  - Expanded `docker/README.md` S3 section with a concise migration procedure
+  - Linked S3 docs from root `README.md`
+
 - 2025-09-16 — Initialized project memory
   - Added `AGENTS.md` (project conventions), `codex.md` (agent playbook), and `continue.md` (this log)
   - Confirmed stack structure, build/test scripts, and compose files

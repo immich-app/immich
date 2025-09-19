@@ -4,6 +4,7 @@ import {
   S3Client,
   GetObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   CopyObjectCommand,
   DeleteObjectCommand,
@@ -129,6 +130,25 @@ export class S3AppStorageBackend implements IAppStorageBackend {
         SSEKMSKeyId: this.opts.sseKmsKeyId,
       }),
     );
+  }
+
+  async list(prefixPath: string): Promise<string[]> {
+    const { bucket, key: prefixKeyRaw } = this.parseKey(prefixPath);
+    const prefixKey = prefixKeyRaw.endsWith('/') ? prefixKeyRaw : `${prefixKeyRaw}/`;
+    const items: string[] = [];
+    let ContinuationToken: string | undefined;
+    do {
+      const res = await this.client.send(
+        new ListObjectsV2Command({ Bucket: bucket, Prefix: prefixKey, Delimiter: '/', ContinuationToken }),
+      );
+      for (const obj of res.Contents || []) {
+        const key = obj.Key || '';
+        if (!key || key === prefixKey) continue;
+        items.push(key.substring(prefixKey.length));
+      }
+      ContinuationToken = res.IsTruncated ? res.NextContinuationToken : undefined;
+    } while (ContinuationToken);
+    return items;
   }
 
   async copyObject(srcKey: string, dstKey: string): Promise<void> {
