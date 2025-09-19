@@ -1,0 +1,35 @@
+services:
+  codex:
+    build:
+      context: ${PWD}
+      dockerfile: Dockerfile
+    container_name: codex-runner
+    image: enarciso/codex-runner:latest
+    pull_policy: always
+    restart: no
+    environment:
+      # Remove if you want to mount your ${HOME}/.codex instead
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # - CODEX_MODEL=${CODEX_MODEL:-gpt-5-mini}
+      # - SANDBOX_MODE=${SANDBOX_MODE:-danger-full-access}
+      # - NETWORK_ACCESS=${NETWORK_ACCESS:-true}
+      # - MODEL_REASONING_EFFORT=${MODEL_REASONING_EFFORT:-high}
+      # - MODEL_REASONING_SUMMARY=${MODEL_REASONING_SUMMARY:-auto}
+      # - AUTONOMY=${AUTONOMY:-full}
+    volumes:
+      # Mount your repo dynamically on run
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Example: mounting project repo
+      - ${HOME}/Projects/immich:/workspace
+      - ${HOME}/.codex:/home/ubuntu/.codex
+    working_dir: /workspace
+    tty: true
+    stdin_open: true
+    privileged: true
+    entrypoint:
+      - "/usr/bin/bash"
+      - "-l"
+      - "-c"
+    command:
+      - "bash"

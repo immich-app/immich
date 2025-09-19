@@ -2,7 +2,7 @@
 
 This file captures durable context, decisions, and next steps so work can resume smoothly after restarts.
 
-Last updated: 2025-09-18
+Last updated: 2025-09-19
 
 Repository Map (high level)
 
@@ -47,6 +47,23 @@ Key Files/Configs
 - OpenAPI generator script: `open-api/bin/generate-open-api.sh`
 
 Session Log
+
+- 2025-09-19 — Session start and guidelines review
+  - Read `AGENTS.md`, `codex.md`, and `continue.md`; aligned on principles, workflows, and memory protocol
+  - Environment context: approvals=never, sandbox=danger-full-access, network=enabled
+  - Commands: searched/opened files with `rg`, `find`, and `sed -n` for chunked reads
+  - Next: Awaiting user direction on what to tackle first; will create a short plan and validate within the smallest scope
+
+- 2025-09-19 — Resolve merge conflicts (en/S3_Support)
+  - Files fixed:
+    - `server/src/repositories/machine-learning.repository.ts` — merged imports: kept `S3AppStorageBackend` + `ConfigRepository` and added `MachineLearningConfig`; removed conflict markers and unused constants
+    - `pnpm-lock.yaml` — regenerated via lockfile-only install to remove extensive conflict markers
+  - Commands:
+    - `npm i -g pnpm@10.14.0 || sudo npm i -g pnpm@10.14.0` (resulted in pnpm 10.15.1)
+    - `pnpm -r --filter '!documentation' install --lockfile-only`
+    - Verified no conflict markers: `rg -n '^(<<<<<<<|=======|>>>>>>>)' -- pnpm-lock.yaml server/src/repositories/machine-learning.repository.ts`
+  - Notes:
+    - Skipped full installs/builds; Node here is v18.19.1, while some packages want >=20 — will validate builds on request or under Node 22.19.0 per repo standard
 
 - 2025-09-16 — Initialized project memory
   - Added `AGENTS.md` (project conventions), `codex.md` (agent playbook), and `continue.md` (this log)
