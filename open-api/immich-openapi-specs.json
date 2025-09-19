@@ -10428,9 +10428,11 @@
             "type": "boolean"
           },
           "latitude": {
+            "nullable": true,
             "type": "number"
           },
           "longitude": {
+            "nullable": true,
             "type": "number"
           },
           "rating": {
@@ -17302,6 +17304,7 @@
             "type": "boolean"
           },
           "latitude": {
+            "nullable": true,
             "type": "number"
           },
           "livePhotoVideoId": {
@@ -17310,6 +17313,7 @@
             "type": "string"
           },
           "longitude": {
+            "nullable": true,
             "type": "number"
           },
           "rating": {

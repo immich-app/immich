@@ -46,12 +46,12 @@ export class UpdateAssetBase {
   @ValidateGPS()
   @IsLatitude()
   @IsNotEmpty()
-  latitude?: number;
+  latitude?: number | null;
 
   @ValidateGPS()
   @IsLongitude()
   @IsNotEmpty()
-  longitude?: number;
+  longitude?: number | null;
 
   @Optional()
   @IsInt()

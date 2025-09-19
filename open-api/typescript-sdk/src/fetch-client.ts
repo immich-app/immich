@@ -477,8 +477,8 @@ export type AssetBulkUpdateDto = {
     duplicateId?: string | null;
     ids: string[];
     isFavorite?: boolean;
-    latitude?: number;
-    longitude?: number;
+    latitude?: number | null;
+    longitude?: number | null;
     rating?: number;
     timeZone?: string;
     visibility?: AssetVisibility;
@@ -516,9 +516,9 @@ export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
     isFavorite?: boolean;
-    latitude?: number;
+    latitude?: number | null;
     livePhotoVideoId?: string | null;
-    longitude?: number;
+    longitude?: number | null;
     rating?: number;
     visibility?: AssetVisibility;
 };
