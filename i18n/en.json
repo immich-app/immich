@@ -1916,6 +1916,7 @@
   "stacktrace": "Stacktrace",
   "start": "Start",
   "start_date": "Start date",
+  "start_date_before_end_date": "Start date must be before end date",
   "state": "State",
   "status": "Status",
   "stop_casting": "Stop casting",
