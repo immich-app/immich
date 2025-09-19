@@ -129,6 +129,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     properties.insert(4, _PropertyItem(label: 'Orientation', value: asset.orientation.toString()));
     final albums = await ref.read(assetServiceProvider).getSourceAlbums(asset.id);
     properties.add(_PropertyItem(label: 'Album', value: albums.map((a) => a.name).join(', ')));
+    properties.add(_PropertyItem(label: 'Adjustment Timestamp', value: asset.adjustmentTimestamp?.toString()));
   }
 
   Future<void> _addRemoteAssetProperties(RemoteAsset asset) async {

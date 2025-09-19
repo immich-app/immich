@@ -303,6 +303,7 @@ extension on Iterable<PlatformAsset> {
         durationInSeconds: e.durationInSeconds,
         orientation: e.orientation,
         isFavorite: e.isFavorite,
+        adjustmentTimestamp: e.adjustmentTimestamp,
       ),
     ).toList();
   }

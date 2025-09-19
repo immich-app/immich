@@ -16,6 +16,8 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   IntColumn get orientation => integer().withDefault(const Constant(0))();
 
+  IntColumn get adjustmentTimestamp => integer().nullable()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -34,5 +36,6 @@ extension LocalAssetEntityDataDomainExtension on LocalAssetEntityData {
     width: width,
     remoteId: null,
     orientation: orientation,
+    adjustmentTimestamp: adjustmentTimestamp,
   );
 }

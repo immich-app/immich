@@ -21,6 +21,7 @@ typedef $$LocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
+      i0.Value<int?> adjustmentTimestamp,
     });
 typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
     i1.LocalAssetEntityCompanion Function({
@@ -35,6 +36,7 @@ typedef $$LocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
+      i0.Value<int?> adjustmentTimestamp,
     });
 
 class $$LocalAssetEntityTableFilterComposer
@@ -99,6 +101,11 @@ class $$LocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<int> get orientation => $composableBuilder(
     column: $table.orientation,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<int> get adjustmentTimestamp => $composableBuilder(
+    column: $table.adjustmentTimestamp,
     builder: (column) => i0.ColumnFilters(column),
   );
 }
@@ -166,6 +173,11 @@ class $$LocalAssetEntityTableOrderingComposer
     column: $table.orientation,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i0.ColumnOrderings<int> get adjustmentTimestamp => $composableBuilder(
+    column: $table.adjustmentTimestamp,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 }
 
 class $$LocalAssetEntityTableAnnotationComposer
@@ -213,6 +225,11 @@ class $$LocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<int> get orientation => $composableBuilder(
     column: $table.orientation,
+    builder: (column) => column,
+  );
+
+  i0.GeneratedColumn<int> get adjustmentTimestamp => $composableBuilder(
+    column: $table.adjustmentTimestamp,
     builder: (column) => column,
   );
 }
@@ -268,6 +285,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
+                i0.Value<int?> adjustmentTimestamp = const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion(
                 name: name,
                 type: type,
@@ -280,6 +298,7 @@ class $$LocalAssetEntityTableTableManager
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
+                adjustmentTimestamp: adjustmentTimestamp,
               ),
           createCompanionCallback:
               ({
@@ -294,6 +313,7 @@ class $$LocalAssetEntityTableTableManager
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
+                i0.Value<int?> adjustmentTimestamp = const i0.Value.absent(),
               }) => i1.LocalAssetEntityCompanion.insert(
                 name: name,
                 type: type,
@@ -306,6 +326,7 @@ class $$LocalAssetEntityTableTableManager
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
+                adjustmentTimestamp: adjustmentTimestamp,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -473,6 +494,17 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     requiredDuringInsert: false,
     defaultValue: const i4.Constant(0),
   );
+  static const i0.VerificationMeta _adjustmentTimestampMeta =
+      const i0.VerificationMeta('adjustmentTimestamp');
+  @override
+  late final i0.GeneratedColumn<int> adjustmentTimestamp =
+      i0.GeneratedColumn<int>(
+        'adjustment_timestamp',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: false,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
     name,
@@ -486,6 +518,7 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
     checksum,
     isFavorite,
     orientation,
+    adjustmentTimestamp,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -566,6 +599,15 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         ),
       );
     }
+    if (data.containsKey('adjustment_timestamp')) {
+      context.handle(
+        _adjustmentTimestampMeta,
+        adjustmentTimestamp.isAcceptableOrUnknown(
+          data['adjustment_timestamp']!,
+          _adjustmentTimestampMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -624,6 +666,10 @@ class $LocalAssetEntityTable extends i3.LocalAssetEntity
         i0.DriftSqlType.int,
         data['${effectivePrefix}orientation'],
       )!,
+      adjustmentTimestamp: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}adjustment_timestamp'],
+      ),
     );
   }
 
@@ -653,6 +699,7 @@ class LocalAssetEntityData extends i0.DataClass
   final String? checksum;
   final bool isFavorite;
   final int orientation;
+  final int? adjustmentTimestamp;
   const LocalAssetEntityData({
     required this.name,
     required this.type,
@@ -665,6 +712,7 @@ class LocalAssetEntityData extends i0.DataClass
     this.checksum,
     required this.isFavorite,
     required this.orientation,
+    this.adjustmentTimestamp,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -692,6 +740,9 @@ class LocalAssetEntityData extends i0.DataClass
     }
     map['is_favorite'] = i0.Variable<bool>(isFavorite);
     map['orientation'] = i0.Variable<int>(orientation);
+    if (!nullToAbsent || adjustmentTimestamp != null) {
+      map['adjustment_timestamp'] = i0.Variable<int>(adjustmentTimestamp);
+    }
     return map;
   }
 
@@ -714,6 +765,9 @@ class LocalAssetEntityData extends i0.DataClass
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
+      adjustmentTimestamp: serializer.fromJson<int?>(
+        json['adjustmentTimestamp'],
+      ),
     );
   }
   @override
@@ -733,6 +787,7 @@ class LocalAssetEntityData extends i0.DataClass
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
+      'adjustmentTimestamp': serializer.toJson<int?>(adjustmentTimestamp),
     };
   }
 
@@ -748,6 +803,7 @@ class LocalAssetEntityData extends i0.DataClass
     i0.Value<String?> checksum = const i0.Value.absent(),
     bool? isFavorite,
     int? orientation,
+    i0.Value<int?> adjustmentTimestamp = const i0.Value.absent(),
   }) => i1.LocalAssetEntityData(
     name: name ?? this.name,
     type: type ?? this.type,
@@ -762,6 +818,9 @@ class LocalAssetEntityData extends i0.DataClass
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
+    adjustmentTimestamp: adjustmentTimestamp.present
+        ? adjustmentTimestamp.value
+        : this.adjustmentTimestamp,
   );
   LocalAssetEntityData copyWithCompanion(i1.LocalAssetEntityCompanion data) {
     return LocalAssetEntityData(
@@ -782,6 +841,9 @@ class LocalAssetEntityData extends i0.DataClass
       orientation: data.orientation.present
           ? data.orientation.value
           : this.orientation,
+      adjustmentTimestamp: data.adjustmentTimestamp.present
+          ? data.adjustmentTimestamp.value
+          : this.adjustmentTimestamp,
     );
   }
 
@@ -798,7 +860,8 @@ class LocalAssetEntityData extends i0.DataClass
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('adjustmentTimestamp: $adjustmentTimestamp')
           ..write(')'))
         .toString();
   }
@@ -816,6 +879,7 @@ class LocalAssetEntityData extends i0.DataClass
     checksum,
     isFavorite,
     orientation,
+    adjustmentTimestamp,
   );
   @override
   bool operator ==(Object other) =>
@@ -831,7 +895,8 @@ class LocalAssetEntityData extends i0.DataClass
           other.id == this.id &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
-          other.orientation == this.orientation);
+          other.orientation == this.orientation &&
+          other.adjustmentTimestamp == this.adjustmentTimestamp);
 }
 
 class LocalAssetEntityCompanion
@@ -847,6 +912,7 @@ class LocalAssetEntityCompanion
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
   final i0.Value<int> orientation;
+  final i0.Value<int?> adjustmentTimestamp;
   const LocalAssetEntityCompanion({
     this.name = const i0.Value.absent(),
     this.type = const i0.Value.absent(),
@@ -859,6 +925,7 @@ class LocalAssetEntityCompanion
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
+    this.adjustmentTimestamp = const i0.Value.absent(),
   });
   LocalAssetEntityCompanion.insert({
     required String name,
@@ -872,6 +939,7 @@ class LocalAssetEntityCompanion
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
+    this.adjustmentTimestamp = const i0.Value.absent(),
   }) : name = i0.Value(name),
        type = i0.Value(type),
        id = i0.Value(id);
@@ -887,6 +955,7 @@ class LocalAssetEntityCompanion
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
     i0.Expression<int>? orientation,
+    i0.Expression<int>? adjustmentTimestamp,
   }) {
     return i0.RawValuesInsertable({
       if (name != null) 'name': name,
@@ -900,6 +969,8 @@ class LocalAssetEntityCompanion
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
+      if (adjustmentTimestamp != null)
+        'adjustment_timestamp': adjustmentTimestamp,
     });
   }
 
@@ -915,6 +986,7 @@ class LocalAssetEntityCompanion
     i0.Value<String?>? checksum,
     i0.Value<bool>? isFavorite,
     i0.Value<int>? orientation,
+    i0.Value<int?>? adjustmentTimestamp,
   }) {
     return i1.LocalAssetEntityCompanion(
       name: name ?? this.name,
@@ -928,6 +1000,7 @@ class LocalAssetEntityCompanion
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
+      adjustmentTimestamp: adjustmentTimestamp ?? this.adjustmentTimestamp,
     );
   }
 
@@ -969,6 +1042,9 @@ class LocalAssetEntityCompanion
     if (orientation.present) {
       map['orientation'] = i0.Variable<int>(orientation.value);
     }
+    if (adjustmentTimestamp.present) {
+      map['adjustment_timestamp'] = i0.Variable<int>(adjustmentTimestamp.value);
+    }
     return map;
   }
 
@@ -985,7 +1061,8 @@ class LocalAssetEntityCompanion
           ..write('id: $id, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation')
+          ..write('orientation: $orientation, ')
+          ..write('adjustmentTimestamp: $adjustmentTimestamp')
           ..write(')'))
         .toString();
   }
