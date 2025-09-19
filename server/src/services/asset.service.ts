@@ -95,7 +95,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateExif({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    await this.updateExif({ id, description, dateTimeOriginal, latitude: latitude ?? undefined, longitude: longitude ?? undefined, rating });
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
@@ -167,6 +167,8 @@ export class AssetService extends BaseService {
             ...exifDto,
             id,
             dateTimeOriginal: dateTimeOriginal ?? undefined,
+            latitude: exifDto.latitude ?? undefined,
+            longitude: exifDto.longitude ?? undefined,
           },
         })),
       );
