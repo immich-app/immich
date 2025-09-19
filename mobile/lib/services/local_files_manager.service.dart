@@ -18,13 +18,9 @@ class LocalFilesManagerService {
     }
   }
 
-  Future<bool> restoreFromTrash(String fileName, int type, String checksum) async {
+  Future<bool> restoreFromTrash(String fileName, int type) async {
     try {
-      return await _channel.invokeMethod('restoreFromTrash', {
-        'fileName': fileName,
-        'type': type,
-        'checksum': checksum,
-      });
+      return await _channel.invokeMethod('restoreFromTrash', {'fileName': fileName, 'type': type});
     } catch (e, s) {
       _logger.warning('Error restore file from trash', e, s);
       return false;

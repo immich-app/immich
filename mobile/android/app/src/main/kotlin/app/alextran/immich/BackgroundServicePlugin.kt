@@ -24,7 +24,6 @@ import java.security.MessageDigest
 import java.io.FileInputStream
 import kotlinx.coroutines.*
 import androidx.core.net.toUri
-import java.io.InputStream
 
 /**
  * Android plugin for Dart `BackgroundService` and file trash operations
@@ -144,7 +143,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
         val mediaUrls = call.argument<List<String>>("mediaUrls")
         if (mediaUrls != null) {
           if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) && hasManageMediaPermission()) {
-              moveToTrash(mediaUrls, result)
+            moveToTrash(mediaUrls, result)
           } else {
             result.error("PERMISSION_DENIED", "Media permission required", null)
           }
@@ -156,11 +155,10 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
       "restoreFromTrash" -> {
         val fileName = call.argument<String>("fileName")
         val type = call.argument<Int>("type")
-        val checksum = call.argument<String>("checksum")
         val mediaId = call.argument<String>("mediaId")
-        if (fileName != null && type != null && checksum != null) {
+        if (fileName != null && type != null) {
           if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) && hasManageMediaPermission()) {
-            restoreFromTrash(fileName, type, checksum, result)
+            restoreFromTrash(fileName, type, result)
           } else {
             result.error("PERMISSION_DENIED", "Media permission required", null)
           }
@@ -222,14 +220,14 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
   }
 
   @RequiresApi(Build.VERSION_CODES.R)
-  private fun restoreFromTrash(name: String, type: Int, checksum: String, result: Result) {
-    val uri = getTrashedFileUri(name, type, checksum)
+  private fun restoreFromTrash(name: String, type: Int, result: Result) {
+    val uri = getTrashedFileUri(name, type)
     if (uri == null) {
-      Log.e(TAG, "TrashError, Asset Uri cannot be found obtained")
+      Log.e("TrashError", "Asset Uri cannot be found obtained")
       result.error("TrashError", "Asset Uri cannot be found obtained", null)
       return
     }
-    Log.i(TAG, "trying to restore from trash FILE_URI - $uri")
+    Log.e("FILE_URI", uri.toString())
     uri.let { toggleTrash(listOf(it), false, result) }
   }
 
@@ -259,77 +257,55 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
 
   @RequiresApi(Build.VERSION_CODES.R)
   private fun toggleTrash(contentUris: List<Uri>, isTrashed: Boolean, result: Result) {
-      val activity = activityBinding?.activity
-      val contentResolver = context?.contentResolver
-      if (activity == null || contentResolver == null) {
-        result.error("TrashError", "Activity or ContentResolver not available", null)
-        return
-      }
-      try {
-        val pendingIntent = MediaStore.createTrashRequest(contentResolver, contentUris, isTrashed)
-        pendingResult = result // Store for onActivityResult
-        activity.startIntentSenderForResult(
-          pendingIntent.intentSender,
-          trashRequestCode,
-          null, 0, 0, 0
-        )
-      } catch (e: Exception) {
-        Log.e(TAG, "TrashError, Error creating or starting trash request", e)
-        result.error("TrashError", "Error creating or starting trash request", null)
+    val activity = activityBinding?.activity
+    val contentResolver = context?.contentResolver
+    if (activity == null || contentResolver == null) {
+      result.error("TrashError", "Activity or ContentResolver not available", null)
+      return
+    }
+
+    try {
+      val pendingIntent = MediaStore.createTrashRequest(contentResolver, contentUris, isTrashed)
+      pendingResult = result // Store for onActivityResult
+      activity.startIntentSenderForResult(
+        pendingIntent.intentSender,
+        trashRequestCode,
+        null, 0, 0, 0
+      )
+    } catch (e: Exception) {
+      Log.e("TrashError", "Error creating or starting trash request", e)
+      result.error("TrashError", "Error creating or starting trash request", null)
     }
   }
 
   @RequiresApi(Build.VERSION_CODES.R)
-  private fun getTrashedFileUri(fileName: String, type: Int, checksum: String): Uri? {
+  private fun getTrashedFileUri(fileName: String, type: Int): Uri? {
     val contentResolver = context?.contentResolver ?: return null
     val queryUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
-    val projection = arrayOf(
-      MediaStore.Files.FileColumns._ID,
-      MediaStore.Files.FileColumns.DISPLAY_NAME
-    )
-
-    val dotIndex = fileName.lastIndexOf('.')
-    val baseName = if (dotIndex != -1) fileName.substring(0, dotIndex) else fileName
-    val extension = if (dotIndex != -1) fileName.substring(dotIndex) else ""
-    val nameLike = "%${baseName}%${extension}"
+    val projection = arrayOf(MediaStore.Files.FileColumns._ID)
 
     val queryArgs = Bundle().apply {
-      putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?")
-      putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(nameLike))
+      putString(
+        ContentResolver.QUERY_ARG_SQL_SELECTION,
+        "${MediaStore.Files.FileColumns.DISPLAY_NAME} = ?"
+      )
+      putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(fileName))
       putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
     }
 
-    val expectedBytes = try {
-      android.util.Base64.decode(checksum, android.util.Base64.DEFAULT)
-    } catch (e: Exception) {
-      Log.e(TAG, "getTrashedFileUri, invalid Base64 checksum: $checksum, Exception: $e")
-      return null
-    }
-
     contentResolver.query(queryUri, projection, queryArgs, null)?.use { cursor ->
-      val idxId = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID)
-      val idxName = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME)
-
-      while (cursor.moveToNext()) {
-        val id = cursor.getLong(idxId)
-        val dn = cursor.getString(idxName)
-
-        val candidateUri = ContentUris.withAppendedId(queryUri, id)
-
-        val sha1Bytes = try {
-          contentResolver.openInputStream(candidateUri)?.use { ins -> sha1OfStream(ins) }
-        } catch (e: Exception) {
-          Log.e(TAG, "getTrashedFileUri, hash failed for $dn: ${e.message}")
-          null
-        } ?: continue
-
-        if (sha1Bytes.contentEquals(expectedBytes)) {
-          val contentUri = contentUriForType(type)
-          return ContentUris.withAppendedId(contentUri, id)
+      if (cursor.moveToFirst()) {
+        val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
+        // same order as AssetType from dart
+        val contentUri = when (type) {
+          1 -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+          2 -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+          3 -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+          else -> queryUri
         }
+        return ContentUris.withAppendedId(contentUri, id)
       }
     }
-    Log.w(TAG, "getTrashedFileUri, not found by checksum, nameLike=$nameLike, checksum: $checksum")
     return null
   }
 
@@ -394,18 +370,6 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     }
     Log.i(TAG, "restoreUris: count=${uris.size}, first=${uris.first()}")
     toggleTrash(uris, false, result)
-  }
-
-  private fun sha1OfStream(ins: InputStream): ByteArray {
-    val buf = ByteArray(BUFFER_SIZE)
-    val md = MessageDigest.getInstance("SHA-1")
-    var len: Int
-    while (true) {
-      len = ins.read(buf)
-      if (len <= 0) break
-      md.update(buf, 0, len)
-    }
-    return md.digest()
   }
 
   @RequiresApi(Build.VERSION_CODES.Q)
