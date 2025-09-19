@@ -17,6 +17,7 @@ class SystemConfigMachineLearningDto {
     required this.duplicateDetection,
     required this.enabled,
     required this.facialRecognition,
+    required this.ocr,
     this.url,
     this.urls = const [],
   });
@@ -28,6 +29,8 @@ class SystemConfigMachineLearningDto {
   bool enabled;
 
   FacialRecognitionConfig facialRecognition;
+
+  OcrConfig ocr;
 
   /// This property was deprecated in v1.122.0
   ///
@@ -46,6 +49,7 @@ class SystemConfigMachineLearningDto {
     other.duplicateDetection == duplicateDetection &&
     other.enabled == enabled &&
     other.facialRecognition == facialRecognition &&
+    other.ocr == ocr &&
     other.url == url &&
     _deepEquality.equals(other.urls, urls);
 
@@ -56,11 +60,12 @@ class SystemConfigMachineLearningDto {
     (duplicateDetection.hashCode) +
     (enabled.hashCode) +
     (facialRecognition.hashCode) +
+    (ocr.hashCode) +
     (url == null ? 0 : url!.hashCode) +
     (urls.hashCode);
 
   @override
-  String toString() => 'SystemConfigMachineLearningDto[clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, url=$url, urls=$urls]';
+  String toString() => 'SystemConfigMachineLearningDto[clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, ocr=$ocr, url=$url, urls=$urls]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -68,6 +73,7 @@ class SystemConfigMachineLearningDto {
       json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'enabled'] = this.enabled;
       json[r'facialRecognition'] = this.facialRecognition;
+      json[r'ocr'] = this.ocr;
     if (this.url != null) {
       json[r'url'] = this.url;
     } else {
@@ -90,6 +96,7 @@ class SystemConfigMachineLearningDto {
         duplicateDetection: DuplicateDetectionConfig.fromJson(json[r'duplicateDetection'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         facialRecognition: FacialRecognitionConfig.fromJson(json[r'facialRecognition'])!,
+        ocr: OcrConfig.fromJson(json[r'ocr'])!,
         url: mapValueOfType<String>(json, r'url'),
         urls: json[r'urls'] is Iterable
             ? (json[r'urls'] as Iterable).cast<String>().toList(growable: false)
@@ -145,6 +152,7 @@ class SystemConfigMachineLearningDto {
     'duplicateDetection',
     'enabled',
     'facialRecognition',
+    'ocr',
     'urls',
   };
 }

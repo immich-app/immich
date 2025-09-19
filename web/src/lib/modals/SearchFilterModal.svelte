@@ -6,7 +6,8 @@
 
   export type SearchFilter = {
     query: string;
-    queryType: 'smart' | 'metadata' | 'description';
+    ocr: string;
+    queryType: 'smart' | 'metadata' | 'description' | 'ocr';
     personIds: SvelteSet<string>;
     tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
@@ -74,6 +75,7 @@
 
   let filter: SearchFilter = $state({
     query,
+    ocr: 'ocr' in searchQuery ? searchQuery.ocr : '',
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds:
@@ -112,6 +114,7 @@
   const resetForm = () => {
     filter = {
       query: '',
+      ocr: '',
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
@@ -140,6 +143,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
+      ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
       country: filter.location.country,
