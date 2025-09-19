@@ -34,6 +34,7 @@ class SmartSearchDto {
     this.query,
     this.queryAssetId,
     this.rating,
+    this.searchOnlyThem,
     this.size,
     this.state,
     this.tagIds = const [],
@@ -178,6 +179,14 @@ class SmartSearchDto {
   ///
   num? rating;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? searchOnlyThem;
+
   /// Minimum value: 1
   /// Maximum value: 1000
   ///
@@ -295,6 +304,7 @@ class SmartSearchDto {
     other.query == query &&
     other.queryAssetId == queryAssetId &&
     other.rating == rating &&
+    other.searchOnlyThem == searchOnlyThem &&
     other.size == size &&
     other.state == state &&
     _deepEquality.equals(other.tagIds, tagIds) &&
@@ -333,6 +343,7 @@ class SmartSearchDto {
     (query == null ? 0 : query!.hashCode) +
     (queryAssetId == null ? 0 : queryAssetId!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
+    (searchOnlyThem == null ? 0 : searchOnlyThem!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (tagIds == null ? 0 : tagIds!.hashCode) +
@@ -348,7 +359,7 @@ class SmartSearchDto {
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, queryAssetId=$queryAssetId, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, page=$page, personIds=$personIds, query=$query, queryAssetId=$queryAssetId, rating=$rating, searchOnlyThem=$searchOnlyThem, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -448,6 +459,11 @@ class SmartSearchDto {
       json[r'rating'] = this.rating;
     } else {
     //  json[r'rating'] = null;
+    }
+    if (this.searchOnlyThem != null) {
+      json[r'searchOnlyThem'] = this.searchOnlyThem;
+    } else {
+    //  json[r'searchOnlyThem'] = null;
     }
     if (this.size != null) {
       json[r'size'] = this.size;
@@ -551,6 +567,7 @@ class SmartSearchDto {
         query: mapValueOfType<String>(json, r'query'),
         queryAssetId: mapValueOfType<String>(json, r'queryAssetId'),
         rating: num.parse('${json[r'rating']}'),
+        searchOnlyThem: mapValueOfType<bool>(json, r'searchOnlyThem'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
