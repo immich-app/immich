@@ -1,9 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
+  import ServerAboutItem from '$lib/components/ServerAboutItem.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
-  import { Modal, ModalBody } from '@immich/ui';
-  import { mdiAlert } from '@mdi/js';
+  import { Alert, Label, Modal, ModalBody } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -18,158 +17,61 @@
 
 <Modal title={$t('about')} {onClose}>
   <ModalBody>
-    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-1 text-immich-primary dark:text-immich-dark-primary">
-      <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-desc"
-          >Immich</label
-        >
-        <div>
-          <a
-            href={info.versionUrl}
-            class="underline text-sm immich-form-label"
-            target="_blank"
-            rel="noreferrer"
-            id="version-desc"
-          >
-            {info.version}
-          </a>
-        </div>
-      </div>
+    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-4">
+      {#if info.sourceRef === 'main' && info.repository === 'immich-app/immich'}
+        <Alert color="warning" title={$t('main_branch_warning')} class="col-span-full" size="small" />
+      {/if}
 
-      <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="ffmpeg-desc"
-          >ExifTool</label
-        >
-        <p class="immich-form-label pb-2 text-sm" id="ffmpeg-desc">
-          {info.exiftool}
-        </p>
-      </div>
-
-      <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="nodejs-desc"
-          >Node.js</label
-        >
-        <p class="immich-form-label pb-2 text-sm" id="nodejs-desc">
-          {info.nodejs}
-        </p>
-      </div>
-
-      <div>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="vips-desc"
-          >Libvips</label
-        >
-        <p class="immich-form-label pb-2 text-sm" id="vips-desc">
-          {info.libvips}
-        </p>
-      </div>
-
-      <div class={(info.imagemagick?.length || 0) > 10 ? 'col-span-2' : ''}>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="imagemagick-desc"
-          >ImageMagick</label
-        >
-        <p class="immich-form-label pb-2 text-sm" id="imagemagick-desc">
-          {info.imagemagick}
-        </p>
-      </div>
-
-      <div class={(info.ffmpeg?.length || 0) > 10 ? 'col-span-2' : ''}>
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="ffmpeg-desc"
-          >FFmpeg</label
-        >
-        <p class="immich-form-label pb-2 text-sm" id="ffmpeg-desc">
-          {info.ffmpeg}
-        </p>
-      </div>
+      <ServerAboutItem id="immich" title="Immich" version={info.version} versionHref={info.versionUrl} />
+      <ServerAboutItem id="exif" title="ExifTool" version={info.exiftool} />
+      <ServerAboutItem id="nodejs" title="Node.js" version={info.nodejs} />
+      <ServerAboutItem id="libvips" title="Libvips" version={info.libvips} />
+      <ServerAboutItem
+        id="imagemagick"
+        title="ImageMagick"
+        version={info.imagemagick}
+        class={(info.imagemagick?.length || 0) > 10 ? 'col-span-2' : ''}
+      />
+      <ServerAboutItem
+        id="ffmpeg"
+        title="FFmpeg"
+        version={info.ffmpeg}
+        class={(info.ffmpeg?.length || 0) > 10 ? 'col-span-2' : ''}
+      />
 
       {#if info.repository && info.repositoryUrl}
-        <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-desc"
-            >{$t('repository')}</label
-          >
-          <div>
-            <a
-              href={info.repositoryUrl}
-              class="underline text-sm immich-form-label"
-              target="_blank"
-              rel="noreferrer"
-              id="version-desc"
-            >
-              {info.repository}
-            </a>
-          </div>
-        </div>
+        <ServerAboutItem
+          id="repository"
+          title={$t('repository')}
+          version={info.repository}
+          versionHref={info.repositoryUrl}
+        />
       {/if}
 
       {#if info.sourceRef && info.sourceCommit && info.sourceUrl}
-        <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="git-desc"
-            >{$t('source')}</label
-          >
-          <div>
-            <a
-              href={info.sourceUrl}
-              class="underline text-sm immich-form-label"
-              target="_blank"
-              rel="noreferrer"
-              id="git-desc"
-            >
-              {info.sourceRef}@{info.sourceCommit.slice(0, 9)}
-            </a>
-          </div>
-        </div>
+        <ServerAboutItem
+          id="source"
+          title={$t('source')}
+          version="{info.sourceRef}@{info.sourceCommit.slice(0, 9)}"
+          versionHref={info.sourceUrl}
+        />
       {/if}
 
       {#if info.build && info.buildUrl}
-        <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="build-desc"
-            >{$t('build')}</label
-          >
-          <div>
-            <a
-              href={info.buildUrl}
-              class="underline text-sm immich-form-label"
-              target="_blank"
-              rel="noreferrer"
-              id="build-desc"
-            >
-              {info.build}
-            </a>
-          </div>
-        </div>
+        <ServerAboutItem id="build" title={$t('build')} version={info.build} versionHref={info.buildUrl} />
       {/if}
 
       {#if info.buildImage && info.buildImage}
-        <div>
-          <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="build-image-desc"
-            >{$t('build_image')}</label
-          >
-          <div>
-            <a
-              href={info.buildImageUrl}
-              class="underline text-sm immich-form-label"
-              target="_blank"
-              rel="noreferrer"
-              id="build-image-desc"
-            >
-              {info.buildImage}
-            </a>
-          </div>
-        </div>
-      {/if}
-
-      {#if info.sourceRef === 'main' && info.repository === 'immich-app/immich'}
-        <div class="col-span-full p-4 flex gap-1">
-          <Icon path={mdiAlert} size="2em" color="#ffcc4d" />
-          <p class="immich-form-label text-sm" id="main-warning">
-            {$t('main_branch_warning')}
-          </p>
-        </div>
+        <ServerAboutItem
+          id="build-image"
+          title={$t('build_image')}
+          version={info.buildImage}
+          versionHref={info.buildImageUrl}
+        />
       {/if}
 
       <div class="col-span-full">
-        <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="version-history"
-          >{$t('version_history')}</label
-        >
+        <Label size="small" color="primary" for="version-history">{$t('version_history')}</Label>
         <ul id="version-history" class="list-none">
           {#each versions.slice(0, 5) as item (item.id)}
             {@const createdAt = DateTime.fromISO(item.createdAt)}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { initInput } from '$lib/actions/focus';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { maximumLengthSearchPeople, timeBeforeShowLoadingSpinner } from '$lib/constants';
+  import SearchBar from '$lib/elements/SearchBar.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { searchNameLocal } from '$lib/utils/person';
   import { searchPerson, type PersonResponseDto } from '@immich/sdk';

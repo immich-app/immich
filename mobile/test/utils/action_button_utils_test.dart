@@ -502,6 +502,21 @@ void main() {
 
         expect(ActionButtonType.deleteLocal.shouldShow(context), isFalse);
       });
+
+      test('should show when asset is merged', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.deleteLocal.shouldShow(context), isTrue);
+      });
     });
 
     group('upload button', () {

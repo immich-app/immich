@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import type { SessionResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import {
     mdiAndroid,
     mdiApple,
@@ -32,25 +31,25 @@
 </script>
 
 <div class="flex w-full flex-row">
-  <div class="hidden items-center justify-center pe-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
+  <div class="hidden items-center justify-center pe-2 text-primary sm:flex">
     {#if device.deviceOS === 'Android'}
-      <Icon path={mdiAndroid} size="40" />
+      <Icon icon={mdiAndroid} size="40" />
     {:else if device.deviceOS === 'iOS' || device.deviceOS === 'macOS'}
-      <Icon path={mdiApple} size="40" />
+      <Icon icon={mdiApple} size="40" />
     {:else if device.deviceOS.includes('Safari')}
-      <Icon path={mdiAppleSafari} size="40" />
+      <Icon icon={mdiAppleSafari} size="40" />
     {:else if device.deviceOS.includes('Windows')}
-      <Icon path={mdiMicrosoftWindows} size="40" />
+      <Icon icon={mdiMicrosoftWindows} size="40" />
     {:else if device.deviceOS === 'Linux'}
-      <Icon path={mdiLinux} size="40" />
+      <Icon icon={mdiLinux} size="40" />
     {:else if device.deviceOS === 'Ubuntu'}
-      <Icon path={mdiUbuntu} size="40" />
+      <Icon icon={mdiUbuntu} size="40" />
     {:else if device.deviceOS === 'Chrome OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium' || device.deviceType === 'Mobile Chrome'}
-      <Icon path={mdiGoogleChrome} size="40" />
+      <Icon icon={mdiGoogleChrome} size="40" />
     {:else if device.deviceOS === 'Google Cast'}
-      <Icon path={mdiCast} size="40" />
+      <Icon icon={mdiCast} size="40" />
     {:else}
-      <Icon path={mdiHelp} size="40" />
+      <Icon icon={mdiHelp} size="40" />
     {/if}
   </div>
   <div class="flex grow flex-row justify-between gap-1 ps-4 sm:ps-0">

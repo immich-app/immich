@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { tagAssets } from '$lib/utils/asset-utils';
   import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
-  import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Icon, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiClose, mdiTag } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -90,7 +89,7 @@
               title={$t('remove_tag')}
               onclick={() => handleRemove(tagId)}
             >
-              <Icon path={mdiClose} />
+              <Icon icon={mdiClose} />
             </button>
           </div>
         {/if}

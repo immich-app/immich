@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Dropdown from '$lib/components/elements/dropdown.svelte';
-  import GroupTab from '$lib/components/elements/group-tab.svelte';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
+  import Dropdown from '$lib/elements/Dropdown.svelte';
+  import GroupTab from '$lib/elements/GroupTab.svelte';
+  import SearchBar from '$lib/elements/SearchBar.svelte';
   import {
     AlbumFilter,
     AlbumGroupBy,

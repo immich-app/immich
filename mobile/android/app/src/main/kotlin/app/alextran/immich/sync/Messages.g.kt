@@ -209,6 +209,40 @@ data class SyncDelta (
 
   override fun hashCode(): Int = toList().hashCode()
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class HashResult (
+  val assetId: String,
+  val error: String? = null,
+  val hash: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): HashResult {
+      val assetId = pigeonVar_list[0] as String
+      val error = pigeonVar_list[1] as String?
+      val hash = pigeonVar_list[2] as String?
+      return HashResult(assetId, error, hash)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      assetId,
+      error,
+      hash,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is HashResult) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return MessagesPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -225,6 +259,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
       131.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           SyncDelta.fromList(it)
+        }
+      }
+      132.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          HashResult.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -244,10 +283,15 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(131)
         writeValue(stream, value.toList())
       }
+      is HashResult -> {
+        stream.write(132)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
 }
+
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NativeSyncApi {
@@ -259,7 +303,8 @@ interface NativeSyncApi {
   fun getAlbums(): List<PlatformAlbum>
   fun getAssetsCountSince(albumId: String, timestamp: Long): Long
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
-  fun hashPaths(paths: List<String>): List<ByteArray?>
+  fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
+  fun cancelHashing()
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -402,13 +447,33 @@ interface NativeSyncApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashPaths$separatedMessageChannelSuffix", codec, taskQueue)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashAssets$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val pathsArg = args[0] as List<String>
+            val assetIdsArg = args[0] as List<String>
+            val allowNetworkAccessArg = args[1] as Boolean
+            api.hashAssets(assetIdsArg, allowNetworkAccessArg) { result: Result<List<HashResult>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelHashing$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
-              listOf(api.hashPaths(pathsArg))
+              api.cancelHashing()
+              listOf(null)
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

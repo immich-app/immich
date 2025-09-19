@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
@@ -56,6 +57,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     final actions = <Widget>[
+      if (asset.hasRemote) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(

@@ -28,10 +28,10 @@ class BetaTimelineListTile extends ConsumerWidget {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: value ? const Text("Enable Beta Timeline") : const Text("Disable Beta Timeline"),
+            title: value ? const Text("Enable New Timeline") : const Text("Disable New Timeline"),
             content: value
-                ? const Text("Are you sure you want to enable the beta timeline?")
-                : const Text("Are you sure you want to disable the beta timeline?"),
+                ? const Text("Are you sure you want to enable the new timeline?")
+                : const Text("Are you sure you want to disable the new timeline?"),
             actions: [
               TextButton(
                 onPressed: () {
@@ -58,12 +58,11 @@ class BetaTimelineListTile extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 4.0),
       child: ListTile(
-        title: Text("advanced_settings_beta_timeline_title".t(context: context)),
-        subtitle: Text("advanced_settings_beta_timeline_subtitle".t(context: context)),
+        title: Text("new_timeline".t(context: context)),
         trailing: Switch.adaptive(
           value: betaTimelineValue,
           onChanged: onSwitchChanged,
-          activeColor: context.primaryColor,
+          activeThumbColor: context.primaryColor,
         ),
         onTap: () => onSwitchChanged(!betaTimelineValue),
       ),

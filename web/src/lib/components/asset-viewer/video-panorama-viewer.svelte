@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getAssetOriginalUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   interface Props {
     assetId: string;

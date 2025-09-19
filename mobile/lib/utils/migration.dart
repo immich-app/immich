@@ -62,30 +62,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     await Store.populateCache();
   }
 
-  // Handle migration only for this version
-  // TODO: remove when old timeline is removed
-  final needBetaMigration = Store.tryGet(StoreKey.needBetaMigration);
-  if (version == 15 && needBetaMigration == null) {
-    // Check both databases directly instead of relying on cache
-
-    final isBeta = Store.tryGet(StoreKey.betaTimeline);
-    final isNewInstallation = await _isNewInstallation(db, drift);
-
-    // For new installations, no migration needed
-    // For existing installations, only migrate if beta timeline is not enabled (null or false)
-    if (isNewInstallation || isBeta == true) {
-      await Store.put(StoreKey.needBetaMigration, false);
-      await Store.put(StoreKey.betaTimeline, true);
-    } else {
-      await drift.reset();
-      await Store.put(StoreKey.needBetaMigration, true);
-    }
-  }
-
-  if (version < 16) {
-    await SyncStreamRepository(drift).reset();
-    await Store.put(StoreKey.shouldResetSync, true);
-  }
+  await handleBetaMigration(version, await _isNewInstallation(db, drift), SyncStreamRepository(drift));
 
   if (targetVersion >= 12) {
     await Store.put(StoreKey.version, targetVersion);
@@ -96,6 +73,37 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (shouldTruncate) {
     await _migrateTo(db, targetVersion);
+  }
+}
+
+Future<void> handleBetaMigration(int version, bool isNewInstallation, SyncStreamRepository syncStreamRepository) async {
+  // Handle migration only for this version
+  // TODO: remove when old timeline is removed
+  final isBeta = Store.tryGet(StoreKey.betaTimeline);
+  final needBetaMigration = Store.tryGet(StoreKey.needBetaMigration);
+  if (version <= 15 && needBetaMigration == null) {
+    // For new installations, no migration needed
+    // For existing installations, only migrate if beta timeline is not enabled (null or false)
+    if (isNewInstallation || isBeta == true) {
+      await Store.put(StoreKey.needBetaMigration, false);
+      await Store.put(StoreKey.betaTimeline, true);
+    } else {
+      await Store.put(StoreKey.needBetaMigration, true);
+    }
+  }
+
+  if (version > 15) {
+    if (isBeta == null || isBeta) {
+      await Store.put(StoreKey.needBetaMigration, false);
+      await Store.put(StoreKey.betaTimeline, true);
+    } else {
+      await Store.put(StoreKey.needBetaMigration, false);
+    }
+  }
+
+  if (version < 16) {
+    await syncStreamRepository.reset();
+    await Store.put(StoreKey.shouldResetSync, true);
   }
 }
 

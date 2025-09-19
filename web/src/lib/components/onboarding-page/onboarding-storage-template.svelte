@@ -1,7 +1,7 @@
 <script lang="ts">
-  import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
-  import StorageTemplateSettings from '$lib/components/admin-page/settings/storage-template/storage-template-settings.svelte';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import AdminSettings from '$lib/components/admin-settings/AdminSettings.svelte';
+  import StorageTemplateSettings from '$lib/components/admin-settings/StorageTemplateSettings.svelte';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { getConfig, type SystemConfigDto } from '@immich/sdk';

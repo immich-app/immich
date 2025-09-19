@@ -112,7 +112,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return SwitchListTile.adaptive(
         value: showMetadata.value,
         onChanged: newShareLink.value.isEmpty ? (value) => showMetadata.value = value : null,
-        activeColor: colorScheme.primary,
+        activeThumbColor: colorScheme.primary,
         dense: true,
         title: Text("show_metadata", style: themeData.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold)).tr(),
       );
@@ -122,7 +122,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return SwitchListTile.adaptive(
         value: allowDownload.value,
         onChanged: newShareLink.value.isEmpty ? (value) => allowDownload.value = value : null,
-        activeColor: colorScheme.primary,
+        activeThumbColor: colorScheme.primary,
         dense: true,
         title: Text(
           "allow_public_user_to_download",
@@ -135,7 +135,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return SwitchListTile.adaptive(
         value: allowUpload.value,
         onChanged: newShareLink.value.isEmpty ? (value) => allowUpload.value = value : null,
-        activeColor: colorScheme.primary,
+        activeThumbColor: colorScheme.primary,
         dense: true,
         title: Text(
           "allow_public_user_to_upload",
@@ -148,7 +148,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return SwitchListTile.adaptive(
         value: editExpiry.value,
         onChanged: newShareLink.value.isEmpty ? (value) => editExpiry.value = value : null,
-        activeColor: colorScheme.primary,
+        activeThumbColor: colorScheme.primary,
         dense: true,
         title: Text(
           "change_expiration_time",

@@ -1,9 +1,9 @@
 <script lang="ts">
+  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
+  import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import { t } from 'svelte-i18n';
-  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;
@@ -31,7 +31,7 @@
 <div class="grid grid-cols-2">
   <div>
     <div class="flex h-[26px] place-items-center gap-1">
-      <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={title}>
+      <label class="font-medium text-primary text-sm" for={title}>
         {title}
       </label>
       {#if isEdited}

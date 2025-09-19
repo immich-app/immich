@@ -127,6 +127,7 @@ export default typescriptEslint.config(
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
       'object-shorthand': ['error', 'always'],
+      'svelte/no-navigation-without-resolve': 'off',
     },
   },
   {

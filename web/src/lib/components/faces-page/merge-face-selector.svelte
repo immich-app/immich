@@ -1,11 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -127,7 +126,7 @@
             <div class="relative h-full">
               <div class="flex flex-col h-full justify-between">
                 <div class="flex h-full items-center justify-center">
-                  <Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
+                  <Icon icon={mdiCallMerge} size="48" class="rotate-90 dark:text-white" />
                 </div>
                 {#if selectedPeople.length === 1}
                   <div class="absolute bottom-2">

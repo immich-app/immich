@@ -12,7 +12,6 @@ services:
       - server_node_modules:/workspaces/immich/server/node_modules
       - web_node_modules:/workspaces/immich/web/node_modules
       - ${UPLOAD_LOCATION}/photos:/data
-      - ${UPLOAD_LOCATION}/photos/upload:/data/upload
       - /etc/localtime:/etc/localtime:ro
 
   database:

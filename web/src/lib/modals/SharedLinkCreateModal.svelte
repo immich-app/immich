@@ -146,7 +146,7 @@
       {:else}
         <div class="text-sm">
           {$t('public_album')} |
-          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.album?.albumName}</span>
+          <span class="text-primary">{editingLink.album?.albumName}</span>
         </div>
       {/if}
     {/if}
@@ -157,7 +157,7 @@
       {:else}
         <div class="text-sm">
           {$t('individual_share')} |
-          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.description || ''}</span>
+          <span class="text-primary">{editingLink.description || ''}</span>
         </div>
       {/if}
     {/if}

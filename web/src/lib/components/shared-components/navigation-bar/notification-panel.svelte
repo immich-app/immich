@@ -1,6 +1,5 @@
 <script lang="ts">
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Icon from '$lib/components/elements/icon.svelte';
   import NotificationItem from '$lib/components/shared-components/navigation-bar/notification-item.svelte';
   import {
     notificationController,
@@ -9,7 +8,7 @@
 
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
-  import { Button, Scrollable, Stack, Text } from '@immich/ui';
+  import { Button, Icon, Scrollable, Stack, Text } from '@immich/ui';
   import { mdiBellOutline, mdiCheckAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
@@ -64,7 +63,7 @@
         class="py-12 flex flex-col place-items-center place-content-center text-gray-700 dark:text-gray-300"
         gap={1}
       >
-        <Icon path={mdiBellOutline} size={20}></Icon>
+        <Icon icon={mdiBellOutline} size="20"></Icon>
         <Text>{$t('no_notifications')}</Text>
       </Stack>
     {:else}

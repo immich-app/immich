@@ -435,7 +435,7 @@ class SearchPage extends HookConsumerWidget {
                     }
                   },
                   icon: const Icon(Icons.more_vert_rounded),
-                  tooltip: 'Show text search menu',
+                  tooltip: 'show_text_search_menu'.tr(),
                 );
               },
               menuChildren: [

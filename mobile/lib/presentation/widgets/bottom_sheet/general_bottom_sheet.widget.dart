@@ -87,7 +87,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
 
     return BaseBottomSheet(
       controller: sheetController,
-      initialChildSize: 0.45,
+      initialChildSize: widget.minChildSize ?? 0.15,
       minChildSize: widget.minChildSize,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,

@@ -3,9 +3,9 @@
   import { getAssetOriginalUrl } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { AssetMediaSize, viewAsset, type AssetResponseDto } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   interface Props {
     asset: AssetResponseDto;

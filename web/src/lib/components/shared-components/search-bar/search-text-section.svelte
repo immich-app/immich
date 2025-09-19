@@ -1,5 +1,5 @@
 <script lang="ts">
-  import RadioButton from '$lib/components/elements/radio-button.svelte';
+  import RadioButton from '$lib/elements/RadioButton.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
@@ -10,7 +9,7 @@
     type ServerAboutResponseDto,
     type ServerVersionHistoryResponseDto,
   } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { Icon, modalManager } from '@immich/ui';
   import { mdiAlert } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -60,7 +59,7 @@
         class="dark:text-immich-gray flex gap-1"
       >
         {#if isMain}
-          <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
+          <Icon icon={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
         {:else}
           {version}
         {/if}

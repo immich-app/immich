@@ -3,6 +3,7 @@ package app.alextran.immich
 import android.content.Context
 import android.os.Build
 import android.os.ext.SdkExtensions
+import app.alextran.immich.background.BackgroundEngineLock
 import app.alextran.immich.background.BackgroundWorkerApiImpl
 import app.alextran.immich.background.BackgroundWorkerFgHostApi
 import app.alextran.immich.connectivity.ConnectivityApi
@@ -25,6 +26,7 @@ class MainActivity : FlutterFragmentActivity() {
     fun registerPlugins(ctx: Context, flutterEngine: FlutterEngine) {
       flutterEngine.plugins.add(BackgroundServicePlugin())
       flutterEngine.plugins.add(HttpSSLOptionsPlugin())
+      flutterEngine.plugins.add(BackgroundEngineLock())
 
       val messenger = flutterEngine.dartExecutor.binaryMessenger
       val nativeSyncApiImpl =

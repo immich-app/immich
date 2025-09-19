@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { Icon } from '@immich/ui';
   import { mdiChevronLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import NavigationArea from '../navigation-area.svelte';
@@ -20,5 +20,5 @@
 />
 
 <NavigationArea onClick={onPreviousAsset} label={$t('view_previous_asset')}>
-  <Icon path={mdiChevronLeft} size="36" ariaHidden />
+  <Icon icon={mdiChevronLeft} size="36" aria-hidden />
 </NavigationArea>

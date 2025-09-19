@@ -142,6 +142,10 @@ export class LoggingRepository {
     this.handleMessage(LogLevel.Fatal, message, details);
   }
 
+  deprecate(message: string) {
+    this.warn(`[Deprecated] ${message}`);
+  }
+
   private handleFunction(level: LogLevel, message: LogFunction, details: LogDetails[]) {
     if (this.logger.isLevelEnabled(level)) {
       this.handleMessage(level, message(), details);

@@ -38,7 +38,7 @@ services:
     image: redis:6.2-alpine@sha256:7fe72c486b910f6b1a9769c937dad5d63648ddee82e056f47417542dd40825bb
 
   database:
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0@sha256:7a4469b9484e37bf2630a60bc2f02f086dae898143b599ecc1c93f619849ef6b
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0@sha256:11ced39d65a92a54d12890ced6a26cc2003f92697d6f0d4d944b98459dba7138
     command: -c fsync=off -c shared_preload_libraries=vchord.so -c config_file=/var/lib/postgresql/data/postgresql.conf
     environment:
       POSTGRES_PASSWORD: postgres

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import RadioButton from '$lib/components/elements/radio-button.svelte';
   import { MediaType } from '$lib/constants';
+  import RadioButton from '$lib/elements/RadioButton.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -12,7 +12,7 @@
 
 <div id="media-type-selection">
   <fieldset>
-    <legend class="immich-form-label">{$t('media_type').toUpperCase()}</legend>
+    <legend class="uppercase immich-form-label">{$t('media_type')}</legend>
     <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
       <RadioButton name="media-type" id="type-all" bind:group={filteredMedia} label={$t('all')} value={MediaType.All} />
       <RadioButton

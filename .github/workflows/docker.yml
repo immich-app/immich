@@ -20,15 +20,11 @@ jobs:
     permissions:
       contents: read
     outputs:
-      should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
-      should_run_ml: ${{ steps.found_paths.outputs.machine-learning == 'true' || steps.should_force.outputs.should_force == 'true' }}
+      should_run: ${{ steps.check.outputs.should_run }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-        with:
-          persist-credentials: false
-      - id: found_paths
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      - name: Check what should run
+        id: check
+        uses: immich-app/devtools/actions/pre-job@24820aa4ef67959b0dcf69a438cccf00d7c7042b # pre-job-action-v1.0.1
         with:
           filters: |
             server:
@@ -38,14 +34,11 @@ jobs:
               - 'i18n/**'
             machine-learning:
               - 'machine-learning/**'
-            workflow:
-              - '.github/workflows/docker.yml'
-              - '.github/workflows/multi-runner-build.yml'
-              - '.github/actions/image-build'
-
-      - name: Check if we should force jobs to run
-        id: should_force
-        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+          force-filters: |
+            - '.github/workflows/docker.yml'
+            - '.github/workflows/multi-runner-build.yml'
+            - '.github/actions/image-build'
+          force-events: 'workflow_dispatch,release'
 
   retag_ml:
     name: Re-Tag ML
@@ -53,7 +46,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ needs.pre-job.outputs.should_run_ml == 'false' && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == false && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -82,7 +75,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    if: ${{ needs.pre-job.outputs.should_run_server == 'false' && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == false && !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -108,7 +101,7 @@ jobs:
   machine-learning:
     name: Build and Push ML
     needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -153,7 +146,7 @@ jobs:
   server:
     name: Build and Push Server
     needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
     uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@129aeda75a450666ce96e8bc8126652e717917a7 # multi-runner-build-workflow-0.1.1
     permissions:
       contents: read

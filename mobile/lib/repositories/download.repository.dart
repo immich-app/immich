@@ -90,7 +90,11 @@ class DownloadRepository {
       final isVideo = asset.isVideo;
       final url = getOriginalUrlForRemoteId(id);
 
-      if (Platform.isAndroid || livePhotoVideoId == null || isVideo) {
+      // on iOS it cannot link the image, check if the filename has .MP extension
+      // to avoid downloading the video part
+      final isAndroidMotionPhoto = asset.name.contains(".MP");
+
+      if (Platform.isAndroid || livePhotoVideoId == null || isVideo || isAndroidMotionPhoto) {
         tasks[taskIndex++] = DownloadTask(
           taskId: id,
           url: url,

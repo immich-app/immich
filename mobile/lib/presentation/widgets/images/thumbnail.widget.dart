@@ -326,7 +326,7 @@ class _ThumbnailRenderBox extends RenderBox {
         image: _previousImage!,
         fit: _fit,
         filterQuality: FilterQuality.low,
-        opacity: 1.0 - _fadeValue,
+        opacity: 1.0,
       );
     } else if (_image == null || _fadeValue < 1.0) {
       final paint = Paint()..shader = _placeholderGradient.createShader(rect);

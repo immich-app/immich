@@ -1,11 +1,11 @@
 <script lang="ts">
   import { resizeObserver } from '$lib/actions/resize-observer';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { Icon } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -58,7 +58,7 @@
               aria-label={$t('previous')}
               onclick={scrollLeft}
             >
-              <Icon path={mdiChevronLeft} size="36" ariaLabel={$t('previous')} /></button
+              <Icon icon={mdiChevronLeft} size="36" aria-label={$t('previous')} /></button
             >
           </div>
         {/if}
@@ -74,7 +74,7 @@
               aria-label={$t('next')}
               onclick={scrollRight}
             >
-              <Icon path={mdiChevronRight} size="36" ariaLabel={$t('next')} /></button
+              <Icon icon={mdiChevronRight} size="36" aria-label={$t('next')} /></button
             >
           </div>
         {/if}

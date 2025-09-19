@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
-import android.provider.MediaStore
 import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
@@ -19,7 +18,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DecodeFormat
 import java.util.Base64
-import java.util.HashMap
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
@@ -202,8 +200,10 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
       val source = ImageDecoder.createSource(resolver, uri)
       signal.throwIfCanceled()
       ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-        val sampleSize = max(1, min(info.size.width / targetWidth, info.size.height / targetHeight))
-        decoder.setTargetSampleSize(sampleSize)
+        if (targetWidth > 0 && targetHeight > 0) {
+          val sample = max(1, min(info.size.width / targetWidth, info.size.height / targetHeight))
+          decoder.setTargetSampleSize(sample)
+        }
         decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
         decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
       }

@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { ConfirmModal } from '@immich/ui';
+  import DateInput from '$lib/elements/DateInput.svelte';
+  import DurationInput from '$lib/elements/DurationInput.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util.js';
+  import { ConfirmModal, Field, Switch } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
-  import DateInput from '../elements/date-input.svelte';
-  import Combobox, { type ComboBoxOption } from './combobox.svelte';
-  import DurationInput from '../elements/duration-input.svelte';
-  import { Field, Switch } from '@immich/ui';
-  import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util.js';
-  import { locale } from '$lib/stores/preferences.store';
   import { get } from 'svelte/store';
+  import Combobox, { type ComboBoxOption } from './combobox.svelte';
 
   interface Props {
     title?: string;

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -46,7 +46,7 @@
       <!-- FAVORITE ICON -->
       {#if asset.isFavorite}
         <div class="absolute bottom-2 start-2">
-          <Icon path={mdiHeart} size="24" class="text-white" />
+          <Icon icon={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
 
@@ -70,7 +70,7 @@
           <div class="bg-immich-primary/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
             <div class="flex items-center justify-center">
               <div class="me-1">{asset.stack.assetCount}</div>
-              <Icon path={mdiImageMultipleOutline} size="18" />
+              <Icon icon={mdiImageMultipleOutline} size="18" />
             </div>
           </div>
         {/if}
@@ -83,7 +83,7 @@
       class="absolute rounded-full top-1 start-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
       title={$t('view')}
     >
-      <Icon ariaLabel={$t('view')} path={mdiMagnifyPlus} flipped size="18" />
+      <Icon aria-label={$t('view')} icon={mdiMagnifyPlus} flipped size="18" />
     </button>
   </div>
 

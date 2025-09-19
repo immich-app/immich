@@ -350,8 +350,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
           final computedScale = useImageScale ? 1.0 : scale;
 
           final matrix = Matrix4.identity()
-            ..translate(value.position.dx, value.position.dy)
-            ..scale(computedScale)
+            ..translateByDouble(value.position.dx, value.position.dy, 0, 1.0)
+            ..scaleByDouble(computedScale, computedScale, computedScale, 1.0)
             ..rotateZ(value.rotation);
 
           final Widget customChildLayout = CustomSingleChildLayout(

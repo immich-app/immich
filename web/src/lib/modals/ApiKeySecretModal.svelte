@@ -14,7 +14,7 @@
 
 <Modal title={$t('api_key')} icon={mdiKeyVariant} {onClose} size="small">
   <ModalBody>
-    <div class="text-immich-primary dark:text-immich-dark-primary">
+    <div class="text-primary">
       <p class="text-sm dark:text-immich-dark-fg">
         {$t('api_key_description')}
       </p>

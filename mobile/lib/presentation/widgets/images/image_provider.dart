@@ -96,7 +96,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
     final operation = cachedOperation;
     if (operation != null) {
-      this.cachedOperation = null;
+      cachedOperation = null;
       operation.cancel();
     }
   }

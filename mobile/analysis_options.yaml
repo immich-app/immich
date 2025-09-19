@@ -43,8 +43,9 @@ analyzer:
     - lib/**/*.g.dart
     - lib/**/*.drift.dart
 
-  plugins:
-    - custom_lint
+  # TODO: Re-enable after upgrading custom_lint
+  # plugins:
+  #   - custom_lint
 
 custom_lint:
   debug: true

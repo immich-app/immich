@@ -2,8 +2,10 @@
   import { shortcut } from '$lib/actions/shortcut';
   import CastButton from '$lib/cast/cast-button.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
-  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
+  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -17,8 +19,6 @@
   import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
-  import DownloadAction from '../photos-page/actions/download-action.svelte';
-  import AssetGrid from '../photos-page/asset-grid.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
@@ -61,12 +61,10 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <AssetGrid enableRouting={true} {album} {timelineManager} {assetInteraction}>
+  <Timeline enableRouting={true} {album} {timelineManager} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
-      <h1
-        class="text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary"
-      >
+      <h1 class="text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all">
         {album.albumName}
       </h1>
 
@@ -83,7 +81,7 @@
         </p>
       {/if}
     </section>
-  </AssetGrid>
+  </Timeline>
 </main>
 
 <header>

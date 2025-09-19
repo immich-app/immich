@@ -105,7 +105,7 @@ class ThumbnailApiImpl: ThumbnailApi {
       var image: UIImage?
       Self.imageManager.requestImage(
         for: asset,
-        targetSize: CGSize(width: Double(width), height: Double(height)),
+        targetSize: width > 0 && height > 0 ? CGSize(width: Double(width), height: Double(height)) : PHImageManagerMaximumSize,
         contentMode: .aspectFill,
         options: Self.requestOptions,
         resultHandler: { (_image, info) -> Void in

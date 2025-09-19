@@ -1,10 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
   import { AppRoute } from '$lib/constants';
+  import Portal from '$lib/elements/Portal.svelte';
   import PurchaseModal from '$lib/modals/PurchaseModal.svelte';
   import { purchaseStore } from '$lib/stores/purchase.store';
   import { preferences } from '$lib/stores/user.store';
@@ -12,7 +11,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getButtonVisibility } from '$lib/utils/purchase-utils';
   import { updateMyPreferences } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { SvelteDate } from 'svelte/reactivity';
@@ -97,17 +96,13 @@
           <div class="h-6 w-6">
             <ImmichLogo noText class="h-[24px]" />
           </div>
-          <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
+          <p class="flex text-primary font-medium">
             {$t('purchase_button_buy_immich')}
           </p>
         </div>
 
         <div>
-          <Icon
-            path={mdiInformationOutline}
-            class="hidden sidebar:flex text-immich-primary dark:text-immich-dark-primary font-medium"
-            size="18"
-          />
+          <Icon icon={mdiInformationOutline} class="hidden sidebar:flex text-primary font-medium" size="18" />
         </div>
       </div>
     </button>
@@ -143,7 +138,7 @@
         />
       </div>
 
-      <h1 class="text-lg font-medium my-3 dark:text-immich-dark-primary text-immich-primary">
+      <h1 class="text-lg font-medium my-3 text-primary">
         {$t('purchase_panel_title')}
       </h1>
 

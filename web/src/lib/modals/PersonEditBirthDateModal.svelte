@@ -3,12 +3,12 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import DateInput from '$lib/elements/DateInput.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updatePerson, type PersonResponseDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiCake } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import DateInput from '../components/elements/date-input.svelte';
 
   interface Props {
     person: PersonResponseDto;
@@ -37,7 +37,7 @@
 
 <Modal title={$t('set_date_of_birth')} icon={mdiCake} {onClose} size="small">
   <ModalBody>
-    <div class="text-immich-primary dark:text-immich-dark-primary">
+    <div class="text-primary">
       <p class="text-sm dark:text-immich-dark-fg">
         {$t('birthdate_set_description')}
       </p>

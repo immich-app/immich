@@ -235,7 +235,9 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     switch (update.status) {
       case TaskStatus.complete:
         if (update.task.group == kBackupGroup) {
-          state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
+          if (update.responseStatusCode == 201) {
+            state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
+          }
         }
 
         // Remove the completed task from the upload items

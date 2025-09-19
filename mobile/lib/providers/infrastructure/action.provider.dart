@@ -356,7 +356,6 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> downloadAll(ActionSource source) async {
     final assets = _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
-
     try {
       final didEnqueue = await _service.downloadAll(assets);
       final enqueueCount = didEnqueue.where((e) => e).length;

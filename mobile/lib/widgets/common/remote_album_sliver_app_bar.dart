@@ -75,86 +75,79 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
         const Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.transparent),
     ];
 
-    if (isMultiSelectEnabled) {
-      return SliverToBoxAdapter(
-        child: switch (_scrollProgress) {
-          < 0.8 => const SizedBox(height: 120),
-          _ => const SizedBox(height: 452),
-        },
-      );
-    } else {
-      return SliverAppBar(
-        expandedHeight: 400.0,
-        floating: false,
-        pinned: true,
-        snap: false,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
-            color: actionIconColor,
-            shadows: actionIconShadows,
-          ),
-          onPressed: () => context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()])),
-        ),
-        actions: [
-          if (widget.onToggleAlbumOrder != null)
-            IconButton(
-              icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
-              onPressed: widget.onToggleAlbumOrder,
-            ),
-          if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
-            IconButton(
-              icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
-              onPressed: widget.onActivity,
-            ),
-          if (widget.onShowOptions != null)
-            IconButton(
-              icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
-              onPressed: widget.onShowOptions,
-            ),
-        ],
-        title: Builder(
-          builder: (context) {
-            final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-            final scrollProgress = _calculateScrollProgress(settings);
-
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: scrollProgress > 0.95
-                  ? Text(
-                      currentAlbum.name,
-                      style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
-                    )
-                  : null,
-            );
-          },
-        ),
-        flexibleSpace: Builder(
-          builder: (context) {
-            final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
-            final scrollProgress = _calculateScrollProgress(settings);
-
-            // Update scroll progress for the leading button
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && _scrollProgress != scrollProgress) {
-                setState(() {
-                  _scrollProgress = scrollProgress;
-                });
-              }
-            });
-
-            return FlexibleSpaceBar(
-              background: _ExpandedBackground(
-                scrollProgress: scrollProgress,
-                icon: widget.icon,
-                onEditTitle: widget.onEditTitle,
+    return SliverAppBar(
+      expandedHeight: 400.0,
+      floating: false,
+      pinned: true,
+      snap: false,
+      elevation: 0,
+      leading: isMultiSelectEnabled
+          ? const SizedBox.shrink()
+          : IconButton(
+              icon: Icon(
+                Platform.isIOS ? Icons.arrow_back_ios_new_rounded : Icons.arrow_back,
+                color: actionIconColor,
+                shadows: actionIconShadows,
               ),
-            );
-          },
-        ),
-      );
-    }
+              onPressed: () => context.navigateTo(const TabShellRoute(children: [DriftAlbumsRoute()])),
+            ),
+      actions: [
+        if (widget.onToggleAlbumOrder != null)
+          IconButton(
+            icon: Icon(Icons.swap_vert_rounded, color: actionIconColor, shadows: actionIconShadows),
+            onPressed: widget.onToggleAlbumOrder,
+          ),
+        if (currentAlbum.isActivityEnabled && currentAlbum.isShared)
+          IconButton(
+            icon: Icon(Icons.chat_outlined, color: actionIconColor, shadows: actionIconShadows),
+            onPressed: widget.onActivity,
+          ),
+        if (widget.onShowOptions != null)
+          IconButton(
+            icon: Icon(Icons.more_vert, color: actionIconColor, shadows: actionIconShadows),
+            onPressed: widget.onShowOptions,
+          ),
+      ],
+      title: Builder(
+        builder: (context) {
+          final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+          final scrollProgress = _calculateScrollProgress(settings);
+
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: scrollProgress > 0.95
+                ? Text(
+                    currentAlbum.name,
+                    style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
+                  )
+                : null,
+          );
+        },
+      ),
+      flexibleSpace: Builder(
+        builder: (context) {
+          final settings = context.dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+          final scrollProgress = _calculateScrollProgress(settings);
+
+          // Update scroll progress for the leading button
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _scrollProgress != scrollProgress) {
+              setState(() {
+                _scrollProgress = scrollProgress;
+              });
+            }
+          });
+
+          return FlexibleSpaceBar(
+            background: _ExpandedBackground(
+              scrollProgress: scrollProgress,
+              icon: widget.icon,
+              onEditTitle: widget.onEditTitle,
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 

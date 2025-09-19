@@ -17,30 +17,16 @@ struct AssetWrapper: Hashable, Equatable {
   }
 }
 
-extension PHAsset {
-  func toPlatformAsset() -> PlatformAsset {
-    return PlatformAsset(
-      id: localIdentifier,
-      name: title(),
-      type: Int64(mediaType.rawValue),
-      createdAt: creationDate.map { Int64($0.timeIntervalSince1970) },
-      updatedAt: modificationDate.map { Int64($0.timeIntervalSince1970) },
-      width: Int64(pixelWidth),
-      height: Int64(pixelHeight),
-      durationInSeconds: Int64(duration),
-      orientation: 0,
-      isFavorite: isFavorite
-    )
-  }
-}
-
 class NativeSyncApiImpl: NativeSyncApi {
   private let defaults: UserDefaults
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
   
-  private let hashBufferSize = 2 * 1024 * 1024
+  private var hashTask: Task<Void, Error>?
+  private static let hashCancelledCode = "HASH_CANCELLED"
+  private static let hashCancelled = Result<[HashResult], Error>.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil))
+  
   
   init(with defaults: UserDefaults = .standard) {
     self.defaults = defaults
@@ -96,7 +82,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       let collections = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: nil)
       for i in 0..<collections.count {
         let album = collections.object(at: i)
-      
+        
         // Ignore recovered album
         if(album.assetCollectionSubtype.rawValue == self.recoveredAlbumSubType) {
           continue;
@@ -254,7 +240,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       let date = NSDate(timeIntervalSince1970: TimeInterval(updatedTimeCond!))
       options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
     }
-
+    
     let result = PHAsset.fetchAssets(in: album, options: options)
     if(result.count == 0) {
       return []
@@ -267,23 +253,114 @@ class NativeSyncApiImpl: NativeSyncApi {
     return assets
   }
   
-  func hashPaths(paths: [String]) throws -> [FlutterStandardTypedData?] {
-      return paths.map { path in
-          guard let file = FileHandle(forReadingAtPath: path) else {
-              print("Cannot open file: \(path)")
-              return nil
-          }
-          
-          var hasher = Insecure.SHA1()
-          while autoreleasepool(invoking: {
-              let chunk = file.readData(ofLength: hashBufferSize)
-              guard !chunk.isEmpty else { return false }
-              hasher.update(data: chunk)
-              return true
-          }) { }
-          
-          let digest = hasher.finalize()
-          return FlutterStandardTypedData(bytes: Data(digest))
+  func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void) {
+    if let prevTask = hashTask {
+      prevTask.cancel()
+      hashTask = nil
+    }
+    hashTask = Task { [weak self] in
+      var missingAssetIds = Set(assetIds)
+      var assets = [PHAsset]()
+      assets.reserveCapacity(assetIds.count)
+      PHAsset.fetchAssets(withLocalIdentifiers: assetIds, options: nil).enumerateObjects { (asset, _, stop) in
+        if Task.isCancelled {
+          stop.pointee = true
+          return
+        }
+        missingAssetIds.remove(asset.localIdentifier)
+        assets.append(asset)
       }
+      
+      if Task.isCancelled {
+        return completion(Self.hashCancelled)
+      }
+      
+      await withTaskGroup(of: HashResult?.self) { taskGroup in
+        var results = [HashResult]()
+        results.reserveCapacity(assets.count)
+        for asset in assets {
+          if Task.isCancelled {
+            return completion(Self.hashCancelled)
+          }
+          taskGroup.addTask {
+            guard let self = self else { return nil }
+            return await self.hashAsset(asset, allowNetworkAccess: allowNetworkAccess)
+          }
+        }
+        
+        for await result in taskGroup {
+          guard let result = result else {
+            return completion(Self.hashCancelled)
+          }
+          results.append(result)
+        }
+        
+        for missing in missingAssetIds {
+          results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
+        }
+        
+        completion(.success(results))
+      }
+    }
+  }
+  
+  func cancelHashing() {
+    hashTask?.cancel()
+    hashTask = nil
+  }
+  
+  private func hashAsset(_ asset: PHAsset, allowNetworkAccess: Bool) async -> HashResult? {
+    class RequestRef {
+      var id: PHAssetResourceDataRequestID?
+    }
+    let requestRef = RequestRef()
+    return await withTaskCancellationHandler(operation: {
+      if Task.isCancelled {
+        return nil
+      }
+      
+      guard let resource = asset.getResource() else {
+        return HashResult(assetId: asset.localIdentifier, error: "Cannot get asset resource", hash: nil)
+      }
+      
+      if Task.isCancelled {
+        return nil
+      }
+      
+      let options = PHAssetResourceRequestOptions()
+      options.isNetworkAccessAllowed = allowNetworkAccess
+      
+      return await withCheckedContinuation { continuation in
+        var hasher = Insecure.SHA1()
+        
+        requestRef.id = PHAssetResourceManager.default().requestData(
+          for: resource,
+          options: options,
+          dataReceivedHandler: { data in
+            hasher.update(data: data)
+          },
+          completionHandler: { error in
+            let result: HashResult? = switch (error) {
+            case let e as PHPhotosError where e.code == .userCancelled: nil
+            case let .some(e): HashResult(
+              assetId: asset.localIdentifier,
+              error: "Failed to hash asset: \(e.localizedDescription)",
+              hash: nil
+            )
+            case .none:
+              HashResult(
+                assetId: asset.localIdentifier,
+                error: nil,
+                hash: Data(hasher.finalize()).base64EncodedString()
+              )
+            }
+            continuation.resume(returning: result)
+          }
+        )
+      }
+    }, onCancel: {
+      guard let requestId = requestRef.id else { return }
+      PHAssetResourceManager.default().cancelDataRequest(requestId)
+    })
   }
 }

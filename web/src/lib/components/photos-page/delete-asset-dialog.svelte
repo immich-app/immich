@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { Checkbox, ConfirmModal, Label } from '@immich/ui';
   import { mdiDeleteForeverOutline } from '@mdi/js';

@@ -35,7 +35,7 @@
 <div class="flex place-items-center justify-between">
   <div class="me-2">
     <div class="flex h-[26px] place-items-center gap-1">
-      <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={sliderId}>
+      <label class="font-medium text-primary text-sm" for={sliderId}>
         {title}
       </label>
       {#if isEdited}

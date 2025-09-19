@@ -1,5 +1,5 @@
 <script lang="ts">
-  import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
+  import JobsPanel from '$lib/components/jobs/JobsPanel.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import { AppRoute } from '$lib/constants';
   import JobCreateModal from '$lib/modals/JobCreateModal.svelte';
