@@ -31,6 +31,11 @@ class Scrubber extends ConsumerStatefulWidget {
 
   final double? monthSegmentSnappingOffset;
 
+  final bool snapToMonth;
+
+  /// Whether an app bar is present, affects coordinate calculations
+  final bool hasAppBar;
+
   Scrubber({
     super.key,
     Key? scrollThumbKey,
@@ -39,6 +44,8 @@ class Scrubber extends ConsumerStatefulWidget {
     this.topPadding = 0,
     this.bottomPadding = 0,
     this.monthSegmentSnappingOffset,
+    this.snapToMonth = true,
+    this.hasAppBar = true,
     required this.child,
   }) : assert(child.scrollDirection == Axis.vertical);
 
@@ -232,7 +239,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       }
     }
 
-    if (_monthCount < kMinMonthsToEnableScrubberSnap) {
+    if (_monthCount < kMinMonthsToEnableScrubberSnap || !widget.snapToMonth) {
       // If there are less than kMinMonthsToEnableScrubberSnap months, we don't need to snap to segments
       setState(() {
         _thumbTopOffset = dragPosition;
@@ -259,14 +266,28 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   /// - If user drags to global Y position that's 100 pixels from the top
   /// - The relative position would be 100 - 50 = 50 (50 pixels into the scrubber area)
   double _calculateDragPosition(DragUpdateDetails details) {
+    if (widget.hasAppBar) {
+      final dragAreaTop = widget.topPadding;
+      final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
+      final dragAreaHeight = dragAreaBottom - dragAreaTop;
+
+      final relativePosition = details.globalPosition.dy - dragAreaTop;
+
+      // Make sure the position stays within the scrubber's bounds
+      return relativePosition.clamp(0.0, dragAreaHeight);
+    }
+
+    // Get the local position relative to the gesture detector
+    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final localPosition = renderBox.globalToLocal(details.globalPosition);
+      return localPosition.dy.clamp(0.0, _scrubberHeight);
+    }
+
+    // Fallback to current logic if render box is not available
     final dragAreaTop = widget.topPadding;
-    final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
-    final dragAreaHeight = dragAreaBottom - dragAreaTop;
-
     final relativePosition = details.globalPosition.dy - dragAreaTop;
-
-    // Make sure the position stays within the scrubber's bounds
-    return relativePosition.clamp(0.0, dragAreaHeight);
+    return relativePosition.clamp(0.0, _scrubberHeight);
   }
 
   /// Find the segment closest to the given position
