@@ -415,7 +415,6 @@ export class MetadataService extends BaseService {
 
     await this.metadataRepository.writeTags(sidecarPath, exif);
 
-
     try {
       const writtenTags = await this.metadataRepository.readTags(sidecarPath);
 

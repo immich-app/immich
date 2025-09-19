@@ -516,9 +516,9 @@ export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
     isFavorite?: boolean;
-    latitude?: number | null;
+    latitude?: number;
     livePhotoVideoId?: string | null;
-    longitude?: number | null;
+    longitude?: number;
     rating?: number;
     visibility?: AssetVisibility;
 };
