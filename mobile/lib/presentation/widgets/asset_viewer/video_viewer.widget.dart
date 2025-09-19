@@ -68,8 +68,6 @@ class NativeVideoViewer extends HookConsumerWidget {
     // is brought back to the foreground
     final shouldPlayOnForeground = useRef(true);
 
-    final timerRef = useRef<Timer?>(null);
-
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
     // If the swipe is completed, `isCurrent` will be true for video B after a delay.
@@ -312,39 +310,22 @@ class NativeVideoViewer extends HookConsumerWidget {
 
     ref.listen(currentAssetNotifier, (_, value) {
       final playerController = controller.value;
+      if (playerController != null && value != asset) {
+        removeListeners(playerController);
+      }
 
-      if (currentAsset.value == value) {
+      if (value != null) {
+        isVisible.value = _isCurrentAsset(value, asset);
+      }
+      final curAsset = currentAsset.value;
+      if (curAsset == asset) {
         return;
       }
 
-      // Cancel any pending delayed playback timer before handling new asset
-      timerRef.value?.cancel();
-      timerRef.value = null;
+      final imageToVideo = curAsset != null && !curAsset.isVideo;
 
-      // If we're swiping away from this asset, immediately mark as not current
-      // so the video overlay gets removed without delay and no flash occurs.
-      if (value != asset) {
-        if (playerController != null) {
-          removeListeners(playerController);
-          playerController.stop().catchError((_) {});
-        }
-        // Mark as not current immediately
-        if (currentAsset.value != value) {
-          currentAsset.value = value;
-        }
-        // We're leaving this video; stop processing entry logic below.
-        return;
-      }
-
-      // From here on, value == asset (we are entering this video)
-      final previousAsset = currentAsset.value;
-      final imageToVideo = previousAsset != null && !previousAsset.isVideo;
-
-      // No need to delay video playback when swiping from an image to a video on iOS
+      // No need to delay video playback when swiping from an image to a video
       if (imageToVideo && Platform.isIOS) {
-        // Ensure no previous delayed callback fires
-        timerRef.value?.cancel();
-        timerRef.value = null;
         currentAsset.value = value;
         onPlaybackReady();
         return;
@@ -355,7 +336,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       // the playbackDelayFactor can be used for this
       // This delay seems like a hacky way to resolve underlying bugs in video
       // playback, but other resolutions failed thus far
-      timerRef.value = Timer(
+      Timer(
         Platform.isIOS
             ? Duration(milliseconds: 300 * playbackDelayFactor)
             : imageToVideo
@@ -365,10 +346,11 @@ class NativeVideoViewer extends HookConsumerWidget {
           if (!context.mounted) {
             return;
           }
+
           currentAsset.value = value;
-          onPlaybackReady();
-          // Clear after firing
-          timerRef.value = null;
+          if (currentAsset.value == asset) {
+            onPlaybackReady();
+          }
         },
       );
     });
@@ -379,15 +361,11 @@ class NativeVideoViewer extends HookConsumerWidget {
 
       return () {
         timer?.cancel();
-        // Cancel any pending delayed playback when disposing
-        timerRef.value?.cancel();
-        timerRef.value = null;
         final playerController = controller.value;
         if (playerController == null) {
           return;
         }
         removeListeners(playerController);
-
         playerController.stop().catchError((error) {
           log.fine('Error stopping video: $error');
         });
