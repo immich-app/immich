@@ -140,6 +140,7 @@ struct PlatformAsset: Hashable {
   var durationInSeconds: Int64
   var orientation: Int64
   var isFavorite: Bool
+  var isTrashed: Bool
   var size: Int64? = nil
 
 
@@ -155,7 +156,8 @@ struct PlatformAsset: Hashable {
     let durationInSeconds = pigeonVar_list[7] as! Int64
     let orientation = pigeonVar_list[8] as! Int64
     let isFavorite = pigeonVar_list[9] as! Bool
-    let size: Int64? = nilOrValue(pigeonVar_list[10])
+    let isTrashed = pigeonVar_list[10] as! Bool
+    let size: Int64? = nilOrValue(pigeonVar_list[11])
 
     return PlatformAsset(
       id: id,
@@ -168,6 +170,7 @@ struct PlatformAsset: Hashable {
       durationInSeconds: durationInSeconds,
       orientation: orientation,
       isFavorite: isFavorite,
+      isTrashed: isTrashed,
       size: size
     )
   }
@@ -183,6 +186,7 @@ struct PlatformAsset: Hashable {
       durationInSeconds,
       orientation,
       isFavorite,
+      isTrashed,
       size,
     ]
   }

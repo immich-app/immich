@@ -24,6 +24,7 @@ class PlatformAsset {
   final int durationInSeconds;
   final int orientation;
   final bool isFavorite;
+  final bool isTrashed;
   final int? size;
 
   const PlatformAsset({
@@ -37,6 +38,7 @@ class PlatformAsset {
     this.durationInSeconds = 0,
     this.orientation = 0,
     this.isFavorite = false,
+    this.isTrashed = false,
     this.size,
   });
 }

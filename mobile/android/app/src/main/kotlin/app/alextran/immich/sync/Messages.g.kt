@@ -90,6 +90,7 @@ data class PlatformAsset (
   val durationInSeconds: Long,
   val orientation: Long,
   val isFavorite: Boolean,
+  val isTrashed: Boolean,
   val size: Long? = null
 )
  {
@@ -105,8 +106,9 @@ data class PlatformAsset (
       val durationInSeconds = pigeonVar_list[7] as Long
       val orientation = pigeonVar_list[8] as Long
       val isFavorite = pigeonVar_list[9] as Boolean
-      val size = pigeonVar_list[10] as Long?
-      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, size)
+      val isTrashed = pigeonVar_list[10] as Boolean
+      val size = pigeonVar_list[11] as Long?
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, isTrashed, size)
     }
   }
   fun toList(): List<Any?> {
@@ -121,6 +123,7 @@ data class PlatformAsset (
       durationInSeconds,
       orientation,
       isFavorite,
+      isTrashed,
       size,
     )
   }

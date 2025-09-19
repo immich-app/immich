@@ -41,6 +41,7 @@ class PlatformAsset {
     required this.durationInSeconds,
     required this.orientation,
     required this.isFavorite,
+    required this.isTrashed,
     this.size,
   });
 
@@ -64,6 +65,8 @@ class PlatformAsset {
 
   bool isFavorite;
 
+  bool isTrashed;
+
   int? size;
 
   List<Object?> _toList() {
@@ -78,6 +81,7 @@ class PlatformAsset {
       durationInSeconds,
       orientation,
       isFavorite,
+      isTrashed,
       size,
     ];
   }
@@ -99,7 +103,8 @@ class PlatformAsset {
       durationInSeconds: result[7]! as int,
       orientation: result[8]! as int,
       isFavorite: result[9]! as bool,
-      size: result[10] as int?,
+      isTrashed: result[10]! as bool,
+      size: result[11] as int?,
     );
   }
 

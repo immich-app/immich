@@ -4,8 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
@@ -40,13 +40,14 @@ class LocalSyncService {
         return;
       }
 
-      _log.fine("Delta updated: ${delta.updates.length}");
+      final updates = delta.updates.where((e) => !e.isTrashed);
+      _log.fine("Delta updated assets: ${updates.length}");
       _log.fine("Delta deleted: ${delta.deletes.length}");
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       await _localAlbumRepository.updateAll(deviceAlbums.toLocalAlbums());
       await _localAlbumRepository.processDelta(
-        updates: delta.updates.toLocalAssets(),
+        updates: updates.toLocalAssets(),
         deletes: delta.deletes,
         assetAlbums: delta.assetAlbums,
       );
@@ -76,8 +77,8 @@ class LocalSyncService {
         }
       }
       if (_trashSyncService.isAutoSyncMode) {
-        // On Android we need to sync trashed assets
-        await _trashSyncService.updateLocalTrashFromDevice();
+        _log.fine("Delta updated trashed: ${delta.updates.length - updates.length}");
+        await _trashSyncService.applyTrashDelta(delta);
       }
       await _nativeSyncApi.checkpointSync();
     } catch (e, s) {
@@ -104,7 +105,7 @@ class LocalSyncService {
         onlySecond: addAlbum,
       );
       if (_trashSyncService.isAutoSyncMode) {
-        await _trashSyncService.updateLocalTrashFromDevice();
+        await _trashSyncService.syncDeviceTrashSnapshot();
       }
 
       await _nativeSyncApi.checkpointSync();

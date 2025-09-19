@@ -15,12 +15,12 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     if (assets.isEmpty) {
       return Future.value();
     }
-
+    final now = DateTime.now();
     return _db.batch((batch) async {
       for (final asset in assets) {
         batch.update(
           _db.trashedLocalAssetEntity,
-          TrashedLocalAssetEntityCompanion(checksum: Value(asset.checksum)),
+          TrashedLocalAssetEntityCompanion(checksum: Value(asset.checksum), updatedAt: Value(now)),
           where: (e) => e.id.equals(asset.id),
         );
       }
@@ -93,6 +93,30 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         }
       }
     });
+  }
+
+  Future<void> insertTrashDelta(Iterable<TrashedAsset> trashUpdates) async {
+    if (trashUpdates.isEmpty) {
+      return;
+    }
+    final companions = trashUpdates
+        .map(
+          (a) => TrashedLocalAssetEntityCompanion.insert(
+            id: a.id,
+            albumId: a.albumId,
+            name: a.name,
+            type: a.type,
+            checksum: a.checksum == null ? const Value.absent() : Value(a.checksum),
+            size: a.size == null ? const Value.absent() : Value(a.size),
+            createdAt: Value(a.createdAt),
+          ),
+        );
+
+    for (final slice in companions.slices(200)) {
+      await _db.batch((b) {
+        b.insertAllOnConflictUpdate(_db.trashedLocalAssetEntity, slice);
+      });
+    }
   }
 
   Stream<int> watchCount() {

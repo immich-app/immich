@@ -45,8 +45,6 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
-  @RequiresExtension(extension = Build.VERSION_CODES.R, version = 1)
-  @RequiresApi(Build.VERSION_CODES.R)
   override fun getTrashedAssetsForAlbum(
     albumId: String,
     updatedTimeCond: Long?
@@ -155,14 +153,22 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
         storedGen.toString()
       )
 
-      getAssets(getCursor(volume, selection, selectionArgs)).forEach {
-        when (it) {
-          is AssetResult.ValidAsset -> {
-            changed.add(it.asset)
-            assetAlbums[it.asset.id] = listOf(it.albumId)
-          }
+      val uri = MediaStore.Files.getContentUri(volume)
+      val queryArgs = Bundle().apply {
+        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+        putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE)
+      }
 
-          is AssetResult.InvalidAsset -> deleted.add(it.assetId)
+      ctx.contentResolver.query(uri, ASSET_PROJECTION, queryArgs, null).use { cursor ->
+        getAssets(cursor).forEach {
+          when (it) {
+            is AssetResult.ValidAsset -> {
+              changed.add(it.asset)
+              assetAlbums[it.asset.id] = listOf(it.albumId)
+            }
+            is AssetResult.InvalidAsset -> deleted.add(it.assetId)
+          }
         }
       }
     }

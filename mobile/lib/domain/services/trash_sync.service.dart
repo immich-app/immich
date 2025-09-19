@@ -48,7 +48,7 @@ class TrashSyncService {
   Future<Iterable<TrashedAsset>> getAssetsToHash(String albumId) async =>
       _trashedLocalAssetRepository.getToHash(albumId);
 
-  Future<void> updateLocalTrashFromDevice() async {
+  Future<void> syncDeviceTrashSnapshot() async {
     final backupAlbums = await _localAlbumRepository.getBackupAlbums();
     if (backupAlbums.isEmpty) {
       _logger.info("No backup albums found");
@@ -59,6 +59,24 @@ class TrashSyncService {
       final deviceTrashedAssets = await _nativeSyncApi.getTrashedAssetsForAlbum(album.id);
       await _trashedLocalAssetRepository.applyTrashSnapshot(deviceTrashedAssets.toTrashedAssets(album.id), album.id);
     }
+    // todo find for more suitable place
+    await applyRemoteRestoreToLocal();
+  }
+
+  Future<void> applyTrashDelta(SyncDelta delta) async {
+    final trashUpdates = delta.updates.where((e) => e.isTrashed);
+    if (trashUpdates.isEmpty) {
+      return Future.value();
+    }
+    final trashedAssets = <TrashedAsset>[];
+    for (final update in trashUpdates) {
+      final albums = delta.assetAlbums.cast<String, List<Object?>>();
+      for (final String id in albums[update.id]!.cast<String?>().nonNulls) {
+        trashedAssets.add(update.toTrashedAsset(id));
+      }
+    }
+    _logger.info("updateLocalTrashChanges trashedAssets: ${trashedAssets.map((e) => e.id)}");
+    await _trashedLocalAssetRepository.insertTrashDelta(trashedAssets);
     // todo find for more suitable place
     await applyRemoteRestoreToLocal();
   }
@@ -93,6 +111,10 @@ class TrashSyncService {
         _logger.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
         await _localFilesManager.restoreFromTrashById(asset.id, asset.type.index);
       }
+      // todo 19/09/2025
+      // 1. keeping full mirror of local asset table struct + size into trashedLocalAssetEntity could help to restore assets here
+      // 2. now when hash calculating doing without taking into account size of files, size field may be redundant
+
       // todo It`s necessary? could cause race with deletion in applyTrashSnapshot? 18/09/2025
       await _trashedLocalAssetRepository.delete(remoteAssetsToRestore.map((e) => e.id));
     } else {
@@ -101,19 +123,21 @@ class TrashSyncService {
   }
 }
 
-extension on Iterable<PlatformAsset> {
-  List<TrashedAsset> toTrashedAssets(String albumId) {
-    return map(
-      (e) => TrashedAsset(
-        id: e.id,
-        name: e.name,
-        checksum: null,
-        type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
-        createdAt: tryFromSecondsSinceEpoch(e.createdAt) ?? DateTime.now(),
-        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt) ?? DateTime.now(),
-        size: e.size,
-        albumId: albumId,
-      ),
-    ).toList();
+extension on PlatformAsset {
+  TrashedAsset toTrashedAsset(String albumId) => TrashedAsset(
+    id: id,
+    name: name,
+    checksum: null,
+    type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
+    createdAt: tryFromSecondsSinceEpoch(createdAt) ?? DateTime.now(),
+    updatedAt: tryFromSecondsSinceEpoch(updatedAt) ?? DateTime.now(),
+    size: size,
+    albumId: albumId,
+  );
+}
+
+extension PlatformAssetsExtension on Iterable<PlatformAsset> {
+  Iterable<TrashedAsset> toTrashedAssets(String albumId) {
+    return map((e) => e.toTrashedAsset(albumId));
   }
 }

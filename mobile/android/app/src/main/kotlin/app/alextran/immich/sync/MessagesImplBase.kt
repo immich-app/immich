@@ -61,6 +61,8 @@ open class NativeSyncApiImplBase(context: Context) {
       // IS_FAVORITE is only available on Android 11 and above
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
+        // IS_TRASHED available on Android 11+
+        add(MediaStore.MediaColumns.IS_TRASHED)
       }
       add(MediaStore.MediaColumns.SIZE)
     }.toTypedArray()
@@ -99,6 +101,7 @@ open class NativeSyncApiImplBase(context: Context) {
         val orientationColumn =
           c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
         val favoriteColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_FAVORITE)
+        val trashedColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_TRASHED)
         val sizeColumn = c.getColumnIndex(MediaStore.MediaColumns.SIZE)
 
         while (c.moveToNext()) {
@@ -129,6 +132,7 @@ open class NativeSyncApiImplBase(context: Context) {
           val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
+          val isTrashed = if (trashedColumn == -1) false else c.getInt(trashedColumn) != 0
           val size = c.getLong(sizeColumn)
           val asset = PlatformAsset(
             id,
@@ -141,6 +145,7 @@ open class NativeSyncApiImplBase(context: Context) {
             duration,
             orientation.toLong(),
             isFavorite,
+            isTrashed,
             size
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
