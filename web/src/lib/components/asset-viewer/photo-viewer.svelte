@@ -97,12 +97,15 @@
     }
 
     try {
-      await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('copied_image_to_clipboard'),
-        timeout: 3000,
-      });
+      const result = await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
+      if (result.success) {
+        notificationController.show({ type: NotificationType.Info, message: $t('copied_image_to_clipboard') });
+      } else {
+        notificationController.show({
+          type: NotificationType.Error,
+          message: $t('errors.clipboard_unsupported_mime_type', { values: { mimeType: result.mimeType } }),
+        });
+      }
     } catch (error) {
       handleError(error, $t('copy_error'));
     }
