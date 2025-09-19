@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -649,20 +650,25 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         appBar: const ViewerTopAppBar(),
         extendBody: true,
         extendBodyBehindAppBar: true,
-        body: PhotoViewGallery.builder(
-          gaplessPlayback: true,
-          loadingBuilder: _placeholderBuilder,
-          pageController: pageController,
-          scrollPhysics: CurrentPlatform.isIOS
-              ? const FastScrollPhysics() // Use bouncing physics for iOS
-              : const FastClampingScrollPhysics(), // Use heavy physics for Android
-          itemCount: totalAssets,
-          onPageChanged: _onPageChanged,
-          onPageBuild: _onPageBuild,
-          scaleStateChangedCallback: _onScaleStateChanged,
-          builder: _assetBuilder,
-          backgroundDecoration: BoxDecoration(color: backgroundColor),
-          enablePanAlways: true,
+        floatingActionButton: const DownloadStatusFloatingButton(),
+        body: Stack(
+          children: [
+            PhotoViewGallery.builder(
+              gaplessPlayback: true,
+              loadingBuilder: _placeholderBuilder,
+              pageController: pageController,
+              scrollPhysics: CurrentPlatform.isIOS
+                  ? const FastScrollPhysics() // Use bouncing physics for iOS
+                  : const FastClampingScrollPhysics(), // Use heavy physics for Android
+              itemCount: totalAssets,
+              onPageChanged: _onPageChanged,
+              onPageBuild: _onPageBuild,
+              scaleStateChangedCallback: _onScaleStateChanged,
+              builder: _assetBuilder,
+              backgroundDecoration: BoxDecoration(color: backgroundColor),
+              enablePanAlways: true,
+            ),
+          ],
         ),
         bottomNavigationBar: showingBottomSheet
             ? const SizedBox.shrink()
