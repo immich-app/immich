@@ -702,7 +702,7 @@ describe('/search', () => {
     });
   });
 
-  describe('POST /search/metadata with personIds and strictPersonSearch', () => {
+  describe('POST /search/metadata with personIds and searchOnlyThem', () => {
     let assetStrictMatch: AssetMediaResponseDto;
     let assetExtraPerson: AssetMediaResponseDto;
     let personA: PersonResponseDto;
@@ -734,20 +734,20 @@ describe('/search', () => {
           .set('Authorization', `Bearer ${admin.accessToken}`)
           .send({
             personIds: [],
-            strictPersonSearch: false,
+            searchOnlyThem: false,
           });
         expect(status).toBe(200);
         numberOfAssets = body.assets.total;
       })();
     });
 
-    it('strictPersonSearch is TRUE', async () => {
+    it('searchOnlyThem is TRUE', async () => {
       const { status, body } = await request(app)
         .post('/search/metadata')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           personIds: [personA.id, personB.id],
-          strictPersonSearch: true,
+          searchOnlyThem: true,
         });
 
       expect(status).toBe(200);
@@ -755,52 +755,52 @@ describe('/search', () => {
       expect(body.assets.items[0].id).toBe(assetStrictMatch.id);
     });
 
-    it('strictPersonSearch is TRUE with 4 people', async () => {
+    it('searchOnlyThem is TRUE with 4 people', async () => {
       const { status, body } = await request(app)
         .post('/search/metadata')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           personIds: [personA.id, personB.id, personC.id, personD.id],
-          strictPersonSearch: true,
+          searchOnlyThem: true,
         });
 
       expect(status).toBe(200);
       expect(body.assets.items).toHaveLength(0);
     });
 
-    it('strictPersonSearch is TRUE with one person', async () => {
+    it('searchOnlyThem is TRUE with one person', async () => {
       const { status, body } = await request(app)
         .post('/search/metadata')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           personIds: [personA.id],
-          strictPersonSearch: true,
+          searchOnlyThem: true,
         });
 
       expect(status).toBe(200);
       expect(body.assets.items).toHaveLength(0);
     });
 
-    it('strictPersonSearch is TRUE with no personIds', async () => {
+    it('searchOnlyThem is TRUE with no personIds', async () => {
       const { status, body } = await request(app)
         .post('/search/metadata')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           personIds: [],
-          strictPersonSearch: true,
+          searchOnlyThem: true,
         });
 
       expect(status).toBe(200);
       expect(body.assets.items).toHaveLength(numberOfAssets);
     });
 
-    it('strictPersonSearch is FALSE', async () => {
+    it('searchOnlyThem is FALSE', async () => {
       const { status, body } = await request(app)
         .post('/search/metadata')
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({
           personIds: [personA.id, personB.id],
-          strictPersonSearch: false,
+          searchOnlyThem: false,
         });
 
       expect(status).toBe(200);

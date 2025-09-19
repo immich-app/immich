@@ -77,9 +77,9 @@
     query,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
-    strictSearch:
-      'strictPersonSearch' in searchQuery && typeof searchQuery.strictPersonSearch === 'boolean'
-        ? searchQuery.strictPersonSearch
+    searchOnlyThem:
+      'searchOnlyThem' in searchQuery && typeof searchQuery.searchOnlyThem === 'boolean'
+        ? searchQuery.searchOnlyThem
         : false,
     tagIds:
       'tagIds' in searchQuery
@@ -119,7 +119,7 @@
       query: '',
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
-      strictSearch: false,
+      searchOnlyThem: false,
       tagIds: new SvelteSet(),
       location: {},
       camera: {},
@@ -159,7 +159,7 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
-      strictPersonSearch: filter.strictSearch === true ? true : undefined,
+      searchOnlyThem: filter.searchOnlyThem === true ? true : undefined,
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
@@ -190,7 +190,7 @@
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
       <div class="flex flex-col gap-4 pb-10" tabindex="-1">
         <!-- PEOPLE -->
-        <SearchPeopleSection bind:selectedPeople={filter.personIds} bind:strictPersonSearch={filter.strictSearch} />
+        <SearchPeopleSection bind:selectedPeople={filter.personIds} bind:searchOnlyThem={filter.searchOnlyThem} />
 
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />

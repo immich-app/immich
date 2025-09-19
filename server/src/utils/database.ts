@@ -219,9 +219,9 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'asset'>, withDelet
 export function hasPeople<O>(
   qb: SelectQueryBuilder<DB, 'asset', O>,
   personIds: string[],
-  strictSearch: boolean = false,
+  searchOnlyThem: boolean = false,
 ) {
-  if (!strictSearch) {
+  if (!searchOnlyThem) {
     return qb.innerJoin(
       (eb) =>
         eb
@@ -337,7 +337,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetsId', '=', 'asset.id')))),
     )
     .$if(!!options.personIds && options.personIds.length > 0, (qb) =>
-      hasPeople(qb, options.personIds!, options.strictPersonSearch),
+      hasPeople(qb, options.personIds!, options.searchOnlyThem),
     )
     .$if(!!options.createdBefore, (qb) => qb.where('asset.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('asset.createdAt', '>=', options.createdAfter!))
