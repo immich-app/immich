@@ -1,7 +1,6 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
@@ -11,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
@@ -199,14 +199,11 @@ class ActionService {
   }
 
   Future<int> removeFromAlbum(List<String> remoteIds, String albumId) async {
-    int removedCount = 0;
     final result = await _albumApiRepository.removeAssets(albumId, remoteIds);
-
     if (result.removed.isNotEmpty) {
-      removedCount = await _remoteAlbumRepository.removeAssets(albumId, result.removed);
+      await _remoteAlbumRepository.removeAssets(albumId, result.removed);
     }
-
-    return removedCount;
+    return result.removed.length;
   }
 
   Future<bool> updateDescription(String assetId, String description) async {
