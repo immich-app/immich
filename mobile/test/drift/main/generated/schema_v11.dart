@@ -2765,8 +2765,18 @@ class LocalAlbumAssetEntity extends Table
       'REFERENCES local_album_entity (id) ON DELETE CASCADE',
     ),
   );
+  late final GeneratedColumn<bool> marker_ = GeneratedColumn<bool>(
+    'marker',
+    aliasedName,
+    true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("marker" IN (0, 1))',
+    ),
+  );
   @override
-  List<GeneratedColumn> get $columns => [assetId, albumId];
+  List<GeneratedColumn> get $columns => [assetId, albumId, marker_];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2789,6 +2799,10 @@ class LocalAlbumAssetEntity extends Table
         DriftSqlType.string,
         data['${effectivePrefix}album_id'],
       )!,
+      marker_: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}marker'],
+      ),
     );
   }
 
@@ -2807,15 +2821,20 @@ class LocalAlbumAssetEntityData extends DataClass
     implements Insertable<LocalAlbumAssetEntityData> {
   final String assetId;
   final String albumId;
+  final bool? marker_;
   const LocalAlbumAssetEntityData({
     required this.assetId,
     required this.albumId,
+    this.marker_,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['asset_id'] = Variable<String>(assetId);
     map['album_id'] = Variable<String>(albumId);
+    if (!nullToAbsent || marker_ != null) {
+      map['marker'] = Variable<bool>(marker_);
+    }
     return map;
   }
 
@@ -2827,6 +2846,7 @@ class LocalAlbumAssetEntityData extends DataClass
     return LocalAlbumAssetEntityData(
       assetId: serializer.fromJson<String>(json['assetId']),
       albumId: serializer.fromJson<String>(json['albumId']),
+      marker_: serializer.fromJson<bool?>(json['marker_']),
     );
   }
   @override
@@ -2835,20 +2855,26 @@ class LocalAlbumAssetEntityData extends DataClass
     return <String, dynamic>{
       'assetId': serializer.toJson<String>(assetId),
       'albumId': serializer.toJson<String>(albumId),
+      'marker_': serializer.toJson<bool?>(marker_),
     };
   }
 
-  LocalAlbumAssetEntityData copyWith({String? assetId, String? albumId}) =>
-      LocalAlbumAssetEntityData(
-        assetId: assetId ?? this.assetId,
-        albumId: albumId ?? this.albumId,
-      );
+  LocalAlbumAssetEntityData copyWith({
+    String? assetId,
+    String? albumId,
+    Value<bool?> marker_ = const Value.absent(),
+  }) => LocalAlbumAssetEntityData(
+    assetId: assetId ?? this.assetId,
+    albumId: albumId ?? this.albumId,
+    marker_: marker_.present ? marker_.value : this.marker_,
+  );
   LocalAlbumAssetEntityData copyWithCompanion(
     LocalAlbumAssetEntityCompanion data,
   ) {
     return LocalAlbumAssetEntityData(
       assetId: data.assetId.present ? data.assetId.value : this.assetId,
       albumId: data.albumId.present ? data.albumId.value : this.albumId,
+      marker_: data.marker_.present ? data.marker_.value : this.marker_,
     );
   }
 
@@ -2856,51 +2882,60 @@ class LocalAlbumAssetEntityData extends DataClass
   String toString() {
     return (StringBuffer('LocalAlbumAssetEntityData(')
           ..write('assetId: $assetId, ')
-          ..write('albumId: $albumId')
+          ..write('albumId: $albumId, ')
+          ..write('marker_: $marker_')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(assetId, albumId);
+  int get hashCode => Object.hash(assetId, albumId, marker_);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is LocalAlbumAssetEntityData &&
           other.assetId == this.assetId &&
-          other.albumId == this.albumId);
+          other.albumId == this.albumId &&
+          other.marker_ == this.marker_);
 }
 
 class LocalAlbumAssetEntityCompanion
     extends UpdateCompanion<LocalAlbumAssetEntityData> {
   final Value<String> assetId;
   final Value<String> albumId;
+  final Value<bool?> marker_;
   const LocalAlbumAssetEntityCompanion({
     this.assetId = const Value.absent(),
     this.albumId = const Value.absent(),
+    this.marker_ = const Value.absent(),
   });
   LocalAlbumAssetEntityCompanion.insert({
     required String assetId,
     required String albumId,
+    this.marker_ = const Value.absent(),
   }) : assetId = Value(assetId),
        albumId = Value(albumId);
   static Insertable<LocalAlbumAssetEntityData> custom({
     Expression<String>? assetId,
     Expression<String>? albumId,
+    Expression<bool>? marker_,
   }) {
     return RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (albumId != null) 'album_id': albumId,
+      if (marker_ != null) 'marker': marker_,
     });
   }
 
   LocalAlbumAssetEntityCompanion copyWith({
     Value<String>? assetId,
     Value<String>? albumId,
+    Value<bool?>? marker_,
   }) {
     return LocalAlbumAssetEntityCompanion(
       assetId: assetId ?? this.assetId,
       albumId: albumId ?? this.albumId,
+      marker_: marker_ ?? this.marker_,
     );
   }
 
@@ -2913,6 +2948,9 @@ class LocalAlbumAssetEntityCompanion
     if (albumId.present) {
       map['album_id'] = Variable<String>(albumId.value);
     }
+    if (marker_.present) {
+      map['marker'] = Variable<bool>(marker_.value);
+    }
     return map;
   }
 
@@ -2920,7 +2958,8 @@ class LocalAlbumAssetEntityCompanion
   String toString() {
     return (StringBuffer('LocalAlbumAssetEntityCompanion(')
           ..write('assetId: $assetId, ')
-          ..write('albumId: $albumId')
+          ..write('albumId: $albumId, ')
+          ..write('marker_: $marker_')
           ..write(')'))
         .toString();
   }
@@ -7074,407 +7113,6 @@ class StoreEntityCompanion extends UpdateCompanion<StoreEntityData> {
   }
 }
 
-class TrashedLocalAssetEntity extends Table
-    with TableInfo<TrashedLocalAssetEntity, TrashedLocalAssetEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  TrashedLocalAssetEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> albumId = GeneratedColumn<String>(
-    'album_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<int> type = GeneratedColumn<int>(
-    'type',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
-  );
-  late final GeneratedColumn<int> size = GeneratedColumn<int>(
-    'size',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    albumId,
-    checksum,
-    name,
-    type,
-    createdAt,
-    updatedAt,
-    size,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'trashed_local_asset_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  TrashedLocalAssetEntityData map(
-    Map<String, dynamic> data, {
-    String? tablePrefix,
-  }) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TrashedLocalAssetEntityData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      albumId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}album_id'],
-      )!,
-      checksum: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
-      ),
-      name: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}name'],
-      )!,
-      type: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}type'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      size: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}size'],
-      ),
-    );
-  }
-
-  @override
-  TrashedLocalAssetEntity createAlias(String alias) {
-    return TrashedLocalAssetEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-}
-
-class TrashedLocalAssetEntityData extends DataClass
-    implements Insertable<TrashedLocalAssetEntityData> {
-  final String id;
-  final String albumId;
-  final String? checksum;
-  final String name;
-  final int type;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final int? size;
-  const TrashedLocalAssetEntityData({
-    required this.id,
-    required this.albumId,
-    this.checksum,
-    required this.name,
-    required this.type,
-    required this.createdAt,
-    required this.updatedAt,
-    this.size,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['album_id'] = Variable<String>(albumId);
-    if (!nullToAbsent || checksum != null) {
-      map['checksum'] = Variable<String>(checksum);
-    }
-    map['name'] = Variable<String>(name);
-    map['type'] = Variable<int>(type);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['updated_at'] = Variable<DateTime>(updatedAt);
-    if (!nullToAbsent || size != null) {
-      map['size'] = Variable<int>(size);
-    }
-    return map;
-  }
-
-  factory TrashedLocalAssetEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TrashedLocalAssetEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      albumId: serializer.fromJson<String>(json['albumId']),
-      checksum: serializer.fromJson<String?>(json['checksum']),
-      name: serializer.fromJson<String>(json['name']),
-      type: serializer.fromJson<int>(json['type']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      size: serializer.fromJson<int?>(json['size']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'albumId': serializer.toJson<String>(albumId),
-      'checksum': serializer.toJson<String?>(checksum),
-      'name': serializer.toJson<String>(name),
-      'type': serializer.toJson<int>(type),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'size': serializer.toJson<int?>(size),
-    };
-  }
-
-  TrashedLocalAssetEntityData copyWith({
-    String? id,
-    String? albumId,
-    Value<String?> checksum = const Value.absent(),
-    String? name,
-    int? type,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    Value<int?> size = const Value.absent(),
-  }) => TrashedLocalAssetEntityData(
-    id: id ?? this.id,
-    albumId: albumId ?? this.albumId,
-    checksum: checksum.present ? checksum.value : this.checksum,
-    name: name ?? this.name,
-    type: type ?? this.type,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    size: size.present ? size.value : this.size,
-  );
-  TrashedLocalAssetEntityData copyWithCompanion(
-    TrashedLocalAssetEntityCompanion data,
-  ) {
-    return TrashedLocalAssetEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      albumId: data.albumId.present ? data.albumId.value : this.albumId,
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      name: data.name.present ? data.name.value : this.name,
-      type: data.type.present ? data.type.value : this.type,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      size: data.size.present ? data.size.value : this.size,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashedLocalAssetEntityData(')
-          ..write('id: $id, ')
-          ..write('albumId: $albumId, ')
-          ..write('checksum: $checksum, ')
-          ..write('name: $name, ')
-          ..write('type: $type, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('size: $size')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    albumId,
-    checksum,
-    name,
-    type,
-    createdAt,
-    updatedAt,
-    size,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is TrashedLocalAssetEntityData &&
-          other.id == this.id &&
-          other.albumId == this.albumId &&
-          other.checksum == this.checksum &&
-          other.name == this.name &&
-          other.type == this.type &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt &&
-          other.size == this.size);
-}
-
-class TrashedLocalAssetEntityCompanion
-    extends UpdateCompanion<TrashedLocalAssetEntityData> {
-  final Value<String> id;
-  final Value<String> albumId;
-  final Value<String?> checksum;
-  final Value<String> name;
-  final Value<int> type;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<int?> size;
-  const TrashedLocalAssetEntityCompanion({
-    this.id = const Value.absent(),
-    this.albumId = const Value.absent(),
-    this.checksum = const Value.absent(),
-    this.name = const Value.absent(),
-    this.type = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.size = const Value.absent(),
-  });
-  TrashedLocalAssetEntityCompanion.insert({
-    required String id,
-    required String albumId,
-    this.checksum = const Value.absent(),
-    required String name,
-    required int type,
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.size = const Value.absent(),
-  }) : id = Value(id),
-       albumId = Value(albumId),
-       name = Value(name),
-       type = Value(type);
-  static Insertable<TrashedLocalAssetEntityData> custom({
-    Expression<String>? id,
-    Expression<String>? albumId,
-    Expression<String>? checksum,
-    Expression<String>? name,
-    Expression<int>? type,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<int>? size,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (albumId != null) 'album_id': albumId,
-      if (checksum != null) 'checksum': checksum,
-      if (name != null) 'name': name,
-      if (type != null) 'type': type,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (size != null) 'size': size,
-    });
-  }
-
-  TrashedLocalAssetEntityCompanion copyWith({
-    Value<String>? id,
-    Value<String>? albumId,
-    Value<String?>? checksum,
-    Value<String>? name,
-    Value<int>? type,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<int?>? size,
-  }) {
-    return TrashedLocalAssetEntityCompanion(
-      id: id ?? this.id,
-      albumId: albumId ?? this.albumId,
-      checksum: checksum ?? this.checksum,
-      name: name ?? this.name,
-      type: type ?? this.type,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      size: size ?? this.size,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (albumId.present) {
-      map['album_id'] = Variable<String>(albumId.value);
-    }
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
-    }
-    if (name.present) {
-      map['name'] = Variable<String>(name.value);
-    }
-    if (type.present) {
-      map['type'] = Variable<int>(type.value);
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (size.present) {
-      map['size'] = Variable<int>(size.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashedLocalAssetEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('albumId: $albumId, ')
-          ..write('checksum: $checksum, ')
-          ..write('name: $name, ')
-          ..write('type: $type, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
-          ..write('size: $size')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class DatabaseAtV11 extends GeneratedDatabase {
   DatabaseAtV11(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
@@ -7518,15 +7156,9 @@ class DatabaseAtV11 extends GeneratedDatabase {
   late final PersonEntity personEntity = PersonEntity(this);
   late final AssetFaceEntity assetFaceEntity = AssetFaceEntity(this);
   late final StoreEntity storeEntity = StoreEntity(this);
-  late final TrashedLocalAssetEntity trashedLocalAssetEntity =
-      TrashedLocalAssetEntity(this);
   late final Index idxLatLng = Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
-  );
-  late final Index idxTrashedLocalAssetChecksum = Index(
-    'idx_trashed_local_asset_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)',
   );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
@@ -7556,9 +7188,7 @@ class DatabaseAtV11 extends GeneratedDatabase {
     personEntity,
     assetFaceEntity,
     storeEntity,
-    trashedLocalAssetEntity,
     idxLatLng,
-    idxTrashedLocalAssetChecksum,
   ];
   @override
   int get schemaVersion => 11;

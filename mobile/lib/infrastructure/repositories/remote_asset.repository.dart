@@ -161,7 +161,11 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<void> delete(List<String> ids) {
-    return _db.remoteAssetEntity.deleteWhere((row) => row.id.isIn(ids));
+    return _db.batch((batch) {
+      for (final id in ids) {
+        batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(id));
+      }
+    });
   }
 
   Future<void> updateLocation(List<String> ids, LatLng location) {
@@ -200,7 +204,11 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
           .map((row) => row.id)
           .get();
 
-      await _db.stackEntity.deleteWhere((row) => row.id.isIn(stackIds));
+      await _db.batch((batch) {
+        for (final stackId in stackIds) {
+          batch.deleteWhere(_db.stackEntity, (row) => row.id.equals(stackId));
+        }
+      });
 
       await _db.batch((batch) {
         final companion = StackEntityCompanion(ownerId: Value(userId), primaryAssetId: Value(stack.primaryAssetId));
@@ -220,15 +228,21 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
 
   Future<void> unStack(List<String> stackIds) {
     return _db.transaction(() async {
-      await _db.stackEntity.deleteWhere((row) => row.id.isIn(stackIds));
+      await _db.batch((batch) {
+        for (final stackId in stackIds) {
+          batch.deleteWhere(_db.stackEntity, (row) => row.id.equals(stackId));
+        }
+      });
 
       // TODO: delete this after adding foreign key on stackId
       await _db.batch((batch) {
-        batch.update(
-          _db.remoteAssetEntity,
-          const RemoteAssetEntityCompanion(stackId: Value(null)),
-          where: (e) => e.stackId.isIn(stackIds),
-        );
+        for (final stackId in stackIds) {
+          batch.update(
+            _db.remoteAssetEntity,
+            const RemoteAssetEntityCompanion(stackId: Value(null)),
+            where: (e) => e.stackId.equals(stackId),
+          );
+        }
       });
     });
   }

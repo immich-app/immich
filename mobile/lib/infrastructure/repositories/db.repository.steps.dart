@@ -4298,9 +4298,7 @@ final class Schema11 extends i0.VersionedSchema {
     personEntity,
     assetFaceEntity,
     storeEntity,
-    trashedLocalAssetEntity,
     idxLatLng,
-    idxTrashedLocalAssetChecksum,
   ];
   late final Shape20 userEntity = Shape20(
     source: i0.VersionedTable(
@@ -4424,13 +4422,13 @@ final class Schema11 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape7 localAlbumAssetEntity = Shape7(
+  late final Shape22 localAlbumAssetEntity = Shape22(
     source: i0.VersionedTable(
       entityName: 'local_album_asset_entity',
       withoutRowId: true,
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(asset_id, album_id)'],
-      columns: [_column_34, _column_35],
+      columns: [_column_34, _column_35, _column_33],
       attachedDatabase: database,
     ),
     alias: null,
@@ -4645,70 +4643,22 @@ final class Schema11 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape22 trashedLocalAssetEntity = Shape22(
-    source: i0.VersionedTable(
-      entityName: 'trashed_local_asset_entity',
-      withoutRowId: true,
-      isStrict: true,
-      tableConstraints: ['PRIMARY KEY(id)'],
-      columns: [
-        _column_0,
-        _column_95,
-        _column_22,
-        _column_1,
-        _column_8,
-        _column_9,
-        _column_5,
-        _column_96,
-      ],
-      attachedDatabase: database,
-    ),
-    alias: null,
-  );
   final i1.Index idxLatLng = i1.Index(
     'idx_lat_lng',
     'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
-  );
-  final i1.Index idxTrashedLocalAssetChecksum = i1.Index(
-    'idx_trashed_local_asset_checksum',
-    'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)',
   );
 }
 
 class Shape22 extends i0.VersionedTable {
   Shape22({required super.source, required super.alias}) : super.aliased();
-  i1.GeneratedColumn<String> get id =>
-      columnsByName['id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get assetId =>
+      columnsByName['asset_id']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get albumId =>
       columnsByName['album_id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get checksum =>
-      columnsByName['checksum']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get name =>
-      columnsByName['name']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<int> get type =>
-      columnsByName['type']! as i1.GeneratedColumn<int>;
-  i1.GeneratedColumn<DateTime> get createdAt =>
-      columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
-  i1.GeneratedColumn<DateTime> get updatedAt =>
-      columnsByName['updated_at']! as i1.GeneratedColumn<DateTime>;
-  i1.GeneratedColumn<int> get size =>
-      columnsByName['size']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<bool> get marker_ =>
+      columnsByName['marker']! as i1.GeneratedColumn<bool>;
 }
 
-i1.GeneratedColumn<String> _column_95(String aliasedName) =>
-    i1.GeneratedColumn<String>(
-      'album_id',
-      aliasedName,
-      false,
-      type: i1.DriftSqlType.string,
-    );
-i1.GeneratedColumn<int> _column_96(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'size',
-      aliasedName,
-      true,
-      type: i1.DriftSqlType.int,
-    );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,
   required Future<void> Function(i1.Migrator m, Schema3 schema) from2To3,
