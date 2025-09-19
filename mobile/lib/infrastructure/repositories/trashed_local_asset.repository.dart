@@ -99,18 +99,17 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     if (trashUpdates.isEmpty) {
       return;
     }
-    final companions = trashUpdates
-        .map(
-          (a) => TrashedLocalAssetEntityCompanion.insert(
-            id: a.id,
-            albumId: a.albumId,
-            name: a.name,
-            type: a.type,
-            checksum: a.checksum == null ? const Value.absent() : Value(a.checksum),
-            size: a.size == null ? const Value.absent() : Value(a.size),
-            createdAt: Value(a.createdAt),
-          ),
-        );
+    final companions = trashUpdates.map(
+      (a) => TrashedLocalAssetEntityCompanion.insert(
+        id: a.id,
+        albumId: a.albumId,
+        name: a.name,
+        type: a.type,
+        checksum: a.checksum == null ? const Value.absent() : Value(a.checksum),
+        size: a.size == null ? const Value.absent() : Value(a.size),
+        createdAt: Value(a.createdAt),
+      ),
+    );
 
     for (final slice in companions.slices(200)) {
       await _db.batch((b) {
