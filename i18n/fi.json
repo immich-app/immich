@@ -1310,7 +1310,7 @@
   "menu": "Valikko",
   "merge": "Yhdistä",
   "merge_people": "Yhdistä henkilöt",
-  "merge_people_limit": "Voit yhdistää vain enintään 5 kasvoa kerrallaan",
+  "merge_people_limit": "Voit yhdistää vain enintään 500 kasvoa kerrallaan",
   "merge_people_prompt": "Haluatko yhdistää nämä henkilöt? Tätä valintaa ei voi peruuttaa.",
   "merge_people_successfully": "Henkilöt yhdistetty",
   "merged_people_count": "{count, plural, one {# Henkilö} other {# henkilöä}} yhdistetty",

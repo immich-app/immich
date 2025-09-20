@@ -1306,7 +1306,7 @@
   "menu": "Izbornik",
   "merge": "Spoji",
   "merge_people": "Spajanje ljudi",
-  "merge_people_limit": "Možete spojiti najviše 5 lica odjednom",
+  "merge_people_limit": "Možete spojiti najviše 500 lica odjednom",
   "merge_people_prompt": "Želite li spojiti ove ljude? Ova radnja je nepovratna.",
   "merge_people_successfully": "Uspješno spajanje ljudi",
   "merged_people_count": "{count, plural, one {# Spojena osoba} other {# Spojene osobe}}",

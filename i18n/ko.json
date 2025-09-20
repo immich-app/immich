@@ -1311,7 +1311,7 @@
   "menu": "메뉴",
   "merge": "병합",
   "merge_people": "인물 병합",
-  "merge_people_limit": "한 번에 최대 5명까지 합칠 수 있습니다.",
+  "merge_people_limit": "한 번에 최대 500명까지 합칠 수 있습니다.",
   "merge_people_prompt": "인물들을 병합하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
   "merge_people_successfully": "선택한 인물을 합쳤습니다.",
   "merged_people_count": "인물 {count, plural, one {#명} other {#명}}을 합쳤습니다.",

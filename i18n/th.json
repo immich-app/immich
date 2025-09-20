@@ -1225,7 +1225,7 @@
   "menu": "เมนู",
   "merge": "รวม",
   "merge_people": "รวมผู้คน",
-  "merge_people_limit": "คุณรวมใบหน้าได้มากถึง 5 รูปต่อครั้ง",
+  "merge_people_limit": "คุณรวมใบหน้าได้มากถึง 500 รูปต่อครั้ง",
   "merge_people_prompt": "คุณต้องการรวมคนพวกนี้หรือไม่ การกระทำนี้ไม่สามารถย้อนกลับได้",
   "merge_people_successfully": "รวมผู้คนเรียบร้อยแล้ว",
   "merged_people_count": "{count, plural, one {# person} other {# people}} ถูกรวมเข้าด้วยกัน",

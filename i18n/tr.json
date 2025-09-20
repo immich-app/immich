@@ -1313,7 +1313,7 @@
   "menu": "Menü",
   "merge": "Birleştir",
   "merge_people": "Kişileri birleştir",
-  "merge_people_limit": "Aynı anda 5 yüzü birleştirebilirsiniz",
+  "merge_people_limit": "Aynı anda 500 yüzü birleştirebilirsiniz",
   "merge_people_prompt": "Bu kişileri birleştirmek istiyor musunuz? Bu işlem geri alınamaz.",
   "merge_people_successfully": "Kişiler başarılı bir şekilde birleştirildi",
   "merged_people_count": "{count, plural, one {# kişi} other {# kişi}} birleştirildi",
