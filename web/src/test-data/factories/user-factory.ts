@@ -17,6 +17,14 @@ export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
   name: Sync.each(() => faker.person.fullName()),
   profileImagePath: '',
   avatarColor: UserAvatarColor.Primary,
+  mobileDevices: [
+    {
+      deviceType: 'SM-S938B',
+      deviceOS: 'Android',
+      appVersion: '1.139.4',
+      lastSeen: '2025-08-28T01:57:37.170Z',
+    },
+  ],
   isAdmin: true,
   createdAt: Sync.each(() => faker.date.recent().toISOString()),
   updatedAt: Sync.each(() => faker.date.recent().toISOString()),
