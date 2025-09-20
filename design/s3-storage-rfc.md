@@ -1,6 +1,6 @@
 # RFC: S3 Storage Backend for Immich
 
-Author: Codex Agent
+Author: Eugene Narciso (along with Codex Agent)
 Date: 2025-09-16
 Status: Draft
 
