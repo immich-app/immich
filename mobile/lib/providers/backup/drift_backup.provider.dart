@@ -320,18 +320,13 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   Future<void> getBackupStatus(String userId) async {
-    final [totalCount, backupCount, remainderCount, processingCount] = await Future.wait([
-      _uploadService.getBackupTotalCount(),
-      _uploadService.getBackupFinishedCount(userId),
-      _uploadService.getBackupRemainderCount(userId),
-      _uploadService.getBackupProcessingCount(),
-    ]);
+    final counts = await _uploadService.getBackupCounts(userId);
 
     state = state.copyWith(
-      totalCount: totalCount,
-      backupCount: backupCount,
-      remainderCount: remainderCount,
-      processingCount: processingCount,
+      totalCount: counts.total,
+      backupCount: counts.backup,
+      remainderCount: counts.total - counts.backup,
+      processingCount: counts.processing,
     );
   }
 
