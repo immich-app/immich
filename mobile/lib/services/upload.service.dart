@@ -89,7 +89,7 @@ class UploadService {
     return _uploadRepository.getActiveTasks(group);
   }
 
-  Future<({int total, int backup, int remainder, int processing})> getBackupCounts(String userId) {
+  Future<({int total, int remainder, int processing})> getBackupCounts(String userId) {
     return _backupRepository.getAllCounts(userId);
   }
 

@@ -36,39 +36,38 @@ class DriftBackupRepository extends DriftDatabaseRepository {
   /// - remainder: number of those assets that do not yet exist on the server for [userId]
   ///              (includes processing)
   /// - processing: number of those assets that are still preparing/have a null checksum
-  Future<({int total, int backup, int remainder, int processing})> getAllCounts(String userId) async {
+  Future<({int total, int remainder, int processing})> getAllCounts(String userId) async {
     const sql = '''
-      WITH base AS (
-          SELECT DISTINCT laa.asset_id, lae.checksum
-          FROM local_album_asset_entity laa
-          INNER JOIN local_album_entity la ON laa.album_id = la.id
-          INNER JOIN local_asset_entity lae ON laa.asset_id = lae.id
-          LEFT JOIN (
-              SELECT DISTINCT laa2.asset_id
-              FROM local_album_asset_entity laa2
-              INNER JOIN local_album_entity la2 ON laa2.album_id = la2.id
-              WHERE la2.backup_selection = ?1
-          ) excluded ON laa.asset_id = excluded.asset_id
-          WHERE la.backup_selection = ?2
-            AND excluded.asset_id IS NULL
-      )
-            SELECT
-              COUNT(*) AS total_count,
-              SUM(CASE WHEN base.checksum IS NULL THEN 1 ELSE 0 END) AS processing_count,
-              SUM(CASE WHEN rae.id IS NULL THEN 1 ELSE 0 END) AS remainder_count,
-              SUM(CASE WHEN rae.id IS NOT NULL THEN 1 ELSE 0 END) AS backup_count
-            FROM base
-            LEFT JOIN remote_asset_entity rae
-              ON rae.checksum = base.checksum AND rae.owner_id = ?3
+        SELECT
+        COUNT(*) AS total_count,
+        COUNT(*) FILTER (WHERE lae.checksum IS NULL) AS processing_count,
+        COUNT(*) FILTER (WHERE rae.id IS NULL) AS remainder_count
+        FROM local_asset_entity lae
+        LEFT JOIN main.remote_asset_entity rae
+            ON lae.checksum = rae.checksum AND rae.owner_id = ?1
+        WHERE EXISTS (
+            SELECT 1
+            FROM local_album_asset_entity laa
+            INNER JOIN main.local_album_entity la on laa.album_id = la.id
+            WHERE laa.asset_id = lae.id
+                AND la.backup_selection = ?2
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM local_album_asset_entity laa
+            INNER JOIN main.local_album_entity la on laa.album_id = la.id
+            WHERE laa.asset_id = lae.id
+                AND la.backup_selection = ?3
+        );
       ''';
 
     final row = await _db
         .customSelect(
           sql,
           variables: [
-            Variable.withInt(BackupSelection.excluded.index),
-            Variable.withInt(BackupSelection.selected.index),
             Variable.withString(userId),
+            Variable.withInt(BackupSelection.selected.index),
+            Variable.withInt(BackupSelection.excluded.index),
           ],
           readsFrom: {_db.localAlbumAssetEntity, _db.localAlbumEntity, _db.localAssetEntity, _db.remoteAssetEntity},
         )
@@ -77,7 +76,6 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     final data = row.data;
     return (
       total: (data['total_count'] as int?) ?? 0,
-      backup: (data['backup_count'] as int?) ?? 0,
       remainder: (data['remainder_count'] as int?) ?? 0,
       processing: (data['processing_count'] as int?) ?? 0,
     );

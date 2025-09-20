@@ -324,8 +324,8 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     state = state.copyWith(
       totalCount: counts.total,
-      backupCount: counts.backup,
-      remainderCount: counts.total - counts.backup,
+      backupCount: counts.total - counts.remainder,
+      remainderCount: counts.remainder,
       processingCount: counts.processing,
     );
   }
