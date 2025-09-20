@@ -625,7 +625,21 @@ const urlToBlob = async (imageSource: string) => {
   return await response.blob();
 };
 
-export const copyImageToClipboard = async (source: HTMLImageElement | string) => {
-  const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
+export const copyImageToClipboard = async (
+  source: HTMLImageElement | string,
+): Promise<{ success: true } | { success: false; mimeType: string }> => {
+  if (source instanceof HTMLImageElement) {
+    // do not await, so the Safari clipboard write happens in the context of the user gesture
+    await navigator.clipboard.write([new ClipboardItem({ ['image/png']: imgToBlob(source) })]);
+    return { success: true };
+  }
+
+  // if we had a way to get the mime type synchronously, we could do the same thing here
+  const blob = await urlToBlob(source);
+  if (!ClipboardItem.supports(blob.type)) {
+    return { success: false, mimeType: blob.type };
+  }
+
   await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+  return { success: true };
 };
