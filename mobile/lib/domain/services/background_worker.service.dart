@@ -43,6 +43,17 @@ class BackgroundWorkerFgService {
   // TODO: Move this call to native side once old timeline is removed
   Future<void> enable() => _foregroundHostApi.enable();
 
+  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
+    BackgroundWorkerSettings(
+      minimumDelaySeconds:
+          minimumDelaySeconds ??
+          Store.get(AppSettingsEnum.backupTriggerDelay.storeKey, AppSettingsEnum.backupTriggerDelay.defaultValue),
+      requiresCharging:
+          requireCharging ??
+          Store.get(AppSettingsEnum.backupRequireCharging.storeKey, AppSettingsEnum.backupRequireCharging.defaultValue),
+    ),
+  );
+
   Future<void> disable() => _foregroundHostApi.disable();
 }
 
@@ -173,6 +184,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
     try {
       final backgroundSyncManager = _ref.read(backgroundSyncProvider);
+      final nativeSyncApi = _ref.read(nativeSyncApiProvider);
       _isCleanedUp = true;
       _ref.dispose();
 
@@ -188,7 +200,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _drift.close(),
         _driftLogger.close(),
         backgroundSyncManager.cancel(),
-        backgroundSyncManager.cancelLocal(),
+        nativeSyncApi.cancelHashing(),
       ];
 
       if (_isar.isOpen) {

@@ -1,7 +1,7 @@
 [tools]
 node = "22.19.0"
-flutter = "3.32.8"
-pnpm = "10.14.0"
+flutter = "3.35.4"
+pnpm = "10.15.1"
 dart = "3.8.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
@@ -11,7 +11,6 @@ postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
 
 [settings]
 experimental = true
-lockfile = true
 pin = true
 
 # .github
@@ -300,7 +299,7 @@ run = "tsc --noEmit"
 depends = "web:svelte-kit-sync"
 env._.path = "web/node_modules/.bin"
 dir = "web"
-run = "svelte-check --no-tsconfig --fail-on-warnings --compiler-warnings 'reactive_declaration_non_reactive_property:ignore' --ignore src/lib/components/photos-page/asset-grid.svelte"
+run = "svelte-check --no-tsconfig --fail-on-warnings"
 
 [tasks."web:checklist"]
 run = [

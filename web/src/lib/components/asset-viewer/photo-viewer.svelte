@@ -20,11 +20,11 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
   import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
@@ -97,12 +97,15 @@
     }
 
     try {
-      await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('copied_image_to_clipboard'),
-        timeout: 3000,
-      });
+      const result = await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
+      if (result.success) {
+        notificationController.show({ type: NotificationType.Info, message: $t('copied_image_to_clipboard') });
+      } else {
+        notificationController.show({
+          type: NotificationType.Error,
+          message: $t('errors.clipboard_unsupported_mime_type', { values: { mimeType: result.mimeType } }),
+        });
+      }
     } catch (error) {
       handleError(error, $t('copy_error'));
     }
@@ -240,7 +243,7 @@
       use:zoomImageAction
       use:swipe={() => ({})}
       onswipe={onSwipe}
-      class="h-full w-full"
+      class="h-full w-full flex"
       transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
     >
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
@@ -255,7 +258,7 @@
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-full w-full {$slideshowState === SlideshowState.None
+        class="max-h-full max-w-full h-auto w-auto mx-auto my-auto {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"

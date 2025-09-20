@@ -12277,6 +12277,25 @@
         ],
         "type": "object"
       },
+      "MachineLearningAvailabilityChecksDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "interval": {
+            "type": "number"
+          },
+          "timeout": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "timeout"
+        ],
+        "type": "object"
+      },
       "ManualJobName": {
         "enum": [
           "person-cleanup",
@@ -16413,6 +16432,9 @@
       },
       "SystemConfigMachineLearningDto": {
         "properties": {
+          "availabilityChecks": {
+            "$ref": "#/components/schemas/MachineLearningAvailabilityChecksDto"
+          },
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
@@ -16425,11 +16447,6 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
-          "url": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.122.0",
-            "type": "string"
-          },
           "urls": {
             "format": "uri",
             "items": {
@@ -16441,6 +16458,7 @@
           }
         },
         "required": [
+          "availabilityChecks",
           "clip",
           "duplicateDetection",
           "enabled",
