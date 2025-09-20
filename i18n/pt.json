@@ -387,8 +387,6 @@
   "admin_password": "Palavra-passe do administrador",
   "administration": "Administração",
   "advanced": "Avançado",
-  "advanced_settings_beta_timeline_subtitle": "Experimente as novas funcionalidades da aplicação",
-  "advanced_settings_beta_timeline_title": "Linha temporal da versão Beta",
   "advanced_settings_enable_alternate_media_filter_subtitle": "Utilize esta definição para filtrar ficheiros durante a sincronização baseada em critérios alternativos. Utilize apenas se a aplicação estiver com problemas a detetar todos os álbuns.",
   "advanced_settings_enable_alternate_media_filter_title": "[EXPERIMENTAL] Utilizar um filtro alternativo de sincronização de álbuns em dispositivos",
   "advanced_settings_log_level_title": "Nível de registo: {level}",
