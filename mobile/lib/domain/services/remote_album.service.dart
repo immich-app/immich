@@ -160,6 +160,10 @@ class RemoteAlbumService {
     return _repository.getCount();
   }
 
+  Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) {
+    return _repository.getAlbumsContainingAsset(assetId);
+  }
+
   Future<List<RemoteAlbum>> _sortByNewestAsset(List<RemoteAlbum> albums) async {
     // map album IDs to their newest asset dates
     final Map<String, Future<DateTime?>> assetTimestampFutures = {};
