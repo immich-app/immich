@@ -31,7 +31,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
   Future<int> getTotalCount() async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..addColumns([_db.localAlbumAssetEntity.assetId.count(distinct: true)])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
@@ -44,12 +44,12 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
-    return query.get().then((rows) => rows.length);
+    return query.getSingle().then((row) => row.read(_db.localAlbumAssetEntity.assetId.count(distinct: true)) ?? 0);
   }
 
   Future<int> getRemainderCount(String userId) async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..addColumns([_db.localAlbumAssetEntity.assetId.count(distinct: true)])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
@@ -74,12 +74,12 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
-    return query.get().then((rows) => rows.length);
+    return query.getSingle().then((row) => row.read(_db.localAlbumAssetEntity.assetId.count(distinct: true)) ?? 0);
   }
 
   Future<int> getBackupCount(String userId) async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..addColumns([_db.localAlbumAssetEntity.assetId.count(distinct: true)])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
@@ -104,12 +104,12 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
-    return query.get().then((rows) => rows.length);
+    return query.getSingle().then((row) => row.read(_db.localAlbumAssetEntity.assetId.count(distinct: true)) ?? 0);
   }
 
   Future<int> getProcessingCount() async {
     final query = _db.localAlbumAssetEntity.selectOnly(distinct: true)
-      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..addColumns([_db.localAlbumAssetEntity.assetId.count(distinct: true)])
       ..join([
         innerJoin(
           _db.localAlbumEntity,
@@ -128,7 +128,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             _db.localAlbumAssetEntity.assetId.isNotInQuery(_getExcludedSubquery()),
       );
 
-    return query.get().then((rows) => rows.length);
+    return query.getSingle().then((row) => row.read(_db.localAlbumAssetEntity.assetId.count(distinct: true)) ?? 0);
   }
 
   Future<List<LocalAsset>> getCandidates(String userId) async {
