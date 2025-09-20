@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -193,6 +194,7 @@ class LoginForm extends HookConsumerWidget {
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
             handleSyncFlow();
+            ref.read(websocketProvider.notifier).connect();
             context.replaceRoute(const TabShellRoute());
             return;
           }
