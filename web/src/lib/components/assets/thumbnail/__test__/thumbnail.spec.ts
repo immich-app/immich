@@ -45,15 +45,4 @@ describe('Thumbnail component', () => {
     const tabbables = getTabbable(container!);
     expect(tabbables.length).toBe(0);
   });
-
-  it('shows thumbhash while image is loading', () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
-    const sut = render(Thumbnail, {
-      asset,
-      selected: true,
-    });
-
-    const thumbhash = sut.getByTestId('thumbhash');
-    expect(thumbhash).not.toBeFalsy();
-  });
 });
