@@ -11,7 +11,7 @@ export default function VersionSwitcher(): JSX.Element {
   useEffect(() => {
     async function getVersions() {
       try {
-        let baseUrl = 'https://immich.app';
+        let baseUrl = 'https://docs.immich.app';
         if (window.location.origin === 'http://localhost:3005') {
           baseUrl = window.location.origin;
         }
@@ -21,8 +21,8 @@ export default function VersionSwitcher(): JSX.Element {
         const archiveVersions = await response.json();
 
         const allVersions = [
-          { label: 'Next', url: 'https://main.preview.immich.app' },
-          { label: 'Latest', url: 'https://immich.app' },
+          { label: 'Next', url: 'https://docs.main.preview.immich.app' },
+          { label: 'Latest', url: 'https://docs.immich.app' },
           ...archiveVersions,
         ].map(({ label, url }) => ({
           label,
