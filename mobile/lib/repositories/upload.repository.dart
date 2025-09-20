@@ -1,12 +1,14 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 
@@ -20,6 +22,8 @@ class UploadTaskWithFile {
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
 class UploadRepository {
+  static final _client = const NetworkRepository().getHttpClient('upload');
+
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
@@ -92,13 +96,12 @@ class UploadRepository {
     );
   }
 
-  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {
-    final httpClient = Client();
+  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, Completer cancelToken) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
 
     Logger logger = Logger('UploadRepository');
     for (final candidate in tasks) {
-      if (cancelToken.isCancelled) {
+      if (cancelToken.isCompleted) {
         logger.warning("Backup was cancelled by the user");
         break;
       }
@@ -112,13 +115,17 @@ class UploadRepository {
           filename: candidate.task.filename,
         );
 
-        final baseRequest = MultipartRequest('POST', Uri.parse('$savedEndpoint/assets'));
+        final baseRequest = AbortableMultipartRequest(
+          'POST',
+          Uri.parse('$savedEndpoint/assets'),
+          abortTrigger: cancelToken.future,
+        )..headers['Accept'] = 'application/json';
 
         baseRequest.headers.addAll(candidate.task.headers);
         baseRequest.fields.addAll(candidate.task.fields);
         baseRequest.files.add(assetRawUploadData);
 
-        final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+        final response = await _client.send(baseRequest);
 
         final responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -131,7 +138,7 @@ class UploadRepository {
 
           continue;
         }
-      } on CancelledException {
+      } on RequestAbortedException {
         logger.warning("Backup was cancelled by the user");
         break;
       } catch (error, stackTrace) {

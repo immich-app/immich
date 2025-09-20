@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -13,6 +13,7 @@ import 'package:immich_mobile/utils/user_agent.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 
 class ApiService implements Authentication {
+  static final _client = const NetworkRepository().getHttpClient('api');
   late ApiClient _apiClient;
 
   late UsersApi usersApi;
@@ -50,6 +51,7 @@ class ApiService implements Authentication {
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint, authentication: this);
+    _apiClient.client = _client;
     _setUserAgentHeader();
     if (_accessToken != null) {
       setAccessToken(_accessToken!);
@@ -134,13 +136,11 @@ class ApiService implements Authentication {
   }
 
   Future<String> _getWellKnownEndpoint(String baseUrl) async {
-    final Client client = Client();
-
     try {
       var headers = {"Accept": "application/json"};
       headers.addAll(getRequestHeaders());
 
-      final res = await client
+      final res = await _client
           .get(Uri.parse("$baseUrl/.well-known/immich"), headers: headers)
           .timeout(const Duration(seconds: 5));
 

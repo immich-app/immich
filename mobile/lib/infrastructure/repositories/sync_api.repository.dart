@@ -6,11 +6,13 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class SyncApiRepository {
+  static final _client = const NetworkRepository().getHttpClient('api');
   final Logger _logger = Logger('SyncApiRepository');
   final ApiService _api;
   SyncApiRepository(this._api);
@@ -26,7 +28,7 @@ class SyncApiRepository {
     http.Client? httpClient,
   }) async {
     final stopwatch = Stopwatch()..start();
-    final client = httpClient ?? http.Client();
+    final client = httpClient ?? _client;
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
     final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
@@ -112,8 +114,6 @@ class SyncApiRepository {
     } catch (error, stack) {
       _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
-    } finally {
-      client.close();
     }
     stopwatch.stop();
     _logger.info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");

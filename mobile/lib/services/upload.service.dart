@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -158,7 +157,7 @@ class UploadService {
     }
   }
 
-  Future<void> startBackupWithHttpClient(String userId, bool hasWifi, CancellationToken token) async {
+  Future<void> startBackupWithHttpClient(String userId, bool hasWifi, Completer token) async {
     await _storageRepository.clearCache();
 
     shouldAbortQueuingTasks = false;
@@ -170,7 +169,7 @@ class UploadService {
 
     const batchSize = 100;
     for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks || token.isCancelled) {
+      if (shouldAbortQueuingTasks || token.isCompleted) {
         break;
       }
 
