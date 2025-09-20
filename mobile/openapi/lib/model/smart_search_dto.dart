@@ -148,7 +148,7 @@ class SmartSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? page;
+  int? page;
 
   List<String> personIds;
 
@@ -176,7 +176,7 @@ class SmartSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? rating;
+  int? rating;
 
   /// Minimum value: 1
   /// Maximum value: 1000
@@ -186,7 +186,7 @@ class SmartSearchDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? size;
+  int? size;
 
   String? state;
 
@@ -544,14 +544,14 @@ class SmartSearchDto {
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
-        page: num.parse('${json[r'page']}'),
+        page: mapValueOfType<int>(json, r'page'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         query: mapValueOfType<String>(json, r'query'),
         queryAssetId: mapValueOfType<String>(json, r'queryAssetId'),
-        rating: num.parse('${json[r'rating']}'),
-        size: num.parse('${json[r'size']}'),
+        rating: mapValueOfType<int>(json, r'rating'),
+        size: mapValueOfType<int>(json, r'size'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
             ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
