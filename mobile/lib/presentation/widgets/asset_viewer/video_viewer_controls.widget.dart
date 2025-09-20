@@ -81,27 +81,35 @@ class VideoViewerControls extends HookConsumerWidget {
       }
     }
 
+    void toggleControlsVisibility() {
+      if (showBuffering) {
+        return;
+      }
+      if (showControls) {
+        ref.read(assetViewerProvider.notifier).setControls(false);
+      } else {
+        showControlsAndStartHideTimer();
+      }
+    }
+
     return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: showControlsAndStartHideTimer,
-      child: AbsorbPointer(
-        absorbing: !showControls,
+      behavior: HitTestBehavior.translucent,
+      onTap: toggleControlsVisibility,
+      child: IgnorePointer(
+        ignoring: !showControls,
         child: Stack(
           children: [
             if (showBuffering)
               const Center(child: DelayedLoadingIndicator(fadeInDuration: Duration(milliseconds: 400)))
             else
-              GestureDetector(
-                onTap: () => ref.read(assetViewerProvider.notifier).setControls(false),
-                child: CenterPlayButton(
-                  backgroundColor: Colors.black54,
-                  iconColor: Colors.white,
-                  isFinished: state == VideoPlaybackState.completed,
-                  isPlaying:
-                      state == VideoPlaybackState.playing || (cast.isCasting && cast.castState == CastState.playing),
-                  show: assetIsVideo && showControls,
-                  onPressed: togglePlay,
-                ),
+              CenterPlayButton(
+                backgroundColor: Colors.black54,
+                iconColor: Colors.white,
+                isFinished: state == VideoPlaybackState.completed,
+                isPlaying:
+                    state == VideoPlaybackState.playing || (cast.isCasting && cast.castState == CastState.playing),
+                show: assetIsVideo && showControls,
+                onPressed: togglePlay,
               ),
           ],
         ),
