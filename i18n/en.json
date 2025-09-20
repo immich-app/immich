@@ -920,7 +920,6 @@
     "cant_get_number_of_comments": "Can't get number of comments",
     "cant_search_people": "Can't search people",
     "cant_search_places": "Can't search places",
-    "clipboard_unsupported_mime_type": "The system clipboard does not support copying this type of content: {mimeType}",
     "error_adding_assets_to_album": "Error adding assets to album",
     "error_adding_users_to_album": "Error adding users to album",
     "error_deleting_shared_user": "Error deleting shared user",
