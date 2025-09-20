@@ -387,8 +387,6 @@
   "admin_password": "管理員密碼",
   "administration": "管理",
   "advanced": "進階",
-  "advanced_settings_beta_timeline_subtitle": "試用全新的應用程式體驗",
-  "advanced_settings_beta_timeline_title": "測試版時間軸",
   "advanced_settings_enable_alternate_media_filter_subtitle": "使用此選項可在同步時依其他條件篩選媒體。僅在應用程式無法偵測到所有相簿時再嘗試使用。",
   "advanced_settings_enable_alternate_media_filter_title": "[實驗性] 使用替代的裝置相簿同步篩選器",
   "advanced_settings_log_level_title": "日誌等級：{level}",

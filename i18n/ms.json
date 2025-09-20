@@ -373,8 +373,6 @@
   "admin_password": "Kata laluan Pentadbir",
   "administration": "Pentadbiran",
   "advanced": "Lanjutan",
-  "advanced_settings_beta_timeline_subtitle": "Cuba pengalaman aplikasi baharu",
-  "advanced_settings_beta_timeline_title": "Garis masa beta",
   "advanced_settings_enable_alternate_media_filter_subtitle": "Gunakan pilihan ini untuk menapis media semasa penyegerakan berdasarkan kriteria alternatif. Hanya cuba jika anda menghadapi masalah dengan aplikasi mengesan semua album.",
   "advanced_settings_enable_alternate_media_filter_title": "[EKSPERIMENTAL] Gunakan penapis penyelarasan album peranti alternatif",
   "advanced_settings_log_level_title": "Tahap log: {level}",

@@ -387,8 +387,6 @@
   "admin_password": "管理者パスワード",
   "administration": "管理",
   "advanced": "詳細設定",
-  "advanced_settings_beta_timeline_subtitle": "新しいアプリを体験してみましょう",
-  "advanced_settings_beta_timeline_title": "試験運用のタイムライン",
   "advanced_settings_enable_alternate_media_filter_subtitle": "別の基準に従ってメディアファイルにフィルターをかけて、同期を行います。アプリがすべてのアルバムを読み込んでくれない場合にのみ、この機能を試してください。",
   "advanced_settings_enable_alternate_media_filter_title": "[試験運用] 別のデバイスのアルバム同期フィルターを使用する",
   "advanced_settings_log_level_title": "ログレベル: {level}",
