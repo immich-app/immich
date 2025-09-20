@@ -42,7 +42,7 @@ class ShareActionButton extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        ref.read(actionProvider.notifier).shareAssets(source).then((ActionResult result) {
+        ref.read(actionProvider.notifier).shareAssets(source, context).then((ActionResult result) {
           ref.read(multiSelectProvider.notifier).reset();
 
           if (!context.mounted) {
