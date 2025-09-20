@@ -99,8 +99,8 @@ export class AssetService extends BaseService {
       id,
       description,
       dateTimeOriginal,
-      latitude: latitude ?? undefined,
-      longitude: longitude ?? undefined,
+      latitude,
+      longitude,
       rating,
     });
 
