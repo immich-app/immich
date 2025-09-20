@@ -34,6 +34,7 @@ export class SanitizedAssetResponseDto {
   duration!: string;
   livePhotoVideoId?: string | null;
   hasMetadata!: boolean;
+  hasUserLocation?: boolean;
 }
 
 export class AssetResponseDto extends SanitizedAssetResponseDto {
@@ -226,6 +227,9 @@ export function mapAsset(entity: MapAsset, options: AssetMapOptions = {}): Asset
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
     hasMetadata: true,
+    hasUserLocation:
+      !!entity.sidecarPath &&
+      !!(entity.exifInfo && entity.exifInfo.latitude != null && entity.exifInfo.longitude != null),
     duplicateId: entity.duplicateId,
     resized: true,
   };
