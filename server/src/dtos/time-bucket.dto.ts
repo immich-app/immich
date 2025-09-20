@@ -59,6 +59,12 @@ export class TimeBucketDto {
     description: 'Include location data in the response',
   })
   withCoordinates?: boolean;
+
+  @ValidateBoolean({
+    optional: true,
+    description: 'Filter assets that do not have GPS coordinates',
+  })
+  withoutGps?: boolean;
 }
 
 export class TimeBucketAssetDto extends TimeBucketDto {
@@ -72,6 +78,9 @@ export class TimeBucketAssetDto extends TimeBucketDto {
 }
 
 export class TimeBucketAssetResponseDto {
+  @ValidateBoolean({ optional: true })
+  withoutGps?: boolean;
+
   @ApiProperty({
     type: 'array',
     items: { type: 'string' },
