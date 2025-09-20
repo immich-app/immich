@@ -2,6 +2,8 @@ import 'package:flutter/services.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -14,6 +16,7 @@ class HashService {
   final DriftLocalAlbumRepository _localAlbumRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
+  final TrashSyncService _trashSyncService;
   final bool Function()? _cancelChecker;
   final _log = Logger('HashService');
 
@@ -21,13 +24,15 @@ class HashService {
     required DriftLocalAlbumRepository localAlbumRepository,
     required DriftLocalAssetRepository localAssetRepository,
     required NativeSyncApi nativeSyncApi,
+    required TrashSyncService trashSyncService,
     bool Function()? cancelChecker,
     int? batchSize,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
        _cancelChecker = cancelChecker,
        _nativeSyncApi = nativeSyncApi,
-       _batchSize = batchSize ?? kBatchHashFileLimit;
+       _batchSize = batchSize ?? kBatchHashFileLimit,
+       _trashSyncService = trashSyncService;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
@@ -56,6 +61,20 @@ class HashService {
       }
     } catch (e, s) {
       _log.severe("Error during hashing", e, s);
+    }
+
+    if (_trashSyncService.isAutoSyncMode) {
+      final backupAlbums = await _localAlbumRepository.getBackupAlbums();
+      for (final album in backupAlbums) {
+        if (isCancelled) {
+          _log.warning("Hashing cancelled. Stopped processing albums.");
+          break;
+        }
+        final trashedToHash = await _trashSyncService.getAssetsToHash(album.id);
+        if (trashedToHash.isNotEmpty) {
+          await _hashTrashedAssets(album, trashedToHash);
+        }
+      }
     }
 
     stopwatch.stop();
@@ -122,5 +141,69 @@ class HashService {
     _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
 
     await _localAssetRepository.updateHashes(hashed);
+  }
+
+  Future<void> _hashTrashedAssets(LocalAlbum album, Iterable<TrashedAsset> assetsToHash) async {
+    final toHash = <TrashedAsset>[];
+
+    for (final asset in assetsToHash) {
+      if (isCancelled) {
+        _log.warning("Hashing cancelled. Stopped processing assets.");
+        return;
+      }
+
+      if (asset.size == null) {
+        _log.warning(
+          "Cannot get size for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt} from album: ${album.name}",
+        );
+        continue;
+      }
+
+      toHash.add(asset);
+
+      if (toHash.length == _batchSize) {
+        await _processTrashedBatch(album, toHash);
+        toHash.clear();
+      }
+    }
+
+    await _processTrashedBatch(album, toHash);
+  }
+
+  Future<void> _processTrashedBatch(LocalAlbum album, List<TrashedAsset> toHash) async {
+    if (toHash.isEmpty) {
+      return;
+    }
+
+    _log.fine("Hashing ${toHash.length} trashed files");
+
+    final params = toHash.map((e) => TrashedAssetParams(id: e.id, type: e.type.index, albumId: album.id)).toList();
+    final hashResults = await _nativeSyncApi.hashTrashedAssets(params);
+
+    assert(
+      hashResults.length == toHash.length,
+      "Trashed Assets, Hashes length does not match toHash length: ${hashResults.length} != ${toHash.length}",
+    );
+    final hashed = <TrashedAsset>[];
+
+    for (int i = 0; i < hashResults.length; i++) {
+      if (isCancelled) {
+        _log.warning("Hashing cancelled. Stopped processing batch.");
+        return;
+      }
+
+      final hashResult = hashResults[i];
+      final asset = toHash[i];
+      if (hashResult.hash != null) {
+        hashed.add(asset.copyWith(checksum: hashResult.hash!));
+      } else {
+        _log.warning(
+          "Failed to hash trashed asset with id: ${hashResult.assetId}, name: ${asset.name}, createdAt: ${asset.createdAt}, from album: ${album.name}. Error: ${hashResult.error ?? "unknown"}",
+        );
+      }
+    }
+
+    _log.fine("Hashed ${hashed.length}/${toHash.length} trashed assets");
+    await _trashSyncService.updateChecksums(hashed);
   }
 }

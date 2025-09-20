@@ -1,13 +1,18 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+
+typedef AssetsByAlbums = Map<String, List<LocalAsset>>;
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
+
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
@@ -63,6 +68,41 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
+  Future<void> trash(AssetsByAlbums assetsByAlbums) async {
+    if (assetsByAlbums.isEmpty) {
+      return;
+    }
+
+    final companions = <TrashedLocalAssetEntityCompanion>[];
+    final idToDelete = <String>{};
+
+    assetsByAlbums.forEach((albumId, assets) {
+      for (final asset in assets) {
+        idToDelete.add(asset.id);
+        companions.add(
+          TrashedLocalAssetEntityCompanion(
+            id: Value(asset.id),
+            name: Value(asset.name),
+            albumId: Value(albumId),
+            checksum: asset.checksum == null ? const Value.absent() : Value(asset.checksum),
+            type: Value(asset.type),
+          ),
+        );
+      }
+    });
+
+    await _db.transaction(() async {
+      for (final slice in companions.slices(200)) {
+        await _db.batch((batch) {
+          batch.insertAllOnConflictUpdate(_db.trashedLocalAssetEntity, slice);
+        });
+      }
+      for (final slice in idToDelete.slices(800)) {
+        await (_db.delete(_db.localAssetEntity)..where((e) => e.id.isIn(slice))).go();
+      }
+    });
+  }
+
   Future<LocalAsset?> getById(String id) {
     final query = _db.localAssetEntity.select()..where((lae) => lae.id.equals(id));
 
@@ -94,5 +134,32 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       query.where((lae) => lae.backupSelection.equalsValue(backupSelection));
     }
     return query.map((localAlbum) => localAlbum.toDto()).get();
+  }
+
+  Future<AssetsByAlbums> getBackupSelectedAssetsByAlbum(Iterable<String> checksums) async {
+    if (checksums.isEmpty) {
+      return {};
+    }
+
+    final lAlbumAsset = _db.localAlbumAssetEntity;
+    final lAlbum = _db.localAlbumEntity;
+    final lAsset = _db.localAssetEntity;
+
+    final result = <String, List<LocalAsset>>{};
+
+    for (final slice in checksums.toSet().slices(800)) {
+      final rows = await (_db.select(lAlbumAsset).join([
+        innerJoin(lAlbum, lAlbumAsset.albumId.equalsExp(lAlbum.id)),
+        innerJoin(lAsset, lAlbumAsset.assetId.equalsExp(lAsset.id)),
+      ])..where(lAlbum.backupSelection.equalsValue(BackupSelection.selected) & lAsset.checksum.isIn(slice))).get();
+
+      for (final row in rows) {
+        final albumId = row.readTable(lAlbumAsset).albumId;
+        final assetData = row.readTable(lAsset);
+        final asset = assetData.toDto();
+        (result[albumId] ??= <LocalAsset>[]).add(asset);
+      }
+    }
+    return result;
   }
 }

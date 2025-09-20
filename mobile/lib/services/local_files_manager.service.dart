@@ -27,6 +27,15 @@ class LocalFilesManagerService {
     }
   }
 
+  Future<bool> restoreFromTrashById(String mediaId, int type) async {
+    try {
+      return await _channel.invokeMethod('restoreFromTrash', {'mediaId': mediaId, 'type': type});
+    } catch (e, s) {
+      _logger.warning('Error restore file from trash by Id', e, s);
+      return false;
+    }
+  }
+
   Future<bool> requestManageMediaPermission() async {
     try {
       return await _channel.invokeMethod('requestManageMediaPermission');
