@@ -243,7 +243,7 @@
       use:zoomImageAction
       use:swipe={() => ({})}
       onswipe={onSwipe}
-      class="h-full w-full flex"
+      class="h-full w-full"
       transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
     >
       {#if $slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.BlurredBackground}
@@ -258,7 +258,7 @@
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="max-h-full max-w-full h-auto w-auto mx-auto my-auto {$slideshowState === SlideshowState.None
+        class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
