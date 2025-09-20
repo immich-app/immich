@@ -6,11 +6,11 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/utils/user_agent.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
-import 'package:immich_mobile/utils/user_agent.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 class ApiService implements Authentication {
   late ApiClient _apiClient;
@@ -86,7 +86,7 @@ class ApiService implements Authentication {
     setEndpoint(endpoint);
 
     // Save in local database for next startup
-    Store.put(StoreKey.serverEndpoint, endpoint);
+    unawaited(Store.put(StoreKey.serverEndpoint, endpoint));
     return endpoint;
   }
 

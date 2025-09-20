@@ -53,7 +53,7 @@ void main() {
   });
 
   tearDown(() async {
-    sut.dispose();
+    unawaited(sut.dispose());
     await controller.close();
   });
 
@@ -129,7 +129,7 @@ void main() {
       final stream = sut.watch(StoreKey.accessToken);
       final events = <String?>[_kAccessToken, _kAccessToken.toUpperCase(), null, _kAccessToken.toLowerCase()];
 
-      expectLater(stream, emitsInOrder(events));
+      unawaited(expectLater(stream, emitsInOrder(events)));
 
       for (final event in events) {
         valueController.add(event);

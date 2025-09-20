@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +66,7 @@ class ActionNotifier extends Notifier<void> {
   void _downloadLivePhotoCallback(TaskStatusUpdate update) async {
     if (update.status == TaskStatus.complete) {
       final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
-      _downloadService.saveLivePhotos(update.task, livePhotosId);
+      unawaited(_downloadService.saveLivePhotos(update.task, livePhotosId));
     }
   }
 
@@ -122,7 +124,7 @@ class ActionNotifier extends Notifier<void> {
     if (assets.length > 1) {
       return ActionResult(count: assets.length, success: false, error: 'Cannot troubleshoot multiple assets');
     }
-    context.pushRoute(AssetTroubleshootRoute(asset: assets.first));
+    unawaited(context.pushRoute(AssetTroubleshootRoute(asset: assets.first)));
 
     return ActionResult(count: assets.length, success: true);
   }

@@ -1,17 +1,18 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart' as asset_entity;
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 
 final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)));
@@ -106,15 +107,17 @@ class AssetMediaRepository {
 
     // we dont want to await the share result since the
     // "preparing" dialog will not disappear unti
-    Share.shareXFiles(downloadedXFiles).then((result) async {
-      for (var file in downloadedXFiles) {
-        try {
-          await File(file.path).delete();
-        } catch (e) {
-          _log.warning("Failed to delete temporary file: ${file.path}", e);
+    unawaited(
+      Share.shareXFiles(downloadedXFiles).then((result) async {
+        for (var file in downloadedXFiles) {
+          try {
+            await File(file.path).delete();
+          } catch (e) {
+            _log.warning("Failed to delete temporary file: ${file.path}", e);
+          }
         }
-      }
-    });
+      }),
+    );
 
     return downloadedXFiles.length;
   }

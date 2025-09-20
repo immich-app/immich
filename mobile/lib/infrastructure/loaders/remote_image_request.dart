@@ -68,7 +68,7 @@ class RemoteImageRequest extends ImageRequest {
     final cacheManager = this.cacheManager;
     final streamController = StreamController<List<int>>(sync: true);
     final Stream<List<int>> stream;
-    cacheManager?.putStreamedFile(url, streamController.stream);
+    unawaited(cacheManager?.putStreamedFile(url, streamController.stream));
     stream = response.map((chunk) {
       if (_isCancelled) {
         throw StateError('Cancelled request');
@@ -81,11 +81,11 @@ class RemoteImageRequest extends ImageRequest {
 
     try {
       final Uint8List bytes = await _downloadBytes(stream, response.contentLength);
-      streamController.close();
+      unawaited(streamController.close());
       return await ImmutableBuffer.fromUint8List(bytes);
     } catch (e) {
       streamController.addError(e);
-      streamController.close();
+      unawaited(streamController.close());
       if (_isCancelled) {
         return null;
       }
@@ -143,7 +143,7 @@ class RemoteImageRequest extends ImageRequest {
       return await _decodeBuffer(buffer, decode, scale);
     } catch (e) {
       log.severe('Failed to decode cached image', e);
-      _evictFile(url);
+      unawaited(_evictFile(url));
       return null;
     }
   }
