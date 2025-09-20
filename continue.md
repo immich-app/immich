@@ -90,6 +90,8 @@ Session Log
   - Updated `docs/docs/administration/system-integrity.md` to explain mount checks are skipped in S3 mode
   - Expanded `docker/README.md` S3 section with a concise migration procedure
   - Linked S3 docs from root `README.md`
+  - Added S3 callout to install guide: `docs/docs/install/docker-compose.mdx`
+  - Built docs locally with Node 22 via nvm; Docusaurus build succeeded (warnings only). Artifacts in `docs/build`.
 
 - 2025-09-16 — Initialized project memory
   - Added `AGENTS.md` (project conventions), `codex.md` (agent playbook), and `continue.md` (this log)
