@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.88",
+  "version": "2.2.90",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
@@ -13,7 +13,6 @@
     "cli"
   ],
   "devDependencies": {
-    "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@types/byte-size": "^8.1.0",

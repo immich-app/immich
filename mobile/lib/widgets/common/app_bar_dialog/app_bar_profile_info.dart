@@ -90,11 +90,11 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
           minLeadingWidth: 50,
           leading: GestureDetector(
             onTap: pickUserProfileImage,
-            onDoubleTap: toggleReadonlyMode,
+            onLongPress: toggleReadonlyMode,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                buildUserProfileImage(),
+                AbsorbPointer(child: buildUserProfileImage()),
                 if (!isReadonlyModeEnabled)
                   Positioned(
                     bottom: -5,

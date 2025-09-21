@@ -1,10 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final syncLinkedAlbumServiceProvider = Provider(
   (ref) => SyncLinkedAlbumService(
@@ -19,7 +20,9 @@ class SyncLinkedAlbumService {
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final DriftAlbumApiRepository _albumApiRepository;
 
-  const SyncLinkedAlbumService(this._localAlbumRepository, this._remoteAlbumRepository, this._albumApiRepository);
+  SyncLinkedAlbumService(this._localAlbumRepository, this._remoteAlbumRepository, this._albumApiRepository);
+
+  final _log = Logger("SyncLinkedAlbumService");
 
   Future<void> syncLinkedAlbums(String userId) async {
     final selectedAlbums = await _localAlbumRepository.getBackupAlbums();
@@ -48,8 +51,12 @@ class SyncLinkedAlbumService {
   }
 
   Future<void> manageLinkedAlbums(List<LocalAlbum> localAlbums, String ownerId) async {
-    for (final album in localAlbums) {
-      await _processLocalAlbum(album, ownerId);
+    try {
+      for (final album in localAlbums) {
+        await _processLocalAlbum(album, ownerId);
+      }
+    } catch (error, stackTrace) {
+      _log.severe("Error managing linked albums", error, stackTrace);
     }
   }
 
@@ -93,7 +100,7 @@ class SyncLinkedAlbumService {
 
   /// Creates a new remote album and links it to the local album
   Future<void> _createAndLinkNewRemoteAlbum(LocalAlbum localAlbum) async {
-    debugPrint("Creating new remote album for local album: ${localAlbum.name}");
+    dPrint(() => "Creating new remote album for local album: ${localAlbum.name}");
     final newRemoteAlbum = await _albumApiRepository.createDriftAlbum(localAlbum.name, assetIds: []);
     await _remoteAlbumRepository.create(newRemoteAlbum, []);
     return _localAlbumRepository.linkRemoteAlbum(localAlbum.id, newRemoteAlbum.id);
