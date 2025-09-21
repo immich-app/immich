@@ -25,8 +25,7 @@ export function addAssetsToMonthGroups(
     let month = getMonthGroupByDate(timelineManager, asset.localDateTime);
 
     if (!month) {
-      month = new MonthGroup(timelineManager, asset.localDateTime, 1, options.order);
-      month.isLoaded = true;
+      month = new MonthGroup(timelineManager, asset.localDateTime, 1, true, options.order);
       timelineManager.months.push(month);
     }
 

@@ -1,3 +1,4 @@
+import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
@@ -151,6 +152,14 @@ export function formatGroupTitle(_date: DateTime): string {
   return getDateLocaleString(date, { locale: get(locale) });
 }
 
+export const formatGroupTitleFull = (_date: DateTime): string => {
+  if (!_date.isValid) {
+    return _date.toString();
+  }
+  const date = _date as DateTime<true>;
+  return getDateLocaleString(date);
+};
+
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
@@ -234,3 +243,11 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   }
   return result;
 }
+
+export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDateTime) => ({
+  matches(segment: MonthGroup) {
+    return (
+      segment.yearMonth && segment.yearMonth.year === yearMonth.year && segment.yearMonth.month === yearMonth.month
+    );
+  },
+});
