@@ -10,11 +10,13 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
+import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
@@ -216,7 +218,11 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   Future<void> _handleBackup() async {
     await runZonedGuarded(
       () async {
-        if (!_isBackupEnabled || _isCleanedUp) {
+        if (_isCleanedUp) {
+          return;
+        }
+
+        if (!_isBackupEnabled) {
           _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
           return;
         }
@@ -274,6 +280,23 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
 
     await hashFuture;
+  }
+}
+
+class BackgroundWorkerLockService {
+  final BackgroundWorkerLockApi _hostApi;
+  const BackgroundWorkerLockService(this._hostApi);
+
+  Future<void> lock() async {
+    if (CurrentPlatform.isAndroid) {
+      return _hostApi.lock();
+    }
+  }
+
+  Future<void> unlock() async {
+    if (CurrentPlatform.isAndroid) {
+      return _hostApi.unlock();
+    }
   }
 }
 

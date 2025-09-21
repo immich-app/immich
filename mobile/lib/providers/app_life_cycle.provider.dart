@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -138,6 +139,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _handleBetaTimelineResume() async {
     _ref.read(backupProvider.notifier).cancelBackup();
+    unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
 
     // Give isolates time to complete any ongoing database transactions
     await Future.delayed(const Duration(milliseconds: 500));
@@ -209,6 +211,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     _pauseOperation = Completer<void>();
 
     try {
+      if (Store.isBetaTimelineEnabled) {
+        unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+      }
       await _performPause();
     } catch (e, stackTrace) {
       _log.severe("Error during app pause", e, stackTrace);
@@ -239,6 +244,10 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
+
+    if (Store.isBetaTimelineEnabled) {
+      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
+    }
 
     // Flush logs before closing database
     try {
