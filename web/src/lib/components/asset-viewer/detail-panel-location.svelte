@@ -34,20 +34,14 @@
     }
   };
 
-  async function handleClearLocationConfirm() {
-    isConfirmClearLocation = false;
-
-    try {
-      asset = await updateAsset({ id: asset.id, updateAssetDto: { latitude: null, longitude: null } });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_location'));
-    }
-  }
-
   async function handleConfirmModalClose(confirmed: boolean) {
     isConfirmClearLocation = false;
     if (confirmed) {
-      await handleClearLocationConfirm();
+      try {
+        asset = await updateAsset({ id: asset.id, updateAssetDto: { latitude: null, longitude: null } });
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_change_location'));
+      }
     }
   }
 

@@ -696,7 +696,7 @@
   "completed": "Completed",
   "confirm": "Confirm",
   "confirm_admin_password": "Confirm Admin Password",
-  "confirm_clear_location_prompt": "Remove location from this asset? This action cannot be undone.",
+  "confirm_clear_location_prompt": "Remove location from {count, plural, one {this asset} other {these assets}}? This action cannot be undone.",
   "confirm_delete_face": "Are you sure you want to delete {name} face from the asset?",
   "confirm_delete_shared_link": "Are you sure you want to delete this shared link?",
   "confirm_keep_this_delete_others": "All other assets in the stack will be deleted except for this asset. Are you sure you want to continue?",
