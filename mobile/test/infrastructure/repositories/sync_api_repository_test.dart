@@ -118,7 +118,6 @@ void main() {
     expect(onDataCallCount, 1);
     expect(abortWasCalledInCallback, isTrue);
     expect(receivedEventsBatch1.length, testBatchSize);
-    verify(() => mockHttpClient.close()).called(1);
   });
 
   test('streamChanges does not process remaining lines in finally block if aborted', () async {
@@ -159,7 +158,6 @@ void main() {
 
     expect(onDataCallCount, 1);
     expect(abortWasCalledInCallback, isTrue);
-    verify(() => mockHttpClient.close()).called(1);
   });
 
   test('streamChanges processes remaining lines in finally block if not aborted', () async {
@@ -204,7 +202,6 @@ void main() {
     expect(onDataCallCount, 2);
     expect(receivedEventsBatch1.length, testBatchSize);
     expect(receivedEventsBatch2.length, 1);
-    verify(() => mockHttpClient.close()).called(1);
   });
 
   test('streamChanges handles stream error gracefully', () async {
@@ -229,7 +226,6 @@ void main() {
     await expectLater(streamChangesFuture, throwsA(streamError));
 
     expect(onDataCallCount, 0);
-    verify(() => mockHttpClient.close()).called(1);
   });
 
   test('streamChanges throws ApiException on non-200 status code', () async {
@@ -257,6 +253,5 @@ void main() {
     );
 
     expect(onDataCallCount, 0);
-    verify(() => mockHttpClient.close()).called(1);
   });
 }

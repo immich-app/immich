@@ -337,6 +337,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  cronet_http:
+    dependency: "direct main"
+    description:
+      name: cronet_http
+      sha256: "1b99ad5ae81aa9d2f12900e5f17d3681f3828629bb7f7fe7ad88076a34209840"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.0"
   crop_image:
     dependency: "direct main"
     description:
@@ -369,6 +377,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  cupertino_http:
+    dependency: "direct main"
+    description:
+      name: cupertino_http
+      sha256: "72187f715837290a63479a5b0ae709f4fedad0ed6bd0441c275eceaa02d5abae"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
   custom_lint:
     dependency: "direct dev"
     description:
@@ -899,10 +915,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: fe7ab022b76f3034adc518fb6ea04a82387620e19977665ea18d30a1cf43442f
+      sha256: bb2ce4590bc2667c96f318d68cac1b5a7987ec819351d32b1c987239a815e007
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.0"
+    version: "1.5.0"
   http_multi_server:
     dependency: transitive
     description:
@@ -919,6 +935,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  http_profile:
+    dependency: transitive
+    description:
+      name: http_profile
+      sha256: "7e679e355b09aaee2ab5010915c932cce3f2d1c11c3b2dc177891687014ffa78"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   image:
     dependency: transitive
     description:
@@ -1044,6 +1068,14 @@ packages:
       url: "https://github.com/immich-app/isar"
     source: git
     version: "3.1.8"
+  jni:
+    dependency: transitive
+    description:
+      name: jni
+      sha256: d2c361082d554d4593c3012e26f6b188f902acd291330f13d6427641a92b3da1
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.2"
   js:
     dependency: transitive
     description:
@@ -1237,6 +1269,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
+  objective_c:
+    dependency: transitive
+    description:
+      name: objective_c
+      sha256: "9f034ba1eeca53ddb339bc8f4813cb07336a849cd735559b60cdc068ecce2dc7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.1.0"
   octo_image:
     dependency: "direct main"
     description:

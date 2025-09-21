@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -63,7 +62,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
-  final CancellationToken _cancellationToken = CancellationToken();
+  final Completer _cancellationToken = Completer();
   final Logger _logger = Logger('BackgroundWorkerBgService');
 
   bool _isCleanedUp = false;
@@ -188,7 +187,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _isCleanedUp = true;
       _ref.dispose();
 
-      _cancellationToken.cancel();
+      _cancellationToken.complete();
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
         workerManager.dispose().catchError((_) async {
