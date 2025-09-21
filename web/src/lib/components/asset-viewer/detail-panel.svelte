@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
@@ -208,9 +209,11 @@
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-[90px]"
-              href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
-                ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
-                : AppRoute.PHOTOS}"
+              href={resolve(
+                `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
+                  currentAlbum?.id ? `${AppRoute.ALBUMS}/${currentAlbum?.id}` : AppRoute.PHOTOS
+                }`,
+              )}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
               onmouseover={() => ($boundingBoxesArray = people[index].faces)}
@@ -279,8 +282,7 @@
         class="flex w-full text-start justify-between place-items-start gap-4 py-4"
         onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
-        class:hover:dark:text-immich-dark-primary={isOwner}
-        class:hover:text-immich-primary={isOwner}
+        class:hover:text-primary={isOwner}
       >
         <div class="flex gap-4">
           <div>
@@ -362,10 +364,8 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p
-            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
-            transition:slide={{ duration: 250 }}
-          >
+          <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
+            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
               {asset.originalPath}
             </a>
@@ -398,12 +398,14 @@
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
             <p>
               <a
-                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({
-                  ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
-                  ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
-                })}"
+                href={resolve(
+                  `${AppRoute.SEARCH}?${getMetadataSearchQuery({
+                    ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
+                    ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
+                  })}`,
+                )}
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
-                class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+                class="hover:text-primary"
               >
                 {asset.exifInfo.make || ''}
                 {asset.exifInfo.model || ''}
@@ -415,9 +417,11 @@
             <div class="flex gap-2 text-sm">
               <p>
                 <a
-                  href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
+                  href={resolve(
+                    `${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`,
+                  )}
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
+                  class="hover:text-primary line-clamp-1"
                 >
                   {asset.exifInfo.lensModel}
                 </a>
@@ -479,7 +483,7 @@
         simplified
         useLocationPin
         showSimpleControls={!showEditFaces}
-        onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
+        onOpenInMapView={() => goto(resolve(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`))}
       >
         {#snippet popup({ marker })}
           {@const { lat, lon } = marker}
@@ -520,7 +524,7 @@
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
-      <a href="{AppRoute.ALBUMS}/{album.id}">
+      <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img

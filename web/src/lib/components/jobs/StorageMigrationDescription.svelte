@@ -11,7 +11,7 @@
   {#snippet children({ message })}
     <a
       href="{AppRoute.ADMIN_SETTINGS}?{QueryParameter.IS_OPEN}={OpenSettingQueryParameterValue.STORAGE_TEMPLATE}"
-      class="text-immich-primary dark:text-immich-dark-primary"
+      class="text-primary"
     >
       {message}
     </a>

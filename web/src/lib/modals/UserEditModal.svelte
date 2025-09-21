@@ -101,7 +101,7 @@
 
         <p>
           {$t('admin.note_apply_storage_label_previous_assets')}
-          <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
+          <a href={AppRoute.ADMIN_JOBS} class="text-primary">
             {$t('admin.storage_template_migration_job')}
           </a>
         </p>

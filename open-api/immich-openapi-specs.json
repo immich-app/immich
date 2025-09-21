@@ -12272,6 +12272,25 @@
         ],
         "type": "object"
       },
+      "MachineLearningAvailabilityChecksDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "interval": {
+            "type": "number"
+          },
+          "timeout": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "timeout"
+        ],
+        "type": "object"
+      },
       "ManualJobName": {
         "enum": [
           "person-cleanup",
@@ -16462,6 +16481,9 @@
       },
       "SystemConfigMachineLearningDto": {
         "properties": {
+          "availabilityChecks": {
+            "$ref": "#/components/schemas/MachineLearningAvailabilityChecksDto"
+          },
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
@@ -16493,6 +16515,7 @@
           }
         },
         "required": [
+          "availabilityChecks",
           "clip",
           "duplicateDetection",
           "enabled",

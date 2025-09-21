@@ -1390,6 +1390,11 @@ export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
 };
+export type MachineLearningAvailabilityChecksDto = {
+    enabled: boolean;
+    interval: number;
+    timeout: number;
+};
 export type ClipConfig = {
     enabled: boolean;
     modelName: string;
@@ -1413,6 +1418,7 @@ export type OcrConfig = {
     modelName: string;
 };
 export type SystemConfigMachineLearningDto = {
+    availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;

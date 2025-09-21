@@ -96,17 +96,13 @@
           <div class="h-6 w-6">
             <ImmichLogo noText class="h-[24px]" />
           </div>
-          <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
+          <p class="flex text-primary font-medium">
             {$t('purchase_button_buy_immich')}
           </p>
         </div>
 
         <div>
-          <Icon
-            icon={mdiInformationOutline}
-            class="hidden sidebar:flex text-immich-primary dark:text-immich-dark-primary font-medium"
-            size="18"
-          />
+          <Icon icon={mdiInformationOutline} class="hidden sidebar:flex text-primary font-medium" size="18" />
         </div>
       </div>
     </button>
@@ -142,7 +138,7 @@
         />
       </div>
 
-      <h1 class="text-lg font-medium my-3 dark:text-immich-dark-primary text-immich-primary">
+      <h1 class="text-lg font-medium my-3 text-primary">
         {$t('purchase_panel_title')}
       </h1>
 

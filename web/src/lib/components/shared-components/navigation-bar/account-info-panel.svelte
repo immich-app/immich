@@ -55,7 +55,7 @@
       </div>
     </div>
     <div>
-      <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
+      <p class="text-center text-lg font-medium text-primary">
         {$user.name}
       </p>
       <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
@@ -107,7 +107,7 @@
 
     <button
       type="button"
-      class="text-center mt-4 underline text-xs text-immich-primary dark:text-immich-dark-primary"
+      class="text-center mt-4 underline text-xs text-primary"
       onclick={async () => {
         onClose();
         if (info) {

@@ -61,9 +61,7 @@
         </div>
 
         <div class="text-sm pb-2">
-          <p
-            class="flex place-items-center gap-2 text-immich-primary dark:text-immich-dark-primary break-all uppercase"
-          >
+          <p class="flex place-items-center gap-2 text-primary break-all uppercase">
             {#if link.type === SharedLinkType.Album}
               {link.album?.albumName}
             {:else if link.type === SharedLinkType.Individual}

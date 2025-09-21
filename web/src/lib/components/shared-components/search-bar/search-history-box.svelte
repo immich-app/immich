@@ -102,7 +102,7 @@
           <button
             id={getId(0)}
             type="button"
-            class="rounded-lg p-2 font-semibold text-immich-primary aria-selected:bg-immich-primary/25 hover:bg-immich-primary/25 dark:text-immich-dark-primary"
+            class="rounded-lg p-2 font-semibold text-primary aria-selected:bg-immich-primary/25 hover:bg-immich-primary/25"
             role="option"
             onclick={() => handleClearAll()}
             tabindex="-1"

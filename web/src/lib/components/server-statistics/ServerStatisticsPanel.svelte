@@ -46,38 +46,38 @@
     <div class="mt-5 flex lg:hidden">
       <div class="flex flex-col justify-between rounded-3xl bg-subtle p-5 dark:bg-immich-dark-gray">
         <div class="flex flex-wrap gap-x-12">
-          <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
+          <div class="flex place-items-center gap-4 text-primary">
             <Icon icon={mdiCameraIris} size="25" />
             <p class="uppercase">{$t('photos')}</p>
           </div>
 
           <div class="relative text-center font-mono text-2xl font-semibold">
-            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.photos)}</span><span
-              class="text-immich-primary dark:text-immich-dark-primary">{stats.photos}</span
+            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.photos)}</span><span class="text-primary"
+              >{stats.photos}</span
             >
           </div>
         </div>
         <div class="flex flex-wrap gap-x-12">
-          <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
+          <div class="flex place-items-center gap-4 text-primary">
             <Icon icon={mdiPlayCircle} size="25" />
             <p class="uppercase">{$t('videos')}</p>
           </div>
 
           <div class="relative text-center font-mono text-2xl font-semibold">
-            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.videos)}</span><span
-              class="text-immich-primary dark:text-immich-dark-primary">{stats.videos}</span
+            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(stats.videos)}</span><span class="text-primary"
+              >{stats.videos}</span
             >
           </div>
         </div>
         <div class="flex flex-wrap gap-x-7">
-          <div class="flex place-items-center gap-4 text-immich-primary dark:text-immich-dark-primary">
+          <div class="flex place-items-center gap-4 text-primary">
             <Icon icon={mdiChartPie} size="25" />
             <p class="uppercase">{$t('storage')}</p>
           </div>
 
           <div class="relative flex text-center font-mono text-2xl font-semibold">
-            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(statsUsage)}</span><span
-              class="text-immich-primary dark:text-immich-dark-primary">{statsUsage}</span
+            <span class="text-[#DCDADA] dark:text-[#525252]">{zeros(statsUsage)}</span><span class="text-primary"
+              >{statsUsage}</span
             >
             <span class="my-auto ms-2 text-center text-base font-light text-gray-400">{statsUsageUnit}</span>
           </div>
@@ -90,7 +90,7 @@
     <p class="text-sm dark:text-immich-dark-fg uppercase">{$t('user_usage_detail')}</p>
     <table class="mt-5 w-full text-start">
       <thead
-        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
       >
         <tr class="flex w-full place-items-center">
           <th class="w-1/4 text-center text-sm font-medium">{$t('user')}</th>
@@ -116,7 +116,7 @@
               {#if user.quotaSizeInBytes !== null}
                 / {getByteUnitString(user.quotaSizeInBytes, $locale, 0)}
               {/if}
-              <span class="text-immich-primary dark:text-immich-dark-primary">
+              <span class="text-primary">
                 {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
                   ({(user.quotaSizeInBytes === 0 ? 1 : user.usage / user.quotaSizeInBytes).toLocaleString($locale, {
                     style: 'percent',

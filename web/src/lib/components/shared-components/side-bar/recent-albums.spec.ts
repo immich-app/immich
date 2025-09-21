@@ -17,6 +17,9 @@ describe('RecentAlbums component', () => {
     render(RecentAlbums);
 
     expect(sdkMock.getAllAlbums).toBeCalledTimes(1);
+
+    // wtf
+    await tick();
     await tick();
 
     const links = screen.getAllByRole('link');
