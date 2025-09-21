@@ -1,7 +1,7 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { AbortError } from '$lib/utils';
-import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
+import { fromISODateTimeUTCToObject, getSegmentIdentifier } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { TimelineManager } from './timeline-manager.svelte';
@@ -92,7 +92,7 @@ describe('TimelineManager', () => {
     });
   });
 
-  describe('loadMonthGroup', () => {
+  describe('loadSegment', () => {
     let timelineManager: TimelineManager;
     const bucketAssets: Record<string, TimelineAsset[]> = {
       '2024-01-03T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
@@ -128,48 +128,48 @@ describe('TimelineManager', () => {
     });
 
     it('loads a month', async () => {
-      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
-      await timelineManager.loadMonthGroup({ year: 2024, month: 1 });
+      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.assets.length).toEqual(0);
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
-      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
+      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.assets.length).toEqual(3);
     });
 
     it('ignores invalid months', async () => {
-      await timelineManager.loadMonthGroup({ year: 2023, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2023, month: 1 }));
       expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
     });
 
     it('cancels month loading', async () => {
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })!;
-      void timelineManager.loadMonthGroup({ year: 2024, month: 1 });
+      void timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       const abortSpy = vi.spyOn(month!.loader!.cancelToken!, 'abort');
       month?.cancel();
       expect(abortSpy).toBeCalledTimes(1);
-      await timelineManager.loadMonthGroup({ year: 2024, month: 1 });
-      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
+      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.assets.length).toEqual(3);
     });
 
     it('prevents loading months multiple times', async () => {
       await Promise.all([
-        timelineManager.loadMonthGroup({ year: 2024, month: 1 }),
-        timelineManager.loadMonthGroup({ year: 2024, month: 1 }),
+        timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 })),
+        timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 })),
       ]);
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
 
-      await timelineManager.loadMonthGroup({ year: 2024, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
     });
 
     it('allows loading a canceled month', async () => {
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })!;
-      const loadPromise = timelineManager.loadMonthGroup({ year: 2024, month: 1 });
+      const loadPromise = timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
 
       month.cancel();
       await loadPromise;
-      expect(month?.getAssets().length).toEqual(0);
+      expect(month?.assets.length).toEqual(0);
 
-      await timelineManager.loadMonthGroup({ year: 2024, month: 1 });
-      expect(month!.getAssets().length).toEqual(3);
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
+      expect(month!.assets.length).toEqual(3);
     });
   });
 
@@ -198,7 +198,7 @@ describe('TimelineManager', () => {
 
       expect(timelineManager.months.length).toEqual(1);
       expect(timelineManager.assetCount).toEqual(1);
-      expect(timelineManager.months[0].getAssets().length).toEqual(1);
+      expect(timelineManager.months[0].assets.length).toEqual(1);
       expect(timelineManager.months[0].yearMonth.year).toEqual(2024);
       expect(timelineManager.months[0].yearMonth.month).toEqual(1);
       expect(timelineManager.months[0].getFirstAsset().id).toEqual(asset.id);
@@ -215,7 +215,7 @@ describe('TimelineManager', () => {
 
       expect(timelineManager.months.length).toEqual(1);
       expect(timelineManager.assetCount).toEqual(2);
-      expect(timelineManager.months[0].getAssets().length).toEqual(2);
+      expect(timelineManager.months[0].assets.length).toEqual(2);
       expect(timelineManager.months[0].yearMonth.year).toEqual(2024);
       expect(timelineManager.months[0].yearMonth.month).toEqual(1);
     });
@@ -240,10 +240,10 @@ describe('TimelineManager', () => {
 
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 });
       expect(month).not.toBeNull();
-      expect(month?.getAssets().length).toEqual(3);
-      expect(month?.getAssets()[0].id).toEqual(assetOne.id);
-      expect(month?.getAssets()[1].id).toEqual(assetThree.id);
-      expect(month?.getAssets()[2].id).toEqual(assetTwo.id);
+      expect(month?.assets.length).toEqual(3);
+      expect(month?.assets[0].id).toEqual(assetOne.id);
+      expect(month?.assets[1].id).toEqual(assetThree.id);
+      expect(month?.assets[2].id).toEqual(assetTwo.id);
     });
 
     it('orders months by descending date', () => {
@@ -341,14 +341,14 @@ describe('TimelineManager', () => {
       timelineManager.addAssets([asset]);
       expect(timelineManager.months.length).toEqual(1);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })).not.toBeUndefined();
-      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(1);
+      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.assets.length).toEqual(1);
 
       timelineManager.updateAssets([updatedAsset]);
       expect(timelineManager.months.length).toEqual(2);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })).not.toBeUndefined();
-      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
+      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.assets.length).toEqual(0);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })).not.toBeUndefined();
-      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })?.getAssets().length).toEqual(1);
+      expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })?.assets.length).toEqual(1);
     });
   });
 
@@ -374,7 +374,7 @@ describe('TimelineManager', () => {
 
       expect(timelineManager.assetCount).toEqual(2);
       expect(timelineManager.months.length).toEqual(1);
-      expect(timelineManager.months[0].getAssets().length).toEqual(2);
+      expect(timelineManager.months[0].assets.length).toEqual(2);
     });
 
     it('removes asset from month', () => {
@@ -388,7 +388,7 @@ describe('TimelineManager', () => {
 
       expect(timelineManager.assetCount).toEqual(1);
       expect(timelineManager.months.length).toEqual(1);
-      expect(timelineManager.months[0].getAssets().length).toEqual(1);
+      expect(timelineManager.months[0].assets.length).toEqual(1);
     });
 
     it('does not remove month when empty', () => {
@@ -477,45 +477,45 @@ describe('TimelineManager', () => {
     });
 
     it('returns previous assetId', async () => {
-      await timelineManager.loadMonthGroup({ year: 2024, month: 1 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 1 });
 
-      const a = month!.getAssets()[0];
-      const b = month!.getAssets()[1];
+      const a = month!.assets[0];
+      const b = month!.assets[1];
       const previous = await timelineManager.getLaterAsset(b);
       expect(previous).toEqual(a);
     });
 
     it('returns previous assetId spanning multiple months', async () => {
-      await timelineManager.loadMonthGroup({ year: 2024, month: 2 });
-      await timelineManager.loadMonthGroup({ year: 2024, month: 3 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 2 }));
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 3 }));
 
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 2 });
       const previousMonth = getMonthGroupByDate(timelineManager, { year: 2024, month: 3 });
-      const a = month!.getAssets()[0];
-      const b = previousMonth!.getAssets()[0];
+      const a = month!.assets[0];
+      const b = previousMonth!.assets[0];
       const previous = await timelineManager.getLaterAsset(a);
       expect(previous).toEqual(b);
     });
 
     it('loads previous month', async () => {
-      await timelineManager.loadMonthGroup({ year: 2024, month: 2 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 2 }));
       const month = getMonthGroupByDate(timelineManager, { year: 2024, month: 2 });
       const previousMonth = getMonthGroupByDate(timelineManager, { year: 2024, month: 3 });
       const a = month!.getFirstAsset();
       const b = previousMonth!.getFirstAsset();
-      const loadMonthGroupSpy = vi.spyOn(month!.loader!, 'execute');
+      const loadSegmentSpy = vi.spyOn(month!.loader!, 'execute');
       const previousMonthSpy = vi.spyOn(previousMonth!.loader!, 'execute');
       const previous = await timelineManager.getLaterAsset(a);
       expect(previous).toEqual(b);
-      expect(loadMonthGroupSpy).toBeCalledTimes(0);
+      expect(loadSegmentSpy).toBeCalledTimes(0);
       expect(previousMonthSpy).toBeCalledTimes(0);
     });
 
     it('skips removed assets', async () => {
-      await timelineManager.loadMonthGroup({ year: 2024, month: 1 });
-      await timelineManager.loadMonthGroup({ year: 2024, month: 2 });
-      await timelineManager.loadMonthGroup({ year: 2024, month: 3 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 2 }));
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 3 }));
 
       const [assetOne, assetTwo, assetThree] = await getAssets(timelineManager);
       timelineManager.removeAssets([assetTwo.id]);
@@ -523,7 +523,7 @@ describe('TimelineManager', () => {
     });
 
     it('returns null when no more assets', async () => {
-      await timelineManager.loadMonthGroup({ year: 2024, month: 3 });
+      await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 3 }));
       expect(await timelineManager.getLaterAsset(timelineManager.months[0].getFirstAsset())).toBeUndefined();
     });
   });

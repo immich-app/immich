@@ -1,27 +1,23 @@
+import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
+import type { PhotostreamSegment } from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
 import { TUNABLES } from '$lib/utils/tunables';
-import type { MonthGroup } from '../month-group.svelte';
-import type { TimelineManager } from '../timeline-manager.svelte';
 
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
 
-export function updateIntersectionMonthGroup(timelineManager: TimelineManager, month: MonthGroup) {
-  const actuallyIntersecting = calculateMonthGroupIntersecting(timelineManager, month, 0, 0);
+export function updateIntersectionMonthGroup(timelineManager: PhotostreamManager, month: PhotostreamSegment) {
+  const actuallyIntersecting = calculateSegmentIntersecting(timelineManager, month, 0, 0);
   let preIntersecting = false;
   if (!actuallyIntersecting) {
-    preIntersecting = calculateMonthGroupIntersecting(
+    preIntersecting = calculateSegmentIntersecting(
       timelineManager,
       month,
       INTERSECTION_EXPAND_TOP,
       INTERSECTION_EXPAND_BOTTOM,
     );
   }
-  month.intersecting = actuallyIntersecting || preIntersecting;
-  month.actuallyIntersecting = actuallyIntersecting;
-  if (preIntersecting || actuallyIntersecting) {
-    timelineManager.clearDeferredLayout(month);
-  }
+  month.updateIntersection({ intersecting: actuallyIntersecting || preIntersecting, actuallyIntersecting });
 }
 
 /**
@@ -40,9 +36,9 @@ export function isIntersecting(regionTop: number, regionBottom: number, windowTo
   );
 }
 
-export function calculateMonthGroupIntersecting(
-  timelineManager: TimelineManager,
-  monthGroup: MonthGroup,
+export function calculateSegmentIntersecting(
+  timelineManager: PhotostreamManager,
+  monthGroup: PhotostreamSegment,
   expandTop: number,
   expandBottom: number,
 ) {
@@ -58,7 +54,7 @@ export function calculateMonthGroupIntersecting(
  * Calculate intersection for viewer assets with additional parameters like header height and scroll compensation
  */
 export function calculateViewerAssetIntersecting(
-  timelineManager: TimelineManager,
+  timelineManager: PhotostreamManager,
   positionTop: number,
   positionHeight: number,
   expandTop: number = INTERSECTION_EXPAND_TOP,

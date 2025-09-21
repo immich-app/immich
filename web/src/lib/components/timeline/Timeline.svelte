@@ -19,7 +19,12 @@
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { getTimes, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
+  import {
+    getSegmentIdentifier,
+    getTimes,
+    type ScrubberListener,
+    type TimelineYearMonth,
+  } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -478,7 +483,7 @@
           break;
         }
         if (started) {
-          await timelineManager.loadMonthGroup(monthGroup.yearMonth);
+          await timelineManager.loadSegment(monthGroup.identifier);
           for (const asset of monthGroup.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
@@ -553,7 +558,7 @@
   $effect(() => {
     if ($showAssetViewer) {
       const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
-      void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
+      void timelineManager.loadSegment(getSegmentIdentifier({ year: localDateTime.year, month: localDateTime.month }));
     }
   });
 </script>
