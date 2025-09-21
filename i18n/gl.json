@@ -1170,7 +1170,7 @@
   "menu": "Menú",
   "merge": "Fusionar",
   "merge_people": "Fusionar persoas",
-  "merge_people_limit": "Só pode fusionar ata 5 caras á vez",
+  "merge_people_limit": "Só pode fusionar ata 500 caras á vez",
   "merge_people_prompt": "Queres fusionar estas persoas? Esta acción é irreversible.",
   "merge_people_successfully": "Persoas fusionadas correctamente",
   "merged_people_count": "Fusionadas {count, plural, one {# persoa} other {# persoas}}",

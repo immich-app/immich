@@ -1292,7 +1292,7 @@
   "menu": "Meniu",
   "merge": "Îmbinați",
   "merge_people": "Îmbinați persoane",
-  "merge_people_limit": "Puteți îmbina până la 5 fețe simultan",
+  "merge_people_limit": "Puteți îmbina până la 500 fețe simultan",
   "merge_people_prompt": "Vreți să îmbinați aceste persoane? Această acțiune este ireversibilă.",
   "merge_people_successfully": "Persoane îmbinate cu succes",
   "merged_people_count": "Imbinate {count, plural, one {# persoană} other {# persoane}}",

@@ -1313,7 +1313,7 @@
   "menu": "Menu",
   "merge": "Fusionner",
   "merge_people": "Fusionner les personnes",
-  "merge_people_limit": "Vous pouvez seulement fusionner 5 visages à la fois",
+  "merge_people_limit": "Vous pouvez seulement fusionner 500 visages à la fois",
   "merge_people_prompt": "Voulez-vous fusionner ces personnes ? Cette action est irréversible.",
   "merge_people_successfully": "Fusion des personnes réussie",
   "merged_people_count": "{count, plural, one {# personne fusionnée} other {# personnes fusionnées}}",

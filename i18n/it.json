@@ -1313,7 +1313,7 @@
   "menu": "Menù",
   "merge": "Unisci",
   "merge_people": "Unisci persone",
-  "merge_people_limit": "Puoi unire al massimo 5 volti alla volta",
+  "merge_people_limit": "Puoi unire al massimo 500 volti alla volta",
   "merge_people_prompt": "Vuoi unire queste persone? Questa azione è irreversibile.",
   "merge_people_successfully": "Unione persone completata con successo",
   "merged_people_count": "{count, plural, one {Unita # persona} other {Unite # persone}}",

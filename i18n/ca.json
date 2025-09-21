@@ -1313,7 +1313,7 @@
   "menu": "Menú",
   "merge": "Combinar",
   "merge_people": "Combinar persones",
-  "merge_people_limit": "Només pots combinar fins a 5 cares alhora",
+  "merge_people_limit": "Només pots combinar fins a 500 cares alhora",
   "merge_people_prompt": "Vols combinar aquestes persones? Aquesta acció és irreversible.",
   "merge_people_successfully": "Persones combinades amb èxit",
   "merged_people_count": "Combinades {count, plural, one {# persona} other {# persones}}",

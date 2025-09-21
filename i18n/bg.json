@@ -1313,7 +1313,7 @@
   "menu": "Меню",
   "merge": "Обединяване",
   "merge_people": "Сливане на хора",
-  "merge_people_limit": "Можете да обединявате само до 5 лица в даден момент",
+  "merge_people_limit": "Можете да обединявате само до 500 лица в даден момент",
   "merge_people_prompt": "Искате ли да слеете тези хора? Това действие е необратимо.",
   "merge_people_successfully": "Успешно сливане на хора",
   "merged_people_count": "Слят {count, plural, one {# човек} other {# човека}}",
