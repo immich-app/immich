@@ -136,8 +136,8 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     padding: const EdgeInsets.only(top: 3.0),
                     child: SvgPicture.asset(
                       context.isDarkTheme
-                          ? 'assets/immich-logo-inline-dark.svg'
-                          : 'assets/immich-logo-inline-light.svg',
+                          ? 'assets/pixelunion-no-bg.svg'
+                          : 'assets/pixelunion-no-bg.svg',
                       height: 40,
                     ),
                   );

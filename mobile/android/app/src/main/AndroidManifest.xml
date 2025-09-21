@@ -13,19 +13,19 @@
   <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <!-- <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> -->
+  <!-- <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> -->
   <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+  <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
   <!-- Foreground service permission -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+  <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" /> -->
 
-  <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
+  <application android:label="PixelUnion" android:name=".ImmichApp" android:usesCleartextTraffic="true"
     android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
     android:largeHeap="true" android:enableOnBackInvokedCallback="false" android:allowBackup="false">
 

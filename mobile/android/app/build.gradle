@@ -52,7 +52,7 @@ android {
   }
 
   defaultConfig {
-    applicationId "app.alextran.immich"
+    applicationId "app.pixelunion.immich"
     minSdkVersion 26
     targetSdkVersion 35
     versionCode flutterVersionCode.toInteger()

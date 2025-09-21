@@ -5,6 +5,6 @@
     -->
   <uses-permission android:name="android.permission.INTERNET" />
 
-  <application android:label="Immich-Debug" tools:replace="android:label">
+  <application android:label="PixelUnion-Debug" tools:replace="android:label">
   </application>
 </manifest>
