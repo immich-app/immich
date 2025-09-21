@@ -163,7 +163,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
   private fun decodeImage(id: Long, size: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     val uri = ContentUris.withAppendedId(Images.Media.EXTERNAL_CONTENT_URI, id)
-    if (size.width > 768 || size.height > 768) {
+    if (size.width <= 0 || size.height <= 0 || size.width > 768 || size.height > 768) {
       return decodeSource(uri, size, signal)
     }
 
