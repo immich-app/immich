@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -53,39 +55,41 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final backgroundManager = ref.read(backgroundSyncProvider);
       final backupProvider = ref.read(driftBackupProvider.notifier);
 
-      ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-        (_) async {
-          try {
-            wsProvider.connect();
-            infoProvider.getServerInfo();
+      unawaited(
+        ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
+          (_) async {
+            try {
+              wsProvider.connect();
+              unawaited(infoProvider.getServerInfo());
 
-            if (Store.isBetaTimelineEnabled) {
-              await Future.wait([backgroundManager.syncLocal(), backgroundManager.syncRemote()]);
-              await Future.wait([
-                backgroundManager.hashAssets().then((_) {
-                  _resumeBackup(backupProvider);
-                }),
-                _resumeBackup(backupProvider),
-              ]);
+              if (Store.isBetaTimelineEnabled) {
+                await Future.wait([backgroundManager.syncLocal(), backgroundManager.syncRemote()]);
+                await Future.wait([
+                  backgroundManager.hashAssets().then((_) {
+                    _resumeBackup(backupProvider);
+                  }),
+                  _resumeBackup(backupProvider),
+                ]);
 
-              if (Store.get(StoreKey.syncAlbums, false)) {
-                await backgroundManager.syncLinkedAlbum();
+                if (Store.get(StoreKey.syncAlbums, false)) {
+                  await backgroundManager.syncLinkedAlbum();
+                }
               }
+            } catch (e) {
+              log.severe('Failed establishing connection to the server: $e');
             }
-          } catch (e) {
-            log.severe('Failed establishing connection to the server: $e');
-          }
-        },
-        onError: (exception) => {
-          log.severe('Failed to update auth info with access token: $accessToken'),
-          ref.read(authProvider.notifier).logout(),
-          context.replaceRoute(const LoginRoute()),
-        },
+          },
+          onError: (exception) => {
+            log.severe('Failed to update auth info with access token: $accessToken'),
+            ref.read(authProvider.notifier).logout(),
+            context.replaceRoute(const LoginRoute()),
+          },
+        ),
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
-      ref.read(authProvider.notifier).logout();
-      context.replaceRoute(const LoginRoute());
+      unawaited(ref.read(authProvider.notifier).logout());
+      unawaited(context.replaceRoute(const LoginRoute()));
       return;
     }
 
@@ -95,11 +99,11 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
       if (needBetaMigration) {
         await Store.put(StoreKey.needBetaMigration, false);
-        context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]);
+        unawaited(context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]));
         return;
       }
 
-      context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
+      unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
     }
 
     if (Store.isBetaTimelineEnabled) {
@@ -109,7 +113,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
     if (hasPermission) {
       // Resume backup (if enable) then navigate
-      ref.watch(backupProvider.notifier).resumeBackup();
+      unawaited(ref.watch(backupProvider.notifier).resumeBackup());
     }
   }
 
@@ -119,7 +123,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
-        notifier.handleBackupResume(currentUser.id);
+        unawaited(notifier.handleBackupResume(currentUser.id));
       }
     }
   }

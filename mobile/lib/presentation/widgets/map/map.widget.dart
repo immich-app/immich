@@ -9,8 +9,8 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet.widget.dart';
-import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
+import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -114,12 +114,14 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     }
 
     final bounds = await controller.getVisibleRegion();
-    _reloadMutex.run(() async {
-      if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
-        final markers = await ref.read(mapMarkerProvider(bounds).future);
-        await reloadMarkers(markers);
-      }
-    });
+    unawaited(
+      _reloadMutex.run(() async {
+        if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
+          final markers = await ref.read(mapMarkerProvider(bounds).future);
+          await reloadMarkers(markers);
+        }
+      }),
+    );
   }
 
   Future<void> reloadMarkers(Map<String, dynamic> markers) async {
@@ -147,7 +149,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 
     final controller = mapController;
     if (controller != null && location != null) {
-      controller.animateCamera(
+      await controller.animateCamera(
         CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), MapUtils.mapZoomToAssetLevel),
         duration: const Duration(milliseconds: 800),
       );

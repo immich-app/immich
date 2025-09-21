@@ -634,9 +634,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Listen for control visibility changes and change system UI mode accordingly
     ref.listen(assetViewerProvider.select((value) => value.showingControls), (_, showingControls) async {
       if (showingControls) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
       } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
       }
     });
 
