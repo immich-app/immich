@@ -765,8 +765,8 @@ importers:
         specifier: ~4.8.0
         version: 4.8.1
       svelte-gestures:
-        specifier: 5.1.4
-        version: 5.1.4
+        specifier: ^5.2.2
+        version: 5.2.2
       svelte-i18n:
         specifier: ^4.0.1
         version: 4.0.1(svelte@5.38.10)
@@ -10581,8 +10581,8 @@ packages:
       svelte:
         optional: true
 
-  svelte-gestures@5.1.4:
-    resolution: {integrity: sha512-gfSO/GqWLu9nRMCz12jqdyA0+NTsojYcIBcRqZjwWrpQbqMXr0zWPFpZBtzfYbRHtuFxZImMZp9MrVaFCYbhDg==}
+  svelte-gestures@5.2.2:
+    resolution: {integrity: sha512-Y+chXPaSx8OsPoFppUwPk8PJzgrZ7xoDJKXeiEc7JBqyKKzXer9hlf8F9O34eFuAWB4/WQEvccACvyBplESL7A==}
 
   svelte-i18n@4.0.1:
     resolution: {integrity: sha512-jaykGlGT5PUaaq04JWbJREvivlCnALtT+m87Kbm0fxyYHynkQaxQMnIKHLm2WeIuBRoljzwgyvz0Z6/CMwfdmQ==}
@@ -23862,7 +23862,7 @@ snapshots:
     optionalDependencies:
       svelte: 5.38.10
 
-  svelte-gestures@5.1.4: {}
+  svelte-gestures@5.2.2: {}
 
   svelte-i18n@4.0.1(svelte@5.38.10):
     dependencies:
