@@ -152,12 +152,15 @@ export abstract class PhotostreamSegment {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
+        // eslint-disable-next-line svelte/prefer-svelte-reactivity
         processedIds: new Set<string>(),
         unprocessedIds: ids,
         changedGeometry: false,
       };
     }
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const unprocessedIds = new Set<string>(ids);
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const processedIds = new Set<string>();
     const moveAssets: MoveAsset[] = [];
     let changedGeometry = false;

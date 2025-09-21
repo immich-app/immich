@@ -320,6 +320,7 @@ export abstract class PhotostreamManager {
   }
 
   updateAssetOperation(ids: string[], operation: AssetOperation) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     return this.#runAssetOperation(new Set(ids), operation);
   }
 
@@ -330,7 +331,9 @@ export abstract class PhotostreamManager {
   }
 
   #updateAssets(assets: TimelineAsset[]) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const lookup = new Map<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const { unprocessedIds } = this.#runAssetOperation(new Set(lookup.keys()), (asset) =>
       updateObject(asset, lookup.get(asset.id)),
     );
@@ -342,6 +345,7 @@ export abstract class PhotostreamManager {
   }
 
   removeAssets(ids: string[]) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const { unprocessedIds } = this.#runAssetOperation(new Set(ids), () => ({ remove: true }));
     return [...unprocessedIds];
   }
@@ -378,11 +382,15 @@ export abstract class PhotostreamManager {
 
   #runAssetOperation(ids: Set<string>, operation: AssetOperation) {
     if (ids.size === 0) {
+      // eslint-disable-next-line svelte/prefer-svelte-reactivity
       return { processedIds: new Set(), unprocessedIds: ids, changedGeometry: false };
     }
 
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const changedMonthGroups = new Set<PhotostreamSegment>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     let idsToProcess = new Set(ids);
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const idsProcessed = new Set<string>();
     const combinedMoveAssets: MoveAsset[][] = [];
     for (const month of this.months) {
