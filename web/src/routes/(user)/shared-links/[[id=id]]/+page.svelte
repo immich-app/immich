@@ -54,8 +54,15 @@
     }
   };
 
-  const handleEditDone = async () => {
-    await refresh();
+  const handleEditDone = async (updatedLink?: SharedLinkResponseDto) => {
+    if (updatedLink) {
+      const index = sharedLinks.findIndex((link) => link.id === updatedLink.id);
+      if (index !== -1) {
+        sharedLinks[index] = updatedLink;
+      }
+    } else {
+      await refresh();
+    }
     await goto(AppRoute.SHARED_LINKS);
   };
 
