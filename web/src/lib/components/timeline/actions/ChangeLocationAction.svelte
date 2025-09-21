@@ -24,9 +24,7 @@
     isShowChangeLocation = false;
 
     if (!point) {
-      // if point is undefined or null, user chose to clear location
       try {
-        // explicitly set latitude and longitude to null to clear them
         await updateAssets({ assetBulkUpdateDto: { ids, latitude: null, longitude: null } });
         clearSelect();
       } catch (error) {

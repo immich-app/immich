@@ -170,14 +170,13 @@ export class AssetService extends BaseService {
       await this.jobRepository.queueAll(
         dateTimesWithTimezone.map(({ assetId: id, dateTimeOriginal }) => ({
           name: JobName.SidecarWrite,
-            data: {
-              ...exifDto,
-              id,
-              dateTimeOriginal: dateTimeOriginal ?? undefined,
-              // preserve null values so sidecar writer can clear GPS tags when latitude/longitude are null
-              latitude: exifDto.latitude,
-              longitude: exifDto.longitude,
-            },
+          data: {
+            ...exifDto,
+            id,
+            dateTimeOriginal: dateTimeOriginal ?? undefined,
+            latitude: exifDto.latitude,
+            longitude: exifDto.longitude,
+          },
         })),
       );
     }
