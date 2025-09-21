@@ -1,17 +1,19 @@
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart' as asset_entity;
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 
 final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)));
@@ -68,7 +70,7 @@ class AssetMediaRepository {
   }
 
   // TODO: make this more efficient
-  Future<int> shareAssets(List<BaseAsset> assets) async {
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) async {
     final downloadedXFiles = <XFile>[];
 
     for (var asset in assets) {
@@ -105,8 +107,12 @@ class AssetMediaRepository {
     }
 
     // we dont want to await the share result since the
-    // "preparing" dialog will not disappear unti
-    Share.shareXFiles(downloadedXFiles).then((result) async {
+    // "preparing" dialog will not disappear until
+    final size = context.sizeData;
+    Share.shareXFiles(
+      downloadedXFiles,
+      sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
+    ).then((result) async {
       for (var file in downloadedXFiles) {
         try {
           await File(file.path).delete();
