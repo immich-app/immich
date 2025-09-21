@@ -9,7 +9,6 @@ import { DisableOAuthLogin, EnableOAuthLogin } from 'src/commands/oauth-login';
 import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/commands/password-login';
 import { PromptPasswordQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
 import { VersionCommand } from 'src/commands/version.command';
-import { MigrateToS3Command } from 'src/commands/migrate-to-s3.command';
 
 export const commandsAndQuestions = [
   ResetAdminPasswordCommand,
@@ -26,5 +25,4 @@ export const commandsAndQuestions = [
   ChangeMediaLocationCommand,
   PromptMediaLocationQuestions,
   PromptConfirmMoveQuestions,
-  MigrateToS3Command,
 ];

@@ -2,7 +2,7 @@
 
 This file captures durable context, decisions, and next steps so work can resume smoothly after restarts.
 
-Last updated: 2025-09-19
+Last updated: 2025-09-20
 
 Repository Map (high level)
 
@@ -47,6 +47,26 @@ Key Files/Configs
 - OpenAPI generator script: `open-api/bin/generate-open-api.sh`
 
 Session Log
+
+- 2025-09-20 — Remove non-functioning server migrate-to-s3
+  - Removed server admin CLI command: deleted `server/src/commands/migrate-to-s3.command.ts` and its import/registration in `server/src/commands/index.ts:1`
+  - Rationale: command was non-functional and not part of supported workflows; reducing surface area avoids confusion
+  - Validation: code references removed (rg search); full build not executed here due to Node 18 vs. repo Node 22 requirement
+
+- 2025-09-20 — Explore S3 migration via Immich CLI (proposal)
+  - Constraints: CLI runs on client machine; server media files live on the server host. Avoid heavy deps (AWS SDK) in CLI.
+  - Recommended path (lightweight, reliable): Wrap existing tools and add verification utilities.
+    1) Plan command: `immich storage s3-plan` — prints exact `aws s3 sync`/`s5cmd` commands based on env (bucket/prefix) and a provided `--media-base` path (run on the server host).
+    2) Migrate wrapper: `immich storage s3-migrate` — optionally executes the printed command if AWS CLI is present; supports `--dry-run` and `--concurrency` flags, surfaces progress.
+    3) Verify command: `immich storage s3-verify` — uses `@immich/sdk` to check that asset paths are `s3://...` after switching engine; reports mismatches or missing objects (via HEAD using server S3 backend API when available).
+    4) Manifest export (optional): `immich storage export-manifest` — emits newline-delimited `source\tdest` pairs to feed `s5cmd run -` for high-performance migration; requires `--media-base` and runs on the server host.
+  - UX notes: group under `immich storage ...`; require admin API key for verify. No AWS SDK dependency; rely on installed CLI tools when executing.
+  - Next step (if approved): scaffold commands without heavy logic, focusing on env detection, argument parsing, and clear instructions; add tests in `cli` for option parsing.
+
+- 2025-09-20 — Session start & guideline sync
+  - Read `AGENTS.md`, `codex.md`, and `continue.md`; confirmed rules: small/surgical changes, preserve style, validate smallest scope, use preambles, maintain a plan for non-trivial work, and always update this log
+  - Environment: approvals=never, sandbox=danger-full-access, network=enabled, cwd=`/workspace`
+  - TODO: Awaiting user direction for next task; will create a short plan and validate within the smallest impacted package
 
 - 2025-09-19 — Session start and guidelines review
   - Read `AGENTS.md`, `codex.md`, and `continue.md`; aligned on principles, workflows, and memory protocol
