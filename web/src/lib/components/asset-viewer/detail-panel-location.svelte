@@ -126,7 +126,7 @@
   <ConfirmModal
     confirmColor="danger"
     title={$t('clear_location')}
-    prompt={$t('confirm_clear_location_prompt')}
+    prompt={$t('confirm_clear_location_prompt', { values: { count: 1 } })}
     icon={mdiMapMarkerOff}
     size="small"
     onClose={handleConfirmModalClose}
