@@ -1,8 +1,8 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import AssetLayout from '$lib/components/timeline/base-components/AssetLayout.svelte';
-  import BaseTimelineViewer from '$lib/components/timeline/base-components/base-timeline-viewer.svelte';
-  import SelectableTimelineMonth from '$lib/components/timeline/internal-components/selectable-timeline-month.svelte';
+  import BaseTimelineViewer from '$lib/components/timeline/base-components/Stream.svelte';
+  import SelectableTimelineMonth from '$lib/components/timeline/internal-components/SelectableSegment.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import { SearchStreamManager } from '$lib/managers/timeline-manager/SearchStreamManager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';

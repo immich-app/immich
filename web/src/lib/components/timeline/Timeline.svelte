@@ -1,10 +1,10 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/timeline-keyboard-actions.svelte';
-  import BaseTimeline from '$lib/components/timeline/base-components/base-timeline.svelte';
-  import TimelineMonth from '$lib/components/timeline/base-components/timeline-month.svelte';
-  import SelectableTimelineDaygroup from '$lib/components/timeline/internal-components/selectable-timeline-daygroup.svelte';
-  import SelectableTimelineMonth from '$lib/components/timeline/internal-components/selectable-timeline-month.svelte';
+  import StreamWithScrubber from '$lib/components/timeline/base-components/StreamWithScrubber.svelte';
+  import TimelineMonth from '$lib/components/timeline/base-components/Segment.svelte';
+  import SelectableDayGroup from '$lib/components/timeline/internal-components/SelectableDayGroup.svelte';
+  import SelectableSegment from '$lib/components/timeline/internal-components/SelectableSegment.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/internal-components/timeline-asset-viewer.svelte';
   import type { AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
@@ -71,11 +71,11 @@
     empty,
   }: Props = $props();
 
-  let viewer: BaseTimeline | undefined = $state();
+  let viewer: StreamWithScrubber | undefined = $state();
   let showSkeleton: boolean = $state(true);
 </script>
 
-<BaseTimeline
+<StreamWithScrubber
   bind:this={viewer}
   {enableRouting}
   {timelineManager}
@@ -91,7 +91,7 @@
     />
   {/snippet}
   {#snippet segment({ segment, onScrollCompensationMonthInDOM })}
-    <SelectableTimelineMonth
+    <SelectableSegment
       {segment}
       {onScrollCompensationMonthInDOM}
       {timelineManager}
@@ -100,7 +100,7 @@
       {singleSelect}
     >
       {#snippet content({ onAssetOpen, onAssetSelect, onHover })}
-        <SelectableTimelineDaygroup {timelineManager} {assetInteraction} {onAssetSelect}>
+        <SelectableDayGroup {timelineManager} {assetInteraction} {onAssetSelect}>
           {#snippet content({ onDayGroupSelect, onDayGroupAssetSelect })}
             <TimelineMonth
               {assetInteraction}
@@ -132,11 +132,11 @@
               {/snippet}
             </TimelineMonth>
           {/snippet}
-        </SelectableTimelineDaygroup>
+        </SelectableDayGroup>
       {/snippet}
-    </SelectableTimelineMonth>
+    </SelectableSegment>
   {/snippet}
-</BaseTimeline>
+</StreamWithScrubber>
 
 <TimelineKeyboardActions
   scrollToAsset={(asset) => viewer?.scrollToAsset(asset) ?? false}

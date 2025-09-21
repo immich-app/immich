@@ -1,5 +1,5 @@
 <script lang="ts">
-  import BaseTimelineViewer from '$lib/components/timeline/base-components/base-timeline-viewer.svelte';
+  import BaseTimelineViewer from '$lib/components/timeline/base-components/Stream.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { PhotostreamSegment } from '$lib/managers/timeline-manager/PhotostreamSegment.svelte';
