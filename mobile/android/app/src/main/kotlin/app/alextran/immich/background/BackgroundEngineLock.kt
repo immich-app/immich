@@ -17,7 +17,7 @@ class BackgroundEngineLock(context: Context) : BackgroundWorkerLockApi, FlutterP
         private fun checkAndEnforceBackgroundLock(ctx: Context) {
             // work manager task is running while the main app is opened, cancel the worker
             if (BackgroundWorkerPreferences(ctx).isLocked() &&
-                engineCount.incrementAndGet() > 1 &&
+                engineCount.get() > 1 &&
                 BackgroundWorkerApiImpl.isBackgroundWorkerRunning()
             ) {
                 Log.i(TAG, "Background worker is locked, cancelling the background worker")
@@ -39,6 +39,7 @@ class BackgroundEngineLock(context: Context) : BackgroundWorkerLockApi, FlutterP
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         checkAndEnforceBackgroundLock(binding.applicationContext)
+        engineCount.incrementAndGet()
         Log.i(TAG, "Flutter engine attached. Attached Engines count: $engineCount")
     }
 
