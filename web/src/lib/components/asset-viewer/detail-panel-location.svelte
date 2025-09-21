@@ -90,7 +90,7 @@
         <button type="button" class="p-1" onclick={openChangeLocation} title={$t('edit_location')}>
           <Icon icon={mdiPencil} size="20" />
         </button>
-        {#if asset.hasUserLocation ?? asset.exifInfo?.latitude != null}
+        {#if asset.hasUserLocation}
           <button type="button" class="p-1 text-red-600" onclick={confirmClearLocation} title={$t('clear_location')}>
             <Icon icon={mdiMapMarkerOff} size="20" />
           </button>
