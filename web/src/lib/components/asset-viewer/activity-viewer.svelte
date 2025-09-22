@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import { autoGrowHeight } from '$lib/actions/autogrow';
   import { shortcut } from '$lib/actions/shortcut';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -146,7 +147,10 @@
 
               <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">{reaction.comment}</div>
               {#if assetId === undefined && reaction.assetId}
-                <a class="aspect-square w-[75px] h-[75px]" href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}">
+                <a
+                  class="aspect-square w-[75px] h-[75px]"
+                  href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
+                >
                   <img
                     class="rounded-lg w-[75px] h-[75px] object-cover"
                     src={getAssetThumbnailUrl(reaction.assetId)}
@@ -198,7 +202,7 @@
                 {#if assetId === undefined && reaction.assetId}
                   <a
                     class="aspect-square w-[75px] h-[75px]"
-                    href="{AppRoute.ALBUMS}/{albumId}/photos/{reaction.assetId}"
+                    href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetId}`)}
                   >
                     <img
                       class="rounded-lg w-[75px] h-[75px] object-cover"

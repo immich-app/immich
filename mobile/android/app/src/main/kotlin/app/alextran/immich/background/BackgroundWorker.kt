@@ -76,9 +76,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
-      FlutterEngineCache.getInstance().remove(BackgroundEngineLock.ENGINE_CACHE_KEY);
-      FlutterEngineCache.getInstance()
-        .put(BackgroundEngineLock.ENGINE_CACHE_KEY, engine!!)
+      FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
 
       // Register custom plugins
       MainActivity.registerPlugins(ctx, engine!!)
@@ -192,9 +190,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     isComplete = true
     engine?.destroy()
     engine = null
-    FlutterEngineCache.getInstance().remove(BackgroundEngineLock.ENGINE_CACHE_KEY);
     flutterApi = null
     notificationManager.cancel(NOTIFICATION_ID)
+    FlutterEngineCache.getInstance().remove(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY)
     waitForForegroundPromotion()
     completionHandler.set(success)
   }

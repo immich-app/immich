@@ -344,7 +344,7 @@ export class AuthService extends BaseService {
         await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldPath] } });
       }
     } catch (error: Error | any) {
-      this.logger.warn(`Unable to sync oauth profile picture: ${error}`, error?.stack);
+      this.logger.warn(`Unable to sync oauth profile picture: ${error}\n${error?.stack}`);
     }
   }
 

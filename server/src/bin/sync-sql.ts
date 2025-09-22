@@ -15,6 +15,7 @@ import { repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { AuthService } from 'src/services/auth.service';
 import { getKyselyConfig } from 'src/utils/database';
@@ -57,7 +58,7 @@ class SqlGenerator {
     try {
       await this.setup();
       for (const Repository of repositories) {
-        if (Repository === LoggingRepository) {
+        if (Repository === LoggingRepository || Repository === MachineLearningRepository) {
           continue;
         }
         await this.process(Repository);

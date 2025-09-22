@@ -342,11 +342,11 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> shareAssets(ActionSource source) async {
+  Future<ActionResult> shareAssets(ActionSource source, BuildContext context) async {
     final ids = _getAssets(source).toList(growable: false);
 
     try {
-      await _service.shareAssets(ids);
+      await _service.shareAssets(ids, context);
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to share assets', error, stack);
@@ -356,7 +356,6 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> downloadAll(ActionSource source) async {
     final assets = _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
-
     try {
       final didEnqueue = await _service.downloadAll(assets);
       final enqueueCount = didEnqueue.where((e) => e).length;

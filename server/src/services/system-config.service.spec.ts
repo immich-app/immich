@@ -82,6 +82,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: true,
     urls: ['http://immich-machine-learning:3003'],
+    availabilityChecks: {
+      enabled: true,
+      interval: 30_000,
+      timeout: 2000,
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',

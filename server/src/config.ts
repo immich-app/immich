@@ -54,6 +54,11 @@ export interface SystemConfig {
   machineLearning: {
     enabled: boolean;
     urls: string[];
+    availabilityChecks: {
+      enabled: boolean;
+      timeout: number;
+      interval: number;
+    };
     clip: {
       enabled: boolean;
       modelName: string;
@@ -176,6 +181,8 @@ export interface SystemConfig {
   };
 }
 
+export type MachineLearningConfig = SystemConfig['machineLearning'];
+
 export const defaults = Object.freeze<SystemConfig>({
   backup: {
     database: {
@@ -227,6 +234,11 @@ export const defaults = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
+    availabilityChecks: {
+      enabled: true,
+      timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
+      interval: 30_000,
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',

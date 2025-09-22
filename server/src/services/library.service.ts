@@ -245,7 +245,7 @@ export class LibraryService extends BaseService {
       job.paths.map((path) =>
         this.processEntity(path, library.ownerId, job.libraryId)
           .then((asset) => assetImports.push(asset))
-          .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}`, error)),
+          .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`)),
       ),
     );
 

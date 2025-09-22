@@ -95,7 +95,7 @@ export class VersionService extends BaseService {
         this.eventRepository.clientBroadcast('on_new_release', asNotification(metadata));
       }
     } catch (error: Error | any) {
-      this.logger.warn(`Unable to run version check: ${error}`, error?.stack);
+      this.logger.warn(`Unable to run version check: ${error}\n${error?.stack}`);
       return JobStatus.Failed;
     }
 

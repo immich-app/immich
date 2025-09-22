@@ -9,7 +9,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import type { SystemConfigDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
-  import { mdiMinusCircle } from '@mdi/js';
+  import { mdiPlus, mdiTrashCanOutline } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -46,19 +46,6 @@
 
         <div>
           {#each config.machineLearning.urls as _, i (i)}
-            {#snippet removeButton()}
-              {#if config.machineLearning.urls.length > 1}
-                <IconButton
-                  size="large"
-                  shape="round"
-                  color="danger"
-                  aria-label=""
-                  onclick={() => config.machineLearning.urls.splice(i, 1)}
-                  icon={mdiMinusCircle}
-                />
-              {/if}
-            {/snippet}
-
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={i === 0 ? $t('url') : undefined}
@@ -67,19 +54,68 @@
               required={i === 0}
               disabled={disabled || !config.machineLearning.enabled}
               isEdited={i === 0 && !isEqual(config.machineLearning.urls, savedConfig.machineLearning.urls)}
-              trailingSnippet={removeButton}
-            />
+            >
+              {#snippet trailingSnippet()}
+                {#if config.machineLearning.urls.length > 1}
+                  <IconButton
+                    aria-label=""
+                    onclick={() => config.machineLearning.urls.splice(i, 1)}
+                    icon={mdiTrashCanOutline}
+                    color="danger"
+                  />
+                {/if}
+              {/snippet}
+            </SettingInputField>
           {/each}
         </div>
 
-        <Button
-          class="mb-2"
-          size="small"
-          shape="round"
-          onclick={() => config.machineLearning.urls.splice(0, 0, '')}
-          disabled={disabled || !config.machineLearning.enabled}>{$t('add_url')}</Button
-        >
+        <div class="flex justify-end">
+          <Button
+            class="mb-2"
+            size="small"
+            shape="round"
+            leadingIcon={mdiPlus}
+            onclick={() => config.machineLearning.urls.push('')}
+            disabled={disabled || !config.machineLearning.enabled}>{$t('add_url')}</Button
+          >
+        </div>
       </div>
+
+      <SettingAccordion
+        key="availability-checks"
+        title={$t('admin.machine_learning_availability_checks')}
+        subtitle={$t('admin.machine_learning_availability_checks_description')}
+      >
+        <div class="ms-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_availability_checks_enabled')}
+            bind:checked={config.machineLearning.availabilityChecks.enabled}
+            disabled={disabled || !config.machineLearning.enabled}
+          />
+
+          <hr />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_availability_checks_interval')}
+            bind:value={config.machineLearning.availabilityChecks.interval}
+            description={$t('admin.machine_learning_availability_checks_interval_description')}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.availabilityChecks.enabled}
+            isEdited={config.machineLearning.availabilityChecks.interval !==
+              savedConfig.machineLearning.availabilityChecks.interval}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_availability_checks_timeout')}
+            bind:value={config.machineLearning.availabilityChecks.timeout}
+            description={$t('admin.machine_learning_availability_checks_timeout_description')}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.availabilityChecks.enabled}
+            isEdited={config.machineLearning.availabilityChecks.timeout !==
+              savedConfig.machineLearning.availabilityChecks.timeout}
+          />
+        </div>
+      </SettingAccordion>
 
       <SettingAccordion
         key="smart-search"

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import AlbumCard from '$lib/components/album-page/album-card.svelte';
   import { AppRoute } from '$lib/constants';
   import { albumViewSettings } from '$lib/stores/preferences.store';
@@ -65,7 +66,7 @@
       {#each albums as album, index (album.id)}
         <a
           data-sveltekit-preload-data="hover"
-          href="{AppRoute.ALBUMS}/{album.id}"
+          href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}
           animate:flip={{ duration: 400 }}
           oncontextmenu={(event) => oncontextmenu(event, album)}
         >

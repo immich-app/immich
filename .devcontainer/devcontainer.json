@@ -5,8 +5,7 @@
     "immich-server",
     "redis",
     "database",
-    "immich-machine-learning",
-    "init"
+    "immich-machine-learning"
   ],
   "dockerComposeFile": [
     "../docker/docker-compose.dev.yml",

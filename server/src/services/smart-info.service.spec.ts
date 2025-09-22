@@ -205,7 +205,6 @@ describe(SmartInfoService.name, () => {
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.encodeImage).toHaveBeenCalledWith(
-        ['http://immich-machine-learning:3003'],
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
@@ -242,7 +241,6 @@ describe(SmartInfoService.name, () => {
 
       expect(mocks.database.wait).toHaveBeenCalledWith(512);
       expect(mocks.machineLearning.encodeImage).toHaveBeenCalledWith(
-        ['http://immich-machine-learning:3003'],
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );

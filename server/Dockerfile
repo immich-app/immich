@@ -1,4 +1,4 @@
-FROM ghcr.io/immich-app/base-server-dev:202509091104@sha256:4f9275330f1e49e7ce9840758ea91839052fe6ed40972d5bb97a9af857fa956a AS builder
+FROM ghcr.io/immich-app/base-server-dev:202509210934@sha256:b5ce2d7eaf379d4cf15efd4bab180d8afc8a80d20b36c9800f4091aca6ae267e AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp
@@ -33,7 +33,7 @@ RUN pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && 
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-FROM ghcr.io/immich-app/base-server-prod:202509091104@sha256:d1ccbac24c84f2f8277cf85281edfca62d85d7daed6a62b8efd3a81bcd3c5e0e
+FROM ghcr.io/immich-app/base-server-prod:202509210934@sha256:0c7eacf0ba88ca52e1a267cfc62d20d07792ea2c604818c2cbd37dc7dcefdac9
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

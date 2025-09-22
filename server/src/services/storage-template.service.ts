@@ -338,7 +338,7 @@ export class StorageTemplateService extends BaseService {
 
       return destination;
     } catch (error: any) {
-      this.logger.error(`Unable to get template path for ${filename}`, error);
+      this.logger.error(`Unable to get template path for ${filename}: ${error}`);
       return asset.originalPath;
     }
   }

@@ -51,11 +51,6 @@ export const serverVersion = new SemVer(version);
 export const AUDIT_LOG_MAX_DURATION = Duration.fromObject({ days: 100 });
 export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
-export const MACHINE_LEARNING_PING_TIMEOUT = Number(process.env.MACHINE_LEARNING_PING_TIMEOUT || 2000);
-export const MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME = Number(
-  process.env.MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME || 30_000,
-);
-
 export const citiesFile = 'cities500.txt';
 export const reverseGeocodeMaxDistance = 25_000;
 

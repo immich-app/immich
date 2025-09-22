@@ -18,6 +18,7 @@ mobile/libisar.dylib
 mobile/openapi/test
 mobile/openapi/doc
 mobile/openapi/.openapi-generator/FILES
+mobile/ios/build
 
 open-api/typescript-sdk/build
 mobile/android/fastlane/report.xml
