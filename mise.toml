@@ -327,6 +327,7 @@ depends = [
   "mobile:pigeon:native-sync",
   "mobile:pigeon:thumbnail",
   "mobile:pigeon:background-worker",
+  "mobile:pigeon:background-worker-lock",
   "mobile:pigeon:connectivity",
 ]
 
@@ -428,6 +429,20 @@ outputs = [
 run = [
   "dart run pigeon --input pigeon/background_worker_api.dart",
   "dart format lib/platform/background_worker_api.g.dart",
+]
+
+[tasks."mobile:pigeon:background-worker-lock"]
+description = "Generate background worker lock API pigeon code"
+dir = "mobile"
+hide = true
+sources = ["pigeon/background_worker_lock_api.dart"]
+outputs = [
+  "lib/platform/background_worker_lock_api.g.dart",
+  "android/app/src/main/kotlin/app/alextran/immich/background/BackgroundWorkerLock.g.kt",
+]
+run = [
+  "dart run pigeon --input pigeon/background_worker_lock_api.dart",
+  "dart format lib/platform/background_worker_lock_api.g.dart",
 ]
 
 [tasks."mobile:pigeon:connectivity"]
