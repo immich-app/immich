@@ -98,6 +98,19 @@ export interface EnvData {
   storage: {
     ignoreMountCheckErrors: boolean;
     mediaLocation?: string;
+    engine?: 'local' | 's3';
+    s3?: {
+      endpoint?: string;
+      region?: string;
+      bucket?: string;
+      prefix?: string;
+      forcePathStyle?: boolean;
+      useAccelerate?: boolean;
+      accessKeyId?: string;
+      secretAccessKey?: string;
+      sse?: string;
+      sseKmsKeyId?: string;
+    };
   };
 
   workers: ImmichWorker[];
@@ -309,6 +322,19 @@ const getEnv = (): EnvData => {
     storage: {
       ignoreMountCheckErrors: !!dto.IMMICH_IGNORE_MOUNT_CHECK_ERRORS,
       mediaLocation: dto.IMMICH_MEDIA_LOCATION,
+      engine: (dto.IMMICH_STORAGE_ENGINE as 'local' | 's3') || 'local',
+      s3: {
+        endpoint: dto.S3_ENDPOINT,
+        region: dto.S3_REGION || 'us-east-1',
+        bucket: dto.S3_BUCKET,
+        prefix: dto.S3_PREFIX,
+        forcePathStyle: !!dto.S3_FORCE_PATH_STYLE,
+        useAccelerate: !!dto.S3_USE_ACCELERATE,
+        accessKeyId: dto.S3_ACCESS_KEY_ID,
+        secretAccessKey: dto.S3_SECRET_ACCESS_KEY,
+        sse: dto.S3_SSE,
+        sseKmsKeyId: dto.S3_SSE_KMS_KEY_ID,
+      },
     },
 
     telemetry: {

@@ -9,10 +9,43 @@ import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolde
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { handlePromiseError } from 'src/utils/misc';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 
 @Injectable()
 export class BackupService extends BaseService {
   private backupLock = false;
+  // S3 helpers
+  private _s3: S3AppStorageBackend | null | undefined;
+  private joinPaths(base: string, part: string): string {
+    if (base.startsWith('s3://')) {
+      const head = base.replace(/\/+$/g, '');
+      const tail = part.replace(/^\/+/, '');
+      return `${head}/${tail}`;
+    }
+    return path.join(base, part);
+  }
+  private getS3(): S3AppStorageBackend | null {
+    if (this._s3 !== undefined) return this._s3;
+    const env = this.configRepository.getEnv();
+    const s3c = env.storage.s3;
+    if (env.storage.engine === 's3' && s3c && s3c.bucket) {
+      this._s3 = new S3AppStorageBackend({
+        endpoint: s3c.endpoint,
+        region: s3c.region || 'us-east-1',
+        bucket: s3c.bucket,
+        prefix: s3c.prefix,
+        forcePathStyle: s3c.forcePathStyle,
+        useAccelerate: s3c.useAccelerate,
+        accessKeyId: s3c.accessKeyId,
+        secretAccessKey: s3c.secretAccessKey,
+        sse: s3c.sse as any,
+        sseKmsKeyId: s3c.sseKmsKeyId,
+      });
+    } else {
+      this._s3 = null;
+    }
+    return this._s3;
+  }
 
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Microservices] })
   async onConfigInit({
@@ -52,7 +85,14 @@ export class BackupService extends BaseService {
     } = await this.getConfig({ withCache: false });
 
     const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
-    const files = await this.storageRepository.readdir(backupsFolder);
+    const s3 = this.getS3();
+    let files: string[] = [];
+    if (s3 && (backupsFolder.startsWith('s3://') || StorageCore.isImmichPath(backupsFolder))) {
+      // List immediate files under the backups prefix on S3
+      files = await s3.list(backupsFolder);
+    } else {
+      files = await this.storageRepository.readdir(backupsFolder);
+    }
     const failedBackups = files.filter((file) => file.match(/immich-db-backup-.*\.sql\.gz\.tmp$/));
     const backups = files
       .filter((file) => {
@@ -68,7 +108,12 @@ export class BackupService extends BaseService {
     toDelete.push(...failedBackups);
 
     for (const file of toDelete) {
-      await this.storageRepository.unlink(path.join(backupsFolder, file));
+      const filePath = this.joinPaths(backupsFolder, file);
+      if (s3 && (filePath.startsWith('s3://') || StorageCore.isImmichPath(filePath))) {
+        await s3.deleteObject(filePath);
+      } else {
+        await this.storageRepository.unlink(filePath);
+      }
     }
     this.logger.debug(`Database Backup Cleanup Finished, deleted ${toDelete.length} backups`);
   }
@@ -96,10 +141,12 @@ export class BackupService extends BaseService {
 
     databaseParams.push('--clean', '--if-exists');
     const databaseVersion = await this.databaseRepository.getPostgresVersion();
-    const backupFilePath = path.join(
-      StorageCore.getBaseFolder(StorageFolder.Backups),
-      `immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz.tmp`,
-    );
+    const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
+    const filename = `immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${
+      databaseVersion.split(' ')[0]
+    }.sql.gz`;
+    const backupFilePath = this.joinPaths(backupsFolder, `${filename}.tmp`);
+    const finalFilePath = this.joinPaths(backupsFolder, filename);
     const databaseSemver = semver.coerce(databaseVersion);
     const databaseMajorVersion = databaseSemver?.major;
 
@@ -111,6 +158,8 @@ export class BackupService extends BaseService {
     this.logger.log(`Database Backup Starting. Database Version: ${databaseMajorVersion}`);
 
     try {
+      const s3 = this.getS3();
+      let s3Finalize: (() => Promise<void>) | null = null;
       await new Promise<void>((resolve, reject) => {
         const pgdump = this.processRepository.spawn(
           `/usr/lib/postgresql/${databaseMajorVersion}/bin/pg_dumpall`,
@@ -127,9 +176,21 @@ export class BackupService extends BaseService {
         const gzip = this.processRepository.spawn(`gzip`, ['--rsyncable']);
         pgdump.stdout.pipe(gzip.stdin);
 
-        const fileStream = this.storageRepository.createWriteStream(backupFilePath);
-
-        gzip.stdout.pipe(fileStream);
+        // Select destination stream: local FS or S3
+        if (s3 && (backupsFolder.startsWith('s3://') || StorageCore.isImmichPath(backupsFolder))) {
+          s3.writeStream(backupFilePath)
+            .then(({ stream, done }) => {
+              s3Finalize = done;
+              gzip.stdout.pipe(stream);
+            })
+            .catch((err) => {
+              this.logger.error(`Failed to start S3 upload stream: ${err}`);
+              reject(err);
+            });
+        } else {
+          const fileStream = this.storageRepository.createWriteStream(backupFilePath);
+          gzip.stdout.pipe(fileStream);
+        }
 
         pgdump.on('error', (err) => {
           this.logger.error(`Backup failed with error: ${err}`);
@@ -170,15 +231,34 @@ export class BackupService extends BaseService {
             this.logger.error(`Gzip exited with code 0 but pgdump exited with ${pgdump.exitCode}`);
             return;
           }
-          resolve();
+          // Ensure S3 multipart upload has completed
+          if (s3Finalize) {
+            s3Finalize().then(() => resolve()).catch((err) => reject(err));
+          } else {
+            resolve();
+          }
         });
       });
-      await this.storageRepository.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
+      // Finalize: rename tmp → final
+      const s3w = this.getS3();
+      if (s3w && (backupsFolder.startsWith('s3://') || StorageCore.isImmichPath(backupsFolder))) {
+        await s3w.copyObject(backupFilePath, finalFilePath);
+        await s3w.deleteObject(backupFilePath);
+      } else {
+        await this.storageRepository.rename(backupFilePath, finalFilePath);
+      }
     } catch (error) {
       this.logger.error(`Database Backup Failure: ${error}`);
-      await this.storageRepository
-        .unlink(backupFilePath)
-        .catch((error) => this.logger.error(`Failed to delete failed backup file: ${error}`));
+      const s3 = this.getS3();
+      if (s3 && (backupsFolder.startsWith('s3://') || StorageCore.isImmichPath(backupsFolder))) {
+        await s3.deleteObject(backupFilePath).catch((err) =>
+          this.logger.error(`Failed to delete failed backup object: ${err}`),
+        );
+      } else {
+        await this.storageRepository
+          .unlink(backupFilePath)
+          .catch((err) => this.logger.error(`Failed to delete failed backup file: ${err}`));
+      }
       throw error;
     }
 

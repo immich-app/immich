@@ -224,3 +224,25 @@ to use a Docker secret for the password in the Redis container.
 [docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
 [ioredis]: https://ioredis.readthedocs.io/en/latest/README/#connect-to-redis
 [systemd-creds]: https://systemd.io/CREDENTIALS/
+
+## S3 Storage (optional)
+
+| Variable                 | Description                                                                                                   |     Default     | Containers | Workers |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------ | :------------: | :--------- | :-----: |
+| `IMMICH_STORAGE_ENGINE`  | Storage engine for Immich‑managed media. `local` (default) or `s3`.                                           |    `local`     | server     |         |
+| `S3_BUCKET`              | S3 bucket name (required when `IMMICH_STORAGE_ENGINE=s3`).                                                    |                | server     |         |
+| `S3_REGION`              | AWS region for the bucket.                                                                                    |  `us-east-1`   | server     |         |
+| `S3_PREFIX`              | Optional path prefix within the bucket (e.g., `data/immich`).                                                 |                | server     |         |
+| `S3_ENDPOINT`            | Custom endpoint URL (e.g., MinIO `http://minio:9000`).                                                        |                | server     |         |
+| `S3_FORCE_PATH_STYLE`    | Force path‑style requests (set `true` for MinIO or path‑style endpoints).                                     |    `false`     | server     |         |
+| `S3_ACCESS_KEY_ID`       | Access key ID (omit when using IAM).                                                                          |                | server     |         |
+| `S3_SECRET_ACCESS_KEY`   | Secret access key (omit when using IAM).                                                                      |                | server     |         |
+| `S3_USE_ACCELERATE`      | Use S3 Transfer Acceleration (only if enabled on the bucket).                                                |    `false`     | server     |         |
+| `S3_SSE`                 | Server‑side encryption mode (`AES256` or `aws:kms`).                                                          |                | server     |         |
+| `S3_SSE_KMS_KEY_ID`      | KMS key ID when using `aws:kms`.                                                                             |                | server     |         |
+
+Notes:
+
+- Do not set `IMMICH_MEDIA_LOCATION` when using S3; Immich derives `s3://<bucket>/<prefix>` automatically.
+- When using S3, the `/data` bind mount is optional/unused by the server.
+- Database dumps created by the “Create Database Dump” job are saved under `backups/` within the S3 prefix.

@@ -4,6 +4,10 @@ import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { Stats } from 'node:fs';
+import os from 'node:os';
+import fs from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
+import { pipeline } from 'node:stream/promises';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
@@ -32,6 +36,7 @@ import { JobItem, JobOf } from 'src/types';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
@@ -163,6 +168,48 @@ export class MetadataService extends BaseService {
     }
   }
 
+  // S3 staging helpers (mirror MediaService logic)
+  private _s3: S3AppStorageBackend | null | undefined;
+  private getS3(): S3AppStorageBackend | null {
+    if (this._s3 !== undefined) return this._s3;
+    const env = this.configRepository.getEnv();
+    const s3c = env.storage.s3;
+    if (env.storage.engine === 's3' && s3c && s3c.bucket) {
+      this._s3 = new S3AppStorageBackend({
+        endpoint: s3c.endpoint,
+        region: s3c.region || 'us-east-1',
+        bucket: s3c.bucket,
+        prefix: s3c.prefix,
+        forcePathStyle: s3c.forcePathStyle,
+        useAccelerate: s3c.useAccelerate,
+        accessKeyId: s3c.accessKeyId,
+        secretAccessKey: s3c.secretAccessKey,
+        sse: s3c.sse as any,
+        sseKmsKeyId: s3c.sseKmsKeyId,
+      });
+    } else {
+      this._s3 = null;
+    }
+    return this._s3;
+  }
+
+  private isS3Path(p: string): boolean {
+    const s3 = this.getS3();
+    return !!s3 && (p.startsWith('s3://') || StorageCore.isImmichPath(p));
+  }
+
+  private async stageInputIfS3(path: string): Promise<{ localPath: string; cleanup: () => Promise<void> }> {
+    if (!this.isS3Path(path)) {
+      return { localPath: path, cleanup: async () => {} };
+    }
+    const s3 = this.getS3()!;
+    const tmp = StorageCore.getTempPathInDir(os.tmpdir());
+    await fs.mkdir(tmp.substring(0, tmp.lastIndexOf('/')), { recursive: true }).catch(() => {});
+    const stream = await s3.readStream(path);
+    await pipeline(stream, createWriteStream(tmp));
+    return { localPath: tmp, cleanup: () => fs.rm(tmp, { force: true }).then(() => {}) };
+  }
+
   private async linkLivePhotos(
     asset: { id: string; type: AssetType; ownerId: string; libraryId: string | null },
     exifInfo: Insertable<AssetExifTable>,
@@ -223,13 +270,17 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const [exifTags, stats] = await Promise.all([
-      this.getExifTags(asset),
-      this.storageRepository.stat(asset.originalPath),
-    ]);
-    this.logger.verbose('Exif Tags', exifTags);
+    // Stage original/sidecar if stored in S3 for tools that require local files
+    const stagedOriginal = await this.stageInputIfS3(asset.originalPath);
+    const stagedSidecar = asset.sidecarPath ? await this.stageInputIfS3(asset.sidecarPath) : null;
+    try {
+      const [exifTags, stats] = await Promise.all([
+        this.getExifTags({ originalPath: stagedOriginal.localPath, sidecarPath: stagedSidecar?.localPath || null, type: asset.type }),
+        this.storageRepository.stat(stagedOriginal.localPath),
+      ]);
+      this.logger.verbose('Exif Tags', exifTags);
 
-    const dates = this.getDates(asset, exifTags, stats);
+      const dates = this.getDates(asset, exifTags, stats);
 
     const { width, height } = this.getImageDimensions(exifTags);
     let geo: ReverseGeocodeResult = { country: null, state: null, city: null },
@@ -300,7 +351,7 @@ export class MetadataService extends BaseService {
     ];
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
+      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats, stagedOriginal.localPath));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
@@ -319,6 +370,9 @@ export class MetadataService extends BaseService {
       userId: asset.ownerId,
       source: data.source,
     });
+    } finally {
+      await Promise.all([stagedOriginal.cleanup(), stagedSidecar?.cleanup?.() ?? Promise.resolve()]);
+    }
   }
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })
@@ -534,7 +588,7 @@ export class MetadataService extends BaseService {
     return asset.type === AssetType.Image && !!(tags.MotionPhoto || tags.MicroVideo);
   }
 
-  private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: Stats) {
+  private async applyMotionPhotos(asset: Asset, tags: ImmichTags, dates: Dates, stats: Stats, localOriginalPath: string) {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
@@ -573,15 +627,15 @@ export class MetadataService extends BaseService {
       // Samsung MotionPhoto video extraction
       //     HEIC-encoded
       if (hasMotionPhotoVideo) {
-        video = await this.metadataRepository.extractBinaryTag(asset.originalPath, 'MotionPhotoVideo');
+        video = await this.metadataRepository.extractBinaryTag(localOriginalPath, 'MotionPhotoVideo');
       }
       //     JPEG-encoded; HEIC also contains these tags, so this conditional must come second
       else if (hasEmbeddedVideoFile) {
-        video = await this.metadataRepository.extractBinaryTag(asset.originalPath, 'EmbeddedVideoFile');
+        video = await this.metadataRepository.extractBinaryTag(localOriginalPath, 'EmbeddedVideoFile');
       }
       // Default video extraction
       else {
-        video = await this.storageRepository.readFile(asset.originalPath, {
+        video = await this.storageRepository.readFile(localOriginalPath, {
           buffer: Buffer.alloc(length),
           position,
           length,

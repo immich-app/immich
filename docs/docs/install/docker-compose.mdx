@@ -23,6 +23,12 @@ The Compose file './docker-compose.yml' is invalid because:
 See the previous paragraph about installing from the official Docker repository.
 :::
 
+:::tip S3/MinIO Storage (optional)
+Immich can store media in S3‑compatible object storage instead of the local `/data` volume. See Administration → S3/MinIO Storage for configuration, migration using `aws s3 sync`, and caveats.
+
+[Read the S3/MinIO guide](/docs/administration/s3-storage)
+:::
+
 :::info Health check start interval
 If you get an error `can't set healthcheck.start_interval as feature require Docker Engine v25 or later`, it helps to comment out the line for `start_interval` in the `database` section of the `docker-compose.yml` file.
 :::

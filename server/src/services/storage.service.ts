@@ -12,6 +12,7 @@ import {
   SystemMetadataKey,
 } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 import { JobOf, SystemFlags } from 'src/types';
 import { ImmichStartupError } from 'src/utils/misc';
 
@@ -23,6 +24,14 @@ export class StorageService extends BaseService {
     const envData = this.configRepository.getEnv();
     if (envData.storage.mediaLocation) {
       return envData.storage.mediaLocation;
+    }
+
+    if (envData.storage.engine === 's3' && envData.storage.s3?.bucket) {
+      const bucket = envData.storage.s3.bucket;
+      const prefix = envData.storage.s3.prefix
+        ? '/' + envData.storage.s3.prefix.replace(/^\//, '').replace(/\/$/, '')
+        : '';
+      return `s3://${bucket}${prefix}`;
     }
 
     const targets: string[] = [];
@@ -58,6 +67,21 @@ export class StorageService extends BaseService {
       let updated = false;
 
       this.logger.log(`Verifying system mount folder checks, current state: ${JSON.stringify(flags)}`);
+
+      // For S3 storage engine, skip filesystem mount checks and mark as passed
+      if (this.configRepository.getEnv().storage.engine === 's3') {
+        for (const folder of Object.values(StorageFolder)) {
+          if (!flags.mountChecks[folder]) {
+            flags.mountChecks[folder] = true;
+            updated = true;
+          }
+        }
+        if (updated) {
+          await this.systemMetadataRepository.set(SystemMetadataKey.SystemFlags, flags);
+          this.logger.log('Skipping mount checks for S3 engine and marking as verified');
+        }
+        return;
+      }
 
       try {
         // check each folder exists and is writable
@@ -138,13 +162,36 @@ export class StorageService extends BaseService {
     const { files } = job;
 
     // TODO: one job per file
+    const env = this.configRepository.getEnv();
+    const engine = env.storage.engine || 'local';
+    const s3c = env.storage.s3;
+    const useS3 = engine === 's3' && s3c && s3c.bucket;
+    const s3 = useS3
+      ? new S3AppStorageBackend({
+          endpoint: s3c.endpoint,
+          region: s3c.region || 'us-east-1',
+          bucket: s3c.bucket!,
+          prefix: s3c.prefix,
+          forcePathStyle: s3c.forcePathStyle,
+          useAccelerate: s3c.useAccelerate,
+          accessKeyId: s3c.accessKeyId,
+          secretAccessKey: s3c.secretAccessKey,
+          sse: s3c.sse as any,
+          sseKmsKeyId: s3c.sseKmsKeyId,
+        })
+      : null;
+
     for (const file of files) {
       if (!file) {
         continue;
       }
 
       try {
-        await this.storageRepository.unlink(file);
+        if (s3 && (file.startsWith('s3://') || StorageCore.isImmichPath(file))) {
+          await s3.deleteObject(file);
+        } else {
+          await this.storageRepository.unlink(file);
+        }
       } catch (error: any) {
         this.logger.warn('Unable to remove file from disk', error);
       }

@@ -38,6 +38,10 @@ The above error messages show that the server has previously (successfully) writ
 - File does not exist - user manually deleted it and should be manually re-created (`touch .immich`)
 - File does not exist - user restored from a backup, but did not restore each folder (user should restore all folders or manually create `.immich` in any missing folders)
 
+### Using S3 storage engine
+
+When `IMMICH_STORAGE_ENGINE=s3` is enabled, Immich stores media in object storage and does not rely on local folder mounts for Immich‑managed files. In this mode, the local mount checks are skipped, and the system marks folders as verified automatically.
+
 ### Ignoring the checks
 
 :::warning

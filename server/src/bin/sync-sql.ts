@@ -82,7 +82,7 @@ class SqlGenerator {
     const moduleFixture = await Test.createTestingModule({
       imports: [
         KyselyModule.forRoot({
-          ...getKyselyConfig(database.config),
+          ...(getKyselyConfig(database.config) as any),
           log: (event) => {
             if (event.level === 'query') {
               this.sqlLogger.logQuery(event.query.sql);

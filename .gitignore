@@ -6,6 +6,7 @@
 !.vscode/extensions.json
 .idea
 
+docker/.env
 docker/upload
 docker/library
 uploads

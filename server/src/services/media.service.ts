@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import os from 'node:os';
+import { createWriteStream } from 'node:fs';
+import fs from 'node:fs/promises';
+import { pipeline } from 'node:stream/promises';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { Exif } from 'src/database';
@@ -41,6 +45,7 @@ import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
+import { S3AppStorageBackend } from 'src/storage/s3-backend';
 interface UpsertFileOptions {
   assetId: string;
   type: AssetFileType;
@@ -50,6 +55,78 @@ interface UpsertFileOptions {
 @Injectable()
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
+
+  private _s3: S3AppStorageBackend | null | undefined;
+
+  private getS3(): S3AppStorageBackend | null {
+    if (this._s3 !== undefined) return this._s3;
+    const env = this.configRepository.getEnv();
+    const s3c = env.storage.s3;
+    if (env.storage.engine === 's3' && s3c && s3c.bucket) {
+      this._s3 = new S3AppStorageBackend({
+        endpoint: s3c.endpoint,
+        region: s3c.region || 'us-east-1',
+        bucket: s3c.bucket,
+        prefix: s3c.prefix,
+        forcePathStyle: s3c.forcePathStyle,
+        useAccelerate: s3c.useAccelerate,
+        accessKeyId: s3c.accessKeyId,
+        secretAccessKey: s3c.secretAccessKey,
+        sse: s3c.sse as any,
+        sseKmsKeyId: s3c.sseKmsKeyId,
+      });
+    } else {
+      this._s3 = null;
+    }
+    return this._s3;
+  }
+
+  private isS3Path(p: string): boolean {
+    const s3 = this.getS3();
+    return !!s3 && (p.startsWith('s3://') || StorageCore.isImmichPath(p));
+  }
+
+  private async stageInputIfS3(path: string): Promise<{ localPath: string; cleanup: () => Promise<void> }> {
+    if (!this.isS3Path(path)) {
+      return { localPath: path, cleanup: async () => {} };
+    }
+    const s3 = this.getS3()!;
+    const tmp = StorageCore.getTempPathInDir(os.tmpdir());
+    const stream = await s3.readStream(path);
+    await fs.mkdir(tmp.substring(0, tmp.lastIndexOf('/')), { recursive: true }).catch(() => {});
+    await pipeline(stream, createWriteStream(tmp));
+    return { localPath: tmp, cleanup: () => fs.rm(tmp, { force: true }).then(() => {}) };
+  }
+
+  private async stageOutputIfS3(destPath: string): Promise<{ localPath: string; finalize: () => Promise<void> }> {
+    if (!this.isS3Path(destPath)) {
+      return { localPath: destPath, finalize: async () => {} };
+    }
+    const s3 = this.getS3()!;
+    const ext = destPath.split('.').pop() || 'tmp';
+    const tmpBase = StorageCore.getTempPathInDir(os.tmpdir());
+    const tmp = tmpBase.replace(/\.tmp$/, `.${ext}`);
+    await fs.mkdir(tmp.substring(0, tmp.lastIndexOf('/')), { recursive: true }).catch(() => {});
+    return {
+      localPath: tmp,
+      finalize: async () => {
+        const buffer = await fs.readFile(tmp);
+        await s3.putObject(destPath, buffer);
+        await fs.rm(tmp, { force: true });
+      },
+    };
+  }
+
+  private async deletePath(path: string) {
+    if (this.isS3Path(path)) {
+      const s3 = this.getS3();
+      if (s3) {
+        await s3.deleteObject(path);
+        return;
+      }
+    }
+    await this.storageRepository.unlink(path);
+  }
 
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap() {
@@ -221,7 +298,7 @@ export class MediaService extends BaseService {
     }
 
     if (pathsToDelete.length > 0) {
-      await Promise.all(pathsToDelete.map((path) => this.storageRepository.unlink(path)));
+      await Promise.all(pathsToDelete.map((path) => this.deletePath(path)));
     }
 
     if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
@@ -234,12 +311,17 @@ export class MediaService extends BaseService {
   }
 
   private async extractImage(originalPath: string, minSize: number) {
-    let extracted = await this.mediaRepository.extract(originalPath);
-    if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
-      extracted = null;
+    // Stage S3 input to local file for exiftool
+    const staged = await this.stageInputIfS3(originalPath);
+    try {
+      let extracted = await this.mediaRepository.extract(staged.localPath);
+      if (extracted && !(await this.shouldUseExtractedImage(extracted.buffer, minSize))) {
+        extracted = null;
+      }
+      return extracted;
+    } finally {
+      await staged.cleanup();
     }
-
-    return extracted;
   }
 
   private async decodeImage(thumbSource: string | Buffer, exifInfo: Exif, targetSize?: number) {
@@ -274,8 +356,18 @@ export class MediaService extends BaseService {
     const generateFullsize = image.fullsize.enabled && !mimeTypes.isWebSupportedImage(asset.originalPath);
     const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
+    // Stage original if we didn't extract an embedded preview and original is on S3
+    let stagedIn: { cleanup: () => Promise<void> } | null = null;
+    let source: string | Buffer;
+    if (extracted) {
+      source = extracted.buffer;
+    } else {
+      const staged = await this.stageInputIfS3(asset.originalPath);
+      source = staged.localPath;
+      stagedIn = { cleanup: staged.cleanup };
+    }
     const { info, data, colorspace } = await this.decodeImage(
-      extracted ? extracted.buffer : asset.originalPath,
+      source,
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
@@ -284,10 +376,12 @@ export class MediaService extends BaseService {
 
     // generate final images
     const thumbnailOptions = { colorspace, processInvalidImages: false, raw: info };
+    const previewOut = await this.stageOutputIfS3(previewPath);
+    const thumbOut = await this.stageOutputIfS3(thumbnailPath);
     const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
-      this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailPath),
-      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath),
+      this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbOut.localPath),
+      this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewOut.localPath),
     ];
 
     let fullsizePath: string | undefined;
@@ -296,24 +390,41 @@ export class MediaService extends BaseService {
       // convert a new fullsize image from the same source as the thumbnail
       fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FullSize, image.fullsize.format);
       const fullsizeOptions = { format: image.fullsize.format, quality: image.fullsize.quality, ...thumbnailOptions };
-      promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
+      const fullOut = await this.stageOutputIfS3(fullsizePath);
+      promises.push(
+        (async () => {
+          await this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullOut.localPath);
+          await fullOut.finalize();
+        })(),
+      );
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
       fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FullSize, extracted.format);
       this.storageCore.ensureFolders(fullsizePath);
 
-      // Write the buffer to disk with essential EXIF data
-      await this.storageRepository.createOrOverwriteFile(fullsizePath, extracted.buffer);
-      await this.mediaRepository.writeExif(
-        {
-          orientation: asset.exifInfo.orientation,
-          colorspace: asset.exifInfo.colorspace,
-        },
-        fullsizePath,
-      );
+      // Write the buffer with essential EXIF data (S3: upload buffer; local: write file then exif)
+      if (this.isS3Path(fullsizePath)) {
+        const s3 = this.getS3();
+        if (s3) {
+          await s3.putObject(fullsizePath, extracted.buffer);
+        }
+      } else {
+        await this.storageRepository.createOrOverwriteFile(fullsizePath, extracted.buffer);
+        await this.mediaRepository.writeExif(
+          {
+            orientation: asset.exifInfo.orientation,
+            colorspace: asset.exifInfo.colorspace,
+          },
+          fullsizePath,
+        );
+      }
     }
 
     const outputs = await Promise.all(promises);
-
+    await Promise.all([
+      previewOut.finalize(),
+      thumbOut.finalize(),
+      stagedIn ? stagedIn.cleanup() : Promise.resolve(),
+    ]);
     return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
@@ -332,6 +443,7 @@ export class MediaService extends BaseService {
 
     const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
     let inputImage: string | Buffer;
+    let stagedCleanup: (() => Promise<void>) | null = null;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
         this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
@@ -342,7 +454,13 @@ export class MediaService extends BaseService {
       const extracted = await this.extractImage(originalPath, image.preview.size);
       inputImage = extracted ? extracted.buffer : originalPath;
     } else {
-      inputImage = originalPath;
+      if (this.isS3Path(originalPath)) {
+        const staged = await this.stageInputIfS3(originalPath);
+        inputImage = staged.localPath;
+        stagedCleanup = staged.cleanup;
+      } else {
+        inputImage = originalPath;
+      }
     }
 
     const { data: decodedImage, info } = await this.mediaRepository.decodeImage(inputImage, {
@@ -369,6 +487,9 @@ export class MediaService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
+    if (stagedCleanup) {
+      await stagedCleanup();
+    }
     await this.personRepository.update({ id, thumbnailPath });
 
     return JobStatus.Success;
@@ -415,7 +536,8 @@ export class MediaService extends BaseService {
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.Thumbnail, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
 
-    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+    const stagedIn = await this.stageInputIfS3(asset.originalPath);
+    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(stagedIn.localPath);
     const mainVideoStream = this.getMainStream(videoStreams);
     if (!mainVideoStream) {
       throw new Error(`No video streams found for asset ${asset.id}`);
@@ -432,14 +554,17 @@ export class MediaService extends BaseService {
       format,
     );
 
-    await this.mediaRepository.transcode(asset.originalPath, previewPath, previewOptions);
-    await this.mediaRepository.transcode(asset.originalPath, thumbnailPath, thumbnailOptions);
+    const stagedPreview = await this.stageOutputIfS3(previewPath);
+    const stagedThumb = await this.stageOutputIfS3(thumbnailPath);
+    await this.mediaRepository.transcode(stagedIn.localPath, stagedPreview.localPath, previewOptions);
+    await this.mediaRepository.transcode(stagedIn.localPath, stagedThumb.localPath, thumbnailOptions);
 
-    const thumbhash = await this.mediaRepository.generateThumbhash(previewPath, {
+    const thumbhash = await this.mediaRepository.generateThumbhash(stagedPreview.localPath, {
       colorspace: image.colorspace,
       processInvalidImages: process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true',
     });
 
+    await Promise.all([stagedPreview.finalize(), stagedThumb.finalize(), stagedIn.cleanup()]);
     return { previewPath, thumbnailPath, thumbhash };
   }
 
@@ -472,8 +597,10 @@ export class MediaService extends BaseService {
     const input = asset.originalPath;
     const output = StorageCore.getEncodedVideoPath(asset);
     this.storageCore.ensureFolders(output);
+    const stagedIn = await this.stageInputIfS3(input);
+    const stagedOut = await this.stageOutputIfS3(output);
 
-    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(input, {
+    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(stagedIn.localPath, {
       countFrames: this.logger.isLevelEnabled(LogLevel.Debug), // makes frame count more reliable for progress logs
     });
     const videoStream = this.getMainStream(videoStreams);
@@ -511,7 +638,8 @@ export class MediaService extends BaseService {
     }
 
     try {
-      await this.mediaRepository.transcode(input, output, command);
+      await this.mediaRepository.transcode(stagedIn.localPath, stagedOut.localPath, command);
+      await Promise.all([stagedOut.finalize(), stagedIn.cleanup()]);
     } catch (error: any) {
       this.logger.error(`Error occurred during transcoding: ${error.message}`);
       if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
@@ -524,7 +652,8 @@ export class MediaService extends BaseService {
           this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
           ffmpeg = { ...ffmpeg, accelDecode: false };
           const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-          await this.mediaRepository.transcode(input, output, command);
+          await this.mediaRepository.transcode(stagedIn.localPath, stagedOut.localPath, command);
+          await Promise.all([stagedOut.finalize(), stagedIn.cleanup()]);
           partialFallbackSuccess = true;
         } catch (error: any) {
           this.logger.error(`Error occurred during transcoding: ${error.message}`);
@@ -535,7 +664,8 @@ export class MediaService extends BaseService {
         this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
         ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
         const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
-        await this.mediaRepository.transcode(input, output, command);
+        await this.mediaRepository.transcode(stagedIn.localPath, stagedOut.localPath, command);
+        await Promise.all([stagedOut.finalize(), stagedIn.cleanup()]);
       }
     }
 
