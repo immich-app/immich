@@ -29,20 +29,20 @@
 
   let currentUser: UserResponseDto | undefined = $state();
 
-  let isOwned = $derived(currentUser?.id == album.ownerId);
+  // Album is not reactive; compute derived flags imperatively
+  let isOwned = false;
 
-  // Map contributor counts by user id (owner + collaborators)
+  // Map contributor counts by user id (owner + collaborators), no casts/derived
   type ContributorCount = { userId: string; assetCount: number };
-  const contributorMap = $derived(
-    Object.fromEntries(
-      (((album as any)?.contributorCounts ?? []) as ContributorCount[]).map((c) => [c.userId, c.assetCount]),
-    ) as Record<string, number>,
+  const contributorMap: Record<string, number> = Object.fromEntries(
+    (album.contributorCounts ?? []).map(({ userId, assetCount }) => [userId, assetCount]),
   );
   const getCount = (userId: string) => contributorMap[userId] ?? 0;
 
   onMount(async () => {
     try {
       currentUser = await getMyUser();
+      isOwned = currentUser?.id === album.ownerId;
     } catch (error) {
       handleError(error, $t('errors.unable_to_refresh_user'));
     }
