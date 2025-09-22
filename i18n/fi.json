@@ -387,8 +387,6 @@
   "admin_password": "Ylläpitäjän salasana",
   "administration": "Ylläpito",
   "advanced": "Edistyneet",
-  "advanced_settings_beta_timeline_subtitle": "Kokeile uutta sovelluskokemusta",
-  "advanced_settings_beta_timeline_title": "Beta-aikajana",
   "advanced_settings_enable_alternate_media_filter_subtitle": "Käytä tätä vaihtoehtoa suodattaaksesi mediaa synkronoinnin aikana vaihtoehtoisten kriteerien perusteella. Kokeile tätä vain, jos sovelluksessa on ongelmia kaikkien albumien tunnistamisessa.",
   "advanced_settings_enable_alternate_media_filter_title": "[KOKEELLINEN] Käytä vaihtoehtoisen laitteen albumin synkronointisuodatinta",
   "advanced_settings_log_level_title": "Kirjaustaso: {level}",
