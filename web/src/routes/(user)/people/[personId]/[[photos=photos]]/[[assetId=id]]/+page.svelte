@@ -392,7 +392,7 @@
       {assetInteraction}
       isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
-      onSelect={handleSelectFeaturePhoto}
+      onAssetSelect={handleSelectFeaturePhoto}
       onEscape={handleEscape}
     >
       {#if viewMode === PersonPageViewMode.VIEW_ASSETS}

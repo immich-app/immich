@@ -294,11 +294,15 @@ export abstract class PhotostreamManager {
     return this.topSectionHeight + this.bottomSectionHeight + (this.timelineHeight - this.viewportHeight);
   }
 
-  retrieveRange(start: AssetDescriptor, end: AssetDescriptor): Promise<TimelineAsset[]> {
+  retrieveLoadedRange(start: AssetDescriptor, end: AssetDescriptor): TimelineAsset[] {
     const range: TimelineAsset[] = [];
     let collecting = false;
 
     for (const month of this.months) {
+      if (collecting && !month.isLoaded) {
+        // if there are any unloaded months in the range, return empty []
+        return [];
+      }
       for (const asset of month.assets) {
         if (asset.id === start.id) {
           collecting = true;
@@ -307,10 +311,14 @@ export abstract class PhotostreamManager {
           range.push(asset);
         }
         if (asset.id === end.id) {
-          return Promise.resolve(range);
+          return range;
         }
       }
     }
-    return Promise.resolve(range);
+    return range;
+  }
+
+  retrieveRange(start: AssetDescriptor, end: AssetDescriptor): Promise<TimelineAsset[]> {
+    return Promise.resolve(this.retrieveLoadedRange(start, end));
   }
 }

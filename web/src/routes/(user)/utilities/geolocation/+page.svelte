@@ -5,7 +5,6 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
@@ -110,17 +109,7 @@
     return !!asset.latitude && !!asset.longitude;
   };
 
-  const handleThumbnailClick = (
-    asset: TimelineAsset,
-    timelineManager: TimelineManager,
-    dayGroup: DayGroup,
-    onClick: (
-      timelineManager: TimelineManager,
-      assets: TimelineAsset[],
-      groupTitle: string,
-      asset: TimelineAsset,
-    ) => void,
-  ) => {
+  const handleAssetOpen = (asset: TimelineAsset, defaultAssetOpen: () => void) => {
     if (hasGps(asset)) {
       locationUpdated = true;
       setTimeout(() => {
@@ -128,9 +117,9 @@
       }, 1500);
       location = { latitude: asset.latitude!, longitude: asset.longitude! };
       void setQueryValue('at', asset.id);
-    } else {
-      onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+      return;
     }
+    defaultAssetOpen();
   };
 </script>
 
@@ -193,7 +182,7 @@
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
     withStacked
-    onThumbnailClick={handleThumbnailClick}
+    onAssetOpen={handleAssetOpen}
   >
     {#snippet customThumbnailLayout(asset: TimelineAsset)}
       {#if hasGps(asset)}

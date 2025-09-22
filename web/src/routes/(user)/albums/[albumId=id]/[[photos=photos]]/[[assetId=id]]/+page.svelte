@@ -452,7 +452,7 @@
         {isSelectionMode}
         {singleSelect}
         {showArchiveIcon}
-        {onSelect}
+        onAssetSelect={onSelect}
         onEscape={handleEscape}
       >
         {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
