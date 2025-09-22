@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -243,10 +244,19 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
         if (didPop || !mounted) {
           return;
         }
-        final hasAncestor = context.findAncestorWidgetOfExactType<RemoteAlbumPage>() != null;
+
+        final ancestors = context.router.stack.take(context.router.stack.length - 1);
+        final ancestorPage = ancestors.lastWhereOrNull((route) {
+          return route.name == RemoteAlbumRoute.page.name;
+        });
+
         Navigator.of(context).pop();
-        if (!hasAncestor) {
+
+        if (ancestorPage == null) {
           ref.read(currentRemoteAlbumProvider.notifier).dispose();
+        } else {
+          final album = (ancestorPage.routeData.args as RemoteAlbumRouteArgs).album;
+          ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
         }
       },
       child: ProviderScope(
