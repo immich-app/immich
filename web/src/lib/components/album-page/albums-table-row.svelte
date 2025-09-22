@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { AppRoute, dateFormats } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { user } from '$lib/stores/user.store';
@@ -32,7 +33,7 @@
 
 <tr
   class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center even:bg-subtle/20 odd:bg-subtle/80 hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
-  onclick={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
+  onclick={() => goto(resolve(`${AppRoute.ALBUMS}/${album.id}`))}
   {oncontextmenu}
 >
   <td class="text-md text-ellipsis text-start w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%] items-center">

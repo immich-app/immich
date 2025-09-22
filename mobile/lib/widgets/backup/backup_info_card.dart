@@ -8,8 +8,17 @@ class BackupInfoCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String info;
+
   final VoidCallback? onTap;
-  const BackupInfoCard({super.key, required this.title, required this.subtitle, required this.info, this.onTap});
+  final bool isLoading;
+  const BackupInfoCard({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.info,
+    this.onTap,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +47,36 @@ class BackupInfoCard extends StatelessWidget {
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(info, style: context.textTheme.titleLarge),
-                Text("backup_info_card_assets", style: context.textTheme.labelLarge).tr(),
+                Stack(
+                  children: [
+                    Text(
+                      info,
+                      style: context.textTheme.titleLarge?.copyWith(
+                        color: context.colorScheme.onSurface.withAlpha(isLoading ? 50 : 255),
+                      ),
+                    ),
+                    if (isLoading)
+                      Positioned.fill(
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: context.colorScheme.onSurface.withAlpha(150),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Text(
+                  "backup_info_card_assets",
+                  style: context.textTheme.labelLarge?.copyWith(
+                    color: context.colorScheme.onSurface.withAlpha(isLoading ? 50 : 255),
+                  ),
+                ).tr(),
               ],
             ),
           ),

@@ -387,8 +387,6 @@
   "admin_password": "Kata Sandi Admin",
   "administration": "Administrasi",
   "advanced": "Tingkat lanjut",
-  "advanced_settings_beta_timeline_subtitle": "Coba pengalaman aplikasi baru",
-  "advanced_settings_beta_timeline_title": "Garis waktu Beta",
   "advanced_settings_enable_alternate_media_filter_subtitle": "Gunakan opsi ini untuk menyaring media saat sinkronisasi berdasarkan kriteria alternatif. Hanya coba ini dengan aplikasi mendeteksi semua album.",
   "advanced_settings_enable_alternate_media_filter_title": "[EKSPERIMENTAL] Gunakan saringan sinkronisasi album perangkat alternatif",
   "advanced_settings_log_level_title": "Tingkat log: {level}",

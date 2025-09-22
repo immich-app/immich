@@ -387,8 +387,6 @@
   "admin_password": "كلمة سر المشرف",
   "administration": "الإدارة",
   "advanced": "متقدم",
-  "advanced_settings_beta_timeline_subtitle": "جرب تجربة التطبيق الجديدة",
-  "advanced_settings_beta_timeline_title": "الجدول الزمني التجريبي",
   "advanced_settings_enable_alternate_media_filter_subtitle": "استخدم هذا الخيار لتصفية الوسائط اثناء المزامنه بناء على معايير بديلة. جرب هذا الخيار فقط كان لديك مشاكل مع التطبيق بالكشف عن جميع الالبومات.",
   "advanced_settings_enable_alternate_media_filter_title": "[تجريبي] استخدم جهاز تصفية مزامنه البومات بديل",
   "advanced_settings_log_level_title": "مستوى السجل: {level}",

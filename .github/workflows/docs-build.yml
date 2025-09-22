@@ -18,32 +18,28 @@ jobs:
     permissions:
       contents: read
     outputs:
-      should_run: ${{ steps.found_paths.outputs.docs == 'true' || steps.found_paths.outputs.open-api == 'true' ||  steps.should_force.outputs.should_force == 'true' }}
+      should_run: ${{ steps.check.outputs.should_run }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
-        with:
-          persist-credentials: false
-      - id: found_paths
-        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      - name: Check what should run
+        id: check
+        uses: immich-app/devtools/actions/pre-job@24820aa4ef67959b0dcf69a438cccf00d7c7042b # pre-job-action-v1.0.1
         with:
           filters: |
             docs:
               - 'docs/**'
-            workflow:
-              - '.github/workflows/docs-build.yml'
             open-api:
               - 'open-api/immich-openapi-specs.json'
-      - name: Check if we should force jobs to run
-        id: should_force
-        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'release' || github.ref_name == 'main' }}" >> "$GITHUB_OUTPUT"
+          force-filters: |
+            - '.github/workflows/docs-build.yml'
+          force-events: 'release'
+          force-branches: 'main'
 
   build:
     name: Docs Build
     needs: pre-job
     permissions:
       contents: read
-    if: ${{ needs.pre-job.outputs.should_run == 'true' }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).docs == true }}
     runs-on: ubuntu-latest
     defaults:
       run:
