@@ -95,7 +95,7 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
       await ref.read(driftProvider).reset();
       await Store.put(StoreKey.shouldResetSync, true);
       final delay = Store.get(StoreKey.backupTriggerDelay, AppSettingsEnum.backupTriggerDelay.defaultValue);
-      if (delay > 1000) {
+      if (delay >= 1000) {
         await Store.put(StoreKey.backupTriggerDelay, (delay / 1000).toInt());
       }
       final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();

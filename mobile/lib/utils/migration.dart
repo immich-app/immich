@@ -67,7 +67,7 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (version < 17 && Store.isBetaTimelineEnabled) {
     final delay = Store.get(StoreKey.backupTriggerDelay, AppSettingsEnum.backupTriggerDelay.defaultValue);
-    if (delay > 1000) {
+    if (delay >= 1000) {
       await Store.put(StoreKey.backupTriggerDelay, (delay / 1000).toInt());
     }
   }

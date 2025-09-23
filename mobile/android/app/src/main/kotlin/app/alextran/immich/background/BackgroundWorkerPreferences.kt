@@ -30,7 +30,7 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
     val delaySeconds = sp.getLong(SHARED_PREF_MIN_DELAY_KEY, DEFAULT_MIN_DELAY_SECONDS)
 
     return BackgroundWorkerSettings(
-      minimumDelaySeconds = if (delaySeconds > 1000) delaySeconds / 1000 else delaySeconds,
+      minimumDelaySeconds = if (delaySeconds >= 1000) delaySeconds / 1000 else delaySeconds,
       requiresCharging = sp.getBoolean(
         SHARED_PREF_REQUIRE_CHARGING_KEY,
         DEFAULT_REQUIRE_CHARGING
