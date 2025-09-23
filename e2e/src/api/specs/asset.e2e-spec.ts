@@ -900,13 +900,11 @@ describe('/asset', () => {
 
       expect(status).toEqual(204);
 
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+
       const asset = await utils.getAssetInfo(user1.accessToken, user1Assets[1].id);
-      expect(asset).toMatchObject({
-        id: user1Assets[1].id,
-        exifInfo: expect.objectContaining({
-          dateTimeOriginal: '2025-09-22T17:33:00Z',
-        }),
-      });
+      expect(new Date(asset.exifInfo!.dateTimeOriginal!).getTime())
+        .toBe(new Date('2025-09-22T17:33:00Z').getTime());
     });
   });
 
