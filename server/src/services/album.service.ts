@@ -81,11 +81,8 @@ export class AlbumService extends BaseService {
 
     let contributorCounts: { userId: string; assetCount: number }[] | undefined = undefined;
     if (album.albumUsers && album.albumUsers.length > 0) {
-      const rows = await this.albumRepository.getContributorCountsForIds([album.id]);
-      contributorCounts = rows
-        .filter((r) => r.albumId === album.id)
-        .map(({ userId, assetCount }) => ({ userId, assetCount }))
-        .sort((a, b) => b.assetCount - a.assetCount);
+      const rows = await this.albumRepository.getContributorCountsForId(album.id);
+      contributorCounts = rows.map(({ userId, assetCount }) => ({ userId, assetCount }));
     }
 
     return {

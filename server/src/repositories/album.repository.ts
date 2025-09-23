@@ -145,13 +145,8 @@ export class AlbumRepository {
     );
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  @ChunkedArray()
-  async getContributorCountsForIds(ids: string[]): Promise<AlbumContributorCount[]> {
-    if (ids.length === 0) {
-      return [];
-    }
-
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getContributorCountsForId(id: string): Promise<AlbumContributorCount[]> {
     return this.db
       .selectFrom('asset')
       .$call(withDefaultVisibility)
@@ -159,10 +154,11 @@ export class AlbumRepository {
       .select('album_asset.albumsId as albumId')
       .select('asset.ownerId as userId')
       .select((eb) => sql<number>`${eb.fn.count('asset.id')}::int`.as('assetCount'))
-      .where('album_asset.albumsId', 'in', ids)
+      .where('album_asset.albumsId', '=', id)
       .where('asset.deletedAt', 'is', null)
       .groupBy('album_asset.albumsId')
       .groupBy('asset.ownerId')
+      .orderBy((eb) => sql`count(asset.id)`, 'desc')
       .execute();
   }
 
