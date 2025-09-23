@@ -204,7 +204,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             return TimeBucket(date: timeline, assetCount: assetCount);
           }).watch();
         })
-          // If there's an error (e.g., album was deleted), return empty buckets
+        // If there's an error (e.g., album was deleted), return empty buckets
         .handleError((error) => const <Bucket>[]);
   }
 
