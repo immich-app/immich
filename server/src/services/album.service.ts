@@ -80,7 +80,7 @@ export class AlbumService extends BaseService {
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
     let contributorCounts: { userId: string; assetCount: number }[] | undefined = undefined;
-    if ((album.albumUsers?.length || 0) > 0) {
+    if (album.albumUsers && album.albumUsers.length > 0) {
       const rows = await this.albumRepository.getContributorCountsForIds([album.id]);
       contributorCounts = rows
         .filter((r) => r.albumId === album.id)
