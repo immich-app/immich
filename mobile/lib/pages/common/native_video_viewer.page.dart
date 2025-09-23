@@ -26,6 +26,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 @RoutePage()
 class NativeVideoViewerPage extends HookConsumerWidget {
+  static final log = Logger('NativeVideoViewer');
   final Asset asset;
   final bool showControls;
   final int playbackDelayFactor;
@@ -58,8 +59,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     // Used to show the placeholder during hero animations for remote videos to avoid a stutter
     final isVisible = useState(Platform.isIOS && asset.isLocal);
-
-    final log = Logger('NativeVideoViewerPage');
 
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
@@ -142,7 +141,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       interval: const Duration(milliseconds: 100),
       maxWaitTime: const Duration(milliseconds: 200),
     );
-    ref.listen(videoPlayerControlsProvider, (oldControls, newControls) async {
+    ref.listen(videoPlayerControlsProvider, (oldControls, newControls) {
       final playerController = controller.value;
       if (playerController == null) {
         return;
@@ -153,28 +152,14 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      final oldSeek = (oldControls?.position ?? 0) ~/ 1;
-      final newSeek = newControls.position ~/ 1;
+      final oldSeek = oldControls?.position.inMilliseconds;
+      final newSeek = newControls.position.inMilliseconds;
       if (oldSeek != newSeek || newControls.restarted) {
         seekDebouncer.run(() => playerController.seekTo(newSeek));
       }
 
       if (oldControls?.pause != newControls.pause || newControls.restarted) {
-        // Make sure the last seek is complete before pausing or playing
-        // Otherwise, `onPlaybackPositionChanged` can receive outdated events
-        if (seekDebouncer.isActive) {
-          await seekDebouncer.drain();
-        }
-
-        try {
-          if (newControls.pause) {
-            await playerController.pause();
-          } else {
-            await playerController.play();
-          }
-        } catch (error) {
-          log.severe('Error pausing or playing video: $error');
-        }
+        _onPauseChange(context, playerController, seekDebouncer, newControls.pause);
       }
     });
 
@@ -234,7 +219,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      ref.read(videoPlaybackValueProvider.notifier).position = Duration(seconds: playbackInfo.position);
+      ref.read(videoPlaybackValueProvider.notifier).position = Duration(milliseconds: playbackInfo.position);
 
       // Check if the video is buffering
       if (playbackInfo.status == PlaybackStatus.playing) {
@@ -390,5 +375,36 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );
+  }
+
+  Future<void> _onPauseChange(
+    BuildContext context,
+    NativeVideoPlayerController controller,
+    Debouncer seekDebouncer,
+    bool isPaused,
+  ) async {
+    if (!context.mounted) {
+      return;
+    }
+
+    // Make sure the last seek is complete before pausing or playing
+    // Otherwise, `onPlaybackPositionChanged` can receive outdated events
+    if (seekDebouncer.isActive) {
+      await seekDebouncer.drain();
+    }
+
+    if (!context.mounted) {
+      return;
+    }
+
+    try {
+      if (isPaused) {
+        await controller.pause();
+      } else {
+        await controller.play();
+      }
+    } catch (error) {
+      log.severe('Error pausing or playing video: $error');
+    }
   }
 }
