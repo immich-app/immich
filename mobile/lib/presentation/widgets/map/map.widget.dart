@@ -189,7 +189,7 @@ class _Map extends StatelessWidget {
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,
           attributionButtonPosition: AttributionButtonPosition.topRight,
-          attributionButtonMargins: const Point(24, 12),
+          attributionButtonMargins: Platform.isIOS ? const Point(40, 12) : const Point(40, 72),
         ),
       ),
     );
