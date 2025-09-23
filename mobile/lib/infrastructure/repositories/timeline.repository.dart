@@ -172,7 +172,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .watch()
         .switchMap((albums) {
           if (albums.isEmpty) {
-            return Stream.value(<Bucket>[]);
+            return Stream.value(const <Bucket>[]);
           }
 
           final album = albums.first;
