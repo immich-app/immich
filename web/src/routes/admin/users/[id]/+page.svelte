@@ -1,12 +1,12 @@
 <script lang="ts">
-  import StatsCard from '$lib/components/admin-page/server-stats/stats-card.svelte';
-  import FeatureSetting from '$lib/components/admin-page/user/feature-setting.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
   import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
   import UserEditModal from '$lib/modals/UserEditModal.svelte';
@@ -242,14 +242,9 @@
         </div>
         <div class="col-span-full">
           <div class="flex flex-col lg:flex-row gap-4 w-full">
-            <StatsCard icon={mdiCameraIris} title={$t('photos').toUpperCase()} value={userStatistics.images} />
-            <StatsCard icon={mdiPlayCircle} title={$t('videos').toUpperCase()} value={userStatistics.videos} />
-            <StatsCard
-              icon={mdiChartPie}
-              title={$t('storage').toUpperCase()}
-              value={statsUsage}
-              unit={statsUsageUnit}
-            />
+            <ServerStatisticsCard icon={mdiCameraIris} title={$t('photos')} value={userStatistics.images} />
+            <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} value={userStatistics.videos} />
+            <ServerStatisticsCard icon={mdiChartPie} title={$t('storage')} value={statsUsage} unit={statsUsageUnit} />
           </div>
         </div>
         <div>

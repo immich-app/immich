@@ -34,7 +34,7 @@ class SearchApiRepository extends ApiRepository {
           personIds: filter.people.map((e) => e.id).toList(),
           type: type,
           page: page,
-          size: 1000,
+          size: 100,
         ),
       );
     }

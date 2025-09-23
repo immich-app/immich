@@ -1660,5 +1660,16 @@ describe(MetadataService.name, () => {
       expect(result?.tag).toBe('GPSDateTime');
       expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-10-10T10:00:00.000Z');
     });
+
+    it('should prefer CreationDate over CreateDate', () => {
+      const tags = {
+        CreationDate: '2025:05:24 18:26:20+02:00',
+        CreateDate: '2025:08:27 08:45:40',
+      };
+
+      const result = firstDateTime(tags);
+      expect(result?.tag).toBe('CreationDate');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2025-05-24T16:26:20.000Z');
+    });
   });
 });

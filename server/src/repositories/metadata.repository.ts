@@ -103,7 +103,7 @@ export class MetadataRepository {
 
   readTags(path: string): Promise<ImmichTags> {
     return this.exiftool.read(path).catch((error) => {
-      this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
+      this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
       return {};
     }) as Promise<ImmichTags>;
   }

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { discordPath, discordViewBox } from '$lib/assets/svg-paths';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { type ServerAboutResponseDto } from '@immich/sdk';
-  import { Modal, ModalBody } from '@immich/ui';
+  import { Icon, Modal, ModalBody } from '@immich/ui';
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
+  import { siDiscord } from 'simple-icons';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -20,11 +19,8 @@
     <div class="flex flex-col sm:grid sm:grid-cols-2 gap-2 mt-5">
       <div>
         <a href="https://{info.version}.archive.immich.app/docs/overview/introduction" target="_blank" rel="noreferrer">
-          <Icon path={mdiInformationOutline} size="1.5em" class="inline-block" />
-          <p
-            class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-            id="documentation-label"
-          >
+          <Icon icon={mdiInformationOutline} size="1.5em" class="inline-block" />
+          <p class="font-medium text-primary text-sm underline inline-block" id="documentation-label">
             {$t('documentation')}
           </p>
         </a>
@@ -32,11 +28,8 @@
 
       <div>
         <a href="https://github.com/immich-app/immich/" target="_blank" rel="noreferrer">
-          <Icon path={mdiGithub} size="1.5em" class="inline-block" />
-          <p
-            class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-            id="github-label"
-          >
+          <Icon icon={mdiGithub} size="1.5em" class="inline-block" />
+          <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
             {$t('source')}
           </p>
         </a>
@@ -44,11 +37,8 @@
 
       <div>
         <a href="https://discord.immich.app" target="_blank" rel="noreferrer">
-          <Icon path={discordPath} viewBox={discordViewBox} class="inline-block" size="1.5em" />
-          <p
-            class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-            id="github-label"
-          >
+          <Icon icon={siDiscord} class="inline-block" size="1.5em" />
+          <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
             {$t('discord')}
           </p>
         </a>
@@ -56,11 +46,8 @@
 
       <div>
         <a href="https://github.com/immich-app/immich/issues/new/choose" target="_blank" rel="noreferrer">
-          <Icon path={mdiBugOutline} size="1.5em" class="inline-block" />
-          <p
-            class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-            id="github-label"
-          >
+          <Icon icon={mdiBugOutline} size="1.5em" class="inline-block" />
+          <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
             {$t('bugs_and_feature_requests')}
           </p>
         </a>
@@ -75,11 +62,8 @@
         {#if info.thirdPartyDocumentationUrl}
           <div>
             <a href={info.thirdPartyDocumentationUrl} target="_blank" rel="noreferrer">
-              <Icon path={mdiInformationOutline} size="1.5em" class="inline-block" />
-              <p
-                class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-                id="documentation-label"
-              >
+              <Icon icon={mdiInformationOutline} size="1.5em" class="inline-block" />
+              <p class="font-medium text-primary text-sm underline inline-block" id="documentation-label">
                 {$t('documentation')}
               </p>
             </a>
@@ -89,11 +73,8 @@
         {#if info.thirdPartySourceUrl}
           <div>
             <a href={info.thirdPartySourceUrl} target="_blank" rel="noreferrer">
-              <Icon path={mdiGit} size="1.5em" class="inline-block" />
-              <p
-                class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-                id="github-label"
-              >
+              <Icon icon={mdiGit} size="1.5em" class="inline-block" />
+              <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
                 {$t('source')}
               </p>
             </a>
@@ -103,11 +84,8 @@
         {#if info.thirdPartySupportUrl}
           <div>
             <a href={info.thirdPartySupportUrl} target="_blank" rel="noreferrer">
-              <Icon path={mdiFaceAgent} class="inline-block" size="1.5em" />
-              <p
-                class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-                id="github-label"
-              >
+              <Icon icon={mdiFaceAgent} class="inline-block" size="1.5em" />
+              <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
                 {$t('support')}
               </p>
             </a>
@@ -117,11 +95,8 @@
         {#if info.thirdPartyBugFeatureUrl}
           <div>
             <a href={info.thirdPartyBugFeatureUrl} target="_blank" rel="noreferrer">
-              <Icon path={mdiBugOutline} size="1.5em" class="inline-block" />
-              <p
-                class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
-                id="github-label"
-              >
+              <Icon icon={mdiBugOutline} size="1.5em" class="inline-block" />
+              <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
                 {$t('bugs_and_feature_requests')}
               </p>
             </a>

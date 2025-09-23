@@ -8,15 +8,17 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -38,8 +40,9 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final previousRouteName = ref.watch(previousRouteNameProvider);
+    final tabRoute = ref.watch(tabProvider);
     final showViewInTimelineButton =
-        previousRouteName != TabShellRoute.name &&
+        (previousRouteName != TabShellRoute.name || tabRoute == TabEnum.search) &&
         previousRouteName != AssetViewerRoute.name &&
         previousRouteName != null;
 
@@ -54,6 +57,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     final actions = <Widget>[
+      if (asset.hasRemote) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(

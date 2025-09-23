@@ -7,11 +7,12 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final immichThemeModeProvider = StateProvider<ThemeMode>((ref) {
   final themeMode = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.themeMode);
 
-  debugPrint("Current themeMode $themeMode");
+  dPrint(() => "Current themeMode $themeMode");
 
   if (themeMode == ThemeMode.light.name) {
     return ThemeMode.light;
@@ -26,12 +27,12 @@ final immichThemePresetProvider = StateProvider<ImmichColorPreset>((ref) {
   final appSettingsProvider = ref.watch(appSettingsServiceProvider);
   final primaryColorPreset = appSettingsProvider.getSetting(AppSettingsEnum.primaryColor);
 
-  debugPrint("Current theme preset $primaryColorPreset");
+  dPrint(() => "Current theme preset $primaryColorPreset");
 
   try {
     return ImmichColorPreset.values.firstWhere((e) => e.name == primaryColorPreset);
   } catch (e) {
-    debugPrint("Theme preset $primaryColorPreset not found. Applying default preset.");
+    dPrint(() => "Theme preset $primaryColorPreset not found. Applying default preset.");
     appSettingsProvider.setSetting(AppSettingsEnum.primaryColor, defaultColorPresetName);
     return defaultColorPreset;
   }

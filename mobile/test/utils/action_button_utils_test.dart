@@ -81,6 +81,7 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
         source: ActionSource.timeline,
       );
 
@@ -110,6 +111,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -124,6 +126,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -141,6 +144,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -156,6 +160,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -171,6 +176,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -188,6 +194,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -203,6 +210,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -218,6 +226,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -233,6 +242,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -248,6 +258,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -265,6 +276,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -280,6 +292,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -295,6 +308,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -312,6 +326,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -327,6 +342,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -342,6 +358,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -359,6 +376,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -374,6 +392,7 @@ void main() {
           isTrashEnabled: false,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -391,6 +410,7 @@ void main() {
           isTrashEnabled: false,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -406,6 +426,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -423,6 +444,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -440,6 +462,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -457,6 +480,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -472,10 +496,26 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
         expect(ActionButtonType.deleteLocal.shouldShow(context), isFalse);
+      });
+
+      test('should show when asset is merged', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.deleteLocal.shouldShow(context), isTrue);
       });
     });
 
@@ -489,6 +529,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -506,6 +547,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -520,6 +562,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -537,6 +580,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -552,6 +596,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -567,6 +612,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: album,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
@@ -581,10 +627,43 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: false,
           currentAlbum: null,
+          advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
 
         expect(ActionButtonType.likeActivity.shouldShow(context), isFalse);
+      });
+    });
+
+    group('advancedTroubleshooting button', () {
+      test('should show when in advanced troubleshooting mode', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: true,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.advancedInfo.shouldShow(context), isTrue);
+      });
+
+      test('should not show when not in advanced troubleshooting mode', () {
+        final context = ActionButtonContext(
+          asset: mergedAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.advancedInfo.shouldShow(context), isFalse);
       });
     });
   });
@@ -602,6 +681,7 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
         source: ActionSource.timeline,
       );
     });
@@ -617,6 +697,7 @@ void main() {
             isTrashEnabled: true,
             isInLockedView: false,
             currentAlbum: album,
+            advancedTroubleshooting: false,
             source: ActionSource.timeline,
           );
           final widget = buttonType.buildButton(contextWithAlbum);
@@ -639,6 +720,7 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
         source: ActionSource.timeline,
       );
 
@@ -658,6 +740,7 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: album,
+        advancedTroubleshooting: false,
         source: ActionSource.timeline,
       );
 
@@ -675,6 +758,7 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
         source: ActionSource.timeline,
       );
 
@@ -693,6 +777,7 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
         source: ActionSource.timeline,
       );
 
@@ -705,6 +790,7 @@ void main() {
         isTrashEnabled: true,
         isInLockedView: false,
         currentAlbum: null,
+        advancedTroubleshooting: false,
         source: ActionSource.timeline,
       );
 

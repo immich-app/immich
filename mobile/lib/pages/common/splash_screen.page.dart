@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/utils/isolate_lock_manager.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -27,19 +29,11 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
-    final lockManager = ref.read(isolateLockManagerProvider(kIsolateLockManagerPort));
-
-    lockManager.requestHolderToClose();
-    lockManager
-        .acquireLock()
-        .timeout(const Duration(seconds: 5))
-        .whenComplete(
-          () => ref
-              .read(authProvider.notifier)
-              .setOpenApiServiceEndpoint()
-              .then(logConnectionInfo)
-              .whenComplete(() => resumeSession()),
-        );
+    ref
+        .read(authProvider.notifier)
+        .setOpenApiServiceEndpoint()
+        .then(logConnectionInfo)
+        .whenComplete(() => resumeSession());
   }
 
   void logConnectionInfo(String? endpoint) {
@@ -58,11 +52,28 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (accessToken != null && serverUrl != null && endpoint != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);
+      final backgroundManager = ref.read(backgroundSyncProvider);
+      final backupProvider = ref.read(driftBackupProvider.notifier);
+
       ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-        (a) {
+        (_) async {
           try {
             wsProvider.connect();
             infoProvider.getServerInfo();
+
+            if (Store.isBetaTimelineEnabled) {
+              await Future.wait([backgroundManager.syncLocal(), backgroundManager.syncRemote()]);
+              await Future.wait([
+                backgroundManager.hashAssets().then((_) {
+                  _resumeBackup(backupProvider);
+                }),
+                _resumeBackup(backupProvider),
+              ]);
+
+              if (Store.get(StoreKey.syncAlbums, false)) {
+                await backgroundManager.syncLinkedAlbum();
+              }
+            }
           } catch (e) {
             log.severe('Failed establishing connection to the server: $e');
           }
@@ -80,7 +91,16 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       return;
     }
 
+    // clean install - change the default of the flag
+    // current install not using beta timeline
     if (context.router.current.name == SplashScreenRoute.name) {
+      final needBetaMigration = Store.get(StoreKey.needBetaMigration, false);
+      if (needBetaMigration) {
+        await Store.put(StoreKey.needBetaMigration, false);
+        context.router.replaceAll([ChangeExperienceRoute(switchingToBeta: true)]);
+        return;
+      }
+
       context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute());
     }
 
@@ -92,6 +112,17 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     if (hasPermission) {
       // Resume backup (if enable) then navigate
       ref.watch(backupProvider.notifier).resumeBackup();
+    }
+  }
+
+  Future<void> _resumeBackup(DriftBackupNotifier notifier) async {
+    final isEnableBackup = Store.get(StoreKey.enableBackup, false);
+
+    if (isEnableBackup) {
+      final currentUser = Store.tryGet(StoreKey.currentUser);
+      if (currentUser != null) {
+        notifier.handleBackupResume(currentUser.id);
+      }
     }
   }
 

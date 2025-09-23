@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { Icon } from '@immich/ui';
   import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -28,7 +28,7 @@
   }: Props = $props();
 
   $effect(() => {
-    isSelected = (page.url.pathname.match(/^\/(admin|user)\/[^/]*/) || [])[0] === href;
+    isSelected = page.url.pathname.startsWith(href);
   });
 </script>
 
@@ -42,11 +42,11 @@
         onclick={() => (dropdownOpen = !dropdownOpen)}
       >
         <Icon
-          path={dropdownOpen ? mdiChevronDown : mdiChevronLeft}
+          icon={dropdownOpen ? mdiChevronDown : mdiChevronLeft}
           size="1em"
           class="shrink-0 delay-100 duration-100 "
           flipped={flippedLogo}
-          ariaHidden
+          aria-hidden
         />
       </button>
     </span>
@@ -57,12 +57,10 @@
     draggable="false"
     aria-current={isSelected ? 'page' : undefined}
     class="flex w-full place-items-center gap-4 rounded-e-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-subtle hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary
-    {isSelected
-      ? 'bg-immich-primary/10 text-immich-primary hover:bg-immich-primary/10 dark:bg-immich-dark-primary/10 dark:text-immich-dark-primary'
-      : ''}"
+    {isSelected ? 'bg-immich-primary/10 text-primary hover:bg-immich-primary/10 dark:bg-immich-dark-primary/10' : ''}"
   >
     <div class="flex w-full place-items-center gap-4 ps-5 overflow-hidden truncate">
-      <Icon path={icon} size="1.5em" class="shrink-0" flipped={flippedLogo} ariaHidden />
+      <Icon {icon} size="1.5em" class="shrink-0" flipped={flippedLogo} aria-hidden />
       <span class="text-sm font-medium">{title}</span>
     </div>
     <div></div>

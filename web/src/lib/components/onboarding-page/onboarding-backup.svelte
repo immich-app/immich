@@ -1,7 +1,6 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import { Stack } from '@immich/ui';
+  import FormatMessage from '$lib/elements/FormatMessage.svelte';
+  import { Icon, Stack } from '@immich/ui';
   import { mdiAlertCircleOutline } from '@mdi/js';
   import type { Translations } from 'svelte-i18n';
 
@@ -15,7 +14,7 @@
 <div class="flex flex-col">
   <Stack gap={2}>
     <div class="flex items-start gap-4 p-6 my-10 bg-gray-100 dark:bg-gray-800/40 rounded-xl border border-gray-700/50">
-      <Icon path={mdiAlertCircleOutline} size="36" class="text-warning flex-shrink-0 mt-0.5" />
+      <Icon icon={mdiAlertCircleOutline} size="36" class="text-warning flex-shrink-0 mt-0.5" />
       <div class="text-gray-800 dark:text-gray-300 leading-relaxed">
         <FormatMessage key="admin.backup_onboarding_description">
           {#snippet children({ message })}
