@@ -1546,6 +1546,7 @@
   "year": "वर्ष",
   "yes": "हाँ",
   "you_dont_have_any_shared_links": "आपके पास कोई साझा लिंक नहीं है",
-  "your_wifi_name": "Your WiFi name",
-  "zoom_image": "छवि ज़ूम करें"
+  "your_wifi_name": "आपके वाईफाई का नाम",
+  "zoom_image": "छवि ज़ूम करें",
+  "zoom_to_bounds": "सीमा तक ज़ूम करें"
 }
