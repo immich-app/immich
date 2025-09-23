@@ -47,7 +47,7 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
         addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
         addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
         setTriggerContentUpdateDelay(settings.minimumDelaySeconds, TimeUnit.SECONDS)
-        setTriggerContentMaxDelay(settings.minimumDelaySeconds * 10, TimeUnit.MINUTES)
+        setTriggerContentMaxDelay(settings.minimumDelaySeconds * 10, TimeUnit.SECONDS)
         setRequiresCharging(settings.requiresCharging)
       }.build()
 
