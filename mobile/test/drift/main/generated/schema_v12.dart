@@ -7119,27 +7119,6 @@ class TrashedLocalAssetEntity extends Table
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   TrashedLocalAssetEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> albumId = GeneratedColumn<String>(
-    'album_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
     aliasedName,
@@ -7170,23 +7149,89 @@ class TrashedLocalAssetEntity extends Table
     requiredDuringInsert: false,
     defaultValue: const CustomExpression('CURRENT_TIMESTAMP'),
   );
-  late final GeneratedColumn<int> size = GeneratedColumn<int>(
-    'size',
+  late final GeneratedColumn<int> width = GeneratedColumn<int>(
+    'width',
     aliasedName,
     true,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  late final GeneratedColumn<int> height = GeneratedColumn<int>(
+    'height',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<int> durationInSeconds = GeneratedColumn<int>(
+    'duration_in_seconds',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<String> albumId = GeneratedColumn<String>(
+    'album_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  late final GeneratedColumn<String> volume = GeneratedColumn<String>(
+    'volume',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
+    'checksum',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+    'is_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favorite" IN (0, 1))',
+    ),
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<int> orientation = GeneratedColumn<int>(
+    'orientation',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const CustomExpression('0'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    albumId,
-    checksum,
     name,
     type,
     createdAt,
     updatedAt,
-    size,
+    width,
+    height,
+    durationInSeconds,
+    id,
+    albumId,
+    volume,
+    checksum,
+    isFavorite,
+    orientation,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7194,7 +7239,7 @@ class TrashedLocalAssetEntity extends Table
   String get actualTableName => $name;
   static const String $name = 'trashed_local_asset_entity';
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {id, albumId};
   @override
   TrashedLocalAssetEntityData map(
     Map<String, dynamic> data, {
@@ -7202,18 +7247,6 @@ class TrashedLocalAssetEntity extends Table
   }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TrashedLocalAssetEntityData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      albumId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}album_id'],
-      )!,
-      checksum: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
-      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -7230,10 +7263,42 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
-      size: attachedDatabase.typeMapping.read(
+      width: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}size'],
+        data['${effectivePrefix}width'],
       ),
+      height: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}height'],
+      ),
+      durationInSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_in_seconds'],
+      ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      albumId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}album_id'],
+      )!,
+      volume: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}volume'],
+      ),
+      checksum: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}checksum'],
+      ),
+      isFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_favorite'],
+      )!,
+      orientation: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}orientation'],
+      )!,
     );
   }
 
@@ -7250,39 +7315,60 @@ class TrashedLocalAssetEntity extends Table
 
 class TrashedLocalAssetEntityData extends DataClass
     implements Insertable<TrashedLocalAssetEntityData> {
-  final String id;
-  final String albumId;
-  final String? checksum;
   final String name;
   final int type;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final int? size;
+  final int? width;
+  final int? height;
+  final int? durationInSeconds;
+  final String id;
+  final String albumId;
+  final String? volume;
+  final String? checksum;
+  final bool isFavorite;
+  final int orientation;
   const TrashedLocalAssetEntityData({
-    required this.id,
-    required this.albumId,
-    this.checksum,
     required this.name,
     required this.type,
     required this.createdAt,
     required this.updatedAt,
-    this.size,
+    this.width,
+    this.height,
+    this.durationInSeconds,
+    required this.id,
+    required this.albumId,
+    this.volume,
+    this.checksum,
+    required this.isFavorite,
+    required this.orientation,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['album_id'] = Variable<String>(albumId);
-    if (!nullToAbsent || checksum != null) {
-      map['checksum'] = Variable<String>(checksum);
-    }
     map['name'] = Variable<String>(name);
     map['type'] = Variable<int>(type);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
-    if (!nullToAbsent || size != null) {
-      map['size'] = Variable<int>(size);
+    if (!nullToAbsent || width != null) {
+      map['width'] = Variable<int>(width);
     }
+    if (!nullToAbsent || height != null) {
+      map['height'] = Variable<int>(height);
+    }
+    if (!nullToAbsent || durationInSeconds != null) {
+      map['duration_in_seconds'] = Variable<int>(durationInSeconds);
+    }
+    map['id'] = Variable<String>(id);
+    map['album_id'] = Variable<String>(albumId);
+    if (!nullToAbsent || volume != null) {
+      map['volume'] = Variable<String>(volume);
+    }
+    if (!nullToAbsent || checksum != null) {
+      map['checksum'] = Variable<String>(checksum);
+    }
+    map['is_favorite'] = Variable<bool>(isFavorite);
+    map['orientation'] = Variable<int>(orientation);
     return map;
   }
 
@@ -7292,194 +7378,268 @@ class TrashedLocalAssetEntityData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TrashedLocalAssetEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      albumId: serializer.fromJson<String>(json['albumId']),
-      checksum: serializer.fromJson<String?>(json['checksum']),
       name: serializer.fromJson<String>(json['name']),
       type: serializer.fromJson<int>(json['type']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      size: serializer.fromJson<int?>(json['size']),
+      width: serializer.fromJson<int?>(json['width']),
+      height: serializer.fromJson<int?>(json['height']),
+      durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
+      id: serializer.fromJson<String>(json['id']),
+      albumId: serializer.fromJson<String>(json['albumId']),
+      volume: serializer.fromJson<String?>(json['volume']),
+      checksum: serializer.fromJson<String?>(json['checksum']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      orientation: serializer.fromJson<int>(json['orientation']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'albumId': serializer.toJson<String>(albumId),
-      'checksum': serializer.toJson<String?>(checksum),
       'name': serializer.toJson<String>(name),
       'type': serializer.toJson<int>(type),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'size': serializer.toJson<int?>(size),
+      'width': serializer.toJson<int?>(width),
+      'height': serializer.toJson<int?>(height),
+      'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
+      'id': serializer.toJson<String>(id),
+      'albumId': serializer.toJson<String>(albumId),
+      'volume': serializer.toJson<String?>(volume),
+      'checksum': serializer.toJson<String?>(checksum),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
+      'orientation': serializer.toJson<int>(orientation),
     };
   }
 
   TrashedLocalAssetEntityData copyWith({
-    String? id,
-    String? albumId,
-    Value<String?> checksum = const Value.absent(),
     String? name,
     int? type,
     DateTime? createdAt,
     DateTime? updatedAt,
-    Value<int?> size = const Value.absent(),
+    Value<int?> width = const Value.absent(),
+    Value<int?> height = const Value.absent(),
+    Value<int?> durationInSeconds = const Value.absent(),
+    String? id,
+    String? albumId,
+    Value<String?> volume = const Value.absent(),
+    Value<String?> checksum = const Value.absent(),
+    bool? isFavorite,
+    int? orientation,
   }) => TrashedLocalAssetEntityData(
-    id: id ?? this.id,
-    albumId: albumId ?? this.albumId,
-    checksum: checksum.present ? checksum.value : this.checksum,
     name: name ?? this.name,
     type: type ?? this.type,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
-    size: size.present ? size.value : this.size,
+    width: width.present ? width.value : this.width,
+    height: height.present ? height.value : this.height,
+    durationInSeconds: durationInSeconds.present
+        ? durationInSeconds.value
+        : this.durationInSeconds,
+    id: id ?? this.id,
+    albumId: albumId ?? this.albumId,
+    volume: volume.present ? volume.value : this.volume,
+    checksum: checksum.present ? checksum.value : this.checksum,
+    isFavorite: isFavorite ?? this.isFavorite,
+    orientation: orientation ?? this.orientation,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     TrashedLocalAssetEntityCompanion data,
   ) {
     return TrashedLocalAssetEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      albumId: data.albumId.present ? data.albumId.value : this.albumId,
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
       name: data.name.present ? data.name.value : this.name,
       type: data.type.present ? data.type.value : this.type,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      size: data.size.present ? data.size.value : this.size,
+      width: data.width.present ? data.width.value : this.width,
+      height: data.height.present ? data.height.value : this.height,
+      durationInSeconds: data.durationInSeconds.present
+          ? data.durationInSeconds.value
+          : this.durationInSeconds,
+      id: data.id.present ? data.id.value : this.id,
+      albumId: data.albumId.present ? data.albumId.value : this.albumId,
+      volume: data.volume.present ? data.volume.value : this.volume,
+      checksum: data.checksum.present ? data.checksum.value : this.checksum,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
+      orientation: data.orientation.present
+          ? data.orientation.value
+          : this.orientation,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('TrashedLocalAssetEntityData(')
-          ..write('id: $id, ')
-          ..write('albumId: $albumId, ')
-          ..write('checksum: $checksum, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('size: $size')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('id: $id, ')
+          ..write('albumId: $albumId, ')
+          ..write('volume: $volume, ')
+          ..write('checksum: $checksum, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('orientation: $orientation')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(
-    id,
-    albumId,
-    checksum,
     name,
     type,
     createdAt,
     updatedAt,
-    size,
+    width,
+    height,
+    durationInSeconds,
+    id,
+    albumId,
+    volume,
+    checksum,
+    isFavorite,
+    orientation,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TrashedLocalAssetEntityData &&
-          other.id == this.id &&
-          other.albumId == this.albumId &&
-          other.checksum == this.checksum &&
           other.name == this.name &&
           other.type == this.type &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.size == this.size);
+          other.width == this.width &&
+          other.height == this.height &&
+          other.durationInSeconds == this.durationInSeconds &&
+          other.id == this.id &&
+          other.albumId == this.albumId &&
+          other.volume == this.volume &&
+          other.checksum == this.checksum &&
+          other.isFavorite == this.isFavorite &&
+          other.orientation == this.orientation);
 }
 
 class TrashedLocalAssetEntityCompanion
     extends UpdateCompanion<TrashedLocalAssetEntityData> {
-  final Value<String> id;
-  final Value<String> albumId;
-  final Value<String?> checksum;
   final Value<String> name;
   final Value<int> type;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
-  final Value<int?> size;
+  final Value<int?> width;
+  final Value<int?> height;
+  final Value<int?> durationInSeconds;
+  final Value<String> id;
+  final Value<String> albumId;
+  final Value<String?> volume;
+  final Value<String?> checksum;
+  final Value<bool> isFavorite;
+  final Value<int> orientation;
   const TrashedLocalAssetEntityCompanion({
-    this.id = const Value.absent(),
-    this.albumId = const Value.absent(),
-    this.checksum = const Value.absent(),
     this.name = const Value.absent(),
     this.type = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.size = const Value.absent(),
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    this.durationInSeconds = const Value.absent(),
+    this.id = const Value.absent(),
+    this.albumId = const Value.absent(),
+    this.volume = const Value.absent(),
+    this.checksum = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.orientation = const Value.absent(),
   });
   TrashedLocalAssetEntityCompanion.insert({
-    required String id,
-    required String albumId,
-    this.checksum = const Value.absent(),
     required String name,
     required int type,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.size = const Value.absent(),
-  }) : id = Value(id),
-       albumId = Value(albumId),
-       name = Value(name),
-       type = Value(type);
+    this.width = const Value.absent(),
+    this.height = const Value.absent(),
+    this.durationInSeconds = const Value.absent(),
+    required String id,
+    required String albumId,
+    this.volume = const Value.absent(),
+    this.checksum = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.orientation = const Value.absent(),
+  }) : name = Value(name),
+       type = Value(type),
+       id = Value(id),
+       albumId = Value(albumId);
   static Insertable<TrashedLocalAssetEntityData> custom({
-    Expression<String>? id,
-    Expression<String>? albumId,
-    Expression<String>? checksum,
     Expression<String>? name,
     Expression<int>? type,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
-    Expression<int>? size,
+    Expression<int>? width,
+    Expression<int>? height,
+    Expression<int>? durationInSeconds,
+    Expression<String>? id,
+    Expression<String>? albumId,
+    Expression<String>? volume,
+    Expression<String>? checksum,
+    Expression<bool>? isFavorite,
+    Expression<int>? orientation,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (albumId != null) 'album_id': albumId,
-      if (checksum != null) 'checksum': checksum,
       if (name != null) 'name': name,
       if (type != null) 'type': type,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (size != null) 'size': size,
+      if (width != null) 'width': width,
+      if (height != null) 'height': height,
+      if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
+      if (id != null) 'id': id,
+      if (albumId != null) 'album_id': albumId,
+      if (volume != null) 'volume': volume,
+      if (checksum != null) 'checksum': checksum,
+      if (isFavorite != null) 'is_favorite': isFavorite,
+      if (orientation != null) 'orientation': orientation,
     });
   }
 
   TrashedLocalAssetEntityCompanion copyWith({
-    Value<String>? id,
-    Value<String>? albumId,
-    Value<String?>? checksum,
     Value<String>? name,
     Value<int>? type,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
-    Value<int?>? size,
+    Value<int?>? width,
+    Value<int?>? height,
+    Value<int?>? durationInSeconds,
+    Value<String>? id,
+    Value<String>? albumId,
+    Value<String?>? volume,
+    Value<String?>? checksum,
+    Value<bool>? isFavorite,
+    Value<int>? orientation,
   }) {
     return TrashedLocalAssetEntityCompanion(
-      id: id ?? this.id,
-      albumId: albumId ?? this.albumId,
-      checksum: checksum ?? this.checksum,
       name: name ?? this.name,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      size: size ?? this.size,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      id: id ?? this.id,
+      albumId: albumId ?? this.albumId,
+      volume: volume ?? this.volume,
+      checksum: checksum ?? this.checksum,
+      isFavorite: isFavorite ?? this.isFavorite,
+      orientation: orientation ?? this.orientation,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (albumId.present) {
-      map['album_id'] = Variable<String>(albumId.value);
-    }
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
-    }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
@@ -7492,8 +7652,32 @@ class TrashedLocalAssetEntityCompanion
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (size.present) {
-      map['size'] = Variable<int>(size.value);
+    if (width.present) {
+      map['width'] = Variable<int>(width.value);
+    }
+    if (height.present) {
+      map['height'] = Variable<int>(height.value);
+    }
+    if (durationInSeconds.present) {
+      map['duration_in_seconds'] = Variable<int>(durationInSeconds.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (albumId.present) {
+      map['album_id'] = Variable<String>(albumId.value);
+    }
+    if (volume.present) {
+      map['volume'] = Variable<String>(volume.value);
+    }
+    if (checksum.present) {
+      map['checksum'] = Variable<String>(checksum.value);
+    }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
+    if (orientation.present) {
+      map['orientation'] = Variable<int>(orientation.value);
     }
     return map;
   }
@@ -7501,14 +7685,19 @@ class TrashedLocalAssetEntityCompanion
   @override
   String toString() {
     return (StringBuffer('TrashedLocalAssetEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('albumId: $albumId, ')
-          ..write('checksum: $checksum, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('size: $size')
+          ..write('width: $width, ')
+          ..write('height: $height, ')
+          ..write('durationInSeconds: $durationInSeconds, ')
+          ..write('id: $id, ')
+          ..write('albumId: $albumId, ')
+          ..write('volume: $volume, ')
+          ..write('checksum: $checksum, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('orientation: $orientation')
           ..write(')'))
         .toString();
   }

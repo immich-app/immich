@@ -58,13 +58,12 @@ open class NativeSyncApiImplBase(context: Context) {
       add(MediaStore.MediaColumns.HEIGHT)
       add(MediaStore.MediaColumns.DURATION)
       add(MediaStore.MediaColumns.ORIENTATION)
-      // IS_FAVORITE is only available on Android 11 and above
+      // only available on Android 11 and above
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
-        // IS_TRASHED available on Android 11+
         add(MediaStore.MediaColumns.IS_TRASHED)
+        add(MediaStore.MediaColumns.VOLUME_NAME)
       }
-      add(MediaStore.MediaColumns.SIZE)
     }.toTypedArray()
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
@@ -102,7 +101,7 @@ open class NativeSyncApiImplBase(context: Context) {
           c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
         val favoriteColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_FAVORITE)
         val trashedColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_TRASHED)
-        val sizeColumn = c.getColumnIndex(MediaStore.MediaColumns.SIZE)
+        val volumeColumn = c.getColumnIndex(MediaStore.MediaColumns.VOLUME_NAME)
 
         while (c.moveToNext()) {
           val id = c.getLong(idColumn).toString()
@@ -132,8 +131,8 @@ open class NativeSyncApiImplBase(context: Context) {
           val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
-          val isTrashed = if (trashedColumn == -1) false else c.getInt(trashedColumn) != 0
-          val size = c.getLong(sizeColumn)
+          val isTrashed = if (trashedColumn == -1) null else c.getInt(trashedColumn) != 0
+          val volume = if (volumeColumn == -1) null else c.getString(volumeColumn)
           val asset = PlatformAsset(
             id,
             name,
@@ -146,7 +145,7 @@ open class NativeSyncApiImplBase(context: Context) {
             orientation.toLong(),
             isFavorite,
             isTrashed,
-            size
+            volume,
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }

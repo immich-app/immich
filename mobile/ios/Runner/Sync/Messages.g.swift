@@ -140,8 +140,8 @@ struct PlatformAsset: Hashable {
   var durationInSeconds: Int64
   var orientation: Int64
   var isFavorite: Bool
-  var isTrashed: Bool
-  var size: Int64? = nil
+  var isTrashed: Bool? = nil
+  var volume: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -156,8 +156,8 @@ struct PlatformAsset: Hashable {
     let durationInSeconds = pigeonVar_list[7] as! Int64
     let orientation = pigeonVar_list[8] as! Int64
     let isFavorite = pigeonVar_list[9] as! Bool
-    let isTrashed = pigeonVar_list[10] as! Bool
-    let size: Int64? = nilOrValue(pigeonVar_list[11])
+    let isTrashed: Bool? = nilOrValue(pigeonVar_list[10])
+    let volume: String? = nilOrValue(pigeonVar_list[11])
 
     return PlatformAsset(
       id: id,
@@ -171,7 +171,7 @@ struct PlatformAsset: Hashable {
       orientation: orientation,
       isFavorite: isFavorite,
       isTrashed: isTrashed,
-      size: size
+      volume: volume
     )
   }
   func toList() -> [Any?] {
@@ -187,7 +187,7 @@ struct PlatformAsset: Hashable {
       orientation,
       isFavorite,
       isTrashed,
-      size,
+      volume,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
@@ -401,7 +401,7 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NativeSyncApi {
   func shouldFullSync() throws -> Bool
-  func getMediaChanges() throws -> SyncDelta
+  func getMediaChanges(isTrashed: Bool) throws -> SyncDelta
   func checkpointSync() throws
   func clearSyncCheckpoint() throws
   func getAssetIdsForAlbum(albumId: String) throws -> [String]
@@ -410,7 +410,7 @@ protocol NativeSyncApi {
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
-  func getTrashedAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
+  func getTrashedAssetsForAlbum(albumId: String) throws -> [PlatformAsset]
   func hashTrashedAssets(trashedAssets: [TrashedAssetParams], completion: @escaping (Result<[HashResult], Error>) -> Void)
 }
 
@@ -442,9 +442,11 @@ class NativeSyncApiSetup {
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
-      getMediaChangesChannel.setMessageHandler { _, reply in
+      getMediaChangesChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let isTrashedArg = args[0] as! Bool
         do {
-          let result = try api.getMediaChanges()
+          let result = try api.getMediaChanges(isTrashed: isTrashedArg)
           reply(wrapResult(result))
         } catch {
           reply(wrapError(error))
@@ -587,9 +589,8 @@ class NativeSyncApiSetup {
       getTrashedAssetsForAlbumChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let albumIdArg = args[0] as! String
-        let updatedTimeCondArg: Int64? = nilOrValue(args[1])
         do {
-          let result = try api.getTrashedAssetsForAlbum(albumId: albumIdArg, updatedTimeCond: updatedTimeCondArg)
+          let result = try api.getTrashedAssetsForAlbum(albumId: albumIdArg)
           reply(wrapResult(result))
         } catch {
           reply(wrapError(error))

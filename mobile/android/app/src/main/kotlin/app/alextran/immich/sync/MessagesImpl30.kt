@@ -45,20 +45,89 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
+  override fun shouldFullSync(): Boolean =
+    MediaStore.getVersion(ctx) != prefs.getString(SHARED_PREF_MEDIA_STORE_VERSION_KEY, null)
+
+  override fun checkpointSync() {
+    val genMap = MediaStore.getExternalVolumeNames(ctx)
+      .associateWith { MediaStore.getGeneration(ctx, it) }
+
+    prefs.edit().apply {
+      putString(SHARED_PREF_MEDIA_STORE_VERSION_KEY, MediaStore.getVersion(ctx))
+      putString(SHARED_PREF_MEDIA_STORE_GEN_KEY, Json.encodeToString(genMap))
+      apply()
+    }
+  }
+
+  override fun getMediaChanges(isTrashed: Boolean): SyncDelta {
+    val genMap = getSavedGenerationMap()
+    val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
+    val changed = mutableListOf<PlatformAsset>()
+    val deleted = mutableListOf<String>()
+    val assetAlbums = mutableMapOf<String, List<String>>()
+    var hasChanges = genMap.keys != currentVolumes
+
+    for (volume in currentVolumes) {
+      val currentGen = MediaStore.getGeneration(ctx, volume)
+      val storedGen = genMap[volume] ?: 0
+      if (currentGen <= storedGen) {
+        continue
+      }
+
+      hasChanges = true
+
+      val selection =
+        "$MEDIA_SELECTION AND (${MediaStore.MediaColumns.GENERATION_MODIFIED} > ? OR ${MediaStore.MediaColumns.GENERATION_ADDED} > ?)"
+      val selectionArgs = arrayOf(
+        *MEDIA_SELECTION_ARGS,
+        storedGen.toString(),
+        storedGen.toString()
+      )
+      if (isTrashed) {
+        val uri = MediaStore.Files.getContentUri(volume)
+        val queryArgs = Bundle().apply {
+          putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+          putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+          putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
+        }
+
+        ctx.contentResolver.query(uri, ASSET_PROJECTION, queryArgs, null).use { cursor ->
+          getAssets(cursor).forEach {
+            when (it) {
+              is AssetResult.ValidAsset -> {
+                changed.add(it.asset)
+                assetAlbums[it.asset.id] = listOf(it.albumId)
+              }
+
+              is AssetResult.InvalidAsset -> deleted.add(it.assetId)
+            }
+          }
+        }
+      } else {
+        getAssets(getCursor(volume, selection, selectionArgs)).forEach {
+          when (it) {
+            is AssetResult.ValidAsset -> {
+              changed.add(it.asset)
+              assetAlbums[it.asset.id] = listOf(it.albumId)
+            }
+
+            is AssetResult.InvalidAsset -> deleted.add(it.assetId)
+          }
+        }
+      }
+    }
+    // Unmounted volumes are handled in dart when the album is removed
+    return SyncDelta(hasChanges, changed, deleted, assetAlbums)
+  }
+
   override fun getTrashedAssetsForAlbum(
-    albumId: String,
-    updatedTimeCond: Long?
+    albumId: String
   ): List<PlatformAsset> {
     val trashed = mutableListOf<PlatformAsset>()
     val volumes = MediaStore.getExternalVolumeNames(ctx)
 
-    var selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
+    val selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
     val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
-
-    if (updatedTimeCond != null) {
-      selection += " AND (${MediaStore.Files.FileColumns.DATE_MODIFIED} > ? OR ${MediaStore.Files.FileColumns.DATE_ADDED} > ?)"
-      selectionArgs.addAll(listOf(updatedTimeCond.toString(), updatedTimeCond.toString()))
-    }
 
     for (volume in volumes) {
       val uri = MediaStore.Files.getContentUri(volume)
@@ -112,68 +181,6 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
         callback(Result.failure(e))
       }
     }
-  }
-
-  override fun shouldFullSync(): Boolean =
-    MediaStore.getVersion(ctx) != prefs.getString(SHARED_PREF_MEDIA_STORE_VERSION_KEY, null)
-
-  override fun checkpointSync() {
-    val genMap = MediaStore.getExternalVolumeNames(ctx)
-      .associateWith { MediaStore.getGeneration(ctx, it) }
-
-    prefs.edit().apply {
-      putString(SHARED_PREF_MEDIA_STORE_VERSION_KEY, MediaStore.getVersion(ctx))
-      putString(SHARED_PREF_MEDIA_STORE_GEN_KEY, Json.encodeToString(genMap))
-      apply()
-    }
-  }
-
-  override fun getMediaChanges(): SyncDelta {
-    val genMap = getSavedGenerationMap()
-    val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
-    val changed = mutableListOf<PlatformAsset>()
-    val deleted = mutableListOf<String>()
-    val assetAlbums = mutableMapOf<String, List<String>>()
-    var hasChanges = genMap.keys != currentVolumes
-
-    for (volume in currentVolumes) {
-      val currentGen = MediaStore.getGeneration(ctx, volume)
-      val storedGen = genMap[volume] ?: 0
-      if (currentGen <= storedGen) {
-        continue
-      }
-
-      hasChanges = true
-
-      val selection =
-        "$MEDIA_SELECTION AND (${MediaStore.MediaColumns.GENERATION_MODIFIED} > ? OR ${MediaStore.MediaColumns.GENERATION_ADDED} > ?)"
-      val selectionArgs = arrayOf(
-        *MEDIA_SELECTION_ARGS,
-        storedGen.toString(),
-        storedGen.toString()
-      )
-
-      val uri = MediaStore.Files.getContentUri(volume)
-      val queryArgs = Bundle().apply {
-        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
-        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
-        putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_INCLUDE)
-      }
-
-      ctx.contentResolver.query(uri, ASSET_PROJECTION, queryArgs, null).use { cursor ->
-        getAssets(cursor).forEach {
-          when (it) {
-            is AssetResult.ValidAsset -> {
-              changed.add(it.asset)
-              assetAlbums[it.asset.id] = listOf(it.albumId)
-            }
-            is AssetResult.InvalidAsset -> deleted.add(it.assetId)
-          }
-        }
-      }
-    }
-    // Unmounted volumes are handled in dart when the album is removed
-    return SyncDelta(hasChanges, changed, deleted, assetAlbums)
   }
 
   suspend fun hashTrashedAsset(assetParams: TrashedAssetParams): HashResult {

@@ -90,8 +90,8 @@ data class PlatformAsset (
   val durationInSeconds: Long,
   val orientation: Long,
   val isFavorite: Boolean,
-  val isTrashed: Boolean,
-  val size: Long? = null
+  val isTrashed: Boolean? = null,
+  val volume: String? = null
 )
  {
   companion object {
@@ -106,9 +106,9 @@ data class PlatformAsset (
       val durationInSeconds = pigeonVar_list[7] as Long
       val orientation = pigeonVar_list[8] as Long
       val isFavorite = pigeonVar_list[9] as Boolean
-      val isTrashed = pigeonVar_list[10] as Boolean
-      val size = pigeonVar_list[11] as Long?
-      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, isTrashed, size)
+      val isTrashed = pigeonVar_list[10] as Boolean?
+      val volume = pigeonVar_list[11] as String?
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, isTrashed, volume)
     }
   }
   fun toList(): List<Any?> {
@@ -124,7 +124,7 @@ data class PlatformAsset (
       orientation,
       isFavorite,
       isTrashed,
-      size,
+      volume,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -345,7 +345,7 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NativeSyncApi {
   fun shouldFullSync(): Boolean
-  fun getMediaChanges(): SyncDelta
+  fun getMediaChanges(isTrashed: Boolean): SyncDelta
   fun checkpointSync()
   fun clearSyncCheckpoint()
   fun getAssetIdsForAlbum(albumId: String): List<String>
@@ -354,7 +354,7 @@ interface NativeSyncApi {
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
-  fun getTrashedAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
+  fun getTrashedAssetsForAlbum(albumId: String): List<PlatformAsset>
   fun hashTrashedAssets(trashedAssets: List<TrashedAssetParams>, callback: (Result<List<HashResult>>) -> Unit)
 
   companion object {
@@ -385,9 +385,11 @@ interface NativeSyncApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val isTrashedArg = args[0] as Boolean
             val wrapped: List<Any?> = try {
-              listOf(api.getMediaChanges())
+              listOf(api.getMediaChanges(isTrashedArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }
@@ -540,9 +542,8 @@ interface NativeSyncApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val albumIdArg = args[0] as String
-            val updatedTimeCondArg = args[1] as Long?
             val wrapped: List<Any?> = try {
-              listOf(api.getTrashedAssetsForAlbum(albumIdArg, updatedTimeCondArg))
+              listOf(api.getTrashedAssetsForAlbum(albumIdArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

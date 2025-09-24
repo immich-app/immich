@@ -152,13 +152,6 @@ class HashService {
         return;
       }
 
-      if (asset.size == null) {
-        _log.warning(
-          "Cannot get size for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt} from album: ${album.name}",
-        );
-        continue;
-      }
-
       toHash.add(asset);
 
       if (toHash.length == _batchSize) {

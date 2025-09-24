@@ -5,10 +5,9 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-typedef AssetsByAlbums = Map<String, List<LocalAsset>>;
+typedef AlbumId = String;
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -68,41 +67,6 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> trash(AssetsByAlbums assetsByAlbums) async {
-    if (assetsByAlbums.isEmpty) {
-      return;
-    }
-
-    final companions = <TrashedLocalAssetEntityCompanion>[];
-    final idToDelete = <String>{};
-
-    assetsByAlbums.forEach((albumId, assets) {
-      for (final asset in assets) {
-        idToDelete.add(asset.id);
-        companions.add(
-          TrashedLocalAssetEntityCompanion(
-            id: Value(asset.id),
-            name: Value(asset.name),
-            albumId: Value(albumId),
-            checksum: asset.checksum == null ? const Value.absent() : Value(asset.checksum),
-            type: Value(asset.type),
-          ),
-        );
-      }
-    });
-
-    await _db.transaction(() async {
-      for (final slice in companions.slices(200)) {
-        await _db.batch((batch) {
-          batch.insertAllOnConflictUpdate(_db.trashedLocalAssetEntity, slice);
-        });
-      }
-      for (final slice in idToDelete.slices(800)) {
-        await (_db.delete(_db.localAssetEntity)..where((e) => e.id.isIn(slice))).go();
-      }
-    });
-  }
-
   Future<LocalAsset?> getById(String id) {
     final query = _db.localAssetEntity.select()..where((lae) => lae.id.equals(id));
 
@@ -136,7 +100,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<AssetsByAlbums> getBackupSelectedAssetsByAlbum(Iterable<String> checksums) async {
+  Future<Map<AlbumId, List<LocalAsset>>> getBackupSelectedAssetsByAlbum(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
       return {};
     }

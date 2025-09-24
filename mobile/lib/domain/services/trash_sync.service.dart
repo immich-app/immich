@@ -56,15 +56,15 @@ class TrashSyncService {
     }
     for (final album in backupAlbums) {
       _logger.info("deviceTrashedAssets prepare, album: ${album.id}/${album.name}");
-      final deviceTrashedAssets = await _nativeSyncApi.getTrashedAssetsForAlbum(album.id);
-      await _trashedLocalAssetRepository.applyTrashSnapshot(deviceTrashedAssets.toTrashedAssets(album.id), album.id);
+      final trashedPlatformAssets = await _nativeSyncApi.getTrashedAssetsForAlbum(album.id);
+      final trashedAssets = trashedPlatformAssets.toTrashedAssets(album.id);
+      await _trashedLocalAssetRepository.applyTrashSnapshot(trashedAssets, album.id);
     }
-    // todo find for more suitable place
     await applyRemoteRestoreToLocal();
   }
 
   Future<void> applyTrashDelta(SyncDelta delta) async {
-    final trashUpdates = delta.updates.where((e) => e.isTrashed);
+    final trashUpdates = delta.updates;
     if (trashUpdates.isEmpty) {
       return Future.value();
     }
@@ -77,11 +77,10 @@ class TrashSyncService {
     }
     _logger.info("updateLocalTrashChanges trashedAssets: ${trashedAssets.map((e) => e.id)}");
     await _trashedLocalAssetRepository.insertTrashDelta(trashedAssets);
-    // todo find for more suitable place
     await applyRemoteRestoreToLocal();
   }
 
-  Future<void> handleRemoteChanges(Iterable<String> checksums) async {
+  Future<void> handleRemoteTrashed(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
       return Future.value();
     } else {
@@ -95,7 +94,7 @@ class TrashSyncService {
         _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
         final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
         if (result) {
-          await _localAssetRepository.trash(localAssetsToTrash);
+          await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
         }
       } else {
         _logger.info("No assets found in backup-enabled albums for assets: $checksums");
@@ -111,12 +110,7 @@ class TrashSyncService {
         _logger.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
         await _localFilesManager.restoreFromTrashById(asset.id, asset.type.index);
       }
-      // todo 19/09/2025
-      // 1. keeping full mirror of local asset table struct + size into trashedLocalAssetEntity could help to restore assets here
-      // 2. now when hash calculating doing without taking into account size of files, size field may be redundant
-
-      // todo It`s necessary? could cause race with deletion in applyTrashSnapshot? 18/09/2025
-      await _trashedLocalAssetRepository.delete(remoteAssetsToRestore.map((e) => e.id));
+      await _trashedLocalAssetRepository.restoreLocalAssets(remoteAssetsToRestore.map((e) => e.id));
     } else {
       _logger.info("No remote assets found for restoration");
     }
@@ -131,7 +125,7 @@ extension on PlatformAsset {
     type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
     createdAt: tryFromSecondsSinceEpoch(createdAt) ?? DateTime.now(),
     updatedAt: tryFromSecondsSinceEpoch(updatedAt) ?? DateTime.now(),
-    size: size,
+    volume: volume,
     albumId: albumId,
   );
 }

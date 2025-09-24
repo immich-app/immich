@@ -41,8 +41,8 @@ class PlatformAsset {
     required this.durationInSeconds,
     required this.orientation,
     required this.isFavorite,
-    required this.isTrashed,
-    this.size,
+    this.isTrashed,
+    this.volume,
   });
 
   String id;
@@ -65,9 +65,9 @@ class PlatformAsset {
 
   bool isFavorite;
 
-  bool isTrashed;
+  bool? isTrashed;
 
-  int? size;
+  String? volume;
 
   List<Object?> _toList() {
     return <Object?>[
@@ -82,7 +82,7 @@ class PlatformAsset {
       orientation,
       isFavorite,
       isTrashed,
-      size,
+      volume,
     ];
   }
 
@@ -103,8 +103,8 @@ class PlatformAsset {
       durationInSeconds: result[7]! as int,
       orientation: result[8]! as int,
       isFavorite: result[9]! as bool,
-      isTrashed: result[10]! as bool,
-      size: result[11] as int?,
+      isTrashed: result[10] as bool?,
+      volume: result[11] as String?,
     );
   }
 
@@ -391,7 +391,7 @@ class NativeSyncApi {
     }
   }
 
-  Future<SyncDelta> getMediaChanges() async {
+  Future<SyncDelta> getMediaChanges({bool isTrashed = false}) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -399,7 +399,7 @@ class NativeSyncApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[isTrashed]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -628,7 +628,7 @@ class NativeSyncApi {
     }
   }
 
-  Future<List<PlatformAsset>> getTrashedAssetsForAlbum(String albumId, {int? updatedTimeCond}) async {
+  Future<List<PlatformAsset>> getTrashedAssetsForAlbum(String albumId) async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -636,7 +636,7 @@ class NativeSyncApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId, updatedTimeCond]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);

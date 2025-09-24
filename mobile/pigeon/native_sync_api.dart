@@ -24,8 +24,8 @@ class PlatformAsset {
   final int durationInSeconds;
   final int orientation;
   final bool isFavorite;
-  final bool isTrashed;
-  final int? size;
+  final bool? isTrashed;
+  final String? volume;
 
   const PlatformAsset({
     required this.id,
@@ -38,8 +38,8 @@ class PlatformAsset {
     this.durationInSeconds = 0,
     this.orientation = 0,
     this.isFavorite = false,
-    this.isTrashed = false,
-    this.size,
+    this.isTrashed,
+    this.volume,
   });
 }
 
@@ -100,7 +100,7 @@ abstract class NativeSyncApi {
   bool shouldFullSync();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  SyncDelta getMediaChanges();
+  SyncDelta getMediaChanges({bool isTrashed = false});
 
   void checkpointSync();
 
@@ -125,7 +125,7 @@ abstract class NativeSyncApi {
   void cancelHashing();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<PlatformAsset> getTrashedAssetsForAlbum(String albumId, {int? updatedTimeCond});
+  List<PlatformAsset> getTrashedAssetsForAlbum(String albumId);
 
   @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

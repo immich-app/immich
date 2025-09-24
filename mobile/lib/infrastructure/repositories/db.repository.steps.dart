@@ -5038,16 +5038,21 @@ final class Schema12 extends i0.VersionedSchema {
       entityName: 'trashed_local_asset_entity',
       withoutRowId: true,
       isStrict: true,
-      tableConstraints: ['PRIMARY KEY(id)'],
+      tableConstraints: ['PRIMARY KEY(id, album_id)'],
       columns: [
-        _column_0,
-        _column_95,
-        _column_22,
         _column_1,
         _column_8,
         _column_9,
         _column_5,
+        _column_10,
+        _column_11,
+        _column_12,
+        _column_0,
+        _column_95,
         _column_96,
+        _column_22,
+        _column_14,
+        _column_23,
       ],
       attachedDatabase: database,
     ),
@@ -5065,12 +5070,6 @@ final class Schema12 extends i0.VersionedSchema {
 
 class Shape23 extends i0.VersionedTable {
   Shape23({required super.source, required super.alias}) : super.aliased();
-  i1.GeneratedColumn<String> get id =>
-      columnsByName['id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get albumId =>
-      columnsByName['album_id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get checksum =>
-      columnsByName['checksum']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get name =>
       columnsByName['name']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<int> get type =>
@@ -5079,8 +5078,24 @@ class Shape23 extends i0.VersionedTable {
       columnsByName['created_at']! as i1.GeneratedColumn<DateTime>;
   i1.GeneratedColumn<DateTime> get updatedAt =>
       columnsByName['updated_at']! as i1.GeneratedColumn<DateTime>;
-  i1.GeneratedColumn<int> get size =>
-      columnsByName['size']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get width =>
+      columnsByName['width']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get height =>
+      columnsByName['height']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<int> get durationInSeconds =>
+      columnsByName['duration_in_seconds']! as i1.GeneratedColumn<int>;
+  i1.GeneratedColumn<String> get id =>
+      columnsByName['id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get albumId =>
+      columnsByName['album_id']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get volume =>
+      columnsByName['volume']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<String> get checksum =>
+      columnsByName['checksum']! as i1.GeneratedColumn<String>;
+  i1.GeneratedColumn<bool> get isFavorite =>
+      columnsByName['is_favorite']! as i1.GeneratedColumn<bool>;
+  i1.GeneratedColumn<int> get orientation =>
+      columnsByName['orientation']! as i1.GeneratedColumn<int>;
 }
 
 i1.GeneratedColumn<String> _column_95(String aliasedName) =>
@@ -5090,12 +5105,12 @@ i1.GeneratedColumn<String> _column_95(String aliasedName) =>
       false,
       type: i1.DriftSqlType.string,
     );
-i1.GeneratedColumn<int> _column_96(String aliasedName) =>
-    i1.GeneratedColumn<int>(
-      'size',
+i1.GeneratedColumn<String> _column_96(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'volume',
       aliasedName,
       true,
-      type: i1.DriftSqlType.int,
+      type: i1.DriftSqlType.string,
     );
 i0.MigrationStepWithVersion migrationSteps({
   required Future<void> Function(i1.Migrator m, Schema2 schema) from1To2,

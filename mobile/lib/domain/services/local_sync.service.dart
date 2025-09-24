@@ -40,14 +40,13 @@ class LocalSyncService {
         return;
       }
 
-      final updates = delta.updates.where((e) => !e.isTrashed);
-      _log.fine("Delta updated assets: ${updates.length}");
+      _log.fine("Delta updated: ${delta.updates.length}");
       _log.fine("Delta deleted: ${delta.deletes.length}");
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       await _localAlbumRepository.updateAll(deviceAlbums.toLocalAlbums());
       await _localAlbumRepository.processDelta(
-        updates: updates.toLocalAssets(),
+        updates: delta.updates.toLocalAssets(),
         deletes: delta.deletes,
         assetAlbums: delta.assetAlbums,
       );
@@ -77,7 +76,8 @@ class LocalSyncService {
         }
       }
       if (_trashSyncService.isAutoSyncMode) {
-        _log.fine("Delta updated trashed: ${delta.updates.length - updates.length}");
+        final delta = await _nativeSyncApi.getMediaChanges(isTrashed: true);
+        _log.fine("Delta updated in trash: ${delta.updates.length - delta.updates.length}");
         await _trashSyncService.applyTrashDelta(delta);
       }
       await _nativeSyncApi.checkpointSync();
