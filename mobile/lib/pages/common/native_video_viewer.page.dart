@@ -159,7 +159,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
 
       if (oldControls?.pause != newControls.pause || newControls.restarted) {
-        _onPauseChange(context, playerController, seekDebouncer, newControls.pause);
+        unawaited(_onPauseChange(context, playerController, seekDebouncer, newControls.pause));
       }
     });
 
