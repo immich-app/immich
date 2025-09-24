@@ -83,36 +83,24 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
         storedGen.toString(),
         storedGen.toString()
       )
-      if (isTrashed) {
-        val uri = MediaStore.Files.getContentUri(volume)
+      val cursor = if (isTrashed) {
         val queryArgs = Bundle().apply {
           putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
           putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
           putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
         }
-
-        ctx.contentResolver.query(uri, ASSET_PROJECTION, queryArgs, null).use { cursor ->
-          getAssets(cursor).forEach {
-            when (it) {
-              is AssetResult.ValidAsset -> {
-                changed.add(it.asset)
-                assetAlbums[it.asset.id] = listOf(it.albumId)
-              }
-
-              is AssetResult.InvalidAsset -> deleted.add(it.assetId)
-            }
-          }
-        }
+        getCursor(volume, queryArgs)
       } else {
-        getAssets(getCursor(volume, selection, selectionArgs)).forEach {
-          when (it) {
-            is AssetResult.ValidAsset -> {
-              changed.add(it.asset)
-              assetAlbums[it.asset.id] = listOf(it.albumId)
-            }
-
-            is AssetResult.InvalidAsset -> deleted.add(it.assetId)
+        getCursor(volume, selection, selectionArgs)
+      }
+      getAssets(cursor).forEach {
+        when (it) {
+          is AssetResult.ValidAsset -> {
+            changed.add(it.asset)
+            assetAlbums[it.asset.id] = listOf(it.albumId)
           }
+
+          is AssetResult.InvalidAsset -> deleted.add(it.assetId)
         }
       }
     }
@@ -130,19 +118,16 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
 
     for (volume in volumes) {
-      val uri = MediaStore.Files.getContentUri(volume)
-      val queryArgs = Bundle().apply {
+      val cursor = getCursor(volume, Bundle().apply {
         putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
         putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
         putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
-      }
-
-      ctx.contentResolver.query(uri, ASSET_PROJECTION, queryArgs, null).use { cursor ->
-        getAssets(cursor).forEach { res ->
-          if (res is AssetResult.ValidAsset) trashed += res.asset
-        }
+      })
+      getAssets(cursor).forEach { res ->
+        if (res is AssetResult.ValidAsset) trashed += res.asset
       }
     }
+
     return trashed
   }
 

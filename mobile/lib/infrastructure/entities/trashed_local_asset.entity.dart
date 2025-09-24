@@ -22,7 +22,6 @@ class TrashedLocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntity
 
   @override
   Set<Column> get primaryKey => {id, albumId};
-
 }
 
 extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityData {
