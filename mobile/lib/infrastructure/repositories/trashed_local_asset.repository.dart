@@ -73,6 +73,11 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
           type: a.type,
           createdAt: Value(a.createdAt),
           updatedAt: Value(a.updatedAt),
+          width: Value(a.width),
+          height: Value(a.height),
+          durationInSeconds: Value(a.durationInSeconds),
+          isFavorite: Value(a.isFavorite),
+          orientation: Value(a.orientation),
         ),
       );
 
@@ -108,6 +113,11 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         type: a.type,
         checksum: a.checksum == null ? const Value.absent() : Value(a.checksum),
         createdAt: Value(a.createdAt),
+        width: Value(a.width),
+        height: Value(a.height),
+        durationInSeconds: Value(a.durationInSeconds),
+        isFavorite: Value(a.isFavorite),
+        orientation: Value(a.orientation),
       ),
     );
 

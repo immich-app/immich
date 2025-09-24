@@ -127,6 +127,11 @@ extension on PlatformAsset {
     updatedAt: tryFromSecondsSinceEpoch(updatedAt) ?? DateTime.now(),
     volume: volume,
     albumId: albumId,
+    width: width,
+    height: height,
+    durationInSeconds: durationInSeconds,
+    isFavorite: isFavorite,
+    orientation: orientation,
   );
 }
 

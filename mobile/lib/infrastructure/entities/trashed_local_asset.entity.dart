@@ -34,5 +34,10 @@ extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityD
     type: type,
     createdAt: createdAt,
     updatedAt: updatedAt,
+    durationInSeconds: durationInSeconds,
+    isFavorite: isFavorite,
+    height: height,
+    width: width,
+    orientation: orientation,
   );
 }
