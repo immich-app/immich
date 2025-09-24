@@ -25,7 +25,6 @@
     "@mdx-js/react": "^3.0.0",
     "autoprefixer": "^10.4.17",
     "docusaurus-lunr-search": "^3.3.2",
-    "docusaurus-preset-openapi": "^0.7.5",
     "lunr": "^2.3.9",
     "postcss": "^8.4.25",
     "prism-react-renderer": "^2.3.1",

@@ -476,5 +476,5 @@ Recommended minimums:
 
 - Read the [architecture overview](/docs/developer/architecture)
 - Learn about [database migrations](/docs/developer/database-migrations)
-- Explore [API documentation](/docs/api)
+- Explore [API documentation](https://api.immich.app/)
 - Join `#immich` on [Discord](https://discord.immich.app)

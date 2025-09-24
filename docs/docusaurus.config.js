@@ -42,8 +42,8 @@ const config = {
   ],
   presets: [
     [
-      'docusaurus-preset-openapi',
-      /** @type {import('docusaurus-preset-openapi').Options} */
+      'classic',
+      /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
           showLastUpdateAuthor: true,
@@ -54,14 +54,6 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/immich-app/immich/tree/main/docs/',
         },
-        api: {
-          path: '../open-api/immich-openapi-specs.json',
-          routeBasePath: '/docs/api',
-        },
-        // blog: {
-        //   showReadingTime: true,
-        //   editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
-        // },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -100,12 +92,12 @@ const config = {
             label: 'Docs',
           },
           {
-            to: '/roadmap',
+            href: 'https://immich.app/roadmap',
             position: 'right',
             label: 'Roadmap',
           },
           {
-            to: '/docs/api',
+            href: 'https://api.immich.app/',
             position: 'right',
             label: 'API',
           },
@@ -161,15 +153,15 @@ const config = {
             items: [
               {
                 label: 'Roadmap',
-                to: '/roadmap',
+                href: 'https://immich.app/roadmap',
               },
               {
                 label: 'API',
-                to: '/docs/api',
+                href: 'https://api.immich.app/',
               },
               {
                 label: 'Cursed Knowledge',
-                to: '/cursed-knowledge',
+                href: 'https://immich.app/cursed-knowledge',
               },
             ],
           },
