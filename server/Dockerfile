@@ -55,6 +55,7 @@ ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
 
+COPY --from=builder /usr/bin/tusd /usr/bin/tusd
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
