@@ -77,7 +77,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: '5459d54'
+      ref: '893894b'
   openapi:
     path: openapi
   isar:
