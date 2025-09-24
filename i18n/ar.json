@@ -123,6 +123,7 @@
     "logging_enable_description": "تفعيل تسجيل الأحداث",
     "logging_level_description": "عند التفعيل، أي مستوى تسجيل سيستخدم.",
     "logging_settings": "تسجيل الاحداث",
+    "machine_learning_availability_checks": "تحقق من التوفر",
     "machine_learning_clip_model": "نموذج CLIP",
     "machine_learning_clip_model_description": "اسم نموذج CLIP مدرجٌ <link>هنا</link>. يرجى ملاحظة أنه يجب إعادة تشغيل وظيفة \"البحث الذكي\" لجميع الصور بعد تغيير النموذج.",
     "machine_learning_duplicate_detection": "كشف التكرار",
