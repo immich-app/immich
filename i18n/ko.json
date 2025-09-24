@@ -387,8 +387,6 @@
   "admin_password": "관리자 비밀번호",
   "administration": "관리",
   "advanced": "고급",
-  "advanced_settings_beta_timeline_subtitle": "새로운 앱 경험 사용해보기",
-  "advanced_settings_beta_timeline_title": "베타 타임라인",
   "advanced_settings_enable_alternate_media_filter_subtitle": "이 옵션을 사용하면 동기화 중 미디어를 대체 기준으로 필터링할 수 있습니다. 앱이 모든 앨범을 제대로 감지하지 못할 때만 사용하세요.",
   "advanced_settings_enable_alternate_media_filter_title": "대체 기기 앨범 동기화 필터 사용 (실험적)",
   "advanced_settings_log_level_title": "로그 레벨: {level}",

@@ -22,7 +22,7 @@
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -92,20 +92,13 @@
   };
 
   copyImage = async () => {
-    if (!canCopyImageToClipboard()) {
+    if (!canCopyImageToClipboard() || !$photoViewerImgElement) {
       return;
     }
 
     try {
-      const result = await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
-      if (result.success) {
-        notificationController.show({ type: NotificationType.Info, message: $t('copied_image_to_clipboard') });
-      } else {
-        notificationController.show({
-          type: NotificationType.Error,
-          message: $t('errors.clipboard_unsupported_mime_type', { values: { mimeType: result.mimeType } }),
-        });
-      }
+      await copyImageToClipboard($photoViewerImgElement);
+      notificationController.show({ type: NotificationType.Info, message: $t('copied_image_to_clipboard') });
     } catch (error) {
       handleError(error, $t('copy_error'));
     }
@@ -241,8 +234,7 @@
   {:else if !imageError}
     <div
       use:zoomImageAction
-      use:swipe={() => ({})}
-      onswipe={onSwipe}
+      {...useSwipe(onSwipe)}
       class="h-full w-full"
       transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
     >

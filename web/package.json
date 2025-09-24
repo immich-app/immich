@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.142.1",
+  "version": "1.143.1",
   "license": "GNU Affero General Public License version 3",
   "type": "module",
   "scripts": {
@@ -55,7 +55,7 @@
     "qrcode": "^1.5.4",
     "simple-icons": "^15.15.0",
     "socket.io-client": "~4.8.0",
-    "svelte-gestures": "5.1.4",
+    "svelte-gestures": "^5.2.2",
     "svelte-i18n": "^4.0.1",
     "svelte-maplibre": "^1.2.0",
     "svelte-persisted-store": "^0.12.0",
