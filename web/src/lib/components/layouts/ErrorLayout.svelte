@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import { copyToClipboard } from '$lib/utils';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -37,7 +36,7 @@
       >
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
-            <h1 class="font-medium text-immich-primary dark:text-immich-dark-primary">
+            <h1 class="font-medium text-primary">
               🚨 {$t('error_title')}
             </h1>
             <div class="flex justify-end">
@@ -74,7 +73,7 @@
               class="flex grow basis-0 justify-center p-4"
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
-                <Icon path={mdiMessage} size={24} />
+                <Icon icon={mdiMessage} size="24" />
                 <p class="text-sm">{$t('get_help')}</p>
               </div>
             </a>
@@ -86,7 +85,7 @@
               class="flex grow basis-0 justify-center p-4"
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
-                <Icon path={mdiPartyPopper} size={24} />
+                <Icon icon={mdiPartyPopper} size="24" />
                 <p class="text-sm">{$t('read_changelog')}</p>
               </div>
             </a>
@@ -98,7 +97,7 @@
               class="flex grow basis-0 justify-center p-4"
             >
               <div class="flex flex-col place-content-center place-items-center gap-2">
-                <Icon path={mdiCodeTags} size={24} />
+                <Icon icon={mdiCodeTags} size="24" />
                 <p class="text-sm">{$t('check_logs')}</p>
               </div>
             </a>

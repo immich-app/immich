@@ -387,8 +387,6 @@
   "admin_password": "Admin lozinka",
   "administration": "Administracija",
   "advanced": "Napredno",
-  "advanced_settings_beta_timeline_subtitle": "Isprobaj novo iskustvo aplikacije",
-  "advanced_settings_beta_timeline_title": "Beta vremenska crta",
   "advanced_settings_enable_alternate_media_filter_subtitle": "Koristite ovu opciju za filtriranje medija tijekom sinkronizacije na temelju alternativnih kriterija. Pokušajte ovo samo ako imate problema s aplikacijom koja ne prepoznaje sve albume.",
   "advanced_settings_enable_alternate_media_filter_title": "[EKSPERIMENTALNO] Koristite alternativni filter za sinkronizaciju albuma na uređaju",
   "advanced_settings_log_level_title": "Razina zapisivanja: {level}",

@@ -22,13 +22,14 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 16;
+const int targetVersion = 17;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -62,29 +63,13 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
     await Store.populateCache();
   }
 
-  // Handle migration only for this version
-  // TODO: remove when old timeline is removed
-  final needBetaMigration = Store.tryGet(StoreKey.needBetaMigration);
-  if (version == 15 && needBetaMigration == null) {
-    // Check both databases directly instead of relying on cache
+  await handleBetaMigration(version, await _isNewInstallation(db, drift), SyncStreamRepository(drift));
 
-    final isBeta = Store.tryGet(StoreKey.betaTimeline);
-    final isNewInstallation = await _isNewInstallation(db, drift);
-
-    // For new installations, no migration needed
-    // For existing installations, only migrate if beta timeline is not enabled (null or false)
-    if (isNewInstallation || isBeta == true) {
-      await Store.put(StoreKey.needBetaMigration, false);
-      await Store.put(StoreKey.betaTimeline, true);
-    } else {
-      await drift.reset();
-      await Store.put(StoreKey.needBetaMigration, true);
+  if (version < 17 && Store.isBetaTimelineEnabled) {
+    final delay = Store.get(StoreKey.backupTriggerDelay, AppSettingsEnum.backupTriggerDelay.defaultValue);
+    if (delay >= 1000) {
+      await Store.put(StoreKey.backupTriggerDelay, (delay / 1000).toInt());
     }
-  }
-
-  if (version < 16) {
-    await SyncStreamRepository(drift).reset();
-    await Store.put(StoreKey.shouldResetSync, true);
   }
 
   if (targetVersion >= 12) {
@@ -96,6 +81,37 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
 
   if (shouldTruncate) {
     await _migrateTo(db, targetVersion);
+  }
+}
+
+Future<void> handleBetaMigration(int version, bool isNewInstallation, SyncStreamRepository syncStreamRepository) async {
+  // Handle migration only for this version
+  // TODO: remove when old timeline is removed
+  final isBeta = Store.tryGet(StoreKey.betaTimeline);
+  final needBetaMigration = Store.tryGet(StoreKey.needBetaMigration);
+  if (version <= 15 && needBetaMigration == null) {
+    // For new installations, no migration needed
+    // For existing installations, only migrate if beta timeline is not enabled (null or false)
+    if (isNewInstallation || isBeta == true) {
+      await Store.put(StoreKey.needBetaMigration, false);
+      await Store.put(StoreKey.betaTimeline, true);
+    } else {
+      await Store.put(StoreKey.needBetaMigration, true);
+    }
+  }
+
+  if (version > 15) {
+    if (isBeta == null || isBeta) {
+      await Store.put(StoreKey.needBetaMigration, false);
+      await Store.put(StoreKey.betaTimeline, true);
+    } else {
+      await Store.put(StoreKey.needBetaMigration, false);
+    }
+  }
+
+  if (version < 16) {
+    await syncStreamRepository.reset();
+    await Store.put(StoreKey.shouldResetSync, true);
   }
 }
 

@@ -10,10 +10,15 @@ on:
         type: choice
         options:
           - 'false'
+          - major
           - minor
           - patch
       mobileBump:
         description: 'Bump mobile build number'
+        required: false
+        type: boolean
+      skipTranslations:
+        description: 'Skip translations'
         required: false
         type: boolean
 
@@ -26,6 +31,8 @@ permissions: {}
 jobs:
   merge_translations:
     uses: ./.github/workflows/merge-translations.yml
+    with:
+      skip: ${{ inputs.skipTranslations }}
     permissions:
       pull-requests: write
     secrets:
@@ -35,6 +42,7 @@ jobs:
 
   bump_version:
     runs-on: ubuntu-latest
+    needs: [merge_translations]
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
@@ -51,6 +59,7 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: true
+          ref: main
 
       - name: Install uv
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
@@ -119,7 +128,7 @@ jobs:
           name: release-apk-signed
 
       - name: Create draft release
-        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2.3.3
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}

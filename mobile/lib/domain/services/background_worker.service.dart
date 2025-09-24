@@ -10,11 +10,13 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
+import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
@@ -43,11 +45,22 @@ class BackgroundWorkerFgService {
   // TODO: Move this call to native side once old timeline is removed
   Future<void> enable() => _foregroundHostApi.enable();
 
+  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
+    BackgroundWorkerSettings(
+      minimumDelaySeconds:
+          minimumDelaySeconds ??
+          Store.get(AppSettingsEnum.backupTriggerDelay.storeKey, AppSettingsEnum.backupTriggerDelay.defaultValue),
+      requiresCharging:
+          requireCharging ??
+          Store.get(AppSettingsEnum.backupRequireCharging.storeKey, AppSettingsEnum.backupRequireCharging.defaultValue),
+    ),
+  );
+
   Future<void> disable() => _foregroundHostApi.disable();
 }
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
-  late final ProviderContainer _ref;
+  ProviderContainer? _ref;
   final Isar _isar;
   final Drift _drift;
   final DriftLogger _driftLogger;
@@ -72,29 +85,31 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
-  bool get _isBackupEnabled => _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+  bool get _isBackupEnabled => _ref?.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup) ?? false;
 
   Future<void> init() async {
     try {
       HttpSSLOptions.apply(applyNative: false);
 
-      await Future.wait([
-        loadTranslations(),
-        workerManager.init(dynamicSpawning: true),
-        _ref.read(authServiceProvider).setOpenApiServiceEndpoint(),
-        // Initialize the file downloader
-        FileDownloader().configure(
-          globalConfig: [
-            // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
-            (Config.holdingQueue, (6, 6, 3)),
-            // On Android, if files are larger than 256MB, run in foreground service
-            (Config.runInForegroundIfFileLargerThan, 256),
-          ],
-        ),
-        FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false),
-        FileDownloader().trackTasks(),
-        _ref.read(fileMediaRepositoryProvider).enableBackgroundAccess(),
-      ]);
+      await Future.wait(
+        [
+          loadTranslations(),
+          workerManager.init(dynamicSpawning: true),
+          _ref?.read(authServiceProvider).setOpenApiServiceEndpoint(),
+          // Initialize the file downloader
+          FileDownloader().configure(
+            globalConfig: [
+              // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
+              (Config.holdingQueue, (6, 6, 3)),
+              // On Android, if files are larger than 256MB, run in foreground service
+              (Config.runInForegroundIfFileLargerThan, 256),
+            ],
+          ),
+          FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false),
+          FileDownloader().trackTasks(),
+          _ref?.read(fileMediaRepositoryProvider).enableBackgroundAccess(),
+        ].nonNulls,
+      );
 
       configureFileDownloaderNotifications();
 
@@ -167,14 +182,17 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _cleanup() async {
-    if (_isCleanedUp) {
+    // If ref is null, it means the service was never initialized properly
+    if (_isCleanedUp || _ref == null) {
       return;
     }
 
     try {
-      final backgroundSyncManager = _ref.read(backgroundSyncProvider);
       _isCleanedUp = true;
-      _ref.dispose();
+      final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
+      final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
+      _ref?.dispose();
+      _ref = null;
 
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
@@ -187,14 +205,14 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         Store.dispose(),
         _drift.close(),
         _driftLogger.close(),
-        backgroundSyncManager.cancel(),
-        backgroundSyncManager.cancelLocal(),
+        backgroundSyncManager?.cancel(),
+        nativeSyncApi?.cancelHashing(),
       ];
 
       if (_isar.isOpen) {
         cleanupFutures.add(_isar.close());
       }
-      await Future.wait(cleanupFutures);
+      await Future.wait(cleanupFutures.nonNulls);
       _logger.info("Background worker resources cleaned up");
     } catch (error, stack) {
       dPrint(() => 'Failed to cleanup background worker: $error with stack: $stack');
@@ -204,14 +222,18 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   Future<void> _handleBackup() async {
     await runZonedGuarded(
       () async {
-        if (!_isBackupEnabled || _isCleanedUp) {
+        if (_isCleanedUp) {
+          return;
+        }
+
+        if (!_isBackupEnabled) {
           _logger.info("[_handleBackup 1] Backup is disabled. Skipping backup routine");
           return;
         }
 
         _logger.info("[_handleBackup 2] Enqueuing assets for backup from the background service");
 
-        final currentUser = _ref.read(currentUserProvider);
+        final currentUser = _ref?.read(currentUserProvider);
         if (currentUser == null) {
           _logger.warning("[_handleBackup 3] No current user found. Skipping backup from background");
           return;
@@ -219,19 +241,18 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
         _logger.info("[_handleBackup 4] Resume backup from background");
         if (Platform.isIOS) {
-          return _ref.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
+          return _ref?.read(driftBackupProvider.notifier).handleBackupResume(currentUser.id);
         }
 
-        final canPing = await _ref.read(serverInfoServiceProvider).ping();
+        final canPing = await _ref?.read(serverInfoServiceProvider).ping() ?? false;
         if (!canPing) {
           _logger.warning("[_handleBackup 5] Server is not reachable. Skipping backup from background");
           return;
         }
 
-        final networkCapabilities = await _ref.read(connectivityApiProvider).getCapabilities();
-
+        final networkCapabilities = await _ref?.read(connectivityApiProvider).getCapabilities() ?? [];
         return _ref
-            .read(uploadServiceProvider)
+            ?.read(uploadServiceProvider)
             .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _cancellationToken);
       },
       (error, stack) {
@@ -241,18 +262,18 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<void> _syncAssets({Duration? hashTimeout}) async {
-    await _ref.read(backgroundSyncProvider).syncLocal();
+    await _ref?.read(backgroundSyncProvider).syncLocal();
     if (_isCleanedUp) {
       return;
     }
 
-    await _ref.read(backgroundSyncProvider).syncRemote();
+    await _ref?.read(backgroundSyncProvider).syncRemote();
     if (_isCleanedUp) {
       return;
     }
 
-    var hashFuture = _ref.read(backgroundSyncProvider).hashAssets();
-    if (hashTimeout != null) {
+    var hashFuture = _ref?.read(backgroundSyncProvider).hashAssets();
+    if (hashTimeout != null && hashFuture != null) {
       hashFuture = hashFuture.timeout(
         hashTimeout,
         onTimeout: () {
@@ -262,6 +283,23 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
 
     await hashFuture;
+  }
+}
+
+class BackgroundWorkerLockService {
+  final BackgroundWorkerLockApi _hostApi;
+  const BackgroundWorkerLockService(this._hostApi);
+
+  Future<void> lock() async {
+    if (CurrentPlatform.isAndroid) {
+      return _hostApi.lock();
+    }
+  }
+
+  Future<void> unlock() async {
+    if (CurrentPlatform.isAndroid) {
+      return _hostApi.unlock();
+    }
   }
 }
 

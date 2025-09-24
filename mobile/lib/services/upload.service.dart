@@ -89,16 +89,8 @@ class UploadService {
     return _uploadRepository.getActiveTasks(group);
   }
 
-  Future<int> getBackupTotalCount() {
-    return _backupRepository.getTotalCount();
-  }
-
-  Future<int> getBackupRemainderCount(String userId) {
-    return _backupRepository.getRemainderCount(userId);
-  }
-
-  Future<int> getBackupFinishedCount(String userId) {
-    return _backupRepository.getBackupCount(userId);
+  Future<({int total, int remainder, int processing})> getBackupCounts(String userId) {
+    return _backupRepository.getAllCounts(userId);
   }
 
   Future<void> manualBackup(List<LocalAsset> localAssets) async {

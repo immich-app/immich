@@ -9858,7 +9858,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.142.1",
+    "version": "1.143.1",
     "contact": {}
   },
   "tags": [],
@@ -12256,6 +12256,25 @@
         "required": [
           "redirectUri",
           "successful"
+        ],
+        "type": "object"
+      },
+      "MachineLearningAvailabilityChecksDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "interval": {
+            "type": "number"
+          },
+          "timeout": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "timeout"
         ],
         "type": "object"
       },
@@ -16395,6 +16414,9 @@
       },
       "SystemConfigMachineLearningDto": {
         "properties": {
+          "availabilityChecks": {
+            "$ref": "#/components/schemas/MachineLearningAvailabilityChecksDto"
+          },
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
@@ -16407,11 +16429,6 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
-          "url": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.122.0",
-            "type": "string"
-          },
           "urls": {
             "format": "uri",
             "items": {
@@ -16423,6 +16440,7 @@
           }
         },
         "required": [
+          "availabilityChecks",
           "clip",
           "duplicateDetection",
           "enabled",

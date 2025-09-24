@@ -21,16 +21,14 @@ services:
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
-      dockerfile: server/Dockerfile
+      dockerfile: server/Dockerfile.dev
       target: dev
     restart: unless-stopped
     volumes:
       - ..:/usr/src/app
       - ${UPLOAD_LOCATION}/photos:/data
-      - ${UPLOAD_LOCATION}/photos/upload:/data/upload
       - /etc/localtime:/etc/localtime:ro
       - pnpm-store:/usr/src/app/.pnpm-store
       - server-node_modules:/usr/src/app/server/node_modules
@@ -72,20 +70,15 @@ services:
         condition: service_started
       database:
         condition: service_started
-      init:
-        condition: service_completed_successfully
     healthcheck:
       disable: false
 
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
-    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
-    # user: 0:0
-    user: '${UID:-0}:${GID:-0}'
     build:
       context: ../
-      dockerfile: server/Dockerfile
+      dockerfile: server/Dockerfile.dev
       target: dev
     command: ['immich-web']
     env_file:
@@ -114,8 +107,6 @@ services:
     depends_on:
       immich-server:
         condition: service_started
-      init:
-        condition: service_completed_successfully
 
   immich-machine-learning:
     container_name: immich_machine_learning
@@ -149,7 +140,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:8d292bdb796aa58bbbaa47fe971c8516f6f57d6a47e7172e62754feb6ed4e7b0
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:c44be5f2871c59362966d71eab4268170eb6f5653c0e6170184e72b38ffdf107
     env_file:
       - .env
     environment:
@@ -183,25 +174,6 @@ services:
   #   volumes:
   #     - grafana-data:/var/lib/grafana
 
-  init:
-    container_name: init
-    image: busybox@sha256:ab33eacc8251e3807b85bb6dba570e4698c3998eca6f0fc2ccb60575a563ea74
-    env_file:
-      - .env
-    user: 0:0
-    command: sh -c 'find /data -maxdepth 1 -type d -exec chown ${UID:-0}:${GID:-0} {} + 2>/dev/null || true; for path in /usr/src/app/.pnpm-store /usr/src/app/server/node_modules /usr/src/app/server/dist /usr/src/app/.github/node_modules /usr/src/app/cli/node_modules /usr/src/app/docs/node_modules /usr/src/app/e2e/node_modules /usr/src/app/open-api/typescript-sdk/node_modules /usr/src/app/web/.svelte-kit /usr/src/app/web/coverage /usr/src/app/node_modules /usr/src/app/web/node_modules; do [ -e "$$path" ] && chown -R ${UID:-0}:${GID:-0} "$$path" || true; done'
-    volumes:
-      - pnpm-store:/usr/src/app/.pnpm-store
-      - server-node_modules:/usr/src/app/server/node_modules
-      - web-node_modules:/usr/src/app/web/node_modules
-      - github-node_modules:/usr/src/app/.github/node_modules
-      - cli-node_modules:/usr/src/app/cli/node_modules
-      - docs-node_modules:/usr/src/app/docs/node_modules
-      - e2e-node_modules:/usr/src/app/e2e/node_modules
-      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
-      - app-node_modules:/usr/src/app/node_modules
-      - sveltekit:/usr/src/app/web/.svelte-kit
-      - coverage:/usr/src/app/web/coverage
 volumes:
   model-cache:
   prometheus-data:

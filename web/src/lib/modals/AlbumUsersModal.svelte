@@ -15,7 +15,7 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Modal, ModalBody, modalManager } from '@immich/ui';
+  import { Button, Modal, ModalBody, Text, modalManager } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -97,33 +97,25 @@
 <Modal title={$t('options')} size="small" {onClose}>
   <ModalBody>
     <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
-      <div class="flex w-full place-items-center justify-between gap-4 p-5">
-        <div class="flex place-items-center gap-4">
-          <UserAvatar user={album.owner} size="md" />
-          <p class="text-sm font-medium">{album.owner.name}</p>
-        </div>
-
-        <div id="icon-{album.owner.id}" class="flex place-items-center">
-          <p class="text-sm">{$t('owner')}</p>
-        </div>
-      </div>
-      {#each album.albumUsers as { user, role } (user.id)}
-        <div
-          class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
+      {#each [{ user: album.owner, role: 'owner' }, ...album.albumUsers] as { user, role } (user.id)}
+        <div class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors">
           <div class="flex place-items-center gap-4">
             <UserAvatar {user} size="md" />
-            <p class="text-sm font-medium">{user.name}</p>
+            <div class="flex flex-col">
+              <p class="font-medium">{user.name}</p>
+              <Text color="muted" size="tiny">
+                {#if role === 'owner'}
+                  {$t('owner')}
+                {:else if role === AlbumUserRole.Viewer}
+                  {$t('role_viewer')}
+                {:else}
+                  {$t('role_editor')}
+                {/if}
+              </Text>
+            </div>
           </div>
 
-          <div id="icon-{user.id}" class="flex place-items-center gap-2 text-sm">
-            <div>
-              {#if role === AlbumUserRole.Viewer}
-                {$t('role_viewer')}
-              {:else}
-                {$t('role_editor')}
-              {/if}
-            </div>
+          <div id="icon-{user.id}" class="flex place-items-center">
             {#if isOwned}
               <ButtonContextMenu icon={mdiDotsVertical} size="medium" title={$t('options')}>
                 {#if role === AlbumUserRole.Viewer}
@@ -137,11 +129,8 @@
                 <MenuOption onClick={() => handleRemoveUser(user)} text={$t('remove')} />
               </ButtonContextMenu>
             {:else if user.id == currentUser?.id}
-              <button
-                type="button"
-                onclick={() => handleRemoveUser(user)}
-                class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
-                >{$t('leave')}</button
+              <Button shape="round" variant="ghost" leadingIcon={undefined} onclick={() => handleRemoveUser(user)}
+                >{$t('leave')}</Button
               >
             {/if}
           </div>

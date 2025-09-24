@@ -381,8 +381,6 @@
   "admin_password": "व्यवस्थापक पासवर्ड",
   "administration": "प्रशासन",
   "advanced": "विकसित",
-  "advanced_settings_beta_timeline_subtitle": "नए ऐप अनुभव को आज़माएँ",
-  "advanced_settings_beta_timeline_title": "बीटा टाइमलाइन",
   "advanced_settings_enable_alternate_media_filter_subtitle": "सिंक के दौरान वैकल्पिक मानदंडों के आधार पर मीडिया को फ़िल्टर करने के लिए इस विकल्प का उपयोग करें। इसे केवल तभी आज़माएँ जब आपको ऐप द्वारा सभी एल्बमों का पता लगाने में समस्या हो।",
   "advanced_settings_enable_alternate_media_filter_title": "[प्रयोगात्मक] वैकल्पिक डिवाइस एल्बम सिंक फ़िल्टर का उपयोग करें",
   "advanced_settings_log_level_title": "लॉग स्तर:{level}",
@@ -1548,6 +1546,7 @@
   "year": "वर्ष",
   "yes": "हाँ",
   "you_dont_have_any_shared_links": "आपके पास कोई साझा लिंक नहीं है",
-  "your_wifi_name": "Your WiFi name",
-  "zoom_image": "छवि ज़ूम करें"
+  "your_wifi_name": "आपके वाईफाई का नाम",
+  "zoom_image": "छवि ज़ूम करें",
+  "zoom_to_bounds": "सीमा तक ज़ूम करें"
 }
