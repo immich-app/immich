@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
+import app.alextran.immich.dispatch
 
 class ConnectivityApiImpl(context: Context) : ConnectivityApi {
   private val connectivityManager =
@@ -11,7 +12,13 @@ class ConnectivityApiImpl(context: Context) : ConnectivityApi {
   private val wifiManager =
     context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-  override fun getCapabilities(): List<NetworkCapability> {
+
+  override fun getCapabilities(callback: (Result<List<NetworkCapability>>) -> Unit) =
+    dispatch(callback = callback) {
+      getCapabilities()
+    }
+
+  private fun getCapabilities(): List<NetworkCapability> {
     val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
       ?: return emptyList()
 
