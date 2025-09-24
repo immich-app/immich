@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
-import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
+import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer, unlinkSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
@@ -63,6 +63,14 @@ export class StorageRepository {
 
   createWriteStream(filepath: string): Writable {
     return createWriteStream(filepath, { flags: 'w' });
+  }
+
+  overwriteWriteStream(filepath: string, offset = 0): Writable {
+    return createWriteStream(filepath, { flags: 'r+', start: offset });
+  }
+
+  createOrAppendWriteStream(filepath: string): Writable {
+    return createWriteStream(filepath, { flags: 'a' });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
@@ -134,6 +142,16 @@ export class StorageRepository {
     }
   }
 
+  unlinkSync(file: string) {
+    try {
+      unlinkSync(file);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+  }
+
   async unlinkDir(folder: string, options: { recursive?: boolean; force?: boolean }) {
     await fs.rm(folder, options);
   }
@@ -156,10 +174,13 @@ export class StorageRepository {
     }
   }
 
+  mkdir(filepath: string): Promise<String | undefined> {
+    return fs.mkdir(filepath, { recursive: true });
+  }
+
   mkdirSync(filepath: string): void {
-    if (!existsSync(filepath)) {
-      mkdirSync(filepath, { recursive: true });
-    }
+    // does not throw an error if the folder already exists
+    mkdirSync(filepath, { recursive: true });
   }
 
   existsSync(filepath: string) {

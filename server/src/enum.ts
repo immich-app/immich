@@ -20,6 +20,7 @@ export enum ImmichHeader {
   SharedLinkSlug = 'x-immich-share-slug',
   Checksum = 'x-immich-checksum',
   Cid = 'x-immich-cid',
+  AssetData = 'x-immich-asset-data',
 }
 
 export enum ImmichQuery {
@@ -306,6 +307,7 @@ export enum AssetStatus {
   Active = 'active',
   Trashed = 'trashed',
   Deleted = 'deleted',
+  Partial = 'partial',
 }
 
 export enum SourceType {
@@ -496,6 +498,7 @@ export enum BootstrapEventPriority {
   JobService = -190,
   // Initialise config after other bootstrap services, stop other services from using config on bootstrap
   SystemConfig = 100,
+  UploadService = 200,
 }
 
 export enum QueueName {

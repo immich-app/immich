@@ -104,6 +104,7 @@
     "sharp": "^0.34.4",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",
+    "structured-headers": "^2.0.2",
     "tailwindcss-preset-email": "^1.4.0",
     "thumbhash": "^0.1.1",
     "ua-parser-js": "^2.0.0",

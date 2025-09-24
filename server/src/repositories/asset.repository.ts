@@ -255,6 +255,29 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
+  getCompletionMetadata(assetId: string, ownerId: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['originalPath as path', 'status', 'fileModifiedAt', 'createdAt', 'checksum'])
+      .where('id', '=', assetId)
+      .where('ownerId', '=', ownerId)
+      .executeTakeFirst();
+  }
+
+  setComplete(assetId: string, ownerId: string, size: number) {
+    return this.db
+      .with('exif', (qb) => qb.insertInto('asset_exif').values({ assetId, fileSizeInByte: size }))
+      .with('user', (qb) =>
+        qb
+          .updateTable('user')
+          .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${size}` })
+          .where('id', '=', ownerId),
+      )
+      .updateTable('asset')
+      .set({ status: AssetStatus.Active })
+      .execute();
+  }
+
   createAll(assets: Insertable<AssetTable>[]) {
     return this.db.insertInto('asset').values(assets).returningAll().execute();
   }
@@ -494,17 +517,15 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
-  async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
-    const asset = await this.db
+  getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer) {
+    return this.db
       .selectFrom('asset')
-      .select('id')
+      .select(['id', 'status', 'createdAt'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
       .where('libraryId', 'is', null)
       .limit(1)
       .executeTakeFirst();
-
-    return asset?.id;
   }
 
   findLivePhotoMatch(options: LivePhotoSearchOptions) {

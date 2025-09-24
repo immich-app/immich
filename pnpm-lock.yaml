@@ -511,6 +511,9 @@ importers:
       socket.io:
         specifier: ^4.8.1
         version: 4.8.1
+      structured-headers:
+        specifier: ^2.0.2
+        version: 2.0.2
       tailwindcss-preset-email:
         specifier: ^1.4.0
         version: 1.4.1(tailwindcss@3.4.18(yaml@2.8.1))
@@ -10406,6 +10409,10 @@ packages:
   strtok3@10.3.4:
     resolution: {integrity: sha512-KIy5nylvC5le1OdaaoCJ07L+8iQzJHGH6pWDuzS+d07Cu7n1MZ2x26P8ZKIWfbK02+XIL8Mp4RkWeqdUCrDMfg==}
     engines: {node: '>=18'}
+
+  structured-headers@2.0.2:
+    resolution: {integrity: sha512-IUul56vVHuMg2UxWhwDj9zVJE6ztYEQQkynr1FQ/NydPhivtk5+Qb2N1RS36owEFk2fNUriTguJ2R7htRObcdA==}
+    engines: {node: '>=18', npm: '>=6'}
 
   style-to-js@1.1.18:
     resolution: {integrity: sha512-JFPn62D4kJaPTnhFUI244MThx+FEGbi+9dw1b9yBBQ+1CZpV7QAT8kUtJ7b7EUNdHajjF/0x8fT+16oLJoojLg==}
@@ -23396,6 +23403,8 @@ snapshots:
   strtok3@10.3.4:
     dependencies:
       '@tokenizer/token': 0.3.0
+
+  structured-headers@2.0.2: {}
 
   style-to-js@1.1.18:
     dependencies:
