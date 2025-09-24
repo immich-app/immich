@@ -94,9 +94,10 @@ class ConnectivityPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable 
   static let shared = ConnectivityPigeonCodec(readerWriter: ConnectivityPigeonCodecReaderWriter())
 }
 
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol ConnectivityApi {
-  func getCapabilities() throws -> [NetworkCapability]
+  func getCapabilities(completion: @escaping (Result<[NetworkCapability], Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -115,11 +116,13 @@ class ConnectivityApiSetup {
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.ConnectivityApi.getCapabilities\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
       getCapabilitiesChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.getCapabilities()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getCapabilities { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {

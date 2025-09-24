@@ -1,23 +1,27 @@
 import BackgroundTasks
 
 class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
-
-  func enable() throws {
-    BackgroundWorkerApiImpl.scheduleRefreshWorker()
-    BackgroundWorkerApiImpl.scheduleProcessingWorker()
-    print("BackgroundWorkerApiImpl:enable Background worker scheduled")
+  func enable(completion: @escaping (Result<Void, any Error>) -> Void) {
+    dispatch(completion: completion, block: {
+      BackgroundWorkerApiImpl.scheduleRefreshWorker()
+      BackgroundWorkerApiImpl.scheduleProcessingWorker()
+      print("BackgroundWorkerApiImpl:enable Background worker scheduled")
+    });
   }
   
-  func configure(settings: BackgroundWorkerSettings) throws {
+  func configure(settings: BackgroundWorkerSettings, completion: @escaping (Result<Void, any Error>) -> Void) {
     // Android only
+    completion(Result.success(Void()))
   }
   
-  func disable() throws {
-    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
-    BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);
-    print("BackgroundWorkerApiImpl:disableUploadWorker Disabled background workers")
+  func disable(completion: @escaping (Result<Void, any Error>) -> Void) {
+    dispatch(completion: completion, block: {
+      BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
+      BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);
+      print("BackgroundWorkerApiImpl:disableUploadWorker Disabled background workers")
+    });
   }
-  
+
   private static let refreshTaskID = "app.alextran.immich.background.refreshUpload"
   private static let processingTaskID = "app.alextran.immich.background.processingUpload"
   private static let taskSemaphore = DispatchSemaphore(value: 1)

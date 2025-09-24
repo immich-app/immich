@@ -18,6 +18,7 @@ struct AssetWrapper: Hashable, Equatable {
 }
 
 class NativeSyncApiImpl: NativeSyncApi {
+  
   private let defaults: UserDefaults
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
@@ -75,7 +76,12 @@ class NativeSyncApiImpl: NativeSyncApi {
     return false
   }
   
-  func getAlbums() throws -> [PlatformAlbum] {
+
+  func getAlbums(completion: @escaping (Result<[PlatformAlbum], any Error>) -> Void) {
+    dispatch(qos: .userInitiated, completion: completion, block: getAlbums)
+  }
+  
+  private func getAlbums() throws -> [PlatformAlbum] {
     var albums: [PlatformAlbum] = []
     
     albumTypes.forEach { type in
@@ -112,7 +118,11 @@ class NativeSyncApiImpl: NativeSyncApi {
     return albums.sorted { $0.id < $1.id }
   }
   
-  func getMediaChanges() throws -> SyncDelta {
+  func getMediaChanges(completion: @escaping (Result<SyncDelta, any Error>) -> Void) {
+    dispatch(qos: .userInitiated, completion: completion, block: getMediaChanges)
+  }
+  
+  private func getMediaChanges() throws -> SyncDelta {
     guard #available(iOS 16, *) else {
       throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature requires iOS 16 or later.", details: nil)
     }
@@ -198,7 +208,11 @@ class NativeSyncApiImpl: NativeSyncApi {
     return albumAssets
   }
   
-  func getAssetIdsForAlbum(albumId: String) throws -> [String] {
+  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], any Error>) -> Void) {
+    dispatch(qos: .userInitiated, completion: completion, block: { try self.getAssetIdsForAlbum(albumId: albumId) })
+  }
+  
+  private func getAssetIdsForAlbum(albumId: String) throws -> [String] {
     let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
     guard let album = collections.firstObject else {
       return []
@@ -214,7 +228,13 @@ class NativeSyncApiImpl: NativeSyncApi {
     return ids
   }
   
-  func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64 {
+  func getAssetsCountSince(albumId: String, timestamp: Int64, completion: @escaping (Result<Int64, any Error>) -> Void) {
+    dispatch(qos: .userInitiated, completion: completion, block: {
+      try self.getAssetsCountSince(albumId: albumId, timestamp: timestamp)
+    })
+  }
+  
+  private func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64 {
     let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
     guard let album = collections.firstObject else {
       return 0
@@ -228,7 +248,13 @@ class NativeSyncApiImpl: NativeSyncApi {
     return Int64(assets.count)
   }
   
-  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset] {
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?, completion: @escaping (Result<[PlatformAsset], any Error>) -> Void) {
+    dispatch(qos: .userInitiated, completion: completion, block: {
+      try self.getAssetsForAlbum(albumId: albumId, updatedTimeCond: updatedTimeCond)
+    })
+  }
+  
+  private func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset] {
     let collections = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil)
     guard let album = collections.firstObject else {
       return []
