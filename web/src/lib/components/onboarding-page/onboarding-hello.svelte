@@ -8,7 +8,7 @@
 </script>
 
 <div class="gap-4">
-  <img src="https://pixelunion.eu/images/logo-icon.png" alt="Pixel Union Logo" class="w-24 h-24 mx-auto" />
+  <img src="/pixelunion.svg" alt="Pixel Union Logo" class="w-24 h-24 mx-auto" />
   <p class="font-medium mb-6 text-6xl text-primary">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>
