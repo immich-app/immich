@@ -18,7 +18,7 @@ class NativeSyncApiImpl26(context: Context) : NativeSyncApiImplBase(context), Na
     // No-op for Android 10 and below
   }
 
-  override fun getMediaChanges(): SyncDelta {
-    throw IllegalStateException("Method not supported on this Android version.")
-  }
+  override fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit) =
+    callback(Result.failure(IllegalStateException("Method not supported on this Android version.")))
+
 }

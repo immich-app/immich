@@ -8,6 +8,7 @@ import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import app.alextran.immich.dispatch
 import io.flutter.embedding.engine.FlutterEngineCache
 import java.util.concurrent.TimeUnit
 
@@ -16,16 +17,18 @@ private const val TAG = "BackgroundWorkerApiImpl"
 class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
   private val ctx: Context = context.applicationContext
 
-  override fun enable() {
-    enqueueMediaObserver(ctx)
-  }
+  override fun enable(callback: (Result<Unit>) -> Unit) =
+    dispatch(callback = callback) { enqueueMediaObserver(ctx) }
 
-  override fun configure(settings: BackgroundWorkerSettings) {
+  override fun configure(
+    settings: BackgroundWorkerSettings,
+    callback: (Result<Unit>) -> Unit
+  ) = dispatch(callback = callback) {
     BackgroundWorkerPreferences(ctx).updateSettings(settings)
     enqueueMediaObserver(ctx)
   }
 
-  override fun disable() {
+  override fun disable(callback: (Result<Unit>) -> Unit) = dispatch(callback = callback) {
     WorkManager.getInstance(ctx).apply {
       cancelUniqueWork(OBSERVER_WORKER_NAME)
       cancelUniqueWork(BACKGROUND_WORKER_NAME)
@@ -37,7 +40,6 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     private const val BACKGROUND_WORKER_NAME = "immich/BackgroundWorkerV1"
     private const val OBSERVER_WORKER_NAME = "immich/MediaObserverV1"
     const val ENGINE_CACHE_KEY = "immich::background_worker::engine"
-
 
     fun enqueueMediaObserver(ctx: Context) {
       val settings = BackgroundWorkerPreferences(ctx).getSettings()

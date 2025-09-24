@@ -5,6 +5,7 @@ import android.os.Build
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
+import app.alextran.immich.dispatch
 import kotlinx.serialization.json.Json
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -47,7 +48,12 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
-  override fun getMediaChanges(): SyncDelta {
+  override fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit) =
+    dispatch(callback = callback) {
+      getMediaChanges()
+    }
+
+  private fun getMediaChanges(): SyncDelta {
     val genMap = getSavedGenerationMap()
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
     val changed = mutableListOf<PlatformAsset>()

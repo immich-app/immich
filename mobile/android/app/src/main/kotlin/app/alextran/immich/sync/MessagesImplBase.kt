@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.provider.MediaStore
 import android.util.Base64
 import androidx.core.database.getStringOrNull
+import app.alextran.immich.dispatch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -145,7 +146,10 @@ open class NativeSyncApiImplBase(context: Context) {
     }
   }
 
-  fun getAlbums(): List<PlatformAlbum> {
+  fun getAlbums(callback: (Result<List<PlatformAlbum>>) -> Unit) =
+    dispatch(callback = callback) { getAlbums() }
+
+  private fun getAlbums(): List<PlatformAlbum> {
     val albums = mutableListOf<PlatformAlbum>()
     val albumsCount = mutableMapOf<String, Int>()
 
@@ -192,7 +196,10 @@ open class NativeSyncApiImplBase(context: Context) {
       .sortedBy { it.id }
   }
 
-  fun getAssetIdsForAlbum(albumId: String): List<String> {
+  fun getAssetIdsForAlbum(albumId: String, callback: (Result<List<String>>) -> Unit) =
+    dispatch(callback = callback) { getAssetIdsForAlbum(albumId); }
+
+  private fun getAssetIdsForAlbum(albumId: String): List<String> {
     val projection = arrayOf(MediaStore.MediaColumns._ID)
 
     return getCursor(
@@ -208,15 +215,23 @@ open class NativeSyncApiImplBase(context: Context) {
     } ?: emptyList()
   }
 
-  fun getAssetsCountSince(albumId: String, timestamp: Long): Long =
+  fun getAssetsCountSince(albumId: String, timestamp: Long, callback: (Result<Long>) -> Unit) =
+    dispatch(callback = callback) { getAssetsCountSince(albumId, timestamp) }
+
+  private fun getAssetsCountSince(albumId: String, timestamp: Long): Long =
     getCursor(
       MediaStore.VOLUME_EXTERNAL,
       "$BUCKET_SELECTION AND ${MediaStore.Files.FileColumns.DATE_ADDED} > ? AND $MEDIA_SELECTION",
       arrayOf(albumId, timestamp.toString(), *MEDIA_SELECTION_ARGS),
     )?.use { cursor -> cursor.count.toLong() } ?: 0L
 
+  fun getAssetsForAlbum(
+    albumId: String,
+    updatedTimeCond: Long?,
+    callback: (Result<List<PlatformAsset>>) -> Unit
+  ) = dispatch(callback = callback) { getAssetsForAlbum(albumId, updatedTimeCond) }
 
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset> {
+  private fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset> {
     var selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
     val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
 
@@ -254,7 +269,7 @@ open class NativeSyncApiImplBase(context: Context) {
         }.awaitAll()
 
         callback(Result.success(results))
-      } catch (e: CancellationException) {
+      } catch (_: CancellationException) {
         callback(
           Result.failure(
             FlutterError(

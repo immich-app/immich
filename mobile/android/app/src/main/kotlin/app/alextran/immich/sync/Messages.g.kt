@@ -296,13 +296,13 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NativeSyncApi {
   fun shouldFullSync(): Boolean
-  fun getMediaChanges(): SyncDelta
+  fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit)
   fun checkpointSync()
   fun clearSyncCheckpoint()
-  fun getAssetIdsForAlbum(albumId: String): List<String>
-  fun getAlbums(): List<PlatformAlbum>
-  fun getAssetsCountSince(albumId: String, timestamp: Long): Long
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
+  fun getAssetIdsForAlbum(albumId: String, callback: (Result<List<String>>) -> Unit)
+  fun getAlbums(callback: (Result<List<PlatformAlbum>>) -> Unit)
+  fun getAssetsCountSince(albumId: String, timestamp: Long, callback: (Result<Long>) -> Unit)
+  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?, callback: (Result<List<PlatformAsset>>) -> Unit)
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
 
@@ -335,12 +335,15 @@ interface NativeSyncApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              listOf(api.getMediaChanges())
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
+            api.getMediaChanges{ result: Result<SyncDelta> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -384,12 +387,15 @@ interface NativeSyncApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val albumIdArg = args[0] as String
-            val wrapped: List<Any?> = try {
-              listOf(api.getAssetIdsForAlbum(albumIdArg))
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
+            api.getAssetIdsForAlbum(albumIdArg) { result: Result<List<String>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -399,12 +405,15 @@ interface NativeSyncApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              listOf(api.getAlbums())
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
+            api.getAlbums{ result: Result<List<PlatformAlbum>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -417,12 +426,15 @@ interface NativeSyncApi {
             val args = message as List<Any?>
             val albumIdArg = args[0] as String
             val timestampArg = args[1] as Long
-            val wrapped: List<Any?> = try {
-              listOf(api.getAssetsCountSince(albumIdArg, timestampArg))
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
+            api.getAssetsCountSince(albumIdArg, timestampArg) { result: Result<Long> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -435,12 +447,15 @@ interface NativeSyncApi {
             val args = message as List<Any?>
             val albumIdArg = args[0] as String
             val updatedTimeCondArg = args[1] as Long?
-            val wrapped: List<Any?> = try {
-              listOf(api.getAssetsForAlbum(albumIdArg, updatedTimeCondArg))
-            } catch (exception: Throwable) {
-              MessagesPigeonUtils.wrapError(exception)
+            api.getAssetsForAlbum(albumIdArg, updatedTimeCondArg) { result: Result<List<PlatformAsset>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

@@ -133,11 +133,12 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
   }
 }
 
+
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerFgHostApi {
-  fun enable()
-  fun configure(settings: BackgroundWorkerSettings)
-  fun disable()
+  fun enable(callback: (Result<Unit>) -> Unit)
+  fun configure(settings: BackgroundWorkerSettings, callback: (Result<Unit>) -> Unit)
+  fun disable(callback: (Result<Unit>) -> Unit)
 
   companion object {
     /** The codec used by BackgroundWorkerFgHostApi. */
@@ -152,13 +153,14 @@ interface BackgroundWorkerFgHostApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              api.enable()
-              listOf(null)
-            } catch (exception: Throwable) {
-              BackgroundWorkerPigeonUtils.wrapError(exception)
+            api.enable{ result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(BackgroundWorkerPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(BackgroundWorkerPigeonUtils.wrapResult(null))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -170,13 +172,14 @@ interface BackgroundWorkerFgHostApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val settingsArg = args[0] as BackgroundWorkerSettings
-            val wrapped: List<Any?> = try {
-              api.configure(settingsArg)
-              listOf(null)
-            } catch (exception: Throwable) {
-              BackgroundWorkerPigeonUtils.wrapError(exception)
+            api.configure(settingsArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(BackgroundWorkerPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(BackgroundWorkerPigeonUtils.wrapResult(null))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
@@ -186,13 +189,14 @@ interface BackgroundWorkerFgHostApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disable$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              api.disable()
-              listOf(null)
-            } catch (exception: Throwable) {
-              BackgroundWorkerPigeonUtils.wrapError(exception)
+            api.disable{ result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(BackgroundWorkerPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(BackgroundWorkerPigeonUtils.wrapResult(null))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)

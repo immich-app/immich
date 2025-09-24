@@ -215,7 +215,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     if (foregroundFuture != null && !foregroundFuture.isCancelled && !foregroundFuture.isDone) {
       try {
         foregroundFuture.get(500, TimeUnit.MILLISECONDS)
-      } catch (e: Exception) {
+      } catch (_: Exception) {
         // ignored, there is nothing to be done
       }
     }
