@@ -21,7 +21,7 @@ class BackgroundSyncManager {
   final SyncCallback? onHashingComplete;
   final SyncErrorCallback? onHashingError;
 
-  Cancelable<void>? _syncTask;
+  Cancelable<bool?>? _syncTask;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _linkedAlbumSyncTask;
@@ -144,9 +144,9 @@ class BackgroundSyncManager {
         });
   }
 
-  Future<void> syncRemote() {
+  Future<bool> syncRemote() {
     if (_syncTask != null) {
-      return _syncTask!.future;
+      return _syncTask!.future.then((result) => result ?? false).catchError((_) => false);
     }
 
     onRemoteSyncStart?.call();
@@ -156,6 +156,7 @@ class BackgroundSyncManager {
       debugLabel: 'remote-sync',
     );
     return _syncTask!
+        .then((result) => result ?? false)
         .whenComplete(() {
           onRemoteSyncComplete?.call();
           _syncTask = null;
@@ -163,6 +164,7 @@ class BackgroundSyncManager {
         .catchError((error) {
           onRemoteSyncError?.call(error.toString());
           _syncTask = null;
+          return false;
         });
   }
 
