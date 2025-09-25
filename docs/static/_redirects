@@ -1,4 +1,4 @@
-/ /overview/welcome 307
+/ /overview/quick-start 307
 /mobile-app-beta-program /features/mobile-app 307
 /contribution-guidelines /overview/support-the-project#contributing 307
 /install /install/docker-compose 307
@@ -29,5 +29,6 @@
 /features/smart-search /features/searching 307
 /guides/api-album-sync /community-projects 307
 /guides/remove-offline-files /community-projects 307
-/overview/introduction /overview/welcome 307
+/overview/introduction /overview/quick-start 307
+/overview/welcome /overview/quick-start 307
 /docs/* /:splat 307
