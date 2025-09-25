@@ -65,14 +65,17 @@ class HashService {
 
     if (_trashSyncService.isAutoSyncMode) {
       final backupAlbums = await _localAlbumRepository.getBackupAlbums();
-      for (final album in backupAlbums) {
-        if (isCancelled) {
-          _log.warning("Hashing cancelled. Stopped processing albums.");
-          break;
-        }
-        final trashedToHash = await _trashSyncService.getAssetsToHash(album.id);
+      if (backupAlbums.isNotEmpty) {
+        final backupAlbumIds = backupAlbums.map((e) => e.id);
+        final trashedToHash = await _trashSyncService.getAssetsToHash(backupAlbumIds);
         if (trashedToHash.isNotEmpty) {
-          await _hashTrashedAssets(album, trashedToHash);
+          for (final album in backupAlbums) {
+            if (isCancelled) {
+              _log.warning("Hashing cancelled. Stopped processing albums.");
+              break;
+            }
+            await _hashTrashedAssets(album, trashedToHash.where((e) => e.albumId == album.id));
+          }
         }
       }
     }

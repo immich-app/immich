@@ -30,8 +30,8 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<Iterable<TrashedAsset>> getToHash(String albumId) {
-    final query = _db.trashedLocalAssetEntity.select()..where((r) => r.albumId.equals(albumId) & r.checksum.isNull());
+  Future<Iterable<TrashedAsset>> getToHash(Iterable<String> albumIds) {
+    final query = _db.trashedLocalAssetEntity.select()..where((r) => r.albumId.isIn(albumIds) & r.checksum.isNull());
     return query.map((row) => row.toDto()).get();
   }
 
@@ -100,7 +100,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> insertTrashDelta(Iterable<TrashedAsset> trashUpdates) async {
+  Future<void> saveTrashedAssets(Iterable<TrashedAsset> trashUpdates) async {
     if (trashUpdates.isEmpty) {
       return;
     }

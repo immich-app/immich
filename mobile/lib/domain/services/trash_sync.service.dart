@@ -45,8 +45,8 @@ class TrashSyncService {
   Future<void> updateChecksums(Iterable<TrashedAsset> assets) async =>
       _trashedLocalAssetRepository.updateChecksums(assets);
 
-  Future<Iterable<TrashedAsset>> getAssetsToHash(String albumId) async =>
-      _trashedLocalAssetRepository.getToHash(albumId);
+  Future<Iterable<TrashedAsset>> getAssetsToHash(Iterable<String> albumIds) async =>
+      _trashedLocalAssetRepository.getToHash(albumIds);
 
   Future<void> syncDeviceTrashSnapshot() async {
     final backupAlbums = await _localAlbumRepository.getBackupAlbums();
@@ -60,7 +60,7 @@ class TrashSyncService {
       final trashedAssets = trashedPlatformAssets.toTrashedAssets(album.id);
       await _trashedLocalAssetRepository.applyTrashSnapshot(trashedAssets, album.id);
     }
-    await applyRemoteRestoreToLocal();
+    await _applyRemoteRestoreToLocal();
   }
 
   Future<void> applyTrashDelta(SyncDelta delta) async {
@@ -76,8 +76,8 @@ class TrashSyncService {
       }
     }
     _logger.info("updateLocalTrashChanges trashedAssets: ${trashedAssets.map((e) => e.id)}");
-    await _trashedLocalAssetRepository.insertTrashDelta(trashedAssets);
-    await applyRemoteRestoreToLocal();
+    await _trashedLocalAssetRepository.saveTrashedAssets(trashedAssets);
+    await _applyRemoteRestoreToLocal();
   }
 
   Future<void> handleRemoteTrashed(Iterable<String> checksums) async {
@@ -102,7 +102,7 @@ class TrashSyncService {
     }
   }
 
-  Future<void> applyRemoteRestoreToLocal() async {
+  Future<void> _applyRemoteRestoreToLocal() async {
     final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (remoteAssetsToRestore.isNotEmpty) {
       _logger.info("remoteAssetsToRestore: $remoteAssetsToRestore");

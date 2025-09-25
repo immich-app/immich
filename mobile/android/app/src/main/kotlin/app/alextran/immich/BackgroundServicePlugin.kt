@@ -296,14 +296,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
     contentResolver.query(queryUri, projection, queryArgs, null)?.use { cursor ->
       if (cursor.moveToFirst()) {
         val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
-        // same order as AssetType from dart
-        val contentUri = when (type) {
-          1 -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-          2 -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-          3 -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-          else -> queryUri
-        }
-        return ContentUris.withAppendedId(contentUri, id)
+        return ContentUris.withAppendedId(contentUriForType(type), id)
       }
     }
     return null
