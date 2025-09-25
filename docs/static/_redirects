@@ -30,3 +30,4 @@
 /guides/api-album-sync /community-projects 307
 /guides/remove-offline-files /community-projects 307
 /overview/introduction /overview/welcome 307
+/docs/* /:splat 307
