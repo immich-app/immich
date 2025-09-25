@@ -315,7 +315,12 @@ run = [
 alias = "mobile:codegen"
 description = "Execute build_runner to auto-generate dart code"
 dir = "mobile"
-sources = ["pubspec.yaml", "build.yaml", "lib/**/*.dart"]
+sources = [
+  "pubspec.yaml",
+  "build.yaml",
+  "lib/**/*.dart",
+  "infrastructure/**/*.drift",
+]
 outputs = { auto = true }
 run = "dart run build_runner build --delete-conflicting-outputs"
 
