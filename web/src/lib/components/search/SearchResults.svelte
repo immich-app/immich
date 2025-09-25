@@ -1,5 +1,6 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import SearchKeyboardShortcuts from '$lib/components/search/SearchKeyboardShortcuts.svelte';
   import SearchResultsAssetViewer from '$lib/components/search/SearchResultsAssetViewer.svelte';
 
   import AssetLayout from '$lib/components/timeline/AssetLayout.svelte';
@@ -33,6 +34,7 @@
   {#snippet assetViewer({ onViewerClose })}
     <SearchResultsAssetViewer timelineManager={searchResultsManager} {onViewerClose} />
   {/snippet}
+  <SearchKeyboardShortcuts {assetInteraction} timelineManager={searchResultsManager} />
   <Photostream
     bind:this={viewer}
     {stylePaddingHorizontalPx}
