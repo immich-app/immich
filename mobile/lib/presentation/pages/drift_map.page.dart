@@ -25,9 +25,10 @@ class DriftMapPage extends StatelessWidget {
               onPressed: () => context.pop(),
               icon: const Icon(Icons.arrow_back_ios_new_rounded),
               style: IconButton.styleFrom(
-                shape: const CircleBorder(side: BorderSide(width: 1, color: Colors.black26)),
                 padding: const EdgeInsets.all(8),
-                backgroundColor: Colors.indigo.withValues(alpha: 0.7),
+                backgroundColor: Colors.indigo,
+                shadowColor: Colors.black26,
+                elevation: 4,
               ),
             ),
           ),
