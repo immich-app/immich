@@ -93,7 +93,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -158,6 +158,25 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from10To11: (m, v11) async {
             await m.addColumn(v11.localAlbumAssetEntity, v11.localAlbumAssetEntity.marker_);
+          },
+          from11To12: (m, v12) async {
+            final localToUTCMapping = {
+              v12.localAssetEntity: [v12.localAssetEntity.createdAt, v12.localAssetEntity.updatedAt],
+              v12.localAlbumEntity: [v12.localAlbumEntity.updatedAt],
+            };
+
+            for (final entry in localToUTCMapping.entries) {
+              final table = entry.key;
+              await m.alterTable(
+                TableMigration(
+                  table,
+                  columnTransformer: {
+                    for (final column in entry.value)
+                      column: column.modify(const DateTimeModifier.utc()).strftime('%Y-%m-%dT%H:%M:%fZ'),
+                  },
+                ),
+              );
+            }
           },
         ),
       );
