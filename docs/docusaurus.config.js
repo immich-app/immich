@@ -88,7 +88,7 @@ const config = {
             position: 'right',
           },
           {
-            to: '/overview/welcome',
+            to: '/overview/quick-start',
             position: 'right',
             label: 'Docs',
           },
@@ -132,8 +132,8 @@ const config = {
             title: 'Overview',
             items: [
               {
-                label: 'Welcome',
-                to: '/overview/welcome',
+                label: 'Quick start',
+                to: '/overview/quick-start',
               },
               {
                 label: 'Installation',
