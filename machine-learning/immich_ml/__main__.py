@@ -12,6 +12,11 @@ else:
 
 module_dir = Path(__file__).parent
 
+bind_host = non_prefixed_settings.immich_host
+if ":" in bind_host and not bind_host.startswith("["):
+    bind_host = f"[{bind_host}]"
+bind_address = f"{bind_host}:{non_prefixed_settings.immich_port}"
+
 try:
     with subprocess.Popen(
         [
@@ -24,7 +29,7 @@ try:
             "-c",
             module_dir / "gunicorn_conf.py",
             "-b",
-            f"{non_prefixed_settings.immich_host}:{non_prefixed_settings.immich_port}",
+            bind_address,
             "-w",
             str(settings.workers),
             "-t",
