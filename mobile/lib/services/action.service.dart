@@ -224,8 +224,8 @@ class ActionService {
     await _assetApiRepository.unStack(stackIds);
   }
 
-  Future<int> shareAssets(List<BaseAsset> assets) {
-    return _assetMediaRepository.shareAssets(assets);
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) {
+    return _assetMediaRepository.shareAssets(assets, context);
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {

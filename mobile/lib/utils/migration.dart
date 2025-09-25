@@ -22,13 +22,14 @@ import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:isar/isar.dart';
 // ignore: import_rule_photo_manager
 import 'package:photo_manager/photo_manager.dart';
 
-const int targetVersion = 16;
+const int targetVersion = 17;
 
 Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   final hasVersion = Store.tryGet(StoreKey.version) != null;
@@ -63,6 +64,13 @@ Future<void> migrateDatabaseIfNeeded(Isar db, Drift drift) async {
   }
 
   await handleBetaMigration(version, await _isNewInstallation(db, drift), SyncStreamRepository(drift));
+
+  if (version < 17 && Store.isBetaTimelineEnabled) {
+    final delay = Store.get(StoreKey.backupTriggerDelay, AppSettingsEnum.backupTriggerDelay.defaultValue);
+    if (delay >= 1000) {
+      await Store.put(StoreKey.backupTriggerDelay, (delay / 1000).toInt());
+    }
+  }
 
   if (targetVersion >= 12) {
     await Store.put(StoreKey.version, targetVersion);

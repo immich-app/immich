@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 echo "Initializing Immich $IMMICH_SOURCE_REF"
 
-lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
+lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.3"
 if [ -f "$lib_path" ]; then
   export LD_PRELOAD="$lib_path"
 else

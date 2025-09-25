@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import SupportedDatetimePanel from '$lib/components/admin-settings/SupportedDatetimePanel.svelte';
   import SupportedVariablesPanel from '$lib/components/admin-settings/SupportedVariablesPanel.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
@@ -262,7 +263,7 @@
                       values={{ job: $t('admin.storage_template_migration_job') }}
                     >
                       {#snippet children({ message })}
-                        <a href={AppRoute.ADMIN_JOBS} class="text-primary">
+                        <a href={resolve(AppRoute.ADMIN_JOBS)} class="text-primary">
                           {message}
                         </a>
                       {/snippet}
