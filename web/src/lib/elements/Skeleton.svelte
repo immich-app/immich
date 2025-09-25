@@ -1,18 +1,20 @@
 <script lang="ts">
   interface Props {
     height: number;
-    title: string;
+    title?: string;
   }
 
   let { height = 0, title }: Props = $props();
 </script>
 
 <div class="overflow-clip" style:height={height + 'px'}>
-  <div
-    class="flex pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-light dark:text-immich-dark-fg md:text-sm"
-  >
-    {title}
-  </div>
+  {#if title}
+    <div
+      class="flex pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-light dark:text-immich-dark-fg md:text-sm"
+    >
+      {title}
+    </div>
+  {/if}
   <div
     class="animate-pulse absolute h-full ms-[10px] me-[10px]"
     style:width="calc(100% - 20px)"
