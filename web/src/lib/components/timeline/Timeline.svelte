@@ -1,25 +1,19 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate } from '$app/navigation';
-  import { page } from '$app/state';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import MonthSegment from '$lib/components/timeline/MonthSegment.svelte';
   import PhotostreamWithScrubber from '$lib/components/timeline/PhotostreamWithScrubber.svelte';
   import SelectableDay from '$lib/components/timeline/SelectableDay.svelte';
   import SelectableSegment from '$lib/components/timeline/SelectableSegment.svelte';
+  import StreamWithViewer from '$lib/components/timeline/StreamWithViewer.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { AssetAction } from '$lib/constants';
-  import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
-  import { getSegmentIdentifier, getTimes } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
-  import { DateTime } from 'luxon';
   import { type Snippet } from 'svelte';
 
   interface Props {
@@ -74,140 +68,90 @@
     customThumbnailLayout,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
+  let viewer: PhotostreamWithScrubber | undefined = $state(undefined);
 
-  let viewer: PhotostreamWithScrubber | undefined = $state();
-  let showSkeleton: boolean = $state(true);
-
-  // tri-state boolean
-  let initialLoadWasAssetViewer: boolean | null = null;
-  let hasNavigatedToOrFromAssetViewer: boolean = false;
-  let timelineScrollPositionInitialized = false;
-
-  beforeNavigate(({ from, to }) => {
-    timelineManager.suspendTransitions = true;
-    hasNavigatedToOrFromAssetViewer = isAssetViewerRoute(to) || isAssetViewerRoute(from);
-  });
-
-  const completeAfterNavigate = () => {
-    const assetViewerPage = !!(page.route.id?.endsWith('/[[assetId=id]]') && page.params.assetId);
-    let isInitial = false;
-    // Set initial load state only once
-    if (initialLoadWasAssetViewer === null) {
-      initialLoadWasAssetViewer = assetViewerPage && !hasNavigatedToOrFromAssetViewer;
-      isInitial = true;
-    }
-
-    let scrollToAssetQueryParam = false;
-    if (
-      !timelineScrollPositionInitialized &&
-      ((isInitial && !assetViewerPage) || // Direct timeline load
-        (!isInitial && hasNavigatedToOrFromAssetViewer)) // Navigated from asset viewer
-    ) {
-      scrollToAssetQueryParam = true;
-      timelineScrollPositionInitialized = true;
-    }
-
-    return viewer?.completeAfterNavigate({ scrollToAssetQueryParam });
-  };
-  afterNavigate(({ complete }) => void complete.then(completeAfterNavigate, completeAfterNavigate));
-
-  const onViewerClose = async (asset: { id: string }) => {
-    assetViewingStore.showAssetViewer(false);
-    showSkeleton = true;
-    $gridScrollTarget = { at: asset.id };
-    await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
-  };
-
-  $effect(() => {
-    if ($showAssetViewer) {
-      const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
-      void timelineManager.loadSegment(getSegmentIdentifier({ year: localDateTime.year, month: localDateTime.month }));
-    }
-  });
+  const onAfterNavigateComplete = ({ scrollToAssetQueryParam }: { scrollToAssetQueryParam: boolean }) =>
+    viewer?.completeAfterNavigate({ scrollToAssetQueryParam });
 </script>
 
-<TimelineKeyboardActions
-  scrollToAsset={async (asset) => (await viewer?.scrollToAsset(asset)) ?? Promise.resolve(false)}
-  {timelineManager}
-  {assetInteraction}
-  bind:isShowDeleteConfirmation
-  {onEscape}
-/>
-
-<PhotostreamWithScrubber
-  bind:this={viewer}
-  {enableRouting}
-  {timelineManager}
-  {isShowDeleteConfirmation}
-  {showSkeleton}
-  {children}
-  {empty}
->
-  {#snippet skeleton({ segment })}
-    <Skeleton
-      height={segment.height - segment.timelineManager.headerHeight}
-      title={(segment as MonthGroup).monthGroupTitle}
-    />
-  {/snippet}
-  {#snippet segment({ segment, onScrollCompensationMonthInDOM })}
-    <SelectableSegment
-      {segment}
-      {onScrollCompensationMonthInDOM}
-      {timelineManager}
-      {assetInteraction}
-      {isSelectionMode}
-      {singleSelect}
-      {onAssetOpen}
-      {onAssetSelect}
-    >
-      {#snippet content({ onAssetOpen, onAssetSelect, onAssetHover })}
-        <SelectableDay {assetInteraction} {onAssetSelect}>
-          {#snippet content({ onDayGroupSelect, onDayGroupAssetSelect })}
-            <MonthSegment
-              {assetInteraction}
-              {customThumbnailLayout}
-              {singleSelect}
-              monthGroup={segment as MonthGroup}
-              {timelineManager}
-              {onDayGroupSelect}
-            >
-              {#snippet thumbnail({ asset, position, dayGroup, groupIndex })}
-                {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
-                {@const isAssetSelected =
-                  assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
-                {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
-                <Thumbnail
-                  showStackedIcon={withStacked}
-                  {showArchiveIcon}
-                  {asset}
-                  {groupIndex}
-                  onClick={() => onAssetOpen(asset)}
-                  onSelect={() => onDayGroupAssetSelect(dayGroup, asset)}
-                  onMouseEvent={(isMouseOver) => {
-                    if (isMouseOver) {
-                      onAssetHover(asset);
-                    } else {
-                      onAssetHover(null);
-                    }
-                  }}
-                  selected={isAssetSelected}
-                  selectionCandidate={isAssetSelectionCandidate}
-                  disabled={isAssetDisabled}
-                  thumbnailWidth={position.width}
-                  thumbnailHeight={position.height}
-                />
-              {/snippet}
-            </MonthSegment>
-          {/snippet}
-        </SelectableDay>
-      {/snippet}
-    </SelectableSegment>
-  {/snippet}
-</PhotostreamWithScrubber>
-
-<Portal target="body">
-  {#if $showAssetViewer}
+<StreamWithViewer {timelineManager} {onAfterNavigateComplete}>
+  {#snippet assetViewer({ onViewerClose })}
     <TimelineAssetViewer {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} {onViewerClose} />
-  {/if}
-</Portal>
+  {/snippet}
+  <TimelineKeyboardActions
+    scrollToAsset={async (asset) => (await viewer?.scrollToAsset(asset)) ?? Promise.resolve(false)}
+    {timelineManager}
+    {assetInteraction}
+    bind:isShowDeleteConfirmation
+    {onEscape}
+  />
+  <PhotostreamWithScrubber
+    bind:this={viewer}
+    {enableRouting}
+    {timelineManager}
+    {isShowDeleteConfirmation}
+    {children}
+    {empty}
+  >
+    {#snippet skeleton({ segment })}
+      <Skeleton
+        height={segment.height - segment.timelineManager.headerHeight}
+        title={(segment as MonthGroup).monthGroupTitle}
+      />
+    {/snippet}
+    {#snippet segment({ segment, onScrollCompensationMonthInDOM })}
+      <SelectableSegment
+        {segment}
+        {onScrollCompensationMonthInDOM}
+        {timelineManager}
+        {assetInteraction}
+        {isSelectionMode}
+        {singleSelect}
+        {onAssetOpen}
+        {onAssetSelect}
+      >
+        {#snippet content({ onAssetOpen, onAssetSelect, onAssetHover })}
+          <SelectableDay {assetInteraction} {onAssetSelect}>
+            {#snippet content({ onDayGroupSelect, onDayGroupAssetSelect })}
+              <MonthSegment
+                {assetInteraction}
+                {customThumbnailLayout}
+                {singleSelect}
+                monthGroup={segment as MonthGroup}
+                {timelineManager}
+                {onDayGroupSelect}
+              >
+                {#snippet thumbnail({ asset, position, dayGroup, groupIndex })}
+                  {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
+                  {@const isAssetSelected =
+                    assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
+                  {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
+                  <Thumbnail
+                    showStackedIcon={withStacked}
+                    {showArchiveIcon}
+                    {asset}
+                    {groupIndex}
+                    onClick={() => onAssetOpen(asset)}
+                    onSelect={() => onDayGroupAssetSelect(dayGroup, asset)}
+                    onMouseEvent={(isMouseOver) => {
+                      if (isMouseOver) {
+                        onAssetHover(asset);
+                      } else {
+                        onAssetHover(null);
+                      }
+                    }}
+                    selected={isAssetSelected}
+                    selectionCandidate={isAssetSelectionCandidate}
+                    disabled={isAssetDisabled}
+                    thumbnailWidth={position.width}
+                    thumbnailHeight={position.height}
+                  />
+                {/snippet}
+              </MonthSegment>
+            {/snippet}
+          </SelectableDay>
+        {/snippet}
+      </SelectableSegment>
+    {/snippet}
+  </PhotostreamWithScrubber>
+</StreamWithViewer>
