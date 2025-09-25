@@ -349,7 +349,7 @@ class _SyncStatsCounts extends ConsumerWidget {
               ),
             ),
             if (trashSyncService.isAutoSyncMode) ...[
-              _SectionHeaderText(text: "trashed".t(context: context)),
+              _SectionHeaderText(text: "trash".t(context: context)),
               Consumer(
                 builder: (context, ref, _) {
                   final counts = ref.watch(trashedAssetsCountProvider);
