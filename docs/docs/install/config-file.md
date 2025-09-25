@@ -209,7 +209,7 @@ So you can just grab it from there, paste it into a file and you're pretty much 
 ### Step 2 - Specify the file location
 
 In your `.env` file, set the variable `IMMICH_CONFIG_FILE` to the path of your config.
-For more information, refer to the [Environment Variables](/docs/install/environment-variables.md) section.
+For more information, refer to the [Environment Variables](/install/environment-variables.md) section.
 
 :::tip
 YAML-formatted config files are also supported.

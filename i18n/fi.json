@@ -123,6 +123,7 @@
     "logging_enable_description": "Ota lokikirjaus käyttöön",
     "logging_level_description": "Kun käytössä, mitä lokituksen tasoa käytetään.",
     "logging_settings": "Lokit",
+    "machine_learning_availability_checks": "Saatavyystarkastukset",
     "machine_learning_clip_model": "CLIP-malli",
     "machine_learning_clip_model_description": "Käytettävän CLIP-mallin nimi <link>toimivien mallien listasta</link>. Huomaa että sinun täytyy suorittaa \"Älykäs etsintä\"-työ uudelleen vaihdettuasi käytettävää mallia.",
     "machine_learning_duplicate_detection": "Kaksoiskappaleiden tunnistus",

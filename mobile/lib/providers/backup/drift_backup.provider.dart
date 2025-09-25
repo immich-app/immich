@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
@@ -12,8 +11,8 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/upload.service.dart';
-import 'package:logging/logging.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:logging/logging.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -90,33 +89,6 @@ class DriftUploadStatus {
         networkSpeedAsString.hashCode ^
         isFailed.hashCode;
   }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'taskId': taskId,
-      'filename': filename,
-      'progress': progress,
-      'fileSize': fileSize,
-      'networkSpeedAsString': networkSpeedAsString,
-      'isFailed': isFailed,
-    };
-  }
-
-  factory DriftUploadStatus.fromMap(Map<String, dynamic> map) {
-    return DriftUploadStatus(
-      taskId: map['taskId'] as String,
-      filename: map['filename'] as String,
-      progress: map['progress'] as double,
-      fileSize: map['fileSize'] as int,
-      networkSpeedAsString: map['networkSpeedAsString'] as String,
-      isFailed: map['isFailed'] != null ? map['isFailed'] as bool : null,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory DriftUploadStatus.fromJson(String source) =>
-      DriftUploadStatus.fromMap(json.decode(source) as Map<String, dynamic>);
 }
 
 class DriftBackupState {
@@ -267,6 +239,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         }
 
         state = state.copyWith(uploadItems: {...state.uploadItems, taskId: currentItem.copyWith(isFailed: true)});
+        _logger.fine("Upload failed for taskId: $taskId, exception: ${update.exception}");
         break;
 
       case TaskStatus.canceled:
