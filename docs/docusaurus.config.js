@@ -48,6 +48,7 @@ const config = {
         docs: {
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
+          routeBasePath: '/',
 
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
@@ -87,7 +88,7 @@ const config = {
             position: 'right',
           },
           {
-            to: '/docs/overview/welcome',
+            to: '/overview/welcome',
             position: 'right',
             label: 'Docs',
           },
@@ -132,15 +133,15 @@ const config = {
             items: [
               {
                 label: 'Welcome',
-                to: '/docs/overview/welcome',
+                to: '/overview/welcome',
               },
               {
                 label: 'Installation',
-                to: '/docs/install/requirements',
+                to: '/install/requirements',
               },
               {
                 label: 'Contributing',
-                to: '/docs/overview/support-the-project',
+                to: '/overview/support-the-project',
               },
               {
                 label: 'Privacy Policy',
