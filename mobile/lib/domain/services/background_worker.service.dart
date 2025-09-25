@@ -116,7 +116,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       if (Platform.isAndroid) {
         await _backgroundHostApi.showNotification(
           IntlKeys.uploading_media.t(),
-          IntlKeys.backup_background_service_in_progress_notification.t(),
+          IntlKeys.backup_background_service_default_notification.t(),
         );
       }
 
