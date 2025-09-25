@@ -75,8 +75,8 @@ class DeprecatedApi {
   ///
   /// Parameters:
   ///
-  /// * [num] count:
-  Future<Response> getRandomWithHttpInfo({ num? count, }) async {
+  /// * [int] count:
+  Future<Response> getRandomWithHttpInfo({ int? count, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/assets/random';
 
@@ -109,8 +109,8 @@ class DeprecatedApi {
   ///
   /// Parameters:
   ///
-  /// * [num] count:
-  Future<List<AssetResponseDto>?> getRandom({ num? count, }) async {
+  /// * [int] count:
+  Future<List<AssetResponseDto>?> getRandom({ int? count, }) async {
     final response = await getRandomWithHttpInfo( count: count, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
