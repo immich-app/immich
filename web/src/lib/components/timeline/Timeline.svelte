@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
+  import { page } from '$app/state';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import MonthSegment from '$lib/components/timeline/MonthSegment.svelte';
   import PhotostreamWithScrubber from '$lib/components/timeline/PhotostreamWithScrubber.svelte';
@@ -14,6 +16,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import { getSegmentIdentifier, getTimes } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -71,10 +74,50 @@
     customThumbnailLayout,
   }: Props = $props();
 
-  let { isViewing: showAssetViewer, asset: viewingAsset } = assetViewingStore;
+  let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
   let viewer: PhotostreamWithScrubber | undefined = $state();
   let showSkeleton: boolean = $state(true);
+
+  // tri-state boolean
+  let initialLoadWasAssetViewer: boolean | null = null;
+  let hasNavigatedToOrFromAssetViewer: boolean = false;
+  let timelineScrollPositionInitialized = false;
+
+  beforeNavigate(({ from, to }) => {
+    timelineManager.suspendTransitions = true;
+    hasNavigatedToOrFromAssetViewer = isAssetViewerRoute(to) || isAssetViewerRoute(from);
+  });
+
+  const completeAfterNavigate = () => {
+    const assetViewerPage = !!(page.route.id?.endsWith('/[[assetId=id]]') && page.params.assetId);
+    let isInitial = false;
+    // Set initial load state only once
+    if (initialLoadWasAssetViewer === null) {
+      initialLoadWasAssetViewer = assetViewerPage && !hasNavigatedToOrFromAssetViewer;
+      isInitial = true;
+    }
+
+    let scrollToAssetQueryParam = false;
+    if (
+      !timelineScrollPositionInitialized &&
+      ((isInitial && !assetViewerPage) || // Direct timeline load
+        (!isInitial && hasNavigatedToOrFromAssetViewer)) // Navigated from asset viewer
+    ) {
+      scrollToAssetQueryParam = true;
+      timelineScrollPositionInitialized = true;
+    }
+
+    return viewer?.completeAfterNavigate({ scrollToAssetQueryParam });
+  };
+  afterNavigate(({ complete }) => void complete.then(completeAfterNavigate, completeAfterNavigate));
+
+  const onViewerClose = async (asset: { id: string }) => {
+    assetViewingStore.showAssetViewer(false);
+    showSkeleton = true;
+    $gridScrollTarget = { at: asset.id };
+    await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
+  };
 
   $effect(() => {
     if ($showAssetViewer) {
@@ -85,7 +128,7 @@
 </script>
 
 <TimelineKeyboardActions
-  scrollToAsset={(asset) => viewer?.scrollToAsset(asset) ?? false}
+  scrollToAsset={async (asset) => (await viewer?.scrollToAsset(asset)) ?? Promise.resolve(false)}
   {timelineManager}
   {assetInteraction}
   bind:isShowDeleteConfirmation
@@ -165,6 +208,6 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <TimelineAssetViewer bind:showSkeleton {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
+    <TimelineAssetViewer {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} {onViewerClose} />
   {/if}
 </Portal>

@@ -269,13 +269,14 @@ export abstract class PhotostreamManager {
     return this.months.find((segment) => identifier.matches(segment));
   }
 
-  getSegmentForAssetId(assetId: string) {
+  findSegmentForAssetId(assetId: string): Promise<PhotostreamSegment | undefined> {
     for (const month of this.months) {
       const asset = month.assets.find((asset) => asset.id === assetId);
       if (asset) {
-        return month;
+        return Promise.resolve(month);
       }
     }
+    return Promise.resolve(void 0);
   }
 
   refreshLayout() {

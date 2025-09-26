@@ -21,19 +21,26 @@ export const focusPreviousAsset = () =>
 
 const queryHTMLElement = (query: string) => document.querySelector(query) as HTMLElement;
 
-export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {
-  const scrolled = scrollToAsset(asset);
+export const setFocusToAsset = async (
+  scrollToAsset: (asset: TimelineAsset) => Promise<boolean>,
+  asset: TimelineAsset,
+) => {
+  const scrolled = await scrollToAsset(asset);
   if (scrolled) {
     const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${asset.id}"]`);
     element?.focus();
   }
 };
 
+export type FocusDirection = 'earlier' | 'later';
+
+export type FocusInterval = 'day' | 'month' | 'year' | 'asset';
+
 export const setFocusTo = async (
-  scrollToAsset: (asset: TimelineAsset) => boolean,
+  scrollToAsset: (asset: TimelineAsset) => Promise<boolean>,
   store: TimelineManager,
-  direction: 'earlier' | 'later',
-  interval: 'day' | 'month' | 'year' | 'asset',
+  direction: FocusDirection,
+  interval: FocusInterval,
 ) => {
   if (tracker.isActive()) {
     // there are unfinished running invocations, so return early
@@ -65,7 +72,10 @@ export const setFocusTo = async (
     return;
   }
 
-  const scrolled = scrollToAsset(asset);
+  const scrolled = await scrollToAsset(asset);
+  if (!invocation.isStillValid()) {
+    return;
+  }
   if (scrolled) {
     await tick();
     if (!invocation.isStillValid()) {
