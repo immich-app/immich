@@ -79,12 +79,19 @@ export class AlbumService extends BaseService {
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
+    let contributorCounts: { userId: string; assetCount: number }[] | undefined = undefined;
+    if (album.albumUsers && album.albumUsers.length > 0) {
+      const rows = await this.albumRepository.getContributorCountsForId(album.id);
+      contributorCounts = rows.map(({ userId, assetCount }) => ({ userId, assetCount }));
+    }
+
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
+      contributorCounts,
     };
   }
 
