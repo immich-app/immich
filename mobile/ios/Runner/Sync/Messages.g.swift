@@ -355,13 +355,13 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NativeSyncApi {
   func shouldFullSync() throws -> Bool
-  func getMediaChanges() throws -> SyncDelta
+  func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void)
   func checkpointSync() throws
   func clearSyncCheckpoint() throws
-  func getAssetIdsForAlbum(albumId: String) throws -> [String]
-  func getAlbums() throws -> [PlatformAlbum]
-  func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
-  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
+  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], Error>) -> Void)
+  func getAlbums(completion: @escaping (Result<[PlatformAlbum], Error>) -> Void)
+  func getAssetsCountSince(albumId: String, timestamp: Int64, completion: @escaping (Result<Int64, Error>) -> Void)
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?, completion: @escaping (Result<[PlatformAsset], Error>) -> Void)
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
 }
@@ -395,11 +395,13 @@ class NativeSyncApiSetup {
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
       getMediaChangesChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.getMediaChanges()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getMediaChanges { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -438,11 +440,13 @@ class NativeSyncApiSetup {
       getAssetIdsForAlbumChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let albumIdArg = args[0] as! String
-        do {
-          let result = try api.getAssetIdsForAlbum(albumId: albumIdArg)
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getAssetIdsForAlbum(albumId: albumIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -453,11 +457,13 @@ class NativeSyncApiSetup {
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
       getAlbumsChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.getAlbums()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getAlbums { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -471,11 +477,13 @@ class NativeSyncApiSetup {
         let args = message as! [Any?]
         let albumIdArg = args[0] as! String
         let timestampArg = args[1] as! Int64
-        do {
-          let result = try api.getAssetsCountSince(albumId: albumIdArg, timestamp: timestampArg)
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getAssetsCountSince(albumId: albumIdArg, timestamp: timestampArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -489,11 +497,13 @@ class NativeSyncApiSetup {
         let args = message as! [Any?]
         let albumIdArg = args[0] as! String
         let updatedTimeCondArg: Int64? = nilOrValue(args[1])
-        do {
-          let result = try api.getAssetsForAlbum(albumId: albumIdArg, updatedTimeCond: updatedTimeCondArg)
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getAssetsForAlbum(albumId: albumIdArg, updatedTimeCond: updatedTimeCondArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {

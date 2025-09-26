@@ -83,6 +83,7 @@ class HashResult {
 abstract class NativeSyncApi {
   bool shouldFullSync();
 
+  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   SyncDelta getMediaChanges();
 
@@ -90,15 +91,19 @@ abstract class NativeSyncApi {
 
   void clearSyncCheckpoint();
 
+  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<String> getAssetIdsForAlbum(String albumId);
 
+  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<PlatformAlbum> getAlbums();
 
+  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   int getAssetsCountSince(String albumId, int timestamp);
 
+  @async
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<PlatformAsset> getAssetsForAlbum(String albumId, {int? updatedTimeCond});
 

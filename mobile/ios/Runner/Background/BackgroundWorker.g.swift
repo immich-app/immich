@@ -179,11 +179,12 @@ class BackgroundWorkerPigeonCodec: FlutterStandardMessageCodec, @unchecked Senda
   static let shared = BackgroundWorkerPigeonCodec(readerWriter: BackgroundWorkerPigeonCodecReaderWriter())
 }
 
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerFgHostApi {
-  func enable() throws
-  func configure(settings: BackgroundWorkerSettings) throws
-  func disable() throws
+  func enable(completion: @escaping (Result<Void, Error>) -> Void)
+  func configure(settings: BackgroundWorkerSettings, completion: @escaping (Result<Void, Error>) -> Void)
+  func disable(completion: @escaping (Result<Void, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -195,11 +196,13 @@ class BackgroundWorkerFgHostApiSetup {
     let enableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       enableChannel.setMessageHandler { _, reply in
-        do {
-          try api.enable()
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
+        api.enable { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -210,11 +213,13 @@ class BackgroundWorkerFgHostApiSetup {
       configureChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let settingsArg = args[0] as! BackgroundWorkerSettings
-        do {
-          try api.configure(settings: settingsArg)
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
+        api.configure(settings: settingsArg) { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -223,11 +228,13 @@ class BackgroundWorkerFgHostApiSetup {
     let disableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.disable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       disableChannel.setMessageHandler { _, reply in
-        do {
-          try api.disable()
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
+        api.disable { result in
+          switch result {
+          case .success:
+            reply(wrapResult(nil))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {

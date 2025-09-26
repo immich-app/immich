@@ -20,10 +20,13 @@ class BackgroundWorkerSettings {
 
 @HostApi()
 abstract class BackgroundWorkerFgHostApi {
+  @async
   void enable();
 
+  @async
   void configure(BackgroundWorkerSettings settings);
 
+  @async
   void disable();
 }
 
