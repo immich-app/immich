@@ -26,7 +26,7 @@ class BaseCLIPVisualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.VISUAL, ModelTask.SEARCH)
 
-    def _predict(self, inputs: Image.Image | bytes, **kwargs: Any) -> str:
+    def _predict(self, inputs: Image.Image | bytes) -> str:
         image = decode_pil(inputs)
         res: NDArray[np.float32] = self.session.run(None, self.transform(image))[0][0]
         return serialize_np_array(res)
