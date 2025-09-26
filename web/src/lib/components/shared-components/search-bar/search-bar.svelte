@@ -7,7 +7,7 @@
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { encodeSearchQuery, isSmartSearchDto } from '$lib/utils/metadata-search';
   import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
@@ -16,13 +16,13 @@
   import SearchHistoryBox from './search-history-box.svelte';
 
   interface Props {
-    value?: string;
     grayTheme: boolean;
     searchQuery?: MetadataSearchDto | SmartSearchDto;
   }
 
-  let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
+  let { grayTheme, searchQuery = {} }: Props = $props();
 
+  let value = $state(initializeValue() ?? '');
   let showClearIcon = $derived(value.length > 0);
 
   let input = $state<HTMLInputElement>();
@@ -40,7 +40,7 @@
   });
 
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
-    const params = getMetadataSearchQuery(payload);
+    const params = encodeSearchQuery(payload);
 
     closeDropdown();
     searchStore.isSearchEnabled = false;
@@ -83,8 +83,6 @@
   };
 
   const onFilterClick = async () => {
-    value = '';
-
     if (close) {
       await close();
       close = undefined;
@@ -202,6 +200,14 @@
         return $t('description');
       }
     }
+  }
+
+  function initializeValue(): string | undefined {
+    if (isSmartSearchDto(searchQuery)) {
+      return searchQuery.query || searchQuery.queryAssetId;
+    }
+
+    return searchQuery.originalFileName || searchQuery.description;
   }
 </script>
 
