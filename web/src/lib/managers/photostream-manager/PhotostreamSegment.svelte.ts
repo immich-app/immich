@@ -66,9 +66,13 @@ export abstract class PhotostreamSegment {
   }
 
   async load(cancelable: boolean): Promise<'DONE' | 'WAITED' | 'CANCELED' | 'LOADED' | 'ERRORED'> {
-    return await this.loader.execute(async (signal: AbortSignal) => {
+    const executionStatus = await this.loader.execute(async (signal: AbortSignal) => {
       await this.fetch(signal);
     }, cancelable);
+    if (executionStatus === 'LOADED') {
+      this.layout();
+    }
+    return executionStatus;
   }
 
   protected abstract fetch(signal: AbortSignal): Promise<void>;
@@ -88,6 +92,8 @@ export abstract class PhotostreamSegment {
     if (this.#height === height) {
       return;
     }
+
+    let needsIntersectionUpdate = false;
     const { timelineManager: store, percent } = this;
     const index = store.months.indexOf(this);
     const heightDelta = height - this.#height;
@@ -99,31 +105,21 @@ export abstract class PhotostreamSegment {
         this.#top = newTop;
       }
     }
+    if (heightDelta === 0) {
+      return;
+    }
+
     for (let cursor = index + 1; cursor < store.months.length; cursor++) {
       const monthGroup = this.timelineManager.months[cursor];
       const newTop = monthGroup.#top + heightDelta;
       if (monthGroup.#top !== newTop) {
         monthGroup.#top = newTop;
+        needsIntersectionUpdate = true;
       }
     }
-    if (store.topIntersectingMonthGroup) {
-      const currentIndex = store.months.indexOf(store.topIntersectingMonthGroup);
-      if (currentIndex > 0) {
-        if (index < currentIndex) {
-          store.scrollCompensation = {
-            heightDelta,
-            scrollTop: undefined,
-            monthGroup: this,
-          };
-        } else if (percent > 0) {
-          const top = this.top + height * percent;
-          store.scrollCompensation = {
-            heightDelta: undefined,
-            scrollTop: top,
-            monthGroup: this,
-          };
-        }
-      }
+
+    if (needsIntersectionUpdate) {
+      store.updateIntersections();
     }
   }
 

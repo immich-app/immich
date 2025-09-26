@@ -49,15 +49,7 @@ export abstract class PhotostreamManager {
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
-  scrollCompensation: {
-    heightDelta: number | undefined;
-    scrollTop: number | undefined;
-    monthGroup: PhotostreamSegment | undefined;
-  } = $state({
-    heightDelta: 0,
-    scrollTop: 0,
-    monthGroup: undefined,
-  });
+  #updatingIntersections = false;
 
   constructor() {}
 
@@ -158,18 +150,11 @@ export abstract class PhotostreamManager {
     }
   }
 
-  clearScrollCompensation() {
-    this.scrollCompensation = {
-      heightDelta: undefined,
-      scrollTop: undefined,
-      monthGroup: undefined,
-    };
-  }
-
   updateIntersections() {
-    if (!this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
+    if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
       return;
     }
+    this.#updatingIntersections = true;
     let topIntersectingMonthGroup = undefined;
     for (const month of this.months) {
       updateIntersectionMonthGroup(this, month);
@@ -191,6 +176,7 @@ export abstract class PhotostreamManager {
         month.percent = 0;
       }
     }
+    this.#updatingIntersections = false;
   }
 
   async init() {
