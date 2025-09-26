@@ -62,20 +62,8 @@ class AssetBulkUpdateDto {
   ///
   bool? isFavorite;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   num? latitude;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   num? longitude;
 
   /// Minimum value: -1
@@ -209,8 +197,12 @@ class AssetBulkUpdateDto {
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: num.parse('${json[r'latitude']}'),
-        longitude: num.parse('${json[r'longitude']}'),
+        latitude: json[r'latitude'] == null
+            ? null
+            : num.parse('${json[r'latitude']}'),
+        longitude: json[r'longitude'] == null
+            ? null
+            : num.parse('${json[r'longitude']}'),
         rating: num.parse('${json[r'rating']}'),
         timeZone: mapValueOfType<String>(json, r'timeZone'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
