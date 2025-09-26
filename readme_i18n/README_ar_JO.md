@@ -46,13 +46,13 @@
 
 ## محتوى
 
-- [الوثائق الرسمية](https://immich.app/docs)
+- [الوثائق الرسمية](https://docs.immich.app)
 - [خريطة الطريق](https://github.com/orgs/immich-app/projects/1)
 - [تجريبي](#demo)
 - [سمات](#features)
-- [مقدمة](https://immich.app/docs/overview/introduction)
-- [تعليمات التحميل](https://immich.app/docs/install/requirements)
-- [قواعد المساهمة](https://immich.app/docs/overview/support-the-project)
+- [مقدمة](https://docs.immich.app/overview/introduction)
+- [تعليمات التحميل](https://docs.immich.app/install/requirements)
+- [قواعد المساهمة](https://docs.immich.app/overview/support-the-project)
 
 ## توثيق
 

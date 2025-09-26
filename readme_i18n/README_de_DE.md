@@ -50,14 +50,14 @@
 
 ## Inhalt
 
-- [Offizielle Dokumentation](https://immich.app/docs)
-- [Über Immich](https://immich.app/docs/overview/introduction)
-- [Installation](https://immich.app/docs/install/requirements)
+- [Offizielle Dokumentation](https://docs.immich.app)
+- [Über Immich](https://docs.immich.app/overview/introduction)
+- [Installation](https://docs.immich.app/install/requirements)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funktionen](#funktionen)
-- [Übersetzungen](https://immich.app/docs/developer/translations)
-- [Beitragsrichtlinien](https://immich.app/docs/overview/support-the-project)
+- [Übersetzungen](https://docs.immich.app/developer/translations)
+- [Beitragsrichtlinien](https://docs.immich.app/overview/support-the-project)
 
 ## Demo
 
@@ -107,7 +107,7 @@ Die Web-Demo kannst Du unter https://demo.immich.app finden. Für die Handy-App 
 
 ## Übersetzungen
 
-Mehr zum Thema Übersetzungen kannst du [hier](https://immich.app/docs/developer/translations) erfahren.
+Mehr zum Thema Übersetzungen kannst du [hier](https://docs.immich.app/developer/translations) erfahren.
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />

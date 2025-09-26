@@ -45,13 +45,13 @@
 
 ## Inhoud
 
-- [Officiële documentatie](https://immich.app/docs)
+- [Officiële documentatie](https://docs.immich.app)
 - [Toekomstplannen](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Functies](#functies)
-- [Introductie](https://immich.app/docs/overview/introduction)
-- [Installatie](https://immich.app/docs/install/requirements)
-- [Richtlijnen voor bijdragen](https://immich.app/docs/overview/support-the-project)
+- [Introductie](https://docs.immich.app/overview/introduction)
+- [Installatie](https://docs.immich.app/install/requirements)
+- [Richtlijnen voor bijdragen](https://docs.immich.app/overview/support-the-project)
 
 ## Documentatie
 
@@ -102,7 +102,7 @@ Je kunt de demo [hier](https://demo.immich.app/) bekijken. Voor de mobiele app k
 
 ## Vertalingen
 
-Je kunt [hier](https://immich.app/docs/developer/translations) meer over vertalingen lezen.
+Je kunt [hier](https://docs.immich.app/developer/translations) meer over vertalingen lezen.
 
 ## Repository activiteit
 

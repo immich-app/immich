@@ -54,14 +54,14 @@
 
 ## 目录
 
-- [官方文档](https://immich.app/docs)
-- [项目总览](https://immich.app/docs/overview/introduction)
-- [安装教程](https://immich.app/docs/install/requirements)
+- [官方文档](https://docs.immich.app)
+- [项目总览](https://docs.immich.app/overview/introduction)
+- [安装教程](https://docs.immich.app/install/requirements)
 - [路线图](https://immich.app/roadmap)
 - [在线演示](#示例)
 - [功能特性](#功能特性)
-- [多语言](https://immich.app/docs/developer/translations)
-- [贡献者](https://immich.app/docs/overview/support-the-project)
+- [多语言](https://docs.immich.app/developer/translations)
+- [贡献者](https://docs.immich.app/overview/support-the-project)
 
 ## 示例
 
@@ -110,7 +110,7 @@
 
 ## 多语言
 
-关于翻译的更多信息请参见[此处](https://immich.app/docs/developer/translations)。
+关于翻译的更多信息请参见[此处](https://docs.immich.app/developer/translations)。
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="翻译进度" />

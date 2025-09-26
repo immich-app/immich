@@ -44,13 +44,13 @@
 
 ## Content
 
-- [Resmi Belgeler](https://immich.app/docs)
+- [Resmi Belgeler](https://docs.immich.app)
 - [Yol Haritası](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Özellikler](#özellikler)
-- [Giriş](https://immich.app/docs/overview/introduction)
-- [Kurulum](https://immich.app/docs/install/requirements)
-- [Katkı Sağlama Rehberi](https://immich.app/docs/overview/support-the-project)
+- [Giriş](https://docs.immich.app/overview/introduction)
+- [Kurulum](https://docs.immich.app/install/requirements)
+- [Katkı Sağlama Rehberi](https://docs.immich.app/overview/support-the-project)
 
 ## Belgeler
 
