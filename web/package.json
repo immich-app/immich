@@ -88,7 +88,7 @@
     "eslint-p": "^0.26.0",
     "eslint-plugin-compat": "^6.0.2",
     "eslint-plugin-svelte": "^3.9.0",
-    "eslint-plugin-unicorn": "^60.0.0",
+    "eslint-plugin-unicorn": "^61.0.0",
     "factory.ts": "^1.4.1",
     "globals": "^16.0.0",
     "happy-dom": "^18.0.1",
