@@ -22,8 +22,13 @@
     searchResultsManager: SearchResultsManager;
   }
 
-  let { searchResultsManager, assetInteraction, children, stylePaddingHorizontalPx, styleMarginTopPx }: Props =
-    $props();
+  let {
+    searchResultsManager,
+    assetInteraction,
+    children,
+    stylePaddingHorizontalPx = 0,
+    styleMarginTopPx,
+  }: Props = $props();
   let viewer: Photostream | undefined = $state(undefined);
 
   const onAfterNavigateComplete = ({ scrollToAssetQueryParam }: { scrollToAssetQueryParam: boolean }) =>
@@ -50,7 +55,7 @@
     {@render children?.()}
 
     {#snippet skeleton({ segment })}
-      <Skeleton height={segment.height - segment.timelineManager.headerHeight} />
+      <Skeleton height={segment.height - segment.timelineManager.headerHeight} {stylePaddingHorizontalPx} />
     {/snippet}
 
     {#snippet segment({ segment, onScrollCompensationMonthInDOM })}
