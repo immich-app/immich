@@ -17,7 +17,7 @@ class AssetStackRow extends ConsumerWidget {
     }
 
     final stackChildren = ref.watch(stackChildrenNotifier(asset)).valueOrNull;
-    if (stackChildren == null || stackChildren.length <= 1) {
+    if (stackChildren == null || stackChildren.isEmpty) {
       return const SizedBox.shrink();
     }
 
