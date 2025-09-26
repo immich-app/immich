@@ -9,15 +9,16 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
 
-  let { asset: viewingAsset, gridScrollTarget, mutex, preloadAssets } = assetViewingStore;
+  let { asset: viewingAsset, mutex, preloadAssets } = assetViewingStore;
 
   interface Props {
     timelineManager: TimelineManager;
-    showSkeleton: boolean;
+
     withStacked?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
+    onViewerClose?: (asset: { id: string }) => Promise<void>;
 
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -30,12 +31,12 @@
 
   let {
     timelineManager,
-    showSkeleton = $bindable(false),
     removeAction,
     withStacked = false,
     isShared = false,
     album = null,
     person = null,
+    onViewerClose = () => Promise.resolve(void 0),
   }: Props = $props();
 
   const handlePrevious = async () => {
@@ -79,13 +80,6 @@
     }
   };
 
-  const handleClose = async (asset: { id: string }) => {
-    assetViewingStore.showAssetViewer(false);
-    showSkeleton = true;
-    $gridScrollTarget = { at: asset.id };
-    await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
-  };
-
   const handlePreAction = async (action: Action) => {
     switch (action.type) {
       case removeAction:
@@ -97,7 +91,7 @@
       case AssetAction.SET_VISIBILITY_TIMELINE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        (await handleNext()) || (await handlePrevious()) || (await handleClose(action.asset));
+        (await handleNext()) || (await handlePrevious()) || (await onViewerClose?.(action.asset));
 
         // delete after find the next one
         timelineManager.removeAssets([action.asset.id]);
@@ -172,6 +166,6 @@
     onPrevious={handlePrevious}
     onNext={handleNext}
     onRandom={handleRandom}
-    onClose={handleClose}
+    onClose={onViewerClose}
   />
 {/await}
