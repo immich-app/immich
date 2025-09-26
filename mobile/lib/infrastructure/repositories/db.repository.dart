@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -62,6 +63,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     PersonEntity,
     AssetFaceEntity,
     StoreEntity,
+    TrashedLocalAssetEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
 )
@@ -93,7 +95,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -158,6 +160,10 @@ class Drift extends $Drift implements IDatabaseRepository {
           },
           from10To11: (m, v11) async {
             await m.addColumn(v11.localAlbumAssetEntity, v11.localAlbumAssetEntity.marker_);
+          },
+          from11To12: (m, v12) async {
+            await m.create(v12.trashedLocalAssetEntity);
+            await m.createIndex(v12.idxTrashedLocalAssetChecksum);
           },
         ),
       );

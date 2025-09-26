@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:path/path.dart' as path;
@@ -229,6 +230,7 @@ class _SyncStatsCounts extends ConsumerWidget {
     final localAlbumService = ref.watch(localAlbumServiceProvider);
     final remoteAlbumService = ref.watch(remoteAlbumServiceProvider);
     final memoryService = ref.watch(driftMemoryServiceProvider);
+    final trashSyncService = ref.watch(trashSyncServiceProvider);
 
     Future<List<dynamic>> loadCounts() async {
       final assetCounts = assetService.getAssetCounts();
@@ -351,6 +353,42 @@ class _SyncStatsCounts extends ConsumerWidget {
                 ],
               ),
             ),
+            if (trashSyncService.isAutoSyncMode) ...[
+              _SectionHeaderText(text: "trash".t(context: context)),
+              Consumer(
+                builder: (context, ref, _) {
+                  final counts = ref.watch(trashedAssetsCountProvider);
+                  return counts.when(
+                    data: (c) => Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      child: Flex(
+                        direction: Axis.horizontal,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        spacing: 8.0,
+                        children: [
+                          Expanded(
+                            child: EntitiyCountTile(
+                              label: "local".t(context: context),
+                              count: c.total,
+                              icon: Icons.delete_outline,
+                            ),
+                          ),
+                          Expanded(
+                            child: EntitiyCountTile(
+                              label: "hashed_assets".t(context: context),
+                              count: c.hashed,
+                              icon: Icons.tag,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    loading: () => const CircularProgressIndicator(),
+                    error: (e, st) => Text('Error: $e'),
+                  );
+                },
+              ),
+            ],
           ],
         );
       },

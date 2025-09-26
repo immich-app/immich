@@ -1,11 +1,23 @@
 package app.alextran.immich.sync
 
+import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.Context
+import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
+import kotlin.coroutines.cancellation.CancellationException
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @RequiresExtension(extension = Build.VERSION_CODES.R, version = 1)
@@ -47,7 +59,7 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
-  override fun getMediaChanges(): SyncDelta {
+  override fun getMediaChanges(isTrashed: Boolean): SyncDelta {
     val genMap = getSavedGenerationMap()
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
     val changed = mutableListOf<PlatformAsset>()
@@ -71,8 +83,17 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
         storedGen.toString(),
         storedGen.toString()
       )
-
-      getAssets(getCursor(volume, selection, selectionArgs)).forEach {
+      val cursor = if (isTrashed) {
+        val queryArgs = Bundle().apply {
+          putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+          putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
+          putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
+        }
+        getCursor(volume, queryArgs)
+      } else {
+        getCursor(volume, selection, selectionArgs)
+      }
+      getAssets(cursor).forEach {
         when (it) {
           is AssetResult.ValidAsset -> {
             changed.add(it.asset)
@@ -85,5 +106,83 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
     // Unmounted volumes are handled in dart when the album is removed
     return SyncDelta(hasChanges, changed, deleted, assetAlbums)
+  }
+
+  override fun getTrashedAssetsForAlbum(
+    albumId: String
+  ): List<PlatformAsset> {
+    val trashed = mutableListOf<PlatformAsset>()
+    val volumes = MediaStore.getExternalVolumeNames(ctx)
+
+    val selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
+    val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
+
+    for (volume in volumes) {
+      val cursor = getCursor(volume, Bundle().apply {
+        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
+        putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
+      })
+      getAssets(cursor).forEach { res ->
+        if (res is AssetResult.ValidAsset) trashed += res.asset
+      }
+    }
+
+    return trashed
+  }
+
+  override fun hashTrashedAssets(
+    trashedAssets: List<TrashedAssetParams>,
+    callback: (Result<List<HashResult>>) -> Unit
+  ) {
+    if (trashedAssets.isEmpty()) {
+      callback(Result.success(emptyList()))
+      return
+    }
+    hashTask?.cancel()
+    hashTask = CoroutineScope(Dispatchers.IO).launch {
+      try {
+        val results = trashedAssets.map { assetParams ->
+          async {
+            hashSemaphore.withPermit {
+              ensureActive()
+              hashTrashedAsset(assetParams)
+            }
+          }
+        }.awaitAll()
+
+        callback(Result.success(results))
+      } catch (e: CancellationException) {
+        callback(
+          Result.failure(
+            FlutterError(
+              HASHING_CANCELLED_CODE,
+              "Hashing operation was cancelled",
+              null
+            )
+          )
+        )
+      } catch (e: Exception) {
+        callback(Result.failure(e))
+      }
+    }
+  }
+
+  suspend fun hashTrashedAsset(assetParams: TrashedAssetParams): HashResult {
+    val id = assetParams.id.toLong()
+    val mediaType = assetParams.type.toInt()
+    val assetUri = contentUriForType(id, mediaType)
+    return hashAssetFromUri(assetParams.id, assetUri)
+  }
+
+  private fun contentUriForType(id: Long, mediaType: Int): Uri {
+    val vol = MediaStore.VOLUME_EXTERNAL
+    val base = when (mediaType) {
+      MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE -> MediaStore.Images.Media.getContentUri(vol)
+      MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> MediaStore.Video.Media.getContentUri(vol)
+      MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO -> MediaStore.Audio.Media.getContentUri(vol)
+      else -> MediaStore.Files.getContentUri(vol)
+    }
+    return ContentUris.withAppendedId(base, id)
   }
 }

@@ -89,7 +89,9 @@ data class PlatformAsset (
   val height: Long? = null,
   val durationInSeconds: Long,
   val orientation: Long,
-  val isFavorite: Boolean
+  val isFavorite: Boolean,
+  val isTrashed: Boolean? = null,
+  val volume: String? = null
 )
  {
   companion object {
@@ -104,7 +106,9 @@ data class PlatformAsset (
       val durationInSeconds = pigeonVar_list[7] as Long
       val orientation = pigeonVar_list[8] as Long
       val isFavorite = pigeonVar_list[9] as Boolean
-      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite)
+      val isTrashed = pigeonVar_list[10] as Boolean?
+      val volume = pigeonVar_list[11] as String?
+      return PlatformAsset(id, name, type, createdAt, updatedAt, width, height, durationInSeconds, orientation, isFavorite, isTrashed, volume)
     }
   }
   fun toList(): List<Any?> {
@@ -119,6 +123,8 @@ data class PlatformAsset (
       durationInSeconds,
       orientation,
       isFavorite,
+      isTrashed,
+      volume,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -243,6 +249,40 @@ data class HashResult (
 
   override fun hashCode(): Int = toList().hashCode()
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class TrashedAssetParams (
+  val id: String,
+  val type: Long,
+  val albumId: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): TrashedAssetParams {
+      val id = pigeonVar_list[0] as String
+      val type = pigeonVar_list[1] as Long
+      val albumId = pigeonVar_list[2] as String?
+      return TrashedAssetParams(id, type, albumId)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      id,
+      type,
+      albumId,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is TrashedAssetParams) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return MessagesPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -266,6 +306,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           HashResult.fromList(it)
         }
       }
+      133.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          TrashedAssetParams.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -287,6 +332,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(132)
         writeValue(stream, value.toList())
       }
+      is TrashedAssetParams -> {
+        stream.write(133)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -296,7 +345,7 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NativeSyncApi {
   fun shouldFullSync(): Boolean
-  fun getMediaChanges(): SyncDelta
+  fun getMediaChanges(isTrashed: Boolean): SyncDelta
   fun checkpointSync()
   fun clearSyncCheckpoint()
   fun getAssetIdsForAlbum(albumId: String): List<String>
@@ -305,6 +354,8 @@ interface NativeSyncApi {
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
+  fun getTrashedAssetsForAlbum(albumId: String): List<PlatformAsset>
+  fun hashTrashedAssets(trashedAssets: List<TrashedAssetParams>, callback: (Result<List<HashResult>>) -> Unit)
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -334,9 +385,11 @@ interface NativeSyncApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val isTrashedArg = args[0] as Boolean
             val wrapped: List<Any?> = try {
-              listOf(api.getMediaChanges())
+              listOf(api.getMediaChanges(isTrashedArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }
@@ -478,6 +531,43 @@ interface NativeSyncApi {
               MessagesPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val albumIdArg = args[0] as String
+            val wrapped: List<Any?> = try {
+              listOf(api.getTrashedAssetsForAlbum(albumIdArg))
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashTrashedAssets$separatedMessageChannelSuffix", codec, taskQueue)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val trashedAssetsArg = args[0] as List<TrashedAssetParams>
+            api.hashTrashedAssets(trashedAssetsArg) { result: Result<List<HashResult>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
           }
         } else {
           channel.setMessageHandler(null)
