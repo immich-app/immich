@@ -82,6 +82,7 @@ void main() {
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -112,6 +113,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -127,6 +129,7 @@ void main() {
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -145,6 +148,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -161,6 +165,7 @@ void main() {
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -177,6 +182,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -195,6 +201,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -211,6 +218,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -227,6 +235,7 @@ void main() {
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -243,6 +252,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -259,6 +269,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -277,6 +288,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -293,6 +305,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -309,6 +322,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -327,6 +341,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -343,6 +358,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -359,6 +375,7 @@ void main() {
           isInLockedView: true,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -377,6 +394,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -393,6 +411,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -411,6 +430,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -427,6 +447,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -445,6 +466,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -463,6 +485,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -481,6 +504,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -497,6 +521,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -512,6 +537,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -530,6 +556,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -548,6 +575,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -563,6 +591,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -581,6 +610,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -597,6 +627,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -613,6 +644,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: album,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -628,6 +660,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -645,6 +678,7 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: true,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
@@ -660,11 +694,65 @@ void main() {
           isInLockedView: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
+          isStacked: false,
           source: ActionSource.timeline,
         );
 
         expect(ActionButtonType.advancedInfo.shouldShow(context), isFalse);
       });
+    });
+  });
+
+  group('unstack button', () {
+    test('should show when owner, not locked, has remote, and is stacked', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: true,
+        source: ActionSource.timeline,
+      );
+
+      expect(ActionButtonType.unstack.shouldShow(context), isTrue);
+    });
+
+    test('should not show when not stacked', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.timeline,
+      );
+
+      expect(ActionButtonType.unstack.shouldShow(context), isFalse);
+    });
+
+    test('should not show when not owner', () {
+      final remoteAsset = createRemoteAsset();
+      final context = ActionButtonContext(
+        asset: remoteAsset,
+        isOwner: false,
+        isArchived: true,
+        isTrashEnabled: true,
+        isInLockedView: false,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.timeline,
+      );
+
+      expect(ActionButtonType.unstack.shouldShow(context), isFalse);
     });
   });
 
@@ -682,6 +770,7 @@ void main() {
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
     });
@@ -698,6 +787,22 @@ void main() {
             isInLockedView: false,
             currentAlbum: album,
             advancedTroubleshooting: false,
+            isStacked: false,
+            source: ActionSource.timeline,
+          );
+          final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
+        } else if (buttonType == ActionButtonType.unstack) {
+          final album = createRemoteAlbum();
+          final contextWithAlbum = ActionButtonContext(
+            asset: asset,
+            isOwner: true,
+            isArchived: false,
+            isTrashEnabled: true,
+            isInLockedView: false,
+            currentAlbum: album,
+            advancedTroubleshooting: false,
+            isStacked: true,
             source: ActionSource.timeline,
           );
           final widget = buttonType.buildButton(contextWithAlbum);
@@ -721,6 +826,7 @@ void main() {
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -741,6 +847,7 @@ void main() {
         isInLockedView: false,
         currentAlbum: album,
         advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -759,6 +866,7 @@ void main() {
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -778,6 +886,7 @@ void main() {
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
@@ -791,6 +900,7 @@ void main() {
         isInLockedView: false,
         currentAlbum: null,
         advancedTroubleshooting: false,
+        isStacked: false,
         source: ActionSource.timeline,
       );
 
