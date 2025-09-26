@@ -833,15 +833,14 @@
     title="Navigate to Time"
     initialDate={DateTime.now()}
     timezoneInput={false}
-    onConfirm={async (dateString: AbsoluteResult | RelativeResult) => {
+    onConfirm={async (result: AbsoluteResult | RelativeResult) => {
       isShowSelectDate = false;
-      if (dateString.mode == 'absolute') {
-        const asset = await timelineManager.getClosestAssetToDate(
-          (DateTime.fromISO(dateString.date) as DateTime<true>).toObject(),
-        );
-        if (asset) {
-          setFocusAsset(asset);
-        }
+      if (result.mode !== 'absolute') {
+        return;
+      }
+      const asset = await timelineManager.getClosestAssetToDate(result.dateTime.toObject());
+      if (asset) {
+        setFocusAsset(asset);
       }
     }}
     onCancel={() => (isShowSelectDate = false)}
