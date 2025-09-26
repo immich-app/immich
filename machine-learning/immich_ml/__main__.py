@@ -1,6 +1,7 @@
 import os
 import signal
 import subprocess
+from ipaddress import ip_address
 from pathlib import Path
 
 from .config import log, non_prefixed_settings, settings
@@ -13,8 +14,8 @@ else:
 module_dir = Path(__file__).parent
 
 bind_host = non_prefixed_settings.immich_host
-if ":" in bind_host and not bind_host.startswith("["):
-    bind_host = f"[{bind_host}]"
+if ip_address(bind_host).version == 6:
+  bind_host = f"[{bind_host}]"
 bind_address = f"{bind_host}:{non_prefixed_settings.immich_port}"
 
 try:
