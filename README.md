@@ -50,7 +50,7 @@
 
 ## Links
 
-- [Documentation](https://immich.app/docs)
+- [Documentation](https://docs.immich.app/overview/quick-start/)
 - [About](https://immich.app/docs/overview/introduction)
 - [Installation](https://immich.app/docs/install/requirements)
 - [Roadmap](https://immich.app/roadmap)
