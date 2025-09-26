@@ -2,12 +2,13 @@
   interface Props {
     height: number;
     title?: string;
+    stylePaddingHorizontalPx?: number;
   }
 
-  let { height = 0, title }: Props = $props();
+  let { height = 0, title, stylePaddingHorizontalPx = 0 }: Props = $props();
 </script>
 
-<div class="overflow-clip" style:height={height + 'px'}>
+<skeleton class="overflow-clip" style:height={height + 'px'}>
   {#if title}
     <div
       class="flex pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-light dark:text-immich-dark-fg md:text-sm"
@@ -16,11 +17,13 @@
     </div>
   {/if}
   <div
-    class="animate-pulse absolute h-full ms-[10px] me-[10px]"
-    style:width="calc(100% - 20px)"
+    class="animate-pulse absolute h-full"
+    style:width="100%"
+    style:padding-left={stylePaddingHorizontalPx + 'px'}
+    style:padding-right={stylePaddingHorizontalPx + 'px'}
     data-skeleton="true"
   ></div>
-</div>
+</skeleton>
 
 <style>
   [data-skeleton] {

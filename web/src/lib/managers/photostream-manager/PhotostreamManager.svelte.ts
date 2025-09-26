@@ -322,4 +322,33 @@ export abstract class PhotostreamManager {
   retrieveRange(start: AssetDescriptor, end: AssetDescriptor): Promise<TimelineAsset[]> {
     return Promise.resolve(this.retrieveLoadedRange(start, end));
   }
+
+  removeAssets(assetIds: string[]): string[] {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const assetIdSet = new Set(assetIds);
+    const removedIds: string[] = [];
+
+    for (const segment of this.months) {
+      // Remove assets from each segment using splice
+      for (let i = segment.viewerAssets.length - 1; i >= 0; i--) {
+        if (assetIdSet.has(segment.viewerAssets[i].asset.id)) {
+          removedIds.push(segment.viewerAssets[i].asset.id);
+          segment.viewerAssets.splice(i, 1);
+        }
+      }
+
+      // Update segment layout after removing assets
+      if (removedIds.length > 0) {
+        segment.layout();
+      }
+    }
+
+    // Update viewport geometry after removals
+    if (removedIds.length > 0) {
+      this.updateViewportGeometry(false);
+    }
+
+    // Return the IDs that were not found/removed
+    return assetIds.filter((id) => !removedIds.includes(id));
+  }
 }
