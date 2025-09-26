@@ -106,7 +106,7 @@ Access the demo [here](https://demo.immich.app). For the mobile app, you can use
 
 ## Translations
 
-Read more about translations [here](https://immich.app/docs/developer/translations).
+Read more about translations [here](https://docs.immich.app/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
