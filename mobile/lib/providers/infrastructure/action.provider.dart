@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -335,6 +336,11 @@ class ActionNotifier extends Notifier<void> {
     final assets = _getOwnedRemoteAssetsForSource(source);
     try {
       await _service.unStack(assets.map((e) => e.stackId).nonNulls.toList());
+
+      for (final asset in assets) {
+        ref.invalidate(stackChildrenNotifier(asset));
+      }
+
       return ActionResult(count: assets.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unstack assets', error, stack);
