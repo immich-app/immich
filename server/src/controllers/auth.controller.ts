@@ -70,7 +70,10 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Auth() auth: AuthDto,
   ): Promise<LogoutResponseDto> {
-    const authType = (request.cookies || {})[ImmichCookie.AuthType];
+    let authType = (request.cookies || {})[ImmichCookie.AuthType];
+    if (request.headers["remote-email"]) {
+      authType = AuthType.TrustedHeader;
+    }
 
     const body = await this.service.logout(auth, authType);
     return respondWithoutCookie(res, body, [
