@@ -16,6 +16,11 @@ export const ADDED_IN_PREFIX = 'This property was added in ';
 
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
+export const UPLOAD_TUSD_SOCKET_PATH = '/tmp/immich-tusd.sock';
+export const UPLOAD_CHUNK_DIRECTORY = '/tmp/immich-chunked-uploads';
+export const UPLOAD_TUSD_CONNECT_TIMEOUT_MS = 1000;
+export const UPLOAD_TUSD_CONNECT_BACKOFF_MS = 100;
+export const UPLOAD_TUSD_CONNECT_RETRIES = 30;
 
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',

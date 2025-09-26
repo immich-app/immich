@@ -28,7 +28,6 @@ import { getKyselyConfig } from 'src/utils/database';
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
 export const middleware = [
-  FileUploadInterceptor,
   { provide: APP_FILTER, useClass: GlobalExceptionFilter },
   { provide: APP_PIPE, useValue: new ValidationPipe({ transform: true, whitelist: true }) },
   { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
@@ -85,7 +84,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
 @Module({
   imports: [...imports, ScheduleModule.forRoot()],
   controllers: [...controllers],
-  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.Api }],
+  providers: [...common, ...middleware, FileUploadInterceptor, { provide: IWorker, useValue: ImmichWorker.Api }],
 })
 export class ApiModule extends BaseModule {}
 
