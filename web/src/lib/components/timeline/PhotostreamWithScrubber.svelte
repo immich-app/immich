@@ -43,7 +43,7 @@
     enableRouting,
     timelineManager = $bindable(),
 
-    showSkeleton = $bindable(true),
+    showSkeleton = true,
     isShowDeleteConfirmation = $bindable(false),
     segment,
     skeleton,
@@ -160,7 +160,10 @@
     handleScrollTop?.(scrollToTop);
   };
   let baseTimelineViewer: Photostream | undefined = $state();
-  export const scrollToAsset = (asset: TimelineAsset) => baseTimelineViewer?.scrollToAssetId(asset.id) ?? false;
+  export const scrollToAsset = async (asset: TimelineAsset) =>
+    (await baseTimelineViewer?.scrollToAssetId(asset.id)) ?? false;
+  export const completeAfterNavigate = (args: { scrollToAssetQueryParam: boolean }) =>
+    baseTimelineViewer?.completeAfterNavigate(args);
 </script>
 
 <Photostream
