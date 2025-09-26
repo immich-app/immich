@@ -205,6 +205,7 @@
       model: $t('camera_model'),
       lensModel: $t('lens_model'),
       personIds: $t('people'),
+      searchOnlyThem: $t('search_only_them'),
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
       description: $t('description'),

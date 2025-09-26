@@ -5,16 +5,17 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
-  import { Button, LoadingSpinner } from '@immich/ui';
+  import { Button, Checkbox, Label, LoadingSpinner } from '@immich/ui';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
+    searchOnlyThem: boolean;
   }
 
-  let { selectedPeople = $bindable() }: Props = $props();
+  let { selectedPeople = $bindable(), searchOnlyThem = $bindable() }: Props = $props();
 
   let peoplePromise = getPeople();
   let showAllPeople = $state(false);
@@ -61,11 +62,18 @@
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
+    <div id="people-selection" class="max-h-66 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
         <p class="uppercase immich-form-label py-3">{$t('people')}</p>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
+
+      {#if selectedPeople.size > 0}
+        <div class="flex items-center gap-2">
+          <Checkbox id="search-only-them-checkbox" size="tiny" bind:checked={searchOnlyThem} />
+          <Label for="search-only-them-checkbox">{$t('search_only_them')}</Label>
+        </div>
+      {/if}
 
       <SingleGridRow
         class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar"

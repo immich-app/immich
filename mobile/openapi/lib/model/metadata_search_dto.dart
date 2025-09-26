@@ -40,6 +40,7 @@ class MetadataSearchDto {
     this.personIds = const [],
     this.previewPath,
     this.rating,
+    this.searchOnlyThem,
     this.size,
     this.state,
     this.tagIds = const [],
@@ -229,6 +230,14 @@ class MetadataSearchDto {
   ///
   num? rating;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? searchOnlyThem;
+
   /// Minimum value: 1
   /// Maximum value: 1000
   ///
@@ -376,6 +385,7 @@ class MetadataSearchDto {
     _deepEquality.equals(other.personIds, personIds) &&
     other.previewPath == previewPath &&
     other.rating == rating &&
+    other.searchOnlyThem == searchOnlyThem &&
     other.size == size &&
     other.state == state &&
     _deepEquality.equals(other.tagIds, tagIds) &&
@@ -423,6 +433,7 @@ class MetadataSearchDto {
     (personIds.hashCode) +
     (previewPath == null ? 0 : previewPath!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
+    (searchOnlyThem == null ? 0 : searchOnlyThem!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (tagIds == null ? 0 : tagIds!.hashCode) +
@@ -441,7 +452,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, searchOnlyThem=$searchOnlyThem, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -568,6 +579,11 @@ class MetadataSearchDto {
     } else {
     //  json[r'rating'] = null;
     }
+    if (this.searchOnlyThem != null) {
+      json[r'searchOnlyThem'] = this.searchOnlyThem;
+    } else {
+    //  json[r'searchOnlyThem'] = null;
+    }
     if (this.size != null) {
       json[r'size'] = this.size;
     } else {
@@ -691,6 +707,7 @@ class MetadataSearchDto {
             : const [],
         previewPath: mapValueOfType<String>(json, r'previewPath'),
         rating: num.parse('${json[r'rating']}'),
+        searchOnlyThem: mapValueOfType<bool>(json, r'searchOnlyThem'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable

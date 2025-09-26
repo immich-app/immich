@@ -30,6 +30,7 @@ class RandomSearchDto {
     this.model,
     this.personIds = const [],
     this.rating,
+    this.searchOnlyThem,
     this.size,
     this.state,
     this.tagIds = const [],
@@ -142,6 +143,14 @@ class RandomSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   num? rating;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? searchOnlyThem;
 
   /// Minimum value: 1
   /// Maximum value: 1000
@@ -272,6 +281,7 @@ class RandomSearchDto {
     other.model == model &&
     _deepEquality.equals(other.personIds, personIds) &&
     other.rating == rating &&
+    other.searchOnlyThem == searchOnlyThem &&
     other.size == size &&
     other.state == state &&
     _deepEquality.equals(other.tagIds, tagIds) &&
@@ -308,6 +318,7 @@ class RandomSearchDto {
     (model == null ? 0 : model!.hashCode) +
     (personIds.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
+    (searchOnlyThem == null ? 0 : searchOnlyThem!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (tagIds == null ? 0 : tagIds!.hashCode) +
@@ -325,7 +336,7 @@ class RandomSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'RandomSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, searchOnlyThem=$searchOnlyThem, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -405,6 +416,11 @@ class RandomSearchDto {
       json[r'rating'] = this.rating;
     } else {
     //  json[r'rating'] = null;
+    }
+    if (this.searchOnlyThem != null) {
+      json[r'searchOnlyThem'] = this.searchOnlyThem;
+    } else {
+    //  json[r'searchOnlyThem'] = null;
     }
     if (this.size != null) {
       json[r'size'] = this.size;
@@ -514,6 +530,7 @@ class RandomSearchDto {
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         rating: num.parse('${json[r'rating']}'),
+        searchOnlyThem: mapValueOfType<bool>(json, r'searchOnlyThem'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
         tagIds: json[r'tagIds'] is Iterable
