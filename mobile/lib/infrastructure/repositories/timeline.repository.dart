@@ -229,7 +229,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
         useColumns: false,
       ),
-    ])..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAssetEntity.id.equals(albumId));
+    ])..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId));
 
     if (isAscending) {
       query.orderBy([OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
