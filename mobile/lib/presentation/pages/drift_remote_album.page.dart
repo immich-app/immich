@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -221,14 +222,24 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          Future.microtask(() {
-            if (mounted) {
-              ref.read(currentRemoteAlbumProvider.notifier).dispose();
-              ref.read(remoteAlbumProvider.notifier).refresh();
-            }
-          });
+        if (didPop || !mounted) {
+          return;
+        }
+
+        final ancestors = context.router.stack.take(context.router.stack.length - 1);
+        final ancestorPage = ancestors.lastWhereOrNull((route) {
+          return route.name == RemoteAlbumRoute.page.name;
+        });
+
+        Navigator.of(context).pop();
+
+        if (ancestorPage == null) {
+          ref.read(currentRemoteAlbumProvider.notifier).dispose();
+        } else {
+          final album = (ancestorPage.routeData.args as RemoteAlbumRouteArgs).album;
+          ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
         }
       },
       child: ProviderScope(
