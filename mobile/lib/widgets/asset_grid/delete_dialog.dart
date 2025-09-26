@@ -22,12 +22,12 @@ class DeleteLocalOnlyDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     void onDeleteBackedUpOnly() {
-      context.pop();
+      context.pop(true);
       onDeleteLocal(true);
     }
 
     void onForceDelete() {
-      context.pop();
+      context.pop(false);
       onDeleteLocal(false);
     }
 

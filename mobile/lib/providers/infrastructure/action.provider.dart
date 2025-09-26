@@ -252,8 +252,15 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> deleteLocal(ActionSource source) async {
-    final ids = _getLocalIdsForSource(source);
+  Future<ActionResult> deleteLocal(ActionSource source, bool backedUpOnly) async {
+    final List<String> ids;
+    if (backedUpOnly) {
+      final assets = _getAssets(source);
+      ids = assets.where((asset) => asset.storage == AssetState.merged).map((asset) => asset.localId!).toList();
+    } else {
+      ids = _getLocalIdsForSource(source);
+    }
+
     try {
       final deletedCount = await _service.deleteLocal(ids);
       return ActionResult(count: deletedCount, success: true);

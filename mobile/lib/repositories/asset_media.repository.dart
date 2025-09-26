@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -8,6 +9,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart' as asset_entity;
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -20,11 +22,26 @@ final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
+
   static final Logger _log = Logger("AssetMediaRepository");
 
   const AssetMediaRepository(this._assetApiRepository);
 
-  Future<List<String>> deleteAll(List<String> ids) => PhotoManager.editor.deleteWithIds(ids);
+  Future<List<String>> deleteAll(List<String> ids) async {
+    if (CurrentPlatform.isIOS) {
+      return PhotoManager.editor.deleteWithIds(ids);
+    } else if (CurrentPlatform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt < 30) {
+        return PhotoManager.editor.deleteWithIds(ids);
+      }
+      return PhotoManager.editor.android.moveToTrash(
+        // Only the id is needed
+        ids.map((id) => AssetEntity(id: id, width: 1, height: 1, typeInt: 0)).toList(),
+      );
+    }
+    return [];
+  }
 
   Future<asset_entity.Asset?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
