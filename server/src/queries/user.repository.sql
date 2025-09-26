@@ -363,6 +363,14 @@ group by
 order by
   "user"."createdAt" asc
 
+-- UserRepository.getCount
+select
+  count(*) as "count"
+from
+  "user"
+where
+  "user"."deletedAt" is null
+
 -- UserRepository.updateUsage
 update "user"
 set
