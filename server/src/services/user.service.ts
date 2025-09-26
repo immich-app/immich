@@ -215,8 +215,7 @@ export class UserService extends BaseService {
 
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap(): Promise<void> {
-    if(this.worker != ImmichWorker.Api)
-        return;
+    if (this.worker != ImmichWorker.Api) return;
 
     const userCount = await this.userRepository.getCount();
     this.telemetryRepository.api.addToGauge('immich.users.total', userCount);
