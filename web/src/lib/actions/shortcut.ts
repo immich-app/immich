@@ -1,5 +1,11 @@
 import type { ActionReturn } from 'svelte/action';
 
+interface ExplainedShortcut {
+  key: string[];
+  action: string;
+  info?: string;
+}
+
 export type Shortcut = {
   key: string;
   alt?: boolean;
@@ -14,6 +20,7 @@ export type ShortcutOptions<T = HTMLElement> = {
   ignoreInputFields?: boolean;
   onShortcut: (event: KeyboardEvent & { currentTarget: T }) => unknown;
   preventDefault?: boolean;
+  explainedShortcut?: ExplainedShortcut;
 };
 
 export const shortcutLabel = (shortcut: Shortcut) => {
