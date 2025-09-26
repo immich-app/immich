@@ -20,7 +20,6 @@ services:
       context: ../
       dockerfile: server/Dockerfile
     volumes:
-      # Note: when using S3 (IMMICH_STORAGE_ENGINE=s3), mapping /data is optional/unused by the server.
       - ${UPLOAD_LOCATION}/photos:/data
       - /etc/localtime:/etc/localtime:ro
     env_file:
