@@ -1,5 +1,8 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
-import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
+import {
+  findMonthGroupForAsset,
+  getMonthGroupByDate,
+} from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject, getSegmentIdentifier } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
@@ -556,10 +559,10 @@ describe('TimelineManager', () => {
       );
       timelineManager.addAssets([assetOne, assetTwo]);
 
-      expect(timelineManager.getMonthGroupByAssetId(assetTwo.id)?.yearMonth.year).toEqual(2024);
-      expect(timelineManager.getMonthGroupByAssetId(assetTwo.id)?.yearMonth.month).toEqual(2);
-      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
-      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
+      expect(findMonthGroupForAsset(timelineManager, assetTwo.id)?.monthGroup.yearMonth.year).toEqual(2024);
+      expect(findMonthGroupForAsset(timelineManager, assetTwo.id)?.monthGroup.yearMonth.month).toEqual(2);
+      expect(findMonthGroupForAsset(timelineManager, assetOne.id)?.monthGroup.yearMonth.year).toEqual(2024);
+      expect(findMonthGroupForAsset(timelineManager, assetOne.id)?.monthGroup.yearMonth.month).toEqual(1);
     });
 
     it('ignores removed months', () => {
@@ -576,8 +579,8 @@ describe('TimelineManager', () => {
       timelineManager.addAssets([assetOne, assetTwo]);
 
       timelineManager.removeAssets([assetTwo.id]);
-      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.year).toEqual(2024);
-      expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
+      expect(findMonthGroupForAsset(timelineManager, assetOne.id)?.monthGroup.yearMonth.year).toEqual(2024);
+      expect(findMonthGroupForAsset(timelineManager, assetOne.id)?.monthGroup.yearMonth.month).toEqual(1);
     });
   });
 });
