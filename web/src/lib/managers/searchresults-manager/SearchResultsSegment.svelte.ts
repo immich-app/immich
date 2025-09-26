@@ -57,15 +57,12 @@ export class SearchResultsSegment extends PhotostreamSegment {
         ? await searchSmart({ smartSearchDto: searchDto }, { signal })
         : await searchAssets({ metadataSearchDto: searchDto }, { signal });
     this.#viewerAssets = assets.items.map((asset) => new ViewerAsset(this, toTimelineAsset(asset)));
-
-    this.layout();
   }
 
   layout(): void {
     const timelineAssets = this.#viewerAssets.map((viewerAsset) => viewerAsset.asset);
     const layoutOptions = this.timelineManager.createLayoutOptions();
     const geometry = getJustifiedLayoutFromAssets(timelineAssets, layoutOptions);
-    //  this.width = geometry.containerWidth;
     this.height = timelineAssets.length === 0 ? 0 : geometry.containerHeight + this.timelineManager.headerHeight;
     for (let i = 0; i < this.#viewerAssets.length; i++) {
       const position = getPosition(geometry, i);

@@ -73,6 +73,10 @@ export class MonthGroup extends PhotostreamSegment {
     return loadFromTimeBuckets(this.timelineManager, this, this.timelineManager.options, signal);
   }
 
+  layout(noDefer?: boolean) {
+    layoutMonthGroup(this.timelineManager, this, noDefer);
+  }
+
   get lastDayGroup() {
     return this.dayGroups.at(-1);
   }
@@ -304,10 +308,6 @@ export class MonthGroup extends PhotostreamSegment {
 
   cancel() {
     this.loader?.cancel();
-  }
-
-  layout(noDefer?: boolean) {
-    layoutMonthGroup(this.timelineManager, this, noDefer);
   }
 
   #clearDeferredLayout() {
