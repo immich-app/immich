@@ -249,6 +249,7 @@ export enum SearchSuggestionType {
   CITY = 'city',
   CAMERA_MAKE = 'camera-make',
   CAMERA_MODEL = 'camera-model',
+  CAMERA_LENS_MODEL = 'camera-lens-model',
 }
 
 export class SearchSuggestionRequestDto {
@@ -270,6 +271,10 @@ export class SearchSuggestionRequestDto {
   @IsString()
   @Optional()
   model?: string;
+
+  @IsString()
+  @Optional()
+  lensModel?: string;
 
   @ValidateBoolean({ optional: true })
   @PropertyLifecycle({ addedAt: 'v111.0.0' })
