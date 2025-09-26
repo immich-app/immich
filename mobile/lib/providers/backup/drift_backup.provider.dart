@@ -91,6 +91,8 @@ class DriftUploadStatus {
   }
 }
 
+enum BackupError { none, syncFailed }
+
 class DriftBackupState {
   final int totalCount;
   final int backupCount;
@@ -101,6 +103,7 @@ class DriftBackupState {
   final int enqueueTotalCount;
 
   final bool isCanceling;
+  final BackupError error;
 
   final Map<String, DriftUploadStatus> uploadItems;
 
@@ -113,6 +116,7 @@ class DriftBackupState {
     required this.enqueueTotalCount,
     required this.isCanceling,
     required this.uploadItems,
+    this.error = BackupError.none,
   });
 
   DriftBackupState copyWith({
@@ -124,6 +128,7 @@ class DriftBackupState {
     int? enqueueTotalCount,
     bool? isCanceling,
     Map<String, DriftUploadStatus>? uploadItems,
+    BackupError? error,
   }) {
     return DriftBackupState(
       totalCount: totalCount ?? this.totalCount,
@@ -134,12 +139,13 @@ class DriftBackupState {
       enqueueTotalCount: enqueueTotalCount ?? this.enqueueTotalCount,
       isCanceling: isCanceling ?? this.isCanceling,
       uploadItems: uploadItems ?? this.uploadItems,
+      error: error ?? this.error,
     );
   }
 
   @override
   String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isCanceling: $isCanceling, uploadItems: $uploadItems)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isCanceling: $isCanceling, uploadItems: $uploadItems, error: $error)';
   }
 
   @override
@@ -154,7 +160,8 @@ class DriftBackupState {
         other.enqueueCount == enqueueCount &&
         other.enqueueTotalCount == enqueueTotalCount &&
         other.isCanceling == isCanceling &&
-        mapEquals(other.uploadItems, uploadItems);
+        mapEquals(other.uploadItems, uploadItems) &&
+        other.error == error;
   }
 
   @override
@@ -166,7 +173,8 @@ class DriftBackupState {
         enqueueCount.hashCode ^
         enqueueTotalCount.hashCode ^
         isCanceling.hashCode ^
-        uploadItems.hashCode;
+        uploadItems.hashCode ^
+        error.hashCode;
   }
 }
 
@@ -186,6 +194,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           enqueueTotalCount: 0,
           isCanceling: false,
           uploadItems: {},
+          error: BackupError.none,
         ),
       ) {
     {
@@ -303,7 +312,12 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
+  Future<void> updateError(BackupError error) async {
+    state = state.copyWith(error: error);
+  }
+
   Future<void> startBackup(String userId) {
+    state = state.copyWith(error: BackupError.none);
     return _uploadService.startBackup(userId, _updateEnqueueCount);
   }
 
@@ -313,7 +327,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   Future<void> cancel() async {
     dPrint(() => "Canceling backup tasks...");
-    state = state.copyWith(enqueueCount: 0, enqueueTotalCount: 0, isCanceling: true);
+    state = state.copyWith(enqueueCount: 0, enqueueTotalCount: 0, isCanceling: true, error: BackupError.none);
 
     final activeTaskCount = await _uploadService.cancelBackup();
 
@@ -329,6 +343,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
   Future<void> handleBackupResume(String userId) async {
     _logger.info("Resuming backup tasks...");
+    state = state.copyWith(error: BackupError.none);
     final tasks = await _uploadService.getActiveTasks(kBackupGroup);
     _logger.info("Found ${tasks.length} tasks");
 

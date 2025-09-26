@@ -9,8 +9,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -168,8 +168,16 @@ class _BackupIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const widgetSize = 30.0;
-    final indicatorIcon = _getBackupBadgeIcon(context, ref);
-    final badgeBackground = context.colorScheme.surfaceContainer;
+    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
+    final indicatorIcon = hasError
+        ? Icon(
+            Icons.warning_rounded,
+            size: 12,
+            color: context.colorScheme.error,
+            semanticLabel: 'backup_controller_page_backup'.tr(),
+          )
+        : _getBackupBadgeIcon(context, ref);
+    final badgeBackground = hasError ? context.colorScheme.errorContainer : context.colorScheme.surfaceContainer;
 
     return InkWell(
       onTap: () => context.pushRoute(const DriftBackupRoute()),

@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
+import 'package:logging/logging.dart';
 
 @RoutePage()
 class DriftBackupAlbumSelectionPage extends ConsumerStatefulWidget {
@@ -112,7 +113,18 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             // Waits for hashing to be cancelled before starting a new one
             unawaited(nativeSync.cancelHashing().whenComplete(() => backgroundSync.hashAssets()));
             if (isBackupEnabled) {
-              unawaited(backupNotifier.cancel().whenComplete(() => backupNotifier.startBackup(user.id)));
+              unawaited(
+                backupNotifier.cancel().whenComplete(
+                  () => backgroundSync.syncRemote().then((success) {
+                    if (success) {
+                      return backupNotifier.startBackup(user.id);
+                    } else {
+                      Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
+                      backupNotifier.updateError(BackupError.syncFailed);
+                    }
+                  }),
+                ),
+              );
             }
           }
 

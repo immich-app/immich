@@ -148,17 +148,22 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
 
     try {
+      bool syncSuccess = false;
       await Future.wait([
         _safeRun(backgroundManager.syncLocal(), "syncLocal"),
-        _safeRun(backgroundManager.syncRemote(), "syncRemote"),
+        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
       ]);
-
-      await Future.wait([
-        _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-          _resumeBackup();
-        }),
-        _resumeBackup(),
-      ]);
+      if (syncSuccess) {
+        await Future.wait([
+          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+            _resumeBackup();
+          }),
+          _resumeBackup(),
+        ]);
+      } else {
+        _ref.read(driftBackupProvider.notifier).updateError(BackupError.syncFailed);
+        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+      }
 
       if (isAlbumLinkedSyncEnable) {
         await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
