@@ -33,9 +33,13 @@
   let isFocus = $state(false);
   let close: (() => Promise<void>) | undefined;
 
+  let navigating = false;
   const listboxId = generateId();
 
   onDestroy(() => {
+    if (navigating) {
+      return;
+    }
     searchStore.isSearchEnabled = false;
   });
 
@@ -44,6 +48,7 @@
 
     closeDropdown();
     searchStore.isSearchEnabled = false;
+    navigating = true;
     await goto(`${AppRoute.SEARCH}?${params}`);
   };
 
@@ -73,6 +78,9 @@
   };
 
   const onFocusOut = () => {
+    if (navigating) {
+      return;
+    }
     searchStore.isSearchEnabled = false;
   };
 
@@ -161,6 +169,9 @@
   };
 
   const closeDropdown = () => {
+    if (navigating) {
+      return;
+    }
     showSuggestions = false;
     isFocus = false;
     searchHistoryBox?.clearSelection();
