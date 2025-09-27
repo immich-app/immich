@@ -28,6 +28,7 @@
   "add_to_album": "Adicionar ao álbum",
   "add_to_album_bottom_sheet_added": "Adicionado ao {album}",
   "add_to_album_bottom_sheet_already_exists": "Já existe em {album}",
+  "add_to_album_bottom_sheet_some_local_assets": "Alguns arquivos / mídias não puderam ser adicionados ao álbum",
   "add_to_album_toggle": "Alternar a seleção de {album}",
   "add_to_albums": "Adicionar aos álbuns",
   "add_to_albums_count": "Adicionar aos álbuns ({count})",
