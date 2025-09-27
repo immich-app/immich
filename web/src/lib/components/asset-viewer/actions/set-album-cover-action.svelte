@@ -4,6 +4,7 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { mdiImageOutline } from '@mdi/js';
@@ -24,6 +25,8 @@
           albumThumbnailAssetId: asset.id,
         },
       });
+      // Clear cached recent albums to refresh sidebar when album cover is updated
+      userInteraction.recentAlbums = undefined;
       notificationController.show({
         type: NotificationType.Info,
         message: $t('album_cover_updated'),

@@ -247,6 +247,8 @@
       }
     }
 
+    // Clear cached recent albums to refresh sidebar when album is deleted
+    userInteraction.recentAlbums = undefined;
     ownedAlbums = ownedAlbums.filter(({ id }) => id !== albumToDelete.id);
     sharedAlbums = sharedAlbums.filter(({ id }) => id !== albumToDelete.id);
   };

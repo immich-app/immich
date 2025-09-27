@@ -1,5 +1,6 @@
 <script lang="ts">
   import { updateAlbumInfo } from '@immich/sdk';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
   import { t } from 'svelte-i18n';
@@ -20,6 +21,8 @@
           description: newDescription,
         },
       });
+      // Clear cached recent albums to refresh sidebar when album is updated
+      userInteraction.recentAlbums = undefined;
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_album'));
     }
