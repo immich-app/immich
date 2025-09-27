@@ -172,7 +172,8 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   Future<void> showOptionSheet(BuildContext context) async {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
-    final canEdit = await ref.read(remoteAlbumUserRoleProvider((_album.id, user!.id)).future) == AlbumUserRole.editor;
+    final canAddPhotos =
+        await ref.read(remoteAlbumUserRoleProvider((_album.id, user!.id)).future) == AlbumUserRole.editor;
 
     showModalBottomSheet(
       context: context,
@@ -194,16 +195,18 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
                   context.pop();
                 }
               : null,
-          onAddPhotos: isOwner || canEdit
+          onAddPhotos: isOwner || canAddPhotos
               ? () async {
                   await addAssets(context);
                   context.pop();
                 }
               : null,
-          onToggleAlbumOrder: () async {
-            await toggleAlbumOrder();
-            context.pop();
-          },
+          onToggleAlbumOrder: isOwner
+              ? () async {
+                  await toggleAlbumOrder();
+                  context.pop();
+                }
+              : null,
           onEditAlbum: isOwner
               ? () async {
                   context.pop();
@@ -227,6 +230,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
+    final isOwner = user != null ? user.id == _album.ownerId : false;
+
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) {
@@ -250,7 +256,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           appBar: RemoteAlbumSliverAppBar(
             icon: Icons.photo_album_outlined,
             onShowOptions: () => showOptionSheet(context),
-            onToggleAlbumOrder: () => toggleAlbumOrder(),
+            onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
             onEditTitle: () => showEditTitleAndDescription(context),
             onActivity: () => showActivity(context),
           ),
