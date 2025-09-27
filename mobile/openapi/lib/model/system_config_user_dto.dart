@@ -14,26 +14,40 @@ class SystemConfigUserDto {
   /// Returns a new [SystemConfigUserDto] instance.
   SystemConfigUserDto({
     required this.deleteDelay,
+    required this.sessionDeleteDelayBrowser,
+    required this.sessionDeleteDelayMobile,
   });
 
   /// Minimum value: 1
   int deleteDelay;
 
+  /// Minimum value: 1
+  int sessionDeleteDelayBrowser;
+
+  /// Minimum value: 1
+  int sessionDeleteDelayMobile;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigUserDto &&
-    other.deleteDelay == deleteDelay;
+    other.deleteDelay == deleteDelay &&
+    other.sessionDeleteDelayBrowser == sessionDeleteDelayBrowser &&
+    other.sessionDeleteDelayMobile == sessionDeleteDelayMobile;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (deleteDelay.hashCode);
+    (deleteDelay.hashCode) +
+    (sessionDeleteDelayBrowser.hashCode) +
+    (sessionDeleteDelayMobile.hashCode);
 
   @override
-  String toString() => 'SystemConfigUserDto[deleteDelay=$deleteDelay]';
+  String toString() => 'SystemConfigUserDto[deleteDelay=$deleteDelay, sessionDeleteDelayBrowser=$sessionDeleteDelayBrowser, sessionDeleteDelayMobile=$sessionDeleteDelayMobile]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'deleteDelay'] = this.deleteDelay;
+      json[r'sessionDeleteDelayBrowser'] = this.sessionDeleteDelayBrowser;
+      json[r'sessionDeleteDelayMobile'] = this.sessionDeleteDelayMobile;
     return json;
   }
 
@@ -47,6 +61,8 @@ class SystemConfigUserDto {
 
       return SystemConfigUserDto(
         deleteDelay: mapValueOfType<int>(json, r'deleteDelay')!,
+        sessionDeleteDelayBrowser: mapValueOfType<int>(json, r'sessionDeleteDelayBrowser')!,
+        sessionDeleteDelayMobile: mapValueOfType<int>(json, r'sessionDeleteDelayMobile')!,
       );
     }
     return null;
@@ -95,6 +111,8 @@ class SystemConfigUserDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'deleteDelay',
+    'sessionDeleteDelayBrowser',
+    'sessionDeleteDelayMobile',
   };
 }
 

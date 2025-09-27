@@ -16,7 +16,11 @@ import { BaseService } from 'src/services/base.service';
 export class SessionService extends BaseService {
   @OnJob({ name: JobName.SessionCleanup, queue: QueueName.BackgroundTask })
   async handleCleanup(): Promise<JobStatus> {
-    const sessions = await this.sessionRepository.cleanup();
+    const config = await this.getConfig({ withCache: false });
+    const sessions = await this.sessionRepository.cleanup(
+      config.user.sessionDeleteDelayBrowser,
+      config.user.sessionDeleteDelayMobile,
+    );
     for (const session of sessions) {
       this.logger.verbose(`Deleted expired session token: ${session.deviceOS}/${session.deviceType}`);
     }
