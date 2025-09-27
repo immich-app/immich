@@ -81,6 +81,7 @@ class DeepLinkService {
       "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
+      "live-wallpaper" => _buildLiveWallpaperDeepLink(link.uri.pathSegments),
       _ => null,
     };
 
@@ -186,5 +187,12 @@ class DeepLinkService {
       _currentAlbum.set(album);
       return AlbumViewerRoute(albumId: album.id);
     }
+  }
+
+  PageRouteInfo<dynamic>? _buildLiveWallpaperDeepLink(List<String> pathSegments) {
+    if (pathSegments.isEmpty || pathSegments.first == 'settings') {
+      return const LiveWallpaperSetupRoute();
+    }
+    return const LiveWallpaperSetupRoute();
   }
 }

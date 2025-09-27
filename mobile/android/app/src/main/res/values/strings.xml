@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="app_name">Immich</string>
   <string name="memory_widget_title">Memories</string>
   <string name="random_widget_title">Random</string>
 
   <string name="memory_widget_description">See memories from Immich.</string>
   <string name="random_widget_description">View a random image from your library or a specific album.</string>
+
+  <string name="wallpaper_settings_title">Immich live wallpaper</string>
+  <string name="wallpaper_settings_description">Preview the wallpaper, then jump back into Immich to choose who appears.</string>
+  <string name="wallpaper_settings_open_button">Open Immich settings</string>
+  <string name="wallpaper_settings_back_button">Back to wallpaper preview</string>
 </resources>

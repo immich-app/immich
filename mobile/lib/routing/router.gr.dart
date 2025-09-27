@@ -1823,6 +1823,22 @@ class LibraryRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [LiveWallpaperSetupPage]
+class LiveWallpaperSetupRoute extends PageRouteInfo<void> {
+  const LiveWallpaperSetupRoute({List<PageRouteInfo>? children})
+    : super(LiveWallpaperSetupRoute.name, initialChildren: children);
+
+  static const String name = 'LiveWallpaperSetupRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LiveWallpaperSetupPage();
+    },
+  );
+}
+
+/// generated route for
 /// [LocalAlbumsPage]
 class LocalAlbumsRoute extends PageRouteInfo<void> {
   const LocalAlbumsRoute({List<PageRouteInfo>? children})

@@ -44,6 +44,7 @@ import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_controller.page.dart';
 import 'package:immich_mobile/pages/common/tab_shell.page.dart';
+import 'package:immich_mobile/pages/common/live_wallpaper_setup.page.dart';
 import 'package:immich_mobile/pages/editing/crop.page.dart';
 import 'package:immich_mobile/pages/editing/edit.page.dart';
 import 'package:immich_mobile/pages/editing/filter.page.dart';
@@ -233,6 +234,7 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(page: SettingsRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: SettingsSubRoute.page, guards: [_duplicateGuard]),
+  AutoRoute(page: LiveWallpaperSetupRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogDetailRoute.page, guards: [_duplicateGuard]),
     CustomRoute(
