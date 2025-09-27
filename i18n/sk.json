@@ -28,6 +28,7 @@
   "add_to_album": "Pridať do albumu",
   "add_to_album_bottom_sheet_added": "Pridané do {album}",
   "add_to_album_bottom_sheet_already_exists": "Už je v {album}",
+  "add_to_album_bottom_sheet_some_local_assets": "Niektoré lokálne súbory nebolo možné pridať do albumu",
   "add_to_album_toggle": "Prepnúť výber pre {album}",
   "add_to_albums": "Pridať do albumov",
   "add_to_albums_count": "Pridať do albumov ({count})",
