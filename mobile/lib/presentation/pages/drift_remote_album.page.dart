@@ -257,7 +257,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             icon: Icons.photo_album_outlined,
             onShowOptions: () => showOptionSheet(context),
             onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
-            onEditTitle: () => showEditTitleAndDescription(context),
+            onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
             onActivity: () => showActivity(context),
           ),
           bottomSheet: RemoteAlbumBottomSheet(album: _album),
