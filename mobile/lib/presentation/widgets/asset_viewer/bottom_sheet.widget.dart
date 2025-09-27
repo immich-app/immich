@@ -140,6 +140,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
+    final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
 
     return SliverList.list(
       children: [
@@ -147,10 +148,10 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         _SheetTile(
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          trailing: asset.hasRemote ? const Icon(Icons.edit, size: 18) : null,
-          onTap: asset.hasRemote ? () async => await _editDateTime(context, ref) : null,
+          trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
+          onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
         ),
-        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
+        if (exifInfo != null && isOwner) _SheetAssetDescription(exif: exifInfo),
         const SheetPeopleDetails(),
         const SheetLocationDetails(),
         // Details header
