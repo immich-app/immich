@@ -215,7 +215,7 @@ export class UserService extends BaseService {
 
   @OnEvent({ name: 'AppBootstrap' })
   async onBootstrap(): Promise<void> {
-    if (this.worker != ImmichWorker.Api) {
+    if (this.worker !== ImmichWorker.Api) {
       return;
     }
 
