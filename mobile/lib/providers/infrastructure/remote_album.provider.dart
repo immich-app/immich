@@ -178,3 +178,13 @@ final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<Us
   final service = ref.watch(remoteAlbumServiceProvider);
   return service.getSharedUsers(albumId);
 });
+
+final remoteAlbumUserRoleProvider = FutureProvider.autoDispose.family<AlbumUserRole?, (String, String)>((
+  ref,
+  data,
+) async {
+  final link = ref.keepAlive();
+  ref.onDispose(() => link.close());
+  final service = ref.watch(remoteAlbumServiceProvider);
+  return service.getUserRole(data.$1, data.$2);
+});

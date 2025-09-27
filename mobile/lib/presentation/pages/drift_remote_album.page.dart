@@ -169,9 +169,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     context.pushRoute(const DriftActivitiesRoute());
   }
 
-  void showOptionSheet(BuildContext context) {
+  Future<void> showOptionSheet(BuildContext context) async {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
+    final canEdit = await ref.read(remoteAlbumUserRoleProvider((_album.id, user!.id)).future) == AlbumUserRole.editor;
 
     showModalBottomSheet(
       context: context,
@@ -193,10 +194,12 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
                   context.pop();
                 }
               : null,
-          onAddPhotos: () async {
-            await addAssets(context);
-            context.pop();
-          },
+          onAddPhotos: isOwner || canEdit
+              ? () async {
+                  await addAssets(context);
+                  context.pop();
+                }
+              : null,
           onToggleAlbumOrder: () async {
             await toggleAlbumOrder();
             context.pop();
