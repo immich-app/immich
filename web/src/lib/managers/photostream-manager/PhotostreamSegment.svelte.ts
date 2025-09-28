@@ -7,6 +7,7 @@ import type { PhotostreamManager } from '$lib/managers/photostream-manager/Photo
 import { getTestHook } from '$lib/managers/photostream-manager/TestHooks.svelte';
 import type { AssetOperation, MoveAsset, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
+import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 
 export type SegmentIdentifier = {
   matches(segment: PhotostreamSegment): boolean;
@@ -144,7 +145,16 @@ export abstract class PhotostreamSegment {
     this.loader?.cancel();
   }
 
-  layout(_?: boolean) {}
+  layout(_?: boolean): void {
+    const timelineAssets = this.viewerAssets.map((viewerAsset) => viewerAsset.asset);
+    const layoutOptions = this.timelineManager.layoutOptions;
+    const geometry = getJustifiedLayoutFromAssets(timelineAssets, layoutOptions);
+    this.height = timelineAssets.length === 0 ? 0 : geometry.containerHeight + this.timelineManager.headerHeight;
+    for (let i = 0; i < this.viewerAssets.length; i++) {
+      const position = getPosition(geometry, i);
+      this.viewerAssets[i].position = position;
+    }
+  }
 
   updateIntersection({ intersecting, actuallyIntersecting }: { intersecting: boolean; actuallyIntersecting: boolean }) {
     this.intersecting = intersecting;
