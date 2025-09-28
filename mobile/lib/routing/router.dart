@@ -234,7 +234,7 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(page: SettingsRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: SettingsSubRoute.page, guards: [_duplicateGuard]),
-  AutoRoute(page: LiveWallpaperSetupRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: LiveWallpaperSetupRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogDetailRoute.page, guards: [_duplicateGuard]),
     CustomRoute(

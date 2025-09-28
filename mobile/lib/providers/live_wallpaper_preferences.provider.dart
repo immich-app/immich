@@ -15,15 +15,14 @@ final liveWallpaperAssetServiceProvider = Provider<LiveWallpaperAssetService>((r
   return LiveWallpaperAssetService(ref.watch(assetApiRepositoryProvider));
 });
 
-final liveWallpaperPreferencesProvider = StateNotifierProvider<LiveWallpaperPreferencesNotifier, LiveWallpaperPreferences>
-    ((ref) {
-  final service = ref.watch(liveWallpaperPreferencesServiceProvider);
-  return LiveWallpaperPreferencesNotifier(service);
-});
+final liveWallpaperPreferencesProvider =
+    StateNotifierProvider<LiveWallpaperPreferencesNotifier, LiveWallpaperPreferences>((ref) {
+      final service = ref.watch(liveWallpaperPreferencesServiceProvider);
+      return LiveWallpaperPreferencesNotifier(service);
+    });
 
 class LiveWallpaperPreferencesNotifier extends StateNotifier<LiveWallpaperPreferences> {
-  LiveWallpaperPreferencesNotifier(this._service)
-      : super(_service.load()) {
+  LiveWallpaperPreferencesNotifier(this._service) : super(_service.load()) {
     _subscription = _service.watch().listen((event) {
       if (mounted) {
         state = event;

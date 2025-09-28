@@ -86,8 +86,6 @@ class LiveWallpaperSetupPage extends HookConsumerWidget {
       }
     }
 
-
-
     return Scaffold(
       appBar: AppBar(title: Text('live_wallpaper_setup_title'.tr())),
       body: Padding(
@@ -132,7 +130,6 @@ class LiveWallpaperSetupPage extends HookConsumerWidget {
                 onPressed: onSetWallpaper,
               ),
             ),
-
           ],
         ),
       ),
@@ -250,5 +247,3 @@ class _RotationControl extends StatelessWidget {
     );
   }
 }
-
-

@@ -42,9 +42,7 @@ class LiveWallpaperSetting extends HookConsumerWidget {
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: ListTile(
             title: Text('live_wallpaper_setting_manage'.tr()),
-            subtitle: statusText == null
-              ? null
-              : Text(statusText, style: Theme.of(context).textTheme.bodySmall),
+            subtitle: statusText == null ? null : Text(statusText, style: Theme.of(context).textTheme.bodySmall),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.pushRoute(const LiveWallpaperSetupRoute()),
           ),

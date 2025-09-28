@@ -30,11 +30,7 @@ class WallpaperStatusMessage {
   final bool isActive;
   final String? lastError;
 
-  const WallpaperStatusMessage({
-    this.isSupported = true,
-    this.isActive = false,
-    this.lastError,
-  });
+  const WallpaperStatusMessage({this.isSupported = true, this.isActive = false, this.lastError});
 }
 
 @HostApi()

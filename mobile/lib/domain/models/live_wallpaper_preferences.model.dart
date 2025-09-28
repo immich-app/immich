@@ -2,14 +2,7 @@ import 'dart:convert';
 
 const _defaultRotationMinutes = 30;
 
-enum RotationMode {
-  lockUnlock,
-  minutes,
-  hours,
-  daily,
-}
-
-
+enum RotationMode { lockUnlock, minutes, hours, daily }
 
 extension RotationModeExtension on RotationMode {
   String get label {
@@ -24,7 +17,7 @@ extension RotationModeExtension on RotationMode {
         return 'Daily';
     }
   }
-  
+
   Duration get duration {
     switch (this) {
       case RotationMode.lockUnlock:
@@ -39,8 +32,6 @@ extension RotationModeExtension on RotationMode {
   }
 }
 
-
-
 class LiveWallpaperPreferences {
   const LiveWallpaperPreferences({
     required this.enabled,
@@ -53,13 +44,13 @@ class LiveWallpaperPreferences {
   });
 
   const LiveWallpaperPreferences.defaults()
-      : enabled = false,
-        personIds = const [],
-        rotationInterval = const Duration(minutes: _defaultRotationMinutes),
-        rotationMode = RotationMode.minutes,
-        allowCellularData = false,
-        lastAssetId = null,
-        lastUpdated = null;
+    : enabled = false,
+      personIds = const [],
+      rotationInterval = const Duration(minutes: _defaultRotationMinutes),
+      rotationMode = RotationMode.minutes,
+      allowCellularData = false,
+      lastAssetId = null,
+      lastUpdated = null;
 
   final bool enabled;
   final List<String> personIds;
@@ -148,6 +139,4 @@ class LiveWallpaperPreferences {
       return RotationMode.minutes;
     }
   }
-
-
 }
