@@ -209,7 +209,7 @@ class NativeSyncApiImpl: NativeSyncApi {
   }
   
   func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], any Error>) -> Void) {
-    dispatch(qos: .userInitiated, completion: completion, block: { try self.getAssetIdsForAlbum(albumId: albumId) })
+    dispatch(qos: .userInitiated, completion: completion) { try self.getAssetIdsForAlbum(albumId: albumId) }
   }
   
   private func getAssetIdsForAlbum(albumId: String) throws -> [String] {
@@ -229,9 +229,9 @@ class NativeSyncApiImpl: NativeSyncApi {
   }
   
   func getAssetsCountSince(albumId: String, timestamp: Int64, completion: @escaping (Result<Int64, any Error>) -> Void) {
-    dispatch(qos: .userInitiated, completion: completion, block: {
+    dispatch(qos: .userInitiated, completion: completion) {
       try self.getAssetsCountSince(albumId: albumId, timestamp: timestamp)
-    })
+    }
   }
   
   private func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64 {
@@ -249,9 +249,9 @@ class NativeSyncApiImpl: NativeSyncApi {
   }
   
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?, completion: @escaping (Result<[PlatformAsset], any Error>) -> Void) {
-    dispatch(qos: .userInitiated, completion: completion, block: {
+    dispatch(qos: .userInitiated, completion: completion) {
       try self.getAssetsForAlbum(albumId: albumId, updatedTimeCond: updatedTimeCond)
-    })
+    }
   }
   
   private func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset] {

@@ -2,11 +2,11 @@ import BackgroundTasks
 
 class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   func enable(completion: @escaping (Result<Void, any Error>) -> Void) {
-    dispatch(completion: completion, block: {
+    dispatch(completion: completion) {
       BackgroundWorkerApiImpl.scheduleRefreshWorker()
       BackgroundWorkerApiImpl.scheduleProcessingWorker()
       print("BackgroundWorkerApiImpl:enable Background worker scheduled")
-    });
+    }
   }
   
   func configure(settings: BackgroundWorkerSettings, completion: @escaping (Result<Void, any Error>) -> Void) {
@@ -15,11 +15,11 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
   }
   
   func disable(completion: @escaping (Result<Void, any Error>) -> Void) {
-    dispatch(completion: completion, block: {
+    dispatch(completion: completion) {
       BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
       BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);
       print("BackgroundWorkerApiImpl:disableUploadWorker Disabled background workers")
-    });
+    }
   }
 
   private static let refreshTaskID = "app.alextran.immich.background.refreshUpload"
