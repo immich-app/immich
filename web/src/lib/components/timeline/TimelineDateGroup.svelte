@@ -12,7 +12,6 @@
 
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
 
-  import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
@@ -125,16 +124,6 @@
     return intersectable.filter((int) => int.intersecting);
   }
 
-  const getDayGroupFullDate = (dayGroup: DayGroup): string => {
-    const { month, year } = dayGroup.monthGroup.yearMonth;
-    const date = fromTimelinePlainDate({
-      year,
-      month,
-      day: dayGroup.day,
-    });
-    return getDateLocaleString(date);
-  };
-
   $effect.root(() => {
     if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
       onScrollCompensation(timelineManager.scrollCompensation);
@@ -185,7 +174,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize" title={getDayGroupFullDate(dayGroup)}>
+      <span class="w-full truncate first-letter:capitalize" title={dayGroup.groupTitleFull}>
         {dayGroup.groupTitle}
       </span>
     </div>
