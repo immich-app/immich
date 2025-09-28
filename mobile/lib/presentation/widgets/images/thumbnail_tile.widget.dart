@@ -54,9 +54,6 @@ class ThumbnailTile extends ConsumerWidget {
           )
         : const BoxDecoration();
 
-    final hasStack = asset is RemoteAsset && asset.stackId != null;
-    final isLivePhoto = asset is RemoteAsset && asset.livePhotoVideoId != null;
-
     final bool storageIndicator =
         showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
@@ -78,10 +75,11 @@ class ThumbnailTile extends ConsumerWidget {
                     child: Thumbnail.fromAsset(asset: asset, size: size),
                   ),
                 ),
-                Align(
-                  alignment: Alignment.topRight,
-                  child: _AssetTypeIcons(isLivePhoto: isLivePhoto, hasStack: hasStack, asset: asset),
-                ),
+                if (asset != null)
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: _AssetTypeIcons(asset: asset),
+                  ),
                 if (storageIndicator && asset != null)
                   switch (asset.storage) {
                     AssetState.local => const Align(
@@ -205,20 +203,21 @@ class _TileOverlayIcon extends StatelessWidget {
 }
 
 class _AssetTypeIcons extends StatelessWidget {
-  final bool isLivePhoto;
-  final bool hasStack;
-  final BaseAsset? asset;
+  final BaseAsset asset;
 
-  const _AssetTypeIcons({required this.isLivePhoto, required this.hasStack, required this.asset});
+  const _AssetTypeIcons({required this.asset});
 
   @override
   Widget build(BuildContext context) {
+    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+    final isLivePhoto = asset is RemoteAsset && asset.livePhotoVideoId != null;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        if (asset != null && asset!.isVideo)
-          Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset!.duration)),
+        if (asset.isVideo)
+          Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
         if (hasStack)
           const Padding(
             padding: EdgeInsets.only(right: 10.0, top: 6.0),
