@@ -4,6 +4,7 @@ import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
 import { createHash } from 'node:crypto';
 import { extname, join } from 'node:path';
+import { setTimeout } from 'node:timers/promises';
 import { StorageCore } from 'src/cores/storage.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UploadAssetDataDto } from 'src/dtos/upload.dto';
@@ -11,26 +12,33 @@ import { AssetStatus, AssetType, AssetVisibility, ImmichHeader, JobName, Storage
 import { BaseService } from 'src/services/base.service';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isInnerList, parseDictionary } from 'structured-headers';
+import { parseDictionary } from 'structured-headers';
 
 @Injectable()
 export class AssetUploadService extends BaseService {
-  async handleInitialChunk(auth: AuthDto, request: Request, response: Response): Promise<void> {
+  async startUpload(auth: AuthDto, request: Request, response: Response): Promise<void> {
     const headers = request.headers;
-    const contentLength = this.getNumberOrThrow(headers, 'content-length');
-    const isComplete = this.getIsCompleteOrThrow(headers);
-    const checksumHeader = this.getChecksumOrThrow(headers);
+    const contentLength = this.requireContentLength(headers);
+    const isComplete = this.requireUploadComplete(headers);
+    const metadata = this.requireAssetData(headers);
+    const checksumHeader = this.requireChecksum(headers);
+    const uploadLength = this.getUploadLength(headers);
 
-    const metadata = this.getAssetDataOrThrow(headers);
+    if (isComplete && uploadLength !== null && uploadLength !== contentLength) {
+      return this.sendInconsistentLengthProblem(response);
+    }
+
     const assetId = this.cryptoRepository.randomUUID();
     const folder = StorageCore.getNestedFolder(StorageFolder.Upload, auth.user.id, assetId);
     const extension = extname(metadata.filename);
     const path = join(folder, `${assetId}${extension}`);
     const type = mimeTypes.assetType(path);
+
     if (type === AssetType.Other) {
       throw new BadRequestException(`${metadata.filename} is an unsupported file type`);
     }
-    this.requireQuota(auth, contentLength);
+
+    this.validateQuota(auth, uploadLength ?? contentLength);
 
     try {
       await this.assetRepository.create({
@@ -58,20 +66,21 @@ export class AssetUploadService extends BaseService {
           throw new InternalServerErrorException('Error locating duplicate for checksum constraint');
         }
 
-        if (duplicate.status === AssetStatus.Partial) {
-          response.status(201).setHeader('location', this.createLocation(headers, assetId)).send();
-        } else {
-          response.status(400).contentType('application/problem+json').send({
-            type: 'https://iana.org/assignments/http-problem-types#completed-upload',
-            title: 'upload is already completed',
-          });
+        if (duplicate.status !== AssetStatus.Partial) {
+          return this.sendAlreadyCompletedProblem(response);
         }
+        const location = `/api/upload/${duplicate.id}`;
+        response.status(201).setHeader('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
         return;
       }
       this.logger.error(`Error creating upload asset record: ${error.message}`);
       response.status(500).send('Error creating upload asset record');
       return;
     }
+
+    const location = `/api/upload/${assetId}`;
+    // this.sendInterimResponse(response, location);
+
     await this.storageRepository.mkdir(folder);
     let checksumBuffer: Buffer | undefined;
     const writeStream = this.storageRepository.createWriteStream(path);
@@ -85,32 +94,34 @@ export class AssetUploadService extends BaseService {
     writeStream.on('error', (error) => {
       this.logger.error(`Failed to write chunk to ${path}: ${error.message}`);
       if (!response.headersSent) {
-        return response.status(500).setHeader('location', this.createLocation(headers, assetId)).send();
+        response.status(500).setHeader('Location', location).send();
       }
     });
 
     writeStream.on('finish', () => {
       if (!isComplete) {
-        return response.status(201).setHeader('location', this.createLocation(headers, assetId)).send();
+        return response.status(201).setHeader('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
+      }
+      this.logger.log(`Finished upload to ${path}`);
+      if (checksumHeader.compare(checksumBuffer!) !== 0) {
+        return this.sendChecksumMismatchResponse(response, assetId, path);
       }
 
-      this.logger.log(`Finished upload to ${path}`);
-      this.assertChecksum(checksumHeader, checksumBuffer!, path, assetId);
-      response.status(201).setHeader('Upload-Complete', '?1').send();
-      void this.onCompletion({
-        assetId,
-        ownerId: auth.user.id,
-        path,
-        size: contentLength,
-        fileModifiedAt: metadata.fileModifiedAt,
-      });
+      response
+        .status(200)
+        .setHeader('Upload-Complete', '?1')
+        .setHeader('Location', location)
+        .setHeader('Upload-Limit', 'min-size=0')
+        .send();
+
+      return this.onComplete({ assetId, path, size: contentLength, fileModifiedAt: metadata.fileModifiedAt });
     });
 
     request.on('error', (error) => {
       this.logger.error(`Failed to read request body: ${error.message}`);
       writeStream.end();
       if (!response.headersSent) {
-        return response.status(500).setHeader('location', this.createLocation(headers, assetId)).send();
+        response.status(500).setHeader('Location', location).send();
       }
     });
 
@@ -119,8 +130,8 @@ export class AssetUploadService extends BaseService {
       if (receivedLength + chunk.length > contentLength) {
         writeStream.destroy();
         request.destroy();
-        this.onPermanentFailure(assetId, path);
         response.status(400).send('Received more data than specified in content-length');
+        return this.removeAsset(assetId, path);
       }
       receivedLength += chunk.length;
       if (!writeStream.write(chunk)) {
@@ -130,18 +141,27 @@ export class AssetUploadService extends BaseService {
     });
 
     request.on('end', () => {
-      if (receivedLength !== contentLength) {
-        this.logger.error(`Received ${receivedLength} bytes when expecting ${contentLength} for ${assetId}`);
-        writeStream.destroy();
-        this.onPermanentFailure(assetId, path);
+      if (receivedLength === contentLength) {
+        return writeStream.end();
       }
+      this.logger.error(`Received ${receivedLength} bytes when expecting ${contentLength} for ${assetId}`);
+      writeStream.destroy();
+      this.removeAsset(assetId, path);
     });
   }
 
-  async handleRemainingChunks(auth: AuthDto, assetId: string, request: Request, response: Response): Promise<void> {
+  async resumeUpload(auth: AuthDto, assetId: string, request: Request, response: Response): Promise<void> {
     const headers = request.headers;
-    const headerIsComplete = this.getIsCompleteOrThrow(headers);
-    const contentLength = this.getNumberOrThrow(headers, 'content-length');
+    const isComplete = this.requireUploadComplete(headers);
+    const contentLength = this.requireContentLength(headers);
+    const providedOffset = this.getUploadOffset(headers);
+    const uploadLength = this.getUploadLength(headers);
+
+    const contentType = headers['content-type'];
+    if (contentType !== 'application/partial-upload') {
+      throw new BadRequestException('Content-Type must be application/partial-upload for PATCH requests');
+    }
+
     await this.databaseRepository.withUuidLock(assetId, async () => {
       const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
       if (!asset) {
@@ -149,36 +169,42 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      const { path } = asset;
       if (asset.status !== AssetStatus.Partial) {
-        response.status(400).contentType('application/problem+json').send({
-          type: 'https://iana.org/assignments/http-problem-types#completed-upload',
-          title: 'upload is already completed',
-        });
-        return;
+        return this.sendAlreadyCompletedProblem(response);
+      }
+      if (providedOffset === null) {
+        throw new BadRequestException('Missing Upload-Offset header');
       }
 
-      const providedOffset = this.getNumber(headers, 'upload-offset') ?? 0;
+      const { path } = asset;
       const expectedOffset = await this.getCurrentOffset(path);
-
       if (expectedOffset !== providedOffset) {
-        response.status(409).contentType('application/problem+json').setHeader('upload-complete', '?0').send({
-          type: 'https://iana.org/assignments/http-problem-types#mismatching-upload-offset',
-          title: 'offset from request does not match offset of resource',
-          'expected-offset': expectedOffset,
-          'provided-offset': providedOffset,
-        });
+        return this.sendOffsetMismatchProblem(response, expectedOffset, providedOffset);
       }
 
       const newLength = providedOffset + contentLength;
-      this.requireQuota(auth, newLength);
 
-      if (contentLength === 0) {
-        response.status(204).send();
+      // If upload length is provided, validate we're not exceeding it
+      if (uploadLength !== null && newLength > uploadLength) {
+        response.status(400).send('Upload would exceed declared length');
+        return;
+      }
+
+      this.validateQuota(auth, newLength);
+
+      // Empty PATCH without Upload-Complete
+      if (contentLength === 0 && !isComplete) {
+        response
+          .status(204)
+          .setHeader('Upload-Offset', expectedOffset.toString())
+          .setHeader('Upload-Complete', '?0')
+          .send();
         return;
       }
 
       const writeStream = this.storageRepository.createOrAppendWriteStream(path);
+      let receivedLength = 0;
+
       writeStream.on('error', (error) => {
         this.logger.error(`Failed to write chunk to ${path}: ${error.message}`);
         if (!response.headersSent) {
@@ -187,31 +213,37 @@ export class AssetUploadService extends BaseService {
       });
 
       writeStream.on('finish', async () => {
-        if (headerIsComplete) {
-          this.logger.log(`Finished upload to ${path}`);
-          const checksum = await this.cryptoRepository.hashFile(path);
-          this.assertChecksum(asset.checksum, checksum, path, assetId);
-          response.status(201).setHeader('upload-complete', '?1').send();
-          await this.onCompletion({
-            assetId,
-            ownerId: auth.user.id,
-            path,
-            size: newLength,
-            fileModifiedAt: asset.fileModifiedAt,
-          });
-        } else {
-          response.status(204).send();
+        const currentOffset = await this.getCurrentOffset(path);
+        if (!isComplete) {
+          return response
+            .status(204)
+            .setHeader('Upload-Offset', currentOffset.toString())
+            .setHeader('Upload-Complete', '?0')
+            .send();
         }
+
+        this.logger.log(`Finished upload to ${path}`);
+        const checksum = await this.cryptoRepository.hashFile(path);
+        if (asset.checksum.compare(checksum) !== 0) {
+          return this.sendChecksumMismatchResponse(response, assetId, path);
+        }
+
+        response
+          .status(200)
+          .setHeader('Upload-Complete', '?1')
+          .setHeader('Upload-Offset', currentOffset.toString())
+          .send();
+
+        await this.onComplete({ assetId, path, size: currentOffset, fileModifiedAt: asset.fileModifiedAt });
       });
 
-      let receivedLength = 0;
       request.on('data', (chunk: Buffer) => {
         if (receivedLength + chunk.length > contentLength) {
           this.logger.error(`Received more data than specified in content-length for upload to ${path}`);
-          writeStream.destroy(new Error('Received more data than specified in content-length'));
+          writeStream.destroy();
           request.destroy();
-          void this.onPermanentFailure(assetId, path);
-          return;
+          response.status(400).send('Received more data than specified in content-length');
+          return this.removeAsset(assetId, path);
         }
 
         receivedLength += chunk.length;
@@ -222,20 +254,17 @@ export class AssetUploadService extends BaseService {
       });
 
       request.on('end', () => {
-        if (receivedLength < contentLength) {
-          this.logger.error(`Received less data than specified in content-length for upload to ${path}`);
-          writeStream.destroy(new Error('Received less data than specified in content-length'));
-          void this.onPermanentFailure(assetId, path);
-          return;
+        if (receivedLength === contentLength) {
+          return writeStream.end();
         }
-        writeStream.end();
+        this.logger.error(`Received ${receivedLength} bytes when expecting ${contentLength} for ${assetId}`);
+        writeStream.destroy();
+        return this.removeAsset(assetId, path);
       });
     });
   }
 
-  getUploadStatus(auth: AuthDto, assetId: string, request: Request, response: Response) {
-    const headers = request.headers;
-    const interopVersion = this.getInteropVersion(headers);
+  async getUploadStatus(auth: AuthDto, assetId: string, request: Request, response: Response) {
     return this.databaseRepository.withUuidLock(assetId, async () => {
       const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
       if (!asset) {
@@ -243,39 +272,141 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      if (interopVersion !== null && interopVersion < 2) {
-        response.setHeader('upload-incomplete', asset.status === AssetStatus.Partial ? '?1' : '?0');
-      } else {
-        response.setHeader('upload-complete', asset.status === AssetStatus.Partial ? '?0' : '?1');
-      }
+      const offset = await this.getCurrentOffset(asset.path);
+      const isComplete = asset.status !== AssetStatus.Partial;
 
       response
         .status(204)
-        .setHeader('upload-offset', await this.getCurrentOffset(asset.path))
+        .setHeader('Upload-Offset', offset.toString())
+        .setHeader('Upload-Complete', isComplete ? '?1' : '?0')
+        .setHeader('Cache-Control', 'no-store')
+        .setHeader('Upload-Limit', 'min-size=0')
         .send();
     });
   }
 
-  private async onCompletion(data: {
-    assetId: string;
-    ownerId: string;
-    path: string;
-    size: number;
-    fileModifiedAt: Date;
-  }): Promise<void> {
-    const { assetId, ownerId, path, size, fileModifiedAt } = data;
+  async getUploadOptions(response: Response): Promise<void> {
+    response.status(204).setHeader('Upload-Limit', 'min-size=0').setHeader('Allow', 'POST, OPTIONS').send();
+  }
+
+  async cancelUpload(auth: AuthDto, assetId: string, response: Response): Promise<void> {
+    const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
+    if (!asset) {
+      response.status(404).send('Asset not found');
+      return;
+    }
+    if (asset.status !== AssetStatus.Partial) {
+      return this.sendAlreadyCompletedProblem(response);
+    }
+    await this.removeAsset(assetId, asset.path);
+    response.status(204).send();
+  }
+
+  private async onComplete(data: { assetId: string; path: string; size: number; fileModifiedAt: Date }): Promise<void> {
+    const { assetId, path, size, fileModifiedAt } = data;
     const jobData = { name: JobName.AssetExtractMetadata, data: { id: assetId, source: 'upload' } } as const;
-    await this.withRetry(() => this.assetRepository.setComplete(assetId, ownerId, size), 2);
-    await this.withRetry(() => this.jobRepository.queue(jobData), 2);
-    await this.withRetry(() => this.storageRepository.utimes(path, new Date(), fileModifiedAt), 2);
+    await this.withRetry(() => this.assetRepository.setCompleteWithSize(assetId, size));
+    await this.withRetry(() => this.jobRepository.queue(jobData));
+    await this.withRetry(() => this.storageRepository.utimes(path, new Date(), fileModifiedAt));
   }
 
-  private async onPermanentFailure(assetId: string, path: string): Promise<void> {
-    await this.withRetry(() => this.storageRepository.unlink(path), 2);
-    await this.withRetry(() => this.assetRepository.remove({ id: assetId }), 2);
+  private async removeAsset(assetId: string, path: string): Promise<void> {
+    await this.withRetry(() => this.storageRepository.unlink(path));
+    await this.withRetry(() => this.assetRepository.remove({ id: assetId }));
   }
 
-  private async withRetry<T>(operation: () => Promise<T>, retries: number): Promise<T> {
+  private sendInterimResponse(response: Response, location: string): void {
+    const socket = response.socket;
+    if (socket && !socket.destroyed) {
+      // Express doesn't understand interim responses, so write directly to socket
+      socket.write(
+        `HTTP/1.1 104 Upload Resumption Supported\r\n` +
+          `Location: ${location}\r\n` +
+          `Upload-Draft-Interop-Version: 8\r\n` +
+          `\r\n`,
+      );
+    }
+  }
+
+  private sendInconsistentLengthProblem(response: Response): void {
+    response.status(400).contentType('application/problem+json').send({
+      type: `https://iana.org/assignments/http-problem-types#inconsistent-upload-length`,
+      title: 'inconsistent length values for upload',
+    });
+  }
+
+  private sendAlreadyCompletedProblem(response: Response): void {
+    response.status(400).contentType('application/problem+json').send({
+      type: `https://iana.org/assignments/http-problem-types#completed-upload`,
+      title: 'upload is already completed',
+    });
+  }
+
+  private sendOffsetMismatchProblem(response: Response, expected: number, actual: number): void {
+    response
+      .status(409)
+      .contentType('application/problem+json')
+      .setHeader('Upload-Offset', expected.toString())
+      .setHeader('Upload-Complete', '?0')
+      .send({
+        type: 'https://iana.org/assignments/http-problem-types#mismatching-upload-offset',
+        title: 'offset from request does not match offset of resource',
+        'expected-offset': expected,
+        'provided-offset': actual,
+      });
+  }
+
+  private sendChecksumMismatchResponse(response: Response, assetId: string, path: string): Promise<void> {
+    this.logger.warn(`Removing upload asset ${assetId} due to checksum mismatch`);
+    response.status(460).send('Checksum mismatch');
+    return this.removeAsset(assetId, path);
+  }
+
+  private requireUploadComplete(headers: Request['headers']): boolean {
+    const value = headers['upload-complete'] as string | undefined;
+    if (value === undefined) {
+      throw new BadRequestException('Missing Upload-Complete header');
+    }
+    return value === '?1';
+  }
+
+  private getUploadOffset(headers: Request['headers']): number | null {
+    const value = headers['upload-offset'] as string | undefined;
+    if (value === undefined) {
+      return null;
+    }
+    const offset = parseInt(value, 10);
+    if (!isFinite(offset) || offset < 0) {
+      throw new BadRequestException('Invalid Upload-Offset header');
+    }
+    return offset;
+  }
+
+  private getUploadLength(headers: Request['headers']): number | null {
+    const value = headers['upload-length'] as string | undefined;
+    if (value === undefined) {
+      return null;
+    }
+    const length = parseInt(value, 10);
+    if (!isFinite(length) || length < 0) {
+      throw new BadRequestException('Invalid Upload-Length header');
+    }
+    return length;
+  }
+
+  private requireContentLength(headers: Request['headers']): number {
+    const value = headers['content-length'] as string | undefined;
+    if (value === undefined) {
+      throw new BadRequestException('Missing Content-Length header');
+    }
+    const length = parseInt(value, 10);
+    if (!isFinite(length) || length < 0) {
+      throw new BadRequestException('Invalid Content-Length header');
+    }
+    return length;
+  }
+
+  private async withRetry<T>(operation: () => Promise<T>, retries: number = 2, delay: number = 100): Promise<T> {
     let lastError: any;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
@@ -283,19 +414,14 @@ export class AssetUploadService extends BaseService {
       } catch (error: any) {
         lastError = error;
       }
+      if (attempt < retries) {
+        await setTimeout(delay);
+      }
     }
     throw lastError;
   }
 
-  private async tryUnlink(path: string): Promise<void> {
-    try {
-      await this.storageRepository.unlink(path);
-    } catch {
-      this.logger.warn(`Failed to remove file at ${path}`);
-    }
-  }
-
-  private requireQuota(auth: AuthDto, size: number) {
+  private validateQuota(auth: AuthDto, size: number) {
     if (auth.user.quotaSizeInBytes === null) {
       return;
     }
@@ -317,28 +443,7 @@ export class AssetUploadService extends BaseService {
     }
   }
 
-  private getNumberOrThrow(headers: Request['headers'], header: string): number {
-    const value = this.getNumber(headers, header);
-    if (value === null) {
-      throw new BadRequestException(`Missing ${header} header`);
-    }
-    return value;
-  }
-
-  private getNumber(headers: Request['headers'], header: string): number | null {
-    const value = headers[header] as string | undefined;
-    if (value === undefined) {
-      return null;
-    }
-
-    const parsedValue = parseInt(value);
-    if (!isFinite(parsedValue) || parsedValue < 0) {
-      throw new BadRequestException(`Invalid ${header} header`);
-    }
-    return parsedValue;
-  }
-
-  private getChecksumOrThrow(headers: Request['headers']): Buffer {
+  private requireChecksum(headers: Request['headers']): Buffer {
     const value = headers['repr-digest'] as string | undefined;
     if (value === undefined) {
       throw new BadRequestException(`Missing 'repr-digest' header`);
@@ -349,9 +454,6 @@ export class AssetUploadService extends BaseService {
       throw new BadRequestException(`Missing 'sha' in 'repr-digest' header`);
     }
 
-    if (isInnerList(sha1Item)) {
-      throw new BadRequestException(`Invalid 'sha' in 'repr-digest' header`);
-    }
     const checksum = sha1Item[0];
     if (!(checksum instanceof ArrayBuffer)) {
       throw new BadRequestException(`Invalid 'sha' in 'repr-digest' header`);
@@ -360,22 +462,7 @@ export class AssetUploadService extends BaseService {
     return Buffer.from(checksum);
   }
 
-  private getIsCompleteOrThrow(headers: Request['headers']): boolean {
-    const isComplete = headers['upload-complete'] as string | undefined;
-    if (isComplete !== undefined) {
-      return isComplete === '?1';
-    }
-
-    // old drafts use this header
-    const isIncomplete = headers['upload-incomplete'] as string | undefined;
-    if (isIncomplete !== undefined) {
-      return isIncomplete === '?0';
-    }
-
-    throw new BadRequestException(`Missing 'upload-complete' header`);
-  }
-
-  private getAssetDataOrThrow(headers: Request['headers']): UploadAssetDataDto {
+  private requireAssetData(headers: Request['headers']): UploadAssetDataDto {
     const value = headers[ImmichHeader.AssetData] as string | undefined;
     if (value === undefined) {
       throw new BadRequestException(`Missing ${ImmichHeader.AssetData} header`);
@@ -387,64 +474,14 @@ export class AssetUploadService extends BaseService {
     } catch {
       throw new BadRequestException(`${ImmichHeader.AssetData} header is not valid base64-encoded JSON`);
     }
+
     const dto = plainToInstance(UploadAssetDataDto, assetData);
-    const assetDataErrors = validateSync(dto, { whitelist: true });
-    if (assetDataErrors.length > 0) {
-      const formatted = assetDataErrors.map((e) => (e.constraints ? Object.values(e.constraints).join(', ') : ''));
+    const errors = validateSync(dto, { whitelist: true });
+    if (errors.length > 0) {
+      const formatted = errors.map((e) => (e.constraints ? Object.values(e.constraints).join(', ') : ''));
       throw new BadRequestException(`Invalid ${ImmichHeader.AssetData} header: ${formatted.join('; ')}`);
     }
 
-    if (!mimeTypes.isAsset(dto.filename)) {
-      throw new BadRequestException(`${dto.filename} is an unsupported file type`);
-    }
     return dto;
-  }
-
-  private getInteropVersion(headers: Request['headers']): number | null {
-    const value = headers['upload-draft-interop-version'] as string | undefined;
-    if (value === undefined) {
-      return null;
-    }
-
-    const parsedValue = parseInt(value);
-    if (!isFinite(parsedValue) || parsedValue < 0) {
-      throw new BadRequestException(`Invalid Upload-Draft-Interop-Version header`);
-    }
-    return parsedValue;
-  }
-
-  private createLocation(headers: Request['headers'], assetId: string): string {
-    const forwardedProto = headers['x-forwarded-proto'] ?? 'http';
-    return `${forwardedProto}://${this.getForwardedHost(headers)}/api/upload/asset/${assetId}`;
-  }
-
-  private assertChecksum(checksum1: Buffer, checksum2: Buffer, assetId: string, path: string): void {
-    if (checksum1.compare(checksum2) !== 0) {
-      this.logger.warn(`Checksum mismatch for upload to ${path}`);
-      void this.onPermanentFailure(assetId, path);
-      throw new BadRequestException('Checksum mismatch');
-    }
-  }
-
-  private getForwardedHost(headers: Request['headers']): string | undefined {
-    const forwardedHost = headers['x-forwarded-host'];
-    if (typeof forwardedHost === 'string') {
-      return forwardedHost;
-    }
-
-    const forwarded = headers['forwarded'] as string | undefined;
-    if (forwarded) {
-      const parts = parseDictionary(forwarded);
-      const hostItem = parts.get('host');
-      if (hostItem && !isInnerList(hostItem)) {
-        const item = hostItem[0];
-        if (typeof item === 'string') {
-          return item;
-        }
-      }
-    }
-
-    const { host, port } = this.configRepository.getEnv();
-    return `${host ?? 'localhost'}:${port}`;
   }
 }
