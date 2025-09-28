@@ -187,7 +187,7 @@ export class TimelineManager extends PhotostreamManager {
     addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
   }
 
-  async findMonthGroupForAsset(id: string) {
+  async findSegmentForAssetId(id: string) {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
     }
@@ -216,11 +216,6 @@ export class TimelineManager extends PhotostreamManager {
   async #loadMonthGroupAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
     await this.loadSegment(getSegmentIdentifier(yearMonth), options);
     return getMonthGroupByDate(this, yearMonth);
-  }
-
-  getMonthGroupByAssetId(assetId: string) {
-    const monthGroupInfo = findMonthGroupForAssetUtil(this, assetId);
-    return monthGroupInfo?.monthGroup;
   }
 
   async getRandomMonthGroup() {

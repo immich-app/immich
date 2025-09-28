@@ -7,8 +7,10 @@
     type RelativeResult,
   } from '$lib/components/shared-components/change-date.svelte';
   import {
-    setFocusToAsset as setFocusAssetInit,
-    setFocusTo as setFocusToInit,
+    setFocusToAsset as setFocusAssetUtil,
+    setFocusTo as setFocusToUtil,
+    type FocusDirection,
+    type FocusInterval,
   } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
@@ -32,7 +34,7 @@
     assetInteraction: AssetInteraction;
     isShowDeleteConfirmation: boolean;
     onEscape?: () => void;
-    scrollToAsset: (asset: TimelineAsset) => boolean;
+    scrollToAsset: (asset: TimelineAsset) => Promise<boolean>;
   }
 
   let {
@@ -147,8 +149,10 @@
     }
   });
 
-  const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
-  const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
+  const setFocusTo = (direction: FocusDirection, interval: FocusInterval) =>
+    setFocusToUtil(scrollToAsset, timelineManager, direction, interval);
+
+  const setFocusAsset = (asset: TimelineAsset) => setFocusAssetUtil(scrollToAsset, asset);
 
   let shortcutList = $derived(
     (() => {
@@ -212,7 +216,7 @@
           (DateTime.fromISO(dateString.date) as DateTime<true>).toObject(),
         );
         if (asset) {
-          setFocusAsset(asset);
+          void setFocusAsset(asset);
         }
       }
     }}

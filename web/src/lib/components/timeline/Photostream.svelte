@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, beforeNavigate } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
@@ -121,50 +120,40 @@
     return height;
   };
 
-  const assetIsVisible = (assetTop: number): boolean => {
-    if (!element) {
-      return false;
-    }
-
-    const { clientHeight, scrollTop } = element;
-    return assetTop >= scrollTop && assetTop < scrollTop + clientHeight;
-  };
-
-  export const scrollToAssetId = (assetId: string) => {
-    const monthGroup = timelineManager.getSegmentForAssetId(assetId);
+  export const scrollToAssetId = async (assetId: string) => {
+    const monthGroup = await timelineManager.findSegmentForAssetId(assetId);
     if (!monthGroup) {
       return false;
     }
+
     const height = getAssetHeight(assetId, monthGroup);
-
-    // If the asset is already visible, then don't scroll.
-    if (assetIsVisible(height)) {
-      return true;
-    }
-
     scrollTo(height);
     return true;
   };
 
-  const completeNav = () => {
-    const scrollTarget = $gridScrollTarget?.at;
-    let scrolled = false;
-    if (scrollTarget) {
-      scrolled = scrollToAssetId(scrollTarget);
+  export const completeAfterNavigate = async ({ scrollToAssetQueryParam }: { scrollToAssetQueryParam: boolean }) => {
+    if (timelineManager.viewportHeight === 0 || timelineManager.viewportWidth === 0) {
+      // this can happen if you do the following navigation order
+      // /photos?at=<id>, /photos/<id>, http://example.com, browser back, browser back
+      const rect = element?.getBoundingClientRect();
+      if (rect) {
+        timelineManager.viewportHeight = rect.height;
+        timelineManager.viewportWidth = rect.width;
+      }
     }
-    if (!scrolled) {
-      // if the asset is not found, scroll to the top
-      scrollTo(0);
+    if (scrollToAssetQueryParam) {
+      const scrollTarget = $gridScrollTarget?.at;
+      let scrolled = false;
+      if (scrollTarget) {
+        scrolled = await scrollToAssetId(scrollTarget);
+      }
+      if (!scrolled) {
+        // if the asset is not found, scroll to the top
+        scrollTo(0);
+      }
     }
     showSkeleton = false;
   };
-
-  beforeNavigate(() => (timelineManager.suspendTransitions = true));
-
-  afterNavigate((nav) => {
-    const { complete } = nav;
-    complete.then(completeNav, completeNav);
-  });
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // Yes, updateSlideWindow() is called by the onScroll event. However, if you also just scrolled
@@ -191,11 +180,11 @@
     // this handler will run the navigation/scroll-to-asset handler when hmr is performed,
     // preventing skeleton from showing after hmr
     const finishHmr = () => {
-      const asset = $page.url.searchParams.get('at');
+      const asset = page.url.searchParams.get('at');
       if (asset) {
         $gridScrollTarget = { at: asset };
       }
-      void completeNav();
+      void completeAfterNavigate({ scrollToAssetQueryParam: true });
     };
     const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('Photostream.svelte'));
     if (assetGridUpdate) {
