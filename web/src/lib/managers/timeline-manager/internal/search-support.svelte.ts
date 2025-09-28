@@ -143,3 +143,79 @@ export function findMonthGroupForDate(timelineManager: TimelineManager, targetYe
     }
   }
 }
+
+export interface MonthGroupForSearch {
+  yearMonth: TimelineYearMonth;
+  top: number;
+  height: number;
+}
+
+export interface BinarySearchResult {
+  month: TimelineYearMonth;
+  monthScrollPercent: number;
+}
+
+export function findMonthAtScrollPosition(
+  months: MonthGroupForSearch[],
+  scrollPosition: number,
+  maxScrollPercent: number,
+): BinarySearchResult | null {
+  const SUBPIXEL_TOLERANCE = -1; // Tolerance for scroll position checks
+  const NEAR_END_THRESHOLD = 0.9999; // Threshold for detecting near-end of month
+
+  if (months.length === 0) {
+    return null;
+  }
+
+  // Check if we're before the first month
+  const firstMonthTop = months[0].top * maxScrollPercent;
+  if (scrollPosition < firstMonthTop - SUBPIXEL_TOLERANCE) {
+    return null;
+  }
+
+  // Check if we're after the last month
+  const lastMonth = months.at(-1)!;
+  const lastMonthBottom = (lastMonth.top + lastMonth.height) * maxScrollPercent;
+  if (scrollPosition >= lastMonthBottom - SUBPIXEL_TOLERANCE) {
+    return null;
+  }
+
+  // Binary search to find the month containing the scroll position
+  let left = 0;
+  let right = months.length - 1;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+    const month = months[mid];
+    const monthTop = month.top * maxScrollPercent;
+    const monthBottom = monthTop + month.height * maxScrollPercent;
+
+    if (scrollPosition >= monthTop - SUBPIXEL_TOLERANCE && scrollPosition < monthBottom - SUBPIXEL_TOLERANCE) {
+      // Found the month containing the scroll position
+      const distanceIntoMonth = scrollPosition - monthTop;
+      const monthScrollPercent = Math.max(0, distanceIntoMonth / (month.height * maxScrollPercent));
+
+      // Handle month boundary edge case
+      if (monthScrollPercent > NEAR_END_THRESHOLD && mid < months.length - 1) {
+        return {
+          month: months[mid + 1].yearMonth,
+          monthScrollPercent: 0,
+        };
+      }
+
+      return {
+        month: month.yearMonth,
+        monthScrollPercent,
+      };
+    }
+
+    if (scrollPosition < monthTop) {
+      right = mid - 1;
+    } else {
+      left = mid + 1;
+    }
+  }
+
+  // Shouldn't reach here, but return null if we do
+  return null;
+}

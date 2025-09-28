@@ -24,11 +24,19 @@ export type TimelineDateTime = TimelineDate & {
   millisecond: number;
 };
 
-export type ScrubberListener = (scrubberData: {
+export type ScrubberData = {
   scrubberMonth: { year: number; month: number };
   overallScrollPercent: number;
   scrubberMonthScrollPercent: number;
-}) => void | Promise<void>;
+};
+
+export type ScrubberListener = (scrubberData: ScrubberData) => void | Promise<void>;
+
+export type ScrubberDataWithScrollTo = ScrubberData & {
+  scrollToFunction: (top: number) => void;
+};
+
+export type ScrubberListenerWithScrollTo = (scrubberData: ScrubberDataWithScrollTo) => void | Promise<void>;
 
 // used for AssetResponseDto.dateTimeOriginal, amongst others
 export const fromISODateTime = (isoDateTime: string, timeZone: string): DateTime<true> =>
