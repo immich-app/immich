@@ -4,6 +4,7 @@ import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
+import { getTestHook } from '$lib/managers/photostream-manager/TestHooks.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 
@@ -20,7 +21,6 @@ export abstract class PhotostreamSegment {
   #assets = $derived.by(() => this.viewerAssets.map((viewerAsset) => viewerAsset.asset));
 
   initialCount = $state(0);
-  percent = $state(0);
 
   assetsCount = $derived.by(() => (this.isLoaded ? this.viewerAssets.length : this.initialCount));
   loader = new CancellableTask(
@@ -29,6 +29,10 @@ export abstract class PhotostreamSegment {
     () => this.handleLoadError,
   );
   isHeightActual = $state(false);
+
+  constructor() {
+    getTestHook()?.hookSegment(this);
+  }
 
   abstract get timelineManager(): PhotostreamManager;
 
@@ -66,9 +70,13 @@ export abstract class PhotostreamSegment {
   }
 
   async load(cancelable: boolean): Promise<'DONE' | 'WAITED' | 'CANCELED' | 'LOADED' | 'ERRORED'> {
-    return await this.loader.execute(async (signal: AbortSignal) => {
+    const executionStatus = await this.loader.execute(async (signal: AbortSignal) => {
       await this.fetch(signal);
     }, cancelable);
+    if (executionStatus === 'LOADED') {
+      this.layout();
+    }
+    return executionStatus;
   }
 
   protected abstract fetch(signal: AbortSignal): Promise<void>;
@@ -88,42 +96,34 @@ export abstract class PhotostreamSegment {
     if (this.#height === height) {
       return;
     }
-    const { timelineManager: store, percent } = this;
-    const index = store.months.indexOf(this);
+
+    let needsIntersectionUpdate = false;
+    const timelineManager = this.timelineManager;
+    const index = timelineManager.months.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevMonthGroup = store.months[index - 1];
+    const prevMonthGroup = timelineManager.months[index - 1];
     if (prevMonthGroup) {
       const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
-    for (let cursor = index + 1; cursor < store.months.length; cursor++) {
-      const monthGroup = this.timelineManager.months[cursor];
+    if (heightDelta === 0) {
+      return;
+    }
+
+    for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
+      const monthGroup = timelineManager.months[cursor];
       const newTop = monthGroup.#top + heightDelta;
       if (monthGroup.#top !== newTop) {
         monthGroup.#top = newTop;
+        needsIntersectionUpdate = true;
       }
     }
-    if (store.topIntersectingMonthGroup) {
-      const currentIndex = store.months.indexOf(store.topIntersectingMonthGroup);
-      if (currentIndex > 0) {
-        if (index < currentIndex) {
-          store.scrollCompensation = {
-            heightDelta,
-            scrollTop: undefined,
-            monthGroup: this,
-          };
-        } else if (percent > 0) {
-          const top = this.top + height * percent;
-          store.scrollCompensation = {
-            heightDelta: undefined,
-            scrollTop: top,
-            monthGroup: this,
-          };
-        }
-      }
+
+    if (needsIntersectionUpdate) {
+      timelineManager.updateIntersections();
     }
   }
 

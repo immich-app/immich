@@ -15,7 +15,6 @@
         {
           segment: PhotostreamSegment;
           scrollToFunction: (top: number) => void;
-          onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
         },
       ]
     >;
@@ -107,44 +106,13 @@
     updateSlidingWindow();
   };
 
-  const scrollBy = (y: number) => {
-    if (element) {
-      element.scrollBy(0, y);
-    }
-    updateSlidingWindow();
-  };
-
-  const handleTriggeredScrollCompensation = (compensation: { heightDelta?: number; scrollTop?: number }) => {
-    const { heightDelta, scrollTop } = compensation;
-    if (heightDelta !== undefined) {
-      scrollBy(heightDelta);
-    } else if (scrollTop !== undefined) {
-      scrollTo(scrollTop);
-    }
-    timelineManager.clearScrollCompensation();
-  };
-
-  const getAssetHeight = (assetId: string, monthGroup: PhotostreamSegment) => {
-    // the following method may trigger any layouts, so need to
-    // handle any scroll compensation that may have been set
-    const height = monthGroup.findAssetAbsolutePosition(assetId);
-
-    // this is in a while loop, since scrollCompensations invoke scrolls
-    // which may load months, triggering more scrollCompensations. Call
-    // this in a loop, until no more layouts occur.
-    while (timelineManager.scrollCompensation.monthGroup) {
-      handleTriggeredScrollCompensation(timelineManager.scrollCompensation);
-    }
-    return height;
-  };
-
   export const scrollToAssetId = async (assetId: string) => {
     const monthGroup = await timelineManager.findSegmentForAssetId(assetId);
     if (!monthGroup) {
       return false;
     }
 
-    const height = getAssetHeight(assetId, monthGroup);
+    const height = monthGroup.findAssetAbsolutePosition(assetId);
     scrollTo(height);
     return true;
   };
@@ -274,7 +242,6 @@
           {@render segment({
             segment: monthGroup,
             scrollToFunction: scrollTo,
-            onScrollCompensationMonthInDOM: handleTriggeredScrollCompensation,
           })}
         {/if}
       </div>

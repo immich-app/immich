@@ -1,7 +1,7 @@
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { clamp, debounce } from 'lodash-es';
+import { debounce } from 'lodash-es';
 
 import type {
   PhotostreamSegment,
@@ -16,15 +16,14 @@ import type {
 
 export abstract class PhotostreamManager {
   isInitialized = $state(false);
+
   topSectionHeight = $state(0);
   bottomSectionHeight = $state(60);
-  abstract get months(): PhotostreamSegment[];
+
+  assetCount = $derived.by(() => this.months.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
   timelineHeight = $derived.by(
     () => this.months.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight,
   );
-  assetCount = $derived.by(() => this.months.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
-
-  topIntersectingMonthGroup: PhotostreamSegment | undefined = $state();
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -49,17 +48,9 @@ export abstract class PhotostreamManager {
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
-  scrollCompensation: {
-    heightDelta: number | undefined;
-    scrollTop: number | undefined;
-    monthGroup: PhotostreamSegment | undefined;
-  } = $state({
-    heightDelta: 0,
-    scrollTop: 0,
-    monthGroup: undefined,
-  });
+  #updatingIntersections = false;
 
-  constructor() {}
+  abstract get months(): PhotostreamSegment[];
 
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
     let changed = false;
@@ -158,39 +149,17 @@ export abstract class PhotostreamManager {
     }
   }
 
-  clearScrollCompensation() {
-    this.scrollCompensation = {
-      heightDelta: undefined,
-      scrollTop: undefined,
-      monthGroup: undefined,
-    };
-  }
-
   updateIntersections() {
-    if (!this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
+    if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
       return;
     }
-    let topIntersectingMonthGroup = undefined;
+    this.#updatingIntersections = true;
+
     for (const month of this.months) {
       updateIntersectionMonthGroup(this, month);
-      if (!topIntersectingMonthGroup && month.actuallyIntersecting) {
-        topIntersectingMonthGroup = month;
-      }
     }
-    if (topIntersectingMonthGroup !== undefined && this.topIntersectingMonthGroup !== topIntersectingMonthGroup) {
-      this.topIntersectingMonthGroup = topIntersectingMonthGroup;
-    }
-    for (const month of this.months) {
-      if (month === this.topIntersectingMonthGroup) {
-        this.topIntersectingMonthGroup.percent = clamp(
-          (this.visibleWindow.top - this.topIntersectingMonthGroup.top) / this.topIntersectingMonthGroup.height,
-          0,
-          1,
-        );
-      } else {
-        month.percent = 0;
-      }
-    }
+
+    this.#updatingIntersections = false;
   }
 
   async init() {

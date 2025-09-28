@@ -24,7 +24,6 @@
       [
         {
           segment: PhotostreamSegment;
-          onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
         },
       ]
     >;

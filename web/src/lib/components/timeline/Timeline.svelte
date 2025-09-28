@@ -99,10 +99,8 @@
         title={(segment as MonthGroup).monthGroupTitle}
       />
     {/snippet}
-    {#snippet segment({ segment, onScrollCompensationMonthInDOM })}
+    {#snippet segment({ segment })}
       <SelectableSegment
-        {segment}
-        {onScrollCompensationMonthInDOM}
         {timelineManager}
         {assetInteraction}
         {isSelectionMode}
