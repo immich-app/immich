@@ -484,7 +484,7 @@ export class DatabaseRepository {
   }
 
   private async acquireUuidLock(uuid: string, connection: Kysely<DB>): Promise<void> {
-    await sql`SELECT pg_advisory_lock(uuid_hash_extended(${uuid}), 0)`.execute(connection);
+    await sql`SELECT pg_advisory_lock(uuid_hash_extended(${uuid}, 0))`.execute(connection);
   }
 
   private async acquireTryLock(lock: DatabaseLock, connection: Kysely<DB>): Promise<boolean> {
@@ -499,6 +499,6 @@ export class DatabaseRepository {
   }
 
   private async releaseUuidLock(uuid: string, connection: Kysely<DB>): Promise<void> {
-    await sql`SELECT pg_advisory_unlock(uuid_hash_extended(${uuid}), 0)`.execute(connection);
+    await sql`SELECT pg_advisory_unlock(uuid_hash_extended(${uuid}, 0))`.execute(connection);
   }
 }

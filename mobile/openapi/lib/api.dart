@@ -60,6 +60,7 @@ part 'api/system_metadata_api.dart';
 part 'api/tags_api.dart';
 part 'api/timeline_api.dart';
 part 'api/trash_api.dart';
+part 'api/upload_api.dart';
 part 'api/users_api.dart';
 part 'api/users_admin_api.dart';
 part 'api/view_api.dart';

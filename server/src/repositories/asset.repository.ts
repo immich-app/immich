@@ -264,17 +264,30 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  setComplete(assetId: string, ownerId: string, size: number) {
+  setCompleteWithSize(assetId: string, size: number) {
     return this.db
-      .with('exif', (qb) => qb.insertInto('asset_exif').values({ assetId, fileSizeInByte: size }))
+      .with('asset', (qb) =>
+        qb
+          .updateTable('asset')
+          .set({ status: AssetStatus.Active })
+          .where('asset.id', '=', assetId)
+          .where('asset.status', '=', sql.lit(AssetStatus.Partial))
+          .returning(['asset.id', 'asset.ownerId']),
+      )
+      .with('exif', (qb) =>
+        qb
+          .insertInto('asset_exif')
+          .columns(['assetId', 'fileSizeInByte'])
+          .expression((eb) => eb.selectFrom('asset').select(['asset.id', eb.val(size).as('fileSizeInByte')])),
+      )
       .with('user', (qb) =>
         qb
           .updateTable('user')
+          .from('asset')
           .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${size}` })
-          .where('id', '=', ownerId),
+          .whereRef('user.id', '=', 'asset.ownerId'),
       )
-      .updateTable('asset')
-      .set({ status: AssetStatus.Active })
+      .selectNoFrom(sql`1`.as('dummy'))
       .execute();
   }
 

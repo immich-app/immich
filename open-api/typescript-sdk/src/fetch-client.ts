@@ -4519,6 +4519,84 @@ export function restoreAssets({ bulkIdsDto }: {
     })));
 }
 /**
+ * This endpoint requires the `asset.upload` permission.
+ */
+export function getUploadOptions({ key, slug }: {
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/upload${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "OPTIONS"
+    }));
+}
+/**
+ * This endpoint requires the `asset.upload` permission.
+ */
+export function startUpload({ key, slug }: {
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/upload${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * This endpoint requires the `asset.upload` permission.
+ */
+export function cancelUpload({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/upload/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `asset.upload` permission.
+ */
+export function getUploadStatus({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/upload/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "HEAD"
+    }));
+}
+/**
+ * This endpoint requires the `asset.upload` permission.
+ */
+export function resumeUpload({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/upload/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "PATCH"
+    }));
+}
+/**
  * This endpoint requires the `user.read` permission.
  */
 export function searchUsers(opts?: Oazapfts.RequestOpts) {
