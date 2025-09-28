@@ -48,6 +48,22 @@
     })),
   ]);
 
+	const expiresAt = DateTime.fromISO(editingLink?.expiresAt);
+	console.log(editingLink?.expiresAt);
+
+	const now = DateTime.now();
+	const remainingMs = expiresAt.toMillis() - now.toMillis();
+	let selectedOption = expiredDateOptions[0];
+
+	for (const option of expiredDateOptions) {
+		if (option.value <= remainingMs) {
+			selectedOption = option;
+		}
+	}
+
+	console.log(expiredDateOptions);
+
+
   let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
 
   $effect(() => {
@@ -182,7 +198,7 @@
 
       <div class="mt-2">
         <SettingSelect
-          bind:value={expirationOption}
+					bind:value={selectedOption.value}
           options={expiredDateOptions}
           label={$t('expire_after')}
           disabled={editingLink && !shouldChangeExpirationTime}
