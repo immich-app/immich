@@ -49,7 +49,6 @@
   ]);
 
 	const expiresAt = DateTime.fromISO(editingLink?.expiresAt);
-	console.log(editingLink?.expiresAt);
 
 	const now = DateTime.now();
 	const remainingMs = expiresAt.toMillis() - now.toMillis();
@@ -60,9 +59,6 @@
 			selectedOption = option;
 		}
 	}
-
-	console.log(expiredDateOptions);
-
 
   let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
 
