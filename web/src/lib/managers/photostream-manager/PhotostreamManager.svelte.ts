@@ -30,6 +30,13 @@ export abstract class PhotostreamManager {
     bottom: this.#scrollTop + this.viewportHeight,
   }));
 
+  layoutOptions = $derived({
+    spacing: 2,
+    heightTolerance: 0.15,
+    rowHeight: this.rowHeight,
+    rowWidth: Math.floor(this.viewportWidth),
+  });
+
   protected initTask = new CancellableTask(
     () => (this.isInitialized = true),
     () => (this.isInitialized = false),
@@ -53,13 +60,9 @@ export abstract class PhotostreamManager {
   abstract get months(): PhotostreamSegment[];
 
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
-    let changed = false;
-    changed ||= this.#setHeaderHeight(headerHeight);
-    changed ||= this.#setGap(gap);
-    changed ||= this.#setRowHeight(rowHeight);
-    if (changed) {
-      this.refreshLayout();
-    }
+    this.#setHeaderHeight(headerHeight);
+    this.#setGap(gap);
+    this.#setRowHeight(rowHeight);
   }
 
   #setHeaderHeight(value: number) {
@@ -203,17 +206,6 @@ export abstract class PhotostreamManager {
     this.updateIntersections();
   }
 
-  createLayoutOptions() {
-    const viewportWidth = this.viewportWidth;
-
-    return {
-      spacing: 2,
-      heightTolerance: 0.15,
-      rowHeight: this.#rowHeight,
-      rowWidth: Math.floor(viewportWidth),
-    };
-  }
-
   async loadSegment(identifier: SegmentIdentifier, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
     if (options) {
@@ -246,13 +238,6 @@ export abstract class PhotostreamManager {
       }
     }
     return Promise.resolve(void 0);
-  }
-
-  refreshLayout() {
-    for (const month of this.months) {
-      updateGeometry(this, month, { invalidateHeight: true });
-    }
-    this.updateIntersections();
   }
 
   getMaxScrollPercent() {

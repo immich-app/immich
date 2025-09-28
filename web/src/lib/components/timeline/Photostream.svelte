@@ -230,7 +230,7 @@
 
       <div
         class="month-group"
-        style:margin-bottom={timelineManager.createLayoutOptions().spacing + 'px'}
+        style:margin-bottom={timelineManager.layoutOptions.spacing + 'px'}
         style:position="absolute"
         style:transform={`translate3d(0,${absoluteHeight}px,0)`}
         style:height={`${monthGroup.height}px`}

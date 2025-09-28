@@ -14,7 +14,6 @@ import { isEqual } from 'lodash-es';
 import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 import { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
-import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import {
   addAssetsToMonthGroups,
   runAssetOperation,
@@ -262,13 +261,6 @@ export class TimelineManager extends PhotostreamManager {
       { order: this.#options.order ?? AssetOrder.Desc },
     );
     return [...unprocessedIds];
-  }
-
-  refreshLayout() {
-    for (const month of this.months) {
-      updateGeometry(this, month, { invalidateHeight: true });
-    }
-    this.updateIntersections();
   }
 
   getFirstAsset(): TimelineAsset | undefined {

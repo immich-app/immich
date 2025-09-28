@@ -74,7 +74,7 @@ export class SearchResultsSegment extends PhotostreamSegment {
 
   layout(): void {
     const timelineAssets = this.#viewerAssets.map((viewerAsset) => viewerAsset.asset);
-    const layoutOptions = this.timelineManager.createLayoutOptions();
+    const layoutOptions = this.timelineManager.layoutOptions;
     const geometry = getJustifiedLayoutFromAssets(timelineAssets, layoutOptions);
 
     this.height = timelineAssets.length === 0 ? 0 : geometry.containerHeight + this.timelineManager.headerHeight;
