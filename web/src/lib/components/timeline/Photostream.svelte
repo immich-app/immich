@@ -23,6 +23,7 @@
       [
         {
           segment: PhotostreamSegment;
+          stylePaddingHorizontalPx: number;
         },
       ]
     >;
@@ -37,7 +38,6 @@
     alwaysShowScrollbar?: boolean;
     showSkeleton?: boolean;
     isShowDeleteConfirmation?: boolean;
-    styleMarginRightOverride?: string;
 
     header?: Snippet<[scrollToFunction: (top: number) => void]>;
     children?: Snippet;
@@ -53,8 +53,9 @@
       rowHeight: number;
       headerHeight: number;
     };
-    styleMarginContentHorizontal?: string;
-    styleMarginTop?: string;
+    stylePaddingHorizontalPx?: number;
+    styleMarginTopPx?: number;
+    styleMarginRightPx?: number;
   }
 
   let {
@@ -64,9 +65,9 @@
     timelineManager = $bindable(),
     showSkeleton = $bindable(true),
     showScrollbar,
-    styleMarginRightOverride,
-    styleMarginContentHorizontal = '0px',
-    styleMarginTop = '0px',
+    styleMarginRightPx = 0,
+    stylePaddingHorizontalPx = 0,
+    styleMarginTopPx = 0,
     alwaysShowScrollbar,
 
     isShowDeleteConfirmation = $bindable(false),
@@ -221,23 +222,26 @@
     { 'm-0': isEmpty },
     { 'ms-0': !isEmpty },
   ]}
-  style:height={`calc(100% - ${styleMarginTop})`}
-  style:margin-top={styleMarginTop}
-  style:margin-right={styleMarginRightOverride}
+  style:height={`calc(100% - ${styleMarginTopPx}px)`}
+  style:margin-top={styleMarginTopPx + 'px'}
+  style:margin-right={styleMarginRightPx + 'px'}
+  style:padding-left={stylePaddingHorizontalPx + 'px'}
+  style:padding-right={stylePaddingHorizontalPx + 'px'}
   style:scrollbar-width={showScrollbar ? 'thin' : 'none'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
+  bind:clientWidth={
+    null, (v: number) => ((timelineManager.viewportWidth = v - stylePaddingHorizontalPx * 2), updateSlidingWindow())
+  }
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}
     id="virtual-timeline"
-    style:margin-left={styleMarginContentHorizontal}
-    style:margin-right={styleMarginContentHorizontal}
+    class:relative={true}
     class:invisible={showSkeleton}
     style:height={timelineManager.timelineHeight + 'px'}
-    bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
   >
     <section
       use:resizeObserver={topSectionResizeObserver}
@@ -252,7 +256,6 @@
         {@render empty?.()}
       {/if}
     </section>
-
     {#each timelineManager.months as monthGroup (monthGroup.id)}
       {@const shouldDisplay = monthGroup.intersecting && monthGroup.isLoaded}
       {@const absoluteHeight = monthGroup.top}
@@ -266,7 +269,7 @@
         style:width="100%"
       >
         {#if !shouldDisplay}
-          {@render skeleton({ segment: monthGroup })}
+          {@render skeleton({ segment: monthGroup, stylePaddingHorizontalPx })}
         {:else}
           {@render segment({
             segment: monthGroup,

@@ -306,7 +306,7 @@ export class MonthGroup extends PhotostreamSegment {
     this.loader?.cancel();
   }
 
-  layout(noDefer: boolean) {
+  layout(noDefer?: boolean) {
     layoutMonthGroup(this.timelineManager, this, noDefer);
   }
 

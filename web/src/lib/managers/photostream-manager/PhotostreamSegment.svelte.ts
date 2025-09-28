@@ -66,12 +66,17 @@ export abstract class PhotostreamSegment {
   }
 
   async load(cancelable: boolean): Promise<'DONE' | 'WAITED' | 'CANCELED' | 'LOADED' | 'ERRORED'> {
-    return await this.loader?.execute(async (signal: AbortSignal) => {
+    return await this.loader.execute(async (signal: AbortSignal) => {
       await this.fetch(signal);
     }, cancelable);
   }
 
   protected abstract fetch(signal: AbortSignal): Promise<void>;
+
+  async reload(cancelable: boolean): Promise<'DONE' | 'WAITED' | 'CANCELED' | 'LOADED' | 'ERRORED'> {
+    await this.loader.reset();
+    return await this.load(cancelable);
+  }
 
   get assets(): TimelineAsset[] {
     return this.#assets;
@@ -139,7 +144,7 @@ export abstract class PhotostreamSegment {
     this.loader?.cancel();
   }
 
-  layout(_: boolean) {}
+  layout(_?: boolean) {}
 
   updateIntersection({ intersecting, actuallyIntersecting }: { intersecting: boolean; actuallyIntersecting: boolean }) {
     this.intersecting = intersecting;
