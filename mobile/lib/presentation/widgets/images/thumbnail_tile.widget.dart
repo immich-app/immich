@@ -60,27 +60,6 @@ class ThumbnailTile extends ConsumerWidget {
     final bool storageIndicator =
         showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
-    Widget topRightIcons() {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (asset != null && asset.isVideo)
-            Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
-          if (hasStack)
-            const Padding(
-              padding: EdgeInsets.only(right: 10.0, top: 6.0),
-              child: _TileOverlayIcon(Icons.burst_mode_rounded),
-            ),
-          if (isLivePhoto)
-            const Padding(
-              padding: EdgeInsets.only(right: 10.0, top: 6.0),
-              child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
-            ),
-        ],
-      );
-    }
-
     return Stack(
       children: [
         AnimatedContainer(
@@ -99,7 +78,10 @@ class ThumbnailTile extends ConsumerWidget {
                     child: Thumbnail.fromAsset(asset: asset, size: size),
                   ),
                 ),
-                Align(alignment: Alignment.topRight, child: topRightIcons()),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: _AssetTypeIcons(isLivePhoto: isLivePhoto, hasStack: hasStack, asset: asset),
+                ),
                 if (storageIndicator && asset != null)
                   switch (asset.storage) {
                     AssetState.local => const Align(
@@ -218,6 +200,36 @@ class _TileOverlayIcon extends StatelessWidget {
       color: Colors.white,
       size: 16,
       shadows: [const Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+    );
+  }
+}
+
+class _AssetTypeIcons extends StatelessWidget {
+  final bool isLivePhoto;
+  final bool hasStack;
+  final BaseAsset? asset;
+
+  const _AssetTypeIcons({required this.isLivePhoto, required this.hasStack, required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (asset != null && asset!.isVideo)
+          Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset!.duration)),
+        if (hasStack)
+          const Padding(
+            padding: EdgeInsets.only(right: 10.0, top: 6.0),
+            child: _TileOverlayIcon(Icons.burst_mode_rounded),
+          ),
+        if (isLivePhoto)
+          const Padding(
+            padding: EdgeInsets.only(right: 10.0, top: 6.0),
+            child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
+          ),
+      ],
     );
   }
 }
