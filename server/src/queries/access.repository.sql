@@ -83,10 +83,13 @@ from
   left join "user" on "user"."id" = "albumUsers"."usersId"
   and "user"."deletedAt" is null
 where
-  array["asset"."id", "asset"."livePhotoVideoId"] && array[$1]::uuid[]
+  (
+    "asset"."id" in ($1)
+    or "asset"."livePhotoVideoId" in ($2)
+  )
   and (
-    "album"."ownerId" = $2
-    or "user"."id" = $3
+    "album"."ownerId" = $3
+    or "user"."id" = $4
   )
   and "album"."deletedAt" is null
 
