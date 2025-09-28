@@ -388,7 +388,7 @@ To migrate from the old storage configuration to the new one, you will need to c
 
 ```bash
 rsync -av /mnt/tank/immich/library/ /mnt/tank/immich/data/library/
-rsync -av /mnt/tank/immich/upload/ /mnt/tank/immich/data/upload/
+rsync -av /mnt/tank/immich/uploads/ /mnt/tank/immich/data/upload/
 rsync -av /mnt/tank/immich/thumbs/ /mnt/tank/immich/data/thumbs/
 rsync -av /mnt/tank/immich/profile/ /mnt/tank/immich/data/profile/
 rsync -av /mnt/tank/immich/video/ /mnt/tank/immich/data/encoded-video/
