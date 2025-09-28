@@ -8,7 +8,6 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { onMount, type Snippet } from 'svelte';
-  import type { UpdatePayload } from 'vite';
 
   interface Props {
     segment: Snippet<
@@ -35,6 +34,7 @@
     enableRouting: boolean;
     timelineManager: PhotostreamManager;
 
+    alwaysShowScrollbar?: boolean;
     showSkeleton?: boolean;
     isShowDeleteConfirmation?: boolean;
     styleMarginRightOverride?: string;
@@ -43,6 +43,18 @@
     children?: Snippet;
     empty?: Snippet;
     handleTimelineScroll?: () => void;
+
+    smallHeaderHeight?: {
+      rowHeight: number;
+      headerHeight: number;
+    };
+
+    largeHeaderHeight?: {
+      rowHeight: number;
+      headerHeight: number;
+    };
+    styleMarginContentHorizontal?: string;
+    styleMarginTop?: string;
   }
 
   let {
@@ -51,14 +63,27 @@
     enableRouting,
     timelineManager = $bindable(),
     showSkeleton = $bindable(true),
-    styleMarginRightOverride,
-    isShowDeleteConfirmation = $bindable(false),
     showScrollbar,
+    styleMarginRightOverride,
+    styleMarginContentHorizontal = '0px',
+    styleMarginTop = '0px',
+    alwaysShowScrollbar,
+
+    isShowDeleteConfirmation = $bindable(false),
+
     children,
     skeleton,
     empty,
     header,
     handleTimelineScroll = () => {},
+    smallHeaderHeight = {
+      rowHeight: 100,
+      headerHeight: 32,
+    },
+    largeHeaderHeight = {
+      rowHeight: 235,
+      headerHeight: 48,
+    },
   }: Props = $props();
 
   let { gridScrollTarget } = assetViewingStore;
@@ -70,15 +95,7 @@
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
 
   $effect(() => {
-    const layoutOptions = maxMd
-      ? {
-          rowHeight: 100,
-          headerHeight: 32,
-        }
-      : {
-          rowHeight: 235,
-          headerHeight: 48,
-        };
+    const layoutOptions = maxMd ? smallHeaderHeight : largeHeaderHeight;
     timelineManager.setLayoutOptions(layoutOptions);
   });
 
@@ -173,7 +190,7 @@
 </script>
 
 <HotModuleReload
-  onAfterUpdate={(payload: UpdatePayload) => {
+  onAfterUpdate={() => {
     // when hmr happens, skeleton is initialized to true by default
     // normally, loading asset-grid is part of a navigation event, and the completion of
     // that event triggers a scroll-to-asset, if necessary, when then clears the skeleton.
@@ -186,38 +203,41 @@
       }
       void completeAfterNavigate({ scrollToAssetQueryParam: true });
     };
-    const assetGridUpdate = payload.updates.some((update) => update.path.endsWith('Photostream.svelte'));
-    if (assetGridUpdate) {
-      // wait 500ms for the update to be fully swapped in
-      setTimeout(finishHmr, 500);
-    }
+
+    // wait 500ms for the update to be fully swapped in
+    setTimeout(finishHmr, 500);
   }}
 />
 
 {@render header?.(scrollTo)}
 
 <!-- Right margin MUST be equal to the width of scrubber -->
-<section
+<photostream
   id="asset-grid"
   class={[
-    'h-full overflow-y-auto outline-none',
+    'overflow-y-auto outline-none',
     { 'scrollbar-hidden': !showScrollbar },
+    { 'overflow-y-scroll': alwaysShowScrollbar },
     { 'm-0': isEmpty },
     { 'ms-0': !isEmpty },
   ]}
+  style:height={`calc(100% - ${styleMarginTop})`}
+  style:margin-top={styleMarginTop}
   style:margin-right={styleMarginRightOverride}
-  style:scrollbar-width={showScrollbar ? 'auto' : 'none'}
+  style:scrollbar-width={showScrollbar ? 'thin' : 'none'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
-  bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}
     id="virtual-timeline"
+    style:margin-left={styleMarginContentHorizontal}
+    style:margin-right={styleMarginContentHorizontal}
     class:invisible={showSkeleton}
     style:height={timelineManager.timelineHeight + 'px'}
+    bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
   >
     <section
       use:resizeObserver={topSectionResizeObserver}
@@ -234,13 +254,15 @@
     </section>
 
     {#each timelineManager.months as monthGroup (monthGroup.id)}
-      {@const shouldDisplay = monthGroup.intersecting}
+      {@const shouldDisplay = monthGroup.intersecting && monthGroup.isLoaded}
       {@const absoluteHeight = monthGroup.top}
+
       <div
         class="month-group"
-        style:height={monthGroup.height + 'px'}
+        style:margin-bottom={timelineManager.createLayoutOptions().spacing + 'px'}
         style:position="absolute"
         style:transform={`translate3d(0,${absoluteHeight}px,0)`}
+        style:height={`${monthGroup.height}px`}
         style:width="100%"
       >
         {#if !shouldDisplay}
@@ -263,9 +285,12 @@
       style:transform={`translate3d(0,${timelineManager.timelineHeight}px,0)`}
     ></div>
   </section>
-</section>
+</photostream>
 
 <style>
+  photostream {
+    display: block;
+  }
   #asset-grid {
     contain: strict;
     scrollbar-width: none;
