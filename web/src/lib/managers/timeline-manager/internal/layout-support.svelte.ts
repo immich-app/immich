@@ -34,7 +34,7 @@ export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthG
   let dayGroupRow = 0;
   let dayGroupCol = 0;
 
-  const options = timelineManager.createLayoutOptions();
+  const options = timelineManager.layoutOptions;
   for (const dayGroup of month.dayGroups) {
     dayGroup.layout(options, noDefer);
 
