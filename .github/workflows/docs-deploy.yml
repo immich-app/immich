@@ -20,7 +20,7 @@ jobs:
         run: echo 'The triggering workflow did not succeed' && exit 1
       - name: Get artifact
         id: get-artifact
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -38,7 +38,7 @@ jobs:
             return { found: true, id: matchArtifact.id };
       - name: Determine deploy parameters
         id: parameters
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         with:
@@ -114,7 +114,7 @@ jobs:
 
       - name: Load parameters
         id: parameters
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           PARAM_JSON: ${{ needs.checks.outputs.parameters }}
         with:
@@ -125,7 +125,7 @@ jobs:
             core.setOutput("shouldDeploy", parameters.shouldDeploy);
 
       - name: Download artifact
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         env:
           ARTIFACT_JSON: ${{ needs.checks.outputs.artifact }}
         with:

@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 
-echo "Build dependencies for Immich Web"
 cd /usr/src/app || exit
+
+pnpm --filter @immich/sdk build
 
 COUNT=0
 UPSTREAM="${IMMICH_SERVER_URL:-http://immich-server:2283/}"
@@ -14,5 +15,4 @@ until wget --spider --quiet "${UPSTREAM}/api/server/config" > /dev/null 2>&1; do
     sleep 1
 done
 echo "Connected to $UPSTREAM, starting Immich Web..."
-pnpm --filter @immich/sdk build
 pnpm --filter immich-web exec vite dev --host 0.0.0.0 --port 3000

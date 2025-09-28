@@ -245,7 +245,7 @@ export class LibraryService extends BaseService {
       job.paths.map((path) =>
         this.processEntity(path, library.ownerId, job.libraryId)
           .then((asset) => assetImports.push(asset))
-          .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}`, error)),
+          .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`)),
       ),
     );
 
@@ -414,7 +414,7 @@ export class LibraryService extends BaseService {
     // We queue a sidecar discovery which, in turn, queues metadata extraction
     await this.jobRepository.queueAll(
       assetIds.map((assetId) => ({
-        name: JobName.SidecarDiscovery,
+        name: JobName.SidecarCheck,
         data: { id: assetId, source: 'upload' },
       })),
     );

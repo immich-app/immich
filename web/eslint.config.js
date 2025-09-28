@@ -1,5 +1,6 @@
 import js from '@eslint/js';
 import tslintPluginCompat from '@koddsson/eslint-plugin-tscompat';
+import prettier from 'eslint-config-prettier';
 import eslintPluginCompat from 'eslint-plugin-compat';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
@@ -17,6 +18,7 @@ export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
+  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
@@ -125,6 +127,7 @@ export default typescriptEslint.config(
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
       'object-shorthand': ['error', 'always'],
+      'svelte/no-navigation-without-resolve': 'off',
     },
   },
   {

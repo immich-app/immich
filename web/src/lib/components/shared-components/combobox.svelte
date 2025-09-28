@@ -22,9 +22,8 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { generateId } from '$lib/utils/generate-id';
-  import { IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -270,7 +269,7 @@
     {#if isActive}
       <div class="absolute inset-y-0 start-0 flex items-center ps-3">
         <div class="dark:text-immich-dark-fg/75">
-          <Icon path={mdiMagnify} ariaHidden={true} />
+          <Icon icon={mdiMagnify} aria-hidden />
         </div>
       </div>
     {/if}
@@ -352,7 +351,7 @@
           size="small"
         />
       {:else if !isOpen}
-        <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
+        <Icon icon={mdiUnfoldMoreHorizontal} aria-hidden />
       {/if}
     </div>
   </div>

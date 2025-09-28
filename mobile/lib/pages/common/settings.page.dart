@@ -11,8 +11,7 @@ import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_se
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
-import 'package:immich_mobile/widgets/settings/beta_sync_settings/beta_sync_settings.dart';
-import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/beta_sync_settings/sync_status_and_actions.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
@@ -20,7 +19,6 @@ import 'package:immich_mobile/widgets/settings/preference_settings/preference_se
 import 'package:immich_mobile/widgets/settings/settings_card.dart';
 
 enum SettingSection {
-  beta('beta_sync', Icons.sync_outlined, "beta_sync_subtitle"),
   advanced('advanced', Icons.build_outlined, "advanced_settings_tile_subtitle"),
   assetViewer('asset_viewer_settings_title', Icons.image_outlined, "asset_viewer_settings_subtitle"),
   backup('backup', Icons.cloud_upload_outlined, "backup_settings_subtitle"),
@@ -28,14 +26,14 @@ enum SettingSection {
   networking('networking_settings', Icons.wifi, "networking_subtitle"),
   notifications('notifications', Icons.notifications_none_rounded, "setting_notifications_subtitle"),
   preferences('preferences_settings_title', Icons.interests_outlined, "preferences_settings_subtitle"),
-  timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined, "asset_list_settings_subtitle");
+  timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined, "asset_list_settings_subtitle"),
+  beta('sync_status', Icons.sync_outlined, "sync_status_subtitle");
 
   final String title;
   final String subtitle;
   final IconData icon;
 
   Widget get widget => switch (this) {
-    SettingSection.beta => const _BetaLandscapeToggle(),
     SettingSection.advanced => const AdvancedSettings(),
     SettingSection.assetViewer => const AssetViewerSettings(),
     SettingSection.backup =>
@@ -45,6 +43,7 @@ enum SettingSection {
     SettingSection.notifications => const NotificationSetting(),
     SettingSection.preferences => const PreferenceSetting(),
     SettingSection.timeline => const AssetListSettings(),
+    SettingSection.beta => const SyncStatusAndActions(),
   };
 
   const SettingSection(this.title, this.icon, this.subtitle);
@@ -59,7 +58,7 @@ class SettingsPage extends StatelessWidget {
     context.locale;
     return Scaffold(
       appBar: AppBar(centerTitle: false, title: const Text('settings').tr()),
-      body: context.isMobile ? const _MobileLayout() : const _TabletLayout(),
+      body: context.isMobile ? const SafeArea(child: _MobileLayout()) : const SafeArea(child: _TabletLayout()),
     );
   }
 }
@@ -72,13 +71,12 @@ class _MobileLayout extends StatelessWidget {
         .expand(
           (setting) => setting == SettingSection.beta
               ? [
-                  const BetaTimelineListTile(),
                   if (Store.isBetaTimelineEnabled)
                     SettingsCard(
                       icon: Icons.sync_outlined,
-                      title: 'beta_sync'.tr(),
-                      subtitle: 'beta_sync_subtitle'.tr(),
-                      settingRoute: const BetaSyncSettingsRoute(),
+                      title: 'sync_status'.tr(),
+                      subtitle: 'sync_status_subtitle'.tr(),
+                      settingRoute: const SyncStatusRoute(),
                     ),
                 ]
               : [
@@ -93,7 +91,7 @@ class _MobileLayout extends StatelessWidget {
         .toList();
     return ListView(
       physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.only(top: 10.0, bottom: 56),
+      padding: const EdgeInsets.only(top: 10.0, bottom: 16),
       children: [...settings],
     );
   }
@@ -134,21 +132,6 @@ class _TabletLayout extends HookWidget {
   }
 }
 
-class _BetaLandscapeToggle extends HookWidget {
-  const _BetaLandscapeToggle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        const SizedBox(height: 100, child: BetaTimelineListTile()),
-        if (Store.isBetaTimelineEnabled) const Expanded(child: BetaSyncSettings()),
-      ],
-    );
-  }
-}
-
 @RoutePage()
 class SettingsSubPage extends StatelessWidget {
   const SettingsSubPage(this.section, {super.key});
@@ -158,9 +141,14 @@ class SettingsSubPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.locale;
-    return Scaffold(
-      appBar: AppBar(centerTitle: false, title: Text(section.title).tr()),
-      body: section.widget,
+    return SafeArea(
+      bottom: true,
+      top: false,
+      right: true,
+      child: Scaffold(
+        appBar: AppBar(centerTitle: false, title: Text(section.title).tr()),
+        body: section.widget,
+      ),
     );
   }
 }
