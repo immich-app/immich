@@ -144,11 +144,7 @@ class AssetAccess {
       .leftJoin('album_user as albumUsers', 'albumUsers.albumsId', 'album.id')
       .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.usersId').on('user.deletedAt', 'is', null))
       .select(['asset.id', 'asset.livePhotoVideoId'])
-      .where(
-        sql`array["asset"."id", "asset"."livePhotoVideoId"]`,
-        '&&',
-        sql`array[${sql.join([...assetIds])}]::uuid[] `,
-      )
+      .where((eb) => eb.or([eb('asset.id', 'in', [...assetIds]), eb('asset.livePhotoVideoId', 'in', [...assetIds])]))
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
       .where('album.deletedAt', 'is', null)
       .execute()
