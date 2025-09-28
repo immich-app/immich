@@ -172,7 +172,7 @@
   {timelineManager}
   {showSkeleton}
   {isShowDeleteConfirmation}
-  styleMarginRightOverride={scrubberWidth + 'px'}
+  styleMarginRightPx={scrubberWidth}
   {handleTimelineScroll}
   {segment}
   {skeleton}

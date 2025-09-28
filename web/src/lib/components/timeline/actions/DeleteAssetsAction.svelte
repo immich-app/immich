@@ -41,9 +41,11 @@
     const assets = [...getOwnedAssets()];
     const undo = (assets: TimelineAsset[]) => {
       manager?.upsertAssets(assets);
+      manager?.order(assetOrdering ?? []);
       onUndoDelete?.(assets);
     };
     await deleteAssets(force, onAssetDelete, assets, undo);
+    const assetOrdering = manager?.assets.map((asset) => asset.id);
     manager?.removeAssets(assets.map((asset) => asset.id));
     clearSelect();
     isShowConfirmation = false;

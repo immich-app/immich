@@ -14,9 +14,10 @@
     menuItem?: boolean;
     unarchive?: boolean;
     manager?: PhotostreamManager;
+    removeOnArchive?: boolean;
   }
 
-  let { onArchive, menuItem = false, unarchive = false, manager }: Props = $props();
+  let { onArchive, menuItem = false, unarchive = false, manager, removeOnArchive }: Props = $props();
 
   let text = $derived(unarchive ? $t('unarchive') : $t('to_archive'));
   let icon = $derived(unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline);
@@ -31,7 +32,12 @@
     loading = true;
     const ids = await archiveAssets(assets, visibility as AssetVisibility);
     if (ids) {
-      manager?.updateAssetOperation(ids, (asset) => ((asset.visibility = visibility), void 0));
+      manager?.updateAssetOperation(ids, (asset) => {
+        asset.visibility = visibility;
+        return {
+          remove: removeOnArchive,
+        };
+      });
       onArchive?.(ids, visibility ? AssetVisibility.Archive : AssetVisibility.Timeline);
       clearSelect();
     }

@@ -328,6 +328,10 @@ export abstract class PhotostreamManager {
     return Promise.resolve(this.retrieveLoadedRange(start, end));
   }
 
+  get assets() {
+    return this.months.flatMap((segment) => segment.assets).flat();
+  }
+
   updateAssetOperation(ids: string[], operation: AssetOperation) {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     return this.#runAssetOperation(new Set(ids), operation);
@@ -429,4 +433,10 @@ export abstract class PhotostreamManager {
     }
     return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry };
   }
+
+  /**
+   * Requests that the manager's content be explictly set to the given id ordering.
+   * A particular Photostream manager may ignore this request.
+   */
+  order(_: string[]) {}
 }
