@@ -7,7 +7,6 @@ import type {
   SearchTerms,
 } from '$lib/managers/searchresults-manager/SearchResultsManager.svelte';
 import { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
-import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
 import { searchAssets, searchSmart } from '@immich/sdk';
@@ -70,18 +69,6 @@ export class SearchResultsSegment extends PhotostreamSegment {
 
     this.#viewerAssets.push(...assets.items.map((asset) => new ViewerAsset(this, toTimelineAsset(asset))));
     this.layout();
-  }
-
-  layout(): void {
-    const timelineAssets = this.#viewerAssets.map((viewerAsset) => viewerAsset.asset);
-    const layoutOptions = this.timelineManager.layoutOptions;
-    const geometry = getJustifiedLayoutFromAssets(timelineAssets, layoutOptions);
-
-    this.height = timelineAssets.length === 0 ? 0 : geometry.containerHeight + this.timelineManager.headerHeight;
-    for (let i = 0; i < this.#viewerAssets.length; i++) {
-      const position = getPosition(geometry, i);
-      this.#viewerAssets[i].position = position;
-    }
   }
 
   get viewerAssets(): ViewerAsset[] {

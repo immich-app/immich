@@ -7,6 +7,7 @@ import type { PhotostreamManager } from '$lib/managers/photostream-manager/Photo
 import { getTestHook } from '$lib/managers/photostream-manager/TestHooks.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
+import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
 
 export type SegmentIdentifier = {
   matches(segment: PhotostreamSegment): boolean;
@@ -144,12 +145,31 @@ export abstract class PhotostreamSegment {
     this.loader?.cancel();
   }
 
-  layout(_?: boolean) {}
+  layout(): void {
+    const timelineAssets = this.viewerAssets.map((viewerAsset) => viewerAsset.asset);
+    const layoutOptions = this.timelineManager.layoutOptions;
+    const geometry = getJustifiedLayoutFromAssets(timelineAssets, layoutOptions);
+    this.height = timelineAssets.length === 0 ? 0 : geometry.containerHeight + this.timelineManager.headerHeight;
+    for (let i = 0; i < this.viewerAssets.length; i++) {
+      const position = getPosition(geometry, i);
+      this.viewerAssets[i].position = position;
+    }
+  }
 
   updateIntersection({ intersecting, actuallyIntersecting }: { intersecting: boolean; actuallyIntersecting: boolean }) {
     this.intersecting = intersecting;
     this.actuallyIntersecting = actuallyIntersecting;
   }
 
-  abstract findAssetAbsolutePosition(assetId: string): number;
+  findAssetAbsolutePosition(assetId: string) {
+    const viewerAsset = this.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
+    if (viewerAsset) {
+      if (!viewerAsset.position) {
+        console.warn('No position for asset');
+        return -1;
+      }
+      return this.top + viewerAsset.position.top + this.timelineManager.headerHeight;
+    }
+    return -1;
+  }
 }

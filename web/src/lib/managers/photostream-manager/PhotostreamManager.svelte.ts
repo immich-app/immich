@@ -305,4 +305,63 @@ export abstract class PhotostreamManager {
     // Return the IDs that were not found/removed
     return assetIds.filter((id) => !removedIds.includes(id));
   }
+
+  findNextAsset(currentAssetId: string): { id: string } | undefined {
+    for (let segmentIndex = 0; segmentIndex < this.months.length; segmentIndex++) {
+      const segment = this.months[segmentIndex];
+      const assetIndex = segment.assets.findIndex((asset) => asset.id === currentAssetId);
+
+      if (assetIndex !== -1) {
+        // Found the current asset
+        if (assetIndex < segment.assets.length - 1) {
+          // Next asset is in the same segment
+          return segment.assets[assetIndex + 1];
+        } else if (segmentIndex < this.months.length - 1) {
+          // Next asset is in the next segment
+          const nextSegment = this.months[segmentIndex + 1];
+          if (nextSegment.assets.length > 0) {
+            return nextSegment.assets[0];
+          }
+        }
+        break;
+      }
+    }
+    return undefined;
+  }
+
+  findPreviousAsset(currentAssetId: string): { id: string } | undefined {
+    for (let segmentIndex = 0; segmentIndex < this.months.length; segmentIndex++) {
+      const segment = this.months[segmentIndex];
+      const assetIndex = segment.assets.findIndex((asset) => asset.id === currentAssetId);
+
+      if (assetIndex !== -1) {
+        // Found the current asset
+        if (assetIndex > 0) {
+          // Previous asset is in the same segment
+          return segment.assets[assetIndex - 1];
+        } else if (segmentIndex > 0) {
+          // Previous asset is in the previous segment
+          const previousSegment = this.months[segmentIndex - 1];
+          if (previousSegment.assets.length > 0) {
+            return previousSegment.assets.at(-1);
+          }
+        }
+        break;
+      }
+    }
+    return undefined;
+  }
+
+  findRandomAsset(): { id: string } | undefined {
+    // Get all loaded assets across all segments
+    const allAssets = this.months.flatMap((segment) => segment.assets);
+
+    if (allAssets.length === 0) {
+      return undefined;
+    }
+
+    // Return a random asset
+    const randomIndex = Math.floor(Math.random() * allAssets.length);
+    return allAssets[randomIndex];
+  }
 }
