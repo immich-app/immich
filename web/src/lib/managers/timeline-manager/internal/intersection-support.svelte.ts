@@ -51,7 +51,7 @@ export function calculateSegmentIntersecting(
 }
 
 /**
- * Calculate intersection for viewer assets with additional parameters like header height and scroll compensation
+ * Calculate intersection for viewer assets with additional parameters like header height
  */
 export function calculateViewerAssetIntersecting(
   timelineManager: PhotostreamManager,
@@ -60,13 +60,8 @@ export function calculateViewerAssetIntersecting(
   expandTop: number = INTERSECTION_EXPAND_TOP,
   expandBottom: number = INTERSECTION_EXPAND_BOTTOM,
 ) {
-  const scrollCompensationHeightDelta = timelineManager.scrollCompensation?.heightDelta ?? 0;
-
-  const topWindow =
-    timelineManager.visibleWindow.top - timelineManager.headerHeight - expandTop + scrollCompensationHeightDelta;
-  const bottomWindow =
-    timelineManager.visibleWindow.bottom + timelineManager.headerHeight + expandBottom + scrollCompensationHeightDelta;
-
+  const topWindow = timelineManager.visibleWindow.top - timelineManager.headerHeight - expandTop;
+  const bottomWindow = timelineManager.visibleWindow.bottom + timelineManager.headerHeight + expandBottom;
   const positionBottom = positionTop + positionHeight;
 
   return isIntersecting(positionTop, positionBottom, topWindow, bottomWindow);

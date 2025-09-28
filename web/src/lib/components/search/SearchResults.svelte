@@ -58,10 +58,8 @@
       <Skeleton height={segment.height - segment.timelineManager.headerHeight} {stylePaddingHorizontalPx} />
     {/snippet}
 
-    {#snippet segment({ segment, onScrollCompensationMonthInDOM })}
+    {#snippet segment({ segment })}
       <SelectableSegment
-        {segment}
-        {onScrollCompensationMonthInDOM}
         timelineManager={searchResultsManager}
         {assetInteraction}
         isSelectionMode={false}

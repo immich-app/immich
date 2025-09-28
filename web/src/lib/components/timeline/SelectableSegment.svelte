@@ -5,7 +5,6 @@
   import { navigate } from '$lib/utils/navigation';
 
   import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
-  import type { PhotostreamSegment } from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
@@ -21,28 +20,17 @@
         },
       ]
     >;
-    segment: PhotostreamSegment;
+
     isSelectionMode: boolean;
     singleSelect: boolean;
     timelineManager: PhotostreamManager;
     assetInteraction: AssetInteraction;
     onAssetOpen?: (asset: TimelineAsset, defaultAssetOpen: () => void) => void;
     onAssetSelect?: (asset: TimelineAsset) => void;
-
-    onScrollCompensationMonthInDOM: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
   }
 
-  let {
-    segment,
-    content,
-    isSelectionMode,
-    singleSelect,
-    assetInteraction,
-    timelineManager,
-    onAssetOpen,
-    onAssetSelect,
-    onScrollCompensationMonthInDOM,
-  }: Props = $props();
+  let { content, isSelectionMode, singleSelect, assetInteraction, timelineManager, onAssetOpen, onAssetSelect }: Props =
+    $props();
 
   let shiftKeyIsDown = $state(false);
   let isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
@@ -189,12 +177,6 @@
     const assets = assetsSnapshot(timelineManager.retrieveLoadedRange(startAsset, endAsset));
     assetInteraction.setAssetSelectionCandidates(assets);
   };
-
-  $effect.root(() => {
-    if (timelineManager.scrollCompensation.monthGroup === segment) {
-      onScrollCompensationMonthInDOM(timelineManager.scrollCompensation);
-    }
-  });
 </script>
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />

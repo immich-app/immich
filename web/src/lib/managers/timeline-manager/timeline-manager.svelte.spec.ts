@@ -1,4 +1,6 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import type { PhotostreamSegment } from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
+import { setTestHook } from '$lib/managers/photostream-manager/TestHooks.svelte';
 import {
   findMonthGroupForAsset,
   getMonthGroupByDate,
@@ -7,6 +9,7 @@ import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject, getSegmentIdentifier } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import type { MockedFunction } from 'vitest';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -57,8 +60,16 @@ describe('TimelineManager', () => {
       Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
     );
 
+    const spys: { segment: PhotostreamSegment; cancelSpy: MockedFunction<() => void> }[] = [];
     beforeEach(async () => {
       timelineManager = new TimelineManager();
+
+      setTestHook({
+        hookSegment: (segment) => {
+          spys.push({ segment, cancelSpy: vi.spyOn(segment, 'cancel') as MockedFunction<() => void> });
+        },
+      });
+
       sdkMock.getTimeBuckets.mockResolvedValue([
         { count: 1, timeBucket: '2024-03-01' },
         { count: 100, timeBucket: '2024-02-01' },
@@ -71,7 +82,7 @@ describe('TimelineManager', () => {
 
     it('should load months in viewport', () => {
       expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
+      expect(spys[2].cancelSpy).toHaveBeenCalled();
     });
 
     it('calculates month height', () => {
@@ -85,13 +96,13 @@ describe('TimelineManager', () => {
         expect.arrayContaining([
           expect.objectContaining({ year: 2024, month: 3, height: 165.5 }),
           expect.objectContaining({ year: 2024, month: 2, height: 11_996 }),
-          expect.objectContaining({ year: 2024, month: 1, height: 286 }),
+          expect.objectContaining({ year: 2024, month: 1, height: 48 }),
         ]),
       );
     });
 
     it('calculates timeline height', () => {
-      expect(timelineManager.timelineHeight).toBe(12_447.5);
+      expect(timelineManager.timelineHeight).toBe(12_209.5);
     });
   });
 
