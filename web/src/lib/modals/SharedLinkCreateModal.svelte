@@ -49,9 +49,9 @@
   ]);
 
 	const expiresAt = DateTime.fromISO(editingLink?.expiresAt);
+	const createdAt = DateTime.fromISO(editingLink?.createdAt);
 
-	const now = DateTime.now();
-	const remainingMs = expiresAt.toMillis() - now.toMillis();
+	const remainingMs = expiresAt.toMillis() - createdAt.toMillis();
 	let selectedOption = expiredDateOptions[0];
 
 	for (const option of expiredDateOptions) {
