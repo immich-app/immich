@@ -14,15 +14,18 @@ import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mimeTypes } from 'src/utils/mime-types';
 import { parseDictionary } from 'structured-headers';
 
+const MAX_INTEROP_VERSION = 8;
+
 @Injectable()
 export class AssetUploadService extends BaseService {
   async startUpload(auth: AuthDto, request: Request, response: Response): Promise<void> {
     const headers = request.headers;
+    const requestInterop = this.getNumberHeader(headers, 'upload-draft-interop-version');
     const contentLength = this.requireContentLength(headers);
-    const isComplete = this.requireUploadComplete(headers);
+    const isComplete = this.requireUploadComplete(headers, requestInterop);
     const metadata = this.requireAssetData(headers);
     const checksumHeader = this.requireChecksum(headers);
-    const uploadLength = this.getUploadLength(headers);
+    const uploadLength = this.getNumberHeader(headers, 'upload-length');
 
     if (isComplete && uploadLength !== null && uploadLength !== contentLength) {
       return this.sendInconsistentLengthProblem(response);
@@ -79,7 +82,9 @@ export class AssetUploadService extends BaseService {
     }
 
     const location = `/api/upload/${assetId}`;
-    this.sendInterimResponse(response, location);
+    if (requestInterop !== null && requestInterop >= 3 && requestInterop <= MAX_INTEROP_VERSION) {
+      this.sendInterimResponse(response, location, requestInterop);
+    }
 
     await this.storageRepository.mkdir(folder);
     let checksumBuffer: Buffer | undefined;
@@ -107,12 +112,8 @@ export class AssetUploadService extends BaseService {
         return this.sendChecksumMismatchResponse(response, assetId, path);
       }
 
-      response
-        .status(200)
-        .setHeader('Upload-Complete', '?1')
-        .setHeader('Location', location)
-        .setHeader('Upload-Limit', 'min-size=0')
-        .send();
+      this.setCompleteHeader(response, requestInterop, true);
+      response.status(200).setHeader('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
 
       return this.onComplete({ assetId, path, size: contentLength, fileModifiedAt: metadata.fileModifiedAt });
     });
@@ -152,13 +153,14 @@ export class AssetUploadService extends BaseService {
 
   async resumeUpload(auth: AuthDto, assetId: string, request: Request, response: Response): Promise<void> {
     const headers = request.headers;
-    const isComplete = this.requireUploadComplete(headers);
+    const requestInterop = this.getNumberHeader(headers, 'upload-draft-interop-version');
+    const isComplete = this.requireUploadComplete(headers, requestInterop);
     const contentLength = this.requireContentLength(headers);
-    const providedOffset = this.getUploadOffset(headers);
-    const uploadLength = this.getUploadLength(headers);
+    const providedOffset = this.getNumberHeader(headers, 'upload-offset');
+    const uploadLength = this.getNumberHeader(headers, 'upload-length');
 
     const contentType = headers['content-type'];
-    if (contentType !== 'application/partial-upload') {
+    if (requestInterop && requestInterop >= 6 && contentType !== 'application/partial-upload') {
       throw new BadRequestException('Content-Type must be application/partial-upload for PATCH requests');
     }
 
@@ -179,6 +181,7 @@ export class AssetUploadService extends BaseService {
       const { path } = asset;
       const expectedOffset = await this.getCurrentOffset(path);
       if (expectedOffset !== providedOffset) {
+        this.setCompleteHeader(response, requestInterop, false);
         return this.sendOffsetMismatchProblem(response, expectedOffset, providedOffset);
       }
 
@@ -194,11 +197,8 @@ export class AssetUploadService extends BaseService {
 
       // Empty PATCH without Upload-Complete
       if (contentLength === 0 && !isComplete) {
-        response
-          .status(204)
-          .setHeader('Upload-Offset', expectedOffset.toString())
-          .setHeader('Upload-Complete', '?0')
-          .send();
+        this.setCompleteHeader(response, requestInterop, false);
+        response.status(204).setHeader('Upload-Offset', expectedOffset.toString()).send();
         return;
       }
 
@@ -215,11 +215,8 @@ export class AssetUploadService extends BaseService {
       writeStream.on('finish', async () => {
         const currentOffset = await this.getCurrentOffset(path);
         if (!isComplete) {
-          return response
-            .status(204)
-            .setHeader('Upload-Offset', currentOffset.toString())
-            .setHeader('Upload-Complete', '?0')
-            .send();
+          this.setCompleteHeader(response, requestInterop, false);
+          return response.status(204).setHeader('Upload-Offset', currentOffset.toString()).send();
         }
 
         this.logger.log(`Finished upload to ${path}`);
@@ -228,11 +225,8 @@ export class AssetUploadService extends BaseService {
           return this.sendChecksumMismatchResponse(response, assetId, path);
         }
 
-        response
-          .status(200)
-          .setHeader('Upload-Complete', '?1')
-          .setHeader('Upload-Offset', currentOffset.toString())
-          .send();
+        this.setCompleteHeader(response, requestInterop, true);
+        response.status(200).setHeader('Upload-Offset', currentOffset.toString()).send();
 
         await this.onComplete({ assetId, path, size: currentOffset, fileModifiedAt: asset.fileModifiedAt });
       });
@@ -288,10 +282,11 @@ export class AssetUploadService extends BaseService {
       const offset = await this.getCurrentOffset(asset.path);
       const isComplete = asset.status !== AssetStatus.Partial;
 
+      const requestInterop = this.getNumberHeader(response.req.headers, 'upload-draft-interop-version');
+      this.setCompleteHeader(response, requestInterop, isComplete);
       response
         .status(204)
         .setHeader('Upload-Offset', offset.toString())
-        .setHeader('Upload-Complete', isComplete ? '?1' : '?0')
         .setHeader('Cache-Control', 'no-store')
         .setHeader('Upload-Limit', 'min-size=0')
         .send();
@@ -315,15 +310,14 @@ export class AssetUploadService extends BaseService {
     await this.withRetry(() => this.assetRepository.remove({ id: assetId }));
   }
 
-  private sendInterimResponse(response: Response, location: string): void {
+  private sendInterimResponse(response: Response, location: string, interopVersion: number): void {
     const socket = response.socket;
     if (socket && !socket.destroyed) {
       // Express doesn't understand interim responses, so write directly to socket
       socket.write(
-        `HTTP/1.1 104 Upload Resumption Supported\r\n` +
+        'HTTP/1.1 104 Upload Resumption Supported\r\n' +
           `Location: ${location}\r\n` +
-          `Upload-Draft-Interop-Version: 8\r\n` +
-          `\r\n`,
+          `Upload-Draft-Interop-Version: ${interopVersion}\r\n\r\n`,
       );
     }
   }
@@ -343,17 +337,12 @@ export class AssetUploadService extends BaseService {
   }
 
   private sendOffsetMismatchProblem(response: Response, expected: number, actual: number): void {
-    response
-      .status(409)
-      .contentType('application/problem+json')
-      .setHeader('Upload-Offset', expected.toString())
-      .setHeader('Upload-Complete', '?0')
-      .send({
-        type: 'https://iana.org/assignments/http-problem-types#mismatching-upload-offset',
-        title: 'offset from request does not match offset of resource',
-        'expected-offset': expected,
-        'provided-offset': actual,
-      });
+    response.status(409).contentType('application/problem+json').setHeader('Upload-Offset', expected.toString()).send({
+      type: 'https://iana.org/assignments/http-problem-types#mismatching-upload-offset',
+      title: 'offset from request does not match offset of resource',
+      'expected-offset': expected,
+      'provided-offset': actual,
+    });
   }
 
   private sendChecksumMismatchResponse(response: Response, assetId: string, path: string): Promise<void> {
@@ -362,7 +351,15 @@ export class AssetUploadService extends BaseService {
     return this.removeAsset(assetId, path);
   }
 
-  private requireUploadComplete(headers: Request['headers']): boolean {
+  private requireUploadComplete(headers: Request['headers'], interopVersion: number | null): boolean {
+    if (interopVersion !== null && interopVersion <= 3) {
+      const value = headers['upload-incomplete'] as string | undefined;
+      if (value === undefined) {
+        throw new BadRequestException('Missing Upload-Incomplete header');
+      }
+      return value === '?0';
+    }
+
     const value = headers['upload-complete'] as string | undefined;
     if (value === undefined) {
       throw new BadRequestException('Missing Upload-Complete header');
@@ -370,28 +367,16 @@ export class AssetUploadService extends BaseService {
     return value === '?1';
   }
 
-  private getUploadOffset(headers: Request['headers']): number | null {
-    const value = headers['upload-offset'] as string | undefined;
+  private getNumberHeader(headers: Request['headers'], name: string): number | null {
+    const value = headers[name] as string | undefined;
     if (value === undefined) {
       return null;
     }
-    const offset = parseInt(value, 10);
-    if (!isFinite(offset) || offset < 0) {
-      throw new BadRequestException('Invalid Upload-Offset header');
+    const number = parseInt(value, 10);
+    if (!isFinite(number) || number < 0) {
+      throw new BadRequestException(`Invalid ${name} header`);
     }
-    return offset;
-  }
-
-  private getUploadLength(headers: Request['headers']): number | null {
-    const value = headers['upload-length'] as string | undefined;
-    if (value === undefined) {
-      return null;
-    }
-    const length = parseInt(value, 10);
-    if (!isFinite(length) || length < 0) {
-      throw new BadRequestException('Invalid Upload-Length header');
-    }
-    return length;
+    return number;
   }
 
   private requireContentLength(headers: Request['headers']): number {
@@ -483,5 +468,17 @@ export class AssetUploadService extends BaseService {
     }
 
     return dto;
+  }
+
+  private setCompleteHeader(response: Response, interopVersion: number | null, isComplete: boolean): void {
+    if (!interopVersion) {
+      return;
+    }
+
+    if (interopVersion > 3) {
+      response.setHeader('Upload-Complete', isComplete ? '?1' : '?0');
+    } else {
+      response.setHeader('Upload-Incomplete', isComplete ? '?0' : '?1');
+    }
   }
 }
