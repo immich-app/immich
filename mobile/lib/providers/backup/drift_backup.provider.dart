@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -244,10 +245,21 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           return;
         }
 
+        String? error;
+        final exception = update.exception;
+        if (exception != null && exception is TaskHttpException) {
+          final message = tryJsonDecode(exception.description)?['message'] as String?;
+          if (message != null) {
+            final responseCode = exception.httpResponseCode;
+            error = "${exception.exceptionType}, response code $responseCode: $message";
+          }
+        }
+        error ??= update.exception?.toString();
+
         state = state.copyWith(
           uploadItems: {
             ...state.uploadItems,
-            taskId: currentItem.copyWith(isFailed: true, error: update.exception?.toString()),
+            taskId: currentItem.copyWith(isFailed: true, error: error),
           },
         );
         _logger.fine("Upload failed for taskId: $taskId, exception: ${update.exception}");
