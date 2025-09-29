@@ -401,17 +401,33 @@ To decrease Redis logs, you can add the following line to the `redis:` section o
 
 ### How can I run Immich as a non-root user?
 
-You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
-You may need to add mount points or docker volumes for the following internal container paths:
+You can change the user in the container by setting the `user` argument in `docker-compose.yml` for the Immich and Redis services. The Postgres and Redis services already run as a non-root user.
+You must also add additional mount points or docker volumes to your compose file. The non-root user/group must have read and write access to these directories, including `${UPLOAD_LOCATION}` (in .env).
 
-- `immich-machine-learning:/.config`
-- `immich-machine-learning:/.cache`
-- `redis:/data`
-
-The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION` and `/cache` for machine-learning.
+Modified volume and user lines for the default compose.yaml:
+```diff
+...
+services:
+  immich-server:
+...
+    volumes:
+      # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
+      - ${UPLOAD_LOCATION}:/data # No changes to this line, but ensure your user has read/write permissions to this directory
++    user: 1000:1000 # Add this line. To run the container as UID 1000
+...
+  immich-machine-learning:
+    volumes:
+-      - model-cache:/cache
++      - /path/on/docker/host/cache:/cache # Add this line to use a volume mount and ensure the user has read/write permission if using a mounted directory instead of a volume
++      - /path/on/docker/host/config:/config # Add this line and ensure the user has read/write permission if using a mounted directory instead of a volume
++    user: 1000:1000 # Add this line. To run the container as UID 1000
+...
+-volumes:
+-  model-cache:
+```
 
 :::note Docker Compose Volumes
-The Docker Compose top level volume element does not support non-root access, all of the above volumes must be local volume mounts.
+The Docker Compose volume element does not support non-root access, all of the above volumes must be local volume mounts.
 :::
 
 For a further hardened system, you can add the following block to every container.
