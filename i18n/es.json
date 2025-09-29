@@ -28,6 +28,7 @@
   "add_to_album": "Incluir en álbum",
   "add_to_album_bottom_sheet_added": "Agregado a {album}",
   "add_to_album_bottom_sheet_already_exists": "Ya se encuentra en {album}",
+  "add_to_album_bottom_sheet_some_local_assets": "Algunos recursos locales no se pudieron añadir al álbum",
   "add_to_album_toggle": "Alternar selección para el {album}",
   "add_to_albums": "Incluir en álbumes",
   "add_to_albums_count": "Incluir en {count} álbumes",

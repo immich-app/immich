@@ -28,6 +28,7 @@
   "add_to_album": "Lisa albumisse",
   "add_to_album_bottom_sheet_added": "Lisatud albumisse {album}",
   "add_to_album_bottom_sheet_already_exists": "On juba albumis {album}",
+  "add_to_album_bottom_sheet_some_local_assets": "Kõiki lokaalseid üksuseid ei õnnestunud albumisse lisada",
   "add_to_album_toggle": "Muuda albumi {album} valikut",
   "add_to_albums": "Lisa albumitesse",
   "add_to_albums_count": "Lisa albumitesse ({count})",
