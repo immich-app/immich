@@ -35,20 +35,15 @@ export class AssetUploadController {
     return this.service.cancelUpload(auth, id, response);
   }
 
+  @Head(':id')
+  @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
+  getUploadStatus(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Res() response: Response): Promise<void> {
+    return this.service.getUploadStatus(auth, id, response);
+  }
+
   @Options()
   @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
   getUploadOptions(@Res() response: Response): Promise<void> {
     return this.service.getUploadOptions(response);
-  }
-
-  @Head(':id')
-  @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
-  getUploadStatus(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Req() request: Request,
-    @Res() response: Response,
-  ): Promise<void> {
-    return this.service.getUploadStatus(auth, id, request, response);
   }
 }

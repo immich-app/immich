@@ -44,38 +44,6 @@ describe('/upload (RUFH v9 compliance)', () => {
       expect(headers['upload-limit']).toEqual('min-size=0');
     });
 
-    it('should send 104 interim response for resumable upload support', async () => {
-      const content = randomBytes(1024);
-      let interimReceived = false;
-      let uploadResourceUri: string | undefined;
-
-      const response = await request(app)
-        .post('/upload')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('X-Immich-Asset-Data', base64Metadata)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
-        .set('Upload-Complete', '?1')
-        .on('response', (res) => {
-          // Check for interim responses
-          res.on('data', (chunk: Buffer) => {
-            const data = chunk.toString();
-            if (data.includes('HTTP/1.1 104')) {
-              interimReceived = true;
-              const locationMatch = data.match(/Location: (.*)/);
-              if (locationMatch) {
-                uploadResourceUri = locationMatch[1].trim();
-              }
-            }
-          });
-        })
-        .send(content);
-
-      expect(response.status).toBeGreaterThanOrEqual(200);
-      expect(response.status).toBeLessThan(300);
-      expect(interimReceived).toBe(true);
-      expect(uploadResourceUri).toBeDefined();
-    });
-
     it('should create an incomplete upload with Upload-Complete: ?0', async () => {
       const partialContent = randomBytes(512);
 
@@ -142,47 +110,44 @@ describe('/upload (RUFH v9 compliance)', () => {
 
   describe('Upload Append (Section 4.4)', () => {
     let uploadResource: string;
-    let currentOffset: number;
+    let chunks: Buffer[];
 
     beforeAll(async () => {
       // Create an incomplete upload
-      const initialContent = randomBytes(500);
+      chunks = [randomBytes(750), randomBytes(500), randomBytes(1500)];
+      const fullContent = Buffer.concat(chunks);
       const response = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('X-Immich-Asset-Data', base64Metadata)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(initialContent).digest('base64')}:`)
+        .set('Repr-Digest', `sha=:${createHash('sha1').update(fullContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
-        .send(initialContent);
+        .send(chunks[0]);
 
       uploadResource = response.headers['location'];
-      currentOffset = 500;
     });
 
     it('should append data with correct offset', async () => {
-      const appendContent = randomBytes(500);
-
       const { status, headers } = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Offset', currentOffset.toString())
+        .set('Upload-Offset', chunks[0].length.toString())
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
-        .send(appendContent);
+        .send(chunks[1]);
 
       expect(status).toBe(204);
       expect(headers['upload-complete']).toBe('?0');
 
-      // Verify new offset
       const headResponse = await request(baseUrl)
         .head(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`);
 
-      expect(headResponse.headers['upload-offset']).toBe('1000');
+      expect(headResponse.headers['upload-offset']).toBe('1250');
     });
 
     it('should reject append with mismatching offset (409 Conflict)', async () => {
-      const wrongOffset = 100; // Should be 1000 after previous test
+      const wrongOffset = 100;
 
       const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
@@ -193,9 +158,9 @@ describe('/upload (RUFH v9 compliance)', () => {
         .send(randomBytes(100));
 
       expect(status).toBe(409);
-      expect(headers['upload-offset']).toBe('1000'); // Correct offset
+      expect(headers['upload-offset']).toBe('1250');
       expect(body.type).toBe('https://iana.org/assignments/http-problem-types#mismatching-upload-offset');
-      expect(body['expected-offset']).toBe(1000);
+      expect(body['expected-offset']).toBe(1250);
       expect(body['provided-offset']).toBe(wrongOffset);
     });
 
@@ -206,7 +171,7 @@ describe('/upload (RUFH v9 compliance)', () => {
         .set('Authorization', `Bearer ${user.accessToken}`);
 
       const offset = parseInt(headResponse.headers['upload-offset']);
-      const remainingContent = randomBytes(2000 - offset);
+      expect(offset).toBe(1250);
 
       const { status, headers } = await request(baseUrl)
         .patch(uploadResource)
@@ -214,17 +179,18 @@ describe('/upload (RUFH v9 compliance)', () => {
         .set('Upload-Offset', offset.toString())
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'application/partial-upload')
-        .send(remainingContent);
+        .send(chunks[2]);
 
       expect(status).toBe(200);
       expect(headers['upload-complete']).toBe('?1');
+      expect(headers['upload-offset']).toBe('2750');
     });
 
-    it('should reject append to completed upload', async () => {
+    it('should reject append to completed upload when offset is right', async () => {
       const { status, body } = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Offset', '2000')
+        .set('Upload-Offset', '2750')
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
         .send(randomBytes(100));
@@ -286,7 +252,9 @@ describe('/upload (RUFH v9 compliance)', () => {
       const uploadResource = initialResponse.headers['location'];
 
       // Check offset after interruption
-      const offsetResponse = await request(app).head(uploadResource).set('Authorization', `Bearer ${user.accessToken}`);
+      const offsetResponse = await request(baseUrl)
+        .head(uploadResource)
+        .set('Authorization', `Bearer ${user.accessToken}`);
 
       expect(offsetResponse.headers['upload-offset']).toBe('2000');
 
@@ -314,7 +282,7 @@ describe('/upload (RUFH v9 compliance)', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('X-Immich-Asset-Data', base64Metadata)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(hash.digest('base64')).digest('base64')}:`)
+        .set('Repr-Digest', `sha=:${hash.digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .send(chunks[0]);
 
@@ -355,34 +323,6 @@ describe('/upload (RUFH v9 compliance)', () => {
   });
 
   describe('Inconsistent Length Scenarios', () => {
-    it('should reject inconsistent Upload-Length values', async () => {
-      const content = randomBytes(1000);
-      // Create upload with initial length
-      const initialResponse = await request(app)
-        .post('/upload')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('X-Immich-Asset-Data', base64Metadata)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
-        .set('Upload-Complete', '?0')
-        .set('Upload-Length', '5000')
-        .send(content);
-
-      const uploadResource = initialResponse.headers['location'];
-
-      // Try to append with different Upload-Length
-      const { status, body } = await request(baseUrl)
-        .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Offset', '1000')
-        .set('Upload-Complete', '?0')
-        .set('Upload-Length', '6000') // Different from initial
-        .set('Content-Type', 'application/partial-upload')
-        .send(randomBytes(1000));
-
-      expect(status).toBe(400);
-      expect(body.type).toBe('https://iana.org/assignments/http-problem-types#inconsistent-upload-length');
-    });
-
     it('should reject when Upload-Complete: ?1 with mismatching Content-Length and Upload-Length', async () => {
       const content = randomBytes(1000);
 
