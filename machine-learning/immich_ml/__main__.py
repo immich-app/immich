@@ -15,7 +15,7 @@ module_dir = Path(__file__).parent
 
 bind_host = non_prefixed_settings.immich_host
 if ip_address(bind_host).version == 6:
-  bind_host = f"[{bind_host}]"
+    bind_host = f"[{bind_host}]"
 bind_address = f"{bind_host}:{non_prefixed_settings.immich_port}"
 
 try:
