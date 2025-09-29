@@ -11,14 +11,11 @@ import {
 } from '$lib/utils/timeline-util';
 
 import { isEqual } from 'lodash-es';
-import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 
 import { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
+import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
-import {
-  addAssetsToMonthGroups,
-  runAssetOperation,
-} from '$lib/managers/timeline-manager/internal/operations-support.svelte';
 import {
   findMonthGroupForAsset as findMonthGroupForAssetUtil,
   findMonthGroupForDate,
@@ -28,16 +25,9 @@ import {
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { DayGroup } from './day-group.svelte';
-import { isMismatched, updateObject } from './internal/utils.svelte';
+import { isMismatched } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
-import type {
-  AssetDescriptor,
-  AssetOperation,
-  Direction,
-  ScrubberMonth,
-  TimelineAsset,
-  TimelineManagerOptions,
-} from './types';
+import type { AssetDescriptor, Direction, ScrubberMonth, TimelineAsset, TimelineManagerOptions } from './types';
 
 export class TimelineManager extends PhotostreamManager {
   albumAssets: Set<string> = new SvelteSet();
@@ -181,12 +171,6 @@ export class TimelineManager extends PhotostreamManager {
     this.scrubberTimelineHeight = this.timelineHeight;
   }
 
-  addAssets(assets: TimelineAsset[]) {
-    const assetsToUpdate = assets.filter((asset) => !this.isExcluded(asset));
-    const notUpdated = this.updateAssets(assetsToUpdate);
-    addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
-  }
-
   async findMonthGroupForAsset(id: string) {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
@@ -233,40 +217,6 @@ export class TimelineManager extends PhotostreamManager {
   async getRandomAsset() {
     const month = await this.getRandomMonthGroup();
     return month?.getRandomAsset();
-  }
-
-  updateAssetOperation(ids: string[], operation: AssetOperation) {
-    runAssetOperation(this, new SvelteSet(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
-  }
-
-  updateAssets(assets: TimelineAsset[]) {
-    const lookup = new SvelteMap<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
-    const { unprocessedIds } = runAssetOperation(
-      this,
-      new SvelteSet(lookup.keys()),
-      (asset) => {
-        updateObject(asset, lookup.get(asset.id));
-        return { remove: false };
-      },
-      { order: this.#options.order ?? AssetOrder.Desc },
-    );
-    const result: TimelineAsset[] = [];
-    for (const id of unprocessedIds.values()) {
-      result.push(lookup.get(id)!);
-    }
-    return result;
-  }
-
-  removeAssets(ids: string[]) {
-    const { unprocessedIds } = runAssetOperation(
-      this,
-      new SvelteSet(ids),
-      () => {
-        return { remove: true };
-      },
-      { order: this.#options.order ?? AssetOrder.Desc },
-    );
-    return [...unprocessedIds];
   }
 
   refreshLayout() {
@@ -323,5 +273,43 @@ export class TimelineManager extends PhotostreamManager {
 
   getAssetOrder() {
     return this.#options.order ?? AssetOrder.Desc;
+  }
+
+  protected createUpsertContext(): unknown {
+    return new GroupInsertionCache();
+  }
+
+  protected upsertAssetIntoSegment(asset: TimelineAsset, context: GroupInsertionCache): void {
+    let month = getMonthGroupByDate(this, asset.localDateTime);
+
+    if (!month) {
+      month = new MonthGroup(this, asset.localDateTime, 1, true, this.#options.order);
+      this.months.push(month);
+    }
+
+    month.addTimelineAsset(asset, context);
+  }
+
+  protected postCreateSegments(): void {
+    this.months.sort((a, b) => {
+      return a.yearMonth.year === b.yearMonth.year
+        ? b.yearMonth.month - a.yearMonth.month
+        : b.yearMonth.year - a.yearMonth.year;
+    });
+  }
+
+  protected postUpsert(context: GroupInsertionCache): void {
+    for (const group of context.existingDayGroups) {
+      group.sortAssets(this.#options.order);
+    }
+
+    for (const monthGroup of context.bucketsWithNewDayGroups) {
+      monthGroup.sortDayGroups();
+    }
+
+    for (const month of context.updatedBuckets) {
+      month.sortDayGroups();
+      updateGeometry(this, month, { invalidateHeight: true });
+    }
   }
 }

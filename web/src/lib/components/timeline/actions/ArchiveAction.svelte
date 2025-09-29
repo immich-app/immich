@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
   import type { OnArchive } from '$lib/utils/actions';
   import { archiveAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
@@ -13,7 +13,7 @@
     onArchive?: OnArchive;
     menuItem?: boolean;
     unarchive?: boolean;
-    manager?: TimelineManager;
+    manager?: PhotostreamManager;
   }
 
   let { onArchive, menuItem = false, unarchive = false, manager }: Props = $props();

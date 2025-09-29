@@ -51,7 +51,7 @@
       !(isTrashEnabled && !force),
       (assetIds) => timelineManager.removeAssets(assetIds),
       assetInteraction.selectedAssets,
-      !isTrashEnabled || force ? undefined : (assets) => timelineManager.addAssets(assets),
+      !isTrashEnabled || force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );
     assetInteraction.clearMultiselect();
   };

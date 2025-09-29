@@ -63,7 +63,7 @@
       }),
     );
 
-    timelineManager.updateAssets(updatedAssets);
+    timelineManager.upsertAssets(updatedAssets);
 
     handleDeselectAll();
   };

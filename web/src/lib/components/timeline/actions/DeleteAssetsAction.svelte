@@ -1,7 +1,7 @@
 <script lang="ts">
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
@@ -15,7 +15,7 @@
     onUndoDelete?: OnUndoDelete;
     menuItem?: boolean;
     force?: boolean;
-    manager?: TimelineManager;
+    manager?: PhotostreamManager;
   }
 
   let { onAssetDelete, onUndoDelete, menuItem = false, force = !$featureFlags.trash, manager }: Props = $props();
@@ -40,7 +40,7 @@
     loading = true;
     const assets = [...getOwnedAssets()];
     const undo = (assets: TimelineAsset[]) => {
-      manager?.addAssets(assets);
+      manager?.upsertAssets(assets);
       onUndoDelete?.(assets);
     };
     await deleteAssets(force, onAssetDelete, assets, undo);

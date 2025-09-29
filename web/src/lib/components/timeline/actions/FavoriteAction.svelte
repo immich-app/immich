@@ -5,7 +5,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
   import type { OnFavorite } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
@@ -17,7 +17,7 @@
     onFavorite?: OnFavorite;
     menuItem?: boolean;
     removeFavorite: boolean;
-    manager?: TimelineManager;
+    manager?: PhotostreamManager;
   }
 
   let { onFavorite, menuItem = false, removeFavorite, manager }: Props = $props();

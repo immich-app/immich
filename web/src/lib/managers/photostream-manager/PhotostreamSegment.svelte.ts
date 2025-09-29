@@ -4,7 +4,7 @@ import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { AssetOperation, MoveAsset, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 
 export type SegmentIdentifier = {
@@ -147,4 +147,46 @@ export abstract class PhotostreamSegment {
   }
 
   abstract findAssetAbsolutePosition(assetId: string): number;
+
+  runAssetOperation(ids: Set<string>, operation: AssetOperation) {
+    if (ids.size === 0) {
+      return {
+        moveAssets: [] as MoveAsset[],
+        processedIds: new Set<string>(),
+        unprocessedIds: ids,
+        changedGeometry: false,
+      };
+    }
+    const unprocessedIds = new Set<string>(ids);
+    const processedIds = new Set<string>();
+    const moveAssets: MoveAsset[] = [];
+    let changedGeometry = false;
+    for (const assetId of unprocessedIds) {
+      const index = this.viewerAssets.findIndex((viewAsset) => viewAsset.id == assetId);
+      if (index === -1) {
+        continue;
+      }
+
+      const asset = this.viewerAssets[index].asset!;
+      const oldTime = { ...asset.localDateTime };
+      const opResult = operation(asset);
+      let remove = false;
+      if (opResult) {
+        remove = (opResult as { remove: boolean }).remove ?? false;
+      }
+      const newTime = asset.localDateTime;
+      if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
+        const { year, month, day } = newTime;
+        remove = true;
+        moveAssets.push({ asset, date: { year, month, day } });
+      }
+      unprocessedIds.delete(assetId);
+      processedIds.add(assetId);
+      if (remove || this.timelineManager.isExcluded(asset)) {
+        this.viewerAssets.splice(index, 1);
+        changedGeometry = true;
+      }
+    }
+    return { moveAssets, processedIds, unprocessedIds, changedGeometry };
+  }
 }

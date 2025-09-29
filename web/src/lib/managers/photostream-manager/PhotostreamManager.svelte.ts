@@ -3,16 +3,21 @@ import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-s
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { clamp, debounce } from 'lodash-es';
 
-import type {
+import {
   PhotostreamSegment,
-  SegmentIdentifier,
+  type SegmentIdentifier,
 } from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
+
+import { updateObject } from '$lib/managers/timeline-manager/internal/utils.svelte';
 import type {
   AssetDescriptor,
+  AssetOperation,
+  MoveAsset,
   TimelineAsset,
   TimelineManagerLayoutOptions,
   Viewport,
 } from '$lib/managers/timeline-manager/types';
+import { setDifference } from '$lib/utils/timeline-util';
 
 export abstract class PhotostreamManager {
   isInitialized = $state(false);
@@ -312,5 +317,99 @@ export abstract class PhotostreamManager {
       }
     }
     return Promise.resolve(range);
+  }
+
+  updateAssetOperation(ids: string[], operation: AssetOperation) {
+    return this.#runAssetOperation(new Set(ids), operation);
+  }
+
+  upsertAssets(assets: TimelineAsset[]) {
+    const notExcluded = assets.filter((asset) => !this.isExcluded(asset));
+    const notUpdated = this.#updateAssets(notExcluded);
+    this.addAssetsToSegments([...notUpdated]);
+  }
+
+  #updateAssets(assets: TimelineAsset[]) {
+    const lookup = new Map<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
+    const { unprocessedIds } = this.#runAssetOperation(new Set(lookup.keys()), (asset) =>
+      updateObject(asset, lookup.get(asset.id)),
+    );
+    const result: TimelineAsset[] = [];
+    for (const id of unprocessedIds.values()) {
+      result.push(lookup.get(id)!);
+    }
+    return result;
+  }
+
+  removeAssets(ids: string[]) {
+    const { unprocessedIds } = this.#runAssetOperation(new Set(ids), () => ({ remove: true }));
+    return [...unprocessedIds];
+  }
+
+  isExcluded(_: TimelineAsset) {
+    return false;
+  }
+
+  protected createUpsertContext(): unknown {
+    return;
+  }
+
+  protected abstract upsertAssetIntoSegment(asset: TimelineAsset, context: unknown): void;
+
+  protected postCreateSegments(): void {}
+
+  protected postUpsert(_: unknown): void {}
+
+  protected addAssetsToSegments(assets: TimelineAsset[]) {
+    if (assets.length === 0) {
+      return;
+    }
+    const context = this.createUpsertContext();
+    const monthCount = this.months.length;
+    for (const asset of assets) {
+      this.upsertAssetIntoSegment(asset, context);
+    }
+    if (this.months.length !== monthCount) {
+      this.postCreateSegments();
+    }
+    this.postUpsert(context);
+    this.updateIntersections();
+  }
+
+  #runAssetOperation(ids: Set<string>, operation: AssetOperation) {
+    if (ids.size === 0) {
+      return { processedIds: new Set(), unprocessedIds: ids, changedGeometry: false };
+    }
+
+    const changedMonthGroups = new Set<PhotostreamSegment>();
+    let idsToProcess = new Set(ids);
+    const idsProcessed = new Set<string>();
+    const combinedMoveAssets: MoveAsset[][] = [];
+    for (const month of this.months) {
+      if (idsToProcess.size > 0) {
+        const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);
+        if (moveAssets.length > 0) {
+          combinedMoveAssets.push(moveAssets);
+        }
+        idsToProcess = setDifference(idsToProcess, processedIds);
+        for (const id of processedIds) {
+          idsProcessed.add(id);
+        }
+        if (changedGeometry) {
+          changedMonthGroups.add(month);
+        }
+      }
+    }
+    if (combinedMoveAssets.length > 0) {
+      this.addAssetsToSegments(combinedMoveAssets.flat().map((a) => a.asset));
+    }
+    const changedGeometry = changedMonthGroups.size > 0;
+    for (const month of changedMonthGroups) {
+      updateGeometry(this, month, { invalidateHeight: true });
+    }
+    if (changedGeometry) {
+      this.updateIntersections();
+    }
+    return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry };
   }
 }
