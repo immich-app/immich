@@ -35,6 +35,7 @@ class DriftUploadStatus {
   final int fileSize;
   final String networkSpeedAsString;
   final bool? isFailed;
+  final String? error;
 
   const DriftUploadStatus({
     required this.taskId,
@@ -43,6 +44,7 @@ class DriftUploadStatus {
     required this.fileSize,
     required this.networkSpeedAsString,
     this.isFailed,
+    this.error,
   });
 
   DriftUploadStatus copyWith({
@@ -52,6 +54,7 @@ class DriftUploadStatus {
     int? fileSize,
     String? networkSpeedAsString,
     bool? isFailed,
+    String? error,
   }) {
     return DriftUploadStatus(
       taskId: taskId ?? this.taskId,
@@ -60,12 +63,13 @@ class DriftUploadStatus {
       fileSize: fileSize ?? this.fileSize,
       networkSpeedAsString: networkSpeedAsString ?? this.networkSpeedAsString,
       isFailed: isFailed ?? this.isFailed,
+      error: error ?? this.error,
     );
   }
 
   @override
   String toString() {
-    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed)';
+    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed, error: $error)';
   }
 
   @override
@@ -77,7 +81,8 @@ class DriftUploadStatus {
         other.progress == progress &&
         other.fileSize == fileSize &&
         other.networkSpeedAsString == networkSpeedAsString &&
-        other.isFailed == isFailed;
+        other.isFailed == isFailed &&
+        other.error == error;
   }
 
   @override
@@ -87,7 +92,8 @@ class DriftUploadStatus {
         progress.hashCode ^
         fileSize.hashCode ^
         networkSpeedAsString.hashCode ^
-        isFailed.hashCode;
+        isFailed.hashCode ^
+        error.hashCode;
   }
 }
 
@@ -238,7 +244,12 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           return;
         }
 
-        state = state.copyWith(uploadItems: {...state.uploadItems, taskId: currentItem.copyWith(isFailed: true)});
+        state = state.copyWith(
+          uploadItems: {
+            ...state.uploadItems,
+            taskId: currentItem.copyWith(isFailed: true, error: update.exception?.toString()),
+          },
+        );
         _logger.fine("Upload failed for taskId: $taskId, exception: ${update.exception}");
         break;
 
