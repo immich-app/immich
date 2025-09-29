@@ -192,7 +192,7 @@ export function mapToUploadFile(file: ImmichFile): UploadFile {
 
 export const asUploadRequest = (request: AuthRequest, file: Express.Multer.File): UploadRequest => {
   return {
-    auth: request.user || null,
+    auth: request.auth || null,
     body: request.body,
     fieldName: file.fieldname as UploadFieldName,
     file: mapToUploadFile(file as ImmichFile),

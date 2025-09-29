@@ -33,6 +33,7 @@ describe('/upload (RUFH compliance)', () => {
       const { status, headers } = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
@@ -50,6 +51,7 @@ describe('/upload (RUFH compliance)', () => {
       const { status, headers } = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(partialContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
@@ -71,18 +73,21 @@ describe('/upload (RUFH compliance)', () => {
       const { headers } = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .send(content);
 
+      expect(headers['location']).toBeDefined();
       uploadResource = headers['location'];
     });
 
     it('should retrieve upload offset with HEAD request', async () => {
       const { status, headers } = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       expect(status).toBe(204);
       expect(headers['upload-offset']).toBe('512');
@@ -94,7 +99,8 @@ describe('/upload (RUFH compliance)', () => {
     it('should return 400 for non-UUID upload resource', async () => {
       const { status } = await request(app)
         .head('/upload/nonexistent')
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       expect(status).toBe(400);
     });
@@ -102,7 +108,8 @@ describe('/upload (RUFH compliance)', () => {
     it('should return 404 for non-existent upload resource', async () => {
       const { status } = await request(app)
         .head('/upload/4feacf6f-830f-46c8-8140-2b3da67070c0')
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       expect(status).toBe(404);
     });
@@ -119,6 +126,7 @@ describe('/upload (RUFH compliance)', () => {
       const response = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(fullContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
@@ -128,9 +136,10 @@ describe('/upload (RUFH compliance)', () => {
     });
 
     it('should append data with correct offset', async () => {
-      const { status, headers } = await request(baseUrl)
+      const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', chunks[0].length.toString())
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
@@ -141,7 +150,8 @@ describe('/upload (RUFH compliance)', () => {
 
       const headResponse = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       expect(headResponse.headers['upload-offset']).toBe('1250');
     });
@@ -152,6 +162,7 @@ describe('/upload (RUFH compliance)', () => {
       const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', wrongOffset.toString())
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
@@ -159,16 +170,20 @@ describe('/upload (RUFH compliance)', () => {
 
       expect(status).toBe(409);
       expect(headers['upload-offset']).toBe('1250');
-      expect(body.type).toBe('https://iana.org/assignments/http-problem-types#mismatching-upload-offset');
-      expect(body['expected-offset']).toBe(1250);
-      expect(body['provided-offset']).toBe(wrongOffset);
+      expect(body).toEqual({
+        type: 'https://iana.org/assignments/http-problem-types#mismatching-upload-offset',
+        title: 'offset from request does not match offset of resource',
+        'expected-offset': 1250,
+        'provided-offset': wrongOffset,
+      });
     });
 
     it('should complete upload with Upload-Complete: ?1', async () => {
       // Get current offset first
       const headResponse = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       const offset = parseInt(headResponse.headers['upload-offset']);
       expect(offset).toBe(1250);
@@ -176,6 +191,7 @@ describe('/upload (RUFH compliance)', () => {
       const { status, headers } = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', offset.toString())
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'application/partial-upload')
@@ -186,17 +202,21 @@ describe('/upload (RUFH compliance)', () => {
       expect(headers['upload-offset']).toBe('2750');
     });
 
-    it('should reject append to completed upload when offset is right', async () => {
+    it('should reject append to completed upload', async () => {
       const { status, body } = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', '2750')
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
         .send(randomBytes(100));
 
       expect(status).toBe(400);
-      expect(body.type).toBe('https://iana.org/assignments/http-problem-types#completed-upload');
+      expect(body).toEqual({
+        type: 'https://iana.org/assignments/http-problem-types#completed-upload',
+        title: 'upload is already completed',
+      });
     });
   });
 
@@ -209,6 +229,7 @@ describe('/upload (RUFH compliance)', () => {
       const response = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
@@ -227,7 +248,8 @@ describe('/upload (RUFH compliance)', () => {
       // Verify resource is no longer accessible
       const headResponse = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       expect(headResponse.status).toBe(404);
     });
@@ -243,6 +265,7 @@ describe('/upload (RUFH compliance)', () => {
       const initialResponse = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(totalContent).digest('base64')}:`)
         .set('Upload-Complete', '?0') // Indicate incomplete
@@ -254,7 +277,8 @@ describe('/upload (RUFH compliance)', () => {
       // Check offset after interruption
       const offsetResponse = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       expect(offsetResponse.headers['upload-offset']).toBe('2000');
 
@@ -263,6 +287,7 @@ describe('/upload (RUFH compliance)', () => {
       const resumeResponse = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', '2000')
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'application/partial-upload')
@@ -281,6 +306,7 @@ describe('/upload (RUFH compliance)', () => {
       const createResponse = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${hash.digest('base64')}:`)
         .set('Upload-Complete', '?0')
@@ -293,6 +319,7 @@ describe('/upload (RUFH compliance)', () => {
       let response = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', currentOffset.toString())
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
@@ -304,7 +331,8 @@ describe('/upload (RUFH compliance)', () => {
       // Verify offset
       const offsetCheck = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`);
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8');
 
       expect(offsetCheck.headers['upload-offset']).toBe('5000');
 
@@ -312,6 +340,7 @@ describe('/upload (RUFH compliance)', () => {
       response = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', currentOffset.toString())
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'application/partial-upload')
@@ -329,6 +358,7 @@ describe('/upload (RUFH compliance)', () => {
       const { status, body } = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
@@ -337,7 +367,10 @@ describe('/upload (RUFH compliance)', () => {
         .send(content);
 
       expect(status).toBe(400);
-      expect(body.type).toBe('https://iana.org/assignments/http-problem-types#inconsistent-upload-length');
+      expect(body).toEqual({
+        type: 'https://iana.org/assignments/http-problem-types#inconsistent-upload-length',
+        title: 'inconsistent length values for upload',
+      });
     });
   });
 
@@ -348,27 +381,8 @@ describe('/upload (RUFH compliance)', () => {
         .set('Authorization', `Bearer ${user.accessToken}`);
 
       expect(status).toBe(204);
-      expect(headers['upload-limit']).toBeDefined();
-
-      const limits = parseUploadLimit(headers['upload-limit']);
-      expect(limits).toHaveProperty('min-size');
+      expect(headers['upload-limit']).toEqual('min-size=0');
     });
   });
 });
 
-// Helper function to parse Upload-Limit header
-function parseUploadLimit(headerValue: string): Record<string, number> {
-  const limits: Record<string, number> = {};
-  if (!headerValue) return limits;
-
-  // Parse structured field dictionary format
-  const pairs = headerValue.split(',').map((p) => p.trim());
-  for (const pair of pairs) {
-    const [key, value] = pair.split('=');
-    if (key && value) {
-      limits[key] = parseInt(value, 10);
-    }
-  }
-
-  return limits;
-}

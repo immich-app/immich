@@ -62,15 +62,11 @@ export class StorageRepository {
   }
 
   createWriteStream(filepath: string): Writable {
-    return createWriteStream(filepath, { flags: 'w' });
-  }
-
-  overwriteWriteStream(filepath: string, offset = 0): Writable {
-    return createWriteStream(filepath, { flags: 'r+', start: offset });
+    return createWriteStream(filepath, { flags: 'w', highWaterMark: 1024 * 1024 });
   }
 
   createOrAppendWriteStream(filepath: string): Writable {
-    return createWriteStream(filepath, { flags: 'a' });
+    return createWriteStream(filepath, { flags: 'a', highWaterMark: 1024 * 1024 });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {

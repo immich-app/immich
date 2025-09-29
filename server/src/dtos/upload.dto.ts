@@ -1,133 +1,159 @@
-import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from 'class-validator';
-import { AssetMediaCreateDto } from 'src/dtos/asset-media.dto';
+import { BadRequestException } from '@nestjs/common';
+import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
+import { Equals, IsArray, IsEnum, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
+import { AssetVisibility, ImmichHeader } from 'src/enum';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { parseDictionary } from 'structured-headers';
 
-export enum TusdHookRequestType {
-  PreCreate = 'pre-create',
-  PreFinish = 'pre-finish',
-}
+export class UploadAssetDataDto {
+  @IsNotEmpty()
+  @IsString()
+  deviceAssetId!: string;
 
-export enum TusdHookStorageType {
-  FileStore = 'filestore',
-}
+  @IsNotEmpty()
+  @IsString()
+  deviceId!: string;
 
-export class TusdStorageDto {
-  @IsEnum(TusdHookStorageType)
-  Type!: string;
+  @ValidateDate()
+  fileCreatedAt!: Date;
+
+  @ValidateDate()
+  fileModifiedAt!: Date;
+
+  @Optional()
+  @IsString()
+  duration?: string;
 
   @IsString()
   @IsNotEmpty()
-  Path!: string;
+  filename!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  InfoPath!: string;
+  @ValidateBoolean({ optional: true })
+  isFavorite?: boolean;
+
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
+  visibility?: AssetVisibility;
+
+  @ValidateUUID({ optional: true })
+  livePhotoVideoId?: string;
+
+  @Transform(({ value }) => {
+    try {
+      const json = JSON.parse(value);
+      const items = Array.isArray(json) ? json : [json];
+      return items.map((item) => plainToInstance(AssetMetadataUpsertItemDto, item));
+    } catch {
+      throw new BadRequestException(['metadata must be valid JSON']);
+    }
+  })
+  @Optional()
+  @ValidateNested({ each: true })
+  @IsArray()
+  metadata!: AssetMetadataUpsertItemDto[];
 }
 
-export class UploadAssetDataDto extends AssetMediaCreateDto {
-  @IsString()
-  @IsNotEmpty()
-  declare filename: string;
+export enum StructuredBoolean {
+  False = '?0',
+  True = '?1',
 }
 
-export class TusdMetaDataDto {
-  @IsString()
-  @IsNotEmpty()
-  declare AssetData: string; // base64-encoded JSON string of UploadAssetDataDto
+export enum UploadHeader {
+  UploadOffset = 'upload-offset',
+  ContentLength = 'content-length',
+  UploadLength = 'upload-length',
+  UploadComplete = 'upload-complete',
+  UploadIncomplete = 'upload-incomplete',
+  InteropVersion = 'upload-draft-interop-version',
+  ReprDigest = 'repr-digest',
 }
 
-export class TusdPreCreateUploadDto {
+class BaseRufhHeadersDto {
+  @Expose({ name: UploadHeader.InteropVersion })
+  @Min(3)
   @IsInt()
-  Size!: number;
+  @Type(() => Number)
+  version!: number;
 }
 
-export class TusdPreFinishUploadDto {
-  @IsUUID()
-  ID!: string;
-
+export class BaseUploadHeadersDto extends BaseRufhHeadersDto {
+  @Expose({ name: UploadHeader.ContentLength })
+  @Min(0)
   @IsInt()
-  Size!: number;
+  @Type(() => Number)
+  contentLength!: number;
 
-  @Type(() => TusdMetaDataDto)
-  @ValidateNested()
-  @IsObject()
-  MetaData!: TusdMetaDataDto;
+  @Expose({ name: UploadHeader.UploadComplete })
+  @ValidateIf((o) => o.requestInterop !== null && o.requestInterop! <= 3)
+  @IsEnum(StructuredBoolean)
+  uploadComplete!: StructuredBoolean;
 
-  @Type(() => TusdStorageDto)
-  @ValidateNested()
-  @IsObject()
-  Storage!: TusdStorageDto;
+  @Expose({ name: UploadHeader.UploadIncomplete })
+  @ValidateIf((o) => o.requestInterop === null || o.requestInterop! > 3)
+  @IsEnum(StructuredBoolean)
+  uploadIncomplete!: StructuredBoolean;
+
+  @Expose({ name: UploadHeader.UploadLength })
+  @Min(0)
+  @IsInt()
+  @Type(() => Number)
+  @Optional()
+  uploadLength?: number;
+
+  get isComplete(): boolean {
+    if (this.version <= 3) {
+      return this.uploadIncomplete === StructuredBoolean.False;
+    }
+    return this.uploadComplete === StructuredBoolean.True;
+  }
 }
 
-export class TusdHttpRequestDto {
-  @IsString()
-  @IsNotEmpty()
-  Method!: string;
+export class StartUploadDto extends BaseUploadHeadersDto {
+  @Expose({ name: ImmichHeader.AssetData })
+  // @ValidateNested()
+  // @IsObject()
+  @Type(() => UploadAssetDataDto)
+  @Transform(({ value }) => {
+    if (!value) {
+      return null;
+    }
 
-  @IsString()
-  @IsNotEmpty()
-  URI!: string;
+    const json = Buffer.from(value, 'base64').toString('utf-8');
+    try {
+      return JSON.parse(json);
+    } catch {
+      throw new BadRequestException(`${ImmichHeader.AssetData} must be valid base64-encoded JSON`);
+    }
+  })
+  assetData!: UploadAssetDataDto;
 
-  @IsObject()
-  Header!: Record<string, string[]>;
+  @Expose({ name: UploadHeader.ReprDigest })
+  @Transform(({ value }) => {
+    if (!value) {
+      return null;
+    }
+
+    const checksum = parseDictionary(value).get('sha')?.[0];
+    if (checksum instanceof ArrayBuffer) {
+      return Buffer.from(checksum);
+    }
+    throw new BadRequestException(`Invalid ${UploadHeader.ReprDigest} header`);
+  })
+  checksum!: Buffer;
 }
 
-export class TusdPreCreateEventDto {
-  @Type(() => TusdPreCreateUploadDto)
-  @ValidateNested()
-  @IsObject()
-  Upload!: TusdPreCreateUploadDto;
+export class ResumeUploadDto extends BaseUploadHeadersDto {
+  @Expose({ name: 'content-type' })
+  @ValidateIf((o) => o.requestInterop !== null && o.requestInterop >= 6)
+  @Equals('application/partial-upload')
+  contentType!: number | null;
 
-  @Type(() => TusdHttpRequestDto)
-  @ValidateNested()
-  @IsObject()
-  HTTPRequest!: TusdHttpRequestDto;
+  @Expose({ name: UploadHeader.UploadOffset })
+  @Min(0)
+  @IsInt()
+  @Type(() => Number)
+  @Optional()
+  uploadOffset!: number | null;
 }
 
-export class TusdPreFinishEventDto {
-  @Type(() => TusdPreFinishUploadDto)
-  @ValidateNested()
-  @IsObject()
-  Upload!: TusdPreFinishUploadDto;
-
-  @Type(() => TusdHttpRequestDto)
-  @ValidateNested()
-  @IsObject()
-  HTTPRequest!: TusdHttpRequestDto;
-}
-
-export class TusdHookRequestDto {
-  @IsEnum(TusdHookRequestType)
-  Type!: TusdHookRequestType;
-
-  @IsObject()
-  Event!: TusdPreCreateEventDto | TusdPreFinishEventDto;
-}
-
-export class TusdHttpResponseDto {
-  StatusCode!: number;
-
-  Body?: string;
-
-  Header?: Record<string, string>;
-}
-
-export class TusdChangeFileInfoStorageDto {
-  Path?: string;
-}
-
-export class TusdChangeFileInfoDto {
-  ID?: string;
-
-  MetaData?: TusdMetaDataDto;
-
-  Storage?: TusdChangeFileInfoStorageDto;
-}
-
-export class TusdHookResponseDto {
-  HTTPResponse?: TusdHttpResponseDto;
-
-  RejectUpload?: boolean;
-
-  ChangeFileInfo?: TusdChangeFileInfoDto;
-}
+export class GetUploadStatusDto extends BaseRufhHeadersDto {}
