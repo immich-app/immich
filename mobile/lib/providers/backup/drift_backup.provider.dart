@@ -405,7 +405,7 @@ final driftBackupCandidateProvider = FutureProvider.autoDispose<List<LocalAsset>
     return [];
   }
 
-  return ref.read(backupRepositoryProvider).getCandidates(user.id);
+  return ref.read(backupRepositoryProvider).getCandidates(user.id, onlyHashed: false);
 });
 
 final driftCandidateBackupAlbumInfoProvider = FutureProvider.autoDispose.family<List<LocalAlbum>, String>((
