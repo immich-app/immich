@@ -48,18 +48,6 @@
     })),
   ]);
 
-	const expiresAt = DateTime.fromISO(editingLink?.expiresAt);
-	const createdAt = DateTime.fromISO(editingLink?.createdAt);
-
-	const remainingMs = expiresAt.toMillis() - createdAt.toMillis();
-	let selectedOption = expiredDateOptions[0];
-
-	for (const option of expiredDateOptions) {
-		if (option.value <= remainingMs) {
-			selectedOption = option;
-		}
-	}
-
   let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
 
   $effect(() => {
@@ -81,6 +69,23 @@
 
     albumId = editingLink.album?.id;
     assetIds = editingLink.assets.map(({ id }) => id);
+
+    const expiresAt = editingLink.expiresAt ? DateTime.fromISO(editingLink.expiresAt) : DateTime.fromMillis(0);
+    const createdAt = DateTime.fromISO(editingLink.createdAt);
+
+    if (expiresAt) {
+      const remainingMs = expiresAt.toMillis() - createdAt.toMillis();
+
+      const bestOption = expiredDateOptions.reduce((best, option) => {
+        const diff = Math.abs(option.value - remainingMs);
+        const bestDiff = Math.abs(best.value - remainingMs);
+        return diff < bestDiff ? option : best;
+      });
+
+      expirationOption = bestOption.value;
+    } else {
+      expirationOption = 0;
+    }
   }
 
   const handleCreateSharedLink = async () => {
@@ -194,7 +199,7 @@
 
       <div class="mt-2">
         <SettingSelect
-					bind:value={selectedOption.value}
+          bind:value={expirationOption}
           options={expiredDateOptions}
           label={$t('expire_after')}
           disabled={editingLink && !shouldChangeExpirationTime}
