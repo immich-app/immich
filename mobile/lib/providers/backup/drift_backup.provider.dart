@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -35,6 +36,7 @@ class DriftUploadStatus {
   final int fileSize;
   final String networkSpeedAsString;
   final bool? isFailed;
+  final String? error;
 
   const DriftUploadStatus({
     required this.taskId,
@@ -43,6 +45,7 @@ class DriftUploadStatus {
     required this.fileSize,
     required this.networkSpeedAsString,
     this.isFailed,
+    this.error,
   });
 
   DriftUploadStatus copyWith({
@@ -52,6 +55,7 @@ class DriftUploadStatus {
     int? fileSize,
     String? networkSpeedAsString,
     bool? isFailed,
+    String? error,
   }) {
     return DriftUploadStatus(
       taskId: taskId ?? this.taskId,
@@ -60,12 +64,13 @@ class DriftUploadStatus {
       fileSize: fileSize ?? this.fileSize,
       networkSpeedAsString: networkSpeedAsString ?? this.networkSpeedAsString,
       isFailed: isFailed ?? this.isFailed,
+      error: error ?? this.error,
     );
   }
 
   @override
   String toString() {
-    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed)';
+    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed, error: $error)';
   }
 
   @override
@@ -77,7 +82,8 @@ class DriftUploadStatus {
         other.progress == progress &&
         other.fileSize == fileSize &&
         other.networkSpeedAsString == networkSpeedAsString &&
-        other.isFailed == isFailed;
+        other.isFailed == isFailed &&
+        other.error == error;
   }
 
   @override
@@ -87,7 +93,8 @@ class DriftUploadStatus {
         progress.hashCode ^
         fileSize.hashCode ^
         networkSpeedAsString.hashCode ^
-        isFailed.hashCode;
+        isFailed.hashCode ^
+        error.hashCode;
   }
 }
 
@@ -247,7 +254,23 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           return;
         }
 
-        state = state.copyWith(uploadItems: {...state.uploadItems, taskId: currentItem.copyWith(isFailed: true)});
+        String? error;
+        final exception = update.exception;
+        if (exception != null && exception is TaskHttpException) {
+          final message = tryJsonDecode(exception.description)?['message'] as String?;
+          if (message != null) {
+            final responseCode = exception.httpResponseCode;
+            error = "${exception.exceptionType}, response code $responseCode: $message";
+          }
+        }
+        error ??= update.exception?.toString();
+
+        state = state.copyWith(
+          uploadItems: {
+            ...state.uploadItems,
+            taskId: currentItem.copyWith(isFailed: true, error: error),
+          },
+        );
         _logger.fine("Upload failed for taskId: $taskId, exception: ${update.exception}");
         break;
 
