@@ -43,7 +43,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     }
 
     return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
-      final date = row.bucketDate.dateFmt(groupBy);
+      final date = row.bucketDate.truncateDate(groupBy);
       return TimeBucket(date: date, assetCount: row.assetCount);
     }).watch();
   }
@@ -123,7 +123,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
@@ -199,7 +199,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
           }
 
           return query.map((row) {
-            final timeline = row.read(dateExp)!.dateFmt(groupBy);
+            final timeline = row.read(dateExp)!.truncateDate(groupBy);
             final assetCount = row.read(assetCountExp)!;
             return TimeBucket(date: timeline, assetCount: assetCount);
           }).watch();
@@ -328,7 +328,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
@@ -399,7 +399,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
@@ -463,7 +463,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
@@ -520,7 +520,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
@@ -586,7 +586,7 @@ extension on Expression<DateTime> {
 }
 
 extension on String {
-  DateTime dateFmt(GroupAssetsBy groupBy) {
+  DateTime truncateDate(GroupAssetsBy groupBy) {
     final format = switch (groupBy) {
       GroupAssetsBy.day || GroupAssetsBy.auto => "y-M-d",
       GroupAssetsBy.month => "y-M",
