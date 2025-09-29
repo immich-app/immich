@@ -137,12 +137,15 @@ class UploadApi {
   ///
   /// Parameters:
   ///
+  /// * [String] draftUploadInteropVersion (required):
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  ///
   /// * [String] id (required):
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> getUploadStatusWithHttpInfo(String id, { String? key, String? slug, }) async {
+  Future<Response> getUploadStatusWithHttpInfo(String draftUploadInteropVersion, String id, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload/{id}'
       .replaceAll('{id}', id);
@@ -160,6 +163,8 @@ class UploadApi {
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
     }
+
+    headerParams[r'draft-upload-interop-version'] = parameterToString(draftUploadInteropVersion);
 
     const contentTypes = <String>[];
 
@@ -179,13 +184,16 @@ class UploadApi {
   ///
   /// Parameters:
   ///
+  /// * [String] draftUploadInteropVersion (required):
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  ///
   /// * [String] id (required):
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<void> getUploadStatus(String id, { String? key, String? slug, }) async {
-    final response = await getUploadStatusWithHttpInfo(id,  key: key, slug: slug, );
+  Future<void> getUploadStatus(String draftUploadInteropVersion, String id, { String? key, String? slug, }) async {
+    final response = await getUploadStatusWithHttpInfo(draftUploadInteropVersion, id,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -197,12 +205,24 @@ class UploadApi {
   ///
   /// Parameters:
   ///
+  /// * [String] contentLength (required):
+  ///   Non-negative size of the request body in bytes.
+  ///
+  /// * [String] draftUploadInteropVersion (required):
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  ///
   /// * [String] id (required):
+  ///
+  /// * [String] uploadComplete (required):
+  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
+  ///
+  /// * [String] uploadOffset (required):
+  ///   Non-negative byte offset indicating the starting position of the data in the request body within the entire file.
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> resumeUploadWithHttpInfo(String id, { String? key, String? slug, }) async {
+  Future<Response> resumeUploadWithHttpInfo(String contentLength, String draftUploadInteropVersion, String id, String uploadComplete, String uploadOffset, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload/{id}'
       .replaceAll('{id}', id);
@@ -220,6 +240,11 @@ class UploadApi {
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
     }
+
+    headerParams[r'content-length'] = parameterToString(contentLength);
+    headerParams[r'draft-upload-interop-version'] = parameterToString(draftUploadInteropVersion);
+    headerParams[r'upload-complete'] = parameterToString(uploadComplete);
+    headerParams[r'upload-offset'] = parameterToString(uploadOffset);
 
     const contentTypes = <String>[];
 
@@ -239,13 +264,25 @@ class UploadApi {
   ///
   /// Parameters:
   ///
+  /// * [String] contentLength (required):
+  ///   Non-negative size of the request body in bytes.
+  ///
+  /// * [String] draftUploadInteropVersion (required):
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  ///
   /// * [String] id (required):
+  ///
+  /// * [String] uploadComplete (required):
+  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
+  ///
+  /// * [String] uploadOffset (required):
+  ///   Non-negative byte offset indicating the starting position of the data in the request body within the entire file.
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<void> resumeUpload(String id, { String? key, String? slug, }) async {
-    final response = await resumeUploadWithHttpInfo(id,  key: key, slug: slug, );
+  Future<void> resumeUpload(String contentLength, String draftUploadInteropVersion, String id, String uploadComplete, String uploadOffset, { String? key, String? slug, }) async {
+    final response = await resumeUploadWithHttpInfo(contentLength, draftUploadInteropVersion, id, uploadComplete, uploadOffset,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -257,10 +294,25 @@ class UploadApi {
   ///
   /// Parameters:
   ///
+  /// * [String] contentLength (required):
+  ///   Non-negative size of the request body in bytes.
+  ///
+  /// * [String] draftUploadInteropVersion (required):
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  ///
+  /// * [String] reprDigest (required):
+  ///   Structured dictionary containing an SHA-1 checksum used to detect duplicate files and validate data integrity.
+  ///
+  /// * [String] uploadComplete (required):
+  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
+  ///
+  /// * [String] xImmichAssetData (required):
+  ///   Base64-encoded JSON of asset metadata. The expected content is the same as AssetMediaCreateDto, except that `filename` is required and `sidecarData` is ignored.
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> startUploadWithHttpInfo({ String? key, String? slug, }) async {
+  Future<Response> startUploadWithHttpInfo(String contentLength, String draftUploadInteropVersion, String reprDigest, String uploadComplete, String xImmichAssetData, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload';
 
@@ -277,6 +329,12 @@ class UploadApi {
     if (slug != null) {
       queryParams.addAll(_queryParams('', 'slug', slug));
     }
+
+    headerParams[r'content-length'] = parameterToString(contentLength);
+    headerParams[r'draft-upload-interop-version'] = parameterToString(draftUploadInteropVersion);
+    headerParams[r'repr-digest'] = parameterToString(reprDigest);
+    headerParams[r'upload-complete'] = parameterToString(uploadComplete);
+    headerParams[r'x-immich-asset-data'] = parameterToString(xImmichAssetData);
 
     const contentTypes = <String>[];
 
@@ -296,11 +354,26 @@ class UploadApi {
   ///
   /// Parameters:
   ///
+  /// * [String] contentLength (required):
+  ///   Non-negative size of the request body in bytes.
+  ///
+  /// * [String] draftUploadInteropVersion (required):
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  ///
+  /// * [String] reprDigest (required):
+  ///   Structured dictionary containing an SHA-1 checksum used to detect duplicate files and validate data integrity.
+  ///
+  /// * [String] uploadComplete (required):
+  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
+  ///
+  /// * [String] xImmichAssetData (required):
+  ///   Base64-encoded JSON of asset metadata. The expected content is the same as AssetMediaCreateDto, except that `filename` is required and `sidecarData` is ignored.
+  ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<void> startUpload({ String? key, String? slug, }) async {
-    final response = await startUploadWithHttpInfo( key: key, slug: slug, );
+  Future<void> startUpload(String contentLength, String draftUploadInteropVersion, String reprDigest, String uploadComplete, String xImmichAssetData, { String? key, String? slug, }) async {
+    final response = await startUploadWithHttpInfo(contentLength, draftUploadInteropVersion, reprDigest, uploadComplete, xImmichAssetData,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

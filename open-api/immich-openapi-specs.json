@@ -9420,6 +9420,24 @@
         "operationId": "startUpload",
         "parameters": [
           {
+            "name": "content-length",
+            "in": "header",
+            "description": "Non-negative size of the request body in bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "draft-upload-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "key",
             "required": false,
             "in": "query",
@@ -9428,9 +9446,36 @@
             }
           },
           {
+            "name": "repr-digest",
+            "in": "header",
+            "description": "Structured dictionary containing an SHA-1 checksum used to detect duplicate files and validate data integrity.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "slug",
             "required": false,
             "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-complete",
+            "in": "header",
+            "description": "Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-immich-asset-data",
+            "in": "header",
+            "description": "Base64-encoded JSON of asset metadata. The expected content is the same as AssetMediaCreateDto, except that `filename` is required and `sidecarData` is ignored.",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -9515,6 +9560,15 @@
         "operationId": "getUploadStatus",
         "parameters": [
           {
+            "name": "draft-upload-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -9566,6 +9620,24 @@
         "operationId": "resumeUpload",
         "parameters": [
           {
+            "name": "content-length",
+            "in": "header",
+            "description": "Non-negative size of the request body in bytes.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "draft-upload-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -9586,6 +9658,24 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-complete",
+            "in": "header",
+            "description": "Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-offset",
+            "in": "header",
+            "description": "Non-negative byte offset indicating the starting position of the data in the request body within the entire file.",
+            "required": true,
             "schema": {
               "type": "string"
             }

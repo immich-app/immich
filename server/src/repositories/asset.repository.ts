@@ -255,6 +255,18 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
+  createWithMetadata(asset: Insertable<AssetTable> & { id: string }, metadata?: AssetMetadataItem[]) {
+    if (!metadata || metadata.length === 0) {
+      return this.db.insertInto('asset').values(asset).execute();
+    }
+
+    return this.db
+      .with('asset', (qb) => qb.insertInto('asset').values(asset).returning('id'))
+      .insertInto('asset_metadata')
+      .values(metadata.map(({ key, value }) => ({ assetId: asset.id, key, value })))
+      .execute();
+  }
+
   getCompletionMetadata(assetId: string, ownerId: string) {
     return this.db
       .selectFrom('asset')

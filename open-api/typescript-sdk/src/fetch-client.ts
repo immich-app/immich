@@ -4536,16 +4536,28 @@ export function getUploadOptions({ key, slug }: {
 /**
  * This endpoint requires the `asset.upload` permission.
  */
-export function startUpload({ key, slug }: {
+export function startUpload({ contentLength, draftUploadInteropVersion, key, reprDigest, slug, uploadComplete, xImmichAssetData }: {
+    contentLength: string;
+    draftUploadInteropVersion: string;
     key?: string;
+    reprDigest: string;
     slug?: string;
+    uploadComplete: string;
+    xImmichAssetData: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/upload${QS.query(QS.explode({
         key,
         slug
     }))}`, {
         ...opts,
-        method: "POST"
+        method: "POST",
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "content-length": contentLength,
+            "draft-upload-interop-version": draftUploadInteropVersion,
+            "repr-digest": reprDigest,
+            "upload-complete": uploadComplete,
+            "x-immich-asset-data": xImmichAssetData
+        })
     }));
 }
 /**
@@ -4567,7 +4579,8 @@ export function cancelUpload({ id, key, slug }: {
 /**
  * This endpoint requires the `asset.upload` permission.
  */
-export function getUploadStatus({ id, key, slug }: {
+export function getUploadStatus({ draftUploadInteropVersion, id, key, slug }: {
+    draftUploadInteropVersion: string;
     id: string;
     key?: string;
     slug?: string;
@@ -4577,23 +4590,36 @@ export function getUploadStatus({ id, key, slug }: {
         slug
     }))}`, {
         ...opts,
-        method: "HEAD"
+        method: "HEAD",
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "draft-upload-interop-version": draftUploadInteropVersion
+        })
     }));
 }
 /**
  * This endpoint requires the `asset.upload` permission.
  */
-export function resumeUpload({ id, key, slug }: {
+export function resumeUpload({ contentLength, draftUploadInteropVersion, id, key, slug, uploadComplete, uploadOffset }: {
+    contentLength: string;
+    draftUploadInteropVersion: string;
     id: string;
     key?: string;
     slug?: string;
+    uploadComplete: string;
+    uploadOffset: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/upload/${encodeURIComponent(id)}${QS.query(QS.explode({
         key,
         slug
     }))}`, {
         ...opts,
-        method: "PATCH"
+        method: "PATCH",
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "content-length": contentLength,
+            "draft-upload-interop-version": draftUploadInteropVersion,
+            "upload-complete": uploadComplete,
+            "upload-offset": uploadOffset
+        })
     }));
 }
 /**
