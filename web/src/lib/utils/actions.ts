@@ -21,15 +21,15 @@ export type OnSetVisibility = (ids: string[]) => void;
 
 export const deleteAssets = async (
   force: boolean,
-  onAssetDelete: OnDelete,
+  onAssetDelete: OnDelete | undefined,
   assets: TimelineAsset[],
-  onUndoDelete: OnUndoDelete | undefined = undefined,
+  onUndoDelete: OnUndoDelete | undefined,
 ) => {
   const $t = get(t);
   try {
     const ids = assets.map((a) => a.id);
     await deleteBulk({ assetBulkDeleteDto: { ids, force } });
-    onAssetDelete(ids);
+    onAssetDelete?.(ids);
 
     notificationController.show({
       message: force

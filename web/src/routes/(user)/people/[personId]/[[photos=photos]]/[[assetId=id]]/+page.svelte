@@ -349,15 +349,8 @@
     }
   };
 
-  const handleDeleteAssets = async (assetIds: string[]) => {
-    timelineManager.removeAssets(assetIds);
-    await updateAssetCount();
-  };
-
-  const handleUndoDeleteAssets = async (assets: TimelineAsset[]) => {
-    timelineManager.addAssets(assets);
-    await updateAssetCount();
-  };
+  const handleDeleteAssets = async () => await updateAssetCount();
+  const handleUndoDeleteAssets = async () => await updateAssetCount();
 
   let person = $derived(data.person);
 
@@ -511,14 +504,7 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
-      <FavoriteAction
-        removeFavorite={assetInteraction.isAllFavorite}
-        onFavorite={(ids, isFavorite) =>
-          timelineManager.updateAssetOperation(ids, (asset) => {
-            asset.isFavorite = isFavorite;
-            return { remove: false };
-          })}
-      />
+      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} manager={timelineManager} />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
@@ -529,19 +515,16 @@
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
-        />
+        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} manager={timelineManager} />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
         <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
         <DeleteAssets
           menuItem
-          onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)}
-          onUndoDelete={(assets) => handleUndoDeleteAssets(assets)}
+          manager={timelineManager}
+          onAssetDelete={handleDeleteAssets}
+          onUndoDelete={handleUndoDeleteAssets}
         />
       </ButtonContextMenu>
     </AssetSelectControlBar>

@@ -5,6 +5,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { OnFavorite } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
@@ -16,9 +17,10 @@
     onFavorite?: OnFavorite;
     menuItem?: boolean;
     removeFavorite: boolean;
+    manager?: TimelineManager;
   }
 
-  let { onFavorite, menuItem = false, removeFavorite }: Props = $props();
+  let { onFavorite, menuItem = false, removeFavorite, manager }: Props = $props();
 
   let text = $derived(removeFavorite ? $t('remove_from_favorites') : $t('to_favorite'));
   let icon = $derived(removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline);
@@ -39,11 +41,7 @@
       if (ids.length > 0) {
         await updateAssets({ assetBulkUpdateDto: { ids, isFavorite } });
       }
-
-      for (const asset of assets) {
-        asset.isFavorite = isFavorite;
-      }
-
+      manager?.updateAssetOperation(ids, (asset) => ((asset.isFavorite = isFavorite), void 0));
       onFavorite?.(ids, isFavorite);
 
       notificationController.show({

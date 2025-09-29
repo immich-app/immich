@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { OnArchive } from '$lib/utils/actions';
   import { archiveAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
@@ -12,9 +13,10 @@
     onArchive?: OnArchive;
     menuItem?: boolean;
     unarchive?: boolean;
+    manager?: TimelineManager;
   }
 
-  let { onArchive, menuItem = false, unarchive = false }: Props = $props();
+  let { onArchive, menuItem = false, unarchive = false, manager }: Props = $props();
 
   let text = $derived(unarchive ? $t('unarchive') : $t('to_archive'));
   let icon = $derived(unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline);
@@ -24,12 +26,13 @@
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
   const handleArchive = async () => {
-    const isArchived = unarchive ? AssetVisibility.Timeline : AssetVisibility.Archive;
-    const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== isArchived);
+    const visibility = unarchive ? AssetVisibility.Timeline : AssetVisibility.Archive;
+    const assets = [...getOwnedAssets()].filter((asset) => asset.visibility !== visibility);
     loading = true;
-    const ids = await archiveAssets(assets, isArchived as AssetVisibility);
+    const ids = await archiveAssets(assets, visibility as AssetVisibility);
     if (ids) {
-      onArchive?.(ids, isArchived ? AssetVisibility.Archive : AssetVisibility.Timeline);
+      manager?.updateAssetOperation(ids, (asset) => ((asset.visibility = visibility), void 0));
+      onArchive?.(ids, visibility ? AssetVisibility.Archive : AssetVisibility.Timeline);
       clearSelect();
     }
     loading = false;

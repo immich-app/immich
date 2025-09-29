@@ -34,7 +34,6 @@
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
@@ -262,18 +261,15 @@
     }
   };
 
-  const handleSetVisibility = (assetIds: string[]) => {
-    timelineManager.removeAssets(assetIds);
+  const handleSetVisibility = () => {
     assetInteraction.clearMultiselect();
   };
 
-  const handleRemoveAssets = async (assetIds: string[]) => {
-    timelineManager.removeAssets(assetIds);
+  const handleRemoveAssets = async () => {
     await refreshAlbum();
   };
 
-  const handleUndoRemoveAssets = async (assets: TimelineAsset[]) => {
-    timelineManager.addAssets(assets);
+  const handleUndoRemoveAssets = async () => {
     await refreshAlbum();
   };
 
@@ -572,14 +568,7 @@
           <AddToAlbum shared />
         </ButtonContextMenu>
         {#if assetInteraction.isAllUserOwned}
-          <FavoriteAction
-            removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={(ids, isFavorite) =>
-              timelineManager.updateAssetOperation(ids, (asset) => {
-                asset.isFavorite = isFavorite;
-                return { remove: false };
-              })}
-          ></FavoriteAction>
+          <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} manager={timelineManager}></FavoriteAction>
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
@@ -594,7 +583,7 @@
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} manager={timelineManager} />
             <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
           {/if}
 
@@ -606,7 +595,12 @@
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
           {#if assetInteraction.isAllUserOwned}
-            <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
+            <DeleteAssets
+              menuItem
+              onAssetDelete={handleRemoveAssets}
+              onUndoDelete={handleUndoRemoveAssets}
+              manager={timelineManager}
+            />
           {/if}
         </ButtonContextMenu>
       </AssetSelectControlBar>
