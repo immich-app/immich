@@ -5,7 +5,7 @@ import { app, baseUrl, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-describe('/upload (RUFH v9 compliance)', () => {
+describe('/upload (RUFH compliance)', () => {
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
   let base64Metadata: string;
