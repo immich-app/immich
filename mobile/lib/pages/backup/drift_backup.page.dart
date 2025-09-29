@@ -31,6 +31,8 @@ class DriftBackupPage extends ConsumerStatefulWidget {
 }
 
 class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
+  bool? syncSuccess;
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +46,13 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
-      await ref.read(backgroundSyncProvider).syncRemote();
+
+      ref.read(driftBackupProvider.notifier).updateSyncing(true);
+      syncSuccess = await ref.read(backgroundSyncProvider).syncRemote();
+      ref
+          .read(driftBackupProvider.notifier)
+          .updateError(syncSuccess == true ? BackupError.none : BackupError.syncFailed);
+      ref.read(driftBackupProvider.notifier).updateSyncing(false);
 
       if (mounted) {
         await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
@@ -76,12 +84,17 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         return;
       }
 
-      final syncSuccess = await backupSyncManager.syncRemote();
+      if (syncSuccess == null) {
+        ref.read(driftBackupProvider.notifier).updateSyncing(true);
+        syncSuccess = await backupSyncManager.syncRemote();
+        ref.read(driftBackupProvider.notifier).updateSyncing(false);
+      }
+
       await backupNotifier.getBackupStatus(currentUser.id);
 
-      if (!syncSuccess) {
+      if (syncSuccess == false) {
         Logger("DriftBackupPage").warning("Remote sync did not complete successfully, skipping backup");
-        await backupNotifier.updateError(BackupError.syncFailed);
+        backupNotifier.updateError(BackupError.syncFailed);
         return;
       }
       await backupNotifier.startBackup(currentUser.id);
@@ -125,7 +138,13 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                   const _BackupCard(),
                   const _RemainderCard(),
                   const Divider(),
-                  BackupToggleButton(onStart: () async => await startBackup(), onStop: () async => await stopBackup()),
+                  BackupToggleButton(
+                    onStart: () async => await startBackup(),
+                    onStop: () async {
+                      syncSuccess = null;
+                      await stopBackup();
+                    },
+                  ),
                   switch (error) {
                     BackupError.none => const SizedBox.shrink(),
                     BackupError.syncFailed => Padding(

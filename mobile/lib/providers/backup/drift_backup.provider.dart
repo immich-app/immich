@@ -109,6 +109,7 @@ class DriftBackupState {
   final int enqueueCount;
   final int enqueueTotalCount;
 
+  final bool isSyncing;
   final bool isCanceling;
   final BackupError error;
 
@@ -122,6 +123,7 @@ class DriftBackupState {
     required this.enqueueCount,
     required this.enqueueTotalCount,
     required this.isCanceling,
+    required this.isSyncing,
     required this.uploadItems,
     this.error = BackupError.none,
   });
@@ -134,6 +136,7 @@ class DriftBackupState {
     int? enqueueCount,
     int? enqueueTotalCount,
     bool? isCanceling,
+    bool? isSyncing,
     Map<String, DriftUploadStatus>? uploadItems,
     BackupError? error,
   }) {
@@ -145,6 +148,7 @@ class DriftBackupState {
       enqueueCount: enqueueCount ?? this.enqueueCount,
       enqueueTotalCount: enqueueTotalCount ?? this.enqueueTotalCount,
       isCanceling: isCanceling ?? this.isCanceling,
+      isSyncing: isSyncing ?? this.isSyncing,
       uploadItems: uploadItems ?? this.uploadItems,
       error: error ?? this.error,
     );
@@ -152,7 +156,7 @@ class DriftBackupState {
 
   @override
   String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isCanceling: $isCanceling, uploadItems: $uploadItems, error: $error)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, enqueueCount: $enqueueCount, enqueueTotalCount: $enqueueTotalCount, isCanceling: $isCanceling, isSyncing: $isSyncing, uploadItems: $uploadItems, error: $error)';
   }
 
   @override
@@ -167,6 +171,7 @@ class DriftBackupState {
         other.enqueueCount == enqueueCount &&
         other.enqueueTotalCount == enqueueTotalCount &&
         other.isCanceling == isCanceling &&
+        other.isSyncing == isSyncing &&
         mapEquals(other.uploadItems, uploadItems) &&
         other.error == error;
   }
@@ -180,6 +185,7 @@ class DriftBackupState {
         enqueueCount.hashCode ^
         enqueueTotalCount.hashCode ^
         isCanceling.hashCode ^
+        isSyncing.hashCode ^
         uploadItems.hashCode ^
         error.hashCode;
   }
@@ -200,6 +206,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
           enqueueCount: 0,
           enqueueTotalCount: 0,
           isCanceling: false,
+          isSyncing: false,
           uploadItems: {},
           error: BackupError.none,
         ),
@@ -335,8 +342,12 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  Future<void> updateError(BackupError error) async {
+  void updateError(BackupError error) async {
     state = state.copyWith(error: error);
+  }
+
+  void updateSyncing(bool isSyncing) async {
+    state = state.copyWith(isSyncing: isSyncing);
   }
 
   Future<void> startBackup(String userId) {
