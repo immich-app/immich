@@ -95,19 +95,22 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
         const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
-          if (ownsAlbum) const ArchiveActionButton(source: ActionSource.timeline),
-          if (ownsAlbum) const FavoriteActionButton(source: ActionSource.timeline),
+
+          if (ownsAlbum) ...[
+            const ArchiveActionButton(source: ActionSource.timeline),
+            const FavoriteActionButton(source: ActionSource.timeline),
+          ],
           const DownloadActionButton(source: ActionSource.timeline),
-          if (ownsAlbum)
+          if (ownsAlbum) ...[
             isTrashEnable
                 ? const TrashActionButton(source: ActionSource.timeline)
                 : const DeletePermanentActionButton(source: ActionSource.timeline),
-          if (ownsAlbum) const EditDateTimeActionButton(source: ActionSource.timeline),
-          if (ownsAlbum) const EditLocationActionButton(source: ActionSource.timeline),
-          if (ownsAlbum) const MoveToLockFolderActionButton(source: ActionSource.timeline),
-          if (multiselect.selectedAssets.length > 1 && ownsAlbum)
-            const StackActionButton(source: ActionSource.timeline),
-          if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
+            const EditDateTimeActionButton(source: ActionSource.timeline),
+            const EditLocationActionButton(source: ActionSource.timeline),
+            const MoveToLockFolderActionButton(source: ActionSource.timeline),
+            if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
+            if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
+          ],
         ],
         if (multiselect.hasLocal) ...[
           const DeleteLocalActionButton(source: ActionSource.timeline),

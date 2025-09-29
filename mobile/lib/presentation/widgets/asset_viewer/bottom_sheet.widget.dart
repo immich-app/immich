@@ -151,7 +151,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
           onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
         ),
-        if (exifInfo != null && isOwner) _SheetAssetDescription(exif: exifInfo),
+        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
         const SheetPeopleDetails(),
         const SheetLocationDetails(),
         // Details header
@@ -266,8 +266,9 @@ class _SheetTile extends ConsumerWidget {
 
 class _SheetAssetDescription extends ConsumerStatefulWidget {
   final ExifInfo exif;
+  final bool isEditable;
 
-  const _SheetAssetDescription({required this.exif});
+  const _SheetAssetDescription({required this.exif, this.isEditable = true, super.key});
 
   @override
   ConsumerState<_SheetAssetDescription> createState() => _SheetAssetDescriptionState();
@@ -313,27 +314,33 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
 
     // Update controller text when EXIF data changes
     final currentDescription = currentExifInfo?.description ?? '';
+    final hintText = (widget.isEditable ? 'exif_bottom_sheet_description' : 'exif_bottom_sheet_no_description').t(
+      context: context,
+    );
     if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
       _controller.text = currentDescription;
     }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-      child: TextField(
-        controller: _controller,
-        keyboardType: TextInputType.multiline,
-        focusNode: _descriptionFocus,
-        maxLines: null, // makes it grow as text is added
-        decoration: InputDecoration(
-          hintText: 'exif_bottom_sheet_description'.t(context: context),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
+      child: IgnorePointer(
+        ignoring: !widget.isEditable,
+        child: TextField(
+          controller: _controller,
+          keyboardType: TextInputType.multiline,
+          focusNode: _descriptionFocus,
+          maxLines: null, // makes it grow as text is added
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+          ),
+          onTapOutside: (_) => saveDescription(currentExifInfo?.description),
         ),
-        onTapOutside: (_) => saveDescription(currentExifInfo?.description),
       ),
     );
   }

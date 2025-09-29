@@ -173,7 +173,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
     final canAddPhotos =
-        await ref.read(remoteAlbumUserRoleProvider((_album.id, user!.id)).future) == AlbumUserRole.editor;
+        await ref.read(remoteAlbumServiceProvider).getUserRole(_album.id, user?.id ?? '') == AlbumUserRole.editor;
 
     showModalBottomSheet(
       context: context,

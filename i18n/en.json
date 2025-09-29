@@ -1035,6 +1035,7 @@
   },
   "exif": "Exif",
   "exif_bottom_sheet_description": "Add Description...",
+  "exif_bottom_sheet_no_description": "No description",
   "exif_bottom_sheet_description_error": "Error updating description",
   "exif_bottom_sheet_details": "DETAILS",
   "exif_bottom_sheet_location": "LOCATION",
