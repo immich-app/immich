@@ -79,7 +79,7 @@ export class AssetUploadService extends BaseService {
     }
 
     const location = `/api/upload/${assetId}`;
-    // this.sendInterimResponse(response, location);
+    this.sendInterimResponse(response, location);
 
     await this.storageRepository.mkdir(folder);
     let checksumBuffer: Buffer | undefined;
@@ -264,7 +264,20 @@ export class AssetUploadService extends BaseService {
     });
   }
 
-  async getUploadStatus(auth: AuthDto, assetId: string, request: Request, response: Response) {
+  async cancelUpload(auth: AuthDto, assetId: string, response: Response): Promise<void> {
+    const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
+    if (!asset) {
+      response.status(404).send('Asset not found');
+      return;
+    }
+    if (asset.status !== AssetStatus.Partial) {
+      return this.sendAlreadyCompletedProblem(response);
+    }
+    await this.removeAsset(assetId, asset.path);
+    response.status(204).send();
+  }
+
+  async getUploadStatus(auth: AuthDto, assetId: string, response: Response) {
     return this.databaseRepository.withUuidLock(assetId, async () => {
       const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
       if (!asset) {
@@ -287,19 +300,6 @@ export class AssetUploadService extends BaseService {
 
   async getUploadOptions(response: Response): Promise<void> {
     response.status(204).setHeader('Upload-Limit', 'min-size=0').setHeader('Allow', 'POST, OPTIONS').send();
-  }
-
-  async cancelUpload(auth: AuthDto, assetId: string, response: Response): Promise<void> {
-    const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
-    if (!asset) {
-      response.status(404).send('Asset not found');
-      return;
-    }
-    if (asset.status !== AssetStatus.Partial) {
-      return this.sendAlreadyCompletedProblem(response);
-    }
-    await this.removeAsset(assetId, asset.path);
-    response.status(204).send();
   }
 
   private async onComplete(data: { assetId: string; path: string; size: number; fileModifiedAt: Date }): Promise<void> {
