@@ -1,6 +1,8 @@
 <script lang="ts">
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
   import { IconButton } from '@immich/ui';
@@ -9,13 +11,14 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
 
   interface Props {
-    onAssetDelete: OnDelete;
-    onUndoDelete?: OnUndoDelete | undefined;
+    onAssetDelete?: OnDelete;
+    onUndoDelete?: OnUndoDelete;
     menuItem?: boolean;
     force?: boolean;
+    manager?: TimelineManager;
   }
 
-  let { onAssetDelete, onUndoDelete = undefined, menuItem = false, force = !$featureFlags.trash }: Props = $props();
+  let { onAssetDelete, onUndoDelete, menuItem = false, force = !$featureFlags.trash, manager }: Props = $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -36,7 +39,12 @@
   const handleDelete = async () => {
     loading = true;
     const assets = [...getOwnedAssets()];
-    await deleteAssets(force, onAssetDelete, assets, onUndoDelete);
+    const undo = (assets: TimelineAsset[]) => {
+      manager?.addAssets(assets);
+      onUndoDelete?.(assets);
+    };
+    await deleteAssets(force, onAssetDelete, assets, undo);
+    manager?.removeAssets(assets.map((asset) => asset.id));
     clearSelect();
     isShowConfirmation = false;
     loading = false;

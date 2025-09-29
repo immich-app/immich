@@ -118,14 +118,7 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <FavoriteAction
-      removeFavorite={assetInteraction.isAllFavorite}
-      onFavorite={(ids, isFavorite) =>
-        timelineManager.updateAssetOperation(ids, (asset) => {
-          asset.isFavorite = isFavorite;
-          return { remove: false };
-        })}
-    ></FavoriteAction>
+    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} manager={timelineManager}></FavoriteAction>
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
@@ -146,15 +139,11 @@
       <ChangeDate menuItem />
       <ChangeDescription menuItem />
       <ChangeLocation menuItem />
-      <ArchiveAction menuItem onArchive={(assetIds) => timelineManager.removeAssets(assetIds)} />
+      <ArchiveAction menuItem manager={timelineManager} />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
-      <DeleteAssets
-        menuItem
-        onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
-      />
+      <DeleteAssets menuItem manager={timelineManager} />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <hr />
       <AssetJobActions />
