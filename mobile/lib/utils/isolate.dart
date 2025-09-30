@@ -32,7 +32,7 @@ Cancelable<T?> runInIsolateGentle<T>({
     throw const InvalidIsolateUsageException();
   }
 
-  return workerManagerForIos.executeGentle((cancelledChecker) async {
+  return workerManagerPatch.executeGentle((cancelledChecker) async {
     T? result;
     await runZonedGuarded(
       () async {

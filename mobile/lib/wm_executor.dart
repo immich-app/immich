@@ -1,13 +1,16 @@
 // part of 'package:worker_manager/worker_manager.dart';
+// ignore_for_file: implementation_imports, avoid_print
+
 import 'dart:async';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:worker_manager/worker_manager.dart';
+import 'package:worker_manager/src/number_of_processors/processors_io.dart';
 import 'package:worker_manager/src/worker/worker.dart';
+import 'package:worker_manager/worker_manager.dart';
 
-final workerManagerForIos = _Executor();
+final workerManagerPatch = _Executor();
 
 // [-2^54; 2^53] is compatible with dart2js, see core.int doc
 const _minId = -9007199254740992;
@@ -49,7 +52,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   final _pool = <Worker>[];
   var _nextTaskId = _minId;
   var _dynamicSpawning = false;
-  var _isolatesCount = 5;
+  var _isolatesCount = numberOfProcessors;
 
   @override
   Future<void> init({int? isolatesCount, bool? dynamicSpawning}) async {
