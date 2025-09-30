@@ -161,7 +161,24 @@ export class NotificationService extends BaseService {
 
     const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
     if (asset) {
-      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset));
+      // need to specify authDto to this mapAsset request, because it tries to prevent
+      // leaking information PR#7580 which expects a userId in the auth options object
+      this.eventRepository.clientSend(
+        'on_asset_update',
+        userId,
+        mapAsset(asset, {
+          auth: {
+            user: {
+              id: userId,
+              isAdmin: false,
+              name: '',
+              email: '',
+              quotaUsageInBytes: 0,
+              quotaSizeInBytes: null,
+            },
+          },
+        }),
+      );
     }
   }
 

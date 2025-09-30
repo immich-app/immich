@@ -71,7 +71,7 @@
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
-    <FavoriteAction removeFavorite onFavorite={(assetIds) => timelineManager.removeAssets(assetIds)} />
+    <FavoriteAction removeFavorite manager={timelineManager} />
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
@@ -83,20 +83,12 @@
       <ChangeDate menuItem />
       <ChangeDescription menuItem />
       <ChangeLocation menuItem />
-      <ArchiveAction
-        menuItem
-        unarchive={assetInteraction.isAllArchived}
-        onArchive={(assetIds) => timelineManager.removeAssets(assetIds)}
-      />
+      <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} manager={timelineManager} />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
       {/if}
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-      <DeleteAssets
-        menuItem
-        onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-        onUndoDelete={(assets) => timelineManager.addAssets(assets)}
-      />
+      <DeleteAssets menuItem manager={timelineManager} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
