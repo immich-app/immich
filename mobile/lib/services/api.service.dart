@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -11,6 +10,7 @@ import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/utils/user_agent.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class ApiService implements Authentication {
   late ApiClient _apiClient;
@@ -155,7 +155,7 @@ class ApiService implements Authentication {
         return endpoint;
       }
     } catch (e) {
-      debugPrint("Could not locate /.well-known/immich at $baseUrl");
+      dPrint(() => "Could not locate /.well-known/immich at $baseUrl");
     }
 
     return "";

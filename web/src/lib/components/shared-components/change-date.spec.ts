@@ -1,6 +1,6 @@
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { DateTime } from 'luxon';
 import ChangeDate from './change-date.svelte';
@@ -28,6 +28,13 @@ describe('ChangeDate component', () => {
 
   afterEach(() => {
     vi.resetAllMocks();
+  });
+
+  afterAll(async () => {
+    await waitFor(() => {
+      // check that bits-ui body scroll-lock class is gone
+      expect(document.body.style.pointerEvents).not.toBe('none');
+    });
   });
 
   test('should render correct values', () => {

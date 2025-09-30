@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import {
     notificationController,
     NotificationType,
@@ -7,7 +6,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { mergePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, HStack, IconButton, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, HStack, Icon, IconButton, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -78,7 +77,7 @@
           <div></div>
           <div class="flex flex-col h-full items-center justify-center">
             <div class="flex h-full items-center justify-center">
-              <Icon path={mdiCallMerge} size={48} class="rotate-90 dark:text-white" />
+              <Icon icon={mdiCallMerge} size="48" class="rotate-90 dark:text-white" />
             </div>
           </div>
           <div>
@@ -115,7 +114,7 @@
       {:else}
         <div class="grid w-full grid-cols-1 gap-2">
           <div class="px-2">
-            <button type="button" onclick={() => (choosePersonToMerge = false)}> <Icon path={mdiArrowLeft} /></button>
+            <button type="button" onclick={() => (choosePersonToMerge = false)}> <Icon icon={mdiArrowLeft} /></button>
           </div>
           <div class="flex items-center justify-center">
             <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">

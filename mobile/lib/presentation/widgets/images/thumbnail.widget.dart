@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -38,14 +38,7 @@ class Thumbnail extends StatefulWidget {
          ),
          _ => null,
        },
-       imageProvider = switch (asset) {
-         RemoteAsset() =>
-           asset.localId == null
-               ? RemoteThumbProvider(assetId: asset.id)
-               : LocalThumbProvider(id: asset.localId!, size: size, assetType: asset.type),
-         LocalAsset() => LocalThumbProvider(id: asset.id, size: size, assetType: asset.type),
-         _ => null,
-       };
+       imageProvider = asset == null ? null : getThumbnailImageProvider(asset, size: size);
 
   @override
   State<Thumbnail> createState() => _ThumbnailState();
@@ -94,7 +87,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           imageInfo.dispose();
           return;
         }
-
+        _fadeController.value = 1.0;
         setState(() {
           _providerImage = imageInfo.image;
         });
@@ -115,7 +108,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
     final imageStream = _imageStream = imageProvider.resolve(ImageConfiguration.empty);
     final imageStreamListener = _imageStreamListener = ImageStreamListener(
       (ImageInfo imageInfo, bool synchronousCall) {
-        _stopListeningToStream();
+        _stopListeningToThumbhashStream();
         if (!mounted) {
           imageInfo.dispose();
           return;
@@ -125,7 +118,7 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
           return;
         }
 
-        if (synchronousCall && _providerImage == null) {
+        if ((synchronousCall && _providerImage == null) || !_isVisible()) {
           _fadeController.value = 1.0;
         } else if (_fadeController.isAnimating) {
           _fadeController.forward();
@@ -201,6 +194,15 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
     _loadFromThumbhashProvider();
   }
 
+  bool _isVisible() {
+    final renderObject = context.findRenderObject() as RenderBox?;
+    if (renderObject == null || !renderObject.attached) return false;
+
+    final topLeft = renderObject.localToGlobal(Offset.zero);
+    final bottomRight = renderObject.localToGlobal(Offset(renderObject.size.width, renderObject.size.height));
+    return topLeft.dy < context.height && bottomRight.dy > 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
@@ -226,6 +228,16 @@ class _ThumbnailState extends State<Thumbnail> with SingleTickerProviderStateMix
 
   @override
   void dispose() {
+    final imageProvider = widget.imageProvider;
+    if (imageProvider is CancellableImageProvider) {
+      imageProvider.cancel();
+    }
+
+    final thumbhashProvider = widget.thumbhashProvider;
+    if (thumbhashProvider is CancellableImageProvider) {
+      thumbhashProvider.cancel();
+    }
+
     _fadeController.removeStatusListener(_onAnimationStatusChanged);
     _fadeController.dispose();
     _stopListeningToStream();
@@ -306,7 +318,7 @@ class _ThumbnailRenderBox extends RenderBox {
         image: _previousImage!,
         fit: _fit,
         filterQuality: FilterQuality.low,
-        opacity: 1.0 - _fadeValue,
+        opacity: 1.0,
       );
     } else if (_image == null || _fadeValue < 1.0) {
       final paint = Paint()..shader = _placeholderGradient.createShader(rect);

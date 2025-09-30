@@ -48,7 +48,7 @@
         aria-label={$t('show_album_options')}
         icon={mdiDotsVertical}
         shape="round"
-        variant="ghost"
+        variant="filled"
         size="medium"
         class="icon-white-drop-shadow"
         onclick={showAlbumContextMenu}
@@ -60,7 +60,7 @@
 
   <div class="mt-4">
     <p
-      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-immich-primary dark:group-hover:text-immich-dark-primary"
+      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-primary"
       data-testid="album-name"
       title={album.albumName}
     >
