@@ -1,4 +1,4 @@
-import { shortcuts } from '$lib/actions/shortcut';
+import { onKeydown } from '$lib/actions/input';
 import type { Action } from 'svelte/action';
 
 /**
@@ -30,10 +30,17 @@ export const listNavigation: Action<HTMLElement, HTMLElement | undefined> = (
     }
   };
 
-  const { destroy } = shortcuts(node, [
-    { shortcut: { key: 'ArrowUp' }, onShortcut: () => moveFocus('up'), ignoreInputFields: false },
-    { shortcut: { key: 'ArrowDown' }, onShortcut: () => moveFocus('down'), ignoreInputFields: false },
-  ]);
+  const unregisterUp = onKeydown('ArrowUp', (event) => (event.preventDefault(), moveFocus('up')), {
+    ignoreInputFields: false,
+  })(node);
+  const unregisterDown = onKeydown('ArrowDown', (event) => (event.preventDefault(), moveFocus('down')), {
+    ignoreInputFields: false,
+  })(node);
+  let destroy = () => {
+    unregisterUp();
+    unregisterDown();
+    destroy = () => void 0;
+  };
 
   return {
     update(newContainer) {

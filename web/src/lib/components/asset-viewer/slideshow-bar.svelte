@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import ProgressBar from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import { ProgressBarStatus } from '$lib/constants';
   import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
@@ -136,22 +136,16 @@
 
 <svelte:document
   onmousemove={showControlBar}
-  use:shortcuts={[
-    { shortcut: { key: 'Escape' }, onShortcut: onClose },
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: onPrevious },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: onNext },
-    {
-      shortcut: { key: ' ' },
-      onShortcut: () => {
-        if (progressBarStatus === ProgressBarStatus.Paused) {
-          progressBar?.play();
-        } else {
-          progressBar?.pause();
-        }
-      },
-      preventDefault: true,
-    },
-  ]}
+  {@attach shortcut('Escape', category(Category.Application, $t('exit_slideshow')), onClose)}
+  {@attach shortcut('ArrowLeft', category(Category.Navigation, $t('previous')), onClose)}
+  {@attach shortcut('ArrowRight', category(Category.Navigation, $t('next')), onClose)}
+  {@attach shortcut(' ', $t('pause'), () => {
+    if (progressBarStatus === ProgressBarStatus.Paused) {
+      progressBar?.play();
+    } else {
+      progressBar?.pause();
+    }
+  })}
 />
 
 {/* @ts-expect-error https://github.com/Rezi/svelte-gestures/issues/38#issuecomment-3315953573 */ null}

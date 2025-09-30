@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { category, Category, shortcut } from '$lib/actions/shortcut.svelte';
   import { IconButton } from '@immich/ui';
   import { mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -11,7 +11,7 @@
   let { onClose }: Props = $props();
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
+<svelte:document {@attach shortcut('Escape', category(Category.Navigation, $t('go_back')), onClose)} />
 
 <IconButton
   color="secondary"

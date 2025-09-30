@@ -1,7 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { onKeydown } from '$lib/actions/input';
+  import { Category, category, registerShortcutVariant, shortcut, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import { AppRoute } from '$lib/constants';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
@@ -206,11 +207,17 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-    { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() },
-    { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
-  ]}
+  {@attach shortcut(
+    { key: 'k', ctrl: true },
+    category(Category.Application, $t('search_your_photos'), ShortcutVariant.Search),
+    () => input?.select(),
+  )}
+  {@attach shortcut(
+    { key: 'k', ctrl: true, shift: true },
+    category(Category.Application, $t('open_the_search_filters'), ShortcutVariant.SearchFilter),
+    onFilterClick,
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.Search, ShortcutVariant.SearchFilter)}
 />
 
 <div class="w-full relative z-auto" use:focusOutside={{ onFocusOut }} tabindex="-1">
@@ -247,14 +254,11 @@
         aria-activedescendant={selectedId ?? ''}
         aria-expanded={showSuggestions && isSearchSuggestions}
         aria-autocomplete="list"
-        use:shortcuts={[
-          { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-          { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
-          { shortcut: { key: 'ArrowUp' }, onShortcut: () => onArrow(-1) },
-          { shortcut: { key: 'ArrowDown' }, onShortcut: () => onArrow(1) },
-          { shortcut: { key: 'Enter' }, onShortcut: onEnter, preventDefault: false },
-          { shortcut: { key: 'ArrowDown', alt: true }, onShortcut: openDropdown },
-        ]}
+        {@attach onKeydown('Enter', onEnter)}
+        {@attach onKeydown('Escape', onEscape)}
+        {@attach onKeydown('ArrowUp', () => onArrow(-1))}
+        {@attach onKeydown('ArrowDown', () => onArrow(1))}
+        {@attach onKeydown({ key: 'ArrowDown', alt: true }, openDropdown)}
       />
 
       <!-- SEARCH HISTORY BOX -->

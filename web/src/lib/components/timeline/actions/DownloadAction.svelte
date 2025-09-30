@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { downloadArchive, downloadFile } from '$lib/utils/asset-utils';
@@ -13,9 +12,10 @@
   interface Props {
     filename?: string;
     menuItem?: boolean;
+    shortcutCategory?: Category;
   }
 
-  let { filename = 'immich.zip', menuItem = false }: Props = $props();
+  let { filename = 'immich.zip', menuItem = false, shortcutCategory }: Props = $props();
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -33,7 +33,13 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: handleDownloadFiles }} />
+<svelte:document
+  {@attach shortcut(
+    { key: 'd', shift: true },
+    category(shortcutCategory ?? Category.QuickActions, $t('download')),
+    handleDownloadFiles,
+  )}
+/>
 
 {#if menuItem}
   <MenuOption text={$t('download')} icon={mdiDownload} onClick={handleDownloadFiles} />

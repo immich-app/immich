@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { shiftKey } from '$lib/actions/input';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -19,7 +20,7 @@
   const onDownloadFile = async () => downloadFile(await getAssetInfo({ ...authManager.params, id: asset.id }));
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: onDownloadFile }} />
+<svelte:document {@attach shortcut(shiftKey('d'), category(Category.QuickActions, $t('download')), onDownloadFile)} />
 
 {#if !menuItem}
   <IconButton

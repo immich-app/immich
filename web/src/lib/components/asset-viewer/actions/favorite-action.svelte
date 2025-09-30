@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import {
     NotificationType,
     notificationController,
@@ -8,10 +8,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     asset: AssetResponseDto;
@@ -46,7 +46,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'f' }, onShortcut: toggleFavorite }} />
+<svelte:document {@attach shortcut('f', category(Category.AssetActions, 'Toggle favorite'), toggleFavorite)} />
 
 <IconButton
   color="secondary"
