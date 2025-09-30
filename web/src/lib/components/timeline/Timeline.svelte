@@ -5,20 +5,19 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import MonthSegment from '$lib/components/timeline/MonthSegment.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
+  import SelectableDay from '$lib/components/timeline/SelectableDay.svelte';
+  import SelectableSegment from '$lib/components/timeline/SelectableSegment.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
   import {
@@ -54,22 +53,12 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
-    onSelect?: (asset: TimelineAsset) => void;
+    onAssetOpen?: (asset: TimelineAsset, defaultAssetOpen: () => void) => void;
+    onAssetSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     children?: Snippet;
     empty?: Snippet;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
-    onThumbnailClick?: (
-      asset: TimelineAsset,
-      timelineManager: TimelineManager,
-      dayGroup: DayGroup,
-      onClick: (
-        timelineManager: TimelineManager,
-        assets: TimelineAsset[],
-        groupTitle: string,
-        asset: TimelineAsset,
-      ) => void,
-    ) => void;
   }
 
   let {
@@ -85,12 +74,13 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
-    onSelect = () => {},
+
+    onAssetSelect,
+    onAssetOpen,
     onEscape = () => {},
     children,
     empty,
     customThumbnailLayout,
-    onThumbnailClick,
   }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
@@ -149,14 +139,26 @@
     scrollTo(0);
   };
 
+  const handleTriggeredScrollCompensation = (compensation: { heightDelta?: number; scrollTop?: number }) => {
+    const { heightDelta, scrollTop } = compensation;
+    if (heightDelta !== undefined) {
+      scrollBy(heightDelta);
+    } else if (scrollTop !== undefined) {
+      scrollTo(scrollTop);
+    }
+    timelineManager.clearScrollCompensation();
+  };
+
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
     // the following method may trigger any layouts, so need to
     // handle any scroll compensation that may have been set
     const height = monthGroup!.findAssetAbsolutePosition(assetId);
 
+    // this is in a while loop, since scrollCompensations invoke scrolls
+    // which may load months, triggering more scrollCompensations. Call
+    // this in a loop, until no more layouts occur.
     while (timelineManager.scrollCompensation.monthGroup) {
-      handleScrollCompensation(timelineManager.scrollCompensation);
-      timelineManager.clearScrollCompensation();
+      handleTriggeredScrollCompensation(timelineManager.scrollCompensation);
     }
     return height;
   };
@@ -251,19 +253,6 @@
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
-
-  const handleScrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
-    if (heightDelta !== undefined) {
-      scrollBy(heightDelta);
-    } else if (scrollTop !== undefined) {
-      scrollTo(scrollTop);
-    }
-    // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
-    // the above calls. However, this delay is enough time to set the intersecting property
-    // of the monthGroup to false, then true, which causes the DOM nodes to be recreated,
-    // causing bad perf, and also, disrupting focus of those elements.
-    updateSlidingWindow();
-  };
 
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
@@ -390,222 +379,13 @@
     }
   };
 
-  const handleSelectAsset = (asset: TimelineAsset) => {
-    if (!timelineManager.albumAssets.has(asset.id)) {
-      assetInteraction.selectAsset(asset);
-    }
-  };
-
-  let lastAssetMouseEvent: TimelineAsset | null = $state(null);
-
-  let shiftKeyIsDown = $state(false);
-
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = true;
-    }
-  };
-
-  const onKeyUp = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = false;
-    }
-  };
-  const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
-    if (asset) {
-      void selectAssetCandidates(asset);
-    }
-    lastAssetMouseEvent = asset;
-  };
-
-  const handleGroupSelect = (dayGroup: DayGroup, assets: TimelineAsset[]) => {
-    const group = dayGroup.groupTitle;
-    if (assetInteraction.selectedGroup.has(group)) {
-      assetInteraction.removeGroupFromMultiselectGroup(group);
-      for (const asset of assets) {
-        assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-      }
-    } else {
-      assetInteraction.addGroupToMultiselectGroup(group);
-      for (const asset of assets) {
-        handleSelectAsset(asset);
-      }
-    }
-
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
-  };
-
-  const onSelectAssets = async (asset: TimelineAsset) => {
-    if (!asset) {
-      return;
-    }
-    onSelect(asset);
-
-    if (singleSelect) {
-      scrollTop(0);
-      return;
-    }
-
-    const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
-    const deselect = assetInteraction.hasSelectedAsset(asset.id);
-
-    // Select/deselect already loaded assets
-    if (deselect) {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
-        assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
-      }
-      assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-    } else {
-      for (const candidate of assetInteraction.assetSelectionCandidates) {
-        handleSelectAsset(candidate);
-      }
-      handleSelectAsset(asset);
-    }
-
-    assetInteraction.clearAssetSelectionCandidates();
-
-    if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
-
-      if (startBucket === null || endBucket === null) {
-        return;
-      }
-
-      // Select/deselect assets in range (start,end)
-      let started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === endBucket) {
-          break;
-        }
-        if (started) {
-          await timelineManager.loadSegment(monthGroup.identifier);
-          for (const asset of monthGroup.assetsIterator()) {
-            if (deselect) {
-              assetInteraction.removeAssetFromMultiselectGroup(asset.id);
-            } else {
-              handleSelectAsset(asset);
-            }
-          }
-        }
-        if (monthGroup === startBucket) {
-          started = true;
-        }
-      }
-
-      // Update date group selection in range [start,end]
-      started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === startBucket) {
-          started = true;
-        }
-        if (started) {
-          // Split month group into day groups and check each group
-          for (const dayGroup of monthGroup.dayGroups) {
-            const dayGroupTitle = dayGroup.groupTitle;
-            if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-              assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
-            } else {
-              assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
-            }
-          }
-        }
-        if (monthGroup === endBucket) {
-          break;
-        }
-      }
-    }
-
-    assetInteraction.setAssetSelectionStart(deselect ? null : asset);
-  };
-
-  const selectAssetCandidates = async (endAsset: TimelineAsset) => {
-    if (!shiftKeyIsDown) {
-      return;
-    }
-
-    const startAsset = assetInteraction.assetSelectionStart;
-    if (!startAsset) {
-      return;
-    }
-
-    const assets = assetsSnapshot(await timelineManager.retrieveRange(startAsset, endAsset));
-    assetInteraction.setAssetSelectionCandidates(assets);
-  };
-
-  $effect(() => {
-    if (!lastAssetMouseEvent) {
-      assetInteraction.clearAssetSelectionCandidates();
-    }
-  });
-
-  $effect(() => {
-    if (!shiftKeyIsDown) {
-      assetInteraction.clearAssetSelectionCandidates();
-    }
-  });
-
-  $effect(() => {
-    if (shiftKeyIsDown && lastAssetMouseEvent) {
-      void selectAssetCandidates(lastAssetMouseEvent);
-    }
-  });
-
   $effect(() => {
     if ($showAssetViewer) {
       const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
       void timelineManager.loadSegment(getSegmentIdentifier({ year: localDateTime.year, month: localDateTime.month }));
     }
   });
-
-  const assetSelectHandler = (
-    timelineManager: TimelineManager,
-    asset: TimelineAsset,
-    assetsInDayGroup: TimelineAsset[],
-    groupTitle: string,
-  ) => {
-    void onSelectAssets(asset);
-
-    // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = assetsInDayGroup.filter((asset) =>
-      assetInteraction.hasSelectedAsset(asset.id),
-    ).length;
-
-    // if all assets are selected in a group, add the group to selected group
-    if (selectedAssetsInGroupCount == assetsInDayGroup.length) {
-      assetInteraction.addGroupToMultiselectGroup(groupTitle);
-    } else {
-      assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
-    }
-
-    if (timelineManager.assetCount == assetInteraction.selectedAssets.length) {
-      isSelectingAllAssets.set(true);
-    } else {
-      isSelectingAllAssets.set(false);
-    }
-  };
-
-  const _onClick = (
-    timelineManager: TimelineManager,
-    assets: TimelineAsset[],
-    groupTitle: string,
-    asset: TimelineAsset,
-  ) => {
-    if (isSelectionMode || assetInteraction.selectionActive) {
-      assetSelectHandler(timelineManager, asset, assets, groupTitle);
-      return;
-    }
-    void navigate({ targetRoute: 'current', assetId: asset.id });
-  };
 </script>
-
-<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
 <HotModuleReload onAfterUpdate={handleAfterUpdate} onBeforeUpdate={handleBeforeUpdate} />
 
@@ -629,21 +409,6 @@
     {viewportTopMonth}
     {onScrub}
     bind:scrubberWidth
-    onScrubKeyDown={(evt) => {
-      evt.preventDefault();
-      let amount = 50;
-      if (shiftKeyIsDown) {
-        amount = 500;
-      }
-      if (evt.key === 'ArrowUp') {
-        amount = -amount;
-        if (shiftKeyIsDown) {
-          element?.scrollBy({ top: amount, behavior: 'smooth' });
-        }
-      } else if (evt.key === 'ArrowDown') {
-        element?.scrollBy({ top: amount, behavior: 'smooth' });
-      }
-    }}
   />
 {/if}
 
@@ -702,47 +467,58 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <MonthSegment
-            {assetInteraction}
-            {customThumbnailLayout}
-            {singleSelect}
-            {monthGroup}
+          <SelectableSegment
+            segment={monthGroup}
+            onScrollCompensationMonthInDOM={handleTriggeredScrollCompensation}
             {timelineManager}
-            onDayGroupSelect={handleGroupSelect}
+            {assetInteraction}
+            {isSelectionMode}
+            {singleSelect}
+            {onAssetOpen}
+            {onAssetSelect}
           >
-            {#snippet thumbnail({ asset, position, dayGroup, groupIndex })}
-              {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
-              {@const isAssetSelected =
-                assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
-              {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
-              <Thumbnail
-                showStackedIcon={withStacked}
-                {showArchiveIcon}
-                {asset}
-                {groupIndex}
-                onClick={(asset) => {
-                  if (typeof onThumbnailClick === 'function') {
-                    onThumbnailClick(asset, timelineManager, dayGroup, _onClick);
-                  } else {
-                    _onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
-                  }
-                }}
-                onSelect={() => {
-                  if (isSelectionMode || assetInteraction.selectionActive) {
-                    assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle);
-                    return;
-                  }
-                  void onSelectAssets(asset);
-                }}
-                onMouseEvent={() => handleSelectAssetCandidates(asset)}
-                selected={isAssetSelected}
-                selectionCandidate={isAssetSelectionCandidate}
-                disabled={isAssetDisabled}
-                thumbnailWidth={position.width}
-                thumbnailHeight={position.height}
-              />
+            {#snippet content({ onAssetOpen, onAssetSelect, onAssetHover })}
+              <SelectableDay {assetInteraction} {onAssetSelect}>
+                {#snippet content({ onDayGroupSelect, onDayGroupAssetSelect })}
+                  <MonthSegment
+                    {assetInteraction}
+                    {customThumbnailLayout}
+                    {singleSelect}
+                    {monthGroup}
+                    {timelineManager}
+                    {onDayGroupSelect}
+                  >
+                    {#snippet thumbnail({ asset, position, dayGroup, groupIndex })}
+                      {@const isAssetSelectionCandidate = assetInteraction.hasSelectionCandidate(asset.id)}
+                      {@const isAssetSelected =
+                        assetInteraction.hasSelectedAsset(asset.id) || timelineManager.albumAssets.has(asset.id)}
+                      {@const isAssetDisabled = timelineManager.albumAssets.has(asset.id)}
+                      <Thumbnail
+                        showStackedIcon={withStacked}
+                        {showArchiveIcon}
+                        {asset}
+                        {groupIndex}
+                        onClick={() => onAssetOpen(asset)}
+                        onSelect={() => onDayGroupAssetSelect(dayGroup, asset)}
+                        onMouseEvent={(isMouseOver) => {
+                          if (isMouseOver) {
+                            onAssetHover(asset);
+                          } else {
+                            onAssetHover(null);
+                          }
+                        }}
+                        selected={isAssetSelected}
+                        selectionCandidate={isAssetSelectionCandidate}
+                        disabled={isAssetDisabled}
+                        thumbnailWidth={position.width}
+                        thumbnailHeight={position.height}
+                      />
+                    {/snippet}
+                  </MonthSegment>
+                {/snippet}
+              </SelectableDay>
             {/snippet}
-          </MonthSegment>
+          </SelectableSegment>
         </div>
       {/if}
     {/each}
