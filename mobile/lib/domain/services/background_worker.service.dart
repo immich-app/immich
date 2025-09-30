@@ -32,6 +32,7 @@ import 'package:immich_mobile/services/upload.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:immich_mobile/wm_executor.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:worker_manager/worker_manager.dart';
@@ -93,7 +94,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await Future.wait(
         [
           loadTranslations(),
-          workerManager.init(dynamicSpawning: true),
+          workerManagerForIos.init(dynamicSpawning: true),
           _ref?.read(authServiceProvider).setOpenApiServiceEndpoint(),
           // Initialize the file downloader
           FileDownloader().configure(
@@ -198,7 +199,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
-        workerManager.dispose().catchError((_) async {
+        workerManagerForIos.dispose().catchError((_) async {
           // Discard any errors on the dispose call
           return;
         }),

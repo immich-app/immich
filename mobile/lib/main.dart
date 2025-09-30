@@ -41,7 +41,7 @@ import 'package:immich_mobile/utils/migration.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
-import 'package:worker_manager/worker_manager.dart';
+import 'package:immich_mobile/wm_executor.dart';
 
 void main() async {
   ImmichWidgetsBinding();
@@ -50,7 +50,7 @@ void main() async {
   await Bootstrap.initDomain(isar, drift, logDb);
   await initApp();
   // Warm-up isolate pool for worker manager
-  await workerManager.init(dynamicSpawning: true);
+  await workerManagerForIos.init(dynamicSpawning: true, isolatesCount: 6);
   await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
