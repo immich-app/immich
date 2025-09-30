@@ -1,6 +1,6 @@
 <script lang="ts">
   import { autoGrowHeight } from '$lib/actions/autogrow';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { blurOnCtrlEnter } from '$lib/actions/input';
 
   interface Props {
     content?: string;
@@ -26,10 +26,7 @@
   class="resize-none {className}"
   onfocusout={updateContent}
   {placeholder}
-  use:shortcut={{
-    shortcut: { key: 'Enter', ctrl: true },
-    onShortcut: (e) => e.currentTarget.blur(),
-  }}
+  {@attach blurOnCtrlEnter}
   use:autoGrowHeight={{ value: newContent }}
   data-testid="autogrow-textarea">{content}</textarea
 >

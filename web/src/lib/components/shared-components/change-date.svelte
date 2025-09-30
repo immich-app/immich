@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { newShortcutScope } from '$lib/actions/shortcut.svelte';
   import DateInput from '$lib/elements/DateInput.svelte';
   import DurationInput from '$lib/elements/DurationInput.svelte';
   import { locale } from '$lib/stores/preferences.store';
@@ -6,6 +7,7 @@
   import { ConfirmModal, Field, Switch } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
   import Combobox, { type ComboBoxOption } from './combobox.svelte';
@@ -232,6 +234,7 @@
   let intervalTo = $derived.by(() =>
     currentInterval ? calcNewDate(currentInterval.end, selectedDuration, selectedRelativeOption?.value) : undefined,
   );
+  onMount(newShortcutScope);
 </script>
 
 <ConfirmModal

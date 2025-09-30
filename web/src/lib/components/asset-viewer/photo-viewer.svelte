@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { ctrlKey, metaKey } from '$lib/actions/input';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import { zoomImageAction } from '$lib/actions/zoom-image';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
@@ -205,13 +206,13 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: true },
-    { shortcut: { key: 's' }, onShortcut: onPlaySlideshow, preventDefault: true },
-    { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
-    { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
-    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: false },
-  ]}
+  {@attach shortcut('z', category(Category.ViewActions, $t('zoom_image')), zoomToggle)}
+  {@attach shortcut('s', category(Category.ViewActions, 'Start slideshow'), onPlaySlideshow)}
+  {@attach shortcut(
+    [ctrlKey('c'), metaKey('c')],
+    category(Category.QuickActions, 'Copy image to clipboard'),
+    onCopyShortcut,
+  )}
 />
 {#if imageError}
   <div class="h-full w-full">

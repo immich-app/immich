@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import { resizeObserver } from '$lib/actions/resize-observer';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { shortcut } from '$lib/actions/shortcut.svelte';
   import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
   import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -312,15 +312,9 @@
 </script>
 
 <svelte:document
-  use:shortcuts={$isViewing
-    ? []
-    : [
-        { shortcut: { key: 'ArrowRight' }, onShortcut: () => handleNextAsset() },
-        { shortcut: { key: 'd' }, onShortcut: () => handleNextAsset() },
-        { shortcut: { key: 'ArrowLeft' }, onShortcut: () => handlePreviousAsset() },
-        { shortcut: { key: 'a' }, onShortcut: () => handlePreviousAsset() },
-        { shortcut: { key: 'Escape' }, onShortcut: () => handleEscape() },
-      ]}
+  {@attach shortcut(['ArrowRight', 'd'], $t('next'), handleNextAsset)}
+  {@attach shortcut(['ArrowLeft', 'a'], $t('previous'), handlePreviousAsset)}
+  {@attach shortcut(['Escape'], $t('timeline'), handleEscape)}
 />
 
 {#if assetInteraction.selectionActive}

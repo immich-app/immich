@@ -1,7 +1,7 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
   import { autoGrowHeight } from '$lib/actions/autogrow';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { onKeydown } from '$lib/actions/input';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
@@ -258,10 +258,7 @@
               bind:value={message}
               use:autoGrowHeight={{ height: '5px', value: message }}
               placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-              use:shortcut={{
-                shortcut: { key: 'Enter' },
-                onShortcut: () => handleSendComment(),
-              }}
+              {@attach onKeydown({ key: 'Enter' }, () => void handleSendComment())}
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
                 : ''} w-full max-h-56 pe-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"

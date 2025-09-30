@@ -1,6 +1,6 @@
 <script lang="ts">
   import { resolve } from '$app/paths';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { shortcut } from '$lib/actions/shortcut.svelte';
   import { AppRoute } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
@@ -34,7 +34,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: handleAddTag }} />
+<svelte:document {@attach shortcut('t', $t('tag_assets'), handleAddTag)} />
 
 {#if isOwner && !authManager.isSharedLink}
   <section class="px-4 mt-4">

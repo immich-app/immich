@@ -1,6 +1,6 @@
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { onKeydown } from '$lib/actions/input';
   import { generateId } from '$lib/utils/generate-id';
   import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -60,10 +60,7 @@
   class="text-primary w-fit cursor-default"
   onmouseleave={() => setHoverRating(0)}
   use:focusOutside={{ onFocusOut: reset }}
-  use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
-    { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
-  ]}
+  {@attach onKeydown(['ArrowLeft', 'ArrowRight'], (event) => event.stopPropagation())}
 >
   <legend class="sr-only">{$t('rating')}</legend>
   <div class="flex flex-row" data-testid="star-container">

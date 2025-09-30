@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { category, Category, shortcut, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import { Icon } from '@immich/ui';
   import { mdiChevronLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -13,10 +13,11 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: onPreviousAsset },
-    { shortcut: { key: 'a' }, onShortcut: onPreviousAsset },
-  ]}
+  {@attach shortcut(
+    ['ArrowLeft', 'a'],
+    category(Category.Navigation, $t('view_previous_asset'), ShortcutVariant.PrevAsset),
+    onPreviousAsset,
+  )}
 />
 
 <NavigationArea onClick={onPreviousAsset} label={$t('view_previous_asset')}>
