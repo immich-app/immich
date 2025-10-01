@@ -20,7 +20,7 @@
 
 <div id="display-options-selection">
   <fieldset>
-    <legend class="immich-form-label">{$t('display_options').toUpperCase()}</legend>
+    <legend class="uppercase immich-form-label">{$t('display_options')}</legend>
     <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
       <div class="flex items-center gap-2">
         <Checkbox id="not-in-album-checkbox" size="tiny" bind:checked={filters.isNotInAlbum} />

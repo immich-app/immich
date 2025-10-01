@@ -101,7 +101,6 @@ class _FixedSegmentRow extends ConsumerWidget {
     if (isScrubbing) {
       return _buildPlaceholder(context);
     }
-
     if (timelineService.hasRange(assetIndex, assetCount)) {
       return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
     }

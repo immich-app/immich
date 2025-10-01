@@ -249,7 +249,7 @@ export interface IEmailJob {
 }
 
 export interface INotifySignupJob extends IEntityJob {
-  tempPassword?: string;
+  password?: string;
 }
 
 export interface INotifyAlbumInviteJob extends IEntityJob {

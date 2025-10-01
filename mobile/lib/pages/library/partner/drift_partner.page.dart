@@ -134,7 +134,7 @@ class _SharedToPartnerList extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text("Error loading partners: $error")),
+      error: (error, stack) => Center(child: Text('error_loading_partners'.tr(args: [error.toString()]))),
     );
   }
 }

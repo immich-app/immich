@@ -9,8 +9,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -97,29 +97,11 @@ class _ImmichLogoWithText extends StatelessWidget {
           children: [
             Builder(
               builder: (context) {
-                return Badge(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                  backgroundColor: context.primaryColor,
-                  alignment: Alignment.centerRight,
-                  offset: const Offset(16, -8),
-                  label: Text(
-                    'β',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.colorScheme.onPrimary,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'OverpassMono',
-                      height: 1.2,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 3.0),
-                    child: SvgPicture.asset(
-                      context.isDarkTheme
-                          ? 'assets/immich-logo-inline-dark.svg'
-                          : 'assets/immich-logo-inline-light.svg',
-                      height: 40,
-                    ),
+                return Padding(
+                  padding: const EdgeInsets.only(top: 3.0),
+                  child: SvgPicture.asset(
+                    context.isDarkTheme ? 'assets/immich-logo-inline-dark.svg' : 'assets/immich-logo-inline-light.svg',
+                    height: 40,
                   ),
                 );
               },
@@ -157,7 +139,7 @@ class _ProfileIndicator extends ConsumerWidget {
 
     return InkWell(
       onTap: () => showDialog(context: context, useRootNavigator: false, builder: (ctx) => const ImmichAppBarDialog()),
-      onDoubleTap: () => toggleReadonlyMode(),
+      onLongPress: () => toggleReadonlyMode(),
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
@@ -173,7 +155,7 @@ class _ProfileIndicator extends ConsumerWidget {
             ? const Icon(Icons.face_outlined, size: widgetSize)
             : Semantics(
                 label: "logged_in_as".tr(namedArgs: {"user": user.name}),
-                child: UserCircleAvatar(radius: 17, size: 31, user: user),
+                child: AbsorbPointer(child: UserCircleAvatar(radius: 17, size: 31, user: user)),
               ),
       ),
     );
@@ -186,8 +168,16 @@ class _BackupIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const widgetSize = 30.0;
-    final indicatorIcon = _getBackupBadgeIcon(context, ref);
-    final badgeBackground = context.colorScheme.surfaceContainer;
+    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
+    final indicatorIcon = hasError
+        ? Icon(
+            Icons.warning_rounded,
+            size: 12,
+            color: context.colorScheme.error,
+            semanticLabel: 'backup_controller_page_backup'.tr(),
+          )
+        : _getBackupBadgeIcon(context, ref);
+    final badgeBackground = hasError ? context.colorScheme.errorContainer : context.colorScheme.surfaceContainer;
 
     return InkWell(
       onTap: () => context.pushRoute(const DriftBackupRoute()),

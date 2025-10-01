@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:c642d5dfaf9115a12086785f23008558ae2e13bcd0c4794536340bcb777a4381 AS builder-cpu
+FROM python:3.11-bookworm@sha256:fc1f2e357c307c4044133952b203e66a47e7726821a664f603a180a0c5823844 AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -22,7 +22,7 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-22.04:6.3.4-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS builder-rocm
+FROM rocm/dev-ubuntu-22.04:6.4.3-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS builder-rocm
 
 # renovate: datasource=github-releases depName=Microsoft/onnxruntime
 ARG ONNXRUNTIME_VERSION="v1.20.1"
@@ -68,11 +68,11 @@ RUN if [ "$DEVICE" = "rocm" ]; then \
     uv pip install /opt/onnxruntime_rocm-*.whl; \
     fi
 
-FROM python:3.11-slim-bookworm@sha256:838ff46ae6c481e85e369706fa3dea5166953824124735639f3c9f52af85f319 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-cpu
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-FROM python:3.11-slim-bookworm@sha256:838ff46ae6c481e85e369706fa3dea5166953824124735639f3c9f52af85f319 AS prod-openvino
+FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
@@ -99,7 +99,7 @@ COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
-FROM rocm/dev-ubuntu-22.04:6.3.4-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS prod-rocm
+FROM rocm/dev-ubuntu-22.04:6.4.3-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS prod-rocm
 
 FROM prod-cpu AS prod-armnn
 

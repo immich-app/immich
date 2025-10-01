@@ -119,6 +119,10 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     })
   }
   
+  func showNotification(title: String, content: String) throws {
+    // No-op on iOS for the time being
+  }
+  
   /**
    * Cancels the currently running background task, either due to timeout or external request.
    * Sends a cancel signal to the Flutter side and sets up a fallback timer to ensure
@@ -129,7 +133,6 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       return
     }
 
-    isComplete = true
     flutterApi?.cancel { result in
       self.complete(success: false)
     }
@@ -170,6 +173,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     
     isComplete = true
     engine.destroyContext()
+    flutterApi = nil
     completionHandler(success)
   }
 }
