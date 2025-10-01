@@ -184,7 +184,11 @@ export class AuthService extends BaseService {
       throw new ForbiddenException('Forbidden');
     }
 
-    if (authDto.user.shouldChangePassword) {
+    if (
+      authDto.user.shouldChangePassword &&
+      typeof requestedPermission === 'string' &&
+      ![Permission.UserUpdate, Permission.UserRead, Permission.UserPreferenceRead, Permission.ServerAbout].includes(requestedPermission)
+    ) {
       this.logger.warn(`Denied access, user should change their password`);
       throw new ForbiddenException('Change your password');
     }
