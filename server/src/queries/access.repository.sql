@@ -71,6 +71,11 @@ where
   and "shared_link"."albumId" in ($2)
 
 -- AccessRepository.asset.checkAlbumAccess
+with
+  "target" as (
+    select
+      array[$1]::uuid[] as "ids"
+  )
 select
   "asset"."id",
   "asset"."livePhotoVideoId"
@@ -82,14 +87,15 @@ from
   left join "album_user" as "albumUsers" on "albumUsers"."albumsId" = "album"."id"
   left join "user" on "user"."id" = "albumUsers"."usersId"
   and "user"."deletedAt" is null
+  cross join "target"
 where
   (
-    "asset"."id" in ($1)
-    or "asset"."livePhotoVideoId" in ($2)
+    "asset"."id" = any (target.ids)
+    or "asset"."livePhotoVideoId" = any (target.ids)
   )
   and (
-    "album"."ownerId" = $3
-    or "user"."id" = $4
+    "album"."ownerId" = $2
+    or "user"."id" = $3
   )
   and "album"."deletedAt" is null
 
