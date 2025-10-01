@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -185,7 +184,8 @@ class _Map extends StatelessWidget {
           initialCameraPosition: initialLocation == null
               ? const CameraPosition(target: LatLng(0, 0), zoom: 0)
               : CameraPosition(target: initialLocation, zoom: MapUtils.mapZoomToAssetLevel),
-          compassViewMargins: const Point(8, kToolbarHeight),
+          compassEnabled: false,
+          rotateGesturesEnabled: false,
           styleString: style,
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,
