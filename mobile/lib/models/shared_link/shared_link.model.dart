@@ -27,7 +27,7 @@ class SharedLink {
     required this.expiresAt,
     required this.key,
     required this.showMetadata,
-    required this.slug,
+    this.slug,
     required this.type,
   });
 

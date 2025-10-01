@@ -32,12 +32,10 @@ class MockSharedLinksNotifier extends StateNotifier<AsyncValue<List<SharedLink>>
   MockSharedLinksNotifier() : super(const AsyncValue.loading());
 }
 
-final mockServerInfoNotifierProvider = Provider<ServerInfoNotifier>((ref) => MockServerInfoNotifier());
 
-/// Creates a mock ServerInfo with customizable parameters for testing
+/// Creates a mock ServerInfo for testing
 ServerInfo createMockServerInfo({
   String externalDomain = 'https://demo.immich.app',
-  String serverEndpoint = 'https://demo.immich.app',
 }) {
   return ServerInfo(
     serverVersion: const ServerVersion(major: 1, minor: 0, patch: 0),
@@ -54,34 +52,6 @@ ServerInfo createMockServerInfo({
     isVersionMismatch: false,
     isNewReleaseAvailable: false,
     versionMismatchErrorMessage: "",
-  );
-}
-
-/// Creates a mock album shared link with customizable parameters for testing
-SharedLink createAlbumSharedLink({
-  String id = '1',
-  String title = 'Test Album',
-  String description = 'Test Description',
-  String key = 'test-key',
-  String? slug = 'test-slug',
-  bool allowUpload = true,
-  bool allowDownload = true,
-  bool showMetadata = true,
-  String? password,
-}) {
-  return SharedLink(
-    id: id,
-    title: title,
-    description: description,
-    key: key,
-    slug: slug,
-    expiresAt: DateTime.now().add(const Duration(days: 1)),
-    allowUpload: allowUpload,
-    allowDownload: allowDownload,
-    showMetadata: showMetadata,
-    thumbAssetId: null,
-    password: password,
-    type: SharedLinkSource.album,
   );
 }
 
@@ -121,20 +91,13 @@ SharedLink createSharedLinkWithoutSlug() {
   );
 }
 
-/// Sets up default server info with external domain for testing
-void setupDefaultServerInfo(MockServerInfoNotifier mockServerInfoNotifier) {
-  final mockServerInfo = createMockServerInfo(externalDomain: 'https://example.com');
-  mockServerInfoNotifier.state = mockServerInfo;
+/// Sets up server info with external domain for testing
+void setupServerInfo(MockServerInfoNotifier mockServerInfoNotifier, String domain) {
+  mockServerInfoNotifier.state = createMockServerInfo(externalDomain: domain);
 }
 
-/// Sets up empty external domain for testing
-void setupEmptyExternalDomain(ServerInfoNotifier mockServerInfoNotifier) {
-  final mockServerInfoWithEmptyDomain = createMockServerInfo(externalDomain: '');
-  mockServerInfoNotifier.state = mockServerInfoWithEmptyDomain;
-}
-
-/// Sets up default mock responses for shared link service
-void setupDefaultMockResponses(MockSharedLinkService mockSharedLinkService) {
+/// Sets up mock response for shared link service
+void setupMockResponse(MockSharedLinkService mockSharedLinkService, String slug) {
   when(
     () => mockSharedLinkService.createSharedLink(
       albumId: any(named: 'albumId'),
@@ -146,25 +109,20 @@ void setupDefaultMockResponses(MockSharedLinkService mockSharedLinkService) {
       password: any(named: 'password'),
       expiresAt: any(named: 'expiresAt'),
     ),
-  ).thenAnswer(
-    (_) async => createAlbumSharedLink(id: 'new-link-id', title: 'New Link', key: 'new-key', slug: 'new-slug'),
-  );
-}
-
-/// Sets up mock response for link without slug
-void setupMockResponseForLinkWithoutSlug(MockSharedLinkService mockSharedLinkService) {
-  when(
-    () => mockSharedLinkService.createSharedLink(
-      albumId: any(named: 'albumId'),
-      assetIds: any(named: 'assetIds'),
-      showMeta: any(named: 'showMeta'),
-      allowDownload: any(named: 'allowDownload'),
-      allowUpload: any(named: 'allowUpload'),
-      description: any(named: 'description'),
-      password: any(named: 'password'),
-      expiresAt: any(named: 'expiresAt'),
-    ),
-  ).thenAnswer((_) async => createAlbumSharedLink(id: 'new-link-id', title: 'New Link', key: 'new-key', slug: null));
+  ).thenAnswer((_) async => SharedLink(
+    id: 'new-link-id',
+    title: 'New Link',
+    description: 'Test Description',
+    key: 'new-key',
+    slug: slug.isEmpty ? null : slug,
+    expiresAt: DateTime.now().add(const Duration(days: 1)),
+    allowUpload: true,
+    allowDownload: true,
+    showMetadata: true,
+    thumbAssetId: null,
+    password: null,
+    type: SharedLinkSource.album,
+  ));
 }
 
 /// Test utility to capture clipboard operations for verification

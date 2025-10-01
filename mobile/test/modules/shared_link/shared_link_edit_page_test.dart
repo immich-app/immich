@@ -80,7 +80,7 @@ void main() {
     clipboardCapturer = ClipboardCapturer();
     setupClipboardMock(clipboardCapturer);
 
-    setupDefaultMockResponses(mockSharedLinkService);
+    setupMockResponse(mockSharedLinkService, 'new-slug');
   });
 
   tearDown(() {
@@ -90,53 +90,45 @@ void main() {
   });
 
   group('SharedLinkEditPage Tests', () {
-    testWidgets('copies URL with slug to clipboard after link creation', (tester) async {
+    testWidgets('copies correct URL for links with slug', (tester) async {
       await pumpSharedLinkEditPage(tester, container, albumId: 'album-1');
       await createSharedLink(tester);
 
-      final copyButton = find.byIcon(Icons.copy);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy));
       await tester.pumpAndSettle();
       expect(clipboardCapturer.text, 'https://demo.immich.app/s/new-slug');
     });
 
-    testWidgets('copies URL without slug to clipboard after link creation', (tester) async {
-      setupMockResponseForLinkWithoutSlug(mockSharedLinkService);
+    testWidgets('copies correct URL for links without slug', (tester) async {
+      setupMockResponse(mockSharedLinkService, '');
 
       await pumpSharedLinkEditPage(tester, container, albumId: 'album-1');
       await createSharedLink(tester);
 
-      final copyButton = find.byIcon(Icons.copy);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'https://demo.immich.app/share/new-key');
     });
 
-    testWidgets('handles empty external domain by using server endpoint', (tester) async {
-      setupEmptyExternalDomain(mockServerInfoNotifier);
+    testWidgets('uses server endpoint when external domain is empty', (tester) async {
+      setupServerInfo(mockServerInfoNotifier, '');
 
       await pumpSharedLinkEditPage(tester, container, albumId: 'album-1');
       await createSharedLink(tester);
 
-      final copyButton = find.byIcon(Icons.copy);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'https://demo.immich.app/s/new-slug');
     });
 
-    testWidgets('uses custom domain when external domain is set', (tester) async {
-      final mockServerInfoWithCustomDomain = createMockServerInfo(externalDomain: 'https://custom-immich.com');
-      mockServerInfoNotifier.state = mockServerInfoWithCustomDomain;
+    testWidgets('uses custom external domain when set', (tester) async {
+      setupServerInfo(mockServerInfoNotifier, 'https://custom-immich.com');
 
       await pumpSharedLinkEditPage(tester, container, albumId: 'album-1');
       await createSharedLink(tester);
 
-      final copyButton = find.byIcon(Icons.copy);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'https://custom-immich.com/s/new-slug');
     });
   });

@@ -98,5 +98,6 @@ String? punycodeDecodeUrl(String? serverUrl) {
 /// - If slug is present: 's/${sharedLink.slug}'
 /// - Otherwise: 'share/${sharedLink.key}'
 String getShareUrlPath(SharedLink sharedLink) {
-  return sharedLink.slug != null ? 's/${sharedLink.slug}' : 'share/${sharedLink.key}';
+  final slug = sharedLink.slug?.trim();
+  return slug?.isNotEmpty == true ? 's/$slug' : 'share/${sharedLink.key}';
 }

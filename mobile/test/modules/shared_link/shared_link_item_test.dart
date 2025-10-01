@@ -47,7 +47,7 @@ void main() {
     mockSharedLinksNotifier = MockSharedLinksNotifier();
     clipboardCapturer = ClipboardCapturer();
 
-    setupDefaultServerInfo(mockServerInfoNotifier);
+    setupServerInfo(mockServerInfoNotifier, 'https://example.com');
     mockSharedLinksNotifier.state = const AsyncValue.data([]);
 
     overrides = [
@@ -68,62 +68,51 @@ void main() {
   });
 
   group('SharedLinkItem Tests', () {
-    testWidgets('copies URL with slug to clipboard', (tester) async {
+    testWidgets('copies URL with slug', (tester) async {
       await tester.pumpConsumerWidget(Scaffold(body: SharedLinkItem(sharedLinkWithSlug)), overrides: overrides);
 
-      final copyButton = find.byIcon(Icons.copy_outlined);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy_outlined));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'https://example.com/s/test-slug');
     });
 
-    testWidgets('copies URL without slug to clipboard', (tester) async {
+    testWidgets('copies URL without slug', (tester) async {
       await tester.pumpConsumerWidget(Scaffold(body: SharedLinkItem(sharedLinkWithoutSlug)), overrides: overrides);
 
-      final copyButton = find.byIcon(Icons.copy_outlined);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy_outlined));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'https://example.com/share/test-key-2');
     });
 
-    testWidgets('handles empty external domain by using server URL', (tester) async {
-      setupEmptyExternalDomain(mockServerInfoNotifier);
+    testWidgets('falls back to server URL when external domain is empty', (tester) async {
+      setupServerInfo(mockServerInfoNotifier, '');
       await Store.put(StoreKey.serverEndpoint, 'http://example.com');
 
       await tester.pumpConsumerWidget(Scaffold(body: SharedLinkItem(sharedLinkWithSlug)), overrides: overrides);
 
-      final copyButton = find.byIcon(Icons.copy_outlined);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy_outlined));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'http://example.com/s/test-slug');
     });
 
-    testWidgets('shows snackbar on successful copy', (tester) async {
+    testWidgets('shows success message on copy', (tester) async {
       await tester.pumpConsumerWidget(Scaffold(body: SharedLinkItem(sharedLinkWithSlug)), overrides: overrides);
 
-      final copyButton = find.byIcon(Icons.copy_outlined);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy_outlined));
       await tester.pumpAndSettle();
-
       expect(find.textContaining('copied'), findsOneWidget);
     });
 
-    testWidgets('works with different shared links', (tester) async {
+    testWidgets('handles different link types correctly', (tester) async {
       await tester.pumpConsumerWidget(Scaffold(body: SharedLinkItem(sharedLinkWithSlug)), overrides: overrides);
 
-      final copyButton = find.byIcon(Icons.copy_outlined);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy_outlined));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'https://example.com/s/test-slug');
 
       await tester.pumpConsumerWidget(Scaffold(body: SharedLinkItem(sharedLinkWithoutSlug)), overrides: overrides);
-      await tester.tap(copyButton);
+      await tester.tap(find.byIcon(Icons.copy_outlined));
       await tester.pumpAndSettle();
-
       expect(clipboardCapturer.text, 'https://example.com/share/test-key-2');
     });
   });
