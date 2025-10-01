@@ -17,43 +17,16 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
 
 import '../../test_utils.dart';
+import 'shared_link_mocks.dart';
 import 'shared_link_test_utils.dart';
 
 late ClipboardCapturer clipboardCapturer;
 
 void main() {
   late Isar db;
-  late MockSharedLinkService mockSharedLinkService;
+  late SharedLinkServiceMock mockSharedLinkService;
   late MockServerInfoNotifier mockServerInfoNotifier;
   late ProviderContainer container;
-
-  Future<void> createSharedLink(WidgetTester tester) async {
-    await tester.enterText(find.byType(TextField).at(0), 'Test Description');
-    await tester.pump();
-
-    final createButton = find.widgetWithText(ElevatedButton, 'create_link');
-    await tester.ensureVisible(createButton);
-    await tester.tap(createButton);
-    await tester.pumpAndSettle();
-  }
-
-  Future<void> pumpSharedLinkEditPage(
-    WidgetTester tester,
-    ProviderContainer container, {
-    SharedLink? existingLink,
-    List<String>? assetsList,
-    String? albumId,
-  }) async {
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          home: SharedLinkEditPage(existingLink: existingLink, assetsList: assetsList, albumId: albumId),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-  }
 
   setUpAll(() async {
     TestUtils.init();
@@ -62,13 +35,10 @@ void main() {
   });
 
   setUp(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    EasyLocalization.logger.enableBuildModes = [];
-
     await StoreService.init(storeRepository: IsarStoreRepository(db));
     await Store.put(StoreKey.serverEndpoint, 'https://demo.immich.app');
 
-    mockSharedLinkService = MockSharedLinkService();
+    mockSharedLinkService = SharedLinkServiceMock();
     mockServerInfoNotifier = MockServerInfoNotifier();
     container = ProviderContainer(
       overrides: [

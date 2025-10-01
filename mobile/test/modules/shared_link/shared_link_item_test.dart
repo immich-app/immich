@@ -18,6 +18,7 @@ import 'package:immich_mobile/widgets/shared_link/shared_link_item.dart';
 import '../../fixtures/user.stub.dart';
 import '../../test_utils.dart';
 import '../../widget_tester_extensions.dart';
+import 'shared_link_mocks.dart';
 import 'shared_link_test_utils.dart';
 
 void main() {
