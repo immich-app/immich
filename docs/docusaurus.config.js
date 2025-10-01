@@ -7,7 +7,7 @@ const prism = require('prism-react-renderer');
 const config = {
   title: 'Immich',
   tagline: 'High performance self-hosted photo and video backup solution directly from your mobile phone',
-  url: 'https://immich.app',
+  url: 'https://docs.immich.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
