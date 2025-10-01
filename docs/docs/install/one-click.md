@@ -5,7 +5,7 @@ sidebar_position: 65
 # One-Click [Cloud Service]
 
 :::note
-This version of Immich is provided via cloud service provider's one-click marketplaces.  Hosting costs are set by the cloud service providers.
+This version of Immich is provided via cloud service provider's one-click marketplaces. Hosting costs are set by the cloud service providers.
 Support for these are provided by the individual cloud service providers.
 
 **Please report issues to the corresponding [Github Repository][github].**
