@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@24820aa4ef67959b0dcf69a438cccf00d7c7042b # pre-job-action-v1.0.1
+        uses: immich-app/devtools/actions/pre-job@5f91b52dfbb92b8d96ca411ab59c896cd59714ca # pre-job-action-v1.1.0
         with:
           filters: |
             mobile:
@@ -73,7 +73,7 @@ jobs:
 
       - name: Restore Gradle Cache
         id: cache-gradle-restore
-        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: |
             ~/.gradle/caches
@@ -130,7 +130,7 @@ jobs:
 
       - name: Save Gradle Cache
         id: cache-gradle-save
-        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         if: github.ref == 'refs/heads/main'
         with:
           path: |
