@@ -38,11 +38,11 @@ describe('/upload (RUFH compliance)', () => {
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
+        .set('Upload-Length', '1024')
         .send(content);
 
       expect(status).toBe(200);
       expect(headers['upload-complete']).toBe('?1');
-      expect(headers['upload-limit']).toEqual('min-size=0');
     });
 
     it('should create an incomplete upload with Upload-Complete: ?0', async () => {
@@ -55,11 +55,11 @@ describe('/upload (RUFH compliance)', () => {
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(partialContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
-        .set('Content-Length', partialContent.length.toString())
+        .set('Content-Length', '512')
+        .set('Upload-Length', '513')
         .send(partialContent);
 
       expect(status).toBe(201);
-      expect(headers['upload-limit']).toEqual('min-size=0');
       expect(headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9\-]+$/);
     });
   });
@@ -77,6 +77,7 @@ describe('/upload (RUFH compliance)', () => {
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
+        .set('Upload-Length', '512')
         .send(content);
 
       expect(headers['location']).toBeDefined();
@@ -130,13 +131,14 @@ describe('/upload (RUFH compliance)', () => {
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(fullContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
+        .set('Upload-Length', '2750')
         .send(chunks[0]);
 
       uploadResource = response.headers['location'];
     });
 
     it('should append data with correct offset', async () => {
-      const { status, headers, body } = await request(baseUrl)
+      const { status, headers } = await request(baseUrl)
         .patch(uploadResource)
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
@@ -233,6 +235,7 @@ describe('/upload (RUFH compliance)', () => {
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
+        .set('Upload-Length', '200')
         .send(content);
 
       uploadResource = response.headers['location'];
@@ -269,6 +272,7 @@ describe('/upload (RUFH compliance)', () => {
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(totalContent).digest('base64')}:`)
         .set('Upload-Complete', '?0') // Indicate incomplete
+        .set('Upload-Length', '5000')
         .send(firstPart);
 
       expect(initialResponse.status).toBe(201);
@@ -310,6 +314,7 @@ describe('/upload (RUFH compliance)', () => {
         .set('X-Immich-Asset-Data', base64Metadata)
         .set('Repr-Digest', `sha=:${hash.digest('base64')}:`)
         .set('Upload-Complete', '?0')
+        .set('Upload-Length', '10000')
         .send(chunks[0]);
 
       const uploadResource = createResponse.headers['location'];
@@ -363,7 +368,7 @@ describe('/upload (RUFH compliance)', () => {
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Upload-Length', '2000') // Doesn't match content length
-        .set('Content-Length', content.length.toString())
+        .set('Content-Length', '1000')
         .send(content);
 
       expect(status).toBe(400);

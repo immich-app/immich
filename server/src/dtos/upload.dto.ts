@@ -140,6 +140,12 @@ export class StartUploadDto extends BaseUploadHeadersDto {
     throw new BadRequestException(`Invalid ${UploadHeader.ReprDigest} header`);
   })
   checksum!: Buffer;
+
+  @Expose({ name: UploadHeader.UploadLength })
+  @Min(0)
+  @IsInt()
+  @Type(() => Number)
+  declare uploadLength: number;
 }
 
 export class ResumeUploadDto extends BaseUploadHeadersDto {
@@ -152,8 +158,7 @@ export class ResumeUploadDto extends BaseUploadHeadersDto {
   @Min(0)
   @IsInt()
   @Type(() => Number)
-  @Optional()
-  uploadOffset!: number | null;
+  uploadOffset!: number;
 }
 
 export class GetUploadStatusDto extends BaseRufhHeadersDto {}
