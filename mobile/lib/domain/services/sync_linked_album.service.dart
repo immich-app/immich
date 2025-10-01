@@ -4,8 +4,8 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
-import 'package:logging/logging.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:logging/logging.dart';
 
 final syncLinkedAlbumServiceProvider = Provider(
   (ref) => SyncLinkedAlbumService(
@@ -31,17 +31,19 @@ class SyncLinkedAlbumService {
       selectedAlbums.map((localAlbum) async {
         final linkedRemoteAlbumId = localAlbum.linkedRemoteAlbumId;
         if (linkedRemoteAlbumId == null) {
+          _log.warning("No linked remote album ID found for local album: ${localAlbum.name}");
           return;
         }
 
         final remoteAlbum = await _remoteAlbumRepository.get(linkedRemoteAlbumId);
         if (remoteAlbum == null) {
+          _log.warning("Linked remote album not found for ID: $linkedRemoteAlbumId");
           return;
         }
 
         // get assets that are uploaded but not in the remote album
         final assetIds = await _remoteAlbumRepository.getLinkedAssetIds(userId, localAlbum.id, linkedRemoteAlbumId);
-
+        _log.fine("Syncing ${assetIds.length} assets to remote album: ${remoteAlbum.name}");
         if (assetIds.isNotEmpty) {
           final album = await _albumApiRepository.addAssets(remoteAlbum.id, assetIds);
           await _remoteAlbumRepository.addAssets(remoteAlbum.id, album.added);

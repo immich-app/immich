@@ -9,8 +9,7 @@
   import { AssetMediaSize } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import type { SwipeCustomEvent } from 'svelte-gestures';
-  import { swipe } from 'svelte-gestures';
+  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -130,8 +129,7 @@
         playsinline
         controls
         class="h-full object-contain"
-        use:swipe={() => ({})}
-        onswipe={onSwipe}
+        {...useSwipe(onSwipe)}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}
         onended={onVideoEnded}
         onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}

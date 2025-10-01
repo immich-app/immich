@@ -18,6 +18,7 @@ import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:logging/logging.dart';
@@ -93,6 +94,10 @@ class _ChangeExperiencePageState extends ConsumerState<ChangeExperiencePage> {
 
       await ref.read(driftProvider).reset();
       await Store.put(StoreKey.shouldResetSync, true);
+      final delay = Store.get(StoreKey.backupTriggerDelay, AppSettingsEnum.backupTriggerDelay.defaultValue);
+      if (delay >= 1000) {
+        await Store.put(StoreKey.backupTriggerDelay, (delay / 1000).toInt());
+      }
       final permission = await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
 
       if (permission.isGranted) {
