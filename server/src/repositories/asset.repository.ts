@@ -255,37 +255,13 @@ export class AssetRepository {
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
-  createWithMetadata(asset: Insertable<AssetTable> & { id: string }, metadata?: AssetMetadataItem[]) {
+  createWithMetadata(asset: Insertable<AssetTable> & { id: string }, size: number, metadata?: AssetMetadataItem[]) {
     if (!metadata || metadata.length === 0) {
       return this.db.insertInto('asset').values(asset).execute();
     }
 
     return this.db
       .with('asset', (qb) => qb.insertInto('asset').values(asset).returning('id'))
-      .insertInto('asset_metadata')
-      .values(metadata.map(({ key, value }) => ({ assetId: asset.id, key, value })))
-      .execute();
-  }
-
-  getCompletionMetadata(assetId: string, ownerId: string) {
-    return this.db
-      .selectFrom('asset')
-      .select(['originalPath as path', 'status', 'fileModifiedAt', 'createdAt', 'checksum'])
-      .where('id', '=', assetId)
-      .where('ownerId', '=', ownerId)
-      .executeTakeFirst();
-  }
-
-  setCompleteWithSize(assetId: string, size: number) {
-    return this.db
-      .with('asset', (qb) =>
-        qb
-          .updateTable('asset')
-          .set({ status: AssetStatus.Active })
-          .where('asset.id', '=', assetId)
-          .where('asset.status', '=', sql.lit(AssetStatus.Partial))
-          .returning(['asset.id', 'asset.ownerId']),
-      )
       .with('exif', (qb) =>
         qb
           .insertInto('asset_exif')
@@ -299,7 +275,27 @@ export class AssetRepository {
           .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${size}` })
           .whereRef('user.id', '=', 'asset.ownerId'),
       )
-      .selectNoFrom(sql`1`.as('dummy'))
+      .insertInto('asset_metadata')
+      .values(metadata.map(({ key, value }) => ({ assetId: asset.id, key, value })))
+      .execute();
+  }
+
+  getCompletionMetadata(assetId: string, ownerId: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['originalPath as path', 'status', 'fileModifiedAt', 'createdAt', 'checksum', 'fileSizeInByte as size'])
+      .where('id', '=', assetId)
+      .where('ownerId', '=', ownerId)
+      .executeTakeFirst();
+  }
+
+  setCompleteWithSize(assetId: string) {
+    return this.db
+      .updateTable('asset')
+      .set({ status: AssetStatus.Active })
+      .where('asset.id', '=', assetId)
+      .where('asset.status', '=', sql.lit(AssetStatus.Partial))
       .execute();
   }
 
