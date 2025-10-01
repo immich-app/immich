@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
+import 'package:immich_mobile/domain/services/person_merge_tracker.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/person_api.repository.dart';
@@ -22,3 +23,11 @@ final driftGetAllPeopleProvider = FutureProvider<List<DriftPerson>>((ref) async 
   final service = ref.watch(driftPeopleServiceProvider);
   return service.getAllPeople();
 });
+
+final driftGetPersonByIdProvider = StreamProvider.family<DriftPerson?, String>((ref, personId) {
+  return ref.watch(driftPeopleServiceProvider).watchPersonById(personId);
+});
+
+final personMergeTrackerProvider = Provider<PersonMergeTrackerService>(
+  (ref) => PersonMergeTrackerService(),
+);

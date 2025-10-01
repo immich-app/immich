@@ -5,14 +5,13 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 
 class SheetPeopleDetails extends ConsumerStatefulWidget {
   const SheetPeopleDetails({super.key});
@@ -30,18 +29,6 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
     }
 
     final peopleFuture = ref.watch(driftPeopleAssetProvider(asset.id));
-
-    Future<void> showNameEditModal(DriftPerson person) async {
-      await showDialog(
-        context: context,
-        useRootNavigator: false,
-        builder: (BuildContext context) {
-          return DriftPersonNameEditForm(person: person);
-        },
-      );
-
-      ref.invalidate(driftPeopleAssetProvider(asset.id));
-    }
 
     return peopleFuture.when(
       data: (people) {
@@ -74,15 +61,36 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                           final previousRouteData = ref.read(previousRouteDataProvider);
                           final previousRouteArgs = previousRouteData?.arguments;
 
+                          // TODO: Check what happens if the person id from the previous route is not the correct one anymore e.g. after a merge
                           // Prevent circular navigation
-                          if (previousRouteArgs is DriftPersonRouteArgs && previousRouteArgs.person.id == person.id) {
+                          if (previousRouteArgs is DriftPersonRouteArgs &&
+                              previousRouteArgs.initialPerson.id == person.id) {
                             context.back();
                             return;
                           }
                           context.pop();
-                          context.pushRoute(DriftPersonRoute(person: person));
+                          context.pushRoute(DriftPersonRoute(initialPerson: person));
                         },
-                        onNameTap: () => showNameEditModal(person),
+                        onNameTap: () async {
+                          DriftPerson? newPerson = await showNameEditModal(context, person);
+
+                          ref.invalidate(driftPeopleAssetProvider(asset.id));
+
+                          // If the name edit resulted in a new person (e.g. from merging)
+                          // And if we are currently nested below the drift person page if said
+                          // old person id, we need to pop, otherwise the timeline provider
+                          // complains because the indexes are off
+                          // TODO: Preferably we would replace the timeline provider, and let it listen to the new person id (Relevant function is the ```TimelineService person(String userId, String personId)``` in timeline.service.dart)
+                          final previousRouteData = ref.read(previousRouteDataProvider);
+                          final previousRouteArgs = previousRouteData?.arguments;
+                          final previousPersonId = previousRouteArgs is DriftPersonRouteArgs
+                              ? previousRouteArgs.initialPerson.id
+                              : null;
+
+                          if (newPerson != null && newPerson.id != person.id && previousPersonId == person.id) {
+                            context.pop();
+                          }
+                        },
                       ),
                   ],
                 ),

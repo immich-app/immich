@@ -83,7 +83,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.pushRoute(DriftPersonRoute(person: person));
+                            context.pushRoute(DriftPersonRoute(initialPerson: person));
                           },
                           child: Material(
                             shape: const CircleBorder(side: BorderSide.none),
