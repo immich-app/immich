@@ -358,6 +358,11 @@ description = "Run mobile tests"
 dir = "mobile"
 run = "flutter test"
 
+[tasks."mobile:run"]
+description = "Run mobile tests"
+dir = "mobile"
+run = "flutter run"
+
 [tasks."mobile:lint"]
 description = "Analyze Dart code"
 dir = "mobile"
