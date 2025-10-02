@@ -157,8 +157,6 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      this.validateQuota(req.auth, newLength);
-
       if (contentLength === 0 && !isComplete) {
         this.setCompleteHeader(res, version, false);
         res.status(204).setHeader('Upload-Offset', expectedOffset.toString()).send();
