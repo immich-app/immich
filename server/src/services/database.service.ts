@@ -22,7 +22,7 @@ const messages = {
     The ${name} extension version is ${version}, which means it is a nightly release.
 
     Please run 'DROP EXTENSION IF EXISTS ${extension}' and switch to a release version.
-    See https://immich.app/docs/guides/database-queries for how to query the database.`,
+    See https://docs.immich.app/guides/database-queries for how to query the database.`,
   outOfRange: ({ name, version, range }: OutOfRangeArgs) =>
     `The ${name} extension version is ${version}, but Immich only supports ${range}.
     Please change ${name} to a compatible version in the Postgres instance.`,
@@ -32,20 +32,20 @@ const messages = {
 
     If the Postgres instance already has ${name} installed, Immich may not have the necessary permissions to activate it.
     In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${extension} CASCADE' manually as a superuser.
-    See https://immich.app/docs/guides/database-queries for how to query the database.`,
+    See https://docs.immich.app/guides/database-queries for how to query the database.`,
   updateFailed: ({ name, extension, availableVersion }: UpdateFailedArgs) =>
     `The ${name} extension can be updated to ${availableVersion}.
     Immich attempted to update the extension, but failed to do so.
     This may be because Immich does not have the necessary permissions to update the extension.
 
     Please run 'ALTER EXTENSION ${extension} UPDATE' manually as a superuser.
-    See https://immich.app/docs/guides/database-queries for how to query the database.`,
+    See https://docs.immich.app/guides/database-queries for how to query the database.`,
   dropFailed: ({ name, extension }: DropFailedArgs) =>
     `The ${name} extension is no longer needed, but could not be dropped.
     This may be because Immich does not have the necessary permissions to drop the extension.
 
     Please run 'DROP EXTENSION ${extension};' manually as a superuser.
-    See https://immich.app/docs/guides/database-queries for how to query the database.`,
+    See https://docs.immich.app/guides/database-queries for how to query the database.`,
   restartRequired: ({ name, availableVersion }: RestartRequiredArgs) =>
     `The ${name} extension has been updated to ${availableVersion}.
     Please restart the Postgres instance to complete the update.`,
@@ -55,7 +55,7 @@ const messages = {
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
   deprecatedExtension: (name: string) =>
     `DEPRECATION WARNING: The ${name} extension is deprecated and support for it will be removed very soon.
-     See https://immich.app/docs/install/upgrading#migrating-to-vectorchord in order to switch to the VectorChord extension instead.`,
+     See https://docs.immich.app/install/upgrading#migrating-to-vectorchord in order to switch to the VectorChord extension instead.`,
 };
 
 @Injectable()

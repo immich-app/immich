@@ -44,13 +44,13 @@
 
 ## コンテンツ
 
-- [公式ドキュメント](https://immich.app/docs)
+- [公式ドキュメント](https://docs.immich.app)
 - [ロードマップ](https://github.com/orgs/immich-app/projects/1)
 - [デモ](#デモ)
 - [機能](#機能)
-- [紹介](https://immich.app/docs/overview/introduction)
-- [インストール](https://immich.app/docs/install/requirements)
-- [コントリビューションガイド](https://immich.app/docs/overview/support-the-project)
+- [紹介](https://docs.immich.app/overview/introduction)
+- [インストール](https://docs.immich.app/install/requirements)
+- [コントリビューションガイド](https://docs.immich.app/overview/support-the-project)
 
 ## ドキュメント
 

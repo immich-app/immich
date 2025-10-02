@@ -30,11 +30,11 @@ When in doubt or if you have an edge case scenario, we encourage you to contact 
 
 ### How can I reset the admin password?
 
-The admin password can be reset by running the [reset-admin-password](/docs/administration/server-commands.md) command on the immich-server.
+The admin password can be reset by running the [reset-admin-password](/administration/server-commands.md) command on the immich-server.
 
 ### How can I see a list of all users in Immich?
 
-You can see the list of all users by running [list-users](/docs/administration/server-commands.md) Command on the Immich-server.
+You can see the list of all users by running [list-users](/administration/server-commands.md) Command on the Immich-server.
 
 ---
 
@@ -106,20 +106,20 @@ However, Immich will delete original files that have been trashed when the trash
 
 When Storage Template is off (default) Immich saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names.
 To retrieve the original file names, you must enable the Storage Template and then run the STORAGE TEMPLATE MIGRATION job.
-It is recommended to read about [Storage Template](https://immich.app/docs/administration/storage-template) before activation.
+It is recommended to read about [Storage Template](/administration/storage-template) before activation.
 
 ### Can I add my existing photo library?
 
-Yes, with an [External Library](/docs/features/libraries.md).
+Yes, with an [External Library](/features/libraries.md).
 
-### What happens to existing files after I choose a new [Storage Template](/docs/administration/storage-template.mdx)?
+### What happens to existing files after I choose a new [Storage Template](/administration/storage-template.mdx)?
 
-Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/docs/administration/jobs-workers/#jobs) page.
+Template changes will only apply to _new_ assets. To retroactively apply the template to previously uploaded assets, run the Storage Migration Job, available on the [Jobs](/administration/jobs-workers/#jobs) page.
 
 ### Why are only photos and not videos being uploaded to Immich?
 
 This often happens when using a reverse proxy in front of Immich.
-Make sure to [set your reverse proxy](/docs/administration/reverse-proxy/) to allow large requests.
+Make sure to [set your reverse proxy](/administration/reverse-proxy/) to allow large requests.
 Also, check the disk space of your reverse proxy.
 In some cases, proxies cache requests to disk before passing them on, and if disk space runs out, the request fails.
 
@@ -139,7 +139,7 @@ You can _archive_ them.
 
 ### How can I backup data from Immich?
 
-See [Backup and Restore](/docs/administration/backup-and-restore.md).
+See [Backup and Restore](/administration/backup-and-restore.md).
 
 ### Does Immich support reading existing face tag metadata?
 
@@ -225,7 +225,7 @@ volumes:
 
 ### Can I keep my existing album structure while importing assets into Immich?
 
-Yes, by using the [Immich CLI](/docs/features/command-line-interface) along with the `--album` flag.
+Yes, by using the [Immich CLI](/features/command-line-interface) along with the `--album` flag.
 
 ### Is there a way to reorder photos within an album?
 
@@ -266,7 +266,7 @@ Immich uses CLIP models. An ML model converts each image to an "embedding", whic
 
 ### How does facial recognition work?
 
-See [How Facial Recognition Works](/docs/features/facial-recognition#how-facial-recognition-works) for details.
+See [How Facial Recognition Works](/features/facial-recognition#how-facial-recognition-works) for details.
 
 ### How can I disable machine learning?
 
@@ -288,7 +288,7 @@ No, this is not supported. Only models listed in the [Hugging Face][huggingface]
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
-You can change to a multilingual CLIP model. See [here](/docs/features/searching#clip-models) for instructions.
+You can change to a multilingual CLIP model. See [here](/features/searching#clip-models) for instructions.
 
 ### Does Immich support Facial Recognition for videos?
 
@@ -299,7 +299,7 @@ Scanning the entire video for faces may be implemented in the future.
 
 No.
 :::tip
-You can use [Smart Search](/docs/features/searching.md) for this to some extent. For example, if you have a Golden Retriever and a Chihuahua, type these words in the smart search and watch the results.
+You can use [Smart Search](/features/searching.md) for this to some extent. For example, if you have a Golden Retriever and a Chihuahua, type these words in the smart search and watch the results.
 :::
 
 ### I'm getting a lot of "faces" that aren't faces, what can I do?
@@ -329,7 +329,7 @@ ls clip/ facial-recognition/
 
 ### Why is Immich slow on low-memory systems like the Raspberry Pi?
 
-Immich optionally uses transcoding and machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/docs/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/docs/guides/remote-machine-learning), or [disable](/docs/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
+Immich optionally uses transcoding and machine learning for several features. However, it can be too heavy to run on a Raspberry Pi. You can [mitigate](/FAQ#can-i-lower-cpu-and-ram-usage) this or host Immich's machine-learning container on a [more powerful system](/guides/remote-machine-learning), or [disable](/FAQ#how-can-i-disable-machine-learning) machine learning entirely.
 
 ### Can I lower CPU and RAM usage?
 
@@ -339,9 +339,9 @@ The initial backup is the most intensive due to the number of jobs running. The 
 - Under Settings > Transcoding Settings > Threads, set the number of threads to a low number like 1 or 2.
 - Under Settings > Machine Learning Settings > Facial Recognition > Model Name, you can change the facial recognition model to `buffalo_s` instead of `buffalo_l`. The former is a smaller and faster model, albeit not as good.
   - For facial recognition on new images to work properly, You must re-run the Face Detection job for all images after this.
-- At the container level, you can [set resource constraints](/docs/FAQ#can-i-limit-cpu-and-ram-usage) to lower usage further.
+- At the container level, you can [set resource constraints](/FAQ#can-i-limit-cpu-and-ram-usage) to lower usage further.
   - It's recommended to only apply these constraints _after_ taking some of the measures here for best performance.
-- If these changes are not enough, see [above](/docs/FAQ#how-can-i-disable-machine-learning) for instructions on how to disable machine learning.
+- If these changes are not enough, see [above](/FAQ#how-can-i-disable-machine-learning) for instructions on how to disable machine learning.
 
 ### Can I limit CPU and RAM usage?
 
@@ -383,7 +383,7 @@ Do not exaggerate with the job concurrency because you're probably thoroughly ov
 
 ### My server shows Server Status Offline | Version Unknown. What can I do?
 
-You need to [enable WebSockets](/docs/administration/reverse-proxy/) on your reverse proxy.
+You need to [enable WebSockets](/administration/reverse-proxy/) on your reverse proxy.
 
 ---
 
@@ -391,7 +391,7 @@ You need to [enable WebSockets](/docs/administration/reverse-proxy/) on your rev
 
 ### How can I see Immich logs?
 
-Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/docs/guides/docker-help.md).
+Immich components are typically deployed using docker. To see logs for deployed docker containers, you can use the [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/), specifically the `docker logs` command. For examples, see [Docker Help](/guides/docker-help.md).
 
 ### How can I reduce the log verbosity of Redis?
 
@@ -435,7 +435,7 @@ cap_drop:
 Data for Immich comes in two forms:
 
 1. **Metadata** stored in a Postgres database, stored in the `DB_DATA_LOCATION` folder (previously `pg_data` Docker volume).
-2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/docs/administration/backup-and-restore#asset-types-and-storage-locations).
+2. **Files** (originals, thumbs, profile, etc.), stored in the `UPLOAD_LOCATION` folder, more [info](/administration/backup-and-restore#asset-types-and-storage-locations).
 
 :::warning
 This will destroy your database and reset your instance, meaning that you start from scratch.
@@ -473,7 +473,7 @@ If it mentions SIGILL (note the lack of a K) or error code 132, it most likely m
 ### Why am I getting database ownership errors?
 
 If you get database errors such as `FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership` upon database startup, this is likely due to an issue with your filesystem.
-NTFS and ex/FAT/32 filesystems are not supported. See [here](/docs/install/requirements#special-requirements-for-windows-users) for more details.
+NTFS and ex/FAT/32 filesystems are not supported. See [here](/install/requirements#special-requirements-for-windows-users) for more details.
 
 ### How can I verify the integrity of my database?
 

@@ -110,7 +110,6 @@ class SyncApiRepository {
         await onData(_parseLines(lines), abort, reset);
       }
     } catch (error, stack) {
-      _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
       client.close();

@@ -62,7 +62,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               .toDto(
                 assetCount: row.read(assetCount) ?? 0,
                 ownerName: row.read(_db.userEntity.name)!,
-                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
               ),
         )
         .get();
@@ -107,7 +107,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               .toDto(
                 assetCount: row.read(assetCount) ?? 0,
                 ownerName: row.read(_db.userEntity.name)!,
-                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
               ),
         )
         .getSingleOrNull();
@@ -305,8 +305,9 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
           .readTable(_db.remoteAlbumEntity)
           .toDto(
             ownerName: row.read(_db.userEntity.name)!,
-            isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
+            isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
           );
+
       return album;
     }).watchSingleOrNull();
   }

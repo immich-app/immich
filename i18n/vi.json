@@ -360,8 +360,6 @@
   "admin_password": "Mật khẩu Quản trị viên",
   "administration": "Quản trị",
   "advanced": "Nâng cao",
-  "advanced_settings_beta_timeline_subtitle": "Trải nghiệm giao diện app mới",
-  "advanced_settings_beta_timeline_title": "Timeline Beta",
   "advanced_settings_enable_alternate_media_filter_subtitle": "Dùng tùy chọn này để lọc phương tiện khi đồng bộ theo tiêu chí khác. Chỉ thử khi ứng dụng không nhận diện được tất cả các album.",
   "advanced_settings_enable_alternate_media_filter_title": "[THỬ NGHIỆM] Dùng bộ lọc đồng bộ album thay thế",
   "advanced_settings_log_level_title": "Phân loại nhật ký: {level}",

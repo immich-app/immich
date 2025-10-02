@@ -383,8 +383,6 @@
   "admin_password": "प्रशासक पासवर्ड",
   "administration": "प्रशासन",
   "advanced": "प्रगत",
-  "advanced_settings_beta_timeline_subtitle": "नवीन ॲप अनुभव वापरून पहा",
-  "advanced_settings_beta_timeline_title": "बीटा टाईमलाईन",
   "advanced_settings_enable_alternate_media_filter_subtitle": "सिंक दरम्यान वैकल्पिक निकषांवर आधारित मीडिया फिल्टर करण्यासाठी हा पर्याय वापरा. ॲप सर्व अल्बम ओळखण्यात समस्या येत असल्यासच वापरा.",
   "advanced_settings_enable_alternate_media_filter_title": "[प्रयोगात्मक] उपकरण-आधारित अल्बम सिंक फिल्टर वापरा",
   "advanced_settings_log_level_title": "लॉग पातळी: {level}",

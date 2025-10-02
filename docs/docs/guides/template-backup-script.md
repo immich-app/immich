@@ -7,7 +7,7 @@ This script assumes you have a second hard drive connected to your server for on
 The database is saved to your Immich upload folder in the `database-backup` subdirectory. The database is then backed up and versioned with your assets by Borg. This ensures that the database backup is in sync with your assets in every snapshot.
 
 :::info
-This script makes backups of your database along with your photo/video library. This is redundant with the [automatic database backup tool](https://immich.app/docs/administration/backup-and-restore#automatic-database-backups) built into Immich. Using this script to backup your database has two advantages over the built-in backup tool:
+This script makes backups of your database along with your photo/video library. This is redundant with the [automatic database backup tool](/administration/backup-and-restore#automatic-database-dumps) built into Immich. Using this script to backup your database has two advantages over the built-in backup tool:
 
 - This script uses storage more efficiently by versioning your backups instead of making multiple copies.
 - The database backups are performed at the same time as the library backup, ensuring that the backups of your database and the library are always in sync.

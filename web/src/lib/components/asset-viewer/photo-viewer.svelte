@@ -22,7 +22,7 @@
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import { swipe, type SwipeCustomEvent } from 'svelte-gestures';
+  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -234,8 +234,7 @@
   {:else if !imageError}
     <div
       use:zoomImageAction
-      use:swipe={() => ({})}
-      onswipe={onSwipe}
+      {...useSwipe(onSwipe)}
       class="h-full w-full"
       transition:fade={{ duration: haveFadeTransition ? assetViewerFadeDuration : 0 }}
     >

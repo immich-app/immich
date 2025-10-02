@@ -10,10 +10,15 @@ on:
         type: choice
         options:
           - 'false'
+          - major
           - minor
           - patch
       mobileBump:
         description: 'Bump mobile build number'
+        required: false
+        type: boolean
+      skipTranslations:
+        description: 'Skip translations'
         required: false
         type: boolean
 
@@ -26,6 +31,8 @@ permissions: {}
 jobs:
   merge_translations:
     uses: ./.github/workflows/merge-translations.yml
+    with:
+      skip: ${{ inputs.skipTranslations }}
     permissions:
       pull-requests: write
     secrets:
@@ -35,13 +42,14 @@ jobs:
 
   bump_version:
     runs-on: ubuntu-latest
+    needs: [merge_translations]
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
@@ -51,6 +59,7 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: true
+          ref: main
 
       - name: Install uv
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5.4.2
@@ -102,7 +111,7 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@a8d616148505b5069dccd32f177bb87d7f39123b # v2.1.1
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}

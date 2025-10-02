@@ -35,7 +35,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - Where and how you can get this file depends on device and vendor, but typically, the device vendor also supplies these
   - The `hwaccel.ml.yml` file assumes the path to it is `/usr/lib/libmali.so`, so update accordingly if it is elsewhere
   - The `hwaccel.ml.yml` file assumes an additional file `/lib/firmware/mali_csffw.bin`, so update accordingly if your device's driver does not require this file
-- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for ARM NN specific settings
+- Optional: Configure your `.env` file, see [environment variables](/install/environment-variables) for ARM NN specific settings
   - In particular, the `MACHINE_LEARNING_ANN_FP16_TURBO` can significantly improve performance at the cost of very slightly lower accuracy
 
 #### CUDA
@@ -49,7 +49,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 - The GPU must be supported by ROCm. If it isn't officially supported, you can attempt to use the `HSA_OVERRIDE_GFX_VERSION` environmental variable: `HSA_OVERRIDE_GFX_VERSION=<a supported version, e.g. 10.3.0>`. If this doesn't work, you might need to also set `HSA_USE_SVM=0`.
 - The ROCm image is quite large and requires at least 35GiB of free disk space. However, pulling later updates to the service through Docker will generally only amount to a few hundred megabytes as the rest will be cached.
-- This backend is new and may experience some issues. For example, GPU power consumption can be higher than usual after running inference, even if the machine learning service is idle. In this case, it will only go back to normal after being idle for 5 minutes (configurable with the [MACHINE_LEARNING_MODEL_TTL](/docs/install/environment-variables) setting).
+- This backend is new and may experience some issues. For example, GPU power consumption can be higher than usual after running inference, even if the machine learning service is idle. In this case, it will only go back to normal after being idle for 5 minutes (configurable with the [MACHINE_LEARNING_MODEL_TTL](/install/environment-variables) setting).
 
 #### OpenVINO
 
@@ -64,7 +64,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
   - This is usually pre-installed on the device vendor's Linux images
 - RKNPU driver V0.9.8 or later must be available in the host server
   - You may confirm this by running `cat /sys/kernel/debug/rknpu/version` to check the version
-- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for RKNN specific settings
+- Optional: Configure your `.env` file, see [environment variables](/install/environment-variables) for RKNN specific settings
   - In particular, setting `MACHINE_LEARNING_RKNN_THREADS` to 2 or 3 can _dramatically_ improve performance for RK3576 and RK3588 compared to the default of 1, at the expense of multiplying the amount of RAM each model uses by that amount.
 
 ## Setup

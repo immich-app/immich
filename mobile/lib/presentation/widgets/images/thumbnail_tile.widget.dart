@@ -54,8 +54,6 @@ class ThumbnailTile extends ConsumerWidget {
           )
         : const BoxDecoration();
 
-    final hasStack = asset is RemoteAsset && asset.stackId != null;
-
     final bool storageIndicator =
         showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
 
@@ -77,21 +75,10 @@ class ThumbnailTile extends ConsumerWidget {
                     child: Thumbnail.fromAsset(asset: asset, size: size),
                   ),
                 ),
-                if (hasStack)
+                if (asset != null)
                   Align(
                     alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 10.0, top: asset.isVideo ? 24.0 : 6.0),
-                      child: const _TileOverlayIcon(Icons.burst_mode_rounded),
-                    ),
-                  ),
-                if (asset != null && asset.isVideo)
-                  Align(
-                    alignment: Alignment.topRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 10.0, top: 6.0),
-                      child: _VideoIndicator(asset.duration),
-                    ),
+                    child: _AssetTypeIcons(asset: asset),
                   ),
                 if (storageIndicator && asset != null)
                   switch (asset.storage) {
@@ -211,6 +198,37 @@ class _TileOverlayIcon extends StatelessWidget {
       color: Colors.white,
       size: 16,
       shadows: [const Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+    );
+  }
+}
+
+class _AssetTypeIcons extends StatelessWidget {
+  final BaseAsset asset;
+
+  const _AssetTypeIcons({required this.asset});
+
+  @override
+  Widget build(BuildContext context) {
+    final hasStack = asset is RemoteAsset && (asset as RemoteAsset).stackId != null;
+    final isLivePhoto = asset is RemoteAsset && asset.livePhotoVideoId != null;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (asset.isVideo)
+          Padding(padding: const EdgeInsets.only(right: 10.0, top: 6.0), child: _VideoIndicator(asset.duration)),
+        if (hasStack)
+          const Padding(
+            padding: EdgeInsets.only(right: 10.0, top: 6.0),
+            child: _TileOverlayIcon(Icons.burst_mode_rounded),
+          ),
+        if (isLivePhoto)
+          const Padding(
+            padding: EdgeInsets.only(right: 10.0, top: 6.0),
+            child: _TileOverlayIcon(Icons.motion_photos_on_rounded),
+          ),
+      ],
     );
   }
 }

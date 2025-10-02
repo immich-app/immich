@@ -24,7 +24,7 @@ After creating an album, you can access the sharing options by clicking on the s
 
 Partner sharing allows you to share your _entire_ library with other users of your choice. They can then view your library and download the assets.
 
-You can read this guide to learn more about [partner sharing](/docs/features/partner-sharing).
+You can read this guide to learn more about [partner sharing](/features/partner-sharing).
 
 ## Public sharing
 

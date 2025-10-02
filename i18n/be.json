@@ -28,6 +28,8 @@
   "add_to_album": "Дадаць у альбом",
   "add_to_album_bottom_sheet_added": "Дададзена да {album}",
   "add_to_album_bottom_sheet_already_exists": "Ужо знаходзіцца ў {album}",
+  "add_to_album_bottom_sheet_some_local_assets": "Некаторыя лакальныя актывы не могуць быць дададзены ў альбом",
+  "add_to_album_toggle": "Пераключыць выбар для {album}",
   "add_to_albums": "Дадаць у альбомы",
   "add_to_albums_count": "Дадаць у альбомы ({count})",
   "add_to_shared_album": "Дадаць у агульны альбом",

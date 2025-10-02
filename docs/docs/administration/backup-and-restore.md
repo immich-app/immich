@@ -3,7 +3,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/docs/guides/template-backup-script.md)
+A [3-2-1 backup strategy](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) is recommended to protect your data. You should keep copies of your uploaded photos/videos as well as the Immich database for a comprehensive backup solution. This page provides an overview on how to backup the database and the location of user-uploaded pictures and videos. A template bash script that can be run as a cron job is provided [here](/guides/template-backup-script.md)
 
 :::danger
 The instructions on this page show you how to prepare your Immich instance to be backed up, and which files to take a backup of. You still need to take care of using an actual backup tool to make a backup yourself.
@@ -160,7 +160,7 @@ for more info read the [release notes](https://github.com/immich-app/immich/rele
 
   :::danger
   A backup of this folder does not constitute a backup of your database!
-  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  Follow the instructions listed [here](/administration/backup-and-restore#database) to learn how to perform a proper backup.
   :::
 
 </TabItem>
@@ -205,7 +205,7 @@ When you turn off the storage template engine, it will leave the assets in `UPLO
 
   :::danger
   A backup of this folder does not constitute a backup of your database!
-  Follow the instructions listed [here](/docs/administration/backup-and-restore#database) to learn how to perform a proper backup.
+  Follow the instructions listed [here](/administration/backup-and-restore#database) to learn how to perform a proper backup.
   :::
 
 </TabItem>

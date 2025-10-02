@@ -44,13 +44,13 @@
 
 ## Contingut
 
-- [Documentació oficial](https://immich.app/docs)
+- [Documentació oficial](https://docs.immich.app)
 - [Mapa de ruta](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funcionalitats](#funcionalitats)
-- [Introducció](https://immich.app/docs/overview/introduction)
-- [Instal·lació](https://immich.app/docs/install/requirements)
-- [Directrius de contribució](https://immich.app/docs/overview/support-the-project)
+- [Introducció](https://docs.immich.app/overview/introduction)
+- [Instal·lació](https://docs.immich.app/install/requirements)
+- [Directrius de contribució](https://docs.immich.app/overview/support-the-project)
 
 ## Documentació
 

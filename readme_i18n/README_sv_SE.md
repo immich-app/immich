@@ -46,13 +46,13 @@
 
 ## Innehåll
 
-- [Officiell Dokumentation](https://immich.app/docs)
+- [Officiell Dokumentation](https://docs.immich.app)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funktioner](#features)
-- [Introduktion](https://immich.app/docs/overview/introduction)
-- [Installation](https://immich.app/docs/install/requirements)
-- [Riktlinjer för Bidrag](https://immich.app/docs/overview/support-the-project)
+- [Introduktion](https://docs.immich.app/overview/introduction)
+- [Installation](https://docs.immich.app/install/requirements)
+- [Riktlinjer för Bidrag](https://docs.immich.app/overview/support-the-project)
 
 ## Dokumentation
 

@@ -67,7 +67,7 @@
               <FormatMessage key="admin.map_manage_reverse_geocoding_settings">
                 {#snippet children({ message })}
                   <a
-                    href="https://immich.app/docs/features/reverse-geocoding"
+                    href="https://docs.immich.app/features/reverse-geocoding"
                     class="underline"
                     target="_blank"
                     rel="noreferrer"

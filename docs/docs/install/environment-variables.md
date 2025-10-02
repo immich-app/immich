@@ -42,7 +42,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                        |                              | server                   | api                |
-| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/docs/administration/system-integrity)                             |                              | server                   | api, microservices |
+| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/administration/system-integrity)                                  |                              | server                   | api, microservices |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
@@ -57,7 +57,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_WORKERS_EXCLUDE` | Do not run these workers. Matches against default workers, or `IMMICH_WORKERS_INCLUDE` if specified. |         | server     |
 
 :::info
-Information on the current workers can be found [here](/docs/administration/jobs-workers).
+Information on the current workers can be found [here](/administration/jobs-workers).
 :::
 
 ## Ports

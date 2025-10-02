@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -9,8 +10,8 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/map_bottom_sheet.widget.dart';
-import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
+import 'package:immich_mobile/presentation/widgets/map/map_utils.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -187,6 +188,8 @@ class _Map extends StatelessWidget {
           styleString: style,
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,
+          attributionButtonPosition: AttributionButtonPosition.topRight,
+          attributionButtonMargins: Platform.isIOS ? const Point(40, 12) : const Point(40, 72),
         ),
       ),
     );

@@ -52,14 +52,14 @@
 
 ## ลิงก์
 
-- [คู่มือ](https://immich.app/docs)
-- [เกี่ยวกับ](https://immich.app/docs/overview/introduction)
-- [การติดตั้ง](https://immich.app/docs/install/requirements)
+- [คู่มือ](https://docs.immich.app)
+- [เกี่ยวกับ](https://docs.immich.app/overview/introduction)
+- [การติดตั้ง](https://docs.immich.app/install/requirements)
 - [โรดแมป](https://immich.app/roadmap)
 - [สาธิต](#สาธิต)
 - [คุณสมบัติ](#คุณสมบัติ)
-- [การแปลภาษา](https://immich.app/docs/developer/translations)
-- [สนับสนุนโพรเจกต์](https://immich.app/docs/overview/support-the-project)
+- [การแปลภาษา](https://docs.immich.app/developer/translations)
+- [สนับสนุนโพรเจกต์](https://docs.immich.app/overview/support-the-project)
 
 ## สาธิต
 
@@ -106,7 +106,7 @@
 
 ## การแปลภาษา
 
-อ่านเพิ่มเติมเกี่ยวกับการแปล [ที่นี่](https://immich.app/docs/developer/translations)
+อ่านเพิ่มเติมเกี่ยวกับการแปล [ที่นี่](https://docs.immich.app/developer/translations)
 
 <a href="https://hosted.weblate.org/engage/immich/">
   <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="สถานะการแปล" />

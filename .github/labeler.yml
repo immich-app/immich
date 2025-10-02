@@ -6,7 +6,6 @@ cli:
 documentation:
   - changed-files:
       - any-glob-to-any-file:
-          - docs/blob/**
           - docs/docs/**
           - docs/src/**
           - docs/static/**

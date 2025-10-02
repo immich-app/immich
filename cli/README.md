@@ -1,6 +1,6 @@
 A command-line interface for interfacing with the self-hosted photo manager [Immich](https://immich.app/).
 
-Please see the [Immich CLI documentation](https://immich.app/docs/features/command-line-interface).
+Please see the [Immich CLI documentation](https://docs.immich.app/features/command-line-interface).
 
 # For developers
 
