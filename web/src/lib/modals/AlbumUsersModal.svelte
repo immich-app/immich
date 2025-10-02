@@ -31,6 +31,12 @@
 
   let isOwned = $derived(currentUser?.id == album.ownerId);
 
+  // Build a map of contributor counts by user id; avoid casts/derived
+  const contributorMap: Record<string, number> = Object.fromEntries(
+    (album.contributorCounts ?? []).map(({ userId, assetCount }) => [userId, assetCount]),
+  );
+  const getCount = (userId: string) => contributorMap[userId] ?? 0;
+
   onMount(async () => {
     try {
       currentUser = await getMyUser();
@@ -110,6 +116,10 @@
                   {$t('role_viewer')}
                 {:else}
                   {$t('role_editor')}
+                {/if}
+                {#if getCount(user.id) > 0}
+                  <span>-</span>
+                  {$t('items_count', { values: { count: getCount(user.id) } })}
                 {/if}
               </Text>
             </div>
