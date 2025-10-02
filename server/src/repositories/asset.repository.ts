@@ -292,7 +292,7 @@ export class AssetRepository {
   setComplete(assetId: string) {
     return this.db
       .updateTable('asset')
-      .set({ status: AssetStatus.Active })
+      .set({ status: AssetStatus.Active, visibility: AssetVisibility.Timeline })
       .where('id', '=', assetId)
       .where('status', '=', sql.lit(AssetStatus.Partial))
       .execute();

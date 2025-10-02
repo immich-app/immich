@@ -1,14 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Response } from 'express';
+import { DateTime } from 'luxon';
 import { createHash } from 'node:crypto';
 import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto } from 'src/dtos/upload.dto';
-import { AssetStatus, AssetType, AssetVisibility, JobName, StorageFolder } from 'src/enum';
+import { AssetStatus, AssetType, AssetVisibility, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
 import { AuthenticatedRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
+import { JobItem, JobOf } from 'src/types';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mimeTypes } from 'src/utils/mime-types';
 import { withRetry } from 'src/utils/misc';
@@ -49,7 +53,7 @@ export class AssetUploadService extends BaseService {
           type: type,
           isFavorite: assetData.isFavorite,
           duration: assetData.duration || null,
-          visibility: assetData.visibility || AssetVisibility.Timeline,
+          visibility: AssetVisibility.Hidden,
           originalFileName: assetData.filename,
           status: AssetStatus.Partial,
         },
@@ -219,6 +223,44 @@ export class AssetUploadService extends BaseService {
         .setHeader('Cache-Control', 'no-store')
         .setHeader('Upload-Limit', 'min-size=0')
         .send();
+    });
+  }
+
+  @OnJob({ name: JobName.PartialAssetDeleteQueueAll, queue: QueueName.BackgroundTask })
+  async removeStaleUploads(): Promise<void> {
+    // TODO: make this configurable
+    const createdBefore = DateTime.now().minus({ days: 7 }).toJSDate();
+    let jobs: JobItem[] = [];
+    const assets = this.assetJobRepository.streamForPartialAssetCleanupJob(createdBefore);
+    for await (const asset of assets) {
+      jobs.push({ name: JobName.AssetFileMigration, data: asset });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
+    }
+    await this.jobRepository.queueAll(jobs);
+  }
+
+  @OnJob({ name: JobName.PartialAssetDelete, queue: QueueName.BackgroundTask })
+  removeStaleUpload({ id }: JobOf<JobName.PartialAssetDelete>): Promise<JobStatus> {
+    return this.databaseRepository.withUuidLock(id, async () => {
+      const asset = await this.assetJobRepository.getForPartialAssetCleanupJob(id);
+      if (!asset) {
+        return JobStatus.Skipped;
+      }
+      const { checksum, fileModifiedAt, path, size } = asset;
+      try {
+        const stat = await this.storageRepository.stat(path);
+        if (size === stat.size && checksum === (await this.cryptoRepository.hashFile(path))) {
+          await this.onComplete({ id, path, fileModifiedAt });
+          return JobStatus.Success;
+        }
+      } catch (error: any) {
+        this.logger.debugFn(() => `Failed to check upload file ${path}: ${error.message}`);
+      }
+      await this.onCancel(id, path);
+      return JobStatus.Success;
     });
   }
 
