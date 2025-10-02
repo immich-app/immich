@@ -2,8 +2,8 @@ import { BadRequestException } from '@nestjs/common';
 import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
 import { Equals, IsArray, IsEnum, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
-import { AssetVisibility, ImmichHeader } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { ImmichHeader } from 'src/enum';
+import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 import { parseDictionary } from 'structured-headers';
 
 export class UploadAssetDataDto {
@@ -31,12 +31,6 @@ export class UploadAssetDataDto {
 
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
-
-  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
-  visibility?: AssetVisibility;
-
-  @ValidateUUID({ optional: true })
-  livePhotoVideoId?: string;
 
   @Transform(({ value }) => {
     try {

@@ -165,6 +165,10 @@ export class AssetMediaService extends BaseService {
         throw new Error('Asset not found');
       }
 
+      if (asset.status === AssetStatus.Partial) {
+        throw new BadRequestException('Cannot replace a partial asset');
+      }
+
       this.requireQuota(auth, file.size);
 
       await this.replaceFileData(asset.id, dto, file, sidecarFile?.originalPath);
