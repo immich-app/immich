@@ -256,27 +256,26 @@ export class AssetRepository {
   }
 
   createWithMetadata(asset: Insertable<AssetTable> & { id: string }, size: number, metadata?: AssetMetadataItem[]) {
-    if (!metadata || metadata.length === 0) {
-      return this.db.insertInto('asset').values(asset).execute();
-    }
-
-    return this.db
-      .with('asset', (qb) => qb.insertInto('asset').values(asset).returning('id'))
+    let query = this.db
+      .with('asset', (qb) => qb.insertInto('asset').values(asset).returning(['id', 'ownerId']))
       .with('exif', (qb) =>
         qb
           .insertInto('asset_exif')
           .columns(['assetId', 'fileSizeInByte'])
           .expression((eb) => eb.selectFrom('asset').select(['asset.id', eb.val(size).as('fileSizeInByte')])),
-      )
-      .with('user', (qb) =>
-        qb
-          .updateTable('user')
-          .from('asset')
-          .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${size}` })
-          .whereRef('user.id', '=', 'asset.ownerId'),
-      )
-      .insertInto('asset_metadata')
-      .values(metadata.map(({ key, value }) => ({ assetId: asset.id, key, value })))
+      );
+
+    if (metadata && metadata.length > 0) {
+      (query as any) = query.with('metadata', (qb) =>
+        qb.insertInto('asset_metadata').values(metadata.map(({ key, value }) => ({ assetId: asset.id, key, value }))),
+      );
+    }
+
+    return query
+      .updateTable('user')
+      .from('asset')
+      .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${size}` })
+      .whereRef('user.id', '=', 'asset.ownerId')
       .execute();
   }
 
@@ -290,12 +289,23 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  setCompleteWithSize(assetId: string) {
+  setComplete(assetId: string) {
     return this.db
       .updateTable('asset')
       .set({ status: AssetStatus.Active })
-      .where('asset.id', '=', assetId)
-      .where('asset.status', '=', sql.lit(AssetStatus.Partial))
+      .where('id', '=', assetId)
+      .where('status', '=', sql.lit(AssetStatus.Partial))
+      .execute();
+  }
+
+  async removeAndDecrementQuota(id: string): Promise<void> {
+    await this.db
+      .with('asset_exif', (qb) => qb.selectFrom('asset_exif').where('assetId', '=', id).select('fileSizeInByte'))
+      .with('asset', (qb) => qb.deleteFrom('asset').where('id', '=', id).returning('ownerId'))
+      .updateTable('user')
+      .from(['asset_exif', 'asset'])
+      .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" - "fileSizeInByte"` })
+      .whereRef('user.id', '=', 'asset.ownerId')
       .execute();
   }
 

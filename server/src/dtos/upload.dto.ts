@@ -84,21 +84,14 @@ export class BaseUploadHeadersDto extends BaseRufhHeadersDto {
   contentLength!: number;
 
   @Expose({ name: UploadHeader.UploadComplete })
-  @ValidateIf((o) => o.requestInterop !== null && o.requestInterop! <= 3)
+  @ValidateIf((o) => o.version === null || o.version! > 3)
   @IsEnum(StructuredBoolean)
   uploadComplete!: StructuredBoolean;
 
   @Expose({ name: UploadHeader.UploadIncomplete })
-  @ValidateIf((o) => o.requestInterop === null || o.requestInterop! > 3)
+  @ValidateIf((o) => o.version !== null && o.version! <= 3)
   @IsEnum(StructuredBoolean)
   uploadIncomplete!: StructuredBoolean;
-
-  @Expose({ name: UploadHeader.UploadLength })
-  @Min(0)
-  @IsInt()
-  @Type(() => Number)
-  @Optional()
-  uploadLength?: number;
 
   get isComplete(): boolean {
     if (this.version <= 3) {
@@ -134,7 +127,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
     }
 
     const checksum = parseDictionary(value).get('sha')?.[0];
-    if (checksum instanceof ArrayBuffer) {
+    if (checksum instanceof ArrayBuffer && checksum.byteLength === 20) {
       return Buffer.from(checksum);
     }
     throw new BadRequestException(`Invalid ${UploadHeader.ReprDigest} header`);
@@ -145,14 +138,21 @@ export class StartUploadDto extends BaseUploadHeadersDto {
   @Min(0)
   @IsInt()
   @Type(() => Number)
-  declare uploadLength: number;
+  uploadLength!: number;
 }
 
 export class ResumeUploadDto extends BaseUploadHeadersDto {
   @Expose({ name: 'content-type' })
-  @ValidateIf((o) => o.requestInterop !== null && o.requestInterop >= 6)
+  @ValidateIf((o) => o.version && o.version >= 6)
   @Equals('application/partial-upload')
-  contentType!: number | null;
+  contentType!: string;
+
+  @Expose({ name: UploadHeader.UploadLength })
+  @Min(0)
+  @IsInt()
+  @Type(() => Number)
+  @Optional()
+  uploadLength?: number;
 
   @Expose({ name: UploadHeader.UploadOffset })
   @Min(0)
