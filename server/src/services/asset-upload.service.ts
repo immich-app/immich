@@ -20,9 +20,6 @@ export class AssetUploadService extends BaseService {
   async startUpload(req: AuthenticatedRequest, res: Response, dto: StartUploadDto): Promise<void> {
     this.logger.verboseFn(() => `Starting upload: ${JSON.stringify(dto)}`);
     const { isComplete, assetData, uploadLength, contentLength, version } = dto;
-    if (isComplete && uploadLength && uploadLength !== contentLength) {
-      return this.sendInconsistentLengthProblem(res);
-    }
 
     const assetId = this.cryptoRepository.randomUUID();
     const folder = StorageCore.getNestedFolder(StorageFolder.Upload, req.auth.user.id, assetId);
@@ -71,12 +68,16 @@ export class AssetUploadService extends BaseService {
           return this.sendAlreadyCompletedProblem(res);
         }
         const location = `/api/upload/${duplicate.id}`;
-        res.status(201).setHeader('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
+        res.status(400).setHeader('Location', location).send('Incomplete asset already exists');
         return;
       }
       this.logger.error(`Error creating upload asset record: ${error.message}`);
       res.status(500).send('Error creating upload asset record');
       return;
+    }
+
+    if (isComplete && uploadLength && uploadLength !== contentLength) {
+      return this.sendInconsistentLengthProblem(res);
     }
 
     const location = `/api/upload/${assetId}`;
@@ -98,7 +99,7 @@ export class AssetUploadService extends BaseService {
     writeStream.on('finish', () => {
       this.setCompleteHeader(res, dto.version, isComplete);
       if (!isComplete) {
-        return res.status(201).send();
+        return res.status(201).set('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
       }
       this.logger.log(`Finished upload to ${path}`);
       if (dto.checksum.compare(checksumBuffer!) !== 0) {
@@ -183,6 +184,40 @@ export class AssetUploadService extends BaseService {
     });
   }
 
+  cancelUpload(auth: AuthDto, assetId: string, response: Response): Promise<void> {
+    return this.databaseRepository.withUuidLock(assetId, async () => {
+      const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
+      if (!asset) {
+        response.status(404).send('Asset not found');
+        return;
+      }
+      if (asset.status !== AssetStatus.Partial) {
+        return this.sendAlreadyCompletedProblem(response);
+      }
+      await this.onCancel(assetId, asset.path);
+      response.status(204).send();
+    });
+  }
+
+  async getUploadStatus(auth: AuthDto, res: Response, id: string, { version }: GetUploadStatusDto): Promise<void> {
+    return this.databaseRepository.withUuidLock(id, async () => {
+      const asset = await this.assetRepository.getCompletionMetadata(id, auth.user.id);
+      if (!asset) {
+        res.status(404).send('Asset not found');
+        return;
+      }
+
+      const offset = await this.getCurrentOffset(asset.path);
+      this.setCompleteHeader(res, version, asset.status !== AssetStatus.Partial);
+      res
+        .status(204)
+        .setHeader('Upload-Offset', offset.toString())
+        .setHeader('Cache-Control', 'no-store')
+        .setHeader('Upload-Limit', 'min-size=0')
+        .send();
+    });
+  }
+
   private pipe(req: Readable, res: Response, { id, path, size }: { id: string; path: string; size: number }) {
     const writeStream = this.storageRepository.createOrAppendWriteStream(path);
     writeStream.on('error', (error) => {
@@ -228,48 +263,10 @@ export class AssetUploadService extends BaseService {
     return writeStream;
   }
 
-  cancelUpload(auth: AuthDto, assetId: string, response: Response): Promise<void> {
-    return this.databaseRepository.withUuidLock(assetId, async () => {
-      const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
-      if (!asset) {
-        response.status(404).send('Asset not found');
-        return;
-      }
-      if (asset.status !== AssetStatus.Partial) {
-        return this.sendAlreadyCompletedProblem(response);
-      }
-      await this.onCancel(assetId, asset.path);
-      response.status(204).send();
-    });
-  }
-
-  async getUploadStatus(auth: AuthDto, res: Response, id: string, { version }: GetUploadStatusDto): Promise<void> {
-    return this.databaseRepository.withUuidLock(id, async () => {
-      const asset = await this.assetRepository.getCompletionMetadata(id, auth.user.id);
-      if (!asset) {
-        res.status(404).send('Asset not found');
-        return;
-      }
-
-      const offset = await this.getCurrentOffset(asset.path);
-      this.setCompleteHeader(res, version, asset.status !== AssetStatus.Partial);
-      res
-        .status(204)
-        .setHeader('Upload-Offset', offset.toString())
-        .setHeader('Cache-Control', 'no-store')
-        .setHeader('Upload-Limit', 'min-size=0')
-        .send();
-    });
-  }
-
-  async getUploadOptions(response: Response): Promise<void> {
-    response.status(204).setHeader('Upload-Limit', 'min-size=0').setHeader('Allow', 'POST, OPTIONS').send();
-  }
-
   private async onComplete({ id, path, fileModifiedAt }: { id: string; path: string; fileModifiedAt: Date }) {
     this.logger.debug('Completing upload for asset', id);
     const jobData = { name: JobName.AssetExtractMetadata, data: { id: id, source: 'upload' } } as const;
-    await withRetry(() => this.assetRepository.setCompleteWithSize(id));
+    await withRetry(() => this.assetRepository.setComplete(id));
     try {
       await withRetry(() => this.storageRepository.utimes(path, new Date(), fileModifiedAt));
     } catch (error: any) {
@@ -281,7 +278,7 @@ export class AssetUploadService extends BaseService {
   private async onCancel(assetId: string, path: string): Promise<void> {
     this.logger.debug('Cancelling upload for asset', assetId);
     await withRetry(() => this.storageRepository.unlink(path));
-    await withRetry(() => this.assetRepository.remove({ id: assetId }));
+    await withRetry(() => this.assetRepository.removeAndDecrementQuota(assetId));
   }
 
   private sendInterimResponse({ socket }: Response, location: string, interopVersion: number): void {
@@ -321,7 +318,7 @@ export class AssetUploadService extends BaseService {
 
   private sendChecksumMismatchResponse(res: Response, assetId: string, path: string): Promise<void> {
     this.logger.warn(`Removing upload asset ${assetId} due to checksum mismatch`);
-    res.status(460).send('Checksum mismatch');
+    res.status(460).send('File on server does not match provided checksum');
     return this.onCancel(assetId, path);
   }
 

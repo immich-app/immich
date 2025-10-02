@@ -1,4 +1,18 @@
-import { BadRequestException, Controller, Delete, Head, Options, Param, Patch, Post, Req, Res } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Delete,
+  Head,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Options,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
@@ -91,16 +105,15 @@ export class AssetUploadController {
   }
 
   @Options()
-  @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
-  getUploadOptions(@Res() res: Response) {
-    return this.service.getUploadOptions(res);
-  }
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Header('Upload-Limit', 'min-size=0')
+  getUploadOptions() {}
 
   private getDto<T extends object>(cls: new () => T, headers: IncomingHttpHeaders): T {
     const dto = plainToInstance(cls, headers, { excludeExtraneousValues: true });
     const errors = validateSync(dto);
     if (errors.length > 0) {
-      const constraints = errors.map((e) => (e.constraints ? Object.values(e.constraints).join(', ') : '')).join('; ');
+      const constraints = errors.flatMap((e) => (e.constraints ? Object.values(e.constraints) : []));
       console.warn('Upload DTO validation failed:', JSON.stringify(errors, null, 2));
       throw new BadRequestException(constraints);
     }
