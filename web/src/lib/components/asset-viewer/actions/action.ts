@@ -1,6 +1,6 @@
 import type { AssetAction } from '$lib/constants';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { AlbumResponseDto, AssetResponseDto, StackResponseDto } from '@immich/sdk';
+import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto, StackResponseDto } from '@immich/sdk';
 
 type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };
@@ -18,6 +18,7 @@ type ActionMap = {
   [AssetAction.REMOVE_ASSET_FROM_STACK]: { stack: StackResponseDto | null; asset: AssetResponseDto };
   [AssetAction.SET_VISIBILITY_LOCKED]: { asset: TimelineAsset };
   [AssetAction.SET_VISIBILITY_TIMELINE]: { asset: TimelineAsset };
+  [AssetAction.SET_PERSON_FEATURED_PHOTO]: { asset: AssetResponseDto; person: PersonResponseDto };
 };
 
 export type Action = {

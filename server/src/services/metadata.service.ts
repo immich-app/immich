@@ -30,6 +30,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { isAssetChecksumConstraint } from 'src/utils/database';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
@@ -39,9 +40,9 @@ const EXIF_DATE_TAGS: Array<keyof ImmichTags> = [
   'SubSecCreateDate',
   'SubSecMediaCreateDate',
   'DateTimeOriginal',
+  'CreationDate',
   'CreateDate',
   'MediaCreateDate',
-  'CreationDate',
   'DateTimeCreated',
   'GPSDateTime',
   'DateTimeUTC',
@@ -372,11 +373,9 @@ export class MetadataService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    if (sidecarPath === null) {
-      await this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar });
-    } else {
-      await this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath });
-    }
+    await (sidecarPath === null
+      ? this.assetRepository.deleteFile({ assetId: asset.id, type: AssetFileType.Sidecar })
+      : this.assetRepository.upsertFile({ assetId: asset.id, type: AssetFileType.Sidecar, path: sidecarPath }));
 
     return JobStatus.Success;
   }
@@ -430,6 +429,12 @@ export class MetadataService extends BaseService {
 
   private getSidecarCandidates({ files, originalPath }: { files: AssetFile[] | null; originalPath: string }) {
     const candidates: string[] = [];
+
+    const existingSidecar = files?.find((file) => file.type === AssetFileType.Sidecar);
+
+    if (existingSidecar) {
+      candidates.push(existingSidecar.path);
+    }
 
     const assetPath = parse(originalPath);
 
@@ -598,47 +603,62 @@ export class MetadataService extends BaseService {
         });
       }
       const checksum = this.cryptoRepository.hashSha1(video);
+      const checksumQuery = { ownerId: asset.ownerId, libraryId: asset.libraryId ?? undefined, checksum };
 
-      let motionAsset = await this.assetRepository.getByChecksum({
-        ownerId: asset.ownerId,
-        libraryId: asset.libraryId ?? undefined,
-        checksum,
-      });
-      if (motionAsset) {
+      let motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
+      let isNewMotionAsset = false;
+
+      if (!motionAsset) {
+        try {
+          const motionAssetId = this.cryptoRepository.randomUUID();
+          motionAsset = await this.assetRepository.create({
+            id: motionAssetId,
+            libraryId: asset.libraryId,
+            type: AssetType.Video,
+            fileCreatedAt: dates.dateTimeOriginal,
+            fileModifiedAt: stats.mtime,
+            localDateTime: dates.localDateTime,
+            checksum,
+            ownerId: asset.ownerId,
+            originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
+            originalFileName: `${parse(asset.originalFileName).name}.mp4`,
+            visibility: AssetVisibility.Hidden,
+            deviceAssetId: 'NONE',
+            deviceId: 'NONE',
+          });
+
+          isNewMotionAsset = true;
+
+          if (!asset.isExternal) {
+            await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
+          }
+        } catch (error) {
+          if (!isAssetChecksumConstraint(error)) {
+            throw error;
+          }
+
+          motionAsset = await this.assetRepository.getByChecksum(checksumQuery);
+          if (!motionAsset) {
+            this.logger.warn(`Unable to find existing motion video asset for ${asset.id}: ${asset.originalPath}`);
+            return;
+          }
+        }
+      }
+
+      if (!isNewMotionAsset) {
         this.logger.debugFn(() => {
           const base64Checksum = checksum.toString('base64');
           return `Motion asset with checksum ${base64Checksum} already exists for asset ${asset.id}: ${asset.originalPath}`;
         });
+      }
 
-        // Hide the motion photo video asset if it's not already hidden to prepare for linking
-        if (motionAsset.visibility === AssetVisibility.Timeline) {
-          await this.assetRepository.update({
-            id: motionAsset.id,
-            visibility: AssetVisibility.Hidden,
-          });
-          this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
-        }
-      } else {
-        const motionAssetId = this.cryptoRepository.randomUUID();
-        motionAsset = await this.assetRepository.create({
-          id: motionAssetId,
-          libraryId: asset.libraryId,
-          type: AssetType.Video,
-          fileCreatedAt: dates.dateTimeOriginal,
-          fileModifiedAt: stats.mtime,
-          localDateTime: dates.localDateTime,
-          checksum,
-          ownerId: asset.ownerId,
-          originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
-          originalFileName: `${parse(asset.originalFileName).name}.mp4`,
+      // Hide the motion photo video asset if it's not already hidden to prepare for linking
+      if (motionAsset.visibility === AssetVisibility.Timeline) {
+        await this.assetRepository.update({
+          id: motionAsset.id,
           visibility: AssetVisibility.Hidden,
-          deviceAssetId: 'NONE',
-          deviceId: 'NONE',
         });
-
-        if (!asset.isExternal) {
-          await this.userRepository.updateUsage(asset.ownerId, video.byteLength);
-        }
+        this.logger.log(`Hid unlinked motion photo video asset (${motionAsset.id})`);
       }
 
       if (asset.livePhotoVideoId !== motionAsset.id) {
@@ -830,7 +850,11 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: { id: string; originalPath: string }, exifTags: ImmichTags, stats: Stats) {
+  private getDates(
+    asset: { id: string; originalPath: string; fileCreatedAt: Date },
+    exifTags: ImmichTags,
+    stats: Stats,
+  ) {
     const result = firstDateTime(exifTags);
     const tag = result?.tag;
     const dateTime = result?.dateTime;
@@ -859,7 +883,12 @@ export class MetadataService extends BaseService {
     if (!localDateTime || !dateTimeOriginal) {
       // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
       // birthtime is not available in Docker on macOS, so it appears as 0
-      const earliestDate = stats.birthtimeMs ? new Date(Math.min(stats.mtimeMs, stats.birthtimeMs)) : stats.mtime;
+      const earliestDate = new Date(
+        Math.min(
+          asset.fileCreatedAt.getTime(),
+          stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
+        ),
+      );
       this.logger.debug(
         `No exif date time found, falling back on ${earliestDate.toISOString()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
       );

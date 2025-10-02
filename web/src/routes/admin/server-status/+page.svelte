@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
+  import ServerStatisticsPanel from '$lib/components/server-statistics/ServerStatisticsPanel.svelte';
   import { asyncTimeout } from '$lib/utils';
   import { getServerStatistics } from '@immich/sdk';
   import { onDestroy, onMount } from 'svelte';
@@ -29,7 +29,7 @@
 <AdminPageLayout title={data.meta.title}>
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
-      <ServerStatsPanel stats={data.stats} />
+      <ServerStatisticsPanel stats={data.stats} />
     </section>
   </section>
 </AdminPageLayout>

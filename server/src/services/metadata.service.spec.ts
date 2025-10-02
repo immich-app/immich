@@ -23,16 +23,24 @@ import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
+function removeNonSidecarFiles(asset: any) {
+  return {
+    ...asset,
+    files: asset.files.filter((file: any) => file.type === AssetFileType.Sidecar),
+  };
+}
+
 const forSidecarJob = (
   asset: {
     id?: string;
     originalPath?: string;
-    files: { id: string; type: AssetFileType; path: string }[];
+    files?: { id: string; type: AssetFileType; path: string }[];
   } = {},
 ) => {
   return {
     id: factory.uuid(),
     originalPath: '/path/to/IMG_123.jpg',
+    files: [],
     ...asset,
   };
 };
@@ -1501,7 +1509,7 @@ describe(MetadataService.name, () => {
   });
 
   describe('handleSidecarCheck', () => {
-    it("should do nothing if asset isn't found", async () => {
+    it('should do nothing if asset could not be found', async () => {
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(void 0);
 
       await expect(sut.handleSidecarCheck({ id: assetStub.image.id })).resolves.toBeUndefined();
@@ -1510,18 +1518,25 @@ describe(MetadataService.name, () => {
     });
 
     it('should detect a new sidecar at .jpg.xmp', async () => {
-      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg' });
+      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg', files: [] });
 
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
 
       await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, sidecarPath: `/path/to/IMG_123.jpg.xmp` });
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
+        assetId: asset.id,
+        type: AssetFileType.Sidecar,
+        path: '/path/to/IMG_123.jpg.xmp',
+      });
     });
 
     it('should detect a new sidecar at .xmp', async () => {
-      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg' });
+      const asset = forSidecarJob({
+        originalPath: '/path/to/IMG_123.jpg',
+        files: [],
+      });
 
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValueOnce(false);
@@ -1529,29 +1544,39 @@ describe(MetadataService.name, () => {
 
       await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, sidecarPath: '/path/to/IMG_123.xmp' });
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
+        assetId: asset.id,
+        type: AssetFileType.Sidecar,
+        path: '/path/to/IMG_123.xmp',
+      });
     });
 
-    it('should unset sidecar path if file does not exist anymore', async () => {
-      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg', sidecarPath: '/path/to/IMG_123.jpg.xmp' });
+    it('should unset sidecar path if file no longer exist', async () => {
+      const asset = forSidecarJob({
+        originalPath: '/path/to/IMG_123.jpg',
+        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar }],
+      });
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValue(false);
 
       await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, sidecarPath: null });
+      expect(mocks.asset.deleteFile).toHaveBeenCalledWith({ assetId: asset.id, type: AssetFileType.Sidecar });
     });
 
     it('should do nothing if the sidecar file still exists', async () => {
-      const asset = forSidecarJob({ originalPath: '/path/to/IMG_123.jpg', sidecarPath: '/path/to/IMG_123.jpg' });
+      const asset = forSidecarJob({
+        originalPath: '/path/to/IMG_123.jpg',
+        files: [{ id: 'sidecar', path: '/path/to/IMG_123.jpg.xmp', type: AssetFileType.Sidecar }],
+      });
 
       mocks.assetJob.getForSidecarCheckJob.mockResolvedValue(asset);
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
 
       await expect(sut.handleSidecarCheck({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
 
-      expect(mocks.asset.update).not.toHaveBeenCalled();
       expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.asset.deleteFile).not.toHaveBeenCalled();
     });
   });
 
@@ -1668,6 +1693,17 @@ describe(MetadataService.name, () => {
       // Should skip invalid dates and use the first valid one
       expect(result?.tag).toBe('GPSDateTime');
       expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-10-10T10:00:00.000Z');
+    });
+
+    it('should prefer CreationDate over CreateDate', () => {
+      const tags = {
+        CreationDate: '2025:05:24 18:26:20+02:00',
+        CreateDate: '2025:08:27 08:45:40',
+      };
+
+      const result = firstDateTime(tags);
+      expect(result?.tag).toBe('CreationDate');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2025-05-24T16:26:20.000Z');
     });
   });
 });

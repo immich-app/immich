@@ -277,6 +277,10 @@ export enum UserMetadataKey {
   Onboarding = 'onboarding',
 }
 
+export enum AssetMetadataKey {
+  MobileApp = 'mobile-app',
+}
+
 export enum UserAvatarColor {
   Primary = 'primary',
   Pink = 'pink',
@@ -527,6 +531,7 @@ export enum JobName {
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
 
   AuditLogCleanup = 'AuditLogCleanup',
+  AuditTableCleanup = 'AuditTableCleanup',
 
   DatabaseBackup = 'DatabaseBackup',
 
@@ -627,6 +632,7 @@ export enum SyncRequestType {
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
   AssetsV1 = 'AssetsV1',
   AssetExifsV1 = 'AssetExifsV1',
+  AssetMetadataV1 = 'AssetMetadataV1',
   AuthUsersV1 = 'AuthUsersV1',
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
@@ -650,6 +656,8 @@ export enum SyncEntityType {
   AssetV1 = 'AssetV1',
   AssetDeleteV1 = 'AssetDeleteV1',
   AssetExifV1 = 'AssetExifV1',
+  AssetMetadataV1 = 'AssetMetadataV1',
+  AssetMetadataDeleteV1 = 'AssetMetadataDeleteV1',
 
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
@@ -701,6 +709,7 @@ export enum SyncEntityType {
 
   SyncAckV1 = 'SyncAckV1',
   SyncResetV1 = 'SyncResetV1',
+  SyncCompleteV1 = 'SyncCompleteV1',
 }
 
 export enum NotificationLevel {

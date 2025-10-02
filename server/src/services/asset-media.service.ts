@@ -33,19 +33,13 @@ import {
 } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
-import { UploadFile } from 'src/types';
+import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
-import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
-import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
+import { asUploadRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
+import { isAssetChecksumConstraint } from 'src/utils/database';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
-
-interface UploadRequest {
-  auth: AuthDto | null;
-  fieldName: UploadFieldName;
-  file: UploadFile;
-}
 
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
@@ -98,15 +92,15 @@ export class AssetMediaService extends BaseService {
     throw new BadRequestException(`Unsupported file type ${filename}`);
   }
 
-  getUploadFilename({ auth, fieldName, file }: UploadRequest): string {
+  getUploadFilename({ auth, fieldName, file, body }: UploadRequest): string {
     requireUploadAccess(auth);
 
-    const originalExtension = extname(file.originalName);
+    const extension = extname(body.filename || file.originalName);
 
     const lookup = {
-      [UploadFieldName.ASSET_DATA]: originalExtension,
+      [UploadFieldName.ASSET_DATA]: extension,
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
-      [UploadFieldName.PROFILE_DATA]: originalExtension,
+      [UploadFieldName.PROFILE_DATA]: extension,
     };
 
     return sanitize(`${file.uuid}${lookup[fieldName]}`);
@@ -126,8 +120,8 @@ export class AssetMediaService extends BaseService {
   }
 
   async onUploadError(request: AuthRequest, file: Express.Multer.File) {
-    const uploadFilename = this.getUploadFilename(asRequest(request, file));
-    const uploadFolder = this.getUploadFolder(asRequest(request, file));
+    const uploadFilename = this.getUploadFilename(asUploadRequest(request, file));
+    const uploadFolder = this.getUploadFolder(asUploadRequest(request, file));
     const uploadPath = `${uploadFolder}/${uploadFilename}`;
 
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [uploadPath] } });
@@ -327,7 +321,7 @@ export class AssetMediaService extends BaseService {
     });
 
     // handle duplicates with a success response
-    if (error.constraint_name === ASSET_CHECKSUM_CONSTRAINT) {
+    if (isAssetChecksumConstraint(error)) {
       const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
       if (!duplicateId) {
         this.logger.error(`Error locating duplicate for checksum constraint`);
@@ -432,6 +426,10 @@ export class AssetMediaService extends BaseService {
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: dto.filename || file.originalName,
     });
+
+    if (dto.metadata) {
+      await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
+    }
 
     if (sidecarFile) {
       await this.assetRepository.upsertFile({

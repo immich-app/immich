@@ -2,16 +2,16 @@
   import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-  import RestoreAssets from '$lib/components/photos-page/actions/restore-assets.svelte';
-  import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import RestoreAssets from '$lib/components/timeline/actions/RestoreAction.svelte';
+  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -116,14 +116,14 @@
       </HStack>
     {/snippet}
 
-    <AssetGrid enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
+    <Timeline enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
       {#snippet empty()}
         <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
       {/snippet}
-    </AssetGrid>
+    </Timeline>
   </UserPageLayout>
 {/if}
 

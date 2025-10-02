@@ -281,6 +281,7 @@ export class JobService extends BaseService {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.AuditTableCleanup },
         { name: JobName.AuditLogCleanup },
       );
     }

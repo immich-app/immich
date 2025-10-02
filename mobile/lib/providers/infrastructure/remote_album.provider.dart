@@ -12,43 +12,42 @@ import 'album.provider.dart';
 
 class RemoteAlbumState {
   final List<RemoteAlbum> albums;
-  final List<RemoteAlbum> filteredAlbums;
 
-  const RemoteAlbumState({required this.albums, List<RemoteAlbum>? filteredAlbums})
-    : filteredAlbums = filteredAlbums ?? albums;
+  const RemoteAlbumState({required this.albums});
 
-  RemoteAlbumState copyWith({List<RemoteAlbum>? albums, List<RemoteAlbum>? filteredAlbums}) {
-    return RemoteAlbumState(albums: albums ?? this.albums, filteredAlbums: filteredAlbums ?? this.filteredAlbums);
+  RemoteAlbumState copyWith({List<RemoteAlbum>? albums}) {
+    return RemoteAlbumState(albums: albums ?? this.albums);
   }
 
   @override
-  String toString() => 'RemoteAlbumState(albums: ${albums.length}, filteredAlbums: ${filteredAlbums.length})';
+  String toString() => 'RemoteAlbumState(albums: ${albums.length})';
 
   @override
   bool operator ==(covariant RemoteAlbumState other) {
     if (identical(this, other)) return true;
     final listEquals = const DeepCollectionEquality().equals;
 
-    return listEquals(other.albums, albums) && listEquals(other.filteredAlbums, filteredAlbums);
+    return listEquals(other.albums, albums);
   }
 
   @override
-  int get hashCode => albums.hashCode ^ filteredAlbums.hashCode;
+  int get hashCode => albums.hashCode;
 }
 
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   late RemoteAlbumService _remoteAlbumService;
   final _logger = Logger('RemoteAlbumNotifier');
+
   @override
   RemoteAlbumState build() {
     _remoteAlbumService = ref.read(remoteAlbumServiceProvider);
-    return const RemoteAlbumState(albums: [], filteredAlbums: []);
+    return const RemoteAlbumState(albums: []);
   }
 
   Future<List<RemoteAlbum>> _getAll() async {
     try {
       final albums = await _remoteAlbumService.getAll();
-      state = state.copyWith(albums: albums, filteredAlbums: albums);
+      state = state.copyWith(albums: albums);
       return albums;
     } catch (error, stack) {
       _logger.severe('Failed to fetch albums', error, stack);
@@ -60,19 +59,21 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     await _getAll();
   }
 
-  void searchAlbums(String query, String? userId, [QuickFilterMode filterMode = QuickFilterMode.all]) {
-    final filtered = _remoteAlbumService.searchAlbums(state.albums, query, userId, filterMode);
-
-    state = state.copyWith(filteredAlbums: filtered);
+  List<RemoteAlbum> searchAlbums(
+    List<RemoteAlbum> albums,
+    String query,
+    String? userId, [
+    QuickFilterMode filterMode = QuickFilterMode.all,
+  ]) {
+    return _remoteAlbumService.searchAlbums(albums, query, userId, filterMode);
   }
 
-  void clearSearch() {
-    state = state.copyWith(filteredAlbums: state.albums);
-  }
-
-  Future<void> sortFilteredAlbums(RemoteAlbumSortMode sortMode, {bool isReverse = false}) async {
-    final sortedAlbums = await _remoteAlbumService.sortAlbums(state.filteredAlbums, sortMode, isReverse: isReverse);
-    state = state.copyWith(filteredAlbums: sortedAlbums);
+  Future<List<RemoteAlbum>> sortAlbums(
+    List<RemoteAlbum> albums,
+    RemoteAlbumSortMode sortMode, {
+    bool isReverse = false,
+  }) async {
+    return await _remoteAlbumService.sortAlbums(albums, sortMode, isReverse: isReverse);
   }
 
   Future<RemoteAlbum?> createAlbum({
@@ -83,7 +84,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     try {
       final album = await _remoteAlbumService.createAlbum(title: title, description: description, assetIds: assetIds);
 
-      state = state.copyWith(albums: [...state.albums, album], filteredAlbums: [...state.filteredAlbums, album]);
+      state = state.copyWith(albums: [...state.albums, album]);
 
       return album;
     } catch (error, stack) {
@@ -114,11 +115,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
         return album.id == albumId ? updatedAlbum : album;
       }).toList();
 
-      final updatedFilteredAlbums = state.filteredAlbums.map((album) {
-        return album.id == albumId ? updatedAlbum : album;
-      }).toList();
-
-      state = state.copyWith(albums: updatedAlbums, filteredAlbums: updatedFilteredAlbums);
+      state = state.copyWith(albums: updatedAlbums);
 
       return updatedAlbum;
     } catch (error, stack) {
@@ -139,9 +136,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     await _remoteAlbumService.deleteAlbum(albumId);
 
     final updatedAlbums = state.albums.where((album) => album.id != albumId).toList();
-    final updatedFilteredAlbums = state.filteredAlbums.where((album) => album.id != albumId).toList();
-
-    state = state.copyWith(albums: updatedAlbums, filteredAlbums: updatedFilteredAlbums);
+    state = state.copyWith(albums: updatedAlbums);
   }
 
   Future<List<RemoteAsset>> getAssets(String albumId) {
@@ -164,9 +159,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     await _remoteAlbumService.removeUser(albumId, userId: userId);
 
     final updatedAlbums = state.albums.where((album) => album.id != albumId).toList();
-    final updatedFilteredAlbums = state.filteredAlbums.where((album) => album.id != albumId).toList();
-
-    state = state.copyWith(albums: updatedAlbums, filteredAlbums: updatedFilteredAlbums);
+    state = state.copyWith(albums: updatedAlbums);
   }
 
   Future<void> setActivityStatus(String albumId, bool enabled) {

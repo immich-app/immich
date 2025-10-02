@@ -1,6 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
@@ -19,7 +17,7 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { IconButton, modalManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -337,7 +335,7 @@
                   <div
                     class="flex place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all absolute start-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
                   >
-                    <Icon color="primary" path={mdiAccountOff} ariaHidden size="24" />
+                    <Icon color="primary" icon={mdiAccountOff} aria-hidden size="24" />
                   </div>
                 {/if}
               </div>

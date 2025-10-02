@@ -4,6 +4,7 @@ import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
+  AssetMetadataKey,
   AssetOrder,
   AssetType,
   AssetVisibility,
@@ -160,6 +161,21 @@ export class SyncAssetExifV1 {
   rating!: number | null;
   @ApiProperty({ type: 'number', format: 'double' })
   fps!: number | null;
+}
+
+@ExtraModel()
+export class SyncAssetMetadataV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+  value!: object;
+}
+
+@ExtraModel()
+export class SyncAssetMetadataDeleteV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
 }
 
 @ExtraModel()
@@ -320,6 +336,9 @@ export class SyncAckV1 {}
 @ExtraModel()
 export class SyncResetV1 {}
 
+@ExtraModel()
+export class SyncCompleteV1 {}
+
 export type SyncItem = {
   [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
   [SyncEntityType.UserV1]: SyncUserV1;
@@ -328,6 +347,8 @@ export type SyncItem = {
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
   [SyncEntityType.AssetV1]: SyncAssetV1;
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
+  [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
+  [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
@@ -364,6 +385,7 @@ export type SyncItem = {
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
+  [SyncEntityType.SyncCompleteV1]: SyncCompleteV1;
   [SyncEntityType.SyncResetV1]: SyncResetV1;
 };
 

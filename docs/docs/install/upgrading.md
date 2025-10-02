@@ -4,9 +4,7 @@ sidebar_position: 95
 
 # Upgrading
 
-:::danger Read the release notes
-Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. You should read the release notes prior to updating and take special care when using automated tools like [Watchtower][watchtower].
-
+:::tip Breaking changes
 You can see versions that had breaking changes [here][breaking].
 :::
 
@@ -40,7 +38,7 @@ If you do not deploy Immich using Docker Compose and see a deprecation warning f
 
 Immich has migrated off of the deprecated pgvecto.rs database extension to its successor, [VectorChord](https://github.com/tensorchord/VectorChord), which comes with performance improvements in almost every aspect. This section will guide you on how to make this change in a Docker Compose setup.
 
-Before making any changes, please [back up your database](/docs/administration/backup-and-restore). While every effort has been made to make this migration as smooth as possible, there’s always a chance that something can go wrong.
+Before making any changes, please [back up your database](/administration/backup-and-restore). While every effort has been made to make this migration as smooth as possible, there’s always a chance that something can go wrong.
 
 After making a backup, please modify your `docker-compose.yml` file with the following information.
 
@@ -101,7 +99,7 @@ Please don’t hesitate to contact us on [GitHub](https://github.com/immich-app/
 
 #### I have a separate PostgreSQL instance shared with multiple services. How can I switch to VectorChord?
 
-Please see the [standalone PostgreSQL documentation](/docs/administration/postgres-standalone#migrating-to-vectorchord) for migration instructions. The migration path will be different depending on whether you’re currently using pgvecto.rs or pgvector, as well as whether Immich has superuser DB permissions.
+Please see the [standalone PostgreSQL documentation](/administration/postgres-standalone#migrating-to-vectorchord) for migration instructions. The migration path will be different depending on whether you’re currently using pgvecto.rs or pgvector, as well as whether Immich has superuser DB permissions.
 
 #### Why are so many lines removed from the `docker-compose.yml` file? Does this mean the health check is removed?
 

@@ -1,35 +1,37 @@
 <script lang="ts">
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 
   interface Props {
     asset: TimelineAsset;
+    onImageLoad: () => void;
   }
 
-  const { asset }: Props = $props();
+  const { asset, onImageLoad }: Props = $props();
 
   let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
   let loader = $state<HTMLImageElement>();
 
-  const onload = () => {
+  const onLoadCallback = () => {
     imageLoaded = true;
     assetFileUrl = imageLoaderUrl;
+    onImageLoad();
   };
 
   onMount(() => {
     if (loader?.complete) {
-      onload();
+      onLoadCallback();
     }
-    loader?.addEventListener('load', onload);
+    loader?.addEventListener('load', onLoadCallback);
     return () => {
-      loader?.removeEventListener('load', onload);
+      loader?.removeEventListener('load', onLoadCallback);
     };
   });
 

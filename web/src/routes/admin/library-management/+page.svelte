@@ -5,7 +5,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     notificationController,
     NotificationType,
@@ -31,7 +30,7 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, modalManager, Text } from '@immich/ui';
+  import { Button, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import { mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -278,7 +277,7 @@
       {#if libraries.length > 0}
         <table class="w-full text-start">
           <thead
-            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
           >
             <tr class="grid grid-cols-6 w-full place-items-center">
               <th class="text-center text-sm font-medium">{$t('name')}</th>
@@ -297,26 +296,26 @@
                 <td class="text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if owner[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}{owner[index].name}{/if}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if photos[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}
                     {photos[index].toLocaleString($locale)}
                   {/if}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if videos[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}
                     {videos[index].toLocaleString($locale)}
                   {/if}
                 </td>
                 <td class="text-ellipsis px-4 text-sm">
                   {#if diskUsage[index] == undefined}
-                    <LoadingSpinner size="40" />
+                    <LoadingSpinner size="large" />
                   {:else}
                     {diskUsage[index]}
                     {diskUsageUnit[index]}

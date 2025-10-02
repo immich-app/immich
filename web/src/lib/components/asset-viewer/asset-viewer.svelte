@@ -22,6 +22,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
+    getAssetInfo,
     getAllAlbums,
     getStack,
     runAssetJobs,
@@ -339,6 +340,11 @@
         stack = action.stack;
         break;
       }
+      case AssetAction.SET_PERSON_FEATURED_PHOTO: {
+        const assetInfo = await getAssetInfo({ id: asset.id });
+        asset = { ...asset, people: assetInfo.people };
+        break;
+      }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
@@ -491,7 +497,7 @@
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
               {sharedLink}
-              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
+              haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
             />
           {/if}
         {:else}

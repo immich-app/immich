@@ -420,7 +420,7 @@ describe(AssetService.name, () => {
         ids: ['asset-1'],
         latitude: 0,
         longitude: 0,
-        visibility: undefined,
+        visibility: AssetVisibility.Archive,
         isFavorite: false,
         duplicateId: undefined,
         rating: undefined,

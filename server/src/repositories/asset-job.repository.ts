@@ -60,7 +60,7 @@ export class AssetJobRepository {
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
       .select(['id', 'originalPath'])
-      .select(withFiles)
+      .select((eb) => withFiles(eb, AssetFileType.Sidecar))
       .limit(1)
       .executeTakeFirst();
   }
@@ -360,9 +360,9 @@ export class AssetJobRepository {
   @GenerateSql({ params: [], stream: true })
   streamForDetectFacesJob(force?: boolean) {
     return this.assetsWithPreviews()
-      .$if(!force, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
+      .$if(force === false, (qb) => qb.where('job_status.facesRecognizedAt', 'is', null))
       .select(['asset.id'])
-      .orderBy('asset.createdAt', 'desc')
+      .orderBy('asset.fileCreatedAt', 'desc')
       .stream();
   }
 

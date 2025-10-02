@@ -51,14 +51,14 @@
 
 ## Содержание
 
-- [Официальная документация](https://immich.app/docs)
-- [Введение](https://immich.app/docs/overview/introduction)
-- [Установка](https://immich.app/docs/install/requirements)
+- [Официальная документация](https://docs.immich.app)
+- [Введение](https://docs.immich.app/overview/introduction)
+- [Установка](https://docs.immich.app/install/requirements)
 - [План разработки](https://github.com/orgs/immich-app/projects/1)
 - [Демо](#demo)
 - [Возможности](#features)
-- [Перевод](https://immich.app/docs/developer/translations)
-- [Гид по участию и поддержке проекта](https://immich.app/docs/overview/support-the-project)
+- [Перевод](https://docs.immich.app/developer/translations)
+- [Гид по участию и поддержке проекта](https://docs.immich.app/overview/support-the-project)
 
 ## Демо
 
@@ -107,7 +107,7 @@
 
 ## Перевод
 
-Всё про перевод проекта [Здесь](https://immich.app/docs/developer/translations).
+Всё про перевод проекта [Здесь](https://docs.immich.app/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />

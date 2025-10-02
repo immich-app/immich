@@ -20,6 +20,7 @@ export class ViewRepository {
       .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)
       .where('localDateTime', 'is not', null)
+      .orderBy('directoryPath', 'asc')
       .execute();
 
     return results.map((row) => row.directoryPath.replaceAll(/\/$/g, ''));

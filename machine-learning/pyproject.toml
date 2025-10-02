@@ -1,6 +1,6 @@
 [project]
 name = "immich-ml"
-version = "1.129.0"
+version = "2.0.0"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
 requires-python = ">=3.10,<4.0"
