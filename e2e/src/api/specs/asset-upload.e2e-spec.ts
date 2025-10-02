@@ -223,7 +223,8 @@ describe('/upload', () => {
       });
     });
 
-    it('should reject attempt to start upload of existing incomplete asset', async () => {
+    // TODO: find a way to test interim responses
+    it('should return 500 if existing incomplete asset', async () => {
       const content = randomBytes(1024);
 
       const firstRequest = await request(app)
@@ -252,8 +253,7 @@ describe('/upload', () => {
         .set('Upload-Length', '1024')
         .send();
 
-      expect(secondRequest.status).toBe(400);
-      expect(secondRequest.headers['location']).toEqual(firstRequest.headers['location']);
+      expect(secondRequest.status).toBe(500);
       expect(secondRequest.text).toEqual('Incomplete asset already exists');
     });
 

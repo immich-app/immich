@@ -57,22 +57,28 @@ export class AssetUploadService extends BaseService {
         assetData.metadata,
       );
     } catch (error: any) {
-      if (isAssetChecksumConstraint(error)) {
-        const duplicate = await this.assetRepository.getUploadAssetIdByChecksum(req.auth.user.id, dto.checksum);
-        if (!duplicate) {
-          res.status(500).send('Error locating duplicate for checksum constraint');
-          return;
-        }
-
-        if (duplicate.status !== AssetStatus.Partial) {
-          return this.sendAlreadyCompletedProblem(res);
-        }
-        const location = `/api/upload/${duplicate.id}`;
-        res.status(400).setHeader('Location', location).send('Incomplete asset already exists');
+      if (!isAssetChecksumConstraint(error)) {
+        this.logger.error(`Error creating upload asset record: ${error.message}`);
+        res.status(500).send('Error creating upload asset record');
         return;
       }
-      this.logger.error(`Error creating upload asset record: ${error.message}`);
-      res.status(500).send('Error creating upload asset record');
+
+      const duplicate = await this.assetRepository.getUploadAssetIdByChecksum(req.auth.user.id, dto.checksum);
+      if (!duplicate) {
+        res.status(500).send('Error locating duplicate for checksum constraint');
+        return;
+      }
+
+      if (duplicate.status !== AssetStatus.Partial) {
+        return this.sendAlreadyCompletedProblem(res);
+      }
+
+      const location = `/api/upload/${duplicate.id}`;
+      if (version <= MAX_RUFH_INTEROP_VERSION) {
+        this.sendInterimResponse(res, location, version);
+      }
+      // this is a 5xx to indicate the client should do offset retrieval and resume
+      res.status(500).send('Incomplete asset already exists');
       return;
     }
 
