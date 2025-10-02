@@ -163,19 +163,21 @@ export class TagRepository {
   }
 
   async deleteEmptyTags() {
-    // TODO rewrite as a single statement
     await this.db.transaction().execute(async (tx) => {
       const result = await tx
-        .selectFrom('tag')
-        .select('tag.id')
-        .leftJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-        .where('tag_asset.assetsId', 'is', null)
-        .execute();
+        .deleteFrom('tag')
+        .where('id', 'in', (eb) =>
+          eb
+            .selectFrom('tag')
+            .leftJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
+            .select('tag.id')
+            .where('tag_asset.assetsId', 'is', null),
+        )
+        .executeTakeFirst();
 
-      const ids = result.map(row => row.id);
-      if (ids.length > 0) {
-        await this.db.deleteFrom('tag').where('id', 'in', ids).execute();
-        this.logger.log(`Deleted ${ids.length} empty tags`);
+      const deletedRows = Number(result.numDeletedRows);
+      if (deletedRows > 0) {
+        this.logger.log(`Deleted ${deletedRows} empty tags`);
       }
     });
   }
