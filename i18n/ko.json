@@ -2118,11 +2118,6 @@
   "yes": "네",
   "you_dont_have_any_shared_links": "공유 링크가 없습니다.",
   "your_wifi_name": "Wi-Fi 네트워크 이름",
-<<<<<<< HEAD
-  "zoom_image": "이미지 확대"
-}
-=======
   "zoom_image": "이미지 확대",
   "zoom_to_bounds": "화면에 맞춰 확대"
 }
->>>>>>> v2.0.0
