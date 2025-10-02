@@ -1,11 +1,11 @@
 resource "cloudflare_pages_domain" "immich_app_branch_domain" {
   account_id   = var.cloudflare_account_id
   project_name = local.is_release ? data.terraform_remote_state.cloudflare_account.outputs.immich_app_archive_pages_project_name : data.terraform_remote_state.cloudflare_account.outputs.immich_app_preview_pages_project_name
-  domain       = "${var.prefix_name}.${local.deploy_domain_prefix}.immich.app"
+  domain       = "docs.${var.prefix_name}.${local.deploy_domain_prefix}.immich.app"
 }
 
 resource "cloudflare_record" "immich_app_branch_subdomain" {
-  name    = "${var.prefix_name}.${local.deploy_domain_prefix}.immich.app"
+  name    = "docs.${var.prefix_name}.${local.deploy_domain_prefix}.immich.app"
   proxied = true
   ttl     = 1
   type    = "CNAME"

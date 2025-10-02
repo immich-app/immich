@@ -27,7 +27,7 @@ class SyncStreamService {
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
-  Future<void> sync() async {
+  Future<bool> sync() async {
     _logger.info("Remote sync request for user");
     // Start the sync stream and handle events
     bool shouldReset = false;
@@ -36,6 +36,7 @@ class SyncStreamService {
       _logger.info("Resetting sync state as requested by server");
       await _syncApiRepository.streamChanges(_handleEvents);
     }
+    return true;
   }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {

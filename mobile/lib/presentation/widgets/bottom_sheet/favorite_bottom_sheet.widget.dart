@@ -13,6 +13,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_act
 import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -44,6 +45,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
           const EditLocationActionButton(source: ActionSource.timeline),
           const MoveToLockFolderActionButton(source: ActionSource.timeline),
           if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
+          if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
         ],
         if (multiselect.hasLocal) ...[
           const DeleteLocalActionButton(source: ActionSource.timeline),

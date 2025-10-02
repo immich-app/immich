@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@24820aa4ef67959b0dcf69a438cccf00d7c7042b # pre-job-action-v1.0.1
+        uses: immich-app/devtools/actions/pre-job@5f91b52dfbb92b8d96ca411ab59c896cd59714ca # pre-job-action-v1.1.0
         with:
           filters: |
             server:

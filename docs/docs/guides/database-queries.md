@@ -7,7 +7,7 @@ Keep in mind that mucking around in the database might set the Moon on fire. Avo
 :::tip
 Run `docker exec -it immich_postgres psql --dbname=<DB_DATABASE_NAME> --username=<DB_USERNAME>` to connect to the database via the container directly.
 
-(Replace `<DB_DATABASE_NAME>` and `<DB_USERNAME>` with the values from your [`.env` file](/docs/install/environment-variables#database)).
+(Replace `<DB_DATABASE_NAME>` and `<DB_USERNAME>` with the values from your [`.env` file](/install/environment-variables#database)).
 :::
 
 ## Assets
@@ -142,7 +142,7 @@ DELETE FROM "person" WHERE "name" = 'PersonNameHere';
 SELECT "key", "value" FROM "system_metadata" WHERE "key" = 'system-config';
 ```
 
-(Only used when not using the [config file](/docs/install/config-file))
+(Only used when not using the [config file](/install/config-file))
 
 ### File properties
 
