@@ -129,19 +129,24 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       title: Builder(
         builder: (BuildContext context) {
           return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Builder(
-                builder: (context) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 3.0),
-                    child: SvgPicture.asset(
-                      context.isDarkTheme
-                          ? 'assets/pixelunion-no-bg.svg'
-                          : 'assets/pixelunion-no-bg.svg',
-                      height: 40,
-                    ),
-                  );
-                },
+              Padding(
+                padding: const EdgeInsets.only(top: 3.0),
+                child: SvgPicture.asset(
+                  context.isDarkTheme ? 'assets/pixelunion-no-bg.svg' : 'assets/pixelunion-no-bg.svg',
+                  height: 40,
+                ),
+              ),
+              const Tooltip(
+                triggerMode: TooltipTriggerMode.tap,
+                showDuration: Duration(seconds: 4),
+                message:
+                    "The old timeline is deprecated and will be removed in a future release. Kindly switch to the new timeline under Advanced Settings.",
+                child: Padding(
+                  padding: EdgeInsets.only(top: 3.0),
+                  child: Icon(Icons.error_rounded, fill: 1, color: Colors.amber, size: 20),
+                ),
               ),
             ],
           );

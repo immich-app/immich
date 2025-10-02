@@ -28,6 +28,7 @@
   "add_to_album": "Přidat do alba",
   "add_to_album_bottom_sheet_added": "Přidáno do {album}",
   "add_to_album_bottom_sheet_already_exists": "Je již v {album}",
+  "add_to_album_bottom_sheet_some_local_assets": "Některá místní aktiva nebylo možné přidat do alba",
   "add_to_album_toggle": "Přepnout výběr pro {album}",
   "add_to_albums": "Přidat do alb",
   "add_to_albums_count": "Přidat do alb ({count})",
