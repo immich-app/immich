@@ -3,7 +3,10 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -36,6 +39,7 @@ class ActionNotifier extends Notifier<void> {
   late ActionService _service;
   late UploadService _uploadService;
   late DownloadService _downloadService;
+  late AssetService _assetService;
 
   ActionNotifier() : super();
 
@@ -43,6 +47,7 @@ class ActionNotifier extends Notifier<void> {
   void build() {
     _uploadService = ref.watch(uploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
+    _assetService = ref.watch(assetServiceProvider);
     _downloadService = ref.watch(downloadServiceProvider);
     _downloadService.onImageDownloadStatus = _downloadImageCallback;
     _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
@@ -335,6 +340,14 @@ class ActionNotifier extends Notifier<void> {
     final assets = _getOwnedRemoteAssetsForSource(source);
     try {
       await _service.unStack(assets.map((e) => e.stackId).nonNulls.toList());
+      if (source == ActionSource.viewer) {
+        final updatedParent = await _assetService.getRemoteAsset(assets.first.id);
+        if (updatedParent != null) {
+          ref.read(currentAssetNotifier.notifier).setAsset(updatedParent);
+          ref.read(assetViewerProvider.notifier).setAsset(updatedParent);
+        }
+      }
+
       return ActionResult(count: assets.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to unstack assets', error, stack);

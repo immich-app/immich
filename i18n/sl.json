@@ -28,6 +28,7 @@
   "add_to_album": "Dodaj v album",
   "add_to_album_bottom_sheet_added": "Dodano v {album}",
   "add_to_album_bottom_sheet_already_exists": "Že v {album}",
+  "add_to_album_bottom_sheet_some_local_assets": "Nekaterih lokalnih sredstev ni bilo mogoče dodati v album",
   "add_to_album_toggle": "Preklopi izbiro za {album}",
   "add_to_albums": "Dodaj v albume",
   "add_to_albums_count": "Dodaj v albume ({count})",
