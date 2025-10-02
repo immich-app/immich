@@ -55,7 +55,7 @@
 
 ## Links
 
-- [Documentação](https://immich.app/docs)
+- [Documentação](https://docs.immich.app)
 - [Sobre](https://immich.app/docs/overview/introduction)
 - [Instalação](https://immich.app/docs/install/requirements)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)

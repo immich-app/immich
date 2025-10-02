@@ -46,7 +46,7 @@
 
 ## محتوى
 
-- [الوثائق الرسمية](https://immich.app/docs)
+- [الوثائق الرسمية](https://docs.immich.app)
 - [خريطة الطريق](https://github.com/orgs/immich-app/projects/1)
 - [تجريبي](#demo)
 - [سمات](#features)

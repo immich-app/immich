@@ -50,7 +50,7 @@
 
 ## Inhalt
 
-- [Offizielle Dokumentation](https://immich.app/docs)
+- [Offizielle Dokumentation](https://docs.immich.app)
 - [Über Immich](https://immich.app/docs/overview/introduction)
 - [Installation](https://immich.app/docs/install/requirements)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)

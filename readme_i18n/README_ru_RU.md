@@ -51,7 +51,7 @@
 
 ## Содержание
 
-- [Официальная документация](https://immich.app/docs)
+- [Официальная документация](https://docs.immich.app)
 - [Введение](https://immich.app/docs/overview/introduction)
 - [Установка](https://immich.app/docs/install/requirements)
 - [План разработки](https://github.com/orgs/immich-app/projects/1)

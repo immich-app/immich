@@ -45,7 +45,7 @@
 
 ## Inhoud
 
-- [Officiële documentatie](https://immich.app/docs)
+- [Officiële documentatie](https://docs.immich.app)
 - [Toekomstplannen](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Functies](#functies)

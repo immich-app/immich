@@ -44,7 +44,7 @@
 
 ## コンテンツ
 
-- [公式ドキュメント](https://immich.app/docs)
+- [公式ドキュメント](https://docs.immich.app)
 - [ロードマップ](https://github.com/orgs/immich-app/projects/1)
 - [デモ](#デモ)
 - [機能](#機能)

@@ -54,7 +54,7 @@
 
 ## 目录
 
-- [官方文档](https://immich.app/docs)
+- [官方文档](https://docs.immich.app)
 - [项目总览](https://immich.app/docs/overview/introduction)
 - [安装教程](https://immich.app/docs/install/requirements)
 - [路线图](https://immich.app/roadmap)

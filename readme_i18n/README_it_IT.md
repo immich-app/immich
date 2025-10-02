@@ -49,7 +49,7 @@
 
 ## Link utili
 
-- [Documentazione](https://immich.app/docs)  
+- [Documentazione](https://docs.immich.app)  
 - [Informazioni](https://immich.app/docs/overview/introduction)  
 - [Installazione](https://immich.app/docs/install/requirements)  
 - [Roadmap](https://immich.app/roadmap)  

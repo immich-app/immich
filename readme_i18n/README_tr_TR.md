@@ -44,7 +44,7 @@
 
 ## Content
 
-- [Resmi Belgeler](https://immich.app/docs)
+- [Resmi Belgeler](https://docs.immich.app)
 - [Yol Haritası](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Özellikler](#özellikler)

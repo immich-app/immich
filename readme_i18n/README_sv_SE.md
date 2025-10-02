@@ -46,7 +46,7 @@
 
 ## Innehåll
 
-- [Officiell Dokumentation](https://immich.app/docs)
+- [Officiell Dokumentation](https://docs.immich.app)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funktioner](#features)

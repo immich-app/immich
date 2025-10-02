@@ -52,7 +52,7 @@
 
 ## Liên kết
 
-- [Tài liệu](https://immich.app/docs)
+- [Tài liệu](https://docs.immich.app)
 - [Giới thiệu](https://immich.app/docs/overview/introduction)
 - [Cài đặt](https://immich.app/docs/install/requirements)
 - [Lộ trình](https://immich.app/roadmap)

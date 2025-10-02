@@ -50,7 +50,7 @@
 
 ## Посилання
 
-- [Документація](https://immich.app/docs)
+- [Документація](https://docs.immich.app)
 - [Про проєкт](https://immich.app/docs/overview/introduction)
 - [Встановлення](https://immich.app/docs/install/requirements)
 - [Дорожня карта](https://immich.app/roadmap)

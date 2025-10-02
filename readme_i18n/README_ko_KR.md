@@ -50,7 +50,7 @@
 
 ## 링크
 
-- [문서](https://immich.app/docs)
+- [문서](https://docs.immich.app)
 - [소개](https://immich.app/docs/overview/introduction)
 - [설치](https://immich.app/docs/install/requirements)
 - [로드맵](https://immich.app/roadmap)

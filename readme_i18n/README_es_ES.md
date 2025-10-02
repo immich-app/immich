@@ -45,7 +45,7 @@
 
 ## Contenido
 
-- [Documentación oficial](https://immich.app/docs)
+- [Documentación oficial](https://docs.immich.app)
 - [Hoja de ruta](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funciones](#funciones)

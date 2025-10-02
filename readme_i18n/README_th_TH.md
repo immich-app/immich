@@ -52,7 +52,7 @@
 
 ## ลิงก์
 
-- [คู่มือ](https://immich.app/docs)
+- [คู่มือ](https://docs.immich.app)
 - [เกี่ยวกับ](https://immich.app/docs/overview/introduction)
 - [การติดตั้ง](https://immich.app/docs/install/requirements)
 - [โรดแมป](https://immich.app/roadmap)
