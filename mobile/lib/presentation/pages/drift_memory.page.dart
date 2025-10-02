@@ -22,26 +22,19 @@ class DriftMemoryPage extends HookConsumerWidget {
   final List<DriftMemory> memories;
   final int memoryIndex;
 
-  const DriftMemoryPage({
-    required this.memories,
-    required this.memoryIndex,
-    super.key,
-  });
+  const DriftMemoryPage({required this.memories, required this.memoryIndex, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMemory = useState(memories[memoryIndex]);
     final currentAssetPage = useState(0);
     final currentMemoryIndex = useState(memoryIndex);
-    final assetProgress = useState(
-      "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
-    );
+    final assetProgress = useState("${currentAssetPage.value + 1}|${currentMemory.value.assets.length}");
     const bgColor = Colors.black;
     final currentAsset = useState<RemoteAsset?>(null);
 
     /// The list of all of the asset page controllers
-    final memoryAssetPageControllers =
-        List.generate(memories.length, (i) => usePageController());
+    final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
 
     /// The main vertically scrolling page controller with each list of memories
     final memoryPageController = usePageController(initialPage: memoryIndex);
@@ -56,36 +49,27 @@ class DriftMemoryPage extends HookConsumerWidget {
     });
 
     toNextMemory() {
-      memoryPageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeIn,
-      );
+      memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
     }
 
     void toPreviousMemory() {
       if (currentMemoryIndex.value > 0) {
         // Move to the previous memory page
-        memoryPageController.previousPage(
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeIn,
-        );
+        memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
 
         // Wait for the next frame to ensure the page is built
         SchedulerBinding.instance.addPostFrameCallback((_) {
           final previousIndex = currentMemoryIndex.value - 1;
-          final previousMemoryController =
-              memoryAssetPageControllers[previousIndex];
+          final previousMemoryController = memoryAssetPageControllers[previousIndex];
 
           // Ensure the controller is attached
           if (previousMemoryController.hasClients) {
-            previousMemoryController
-                .jumpToPage(memories[previousIndex].assets.length - 1);
+            previousMemoryController.jumpToPage(memories[previousIndex].assets.length - 1);
           } else {
             // Wait for the next frame until it is attached
             SchedulerBinding.instance.addPostFrameCallback((_) {
               if (previousMemoryController.hasClients) {
-                previousMemoryController
-                    .jumpToPage(memories[previousIndex].assets.length - 1);
+                previousMemoryController.jumpToPage(memories[previousIndex].assets.length - 1);
               }
             });
           }
@@ -96,13 +80,9 @@ class DriftMemoryPage extends HookConsumerWidget {
     toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        PageController controller =
-            memoryAssetPageControllers[currentMemoryIndex.value];
+        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.nextPage(
-          curve: Curves.easeInOut,
-          duration: const Duration(milliseconds: 500),
-        );
+        controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
@@ -112,13 +92,9 @@ class DriftMemoryPage extends HookConsumerWidget {
     toPreviousAsset(int currentAssetIndex) {
       if (currentAssetIndex > 0) {
         // Go to the previous asset
-        PageController controller =
-            memoryAssetPageControllers[currentMemoryIndex.value];
+        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.previousPage(
-          curve: Curves.easeInOut,
-          duration: const Duration(milliseconds: 500),
-        );
+        controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
       } else {
         // Go to the previous memory since we are at the end of our assets
         toPreviousMemory();
@@ -126,8 +102,7 @@ class DriftMemoryPage extends HookConsumerWidget {
     }
 
     updateProgressText() {
-      assetProgress.value =
-          "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
+      assetProgress.value = "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
     /// Downloads and caches the image for the asset at this [currentMemory]'s index
@@ -167,20 +142,12 @@ class DriftMemoryPage extends HookConsumerWidget {
 
       // Precache the asset
       final size = MediaQuery.sizeOf(context);
-      await precacheImage(
-        getFullImageProvider(
-          asset,
-          size: Size(size.width, size.height),
-        ),
-        context,
-        size: size,
-      );
+      await precacheImage(getFullImageProvider(asset, size: Size(size.width, size.height)), context, size: size);
     }
 
     // Precache the next page right away if we are on the first page
     if (currentAssetPage.value == 0) {
-      Future.delayed(const Duration(milliseconds: 200))
-          .then((_) => precacheAsset(1));
+      Future.delayed(const Duration(milliseconds: 200)).then((_) => precacheAsset(1));
     }
 
     Future<void> onAssetChanged(int otherIndex) async {
@@ -212,12 +179,10 @@ class DriftMemoryPage extends HookConsumerWidget {
         // maxScrollExtend contains the sum of horizontal pixels of all assets for depth = 1
         // or sum of vertical pixels of all memories for depth = 0
         if (notification is ScrollUpdateNotification) {
-          final isEpiloguePage =
-              (memoryPageController.page?.floor() ?? 0) >= memories.length;
+          final isEpiloguePage = (memoryPageController.page?.floor() ?? 0) >= memories.length;
 
           final offset = notification.metrics.pixels;
-          if (isEpiloguePage &&
-              (offset > notification.metrics.maxScrollExtent + 150)) {
+          if (isEpiloguePage && (offset > notification.metrics.maxScrollExtent + 150)) {
             context.maybePop();
             return true;
           }
@@ -229,9 +194,7 @@ class DriftMemoryPage extends HookConsumerWidget {
         backgroundColor: bgColor,
         body: SafeArea(
           child: PageView.builder(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
+            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             scrollDirection: Axis.vertical,
             controller: memoryPageController,
             onPageChanged: (pageNumber) {
@@ -259,23 +222,13 @@ class DriftMemoryPage extends HookConsumerWidget {
               }
 
               final yearsAgo = DateTime.now().year - memories[mIndex].data.year;
-              final title = 'years_ago'.t(
-                context: context,
-                args: {
-                  'years': yearsAgo.toString(),
-                },
-              );
+              final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
               // Build horizontal page
               final assetController = memoryAssetPageControllers[mIndex];
               return Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(
-                      left: 24.0,
-                      right: 24.0,
-                      top: 8.0,
-                      bottom: 2.0,
-                    ),
+                    padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 8.0, bottom: 2.0),
                     child: AnimatedBuilder(
                       animation: assetController,
                       builder: (context, child) {
@@ -295,9 +248,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                     child: Stack(
                       children: [
                         PageView.builder(
-                          physics: const BouncingScrollPhysics(
-                            parent: AlwaysScrollableScrollPhysics(),
-                          ),
+                          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                           controller: assetController,
                           onPageChanged: onAssetChanged,
                           scrollDirection: Axis.horizontal,
@@ -308,11 +259,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                               children: [
                                 Container(
                                   color: Colors.black,
-                                  child: DriftMemoryCard(
-                                    asset: asset,
-                                    title: title,
-                                    showTitle: index == 0,
-                                  ),
+                                  child: DriftMemoryCard(asset: asset, title: title, showTitle: index == 0),
                                 ),
                                 Positioned.fill(
                                   child: Row(
@@ -353,36 +300,24 @@ class DriftMemoryPage extends HookConsumerWidget {
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
                               context.maybePop();
-                              SystemChrome.setEnabledSystemUIMode(
-                                SystemUiMode.edgeToEdge,
-                              );
+                              SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
                             },
                             shape: const CircleBorder(),
                             color: Colors.white.withValues(alpha: 0.2),
                             elevation: 0,
-                            child: const Icon(
-                              Icons.close_rounded,
-                              color: Colors.white,
-                            ),
+                            child: const Icon(Icons.close_rounded, color: Colors.white),
                           ),
                         ),
-                        if (currentAsset.value != null &&
-                            currentAsset.value!.isVideo)
+                        if (currentAsset.value != null && currentAsset.value!.isVideo)
                           Positioned(
                             bottom: 24,
                             right: 32,
-                            child: Icon(
-                              Icons.videocam_outlined,
-                              color: Colors.grey[200],
-                            ),
+                            child: Icon(Icons.videocam_outlined, color: Colors.grey[200]),
                           ),
                       ],
                     ),
                   ),
-                  DriftMemoryBottomInfo(
-                    memory: memories[mIndex],
-                    title: title,
-                  ),
+                  DriftMemoryBottomInfo(memory: memories[mIndex], title: title),
                 ],
               );
             },

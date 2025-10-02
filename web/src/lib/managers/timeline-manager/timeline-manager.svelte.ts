@@ -3,7 +3,7 @@ import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { toTimelineAsset, type TimelinePlainDateTime, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
 
 import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -288,8 +288,8 @@ export class TimelineManager {
 
   async #initializeMonthGroups() {
     const timebuckets = await getTimeBuckets({
+      ...authManager.params,
       ...this.#options,
-      key: authManager.key,
     });
 
     this.months = timebuckets.map((timeBucket) => {
@@ -387,7 +387,7 @@ export class TimelineManager {
     };
   }
 
-  async loadMonthGroup(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }): Promise<void> {
+  async loadMonthGroup(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
     if (options) {
       cancelable = options.cancelable;
@@ -419,21 +419,29 @@ export class TimelineManager {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
     }
+
     let { monthGroup } = findMonthGroupForAssetUtil(this, id) ?? {};
     if (monthGroup) {
       return monthGroup;
     }
-    const asset = toTimelineAsset(await getAssetInfo({ id, key: authManager.key }));
+
+    const response = await getAssetInfo({ ...authManager.params, id }).catch(() => null);
+    if (!response) {
+      return;
+    }
+
+    const asset = toTimelineAsset(response);
     if (!asset || this.isExcluded(asset)) {
       return;
     }
+
     monthGroup = await this.#loadMonthGroupAtTime(asset.localDateTime, { cancelable: false });
     if (monthGroup?.findAssetById({ id })) {
       return monthGroup;
     }
   }
 
-  async #loadMonthGroupAtTime(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }) {
+  async #loadMonthGroupAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
     await this.loadMonthGroup(yearMonth, options);
     return getMonthGroupByDate(this, yearMonth);
   }
@@ -514,7 +522,7 @@ export class TimelineManager {
     return await getAssetWithOffset(this, assetDescriptor, interval, 'earlier');
   }
 
-  async getClosestAssetToDate(dateTime: TimelinePlainDateTime) {
+  async getClosestAssetToDate(dateTime: TimelineDateTime) {
     const monthGroup = findMonthGroupForDate(this, dateTime);
     if (!monthGroup) {
       return;
@@ -539,5 +547,9 @@ export class TimelineManager {
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );
+  }
+
+  getAssetOrder() {
+    return this.#options.order ?? AssetOrder.Desc;
   }
 }

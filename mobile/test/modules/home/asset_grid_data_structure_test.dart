@@ -58,10 +58,7 @@ void main() {
 
   group('Test grouped', () {
     test('test grouped check months', () async {
-      final renderList = await RenderList.fromAssets(
-        assets,
-        GroupAssetsBy.day,
-      );
+      final renderList = await RenderList.fromAssets(assets, GroupAssetsBy.day);
 
       // Oct
       // Day 1
@@ -75,33 +72,18 @@ void main() {
       // Day 1
       // 5 Assets => 2 Rows
       expect(renderList.elements, hasLength(4));
-      expect(
-        renderList.elements[0].type,
-        RenderAssetGridElementType.monthTitle,
-      );
+      expect(renderList.elements[0].type, RenderAssetGridElementType.monthTitle);
       expect(renderList.elements[0].date.month, 1);
-      expect(
-        renderList.elements[1].type,
-        RenderAssetGridElementType.groupDividerTitle,
-      );
+      expect(renderList.elements[1].type, RenderAssetGridElementType.groupDividerTitle);
       expect(renderList.elements[1].date.month, 1);
-      expect(
-        renderList.elements[2].type,
-        RenderAssetGridElementType.monthTitle,
-      );
+      expect(renderList.elements[2].type, RenderAssetGridElementType.monthTitle);
       expect(renderList.elements[2].date.month, 2);
-      expect(
-        renderList.elements[3].type,
-        RenderAssetGridElementType.monthTitle,
-      );
+      expect(renderList.elements[3].type, RenderAssetGridElementType.monthTitle);
       expect(renderList.elements[3].date.month, 10);
     });
 
     test('test grouped check types', () async {
-      final renderList = await RenderList.fromAssets(
-        assets,
-        GroupAssetsBy.day,
-      );
+      final renderList = await RenderList.fromAssets(assets, GroupAssetsBy.day);
 
       // Oct
       // Day 1

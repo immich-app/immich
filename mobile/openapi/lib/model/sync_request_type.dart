@@ -30,6 +30,8 @@ class SyncRequestType {
   static const albumAssetExifsV1 = SyncRequestType._(r'AlbumAssetExifsV1');
   static const assetsV1 = SyncRequestType._(r'AssetsV1');
   static const assetExifsV1 = SyncRequestType._(r'AssetExifsV1');
+  static const assetMetadataV1 = SyncRequestType._(r'AssetMetadataV1');
+  static const authUsersV1 = SyncRequestType._(r'AuthUsersV1');
   static const memoriesV1 = SyncRequestType._(r'MemoriesV1');
   static const memoryToAssetsV1 = SyncRequestType._(r'MemoryToAssetsV1');
   static const partnersV1 = SyncRequestType._(r'PartnersV1');
@@ -51,6 +53,8 @@ class SyncRequestType {
     albumAssetExifsV1,
     assetsV1,
     assetExifsV1,
+    assetMetadataV1,
+    authUsersV1,
     memoriesV1,
     memoryToAssetsV1,
     partnersV1,
@@ -107,6 +111,8 @@ class SyncRequestTypeTypeTransformer {
         case r'AlbumAssetExifsV1': return SyncRequestType.albumAssetExifsV1;
         case r'AssetsV1': return SyncRequestType.assetsV1;
         case r'AssetExifsV1': return SyncRequestType.assetExifsV1;
+        case r'AssetMetadataV1': return SyncRequestType.assetMetadataV1;
+        case r'AuthUsersV1': return SyncRequestType.authUsersV1;
         case r'MemoriesV1': return SyncRequestType.memoriesV1;
         case r'MemoryToAssetsV1': return SyncRequestType.memoryToAssetsV1;
         case r'PartnersV1': return SyncRequestType.partnersV1;

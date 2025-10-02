@@ -26,10 +26,7 @@ class ActivityTile extends HookConsumerWidget {
           ? Container(
               width: 44,
               alignment: Alignment.center,
-              child: Icon(
-                Icons.favorite_rounded,
-                color: Colors.red[700],
-              ),
+              child: Icon(Icons.favorite_rounded, color: Colors.red[700]),
             )
           : UserCircleAvatar(user: activity.user),
       title: _ActivityTitle(
@@ -38,11 +35,8 @@ class ActivityTile extends HookConsumerWidget {
         leftAlign: isLike || showAssetThumbnail,
       ),
       // No subtitle for like, so center title
-      titleAlignment:
-          !isLike ? ListTileTitleAlignment.top : ListTileTitleAlignment.center,
-      trailing: showAssetThumbnail
-          ? _ActivityAssetThumbnail(activity.assetId!)
-          : null,
+      titleAlignment: !isLike ? ListTileTitleAlignment.top : ListTileTitleAlignment.center,
+      trailing: showAssetThumbnail ? _ActivityAssetThumbnail(activity.assetId!) : null,
       subtitle: !isLike ? Text(activity.comment!) : null,
     );
   }
@@ -53,33 +47,19 @@ class _ActivityTitle extends StatelessWidget {
   final String createdAt;
   final bool leftAlign;
 
-  const _ActivityTitle({
-    required this.userName,
-    required this.createdAt,
-    required this.leftAlign,
-  });
+  const _ActivityTitle({required this.userName, required this.createdAt, required this.leftAlign});
 
   @override
   Widget build(BuildContext context) {
     final textColor = context.isDarkTheme ? Colors.white : Colors.black;
-    final textStyle = context.textTheme.bodyMedium
-        ?.copyWith(color: textColor.withValues(alpha: 0.6));
+    final textStyle = context.textTheme.bodyMedium?.copyWith(color: textColor.withValues(alpha: 0.6));
 
     return Row(
-      mainAxisAlignment:
-          leftAlign ? MainAxisAlignment.start : MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: leftAlign ? MainAxisAlignment.start : MainAxisAlignment.spaceBetween,
       mainAxisSize: leftAlign ? MainAxisSize.min : MainAxisSize.max,
       children: [
-        Text(
-          userName,
-          style: textStyle,
-          overflow: TextOverflow.ellipsis,
-        ),
-        if (leftAlign)
-          Text(
-            " • ",
-            style: textStyle,
-          ),
+        Text(userName, style: textStyle, overflow: TextOverflow.ellipsis),
+        if (leftAlign) Text(" • ", style: textStyle),
         Expanded(
           child: Text(
             createdAt,
@@ -106,9 +86,7 @@ class _ActivityAssetThumbnail extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(4)),
         image: DecorationImage(
-          image: ImmichRemoteThumbnailProvider(
-            assetId: assetId,
-          ),
+          image: ImmichRemoteThumbnailProvider(assetId: assetId),
           fit: BoxFit.cover,
         ),
       ),

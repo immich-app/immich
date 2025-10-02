@@ -50,8 +50,7 @@ String humanReadableBytesProgress(int bytes, int bytesTotal) {
 }
 
 class ThrottleProgressUpdate {
-  ThrottleProgressUpdate(this._fun, Duration interval)
-      : _interval = interval.inMicroseconds;
+  ThrottleProgressUpdate(this._fun, Duration interval) : _interval = interval.inMicroseconds;
   final void Function(String?, int, int) _fun;
   final int _interval;
   int _invokedAt = 0;
@@ -61,11 +60,7 @@ class ThrottleProgressUpdate {
   int progress = 0;
   int total = 0;
 
-  void call({
-    final String? title,
-    final int progress = 0,
-    final int total = 0,
-  }) {
+  void call({final String? title, final int progress = 0, final int total = 0}) {
     final time = Timeline.now;
     this.title = title ?? this.title;
     this.progress = progress;

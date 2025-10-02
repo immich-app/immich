@@ -21,7 +21,7 @@ class DownloadRepository {
     group: '',
     updates: Updates.statusAndProgress,
   );
-  static final _dummyMetadata = {'part': LivePhotosPart.image, 'id': ''};
+  static final _dummyMetadata = {'part': LivePhotosPart.image.index, 'id': ''};
 
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
 
@@ -64,10 +64,7 @@ class DownloadRepository {
   }
 
   Future<List<TaskRecord>> getLiveVideoTasks() {
-    return _downloader.database.allRecordsWithStatus(
-      TaskStatus.complete,
-      group: kDownloadGroupLivePhoto,
-    );
+    return _downloader.database.allRecordsWithStatus(TaskStatus.complete, group: kDownloadGroupLivePhoto);
   }
 
   Future<void> deleteRecordsWithIds(List<String> ids) {
@@ -93,7 +90,11 @@ class DownloadRepository {
       final isVideo = asset.isVideo;
       final url = getOriginalUrlForRemoteId(id);
 
-      if (Platform.isAndroid || livePhotoVideoId == null || isVideo) {
+      // on iOS it cannot link the image, check if the filename has .MP extension
+      // to avoid downloading the video part
+      final isAndroidMotionPhoto = asset.name.contains(".MP");
+
+      if (Platform.isAndroid || livePhotoVideoId == null || isVideo || isAndroidMotionPhoto) {
         tasks[taskIndex++] = DownloadTask(
           taskId: id,
           url: url,
@@ -105,7 +106,7 @@ class DownloadRepository {
         continue;
       }
 
-      _dummyMetadata['part'] = LivePhotosPart.image;
+      _dummyMetadata['part'] = LivePhotosPart.image.index;
       _dummyMetadata['id'] = id;
       tasks[taskIndex++] = DownloadTask(
         taskId: id,
@@ -117,14 +118,12 @@ class DownloadRepository {
         metaData: json.encode(_dummyMetadata),
       );
 
-      _dummyMetadata['part'] = LivePhotosPart.video;
+      _dummyMetadata['part'] = LivePhotosPart.video.index;
       tasks[taskIndex++] = DownloadTask(
         taskId: livePhotoVideoId,
         url: url,
         headers: headers,
-        filename: asset.name
-            .toUpperCase()
-            .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
+        filename: asset.name.toUpperCase().replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
         updates: Updates.statusAndProgress,
         group: kDownloadGroupLivePhoto,
         metaData: json.encode(_dummyMetadata),

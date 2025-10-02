@@ -9,8 +9,7 @@ class EventStream {
 
   static final EventStream shared = EventStream._();
 
-  final StreamController<Event> _controller =
-      StreamController<Event>.broadcast();
+  final StreamController<Event> _controller = StreamController<Event>.broadcast();
 
   void emit(Event event) {
     _controller.add(event);
@@ -29,12 +28,7 @@ class EventStream {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    return where<T>().listen(
-      onData,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-    );
+    return where<T>().listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 
   /// Closes the stream controller

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, NotNull, Selectable, UpdateResult, Updateable, sql } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
+import { Insertable, Kysely, NotNull, Selectable, sql, Updateable, UpdateResult } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { AssetMetadataItem } from 'src/types';
 import {
   anyUuid,
   asUuid,
@@ -60,6 +60,7 @@ interface AssetBuilderOptions {
   status?: AssetStatus;
   assetType?: AssetType;
   visibility?: AssetVisibility;
+  withCoordinates?: boolean;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -170,6 +171,21 @@ export class AssetRepository {
     await this.db.updateTable('asset_exif').set(options).where('assetId', 'in', ids).execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.NUMBER, DummyValue.STRING] })
+  @Chunked()
+  async updateDateTimeOriginal(
+    ids: string[],
+    delta?: number,
+    timeZone?: string,
+  ): Promise<{ assetId: string; dateTimeOriginal: Date | null; timeZone: string | null }[]> {
+    return await this.db
+      .updateTable('asset_exif')
+      .set({ dateTimeOriginal: sql`"dateTimeOriginal" + ${(delta ?? 0) + ' minute'}::interval`, timeZone })
+      .where('assetId', 'in', ids)
+      .returning(['assetId', 'dateTimeOriginal', 'timeZone'])
+      .execute();
+  }
+
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatusTable>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;
@@ -194,6 +210,43 @@ export class AssetRepository {
         ),
       )
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getMetadata(assetId: string) {
+    return this.db
+      .selectFrom('asset_metadata')
+      .select(['key', 'value', 'updatedAt'])
+      .where('assetId', '=', assetId)
+      .execute();
+  }
+
+  upsertMetadata(id: string, items: AssetMetadataItem[]) {
+    return this.db
+      .insertInto('asset_metadata')
+      .values(items.map((item) => ({ assetId: id, ...item })))
+      .onConflict((oc) =>
+        oc
+          .columns(['assetId', 'key'])
+          .doUpdateSet((eb) => ({ key: eb.ref('excluded.key'), value: eb.ref('excluded.value') })),
+      )
+      .returning(['key', 'value', 'updatedAt'])
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getMetadataByKey(assetId: string, key: AssetMetadataKey) {
+    return this.db
+      .selectFrom('asset_metadata')
+      .select(['key', 'value', 'updatedAt'])
+      .where('assetId', '=', assetId)
+      .where('key', '=', key)
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async deleteMetadataByKey(id: string, key: AssetMetadataKey) {
+    await this.db.deleteFrom('asset_metadata').where('assetId', '=', id).where('key', '=', key).execute();
   }
 
   create(asset: Insertable<AssetTable>) {
@@ -338,19 +391,7 @@ export class AssetRepository {
 
   @GenerateSql()
   getFileSamples() {
-    return this.db
-      .selectFrom('asset')
-      .select((eb) => [
-        'asset.id',
-        'asset.originalPath',
-        'asset.sidecarPath',
-        'asset.encodedVideoPath',
-        jsonArrayFrom(eb.selectFrom('asset_file').select('path').whereRef('asset.id', '=', 'asset_file.assetId')).as(
-          'files',
-        ),
-      ])
-      .limit(sql.lit(3))
-      .execute();
+    return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -564,7 +605,7 @@ export class AssetRepository {
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
             'asset.livePhotoVideoId',
-            sql`extract(epoch from (asset."localDateTime" - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
+            sql`extract(epoch from (asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
               'localOffsetHours',
             ),
             'asset.ownerId',
@@ -588,6 +629,7 @@ export class AssetRepository {
               )
               .as('ratio'),
           ])
+          .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
@@ -661,6 +703,12 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
+          .$if(!!options.withCoordinates, (qb) =>
+            qb.select((eb) => [
+              eb.fn.coalesce(eb.fn('array_agg', ['latitude']), sql.lit('{}')).as('latitude'),
+              eb.fn.coalesce(eb.fn('array_agg', ['longitude']), sql.lit('{}')).as('longitude'),
+            ]),
+          )
           .$if(!!options.withStacked, (qb) =>
             qb.select((eb) => eb.fn.coalesce(eb.fn('json_agg', ['stack']), sql.lit('[]')).as('stack')),
           ),

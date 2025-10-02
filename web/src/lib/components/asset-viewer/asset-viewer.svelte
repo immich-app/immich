@@ -22,6 +22,7 @@
   import {
     AssetJobName,
     AssetTypeEnum,
+    getAssetInfo,
     getAllAlbums,
     getStack,
     runAssetJobs,
@@ -111,7 +112,7 @@
   let zoomToggle = $state(() => void 0);
 
   const refreshStack = async () => {
-    if (authManager.key) {
+    if (authManager.isSharedLink) {
       return;
     }
 
@@ -191,7 +192,7 @@
   });
 
   const handleGetAllAlbums = async () => {
-    if (authManager.key) {
+    if (authManager.isSharedLink) {
       return;
     }
 
@@ -338,6 +339,11 @@
       case AssetAction.STACK:
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
+        break;
+      }
+      case AssetAction.SET_PERSON_FEATURED_PHOTO: {
+        const assetInfo = await getAssetInfo({ id: asset.id });
+        asset = { ...asset, people: assetInfo.people };
         break;
       }
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
@@ -492,7 +498,7 @@
               onPreviousAsset={() => navigateAsset('previous')}
               onNextAsset={() => navigateAsset('next')}
               {sharedLink}
-              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
+              haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
             />
           {/if}
         {:else}

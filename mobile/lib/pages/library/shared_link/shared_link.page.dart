@@ -17,16 +17,13 @@ class SharedLinkPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedLinks = ref.watch(sharedLinksStateProvider);
 
-    useEffect(
-      () {
-        ref.read(sharedLinksStateProvider.notifier).fetchLinks();
-        return () {
-          if (!context.mounted) return;
-          ref.invalidate(sharedLinksStateProvider);
-        };
-      },
-      [],
-    );
+    useEffect(() {
+      ref.read(sharedLinksStateProvider.notifier).fetchLinks();
+      return () {
+        if (!context.mounted) return;
+        ref.invalidate(sharedLinksStateProvider);
+      };
+    }, []);
 
     Widget buildNoShares() {
       return Column(
@@ -36,31 +33,19 @@ class SharedLinkPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: const Text(
               "shared_link_manage_links",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
             ).tr(),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
-              child: const Text(
-                "you_dont_have_any_shared_links",
-                style: TextStyle(fontSize: 14),
-              ).tr(),
+              child: const Text("you_dont_have_any_shared_links", style: TextStyle(fontSize: 14)).tr(),
             ),
           ),
           Expanded(
             child: Center(
-              child: Icon(
-                Icons.link_off,
-                size: 100,
-                color:
-                    context.themeData.iconTheme.color?.withValues(alpha: 0.5),
-              ),
+              child: Icon(Icons.link_off, size: 100, color: context.themeData.iconTheme.color?.withValues(alpha: 0.5)),
             ),
           ),
         ],
@@ -75,9 +60,7 @@ class SharedLinkPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 30.0),
             child: Text(
               "shared_link_manage_links",
-              style: context.textTheme.labelLarge?.copyWith(
-                color: context.textTheme.labelLarge?.color?.withAlpha(200),
-              ),
+              style: context.textTheme.labelLarge?.copyWith(color: context.textTheme.labelLarge?.color?.withAlpha(200)),
             ).tr(),
           ),
           Expanded(
@@ -86,8 +69,7 @@ class SharedLinkPage extends HookConsumerWidget {
                 if (constraints.maxWidth > 600) {
                   // Two column
                   return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       mainAxisExtent: 180,
                     ),
@@ -113,16 +95,11 @@ class SharedLinkPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("shared_link_app_bar_title").tr(),
-        elevation: 0,
-        centerTitle: false,
-      ),
+      appBar: AppBar(title: const Text("shared_link_app_bar_title").tr(), elevation: 0, centerTitle: false),
       body: SafeArea(
         child: sharedLinks.widgetWhen(
           onError: (error, stackTrace) => buildNoShares(),
-          onData: (links) =>
-              links.isNotEmpty ? buildSharesList(links) : buildNoShares(),
+          onData: (links) => links.isNotEmpty ? buildSharesList(links) : buildNoShares(),
         ),
       ),
     );

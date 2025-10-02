@@ -8,11 +8,8 @@ void useInterval(Duration delay, VoidCallback callback) {
   final savedCallback = useRef(callback);
   savedCallback.value = callback;
 
-  useEffect(
-    () {
-      final timer = Timer.periodic(delay, (_) => savedCallback.value());
-      return timer.cancel;
-    },
-    [delay],
-  );
+  useEffect(() {
+    final timer = Timer.periodic(delay, (_) => savedCallback.value());
+    return timer.cancel;
+  }, [delay]);
 }

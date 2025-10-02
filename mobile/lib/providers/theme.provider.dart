@@ -7,13 +7,12 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final immichThemeModeProvider = StateProvider<ThemeMode>((ref) {
-  final themeMode = ref
-      .watch(appSettingsServiceProvider)
-      .getSetting(AppSettingsEnum.themeMode);
+  final themeMode = ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.themeMode);
 
-  debugPrint("Current themeMode $themeMode");
+  dPrint(() => "Current themeMode $themeMode");
 
   if (themeMode == ThemeMode.light.name) {
     return ThemeMode.light;
@@ -26,36 +25,25 @@ final immichThemeModeProvider = StateProvider<ThemeMode>((ref) {
 
 final immichThemePresetProvider = StateProvider<ImmichColorPreset>((ref) {
   final appSettingsProvider = ref.watch(appSettingsServiceProvider);
-  final primaryColorPreset =
-      appSettingsProvider.getSetting(AppSettingsEnum.primaryColor);
+  final primaryColorPreset = appSettingsProvider.getSetting(AppSettingsEnum.primaryColor);
 
-  debugPrint("Current theme preset $primaryColorPreset");
+  dPrint(() => "Current theme preset $primaryColorPreset");
 
   try {
-    return ImmichColorPreset.values
-        .firstWhere((e) => e.name == primaryColorPreset);
+    return ImmichColorPreset.values.firstWhere((e) => e.name == primaryColorPreset);
   } catch (e) {
-    debugPrint(
-      "Theme preset $primaryColorPreset not found. Applying default preset.",
-    );
-    appSettingsProvider.setSetting(
-      AppSettingsEnum.primaryColor,
-      defaultColorPresetName,
-    );
+    dPrint(() => "Theme preset $primaryColorPreset not found. Applying default preset.");
+    appSettingsProvider.setSetting(AppSettingsEnum.primaryColor, defaultColorPresetName);
     return defaultColorPreset;
   }
 });
 
 final dynamicThemeSettingProvider = StateProvider<bool>((ref) {
-  return ref
-      .watch(appSettingsServiceProvider)
-      .getSetting(AppSettingsEnum.dynamicTheme);
+  return ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.dynamicTheme);
 });
 
 final colorfulInterfaceSettingProvider = StateProvider<bool>((ref) {
-  return ref
-      .watch(appSettingsServiceProvider)
-      .getSetting(AppSettingsEnum.colorfulInterface);
+  return ref.watch(appSettingsServiceProvider).getSetting(AppSettingsEnum.colorfulInterface);
 });
 
 // Provider for current selected theme
@@ -64,11 +52,7 @@ final immichThemeProvider = StateProvider<ImmichTheme>((ref) {
   final useSystemColor = ref.watch(dynamicThemeSettingProvider);
   final useColorfulInterface = ref.watch(colorfulInterfaceSettingProvider);
   final ImmichTheme? dynamicTheme = DynamicTheme.theme;
-  final currentTheme = (useSystemColor && dynamicTheme != null)
-      ? dynamicTheme
-      : primaryColorPreset.themeOfPreset;
+  final currentTheme = (useSystemColor && dynamicTheme != null) ? dynamicTheme : primaryColorPreset.themeOfPreset;
 
-  return useColorfulInterface
-      ? currentTheme
-      : decolorizeSurfaces(theme: currentTheme);
+  return useColorfulInterface ? currentTheme : decolorizeSurfaces(theme: currentTheme);
 });

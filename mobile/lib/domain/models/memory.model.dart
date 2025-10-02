@@ -13,34 +13,23 @@ enum MemoryTypeEnum {
 class MemoryData {
   final int year;
 
-  const MemoryData({
-    required this.year,
-  });
+  const MemoryData({required this.year});
 
-  MemoryData copyWith({
-    int? year,
-  }) {
-    return MemoryData(
-      year: year ?? this.year,
-    );
+  MemoryData copyWith({int? year}) {
+    return MemoryData(year: year ?? this.year);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'year': year,
-    };
+    return <String, dynamic>{'year': year};
   }
 
   factory MemoryData.fromMap(Map<String, dynamic> map) {
-    return MemoryData(
-      year: map['year'] as int,
-    );
+    return MemoryData(year: map['year'] as int);
   }
 
   String toJson() => json.encode(toMap());
 
-  factory MemoryData.fromJson(String source) =>
-      MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory MemoryData.fromJson(String source) => MemoryData.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() => 'MemoryData(year: $year)';

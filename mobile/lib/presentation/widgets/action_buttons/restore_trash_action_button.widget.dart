@@ -20,17 +20,12 @@ class RestoreTrashActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).restoreTrash(source);
     ref.read(multiSelectProvider.notifier).reset();
 
-    final successMessage = 'restore_trash_action_prompt'.t(
-      context: context,
-      args: {'count': result.count.toString()},
-    );
+    final successMessage = 'assets_restored_count'.t(context: context, args: {'count': result.count.toString()});
 
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success
-            ? successMessage
-            : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );
@@ -40,16 +35,8 @@ class RestoreTrashActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TextButton.icon(
-      icon: const Icon(
-        Icons.history_rounded,
-      ),
-      label: Text(
-        'restore'.t(),
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+      icon: const Icon(Icons.history_rounded),
+      label: Text('restore'.t(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
       onPressed: () => _onTap(context, ref),
     );
   }

@@ -24,9 +24,7 @@ class DetailPanel extends HookConsumerWidget {
           child: Column(
             children: [
               AssetDateTime(asset: asset),
-              asset.isRemote
-                  ? DescriptionInput(asset: asset)
-                  : const SizedBox.shrink(),
+              asset.isRemote ? DescriptionInput(asset: asset) : const SizedBox.shrink(),
               PeopleInfo(asset: asset),
               AssetLocation(asset: asset),
               AssetDetails(asset: asset),

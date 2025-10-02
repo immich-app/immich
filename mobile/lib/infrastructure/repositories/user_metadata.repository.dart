@@ -8,8 +8,7 @@ class DriftUserMetadataRepository extends DriftDatabaseRepository {
   const DriftUserMetadataRepository(this._db) : super(_db);
 
   Future<List<UserMetadata>> getUserMetadata(String userId) {
-    final query = _db.userMetadataEntity.select()
-      ..where((e) => e.userId.equals(userId));
+    final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(userId));
 
     return query.map((userMetadata) {
       return userMetadata.toDto();
@@ -17,22 +16,10 @@ class DriftUserMetadataRepository extends DriftDatabaseRepository {
   }
 }
 
-extension on UserMetadataEntityData {
+extension UserMetadataDataExtension on UserMetadataEntityData {
   UserMetadata toDto() => switch (key) {
-        UserMetadataKey.onboarding => UserMetadata(
-            userId: userId,
-            key: key,
-            onboarding: Onboarding.fromMap(value),
-          ),
-        UserMetadataKey.preferences => UserMetadata(
-            userId: userId,
-            key: key,
-            preferences: Preferences.fromMap(value),
-          ),
-        UserMetadataKey.license => UserMetadata(
-            userId: userId,
-            key: key,
-            license: License.fromMap(value),
-          ),
-      };
+    UserMetadataKey.onboarding => UserMetadata(userId: userId, key: key, onboarding: Onboarding.fromMap(value)),
+    UserMetadataKey.preferences => UserMetadata(userId: userId, key: key, preferences: Preferences.fromMap(value)),
+    UserMetadataKey.license => UserMetadata(userId: userId, key: key, license: License.fromMap(value)),
+  };
 }

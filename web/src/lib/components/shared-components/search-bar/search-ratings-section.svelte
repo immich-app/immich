@@ -20,12 +20,14 @@
 
 <div class="grid grid-auto-fit-40 gap-5">
   <label class="immich-form-label" for="start-date">
-    <Combobox
-      label={$t('rating').toUpperCase()}
-      placeholder={$t('search_rating')}
-      {options}
-      selectedOption={rating === undefined ? undefined : options[rating]}
-      onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
-    />
+    <div class="[&_label]:uppercase">
+      <Combobox
+        label={$t('rating')}
+        placeholder={$t('search_rating')}
+        {options}
+        selectedOption={rating === undefined ? undefined : options[rating]}
+        onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
+      />
+    </div>
   </label>
 </div>

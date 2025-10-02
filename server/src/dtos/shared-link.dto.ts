@@ -22,13 +22,17 @@ export class SharedLinkCreateDto {
   @ValidateUUID({ optional: true })
   albumId?: string;
 
+  @Optional({ nullable: true, emptyToNull: true })
   @IsString()
-  @Optional()
-  description?: string;
+  description?: string | null;
 
+  @Optional({ nullable: true, emptyToNull: true })
   @IsString()
-  @Optional()
-  password?: string;
+  password?: string | null;
+
+  @Optional({ nullable: true, emptyToNull: true })
+  @IsString()
+  slug?: string | null;
 
   @ValidateDate({ optional: true, nullable: true })
   expiresAt?: Date | null = null;
@@ -44,16 +48,22 @@ export class SharedLinkCreateDto {
 }
 
 export class SharedLinkEditDto {
-  @Optional()
-  description?: string;
+  @Optional({ nullable: true, emptyToNull: true })
+  @IsString()
+  description?: string | null;
 
-  @Optional()
-  password?: string;
+  @Optional({ nullable: true, emptyToNull: true })
+  @IsString()
+  password?: string | null;
+
+  @Optional({ nullable: true, emptyToNull: true })
+  @IsString()
+  slug?: string | null;
 
   @Optional({ nullable: true })
   expiresAt?: Date | null;
 
-  @Optional()
+  @ValidateBoolean({ optional: true })
   allowUpload?: boolean;
 
   @ValidateBoolean({ optional: true })
@@ -99,6 +109,8 @@ export class SharedLinkResponseDto {
 
   allowDownload!: boolean;
   showMetadata!: boolean;
+
+  slug!: string | null;
 }
 
 export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
@@ -118,6 +130,7 @@ export function mapSharedLink(sharedLink: SharedLink): SharedLinkResponseDto {
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    slug: sharedLink.slug,
   };
 }
 
@@ -141,5 +154,6 @@ export function mapSharedLinkWithoutMetadata(sharedLink: SharedLink): SharedLink
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
+    slug: sharedLink.slug,
   };
 }

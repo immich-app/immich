@@ -15,6 +15,7 @@ export enum AssetAction {
   REMOVE_ASSET_FROM_STACK = 'remove-asset-from-stack',
   SET_VISIBILITY_LOCKED = 'set-visibility-locked',
   SET_VISIBILITY_TIMELINE = 'set-visibility-timeline',
+  SET_PERSON_FEATURED_PHOTO = 'set-person-featured-photo',
 }
 
 export enum AppRoute {
@@ -52,6 +53,8 @@ export enum AppRoute {
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
+  LARGE_FILES = '/utilities/large-files',
+  GEOLOCATION = '/utilities/geolocation',
 
   FOLDERS = '/folders',
   TAGS = '/tags',

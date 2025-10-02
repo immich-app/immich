@@ -13,8 +13,7 @@ import 'package:logging/logging.dart';
 
 /// The local image provider for an asset
 /// Only viable
-class ImmichLocalThumbnailProvider
-    extends ImageProvider<ImmichLocalThumbnailProvider> {
+class ImmichLocalThumbnailProvider extends ImageProvider<ImmichLocalThumbnailProvider> {
   final Asset asset;
   final int height;
   final int width;
@@ -33,17 +32,12 @@ class ImmichLocalThumbnailProvider
   /// Converts an [ImageProvider]'s settings plus an [ImageConfiguration] to a key
   /// that describes the precise image to load.
   @override
-  Future<ImmichLocalThumbnailProvider> obtainKey(
-    ImageConfiguration configuration,
-  ) {
+  Future<ImmichLocalThumbnailProvider> obtainKey(ImageConfiguration configuration) {
     return SynchronousFuture(this);
   }
 
   @override
-  ImageStreamCompleter loadImage(
-    ImmichLocalThumbnailProvider key,
-    ImageDecoderCallback decode,
-  ) {
+  ImageStreamCompleter loadImage(ImmichLocalThumbnailProvider key, ImageDecoderCallback decode) {
     final cache = cacheManager ?? ThumbnailImageCacheManager();
     return MultiImageStreamCompleter(
       codec: _codec(key.asset, cache, decode),
@@ -55,18 +49,12 @@ class ImmichLocalThumbnailProvider
   }
 
   // Streams in each stage of the image as we ask for it
-  Stream<ui.Codec> _codec(
-    Asset assetData,
-    CacheManager cache,
-    ImageDecoderCallback decode,
-  ) async* {
-    final cacheKey =
-        '$userId${assetData.localId}${assetData.checksum}$width$height';
+  Stream<ui.Codec> _codec(Asset assetData, CacheManager cache, ImageDecoderCallback decode) async* {
+    final cacheKey = '$userId${assetData.localId}${assetData.checksum}$width$height';
     final fileFromCache = await cache.getFileFromCache(cacheKey);
     if (fileFromCache != null) {
       try {
-        final buffer =
-            await ui.ImmutableBuffer.fromFilePath(fileFromCache.file.path);
+        final buffer = await ui.ImmutableBuffer.fromFilePath(fileFromCache.file.path);
         final codec = await decode(buffer);
         yield codec;
         return;
@@ -75,14 +63,9 @@ class ImmichLocalThumbnailProvider
       }
     }
 
-    final thumbnailBytes = await assetData.local?.thumbnailDataWithSize(
-      ThumbnailSize(width, height),
-      quality: 80,
-    );
+    final thumbnailBytes = await assetData.local?.thumbnailDataWithSize(ThumbnailSize(width, height), quality: 80);
     if (thumbnailBytes == null) {
-      throw StateError(
-        "Loading thumb for local photo ${assetData.fileName} failed",
-      );
+      throw StateError("Loading thumb for local photo ${assetData.fileName} failed");
     }
 
     final buffer = await ui.ImmutableBuffer.fromUint8List(thumbnailBytes);

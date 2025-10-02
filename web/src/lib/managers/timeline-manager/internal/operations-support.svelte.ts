@@ -1,4 +1,4 @@
-import { setDifference, type TimelinePlainDate } from '$lib/utils/timeline-util';
+import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 
 import { SvelteSet } from 'svelte/reactivity';
@@ -70,7 +70,7 @@ export function runAssetOperation(
   const changedMonthGroups = new SvelteSet<MonthGroup>();
   let idsToProcess = new SvelteSet(ids);
   const idsProcessed = new SvelteSet<string>();
-  const combinedMoveAssets: { asset: TimelineAsset; date: TimelinePlainDate }[][] = [];
+  const combinedMoveAssets: { asset: TimelineAsset; date: TimelineDate }[][] = [];
   for (const month of timelineManager.months) {
     if (idsToProcess.size > 0) {
       const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);

@@ -85,8 +85,13 @@ export class LoggingRepository {
     this.logger = new MyConsoleLogger(cls, { context: LoggingRepository.name, color: !noColor });
   }
 
-  static create() {
-    return new LoggingRepository(undefined, undefined);
+  static create(context?: string) {
+    const logger = new LoggingRepository(undefined, undefined);
+    if (context) {
+      logger.setContext(context);
+    }
+
+    return logger;
   }
 
   setAppName(name: string): void {
@@ -135,6 +140,10 @@ export class LoggingRepository {
 
   fatal(message: string, ...details: LogDetails) {
     this.handleMessage(LogLevel.Fatal, message, details);
+  }
+
+  deprecate(message: string) {
+    this.warn(`[Deprecated] ${message}`);
   }
 
   private handleFunction(level: LogLevel, message: LogFunction, details: LogDetails[]) {

@@ -470,7 +470,7 @@ describe('/albums', () => {
         .send({ ids: [asset.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not found or no album.addAsset access'));
+      expect(body).toEqual(errorDto.badRequest('Not found or no albumAsset.create access'));
     });
 
     it('should add duplicate assets only once', async () => {
@@ -599,7 +599,7 @@ describe('/albums', () => {
         .send({ ids: [user1Asset1.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Not found or no album.removeAsset access'));
+      expect(body).toEqual(errorDto.badRequest('Not found or no albumAsset.delete access'));
     });
 
     it('should remove duplicate assets only once', async () => {
@@ -683,7 +683,7 @@ describe('/albums', () => {
         .set('Authorization', `Bearer ${user1.accessToken}`)
         .send({ role: AlbumUserRole.Editor });
 
-      expect(status).toBe(200);
+      expect(status).toBe(204);
 
       // Get album to verify the role change
       const { body } = await request(app)

@@ -11,15 +11,13 @@ final timelineRepositoryProvider = Provider<DriftTimelineRepository>(
 );
 
 final timelineArgsProvider = Provider.autoDispose<TimelineArgs>(
-  (ref) =>
-      throw UnimplementedError('Will be overridden through a ProviderScope.'),
+  (ref) => throw UnimplementedError('Will be overridden through a ProviderScope.'),
 );
 
 final timelineServiceProvider = Provider<TimelineService>(
   (ref) {
     final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
-    final timelineService =
-        ref.watch(timelineFactoryProvider).main(timelineUsers);
+    final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
     ref.onDispose(timelineService.dispose);
     return timelineService;
   },
@@ -35,15 +33,11 @@ final timelineFactoryProvider = Provider<TimelineFactory>(
   ),
 );
 
-final timelineUsersProvider = StreamProvider<List<String>>(
-  (ref) {
-    final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
-    if (currentUserId == null) {
-      return Stream.value([]);
-    }
+final timelineUsersProvider = StreamProvider<List<String>>((ref) {
+  final currentUserId = ref.watch(currentUserProvider.select((u) => u?.id));
+  if (currentUserId == null) {
+    return Stream.value([]);
+  }
 
-    return ref
-        .watch(timelineRepositoryProvider)
-        .watchTimelineUserIds(currentUserId);
-  },
-);
+  return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId);
+});

@@ -6,10 +6,7 @@ import 'package:immich_mobile/utils/bytes_units.dart';
 class FileInfo extends StatelessWidget {
   final Asset asset;
 
-  const FileInfo({
-    super.key,
-    required this.asset,
-  });
+  const FileInfo({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context) {
@@ -17,11 +14,8 @@ class FileInfo extends StatelessWidget {
 
     final height = asset.orientatedHeight ?? asset.height;
     final width = asset.orientatedWidth ?? asset.width;
-    String resolution =
-        height != null && width != null ? "$width x $height  " : "";
-    String fileSize = asset.exifInfo?.fileSize != null
-        ? formatBytes(asset.exifInfo!.fileSize!)
-        : "";
+    String resolution = height != null && width != null ? "$width x $height  " : "";
+    String fileSize = asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo!.fileSize!) : "";
     String text = resolution + fileSize;
     final imgSizeString = text.isNotEmpty ? text : null;
 
@@ -44,15 +38,9 @@ class FileInfo extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.all(0),
       dense: true,
-      leading: Icon(
-        Icons.image,
-        color: textColor.withAlpha(200),
-      ),
+      leading: Icon(Icons.image, color: textColor.withAlpha(200)),
       titleAlignment: ListTileTitleAlignment.center,
-      title: Text(
-        title,
-        style: context.textTheme.labelLarge,
-      ),
+      title: Text(title, style: context.textTheme.labelLarge),
       subtitle: subtitle == null ? null : Text(subtitle),
     );
   }

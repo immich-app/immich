@@ -1,22 +1,22 @@
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart' as asset_entity;
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:share_plus/share_plus.dart';
 
-final assetMediaRepositoryProvider = Provider(
-  (ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)),
-);
+final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.watch(assetApiRepositoryProvider)));
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
@@ -24,8 +24,7 @@ class AssetMediaRepository {
 
   const AssetMediaRepository(this._assetApiRepository);
 
-  Future<List<String>> deleteAll(List<String> ids) =>
-      PhotoManager.editor.deleteWithIds(ids);
+  Future<List<String>> deleteAll(List<String> ids) => PhotoManager.editor.deleteWithIds(ids);
 
   Future<asset_entity.Asset?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
@@ -52,8 +51,7 @@ class AssetMediaRepository {
       asset.fileCreatedAt = asset.fileModifiedAt;
     }
     if (local.latitude != null) {
-      asset.exifInfo =
-          ExifInfo(latitude: local.latitude, longitude: local.longitude);
+      asset.exifInfo = ExifInfo(latitude: local.latitude, longitude: local.longitude);
     }
     asset.local = local;
     return asset;
@@ -72,19 +70,17 @@ class AssetMediaRepository {
   }
 
   // TODO: make this more efficient
-  Future<int> shareAssets(List<BaseAsset> assets) async {
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) async {
     final downloadedXFiles = <XFile>[];
 
     for (var asset in assets) {
       final localId = (asset is LocalAsset)
           ? asset.id
           : asset is RemoteAsset
-              ? asset.localId
-              : null;
+          ? asset.localId
+          : null;
       if (localId != null) {
-        File? f =
-            await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0)
-                .originFile;
+        File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
       } else if (asset is RemoteAsset) {
         final tempDir = await getTemporaryDirectory();
@@ -110,17 +106,22 @@ class AssetMediaRepository {
       return 0;
     }
 
-    final result = await Share.shareXFiles(downloadedXFiles);
-
-    for (var file in downloadedXFiles) {
-      try {
-        await File(file.path).delete();
-      } catch (e) {
-        _log.warning("Failed to delete temporary file: ${file.path}", e);
+    // we dont want to await the share result since the
+    // "preparing" dialog will not disappear until
+    final size = context.sizeData;
+    Share.shareXFiles(
+      downloadedXFiles,
+      sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
+    ).then((result) async {
+      for (var file in downloadedXFiles) {
+        try {
+          await File(file.path).delete();
+        } catch (e) {
+          _log.warning("Failed to delete temporary file: ${file.path}", e);
+        }
       }
-    }
-    return result.status == ShareResultStatus.success
-        ? downloadedXFiles.length
-        : 0;
+    });
+
+    return downloadedXFiles.length;
   }
 }

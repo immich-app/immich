@@ -16,7 +16,10 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'DELETE /duplicates/{id}' operation and returns the [Response].
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -46,6 +49,8 @@ class DuplicatesApi {
     );
   }
 
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -56,7 +61,10 @@ class DuplicatesApi {
     }
   }
 
-  /// Performs an HTTP 'DELETE /duplicates' operation and returns the [Response].
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -85,6 +93,8 @@ class DuplicatesApi {
     );
   }
 
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
@@ -95,7 +105,9 @@ class DuplicatesApi {
     }
   }
 
-  /// Performs an HTTP 'GET /duplicates' operation and returns the [Response].
+  /// This endpoint requires the `duplicate.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAssetDuplicatesWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates';
@@ -121,6 +133,7 @@ class DuplicatesApi {
     );
   }
 
+  /// This endpoint requires the `duplicate.read` permission.
   Future<List<DuplicateResponseDto>?> getAssetDuplicates() async {
     final response = await getAssetDuplicatesWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {

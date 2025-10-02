@@ -59,20 +59,16 @@ class PartnerNotifier extends Notifier<List<PartnerUserDto>> {
   }
 }
 
-final driftAvailablePartnerProvider =
-    FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
+final driftAvailablePartnerProvider = FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null) {
     return [];
   }
 
-  return ref
-      .watch(driftPartnerServiceProvider)
-      .getAvailablePartners(currentUser.id);
+  return ref.watch(driftPartnerServiceProvider).getAvailablePartners(currentUser.id);
 });
 
-final driftSharedByPartnerProvider =
-    FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
+final driftSharedByPartnerProvider = FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null) {
     return [];
@@ -81,8 +77,7 @@ final driftSharedByPartnerProvider =
   return ref.watch(driftPartnerServiceProvider).getSharedBy(currentUser.id);
 });
 
-final driftSharedWithPartnerProvider =
-    FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
+final driftSharedWithPartnerProvider = FutureProvider.autoDispose<List<PartnerUserDto>>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   if (currentUser == null) {
     return [];

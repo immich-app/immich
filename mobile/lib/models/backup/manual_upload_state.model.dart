@@ -56,17 +56,14 @@ class ManualUploadState {
       progressInFileSize: progressInFileSize ?? this.progressInFileSize,
       progressInFileSpeed: progressInFileSpeed ?? this.progressInFileSpeed,
       progressInFileSpeeds: progressInFileSpeeds ?? this.progressInFileSpeeds,
-      progressInFileSpeedUpdateTime:
-          progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
-      progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ??
-          this.progressInFileSpeedUpdateSentBytes,
+      progressInFileSpeedUpdateTime: progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
+      progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ?? this.progressInFileSpeedUpdateSentBytes,
       cancelToken: cancelToken ?? this.cancelToken,
       currentUploadAsset: currentUploadAsset ?? this.currentUploadAsset,
       totalAssetsToUpload: totalAssetsToUpload ?? this.totalAssetsToUpload,
       currentAssetIndex: currentAssetIndex ?? this.currentAssetIndex,
       successfulUploads: successfulUploads ?? this.successfulUploads,
-      showDetailedNotification:
-          showDetailedNotification ?? this.showDetailedNotification,
+      showDetailedNotification: showDetailedNotification ?? this.showDetailedNotification,
     );
   }
 
@@ -86,8 +83,7 @@ class ManualUploadState {
         other.progressInFileSpeed == progressInFileSpeed &&
         collectionEquals(other.progressInFileSpeeds, progressInFileSpeeds) &&
         other.progressInFileSpeedUpdateTime == progressInFileSpeedUpdateTime &&
-        other.progressInFileSpeedUpdateSentBytes ==
-            progressInFileSpeedUpdateSentBytes &&
+        other.progressInFileSpeedUpdateSentBytes == progressInFileSpeedUpdateSentBytes &&
         other.cancelToken == cancelToken &&
         other.currentUploadAsset == currentUploadAsset &&
         other.totalAssetsToUpload == totalAssetsToUpload &&

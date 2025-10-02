@@ -20,8 +20,7 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
       return;
     }
 
-    final result =
-        await ref.read(actionProvider.notifier).moveToLockFolder(source);
+    final result = await ref.read(actionProvider.notifier).moveToLockFolder(source);
     ref.read(multiSelectProvider.notifier).reset();
 
     if (source == ActionSource.viewer) {
@@ -36,9 +35,7 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
     if (context.mounted) {
       ImmichToast.show(
         context: context,
-        msg: result.success
-            ? successMessage
-            : 'scaffold_body_error_occurred'.t(context: context),
+        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );
@@ -48,7 +45,7 @@ class MoveToLockFolderActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BaseActionButton(
-      maxWidth: 100.0,
+      maxWidth: 115.0,
       iconData: Icons.lock_outline_rounded,
       label: "move_to_locked_folder".t(context: context),
       onPressed: () => _onTap(context, ref),

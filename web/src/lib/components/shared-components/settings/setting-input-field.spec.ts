@@ -46,6 +46,6 @@ describe('SettingInputField component', () => {
     expect(numberInput.value).toEqual('');
 
     await user.click(document.body);
-    expect(numberInput.value).toEqual('0');
+    expect(numberInput.value).toEqual('');
   });
 });

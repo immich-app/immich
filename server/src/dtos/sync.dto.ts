@@ -4,12 +4,14 @@ import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
+  AssetMetadataKey,
   AssetOrder,
   AssetType,
   AssetVisibility,
   MemoryType,
   SyncEntityType,
   SyncRequestType,
+  UserAvatarColor,
   UserMetadataKey,
 } from 'src/enum';
 import { UserMetadata } from 'src/types';
@@ -58,7 +60,23 @@ export class SyncUserV1 {
   id!: string;
   name!: string;
   email!: string;
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', nullable: true })
+  avatarColor!: UserAvatarColor | null;
   deletedAt!: Date | null;
+  hasProfileImage!: boolean;
+  profileChangedAt!: Date;
+}
+
+@ExtraModel()
+export class SyncAuthUserV1 extends SyncUserV1 {
+  isAdmin!: boolean;
+  pinCode!: string | null;
+  oauthId!: string;
+  storageLabel!: string | null;
+  @ApiProperty({ type: 'integer' })
+  quotaSizeInBytes!: number | null;
+  @ApiProperty({ type: 'integer' })
+  quotaUsageInBytes!: number;
 }
 
 @ExtraModel()
@@ -98,6 +116,7 @@ export class SyncAssetV1 {
   visibility!: AssetVisibility;
   livePhotoVideoId!: string | null;
   stackId!: string | null;
+  libraryId!: string | null;
 }
 
 @ExtraModel()
@@ -142,6 +161,21 @@ export class SyncAssetExifV1 {
   rating!: number | null;
   @ApiProperty({ type: 'number', format: 'double' })
   fps!: number | null;
+}
+
+@ExtraModel()
+export class SyncAssetMetadataV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+  value!: object;
+}
+
+@ExtraModel()
+export class SyncAssetMetadataDeleteV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
 }
 
 @ExtraModel()
@@ -284,14 +318,16 @@ export class SyncAssetFaceDeleteV1 {
 @ExtraModel()
 export class SyncUserMetadataV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
   value!: UserMetadata[UserMetadataKey];
 }
 
 @ExtraModel()
 export class SyncUserMetadataDeleteV1 {
   userId!: string;
-  key!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
 }
 
 @ExtraModel()
@@ -300,13 +336,19 @@ export class SyncAckV1 {}
 @ExtraModel()
 export class SyncResetV1 {}
 
+@ExtraModel()
+export class SyncCompleteV1 {}
+
 export type SyncItem = {
+  [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
   [SyncEntityType.AssetV1]: SyncAssetV1;
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
+  [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
+  [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
@@ -318,9 +360,11 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
-  [SyncEntityType.AlbumAssetV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetCreateV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetUpdateV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
-  [SyncEntityType.AlbumAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifCreateV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifUpdateV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumToAssetV1]: SyncAlbumToAssetV1;
   [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;
@@ -341,6 +385,7 @@ export type SyncItem = {
   [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
   [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
+  [SyncEntityType.SyncCompleteV1]: SyncCompleteV1;
   [SyncEntityType.SyncResetV1]: SyncResetV1;
 };
 

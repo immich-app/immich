@@ -46,6 +46,7 @@ const assetInfo: ExifResponseDto = {
 
 const assetResponse: AssetResponseDto = {
   id: 'id_1',
+  createdAt: today,
   deviceAssetId: 'device_asset_id_1',
   ownerId: 'user_id_1',
   deviceId: 'device_id_1',
@@ -118,6 +119,7 @@ export const sharedLinkStub = {
     description: null,
     assets: [assetStub.image],
     password: 'password',
+    slug: null,
   }),
   valid: Object.freeze({
     id: '123',
@@ -135,6 +137,7 @@ export const sharedLinkStub = {
     password: null,
     assets: [] as MapAsset[],
     album: null,
+    slug: null,
   }),
   expired: Object.freeze({
     id: '123',
@@ -152,6 +155,7 @@ export const sharedLinkStub = {
     albumId: null,
     assets: [] as MapAsset[],
     album: null,
+    slug: null,
   }),
   readonlyNoExif: Object.freeze({
     id: '123',
@@ -166,6 +170,7 @@ export const sharedLinkStub = {
     description: null,
     password: null,
     assets: [],
+    slug: null,
     albumId: 'album-123',
     album: {
       id: 'album-123',
@@ -266,6 +271,7 @@ export const sharedLinkStub = {
     allowUpload: true,
     allowDownload: true,
     showExif: true,
+    slug: null,
     description: null,
     password: 'password',
     assets: [],
@@ -288,6 +294,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.Album,
     userId: 'admin_id',
+    slug: null,
   }),
   expired: Object.freeze<SharedLinkResponseDto>({
     album: undefined,
@@ -303,6 +310,7 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.Album,
     userId: 'admin_id',
+    slug: null,
   }),
   readonlyNoMetadata: Object.freeze<SharedLinkResponseDto>({
     id: '123',
@@ -316,6 +324,7 @@ export const sharedLinkResponseStub = {
     allowUpload: false,
     allowDownload: false,
     showMetadata: false,
+    slug: null,
     album: { ...albumResponse, startDate: assetResponse.localDateTime, endDate: assetResponse.localDateTime },
     assets: [{ ...assetResponseWithoutMetadata, exifInfo: undefined }],
   }),

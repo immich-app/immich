@@ -15,19 +15,17 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'user.provider.g.dart';
 
 @Riverpod(keepAlive: true)
-IsarUserRepository userRepository(Ref ref) =>
-    IsarUserRepository(ref.watch(isarProvider));
+IsarUserRepository userRepository(Ref ref) => IsarUserRepository(ref.watch(isarProvider));
 
 @Riverpod(keepAlive: true)
-UserApiRepository userApiRepository(Ref ref) =>
-    UserApiRepository(ref.watch(apiServiceProvider).usersApi);
+UserApiRepository userApiRepository(Ref ref) => UserApiRepository(ref.watch(apiServiceProvider).usersApi);
 
 @Riverpod(keepAlive: true)
 UserService userService(Ref ref) => UserService(
-      isarUserRepository: ref.watch(userRepositoryProvider),
-      userApiRepository: ref.watch(userApiRepositoryProvider),
-      storeService: ref.watch(storeServiceProvider),
-    );
+  isarUserRepository: ref.watch(userRepositoryProvider),
+  userApiRepository: ref.watch(userApiRepositoryProvider),
+  storeService: ref.watch(storeServiceProvider),
+);
 
 /// Drifts
 final driftPartnerRepositoryProvider = Provider<DriftPartnerRepository>(
@@ -35,13 +33,7 @@ final driftPartnerRepositoryProvider = Provider<DriftPartnerRepository>(
 );
 
 final driftPartnerServiceProvider = Provider<DriftPartnerService>(
-  (ref) => DriftPartnerService(
-    ref.watch(driftPartnerRepositoryProvider),
-    ref.watch(partnerApiRepositoryProvider),
-  ),
+  (ref) => DriftPartnerService(ref.watch(driftPartnerRepositoryProvider), ref.watch(partnerApiRepositoryProvider)),
 );
 
-final partnerUsersProvider =
-    NotifierProvider<PartnerNotifier, List<PartnerUserDto>>(
-  PartnerNotifier.new,
-);
+final partnerUsersProvider = NotifierProvider<PartnerNotifier, List<PartnerUserDto>>(PartnerNotifier.new);

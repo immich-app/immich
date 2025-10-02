@@ -13,14 +13,14 @@ String _$albumSortByOptionsHash() =>
 @ProviderFor(AlbumSortByOptions)
 final albumSortByOptionsProvider =
     AutoDisposeNotifierProvider<AlbumSortByOptions, AlbumSortMode>.internal(
-  AlbumSortByOptions.new,
-  name: r'albumSortByOptionsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$albumSortByOptionsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      AlbumSortByOptions.new,
+      name: r'albumSortByOptionsProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$albumSortByOptionsHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AlbumSortByOptions = AutoDisposeNotifier<AlbumSortMode>;
 String _$albumSortOrderHash() => r'573dea45b4519e69386fc7104c72522e35713440';
@@ -29,14 +29,14 @@ String _$albumSortOrderHash() => r'573dea45b4519e69386fc7104c72522e35713440';
 @ProviderFor(AlbumSortOrder)
 final albumSortOrderProvider =
     AutoDisposeNotifierProvider<AlbumSortOrder, bool>.internal(
-  AlbumSortOrder.new,
-  name: r'albumSortOrderProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$albumSortOrderHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      AlbumSortOrder.new,
+      name: r'albumSortOrderProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$albumSortOrderHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$AlbumSortOrder = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
