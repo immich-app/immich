@@ -106,7 +106,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   custom_lint: ^0.7.5
-  riverpod_lint: ^2.6.1
+  riverpod_lint: ^3.0.0
   riverpod_generator: ^2.6.1
   mocktail: ^1.0.4
   immich_mobile_immich_lint:
