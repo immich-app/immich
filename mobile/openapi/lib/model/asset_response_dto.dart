@@ -23,6 +23,7 @@ class AssetResponseDto {
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.hasMetadata,
+    this.hasUserLocation,
     required this.id,
     required this.isArchived,
     required this.isFavorite,
@@ -76,6 +77,14 @@ class AssetResponseDto {
   DateTime fileModifiedAt;
 
   bool hasMetadata;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? hasUserLocation;
 
   String id;
 
@@ -155,6 +164,7 @@ class AssetResponseDto {
     other.fileCreatedAt == fileCreatedAt &&
     other.fileModifiedAt == fileModifiedAt &&
     other.hasMetadata == hasMetadata &&
+    other.hasUserLocation == hasUserLocation &&
     other.id == id &&
     other.isArchived == isArchived &&
     other.isFavorite == isFavorite &&
@@ -191,6 +201,7 @@ class AssetResponseDto {
     (fileCreatedAt.hashCode) +
     (fileModifiedAt.hashCode) +
     (hasMetadata.hashCode) +
+    (hasUserLocation == null ? 0 : hasUserLocation!.hashCode) +
     (id.hashCode) +
     (isArchived.hashCode) +
     (isFavorite.hashCode) +
@@ -215,7 +226,7 @@ class AssetResponseDto {
     (visibility.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, hasUserLocation=$hasUserLocation, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -237,6 +248,11 @@ class AssetResponseDto {
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
       json[r'hasMetadata'] = this.hasMetadata;
+    if (this.hasUserLocation != null) {
+      json[r'hasUserLocation'] = this.hasUserLocation;
+    } else {
+    //  json[r'hasUserLocation'] = null;
+    }
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
       json[r'isFavorite'] = this.isFavorite;
@@ -309,6 +325,7 @@ class AssetResponseDto {
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
+        hasUserLocation: mapValueOfType<bool>(json, r'hasUserLocation'),
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
