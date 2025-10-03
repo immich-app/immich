@@ -7,7 +7,7 @@ const prism = require('prism-react-renderer');
 const config = {
   title: 'Immich',
   tagline: 'High performance self-hosted photo and video backup solution directly from your mobile phone',
-  url: 'https://immich.app',
+  url: 'https://docs.immich.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -65,11 +65,6 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      announcementBar: {
-        id: 'site_announcement_immich',
-        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
-        isCloseable: false,
-      },
       docs: {
         sidebar: {
           autoCollapseCategories: false,

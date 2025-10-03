@@ -11,8 +11,8 @@ import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 
 class SheetPeopleDetails extends ConsumerStatefulWidget {
   const SheetPeopleDetails({super.key});
@@ -158,11 +158,14 @@ class _PeopleAvatar extends StatelessWidget {
                     maxLines: 1,
                   ),
                   if (person.birthDate != null)
-                    Text(
-                      formatAge(person.birthDate!, assetFileCreatedAt),
-                      textAlign: TextAlign.center,
-                      style: context.textTheme.bodyMedium?.copyWith(
-                        color: context.textTheme.bodyMedium?.color?.withAlpha(175),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        formatAge(person.birthDate!, assetFileCreatedAt),
+                        textAlign: TextAlign.center,
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: context.textTheme.bodyMedium?.color?.withAlpha(175),
+                        ),
                       ),
                     ),
                 ],
