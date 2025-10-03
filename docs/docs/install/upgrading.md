@@ -29,7 +29,7 @@ docker image prune
 ## Migrating to VectorChord
 
 :::info
-If you deploy Immich using Docker Compose, see `ghcr.io/immich-app/postgres` in the `docker-compose.yml` file and have not explicitly set the `DB_VECTOR_EXTENSION` environmental variable, your Immich database is already using VectorChord and this section does not apply to you.
+If you deploy Immich using Docker Compose and see `ghcr.io/immich-app/postgres` in the `docker-compose.yml` file and have not explicitly set the `DB_VECTOR_EXTENSION` environmental variable, your Immich database is already using VectorChord and this section does not apply to you.
 :::
 
 :::important
