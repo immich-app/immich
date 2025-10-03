@@ -20,6 +20,10 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     enqueueMediaObserver(ctx)
   }
 
+  override fun saveNotificationMessage(title: String, body: String) {
+    BackgroundWorkerPreferences(ctx).updateNotificationConfig(title, body)
+  }
+
   override fun configure(settings: BackgroundWorkerSettings) {
     BackgroundWorkerPreferences(ctx).updateSettings(settings)
     enqueueMediaObserver(ctx)

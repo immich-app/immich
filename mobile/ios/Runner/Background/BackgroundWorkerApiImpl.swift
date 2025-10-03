@@ -12,6 +12,10 @@ class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
     // Android only
   }
   
+  func saveNotificationMessage(title: String, body: String) throws {
+    // Android only
+  }
+  
   func disable() throws {
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.refreshTaskID);
     BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: BackgroundWorkerApiImpl.processingTaskID);

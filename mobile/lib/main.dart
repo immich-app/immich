@@ -15,7 +15,9 @@ import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/generated/intl_keys.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
@@ -210,6 +212,14 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       if (Store.isBetaTimelineEnabled) {
         ref.read(backgroundServiceProvider).disableService();
         ref.read(backgroundWorkerFgServiceProvider).enable();
+        if (Platform.isAndroid) {
+          ref
+              .read(backgroundWorkerFgServiceProvider)
+              .saveNotificationMessage(
+                IntlKeys.uploading_media.t(),
+                IntlKeys.backup_background_service_default_notification.t(),
+              );
+        }
       } else {
         ref.read(backgroundWorkerFgServiceProvider).disable();
         ref.read(backgroundServiceProvider).resumeServiceIfEnabled();

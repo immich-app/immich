@@ -73,6 +73,8 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       NotificationManager.IMPORTANCE_LOW
     )
     notificationManager.createNotificationChannel(notificationChannel)
+    val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
+    showNotification(notificationConfig.first, notificationConfig.second)
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
@@ -109,7 +111,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   }
 
   // TODO: Move this to a separate NotificationManager class
-  override fun showNotification(title: String, content: String) {
+  private fun showNotification(title: String, content: String) {
     val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
       .setSmallIcon(R.drawable.notification_icon)
       .setOnlyAlertOnce(true)
