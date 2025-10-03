@@ -18,7 +18,7 @@
     websocketStore,
     type ReleaseEvent,
   } from '$lib/stores/websocket';
-  import { copyToClipboard } from '$lib/utils';
+  import { copyToClipboard, getReleaseType } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import type { ServerVersionResponseDto } from '@immich/sdk';
   import { modalManager, setTranslations } from '@immich/ui';
@@ -85,8 +85,9 @@
 
     const releaseVersion = semverToName(release.releaseVersion);
     const serverVersion = semverToName(release.serverVersion);
+    const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
-    if (localStorage.getItem('appVersion') === releaseVersion) {
+    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
       return;
     }
 
