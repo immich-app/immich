@@ -599,7 +599,7 @@
   "backup_controller_page_turn_on": "Activer la sauvegarde au premier plan",
   "backup_controller_page_uploading_file_info": "Envoi des informations du fichier",
   "backup_err_only_album": "Impossible de retirer le seul album",
-  "backup_error_sync_failed": "Échec de la synchronisation. Impossible de démarrer la sauvegarde.",
+  "backup_error_sync_failed": "Échec de la synchronisation. Impossible d'exécuter la sauvegarde.",
   "backup_info_card_assets": "éléments",
   "backup_manual_cancelled": "Annulé",
   "backup_manual_in_progress": "Envoi déjà en cours. Réessayez plus tard",
