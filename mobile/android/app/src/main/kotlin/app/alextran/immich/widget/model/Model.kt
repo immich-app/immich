@@ -18,7 +18,9 @@ data class SearchFilters(
   var type: AssetType = AssetType.IMAGE,
   val size: Int = 1,
   var albumIds: List<String> = listOf(),
-  var isFavorite: Boolean? = null
+  var isFavorite: Boolean? = null,
+  var personIds: List<String> = listOf(),
+  var withPeople: Boolean? = null
 )
 
 data class MemoryResult(

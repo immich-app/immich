@@ -19,6 +19,12 @@
   <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
   <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+  <uses-permission android:name="android.permission.SET_WALLPAPER" />
+  <uses-permission android:name="android.permission.SET_WALLPAPER_HINTS" />
+
+  <uses-feature
+    android:name="android.software.live_wallpaper"
+    android:required="false" />
 
   <!-- Foreground service permission -->
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -37,6 +43,23 @@
       android:enabled="@bool/enable_system_foreground_service_default"
       android:exported="false"
       android:foregroundServiceType="dataSync|shortService" />
+
+    <service
+      android:name=".wallpaper.ImmichWallpaperService"
+      android:permission="android.permission.BIND_WALLPAPER"
+      android:exported="true">
+      <intent-filter>
+        <action android:name="android.service.wallpaper.WallpaperService" />
+      </intent-filter>
+      <meta-data
+        android:name="android.service.wallpaper"
+        android:resource="@xml/immich_wallpaper" />
+    </service>
+
+    <activity
+      android:name=".wallpaper.ImmichWallpaperSettingsActivity"
+      android:exported="true"
+      android:theme="@style/Theme.Material3.DayNight.NoActionBar" />
 
     <meta-data
       android:name="io.flutter.embedding.android.EnableImpeller"
