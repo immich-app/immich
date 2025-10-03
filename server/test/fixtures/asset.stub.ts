@@ -64,6 +64,7 @@ export const assetStub = {
     originalPath: '/original/path.jpg',
     originalFileName: 'IMG_123.jpg',
     fileSizeInByte: 12_345,
+    sidecarPath: null,
     ...asset,
   }),
   noResizePath: Object.freeze({

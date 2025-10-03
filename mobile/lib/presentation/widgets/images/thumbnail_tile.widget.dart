@@ -16,7 +16,7 @@ class ThumbnailTile extends ConsumerWidget {
     this.asset, {
     this.size = kThumbnailResolution,
     this.fit = BoxFit.cover,
-    this.showStorageIndicator,
+    this.showStorageIndicator = false,
     this.lockSelection = false,
     this.heroOffset,
     super.key,
@@ -25,7 +25,7 @@ class ThumbnailTile extends ConsumerWidget {
   final BaseAsset? asset;
   final Size size;
   final BoxFit fit;
-  final bool? showStorageIndicator;
+  final bool showStorageIndicator;
   final bool lockSelection;
   final int? heroOffset;
 
@@ -55,7 +55,7 @@ class ThumbnailTile extends ConsumerWidget {
         : const BoxDecoration();
 
     final bool storageIndicator =
-        showStorageIndicator ?? ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator)));
+        ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && showStorageIndicator;
 
     return Stack(
       children: [

@@ -599,6 +599,7 @@
   "backup_controller_page_turn_on": "Vklopite varnostno kopiranje v ospredju",
   "backup_controller_page_uploading_file_info": "Nalaganje podatkov o datoteki",
   "backup_err_only_album": "Edinega albuma ni mogoče odstraniti",
+  "backup_error_sync_failed": "Sinhronizacija ni uspela. Varnostne kopije ni mogoče obdelati.",
   "backup_info_card_assets": "sredstva",
   "backup_manual_cancelled": "Preklicano",
   "backup_manual_in_progress": "Nalaganje že poteka. Poskusite čez nekaj časa",

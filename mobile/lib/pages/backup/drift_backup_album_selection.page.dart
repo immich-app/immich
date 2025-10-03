@@ -120,7 +120,6 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                       return backupNotifier.startBackup(user.id);
                     } else {
                       Logger('DriftBackupAlbumSelectionPage').warning('Background sync failed, not starting backup');
-                      backupNotifier.updateError(BackupError.syncFailed);
                     }
                   }),
                 ),

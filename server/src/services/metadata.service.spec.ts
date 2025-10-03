@@ -23,12 +23,12 @@ import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
-function removeNonSidecarFiles(asset: any) {
+const removeNonSidecarFiles = (asset: any) => {
   return {
     ...asset,
     files: asset.files.filter((file: any) => file.type === AssetFileType.Sidecar),
   };
-}
+};
 
 const forSidecarJob = (
   asset: {

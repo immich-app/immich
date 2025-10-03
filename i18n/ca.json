@@ -34,7 +34,7 @@
   "add_to_albums_count": "Afegir als àlbums ({count})",
   "add_to_shared_album": "Afegir a un àlbum compartit",
   "add_url": "Afegir URL",
-  "added_to_archive": "Afegit als arxivats",
+  "added_to_archive": "Afegir a l'arxiu",
   "added_to_favorites": "Afegit als preferits",
   "added_to_favorites_count": "{count, number} afegits als preferits",
   "admin": {
@@ -599,6 +599,7 @@
   "backup_controller_page_turn_on": "Activa la còpia de seguretat",
   "backup_controller_page_uploading_file_info": "S'està pujant la informació del fitxer",
   "backup_err_only_album": "No es pot eliminar l'únic àlbum",
+  "backup_error_sync_failed": "Sincronització malament, No es pot fer backup.",
   "backup_info_card_assets": "elements",
   "backup_manual_cancelled": "Cancel·lat",
   "backup_manual_in_progress": "La pujada ja està en curs. Torneu-ho a provar més tard",
