@@ -36,12 +36,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Clause de non-responsabilité
+> [!WARNING]
+> ⚠️ Ayez toujours un plan de sauvegarde en [3-2-1](https://www.seagate.com/fr/fr/blog/what-is-a-3-2-1-backup-strategy/) pour vos précieuses photos et vidéos !
 
-- ⚠️ Le projet est en **très fort** développement.
-- ⚠️ Attendez-vous à rencontrer des bogues et des changements importants.
-- ⚠️ **N'utilisez pas cette application comme seul support de sauvegarde de vos photos et vos vidéos.**
-- ⚠️ Ayez toujours un plan de sauvegarde en [3-2-1](https://www.seagate.com/fr/fr/blog/what-is-a-3-2-1-backup-strategy/) pour vos précieuses photos et vidéos !
+> [!NOTE]
+> La documentation principale, y compris les guides d'installation, se trouve sur https://immich.app/.
 
 ## Sommaire
 
@@ -59,17 +58,14 @@ Vous pouvez trouver la documentation principale ainsi que les guides d'installat
 
 ## Démo
 
-Vous pouvez accéder à la démo en ligne sur https://demo.immich.app. Pour l'application mobile, vous pouvez utiliser `https://demo.immich.app` dans le champ `URL du point d'accès au serveur`
+Accédez à la démo [ici](https://demo.immich.app).  
+Pour l'application mobile, vous pouvez utiliser `https://demo.immich.app` comme `Server Endpoint URL`.
 
-```bash title="Identifiants pour la démo"
-Les identifiants
-email: demo@immich.app
-mot de passe: demo
-```
+### Identifiants de connexion
 
-## Activités
-
-![Activités](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Image des statistiques Repobeats")
+| Email           | Mot de passe |
+| --------------- | ------------ |
+| demo@immich.app | demo         |
 
 ## Fonctionnalités
 
@@ -104,19 +100,30 @@ mot de passe: demo
 | Gallerie en lecture seule                                        | Oui    | Oui |
 | Empilage de photos                                               | Oui    | Oui |
 
+## Traductions
 
-## Contributeurs
+Découvrez-en plus sur les traductions [ici](https://docs.immich.app/developer/translations).  
 
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Statut des traductions" />
 </a>
 
-## Historique des favoris
+## Activité du dépôt
+
+![Activité](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Image des analyses de Repobeats")
+
+## Historique des étoiles
 
 <a href="https://star-history.com/#immich-app/immich&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+   <img alt="Graphique historique des étoiles" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## Contributeurs
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

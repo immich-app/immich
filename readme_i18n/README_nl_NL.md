@@ -36,12 +36,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Disclaimer
+> [!WARNING]
+> ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
 
-- ⚠️ Het project wordt momenteel **zeer actief** ontwikkeld.
-- ⚠️ Verwacht bugs en ingrijpende wijzigingen.
-- ⚠️ **Gebruik de app niet als de enige manier om uw foto's en video's op te slaan.**
-- ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
+> [!NOTE]
+> De hoofddocumentatie, inclusief de installatiehandleidingen, is te vinden op https://immich.app/.
 
 ## Inhoud
 
@@ -102,23 +101,27 @@ Je kunt de demo [hier](https://demo.immich.app/) bekijken. Voor de mobiele app k
 
 ## Vertalingen
 
-Je kunt [hier](https://docs.immich.app/developer/translations) meer over vertalingen lezen.
+Lees meer over vertalingen [hier](https://docs.immich.app/developer/translations).  
 
-## Repository activiteit
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Vertaalstatus" />
+</a>
 
-![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
+## Repository-activiteit
 
-## Ster geschiedenis
+![Activiteiten](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analyseafbeelding")
+
+## Sterrenhistoriek
 
 <a href="https://star-history.com/#immich-app/immich&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+   <img alt="Historisch sterren diagram" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
 </a>
 
-## Contributie-leden
+## Bijdragers
 
 <a href="https://github.com/alextran1502/immich/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>

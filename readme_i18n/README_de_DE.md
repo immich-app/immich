@@ -37,16 +37,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Warnung
-
-- ⚠️ Das Projekt befindet sich in **sehr aktiver** Entwicklung.
-- ⚠️ Gehe von möglichen Fehlern und von Änderungen mit Breaking-Changes aus.
-- ⚠️ **Nutze die App auf keinen Fall als einziges Speichermedium für deine Fotos und Videos.**
-- ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
+> [!WARNING]
+> ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
 
 > [!NOTE]
 > Die Hauptdokumentation, einschließlich der Installationsanleitungen, befinden sich unter https://immich.app/.
-
 
 ## Inhalt
 

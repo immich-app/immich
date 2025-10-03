@@ -37,12 +37,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Ansvarsfriskrivning
+> [!WARNING]
+> ⚠️ Tillämpa alltid [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/)-strategin för säkerhetskopiering av dina foton och videor!
 
-- ⚠️ Projektet är under **mycket aktiv** utveckling.
-- ⚠️ Förvänta dig buggar och brytande förändringar.
-- ⚠️ **Använd inte appen som enda lagringssätt för dina foton och videor.**
-- ⚠️ Tillämpa alltid [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/)-strategin för säkerhetskopiering av dina foton och videor!
+> [!NOTE]
+> Huvuddokumentationen, inklusive installationsguider, finns på https://immich.app/.
 
 ## Innehåll
 
@@ -60,13 +59,14 @@ Dokumentation och installationsguider hittas på https://imiich.app/.
 
 ## Demo
 
-Ett webb-demo finns att testa på https://demo.immich.app. Använd `https://demo.immich.app` i mobilappen som `Server Endpoint URL`
+Åtkomst till demon [här](https://demo.immich.app).  
+För mobilappen kan du använda `https://demo.immich.app` som `Server Endpoint URL`.  
 
-```bash title="Inloggningsuppgifter För Demo"
-Inloggsningsuppgifter
-epost: demo@immich.app
-lösenord: demo
-```
+### Inloggningsuppgifter
+
+| Email           | Lösenord |
+| --------------- | -------- |
+| demo@immich.app | demo     |
 
 ## Aktiviteter
 
@@ -107,18 +107,30 @@ lösenord: demo
 | Skrivskyddat galleri                                        | Ja    | Ja   |
 | Bildstapling                                                | Ja    | Ja   |
 
-## Medverkande
+## Översättningar
 
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+Läs mer om översättningar [här](https://docs.immich.app/developer/translations).  
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Översättningsstatus" />
 </a>
 
-## Stjärn-Historik
+## Repositoryaktivitet
+
+![Aktiviteter](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analysbild")
+
+## Stjärnhistorik
 
 <a href="https://star-history.com/#immich-app/immich&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+   <img alt="Stjärnhistorikdiagram" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## Bidragsgivare
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

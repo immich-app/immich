@@ -35,12 +35,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## 免責事項
+> [!WARNING]
+> ⚠️ 大切な写真やビデオは、常に [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) のバックアッププランに従ってください！
 
-- ⚠️ このプロジェクトは **非常に活発に** 開発中です。
-- ⚠️ バグの存在や変更が入ることも予想されます。
-- ⚠️ **写真やビデオを保存する唯一の方法としてこのアプリを使用しないでください。**
-- ⚠️ 大切な写真やビデオは、常に [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) のバックアッププランに従ってください！
+> [!NOTE]  
+> メインドキュメント（インストールガイドを含む）は https://immich.app/ にあります。
 
 ## コンテンツ
 
@@ -58,13 +57,14 @@
 
 ## デモ
 
-web デモは https://demo.immich.app からアクセスできます。モバイルアプリの場合、`Server Endpoint URL` には `https://demo.immich.app` を使用することができます
+デモにアクセスするには[こちら](https://demo.immich.app)。  
+モバイルアプリでは、`https://demo.immich.app` を `Server Endpoint URL` として使用できます。
 
-```bash title="Demo Credential"
-The credential
-email: demo@immich.app
-password: demo
-```
+### アクセス認証情報
+
+| メールアドレス       | パスワード |
+| ------------------ | -------- |
+| demo@immich.app     | demo     |
 
 # 機能
 
@@ -95,3 +95,31 @@ password: demo
 | 思い出（x 年前）                             | はい    | はい |
 | オフラインサポート                            | はい    | いいえ  |
 | 読み取り専用ギャラリー                        | はい    | はい |
+
+## 翻訳
+
+翻訳の詳細は[こちら](https://docs.immich.app/developer/translations)をご覧ください。  
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="翻訳状況" />
+</a>
+
+## リポジトリアクティビティ
+
+![アクティビティ](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats分析画像")
+
+## 星の履歴
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="星の履歴グラフ" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>
+
+## コントリビューター
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>

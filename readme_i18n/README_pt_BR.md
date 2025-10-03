@@ -39,16 +39,8 @@
 
 </p>
 
-## Avisos
-
-- ⚠️ Este projeto está sob **desenvolvimento constante**.
-- ⚠️ Podem ocorrer bugs e _breaking changes_ (alterações que quebram a
-  compatibilidade com versões anteriores).
-- ⚠️ **Não use esta solução como a única forma de fazer backup das suas fotos e
-  vídeos.**
-- ⚠️ Sempre siga o plano
-  [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) de backup
-  para as suas mídias preciosas!
+> [!WARNING]
+> [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) de backup
 
 > [!NOTE]
 > Você pode encontrar a documentação principal, incluindo guias de instalação, em https://immich.app/.

@@ -36,12 +36,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Advertencia
+> [!WARNING]
+> ⚠️ Siempre sigue el plan de backups [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) para tus fotos y videos.
 
-- ⚠️ El proyecto está en **activo desarrollo**.
-- ⚠️ Es probable que haya errores y cambios disruptivos.
-- ⚠️ **¡No utilices la aplicación como única forma de almacenar tus fotos y videos!**
-- ⚠️ Siempre sigue el plan de backups [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) para tus fotos y videos.
+> [!NOTE]
+> La documentación principal, incluidas las guías de instalación, se encuentra en https://immich.app/.
 
 ## Contenido
 
@@ -59,13 +58,15 @@ Puedes encontrar la documentación oficial, incluidas las guías de instalación
 
 ## Demo
 
-Puedes acceder a la demostración web en <https://demo.immich.app>. Para la aplicación móvil, puedes usar `https://demo.immich.app` en la `URL del servidor`.
+Accede a la demo [aquí](https://demo.immich.app).  
+Para la app móvil, puedes usar `https://demo.immich.app` como `Server Endpoint URL`.
 
-```bash title="Credenciales de la demo"
-Credenciales
-correo: demo@immich.app
-contraseña: demo
-```
+### Credenciales de acceso
+
+| Email           | Contraseña |
+| --------------- | ---------- |
+| demo@immich.app | demo       |
+
 
 ## Funciones
 
