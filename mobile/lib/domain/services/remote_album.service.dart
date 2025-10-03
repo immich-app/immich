@@ -120,6 +120,10 @@ class RemoteAlbumService {
     return _repository.getSharedUsers(albumId);
   }
 
+  Future<AlbumUserRole?> getUserRole(String albumId, String userId) {
+    return _repository.getUserRole(albumId, userId);
+  }
+
   Future<List<RemoteAsset>> getAssets(String albumId) {
     return _repository.getAssets(albumId);
   }

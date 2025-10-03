@@ -44,7 +44,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final showViewInTimelineButton =
         (previousRouteName != TabShellRoute.name || tabRoute == TabEnum.search) &&
         previousRouteName != AssetViewerRoute.name &&
-        previousRouteName != null;
+        previousRouteName != null &&
+        isOwner;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
