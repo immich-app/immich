@@ -4,9 +4,7 @@ sidebar_position: 95
 
 # Upgrading
 
-:::danger Read the release notes
-Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. You should read the release notes prior to updating and take special care when using automated tools like [Watchtower][watchtower].
-
+:::tip Breaking changes
 You can see versions that had breaking changes [here][breaking].
 :::
 
