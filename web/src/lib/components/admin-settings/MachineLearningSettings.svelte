@@ -254,6 +254,69 @@
         </div>
       </SettingAccordion>
 
+      <SettingAccordion
+        key="ocr"
+        title={$t('admin.machine_learning_ocr')}
+        subtitle={$t('admin.machine_learning_ocr_description')}
+      >
+        <div class="ml-4 mt-4 flex flex-col gap-4">
+          <SettingSwitch
+            title={$t('admin.machine_learning_ocr_enabled')}
+            subtitle={$t('admin.machine_learning_ocr_enabled_description')}
+            bind:checked={config.machineLearning.ocr.enabled}
+            disabled={disabled || !config.machineLearning.enabled}
+          />
+
+          <hr />
+
+          <SettingSelect
+            label={$t('admin.machine_learning_ocr_model')}
+            desc={$t('admin.machine_learning_ocr_model_description')}
+            name="ocr-model"
+            bind:value={config.machineLearning.ocr.modelName}
+            options={[
+              { value: 'PP-OCRv5_server', text: 'PP-OCRv5_server' },
+              { value: 'PP-OCRv5_mobile', text: 'PP-OCRv5_mobile' },
+            ]}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.modelName !== savedConfig.machineLearning.ocr.modelName}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_ocr_min_detection_score')}
+            description={$t('admin.machine_learning_ocr_min_detection_score_description')}
+            bind:value={config.machineLearning.ocr.minDetectionScore}
+            step="0.1"
+            min={0.1}
+            max={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.minDetectionScore !== savedConfig.machineLearning.ocr.minDetectionScore}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_ocr_min_recognition_score')}
+            description={$t('admin.machine_learning_ocr_min_score_recognition_description')}
+            bind:value={config.machineLearning.ocr.minRecognitionScore}
+            step="0.1"
+            min={0.1}
+            max={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.minRecognitionScore !== savedConfig.machineLearning.ocr.minRecognitionScore}
+          />
+
+          <SettingInputField
+            inputType={SettingInputFieldType.NUMBER}
+            label={$t('admin.machine_learning_ocr_max_resolution')}
+            description={$t('admin.machine_learning_ocr_max_resolution_description')}
+            bind:value={config.machineLearning.ocr.maxResolution}
+            min={1}
+            disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
+            isEdited={config.machineLearning.ocr.maxResolution !== savedConfig.machineLearning.ocr.maxResolution}
+          />
+        </div>
+      </SettingAccordion>
       <SettingButtonsRow
         onReset={(options) => onReset({ ...options, configKeys: ['machineLearning'] })}
         onSave={() => onSave({ machineLearning: config.machineLearning })}

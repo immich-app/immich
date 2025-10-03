@@ -220,6 +220,9 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { jobId: JobName.FacialRecognitionQueueAll };
       }
+      case JobName.QUEUE_OCR: {
+        return { jobId: JobName.QUEUE_OCR };
+      }
       default: {
         return null;
       }

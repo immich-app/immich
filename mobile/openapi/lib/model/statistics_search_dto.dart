@@ -29,6 +29,7 @@ class StatisticsSearchDto {
     this.libraryId,
     this.make,
     this.model,
+    this.ocr,
     this.personIds = const [],
     this.rating,
     this.state,
@@ -135,6 +136,14 @@ class StatisticsSearchDto {
 
   String? model;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? ocr;
+
   List<String> personIds;
 
   /// Minimum value: -1
@@ -233,6 +242,7 @@ class StatisticsSearchDto {
     other.libraryId == libraryId &&
     other.make == make &&
     other.model == model &&
+    other.ocr == ocr &&
     _deepEquality.equals(other.personIds, personIds) &&
     other.rating == rating &&
     other.state == state &&
@@ -265,6 +275,7 @@ class StatisticsSearchDto {
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
+    (ocr == null ? 0 : ocr!.hashCode) +
     (personIds.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
@@ -279,7 +290,7 @@ class StatisticsSearchDto {
     (visibility == null ? 0 : visibility!.hashCode);
 
   @override
-  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, personIds=$personIds, rating=$rating, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
+  String toString() => 'StatisticsSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceId=$deviceId, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, personIds=$personIds, rating=$rating, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -358,6 +369,11 @@ class StatisticsSearchDto {
       json[r'model'] = this.model;
     } else {
     //  json[r'model'] = null;
+    }
+    if (this.ocr != null) {
+      json[r'ocr'] = this.ocr;
+    } else {
+    //  json[r'ocr'] = null;
     }
       json[r'personIds'] = this.personIds;
     if (this.rating != null) {
@@ -445,6 +461,7 @@ class StatisticsSearchDto {
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
+        ocr: mapValueOfType<String>(json, r'ocr'),
         personIds: json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
