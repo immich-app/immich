@@ -203,6 +203,9 @@ export class MediaRepository {
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
           bitrate: this.parseInt(stream.bit_rate),
           pixelFormat: stream.pix_fmt || 'yuv420p',
+          colorPrimaries: stream.color_primaries,
+          colorSpace: stream.color_space,
+          colorTransfer: stream.color_transfer,
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')

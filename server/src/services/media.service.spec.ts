@@ -445,6 +445,7 @@ describe(MediaService.name, () => {
         }),
       );
     });
+
     it('should not skip intra frames for MTS file', async () => {
       mocks.media.probe.mockResolvedValue(probeStub.videoStreamMTS);
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
@@ -455,6 +456,25 @@ describe(MediaService.name, () => {
         expect.any(String),
         expect.objectContaining({
           inputOptions: ['-sws_flags accurate_rnd+full_chroma_int'],
+          outputOptions: expect.any(Array),
+          progress: expect.any(Object),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should override reserved color metadata', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStreamReserved);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.video);
+      await sut.handleGenerateThumbnails({ id: assetStub.video.id });
+
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining([
+            '-bsf:v hevc_metadata=colour_primaries=1:matrix_coefficients=1:transfer_characteristics=1',
+          ]),
           outputOptions: expect.any(Array),
           progress: expect.any(Object),
           twoPass: false,
