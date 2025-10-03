@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login mit eigener URL">
 </p>
-<h3 align="center">Immich - Hoch performante, selbst gehostete Backup-Lösung für Fotos und Videos</h3>
+<h3 align="center">Hoch performante, selbst gehostete Backup-Lösung für Fotos und Videos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="Haupt-Screenshot">
@@ -37,16 +37,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Warnung
-
-- ⚠️ Das Projekt befindet sich in **sehr aktiver** Entwicklung.
-- ⚠️ Gehe von möglichen Fehlern und von Änderungen mit Breaking-Changes aus.
-- ⚠️ **Nutze die App auf keinen Fall als einziges Speichermedium für deine Fotos und Videos.**
-- ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
+> [!WARNING]
+> ⚠️ Befolge immer die [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) Backup-Regel für deine wertvollen Fotos und Videos!
 
 > [!NOTE]
 > Die Hauptdokumentation, einschließlich der Installationsanleitungen, befinden sich unter https://immich.app/.
-
 
 ## Inhalt
 

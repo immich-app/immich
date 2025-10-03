@@ -12,16 +12,12 @@
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
 <h3 align="center">高性能的照片和视频自托管解决方案</h3>
-<p align="center">  
-请注意: 此 README 不是由 Immich 团队维护, 而是依靠贡献者来更新的，这意味着它可能并不会被及时更新。感谢理解。
-</p>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="界面截图">
 </a>
 <br/>
 <p align="center">
-
   <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
   <a href="README_es_ES.md">Español</a>
@@ -42,12 +38,8 @@
 
 </p>
 
-## 免责声明
-
-- ⚠️ 本项目正在 **非常活跃** 地开发中。
-- ⚠️ 可能存在 bug 或者随时有重大变更。
-- ⚠️ **不要把本软件作为您存储照片或视频的唯一方式。**
-- ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
+> [!WARNING]
+> ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
 
 > [!NOTE]
 > 完整的项目文档以及安装教程请参见：<https://immich.app/>。

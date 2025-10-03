@@ -1,17 +1,16 @@
 <p align="center"> 
-  <br/>  
-  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=Llicència&logoColor=000000&labelColor=ececec" alt="Llicència: MIT"></a>
-  <a href="https://discord.immich.app">
-    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
+  <a href="https://opensource.org/license/agpl-v3">
+    <img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="Licenza: AGPLv3">
   </a>
-  <br/>  
-  <br/>   
+  <a href="https://discord.immich.app">
+    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord">
+  </a>
 </p>
 
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Iniciar sessió amb URL personalitzada">
 </p>
-<h3 align="center">Immich - Solució de còpia de seguretat d'alta rendiment per a fotos i vídeos auto-allotjada</h3>
+<h3 align="center">Solució de còpia de seguretat d'alta rendiment per a fotos i vídeos auto-allotjada</h3>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="Captura de pantalla principal">
@@ -36,11 +35,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Avís legal
+> [!WARNING]
+> ⚠️ Seguiu sempre la regla de còpia de seguretat [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) per protegir els vostres records i les fotos que valoreu!
 
-- ⚠️ El projecte està en desenvolupament **molt actiu**.
-- ⚠️ Espereu errors i canvis que poden trencar coses.
-- ⚠️ **No utilitzeu l'aplicació com a única manera de guardar les vostres fotos i vídeos!**
+> [!NOTE]
+> La documentació principal, incloses les guies d’instal·lació, es troba a https://immich.app/.
 
 ## Contingut
 
@@ -58,13 +57,14 @@ Podeu trobar la documentació principal, incloent les guies d'instal·lació, a 
 
 ## Demo
 
-Podeu accedir a la demostració web a https://demo.immich.app. Per a l'aplicació mòbil, podeu utilitzar `https://demo.immich.app` com a "URL de punt final del servidor".
+Accedi a la demo [aquí](https://demo.immich.app).  
+Per a l’aplicació mòbil, podeu utilitzar `https://demo.immich.app` com a `Server Endpoint URL`.
 
-```bash title="Credencials de la demo"
-Les credencials
-email: demo@immich.app
-contrasenya: demo
-```
+### Credencials d'accés
+
+| Email           | Contrasenya |
+| --------------- | ----------- |
+| demo@immich.app | demo        |
 
 # Funcionalitats
 
@@ -95,3 +95,31 @@ contrasenya: demo
 | Records (fa x anys)                           | Sí     | Sí  |
 | Suport fora de línia                          | Sí     | No  |
 | Galeria de només lectura                      | Sí     | Sí  |
+
+## Traduccions
+
+Descobreix més sobre les traduccions [aquí](https://docs.immich.app/developer/translations).  
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Estat de les traduccions" />
+</a>
+
+## Activitat del repositori
+
+![Activitat](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Imatge de les anàlisis de Repobeats")
+
+## Historial d'estrelles
+
+<a href="https://star-history.com/#immich-app/immich&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
+   <img alt="Gràfic històric d'estrelles" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+ </picture>
+</a>
+
+## Contribuïdors
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+</a>

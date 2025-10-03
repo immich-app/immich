@@ -36,13 +36,11 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## تنصل
+> [!WARNING]
+> ⚠️ اتبع دائمًا خطة النسخ الاحتياطي [١-٢-٣](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) لصورك ومقاطع الفيديو الثمينة الخاصة بك
 
-- ⚠️ هذا التطبيق قيد التطوير النشط للغاية
-- ⚠️ توقع الأخطاء والتغييرات العاجلة
-- ⚠️ **لا تستخدم التطبيق باعتباره الطريقة الوحيدة لتخزين الصور ومقاطع الفيديو الخاصة بك**
-- ⚠️ اتبع دائمًا خطة النسخ الاحتياطي [١-٢-٣](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) لصورك ومقاطع الفيديو الثمينة الخاصة بك
-
+> [!NOTE]
+> يمكنك العثور على الوثائق الرئيسية، بما في ذلك أدلة التثبيت، على https://immich.app/
 
 ## محتوى
 
@@ -60,22 +58,14 @@
 https://immich.app
 
 ## تجريبي
+يمكنك الوصول إلى العرض التجريبي [هنا](https://demo.immich.app).  
+بالنسبة لتطبيق الهاتف المحمول، يمكنك استخدام `https://demo.immich.app` كـ `Server Endpoint URL`.
 
-يمكنك الوصول إلى العرض التوضيحي على الويب على
-https://demo.immich.app
+### بيانات الدخول
 
-بالنسبة لتطبيق الهاتف المحمول، يمكنك استخدام 
-`https://demo.immich.app` 
-ل `نقطة نهاية الخادم`
-
-```bash title="Demo Credential"
-تفاصيل تسجيل  الدخول
-email: demo@immich.app
-password: demo
-```
-
-## نشاط المساهمة
-![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
+| البريد الإلكتروني      | كلمة المرور |
+| --------------------- | ----------- |
+| demo@immich.app        | demo        |
 
 ## سمات
 
@@ -111,18 +101,30 @@ password: demo
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
 
-## المساهمين
+## الترجمات
 
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+اكتشف المزيد عن الترجمات [هنا](https://docs.immich.app/developer/translations).  
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="حالة الترجمات" />
 </a>
 
-## Star History
+## نشاط المستودع
+
+![نشاط](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "صورة تحليلات Repobeats")
+
+## سجل النجوم
 
 <a href="https://star-history.com/#immich-app/immich&Date">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
+   <img alt="مخطط تاريخي للنجوم" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## المساهمون
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>
