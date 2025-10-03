@@ -40,6 +40,7 @@ import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repos
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { DB } from 'src/schema';
@@ -52,6 +53,7 @@ import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { StackTable } from 'src/schema/tables/stack.table';
+import { TagTable } from 'src/schema/tables/tag.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { SyncService } from 'src/services/sync.service';
@@ -240,6 +242,12 @@ export class MediumTestContext<S extends BaseService = BaseService> {
       user,
     };
   }
+
+  async newTag(dto: Partial<Insertable<TagTable>>) {
+    const tag = mediumFactory.tagInsert(dto);
+    const result = await this.get(TagRepository).create(tag);
+    return { tag, result };
+  }
 }
 
 export class SyncTestContext extends MediumTestContext<SyncService> {
@@ -318,6 +326,10 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
       return new key(LoggingRepository.create());
     }
 
+    case TagRepository: {
+      return new key(db, LoggingRepository.create());
+    }
+
     case LoggingRepository as unknown as ClassConstructor<LoggingRepository>: {
       return new key() as unknown as T;
     }
@@ -345,7 +357,8 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
-    case VersionHistoryRepository: {
+    case VersionHistoryRepository: 
+    case TagRepository: {
       return automock(key);
     }
 
@@ -567,6 +580,23 @@ const memoryInsert = (memory: Partial<Insertable<MemoryTable>> = {}) => {
   return { ...defaults, ...memory, id };
 };
 
+const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
+  const id = tag.id || newUuid();
+
+  const defaults: Insertable<TagTable> = {
+    id,
+    userId: '',
+    value: '',
+    createdAt: newDate(),
+    updatedAt: newDate(),
+    color: '',
+    parentId: null,
+    updateId: newUuid(),
+  }
+
+  return { ...defaults, ...tag, id };
+}
+
 class CustomWritable extends Writable {
   private data = '';
 
@@ -619,4 +649,5 @@ export const mediumFactory = {
   memoryInsert,
   loginDetails,
   loginResponse,
+  tagInsert,
 };
