@@ -11,7 +11,9 @@ import 'package:pigeon/pigeon.dart';
 )
 @HostApi()
 abstract class BackgroundWorkerLockApi {
+  @async
   void lock();
 
+  @async
   void unlock();
 }

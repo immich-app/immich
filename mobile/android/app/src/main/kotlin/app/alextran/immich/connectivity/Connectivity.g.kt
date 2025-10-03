@@ -82,9 +82,10 @@ private open class ConnectivityPigeonCodec : StandardMessageCodec() {
   }
 }
 
+
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface ConnectivityApi {
-  fun getCapabilities(): List<NetworkCapability>
+  fun getCapabilities(callback: (Result<List<NetworkCapability>>) -> Unit)
 
   companion object {
     /** The codec used by ConnectivityApi. */
@@ -100,12 +101,15 @@ interface ConnectivityApi {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.ConnectivityApi.getCapabilities$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
-            val wrapped: List<Any?> = try {
-              listOf(api.getCapabilities())
-            } catch (exception: Throwable) {
-              ConnectivityPigeonUtils.wrapError(exception)
+            api.getCapabilities{ result: Result<List<NetworkCapability>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(ConnectivityPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(ConnectivityPigeonUtils.wrapResult(data))
+              }
             }
-            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
