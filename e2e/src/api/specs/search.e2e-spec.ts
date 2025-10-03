@@ -4,6 +4,7 @@ import {
   AssetVisibility,
   deleteAssets,
   LoginResponseDto,
+  PersonResponseDto,
   updateAsset,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -698,6 +699,114 @@ describe('/search', () => {
         'SM-T970',
       ]);
       expect(status).toBe(200);
+    });
+  });
+
+  describe('POST /search/metadata with personIds and searchOnlyThem', () => {
+    let assetStrictMatch: AssetMediaResponseDto;
+    let assetExtraPerson: AssetMediaResponseDto;
+    let personA: PersonResponseDto;
+    let personB: PersonResponseDto;
+    let personC: PersonResponseDto;
+    let personD: PersonResponseDto;
+    let numberOfAssets: number;
+
+    beforeAll(async () => {
+      personA = await utils.createPerson(admin.accessToken, { name: 'Person A' });
+      personB = await utils.createPerson(admin.accessToken, { name: 'Person B' });
+      personC = await utils.createPerson(admin.accessToken, { name: 'Person C' });
+      personD = await utils.createPerson(admin.accessToken, { name: 'Person D' });
+
+      // Image with exactly A + B
+      assetStrictMatch = await utils.createAsset(admin.accessToken);
+      await utils.createFace({ assetId: assetStrictMatch.id, personId: personA.id });
+      await utils.createFace({ assetId: assetStrictMatch.id, personId: personB.id });
+
+      // Image with A + B + C (should not match strict search)
+      assetExtraPerson = await utils.createAsset(admin.accessToken);
+      await utils.createFace({ assetId: assetExtraPerson.id, personId: personA.id });
+      await utils.createFace({ assetId: assetExtraPerson.id, personId: personB.id });
+      await utils.createFace({ assetId: assetExtraPerson.id, personId: personC.id });
+
+      await (async () => {
+        const { status, body } = await request(app)
+          .post('/search/metadata')
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send({
+            personIds: [],
+            searchOnlyThem: false,
+          });
+        expect(status).toBe(200);
+        numberOfAssets = body.assets.total;
+      })();
+    });
+
+    it('searchOnlyThem is TRUE', async () => {
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          personIds: [personA.id, personB.id],
+          searchOnlyThem: true,
+        });
+
+      expect(status).toBe(200);
+      expect(body.assets.items).toHaveLength(1);
+      expect(body.assets.items[0].id).toBe(assetStrictMatch.id);
+    });
+
+    it('searchOnlyThem is TRUE with 4 people', async () => {
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          personIds: [personA.id, personB.id, personC.id, personD.id],
+          searchOnlyThem: true,
+        });
+
+      expect(status).toBe(200);
+      expect(body.assets.items).toHaveLength(0);
+    });
+
+    it('searchOnlyThem is TRUE with one person', async () => {
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          personIds: [personA.id],
+          searchOnlyThem: true,
+        });
+
+      expect(status).toBe(200);
+      expect(body.assets.items).toHaveLength(0);
+    });
+
+    it('searchOnlyThem is TRUE with no personIds', async () => {
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          personIds: [],
+          searchOnlyThem: true,
+        });
+
+      expect(status).toBe(200);
+      expect(body.assets.items).toHaveLength(numberOfAssets);
+    });
+
+    it('searchOnlyThem is FALSE', async () => {
+      const { status, body } = await request(app)
+        .post('/search/metadata')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          personIds: [personA.id, personB.id],
+          searchOnlyThem: false,
+        });
+
+      expect(status).toBe(200);
+      const assetIds = body.assets.items.map((a: any) => a.id);
+      expect(assetIds).toContain(assetStrictMatch.id);
+      expect(assetIds).toContain(assetExtraPerson.id);
     });
   });
 });
