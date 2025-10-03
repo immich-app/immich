@@ -599,6 +599,7 @@
   "backup_controller_page_turn_on": "Włącz kopię zapasową na pierwszym planie",
   "backup_controller_page_uploading_file_info": "Informacje o przesyłanym pliku",
   "backup_err_only_album": "Nie można usunąć jedynego albumu",
+  "backup_error_sync_failed": "Synchronizacja nie powiodła się. Nie można wykonać kopii zapasowej.",
   "backup_info_card_assets": "zasoby",
   "backup_manual_cancelled": "Anulowano",
   "backup_manual_in_progress": "Przesyłanie już trwa. Spróbuj po pewnym czasie",

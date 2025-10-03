@@ -6,11 +6,12 @@ import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 typedef SyncCallback = void Function();
+typedef SyncCallbackWithResult<T> = void Function(T result);
 typedef SyncErrorCallback = void Function(String error);
 
 class BackgroundSyncManager {
   final SyncCallback? onRemoteSyncStart;
-  final SyncCallback? onRemoteSyncComplete;
+  final SyncCallbackWithResult<bool?>? onRemoteSyncComplete;
   final SyncErrorCallback? onRemoteSyncError;
 
   final SyncCallback? onLocalSyncStart;
@@ -156,15 +157,18 @@ class BackgroundSyncManager {
       debugLabel: 'remote-sync',
     );
     return _syncTask!
-        .then((result) => result ?? false)
-        .whenComplete(() {
-          onRemoteSyncComplete?.call();
-          _syncTask = null;
+        .then((result) {
+          final success = result ?? false;
+          onRemoteSyncComplete?.call(success);
+          return success;
         })
         .catchError((error) {
           onRemoteSyncError?.call(error.toString());
           _syncTask = null;
           return false;
+        })
+        .whenComplete(() {
+          _syncTask = null;
         });
   }
 

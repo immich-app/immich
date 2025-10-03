@@ -599,6 +599,7 @@
   "backup_controller_page_turn_on": "Ativar backup automático",
   "backup_controller_page_uploading_file_info": "Informações do arquivo",
   "backup_err_only_album": "Não é possível remover o único álbum",
+  "backup_error_sync_failed": "A sincronização falhou. Não foi possível processar o backup.",
   "backup_info_card_assets": "arquivos",
   "backup_manual_cancelled": "Cancelado",
   "backup_manual_in_progress": "Envio já está em progresso. Tente novamente mais tarde",

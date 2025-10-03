@@ -75,14 +75,15 @@ select
           "asset_file"
         where
           "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" = $1
       ) as agg
   ) as "files"
 from
   "asset"
 where
-  "asset"."id" = $1::uuid
+  "asset"."id" = $2::uuid
 limit
-  $2
+  $3
 
 -- AssetJobRepository.streamForThumbnailJob
 select

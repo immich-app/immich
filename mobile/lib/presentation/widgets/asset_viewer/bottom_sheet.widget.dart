@@ -186,6 +186,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
+        const SizedBox(height: 64),
       ],
     );
   }

@@ -361,7 +361,7 @@ export class MetadataService extends BaseService {
       break;
     }
 
-    const existingSidecar = asset.files ? asset.files.find((file) => file.type === AssetFileType.Sidecar) : null;
+    const existingSidecar = asset.files?.find((file) => file.type === AssetFileType.Sidecar) ?? null;
 
     const isChanged = sidecarPath !== existingSidecar?.path;
 
@@ -463,11 +463,7 @@ export class MetadataService extends BaseService {
 
   private getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
     if (asset.type === AssetType.Image) {
-      let hasSidecar = false;
-
-      if (asset.files && asset.files.length > 0) {
-        hasSidecar = asset.files.some((file) => file.type === AssetFileType.Sidecar);
-      }
+      const hasSidecar = asset.files?.some(({ type }) => type === AssetFileType.Sidecar);
 
       if (!hasSidecar) {
         return this.metadataRepository.readTags(asset.originalPath);

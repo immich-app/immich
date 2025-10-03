@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
@@ -15,9 +18,12 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class FavoriteBottomSheet extends ConsumerWidget {
   const FavoriteBottomSheet({super.key});
@@ -27,9 +33,42 @@ class FavoriteBottomSheet extends ConsumerWidget {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
 
+    Future<void> addAssetsToAlbum(RemoteAlbum album) async {
+      final selectedAssets = multiselect.selectedAssets;
+      if (selectedAssets.isEmpty) {
+        return;
+      }
+
+      final remoteAssets = selectedAssets.whereType<RemoteAsset>();
+      final addedCount = await ref
+          .read(remoteAlbumProvider.notifier)
+          .addAssets(album.id, remoteAssets.map((e) => e.id).toList());
+
+      if (selectedAssets.length != remoteAssets.length) {
+        ImmichToast.show(
+          context: context,
+          msg: 'add_to_album_bottom_sheet_some_local_assets'.t(context: context),
+        );
+      }
+
+      if (addedCount != remoteAssets.length) {
+        ImmichToast.show(
+          context: context,
+          msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),
+        );
+      } else {
+        ImmichToast.show(
+          context: context,
+          msg: 'add_to_album_bottom_sheet_added'.t(args: {"album": album.name}),
+        );
+      }
+
+      ref.read(multiSelectProvider.notifier).reset();
+    }
+
     return BaseBottomSheet(
-      initialChildSize: 0.25,
-      maxChildSize: 0.4,
+      initialChildSize: 0.4,
+      maxChildSize: 0.7,
       shouldCloseOnMinExtent: false,
       actions: [
         const ShareActionButton(source: ActionSource.timeline),
@@ -52,6 +91,9 @@ class FavoriteBottomSheet extends ConsumerWidget {
           const UploadActionButton(source: ActionSource.timeline),
         ],
       ],
+      slivers: multiselect.hasRemote
+          ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addAssetsToAlbum)]
+          : [],
     );
   }
 }
