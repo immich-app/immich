@@ -84,4 +84,4 @@ Below is how your code needs to be structured:
 
 ## Contributing
 
-Please refer to the [architecture](https://immich.app/docs/developer/architecture/) for contributing to the mobile app!
+Please refer to the [architecture](https://docs.immich.app/developer/architecture/) for contributing to the mobile app!
