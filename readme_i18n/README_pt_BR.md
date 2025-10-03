@@ -40,7 +40,7 @@
 </p>
 
 > [!WARNING]
-> [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) de backup
+> ⚠️ Sempre siga o plano de backup [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) para suas fotos e vídeos valiosos!
 
 > [!NOTE]
 > Você pode encontrar a documentação principal, incluindo guias de instalação, em https://immich.app/.

@@ -1,11 +1,10 @@
 <p align="center"> 
-  <br/>  
-  <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=Llicència&logoColor=000000&labelColor=ececec" alt="Llicència: MIT"></a>
-  <a href="https://discord.immich.app">
-    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" atl="Discord"/>
+  <a href="https://opensource.org/license/agpl-v3">
+    <img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="Licenza: AGPLv3">
   </a>
-  <br/>  
-  <br/>   
+  <a href="https://discord.immich.app">
+    <img src="https://img.shields.io/discord/979116623879368755.svg?label=Discord&logo=Discord&style=for-the-badge&logoColor=000000&labelColor=ececec" alt="Discord">
+  </a>
 </p>
 
 <p align="center">
