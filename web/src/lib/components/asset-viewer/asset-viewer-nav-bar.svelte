@@ -4,6 +4,7 @@
   import CastButton from '$lib/cast/cast-button.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
+  import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
@@ -196,6 +197,7 @@
         {/if}
 
         {#if isOwner}
+          <AddToStackAction {asset} {stack} {onAction} />
           {#if stack}
             <UnstackAction {stack} {onAction} />
             <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
