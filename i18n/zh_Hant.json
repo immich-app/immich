@@ -599,6 +599,7 @@
   "backup_controller_page_turn_on": "開啟前台備份",
   "backup_controller_page_uploading_file_info": "上傳中的檔案資訊",
   "backup_err_only_album": "不能移除唯一的相簿",
+  "backup_error_sync_failed": "同步失敗。 無法處理備份。",
   "backup_info_card_assets": "個媒體",
   "backup_manual_cancelled": "已取消",
   "backup_manual_in_progress": "上傳正在進行中，請稍後再試",
