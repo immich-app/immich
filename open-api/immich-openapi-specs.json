@@ -8924,6 +8924,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "withoutGps",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets that do not have GPS coordinates",
+            "schema": {
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -9075,6 +9084,15 @@
             "required": false,
             "in": "query",
             "description": "Include stacked assets in the response. When true, only primary assets from stacks are returned.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withoutGps",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets that do not have GPS coordinates",
             "schema": {
               "type": "boolean"
             }
