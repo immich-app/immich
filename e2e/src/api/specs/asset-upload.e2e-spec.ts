@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
+import { serializeDictionary } from 'structured-headers';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
@@ -12,7 +13,7 @@ describe('/upload', () => {
   let quotaUser: LoginResponseDto;
   let cancelQuotaUser: LoginResponseDto;
 
-  let base64Metadata: string;
+  let assetData: string;
 
   beforeAll(async () => {
     await utils.resetDatabase();
@@ -20,16 +21,15 @@ describe('/upload', () => {
     user = await utils.userSetup(admin.accessToken, createUserDto.user1);
     cancelQuotaUser = await utils.userSetup(admin.accessToken, createUserDto.user2);
     quotaUser = await utils.userSetup(admin.accessToken, createUserDto.userQuota);
-    base64Metadata = Buffer.from(
-      JSON.stringify({
-        filename: 'test-image.jpg',
-        deviceAssetId: 'rufh',
-        deviceId: 'test',
-        fileCreatedAt: new Date('2025-01-02T00:00:00Z').toISOString(),
-        fileModifiedAt: new Date('2025-01-01T00:00:00Z').toISOString(),
-        isFavorite: false,
-      }),
-    ).toString('base64');
+    assetData = serializeDictionary({
+      filename: 'test-image.jpg',
+      'device-asset-id': 'rufh',
+      'device-id': 'test',
+      'file-created-at': new Date('2025-01-02T00:00:00Z').toISOString(),
+      'file-modified-at': new Date('2025-01-01T00:00:00Z').toISOString(),
+      'is-favorite': false,
+      'icloud-id': 'example-icloud-id',
+    });
   });
 
   describe('startUpload', () => {
@@ -39,7 +39,7 @@ describe('/upload', () => {
       const { status, headers } = await request(app)
         .post('/upload')
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -57,7 +57,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -75,7 +75,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '3')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Incomplete', '?0')
         .set('Content-Type', 'image/jpeg')
@@ -93,7 +93,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Upload-Length', '2000')
@@ -115,7 +115,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -137,7 +137,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(partialContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Content-Length', '512')
@@ -156,7 +156,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '3')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(partialContent).digest('base64')}:`)
         .set('Upload-Incomplete', '?1')
         .set('Content-Length', '512')
@@ -175,7 +175,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:INVALID:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -194,7 +194,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -208,7 +208,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -231,7 +231,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'image/jpeg')
@@ -246,7 +246,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -264,7 +264,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update('').digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -283,7 +283,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${quotaUser.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
@@ -325,7 +325,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(fullContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Upload-Length', '2750')
@@ -358,7 +358,7 @@ describe('/upload', () => {
         .send(chunks[2]);
 
       expect(status).toBe(404);
-      expect(headers['upload-complete']).toBeUndefined();
+      expect(headers['upload-complete']).toEqual('?0');
     });
 
     it('should append data with correct offset', async () => {
@@ -502,7 +502,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(totalContent).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Upload-Length', '5000')
@@ -539,7 +539,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${hash.digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Upload-Length', '10000')
@@ -591,7 +591,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Upload-Length', '200')
@@ -631,7 +631,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'image/jpeg')
@@ -687,7 +687,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${cancelQuotaUser.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Upload-Length', '200')
@@ -723,7 +723,7 @@ describe('/upload', () => {
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', base64Metadata)
+        .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?0')
         .set('Upload-Length', '512')

@@ -9,8 +9,16 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto } from 'src/dtos/upload.dto';
-import { AssetStatus, AssetType, AssetVisibility, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
-import { AuthenticatedRequest } from 'src/middleware/auth.guard';
+import {
+  AssetMetadataKey,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+  QueueName,
+  StorageFolder,
+} from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { isAssetChecksumConstraint } from 'src/utils/database';
@@ -21,12 +29,12 @@ export const MAX_RUFH_INTEROP_VERSION = 8;
 
 @Injectable()
 export class AssetUploadService extends BaseService {
-  async startUpload(req: AuthenticatedRequest, res: Response, dto: StartUploadDto): Promise<void> {
+  async startUpload(auth: AuthDto, req: Readable, res: Response, dto: StartUploadDto): Promise<void> {
     this.logger.verboseFn(() => `Starting upload: ${JSON.stringify(dto)}`);
     const { isComplete, assetData, uploadLength, contentLength, version } = dto;
 
     const assetId = this.cryptoRepository.randomUUID();
-    const folder = StorageCore.getNestedFolder(StorageFolder.Upload, req.auth.user.id, assetId);
+    const folder = StorageCore.getNestedFolder(StorageFolder.Upload, auth.user.id, assetId);
     const extension = extname(assetData.filename);
     const path = join(folder, `${assetId}${extension}`);
     const type = mimeTypes.assetType(path);
@@ -35,13 +43,13 @@ export class AssetUploadService extends BaseService {
       throw new BadRequestException(`${assetData.filename} is an unsupported file type`);
     }
 
-    this.validateQuota(req.auth, uploadLength ?? contentLength);
+    this.validateQuota(auth, uploadLength ?? contentLength);
 
     try {
       await this.assetRepository.createWithMetadata(
         {
           id: assetId,
-          ownerId: req.auth.user.id,
+          ownerId: auth.user.id,
           libraryId: null,
           checksum: dto.checksum,
           originalPath: path,
@@ -58,7 +66,7 @@ export class AssetUploadService extends BaseService {
           status: AssetStatus.Partial,
         },
         uploadLength,
-        assetData.metadata,
+        assetData.iCloudId ? [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: assetData.iCloudId } }] : undefined,
       );
     } catch (error: any) {
       if (!isAssetChecksumConstraint(error)) {
@@ -67,7 +75,7 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      const duplicate = await this.assetRepository.getUploadAssetIdByChecksum(req.auth.user.id, dto.checksum);
+      const duplicate = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, dto.checksum);
       if (!duplicate) {
         res.status(500).send('Error locating duplicate for checksum constraint');
         return;
@@ -126,12 +134,12 @@ export class AssetUploadService extends BaseService {
     await new Promise((resolve) => writeStream.on('close', resolve));
   }
 
-  resumeUpload(req: AuthenticatedRequest, res: Response, id: string, dto: ResumeUploadDto): Promise<void> {
+  resumeUpload(auth: AuthDto, req: Readable, res: Response, id: string, dto: ResumeUploadDto): Promise<void> {
     this.logger.verboseFn(() => `Resuming upload for ${id}: ${JSON.stringify(dto)}`);
     const { isComplete, uploadLength, uploadOffset, contentLength, version } = dto;
-
+    this.setCompleteHeader(res, version, false);
     return this.databaseRepository.withUuidLock(id, async () => {
-      const completionData = await this.assetRepository.getCompletionMetadata(id, req.auth.user.id);
+      const completionData = await this.assetRepository.getCompletionMetadata(id, auth.user.id);
       if (!completionData) {
         res.status(404).send('Asset not found');
         return;
@@ -139,30 +147,25 @@ export class AssetUploadService extends BaseService {
       const { fileModifiedAt, path, status, checksum: providedChecksum, size } = completionData;
 
       if (status !== AssetStatus.Partial) {
-        this.setCompleteHeader(res, version, false);
         return this.sendAlreadyCompletedProblem(res);
       }
 
       if (uploadLength && size && size !== uploadLength) {
-        this.setCompleteHeader(res, version, false);
         return this.sendInconsistentLengthProblem(res);
       }
 
       const expectedOffset = await this.getCurrentOffset(path);
       if (expectedOffset !== uploadOffset) {
-        this.setCompleteHeader(res, version, false);
         return this.sendOffsetMismatchProblem(res, expectedOffset, uploadOffset);
       }
 
       const newLength = uploadOffset + contentLength;
       if (uploadLength !== undefined && newLength > uploadLength) {
-        this.setCompleteHeader(res, version, false);
         res.status(400).send('Upload would exceed declared length');
         return;
       }
 
       if (contentLength === 0 && !isComplete) {
-        this.setCompleteHeader(res, version, false);
         res.status(204).setHeader('Upload-Offset', expectedOffset.toString()).send();
         return;
       }
@@ -192,22 +195,23 @@ export class AssetUploadService extends BaseService {
     });
   }
 
-  cancelUpload(auth: AuthDto, assetId: string, response: Response): Promise<void> {
+  cancelUpload(auth: AuthDto, assetId: string, res: Response): Promise<void> {
     return this.databaseRepository.withUuidLock(assetId, async () => {
       const asset = await this.assetRepository.getCompletionMetadata(assetId, auth.user.id);
       if (!asset) {
-        response.status(404).send('Asset not found');
+        res.status(404).send('Asset not found');
         return;
       }
       if (asset.status !== AssetStatus.Partial) {
-        return this.sendAlreadyCompletedProblem(response);
+        return this.sendAlreadyCompletedProblem(res);
       }
       await this.onCancel(assetId, asset.path);
-      response.status(204).send();
+      res.status(204).send();
     });
   }
 
   async getUploadStatus(auth: AuthDto, res: Response, id: string, { version }: GetUploadStatusDto): Promise<void> {
+    this.logger.verboseFn(() => `Getting upload status for ${id} with version ${version}`);
     return this.databaseRepository.withUuidLock(id, async () => {
       const asset = await this.assetRepository.getCompletionMetadata(id, auth.user.id);
       if (!asset) {
@@ -333,7 +337,7 @@ export class AssetUploadService extends BaseService {
       socket.write(
         'HTTP/1.1 104 Upload Resumption Supported\r\n' +
           `Location: ${location}\r\n` +
-          `Upload-Limit: min-size=0\r\n` +
+          'Upload-Limit: min-size=0\r\n' +
           `Upload-Draft-Interop-Version: ${interopVersion}\r\n\r\n`,
       );
     }
