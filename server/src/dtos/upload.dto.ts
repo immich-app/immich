@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
-import { Equals, IsArray, IsEnum, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
-import { AssetMetadataUpsertItemDto } from 'src/dtos/asset.dto';
+import { Equals, IsEnum, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { ImmichHeader } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 import { parseDictionary } from 'structured-headers';
@@ -32,19 +31,10 @@ export class UploadAssetDataDto {
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 
-  @Transform(({ value }) => {
-    try {
-      const json = JSON.parse(value);
-      const items = Array.isArray(json) ? json : [json];
-      return items.map((item) => plainToInstance(AssetMetadataUpsertItemDto, item));
-    } catch {
-      throw new BadRequestException(['metadata must be valid JSON']);
-    }
-  })
   @Optional()
-  @ValidateNested({ each: true })
-  @IsArray()
-  metadata!: AssetMetadataUpsertItemDto[];
+  @IsString()
+  @IsNotEmpty()
+  iCloudId!: string;
 }
 
 export enum StructuredBoolean {
@@ -78,12 +68,12 @@ export class BaseUploadHeadersDto extends BaseRufhHeadersDto {
   contentLength!: number;
 
   @Expose({ name: UploadHeader.UploadComplete })
-  @ValidateIf((o) => o.version === null || o.version! > 3)
+  @ValidateIf((o) => o.version === null || o.version > 3)
   @IsEnum(StructuredBoolean)
   uploadComplete!: StructuredBoolean;
 
   @Expose({ name: UploadHeader.UploadIncomplete })
-  @ValidateIf((o) => o.version !== null && o.version! <= 3)
+  @ValidateIf((o) => o.version !== null && o.version <= 3)
   @IsEnum(StructuredBoolean)
   uploadIncomplete!: StructuredBoolean;
 
@@ -97,19 +87,26 @@ export class BaseUploadHeadersDto extends BaseRufhHeadersDto {
 
 export class StartUploadDto extends BaseUploadHeadersDto {
   @Expose({ name: ImmichHeader.AssetData })
-  // @ValidateNested()
-  // @IsObject()
-  @Type(() => UploadAssetDataDto)
+  @ValidateNested()
   @Transform(({ value }) => {
     if (!value) {
-      return null;
+      throw new BadRequestException(`${ImmichHeader.AssetData} header is required`);
     }
 
-    const json = Buffer.from(value, 'base64').toString('utf-8');
     try {
-      return JSON.parse(json);
-    } catch {
-      throw new BadRequestException(`${ImmichHeader.AssetData} must be valid base64-encoded JSON`);
+      const dict = parseDictionary(value);
+      return plainToInstance(UploadAssetDataDto, {
+        deviceAssetId: dict.get('device-asset-id')?.[0],
+        deviceId: dict.get('device-id')?.[0],
+        filename: dict.get('filename')?.[0],
+        duration: dict.get('duration')?.[0],
+        fileCreatedAt: dict.get('file-created-at')?.[0],
+        fileModifiedAt: dict.get('file-modified-at')?.[0],
+        isFavorite: dict.get('is-favorite')?.[0],
+        iCloudId: dict.get('icloud-id')?.[0],
+      });
+    } catch (error: any) {
+      throw new BadRequestException(`${ImmichHeader.AssetData} must be a valid structured dictionary`);
     }
   })
   assetData!: UploadAssetDataDto;

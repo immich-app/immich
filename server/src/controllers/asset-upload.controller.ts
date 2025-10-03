@@ -16,12 +16,12 @@ import {
 import { ApiHeader, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { IncomingHttpHeaders } from 'node:http';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto, UploadHeader } from 'src/dtos/upload.dto';
 import { ImmichHeader, Permission } from 'src/enum';
-import { Auth, Authenticated, AuthenticatedRequest } from 'src/middleware/auth.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetUploadService } from 'src/services/asset-upload.service';
 import { UUIDParamDto } from 'src/validation';
 
@@ -53,23 +53,31 @@ export class AssetUploadController {
   @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
   @ApiHeader({
     name: ImmichHeader.AssetData,
-    description:
-      'Base64-encoded JSON of asset metadata. The expected content is the same as AssetMediaCreateDto, except that `filename` is required and `sidecarData` is ignored.',
+    description: `RFC 9651 structured dictionary containing asset metadata with the following keys:
+- device-asset-id (string, required): Unique device asset identifier
+- device-id (string, required): Device identifier
+- file-created-at (string/date, required): ISO 8601 date string or Unix timestamp
+- file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp
+- filename (string, required): Original filename
+- duration (string, optional): Duration for video assets
+- is-favorite (boolean, optional): Favorite status
+- icloud-id (string, optional): iCloud identifier for assets from iOS devices`,
     required: true,
+    example:
+      'device-asset-id="abc123", device-id="phone1", filename="photo.jpg", file-created-at="2024-01-01T00:00:00Z", file-modified-at="2024-01-01T00:00:00Z"',
   })
   @ApiHeader({
     name: UploadHeader.ReprDigest,
     description:
-      'Structured dictionary containing an SHA-1 checksum used to detect duplicate files and validate data integrity.',
+      'RFC 9651 structured dictionary containing an `sha` (bytesequence) checksum used to detect duplicate files and validate data integrity.',
     required: true,
   })
   @ApiHeader(apiInteropVersion)
   @ApiHeader(apiUploadComplete)
   @ApiHeader(apiContentLength)
-  startUpload(@Req() req: AuthenticatedRequest, @Res() res: Response): Promise<void> {
+  startUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response): Promise<void> {
     const dto = this.getDto(StartUploadDto, req.headers);
-    console.log('Starting upload with dto:', JSON.stringify(dto));
-    return this.service.startUpload(req, res, dto);
+    return this.service.startUpload(auth, req, res, dto);
   }
 
   @Patch(':id')
@@ -83,10 +91,9 @@ export class AssetUploadController {
   @ApiHeader(apiInteropVersion)
   @ApiHeader(apiUploadComplete)
   @ApiHeader(apiContentLength)
-  resumeUpload(@Req() req: AuthenticatedRequest, @Res() res: Response, @Param() { id }: UUIDParamDto) {
+  resumeUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Param() { id }: UUIDParamDto) {
     const dto = this.getDto(ResumeUploadDto, req.headers);
-    console.log('Resuming upload with dto:', JSON.stringify(dto));
-    return this.service.resumeUpload(req, res, id, dto);
+    return this.service.resumeUpload(auth, req, res, id, dto);
   }
 
   @Delete(':id')
@@ -98,10 +105,9 @@ export class AssetUploadController {
   @Head(':id')
   @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
   @ApiHeader(apiInteropVersion)
-  getUploadStatus(@Req() req: AuthenticatedRequest, @Res() res: Response, @Param() { id }: UUIDParamDto) {
+  getUploadStatus(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Param() { id }: UUIDParamDto) {
     const dto = this.getDto(GetUploadStatusDto, req.headers);
-    console.log('Getting upload status with dto:', JSON.stringify(dto));
-    return this.service.getUploadStatus(req.auth, res, id, dto);
+    return this.service.getUploadStatus(auth, res, id, dto);
   }
 
   @Options()
