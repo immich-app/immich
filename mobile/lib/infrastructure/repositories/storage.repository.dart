@@ -36,7 +36,8 @@ class StorageRepository {
 
     try {
       final entity = await AssetEntity.fromId(asset.id);
-      file = await entity?.originFileWithSubtype;
+      // Use a timeout to avoid hanging on Live Photos whose paired video is unavailable (e.g., shared albums)
+      file = await entity?.originFileWithSubtype.timeout(const Duration(seconds: 5));
       if (file == null) {
         log.warning(
           "Cannot get motion file for asset ${asset.id}, name: ${asset.name}, created on: ${asset.createdAt}",
