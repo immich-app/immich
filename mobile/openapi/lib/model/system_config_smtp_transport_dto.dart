@@ -28,7 +28,7 @@ class SystemConfigSmtpTransportDto {
 
   /// Minimum value: 0
   /// Maximum value: 65535
-  num port;
+  int port;
 
   String username;
 
@@ -74,7 +74,7 @@ class SystemConfigSmtpTransportDto {
         host: mapValueOfType<String>(json, r'host')!,
         ignoreCert: mapValueOfType<bool>(json, r'ignoreCert')!,
         password: mapValueOfType<String>(json, r'password')!,
-        port: num.parse('${json[r'port']}'),
+        port: mapValueOfType<int>(json, r'port')!,
         username: mapValueOfType<String>(json, r'username')!,
       );
     }

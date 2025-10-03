@@ -89,14 +89,14 @@ export class PersonSearchDto {
   closestAssetId?: string;
 
   /** Page number for pagination */
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: 'integer' })
   @IsInt()
   @Min(1)
   @Type(() => Number)
   page: number = 1;
 
   /** Number of items per page */
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: 'integer' })
   @IsInt()
   @Min(1)
   @Max(1000)

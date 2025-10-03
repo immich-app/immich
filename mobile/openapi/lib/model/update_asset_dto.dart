@@ -53,7 +53,7 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? latitude;
+  double? latitude;
 
   String? livePhotoVideoId;
 
@@ -63,7 +63,7 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? longitude;
+  double? longitude;
 
   /// Minimum value: -1
   /// Maximum value: 5
@@ -73,7 +73,7 @@ class UpdateAssetDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? rating;
+  int? rating;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -166,10 +166,10 @@ class UpdateAssetDto {
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         description: mapValueOfType<String>(json, r'description'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: num.parse('${json[r'latitude']}'),
+        latitude: (mapValueOfType<num>(json, r'latitude')).toDouble(),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        longitude: num.parse('${json[r'longitude']}'),
-        rating: num.parse('${json[r'rating']}'),
+        longitude: (mapValueOfType<num>(json, r'longitude')).toDouble(),
+        rating: mapValueOfType<int>(json, r'rating'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );
     }
