@@ -53,6 +53,7 @@ import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { StackTable } from 'src/schema/tables/stack.table';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagTable } from 'src/schema/tables/tag.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
@@ -247,6 +248,18 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const tag = mediumFactory.tagInsert(dto);
     const result = await this.get(TagRepository).create(tag);
     return { tag, result };
+  }
+
+  async newTagAsset(tagBulkAssets: { tagIds: string[], assetIds: string[] }) {
+    const tagsAssets: Insertable<TagAssetTable>[] = [];
+    for (const tagsId of tagBulkAssets.tagIds) {
+      for (const assetsId of tagBulkAssets.assetIds) {
+        tagsAssets.push({ tagsId, assetsId });
+      }
+    }
+
+    const result = await this.get(TagRepository).upsertAssetIds(tagsAssets);
+    return { tagsAssets, result };
   }
 }
 

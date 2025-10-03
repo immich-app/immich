@@ -1,4 +1,5 @@
 import { Kysely } from "kysely";
+import { JobStatus } from "src/enum";
 import { AccessRepository } from "src/repositories/access.repository";
 import { EventRepository } from "src/repositories/event.repository";
 import { LoggingRepository } from "src/repositories/logging.repository";
@@ -32,16 +33,28 @@ describe(TagService.name, () => {
   describe('deleteEmptyTags', () => {
     it('single tag exists, not connected to any assets, and is deleted', async () => {
       const { sut, ctx } = setup();
-      const tagRepo = ctx.get(TagRepository);
       const { user } = await ctx.newUser();
-      const auth = factory.auth({ user });
       const { tag } = await ctx.newTag({ userId: user.id, value: 'tag-1' });
+      const tagRepo = ctx.get(TagRepository);
       
       await expect(tagRepo.getByValue(user.id, 'tag-1')).resolves.toEqual(expect.objectContaining({ id: tag.id }));
-      await expect(sut.remove(auth, tag.id)).resolves.toBeUndefined();
+      await expect(sut.handleTagCleanup()).resolves.toBe(JobStatus.Success);
       await expect(tagRepo.getByValue(user.id, 'tag-1')).resolves.toBeUndefined();
     });
 
+    it('single tag exists, connected to one asset, and is not deleted', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const { tag } = await ctx.newTag({ userId: user.id, value: 'tag-1' });
+      const tagRepo = ctx.get(TagRepository);
+      
+      await ctx.newTagAsset({ tagIds: [tag.id], assetIds: [asset.id] });
+      
+      await expect(tagRepo.getByValue(user.id, 'tag-1')).resolves.toEqual(expect.objectContaining({ id: tag.id }));
+      await expect(sut.handleTagCleanup()).resolves.toBe(JobStatus.Success);
+      await expect(tagRepo.getByValue(user.id, 'tag-1')).resolves.toEqual(expect.objectContaining({ id: tag.id }));
+    })
 
   })
 })
