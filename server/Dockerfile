@@ -1,4 +1,21 @@
 FROM ghcr.io/immich-app/base-server-dev:202509210934@sha256:b5ce2d7eaf379d4cf15efd4bab180d8afc8a80d20b36c9800f4091aca6ae267e AS builder
+
+ARG TUSD_RELEASE=v2.8.0
+ARG TUSD_AMD64_SHA256=33aaa15e14c7b025772d28605c6e0733ec2e8c1d6b646fa6b83af0049022a9ce
+ARG TUSD_ARM64_SHA256=07f78ee2fd552296c40f3a7a5a06325a06b53f1dd1ba996a60ecc52696906481
+
+# TODO: move this to base image
+RUN apt-get update && apt-get install -y curl && \
+  if [ $(arch) = "x86_64" ]; then \
+  curl -fsSL -o /tmp/tusd.deb "https://github.com/tus/tusd/releases/download/${TUSD_RELEASE}/tusd_snapshot_amd64.deb" && \
+  echo "${TUSD_AMD64_SHA256}  /tmp/tusd.deb" | sha256sum -c; \
+  else \
+  curl -fsSL -o /tmp/tusd.deb "https://github.com/tus/tusd/releases/download/${TUSD_RELEASE}/tusd_snapshot_arm64.deb" && \
+  echo "${TUSD_ARM64_SHA256}  /tmp/tusd.deb" | sha256sum -c; \
+  fi && \
+  dpkg -i /tmp/tusd.deb && \
+  rm -f /tmp/tusd.deb
+
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp
@@ -40,6 +57,7 @@ ENV NODE_ENV=production \
   NVIDIA_DRIVER_CAPABILITIES=all \
   NVIDIA_VISIBLE_DEVICES=all
 
+COPY --from=builder /usr/bin/tusd /usr/bin/tusd
 COPY --from=server /output/server-pruned ./server
 COPY --from=web /usr/src/app/web/build /build/www
 COPY --from=cli /output/cli-pruned ./cli
