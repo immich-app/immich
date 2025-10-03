@@ -166,12 +166,12 @@ export class TagRepository {
     await this.db.transaction().execute(async (tx) => {
       const result = await tx
         .deleteFrom('tag')
-        .where('id', 'in', (eb) =>
+        .where('id', 'not in', (eb) => eb.selectFrom('tag_asset').select('tagsId'))
+        .where('id', 'not in', (eb) =>
           eb
-            .selectFrom('tag')
-            .leftJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-            .select('tag.id')
-            .where('tag_asset.assetsId', 'is', null),
+            .selectFrom('tag as child')
+            .select('child.parentId')
+            .where('child.id', 'in', (eb2) => eb2.selectFrom('tag_asset').select('tagsId')),
         )
         .executeTakeFirst();
 
