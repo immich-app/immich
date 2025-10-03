@@ -168,6 +168,7 @@ export class AuthService extends BaseService {
       name: dto.name,
       password: dto.password,
       storageLabel: 'admin',
+      shouldChangePassword: false
     });
 
     return mapUserAdmin(admin);
@@ -181,6 +182,15 @@ export class AuthService extends BaseService {
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
       throw new ForbiddenException('Forbidden');
+    }
+
+    if (
+      authDto.user.shouldChangePassword &&
+      typeof requestedPermission === 'string' &&
+      ![Permission.UserUpdate, Permission.UserRead, Permission.UserPreferenceRead, Permission.ServerAbout].includes(requestedPermission)
+    ) {
+      this.logger.warn(`Denied access, user should change their password`);
+      throw new ForbiddenException('Change your password');
     }
 
     if (authDto.sharedLink && !sharedLinkRoute) {

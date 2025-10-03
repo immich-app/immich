@@ -62,6 +62,10 @@ export const authenticate = async (url: URL, options?: AuthOptions) => {
     redirect(302, `${AppRoute.AUTH_LOGIN}?continue=${encodeURIComponent(url.pathname + url.search)}`);
   }
 
+  if (user.shouldChangePassword && url.pathname !== AppRoute.AUTH_CHANGE_PASSWORD) {
+    redirect(302, AppRoute.AUTH_CHANGE_PASSWORD)
+  }
+
   if (adminRoute && !user.isAdmin) {
     redirect(302, AppRoute.PHOTOS);
   }

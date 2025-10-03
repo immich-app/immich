@@ -30,7 +30,7 @@
     eventManager.emit('auth.login', user);
   };
 
-  const onFirstLogin = () => goto(AppRoute.AUTH_CHANGE_PASSWORD);
+  const onChangePassword = () => goto(AppRoute.AUTH_CHANGE_PASSWORD);
   const onOnboarding = () => goto(AppRoute.AUTH_ONBOARDING);
 
   onMount(async () => {
@@ -85,9 +85,8 @@
         return;
       }
 
-      // change the user password before we onboard them
-      if (!user.isAdmin && user.shouldChangePassword) {
-        await onFirstLogin();
+      if (user.shouldChangePassword) {
+        await onChangePassword();
         return;
       }
 
