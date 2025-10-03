@@ -12,9 +12,6 @@
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
 <h3 align="center">高性能的照片和视频自托管解决方案</h3>
-<p align="center">  
-请注意: 此 README 不是由 Immich 团队维护, 而是依靠贡献者来更新的，这意味着它可能并不会被及时更新。感谢理解。
-</p>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="界面截图">
