@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Iniciar sesión con URL personalizada">
 </p>
-<h3 align="center">Immich: Una solución Self-Hosted de alto rendimiento para la copia de seguridad de fotos y videos</h3>
+<h3 align="center">Una solución Self-Hosted de alto rendimiento para la copia de seguridad de fotos y videos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="Captura de pantalla principal">

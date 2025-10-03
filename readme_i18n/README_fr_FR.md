@@ -11,7 +11,7 @@
 <p align="center">
 <img src="../design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
-<h3 align="center">Immich - Solution de sauvegarde performante et auto-hébergée de photos et de vidéos</h3>
+<h3 align="center">Solution de sauvegarde performante et auto-hébergée de photos et de vidéos</h3>
 <br/>
 <a href="https://immich.app">
 <img src="../design/immich-screenshots.png" title="Main Screenshot">

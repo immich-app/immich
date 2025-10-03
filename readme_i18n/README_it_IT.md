@@ -17,7 +17,6 @@
 <img src="../design/immich-screenshots.png" title="Screenshot Principale">
 </a>
 <br/>
-
 <p align="center">
   <a href="../README.md">English</a>
   <a href="README_ca_ES.md">Català</a>
