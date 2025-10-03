@@ -14,15 +14,6 @@ class ServerInfoService {
 
   const ServerInfoService(this._apiService);
 
-  Future<bool> ping() async {
-    try {
-      await _apiService.serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   Future<ServerDiskInfo?> getDiskInfo() async {
     try {
       final dto = await _apiService.serverInfoApi.getStorage();
