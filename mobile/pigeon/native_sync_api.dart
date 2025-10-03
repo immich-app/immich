@@ -24,6 +24,8 @@ class PlatformAsset {
   final int durationInSeconds;
   final int orientation;
   final bool isFavorite;
+  final bool? isTrashed;
+  final String? volume;
 
   const PlatformAsset({
     required this.id,
@@ -36,6 +38,8 @@ class PlatformAsset {
     this.durationInSeconds = 0,
     this.orientation = 0,
     this.isFavorite = false,
+    this.isTrashed,
+    this.volume,
   });
 }
 
@@ -79,12 +83,24 @@ class HashResult {
   const HashResult({required this.assetId, this.error, this.hash});
 }
 
+class TrashedAssetParams {
+  final String id;
+  final int type;
+  final String? albumId;
+
+  const TrashedAssetParams({
+    required this.id,
+    required this.type,
+    this.albumId,
+  });
+}
+
 @HostApi()
 abstract class NativeSyncApi {
   bool shouldFullSync();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  SyncDelta getMediaChanges();
+  SyncDelta getMediaChanges({bool isTrashed = false});
 
   void checkpointSync();
 
@@ -107,4 +123,11 @@ abstract class NativeSyncApi {
   List<HashResult> hashAssets(List<String> assetIds, {bool allowNetworkAccess = false});
 
   void cancelHashing();
+
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<PlatformAsset> getTrashedAssetsForAlbum(String albumId);
+
+  @async
+  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
+  List<HashResult> hashTrashedAssets(List<TrashedAssetParams> trashedAssets);
 }

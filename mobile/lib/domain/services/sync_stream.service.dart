@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:logging/logging.dart';
@@ -11,14 +12,17 @@ class SyncStreamService {
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
+  final TrashSyncService _trashSyncService;
   final bool Function()? _cancelChecker;
 
   SyncStreamService({
     required SyncApiRepository syncApiRepository,
     required SyncStreamRepository syncStreamRepository,
+    required TrashSyncService trashSyncService,
     bool Function()? cancelChecker,
   }) : _syncApiRepository = syncApiRepository,
        _syncStreamRepository = syncStreamRepository,
+       _trashSyncService = trashSyncService,
        _cancelChecker = cancelChecker;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
@@ -83,7 +87,13 @@ class SyncStreamService {
       case SyncEntityType.partnerDeleteV1:
         return _syncStreamRepository.deletePartnerV1(data.cast());
       case SyncEntityType.assetV1:
-        return _syncStreamRepository.updateAssetsV1(data.cast());
+        final remoteSyncAssets = data.cast<SyncAssetV1>();
+        if (_trashSyncService.isAutoSyncMode) {
+          await _trashSyncService.handleRemoteTrashed(
+            remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum),
+          );
+        }
+        return _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
       case SyncEntityType.assetDeleteV1:
         return _syncStreamRepository.deleteAssetsV1(data.cast());
       case SyncEntityType.assetExifV1:

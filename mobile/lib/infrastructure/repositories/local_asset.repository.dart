@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -6,8 +7,11 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
+typedef AlbumId = String;
+
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
+
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
@@ -94,5 +98,32 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
       query.where((lae) => lae.backupSelection.equalsValue(backupSelection));
     }
     return query.map((localAlbum) => localAlbum.toDto()).get();
+  }
+
+  Future<Map<AlbumId, List<LocalAsset>>> getBackupSelectedAssetsByAlbum(Iterable<String> checksums) async {
+    if (checksums.isEmpty) {
+      return {};
+    }
+
+    final lAlbumAsset = _db.localAlbumAssetEntity;
+    final lAlbum = _db.localAlbumEntity;
+    final lAsset = _db.localAssetEntity;
+
+    final result = <String, List<LocalAsset>>{};
+
+    for (final slice in checksums.toSet().slices(800)) {
+      final rows = await (_db.select(lAlbumAsset).join([
+        innerJoin(lAlbum, lAlbumAsset.albumId.equalsExp(lAlbum.id)),
+        innerJoin(lAsset, lAlbumAsset.assetId.equalsExp(lAsset.id)),
+      ])..where(lAlbum.backupSelection.equalsValue(BackupSelection.selected) & lAsset.checksum.isIn(slice))).get();
+
+      for (final row in rows) {
+        final albumId = row.readTable(lAlbumAsset).albumId;
+        final assetData = row.readTable(lAsset);
+        final asset = assetData.toDto();
+        (result[albumId] ??= <LocalAsset>[]).add(asset);
+      }
+    }
+    return result;
   }
 }

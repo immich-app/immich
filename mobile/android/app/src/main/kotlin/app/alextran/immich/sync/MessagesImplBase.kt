@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
+import android.net.Uri
+import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import androidx.core.database.getStringOrNull
@@ -30,12 +32,12 @@ sealed class AssetResult {
 open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
-  private var hashTask: Job? = null
+  internal var hashTask: Job? = null
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
-    private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
-    private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
+    internal val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
+    internal const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
 
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
@@ -57,9 +59,11 @@ open class NativeSyncApiImplBase(context: Context) {
       add(MediaStore.MediaColumns.HEIGHT)
       add(MediaStore.MediaColumns.DURATION)
       add(MediaStore.MediaColumns.ORIENTATION)
-      // IS_FAVORITE is only available on Android 11 and above
+      // only available on Android 11 and above
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
+        add(MediaStore.MediaColumns.IS_TRASHED)
+        add(MediaStore.MediaColumns.VOLUME_NAME)
       }
     }.toTypedArray()
 
@@ -80,6 +84,16 @@ open class NativeSyncApiImplBase(context: Context) {
     sortOrder,
   )
 
+  protected fun getCursor(
+    volume: String,
+    queryArgs: Bundle
+  ): Cursor? = ctx.contentResolver.query(
+    MediaStore.Files.getContentUri(volume),
+    ASSET_PROJECTION,
+    queryArgs,
+    null
+  )
+
   protected fun getAssets(cursor: Cursor?): Sequence<AssetResult> {
     return sequence {
       cursor?.use { c ->
@@ -97,6 +111,8 @@ open class NativeSyncApiImplBase(context: Context) {
         val orientationColumn =
           c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
         val favoriteColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_FAVORITE)
+        val trashedColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_TRASHED)
+        val volumeColumn = c.getColumnIndex(MediaStore.MediaColumns.VOLUME_NAME)
 
         while (c.moveToNext()) {
           val id = c.getLong(idColumn).toString()
@@ -126,7 +142,8 @@ open class NativeSyncApiImplBase(context: Context) {
           val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
-
+          val isTrashed = if (trashedColumn == -1) null else c.getInt(trashedColumn) != 0
+          val volume = if (volumeColumn == -1) null else c.getString(volumeColumn)
           val asset = PlatformAsset(
             id,
             name,
@@ -138,6 +155,8 @@ open class NativeSyncApiImplBase(context: Context) {
             duration,
             orientation.toLong(),
             isFavorite,
+            isTrashed,
+            volume,
           )
           yield(AssetResult.ValidAsset(asset, bucketId))
         }
@@ -271,12 +290,15 @@ open class NativeSyncApiImplBase(context: Context) {
   }
 
   private suspend fun hashAsset(assetId: String): HashResult {
-    return try {
-      val assetUri = ContentUris.withAppendedId(
-        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-        assetId.toLong()
-      )
+    val assetUri = ContentUris.withAppendedId(
+      MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+      assetId.toLong()
+    )
+    return hashAssetFromUri(assetId, assetUri)
+  }
 
+  protected suspend fun hashAssetFromUri(assetId: String, assetUri: Uri): HashResult {
+    return try {
       val digest = MessageDigest.getInstance("SHA-1")
       ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
         var bytesRead: Int

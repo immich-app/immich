@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -14,11 +15,16 @@ import 'package:logging/logging.dart';
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
   final NativeSyncApi _nativeSyncApi;
+  final TrashSyncService _trashSyncService;
   final Logger _log = Logger("DeviceSyncService");
 
-  LocalSyncService({required DriftLocalAlbumRepository localAlbumRepository, required NativeSyncApi nativeSyncApi})
-    : _localAlbumRepository = localAlbumRepository,
-      _nativeSyncApi = nativeSyncApi;
+  LocalSyncService({
+    required DriftLocalAlbumRepository localAlbumRepository,
+    required TrashSyncService trashSyncService,
+    required NativeSyncApi nativeSyncApi,
+  }) : _localAlbumRepository = localAlbumRepository,
+       _trashSyncService = trashSyncService,
+       _nativeSyncApi = nativeSyncApi;
 
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
@@ -69,7 +75,11 @@ class LocalSyncService {
           await updateAlbum(dbAlbum, album);
         }
       }
-
+      if (_trashSyncService.isAutoSyncMode) {
+        final delta = await _nativeSyncApi.getMediaChanges(isTrashed: true);
+        _log.fine("Delta updated in trash: ${delta.updates.length - delta.updates.length}");
+        await _trashSyncService.applyTrashDelta(delta);
+      }
       await _nativeSyncApi.checkpointSync();
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
@@ -94,6 +104,9 @@ class LocalSyncService {
         onlyFirst: removeAlbum,
         onlySecond: addAlbum,
       );
+      if (_trashSyncService.isAutoSyncMode) {
+        await _trashSyncService.syncDeviceTrashSnapshot();
+      }
 
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
