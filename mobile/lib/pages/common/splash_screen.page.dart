@@ -76,7 +76,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                   _resumeBackup(backupProvider),
                 ]);
               } else {
-                backupProvider.updateError(BackupError.syncFailed);
                 await backgroundManager.hashAssets();
               }
 
