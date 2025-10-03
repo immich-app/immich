@@ -1208,8 +1208,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "893894b"
-      resolved-ref: "893894b98b832be8a995a8d5d4c2289d0ad2d246"
+      ref: c4cdb27
+      resolved-ref: c4cdb277b02d956c4effb186905329bcb9771adc
       url: "https://github.com/immich-app/native_video_player"
     source: git
     version: "1.3.1"
