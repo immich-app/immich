@@ -6,7 +6,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
   const FilterBottomSheetScaffold({
     super.key,
     required this.child,
-    required this.onSearch,
+    this.onSearch,
     required this.onClear,
     required this.title,
     this.expanded,
@@ -15,7 +15,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
   final bool? expanded;
   final String title;
   final Widget child;
-  final Function() onSearch;
+  final Function()? onSearch;
   final Function() onClear;
 
   @override
@@ -48,15 +48,16 @@ class FilterBottomSheetScaffold extends StatelessWidget {
                   },
                   child: const Text('clear').tr(),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  key: const Key('search_filter_apply'),
-                  onPressed: () {
-                    onSearch();
-                    context.pop();
-                  },
-                  child: const Text('search_filter_apply').tr(),
-                ),
+                if (onSearch != null) const SizedBox(width: 8),
+                if (onSearch != null)
+                  ElevatedButton(
+                    key: const Key('search_filter_apply'),
+                    onPressed: () {
+                      onSearch!();
+                      context.pop();
+                    },
+                    child: const Text('search_filter_apply').tr(),
+                  ),
               ],
             ),
           ),
