@@ -28,6 +28,7 @@ import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_s
 import 'package:immich_mobile/widgets/search/search_filter/location_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
+import 'package:immich_mobile/widgets/search/search_filter/quick_date_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 
