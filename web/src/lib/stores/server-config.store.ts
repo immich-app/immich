@@ -36,6 +36,8 @@ export const serverConfig = writable<ServerConfig>({
   loginPageMessage: '',
   trashDays: 30,
   userDeleteDelay: 7,
+  sessionDeleteDelayBrowser: 90,
+  sessionDeleteDelayMobile: 90,
   isInitialized: false,
   isOnboarded: false,
   externalDomain: '',
