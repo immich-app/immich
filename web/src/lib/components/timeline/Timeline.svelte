@@ -110,14 +110,19 @@
   let timelineElement: HTMLElement | undefined = $state();
   let showSkeleton = $state(true);
   let isShowSelectDate = $state(false);
-  let scrubberMonthPercent = $state(0);
-  let scrubberMonth: { year: number; month: number } | undefined = $state(undefined);
-  let scrubOverallPercent: number = $state(0);
+  // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
+  // Note: There may be multiple months visible within the viewport at any given time.
+  let viewportTopMonthScrollPercent = $state(0);
+  // The timeline month intersecting the top position of the viewport
+  let viewportTopMonth: { year: number; month: number } | undefined = $state(undefined);
+  // Overall scroll percentage through the entire timeline (0-1)
+  let timelineScrollPercent: number = $state(0);
   let scrubberWidth = $state(0);
 
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
-  let leadout = $state(false);
+  // Indicates whether the viewport is currently in the lead-out section (after all months)
+  let isInLeadOutSection = $state(false);
 
   const maxMd = $derived(mobileDevice.maxMd);
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
@@ -301,20 +306,19 @@
     scrollTop(scrollToTop);
   };
 
-  // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
-  const onScrub: ScrubberListener = (
-    scrubMonth: { year: number; month: number },
-    overallScrollPercent: number,
-    scrubberMonthScrollPercent: number,
-  ) => {
-    if (!scrubMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
+  // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
+  // this function scrolls the timeline to the specified month group and offset, based on scrubber interaction
+  const onScrub: ScrubberListener = (scrubberData) => {
+    const { scrubberMonth, overallScrollPercent, scrubberMonthScrollPercent } = scrubberData;
+
+    if (!scrubberMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
       const offset = maxScroll * overallScrollPercent;
       scrollTop(offset);
     } else {
       const monthGroup = timelineManager.months.find(
-        ({ yearMonth: { year, month } }) => year === scrubMonth.year && month === scrubMonth.month,
+        ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
       );
       if (!monthGroup) {
         return;
@@ -325,7 +329,7 @@
 
   // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
   const handleTimelineScroll = () => {
-    leadout = false;
+    isInLeadOutSection = false;
 
     if (!element) {
       return;
@@ -334,19 +338,19 @@
     if (timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
-      scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
+      timelineScrollPercent = Math.min(1, element.scrollTop / maxScroll);
 
-      scrubberMonth = undefined;
-      scrubberMonthPercent = 0;
+      viewportTopMonth = undefined;
+      viewportTopMonthScrollPercent = 0;
     } else {
       let top = element.scrollTop;
       if (top < timelineManager.topSectionHeight) {
         // in the lead-in area
-        scrubberMonth = undefined;
-        scrubberMonthPercent = 0;
+        viewportTopMonth = undefined;
+        viewportTopMonthScrollPercent = 0;
         const maxScroll = getMaxScroll();
 
-        scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
+        timelineScrollPercent = Math.min(1, element.scrollTop / maxScroll);
         return;
       }
 
@@ -371,15 +375,15 @@
         let next = top - monthGroupHeight * maxScrollPercent;
         // instead of checking for < 0, add a little wiggle room for subpixel resolution
         if (next < -1 && monthGroup) {
-          scrubberMonth = monthGroup;
+          viewportTopMonth = monthGroup;
 
           // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
-          scrubberMonthPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
+          viewportTopMonthScrollPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
-          if (scrubberMonthPercent > 0.9999 && i + 1 < monthsLength - 1) {
-            scrubberMonth = timelineManager.months[i + 1].yearMonth;
-            scrubberMonthPercent = 0;
+          if (viewportTopMonthScrollPercent > 0.9999 && i + 1 < monthsLength - 1) {
+            viewportTopMonth = timelineManager.months[i + 1].yearMonth;
+            viewportTopMonthScrollPercent = 0;
           }
 
           found = true;
@@ -388,10 +392,10 @@
         top = next;
       }
       if (!found) {
-        leadout = true;
-        scrubberMonth = undefined;
-        scrubberMonthPercent = 0;
-        scrubOverallPercent = 1;
+        isInLeadOutSection = true;
+        viewportTopMonth = undefined;
+        viewportTopMonthScrollPercent = 0;
+        timelineScrollPercent = 1;
       }
     }
   };
@@ -854,10 +858,10 @@
     height={timelineManager.viewportHeight}
     timelineTopOffset={timelineManager.topSectionHeight}
     timelineBottomOffset={bottomSectionHeight}
-    {leadout}
-    {scrubOverallPercent}
-    {scrubberMonthPercent}
-    {scrubberMonth}
+    {isInLeadOutSection}
+    {timelineScrollPercent}
+    {viewportTopMonthScrollPercent}
+    {viewportTopMonth}
     {onScrub}
     bind:scrubberWidth
     onScrubKeyDown={(evt) => {
