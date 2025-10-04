@@ -86,7 +86,7 @@
       bind:this={img}
       src={getProfileImageUrl(user)}
       alt={$t('profile_image_of_user', { values: { user: title } })}
-      class="h-full w-full object-cover"
+      class="h-full w-full object-cover aspect-square"
       class:hidden={showFallback}
       draggable="false"
     />
