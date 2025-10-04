@@ -1639,7 +1639,7 @@
   "remove_tag": "Удалить тег",
   "remove_url": "Удалить URL",
   "remove_user": "Удалить пользователя",
-  "removed_api_key": "Удалён API ключ {name}",
+  "removed_api_key": "API ключ \"{name}\" удалён",
   "removed_from_archive": "Удален из архива",
   "removed_from_favorites": "Удалено из избранного",
   "removed_from_favorites_count": "{count, plural, one {# объект удалён} many {# объектов удалено} other {# объекта удалено}} из избранного",
