@@ -300,7 +300,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
 
       await ref
           .read(remoteAlbumProvider.notifier)
-          .updateAlbum(widget.album.id, name: newTitle, description: newDescription.isEmpty ? null : newDescription);
+          .updateAlbum(widget.album.id, name: newTitle, description: newDescription);
 
       if (mounted) {
         Navigator.of(
