@@ -27,6 +27,7 @@ import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_s
 import 'package:immich_mobile/widgets/search/search_filter/location_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
+import 'package:immich_mobile/widgets/search/search_filter/quick_date_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 
@@ -245,31 +246,7 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    showDatePicker() async {
-      final firstDate = DateTime(1900);
-      final lastDate = DateTime.now();
-
-      final date = await showDateRangePicker(
-        context: context,
-        firstDate: firstDate,
-        lastDate: lastDate,
-        currentDate: DateTime.now(),
-        initialDateRange: DateTimeRange(
-          start: filter.value.date.takenAfter ?? lastDate,
-          end: filter.value.date.takenBefore ?? lastDate,
-        ),
-        helpText: 'search_filter_date_title'.t(context: context),
-        cancelText: 'cancel'.t(context: context),
-        confirmText: 'select'.t(context: context),
-        saveText: 'save'.t(context: context),
-        errorFormatText: 'invalid_date_format'.t(context: context),
-        errorInvalidText: 'invalid_date'.t(context: context),
-        fieldStartHintText: 'start_date'.t(context: context),
-        fieldEndHintText: 'end_date'.t(context: context),
-        initialEntryMode: DatePickerEntryMode.calendar,
-        keyboardType: TextInputType.text,
-      );
-
+    datePicked(DateTimeRange<DateTime>? date) {
       if (date == null) {
         filter.value = filter.value.copyWith(date: SearchDateFilter());
 
@@ -305,6 +282,55 @@ class DriftSearchPage extends HookConsumerWidget {
       }
 
       unawaited(search());
+    }
+
+    showDatePicker() async {
+      final firstDate = DateTime(1900);
+      final lastDate = DateTime.now();
+
+      final date = await showDateRangePicker(
+        context: context,
+        firstDate: firstDate,
+        lastDate: lastDate,
+        currentDate: DateTime.now(),
+        initialDateRange: DateTimeRange(
+          start: filter.value.date.takenAfter ?? lastDate,
+          end: filter.value.date.takenBefore ?? lastDate,
+        ),
+        helpText: 'search_filter_date_title'.t(context: context),
+        cancelText: 'cancel'.t(context: context),
+        confirmText: 'select'.t(context: context),
+        saveText: 'save'.t(context: context),
+        errorFormatText: 'invalid_date_format'.t(context: context),
+        errorInvalidText: 'invalid_date'.t(context: context),
+        fieldStartHintText: 'start_date'.t(context: context),
+        fieldEndHintText: 'end_date'.t(context: context),
+        initialEntryMode: DatePickerEntryMode.calendar,
+        keyboardType: TextInputType.text,
+      );
+
+      datePicked(date);
+    }
+
+    showQuickDatePicker() {
+      showFilterBottomSheet(
+        context: context,
+        child: FilterBottomSheetScaffold(
+          title: "Pick date range",
+          expanded: true,
+          onClear: () => datePicked(null),
+          child: QuickDatePicker(
+            onRequestPicker: () {
+              context.pop();
+              showDatePicker();
+            },
+            onSelect: (date) {
+              context.pop();
+              datePicked(date);
+            },
+          ),
+        ),
+      );
     }
 
     // MEDIA PICKER
@@ -589,7 +615,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     ),
                     SearchFilterChip(
                       icon: Icons.date_range_outlined,
-                      onTap: showDatePicker,
+                      onTap: showQuickDatePicker,
                       label: 'search_filter_date'.t(context: context),
                       currentFilter: dateRangeCurrentFilterWidget.value,
                     ),
