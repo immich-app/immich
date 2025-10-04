@@ -85,6 +85,21 @@ Below is an example config for Apache2 site configuration.
 </VirtualHost>
 ```
 
+#### Compatibility with Let's Encrypt
+
+In the event that your Apache configuration requires a section for Let's Encrypt, make sure you restrict it only to the ACME endpoint:
+
+```ApacheConf
+        ProxyPass /.well-known/acme-challenge/ !
+```
+
+... because Immich expects the `/.well-known/immich` endpoint to be used for client discovery. In other words, this is *not* correct and will cause issues:
+
+```ApacheConf
+        # THIS IS WRONG AND WILL BREAK THE APP!
+        ProxyPass /.well-known/ !
+```
+
 ### Traefik Proxy example config
 
 The example below is for Traefik version 3.
