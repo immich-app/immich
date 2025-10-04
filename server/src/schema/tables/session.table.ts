@@ -42,6 +42,9 @@ export class SessionTable {
   @Column({ default: '' })
   deviceOS!: Generated<string>;
 
+  @Column({ default: '' })
+  appVersion!: Generated<string>;
+
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 
