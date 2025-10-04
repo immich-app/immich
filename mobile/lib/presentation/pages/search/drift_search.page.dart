@@ -288,15 +288,23 @@ class DriftSearchPage extends HookConsumerWidget {
       final firstDate = DateTime(1900);
       final lastDate = DateTime.now();
 
+      var dateRange = DateTimeRange(
+        start: filter.value.date.takenAfter ?? lastDate,
+        end: filter.value.date.takenBefore ?? lastDate,
+      );
+
+      // datePicked() may increase the date, this will make the date picker fail an assertion
+      // Fixup the end date to be at most now.
+      if (dateRange.end.isAfter(lastDate)) {
+        dateRange = DateTimeRange(start: dateRange.start, end: lastDate);
+      }
+
       final date = await showDateRangePicker(
         context: context,
         firstDate: firstDate,
         lastDate: lastDate,
         currentDate: DateTime.now(),
-        initialDateRange: DateTimeRange(
-          start: filter.value.date.takenAfter ?? lastDate,
-          end: filter.value.date.takenBefore ?? lastDate,
-        ),
+        initialDateRange: dateRange,
         helpText: 'search_filter_date_title'.t(context: context),
         cancelText: 'cancel'.t(context: context),
         confirmText: 'select'.t(context: context),
@@ -316,7 +324,7 @@ class DriftSearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         child: FilterBottomSheetScaffold(
-          title: "Pick date range",
+          title: "pick_date_range".tr(),
           expanded: true,
           onClear: () => datePicked(null),
           child: QuickDatePicker(
