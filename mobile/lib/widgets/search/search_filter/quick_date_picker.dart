@@ -37,7 +37,7 @@ class QuickDatePicker extends HookWidget {
           return _monthListTile("Last 9 months", 9);
         } else {
           final now = DateTime.now();
-          final years = index - 3;
+          final years = index - 4;
           final year = now.year - years;
           return ListTile(
             title: Text("In $year"),
