@@ -91,7 +91,7 @@ class DriftEditImagePage extends ConsumerWidget {
         backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: context.primaryColor, size: 24),
-          onPressed: () => context.navigator.popUntil((route) => route.isFirst),
+          onPressed: () => context.navigator.pop(),
         ),
         actions: <Widget>[
           TextButton(
