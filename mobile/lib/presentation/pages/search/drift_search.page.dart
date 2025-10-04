@@ -48,6 +48,7 @@ class DriftSearchPage extends HookConsumerWidget {
         display: preFilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         mediaType: preFilter?.mediaType ?? AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
+        assetId: preFilter?.assetId,
       ),
     );
 
