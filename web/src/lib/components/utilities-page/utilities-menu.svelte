@@ -1,13 +1,14 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
   import { Icon } from '@immich/ui';
-  import { mdiContentDuplicate, mdiCrosshairsGps, mdiImageSizeSelectLarge } from '@mdi/js';
+  import { mdiContentDuplicate, mdiCrosshairsGps, mdiImageSizeSelectLarge, mdiHistory } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   const links = [
     { href: AppRoute.DUPLICATES, icon: mdiContentDuplicate, label: $t('review_duplicates') },
     { href: AppRoute.LARGE_FILES, icon: mdiImageSizeSelectLarge, label: $t('review_large_files') },
     { href: AppRoute.GEOLOCATION, icon: mdiCrosshairsGps, label: $t('manage_geolocation') },
+    { href: AppRoute.RECENTLY_ADDED, icon: mdiHistory, label: $t('recently_added') },
   ];
 </script>
 
