@@ -103,7 +103,7 @@ export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator
 }
 
 export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: setUnion });
+  return Chunked({ ...options, mergeFn: (args: Set<any>[]) => setUnion(...args) });
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
