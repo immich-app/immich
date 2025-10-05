@@ -161,7 +161,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           _resumeBackup(),
         ]);
       } else {
-        _ref.read(driftBackupProvider.notifier).updateError(BackupError.syncFailed);
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
       }
 
