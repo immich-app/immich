@@ -93,7 +93,6 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
                     .first
                     .then((targetPerson) {
                       if (targetPerson != null && mounted) {
-                        // Mark the merge record as handled
                         mergeTracker.markMergeRecordHandled(_person.id);
 
                         // Open the target person's page
