@@ -100,92 +100,104 @@ describe(SearchController.name, () => {
       expect(body).toEqual(errorDto.badRequest(['isMotion must be a boolean value']));
     });
 
-    describe('POST /search/random', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).post('/search/random');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-
-      it('should reject if withStacked is not a boolean', async () => {
-        const { status, body } = await request(ctx.getHttpServer())
-          .post('/search/random')
-          .send({ withStacked: 'immich' });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['withStacked must be a boolean value']));
-      });
-
-      it('should reject if withPeople is not a boolean', async () => {
-        const { status, body } = await request(ctx.getHttpServer())
-          .post('/search/random')
-          .send({ withPeople: 'immich' });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['withPeople must be a boolean value']));
-      });
+    it('should reject an order as not an enum', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ order: 'invalid' });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['order must be one of the following values: asc, desc']));
     });
 
-    describe('POST /search/smart', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).post('/search/smart');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
+    it('should reject an orderBy as not an enum', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/metadata').send({ orderBy: 'invalid' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.badRequest(['orderBy must be one of the following values: DATE_ADDED, DATE_TAKEN']),
+      );
+    });
+  });
+
+  describe('POST /search/random', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/search/random');
+      expect(ctx.authenticate).toHaveBeenCalled();
     });
 
-    describe('GET /search/explore', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/explore');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
+    it('should reject if withStacked is not a boolean', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/random')
+        .send({ withStacked: 'immich' });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['withStacked must be a boolean value']));
     });
 
-    describe('POST /search/person', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/person');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
+    it('should reject if withPeople is not a boolean', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post('/search/random').send({ withPeople: 'immich' });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['withPeople must be a boolean value']));
+    });
+  });
 
-      it('should require a name', async () => {
-        const { status, body } = await request(ctx.getHttpServer()).get('/search/person').send({});
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['name should not be empty', 'name must be a string']));
-      });
+  describe('POST /search/smart', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/search/smart');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /search/explore', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/search/explore');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /search/person', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/search/person');
+      expect(ctx.authenticate).toHaveBeenCalled();
     });
 
-    describe('GET /search/places', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/places');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
+    it('should require a name', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get('/search/person').send({});
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['name should not be empty', 'name must be a string']));
+    });
+  });
 
-      it('should require a name', async () => {
-        const { status, body } = await request(ctx.getHttpServer()).get('/search/places').send({});
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest(['name should not be empty', 'name must be a string']));
-      });
+  describe('GET /search/places', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/search/places');
+      expect(ctx.authenticate).toHaveBeenCalled();
     });
 
-    describe('GET /search/cities', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/cities');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
+    it('should require a name', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get('/search/places').send({});
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest(['name should not be empty', 'name must be a string']));
+    });
+  });
+
+  describe('GET /search/cities', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/search/cities');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /search/suggestions', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/search/suggestions');
+      expect(ctx.authenticate).toHaveBeenCalled();
     });
 
-    describe('GET /search/suggestions', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get('/search/suggestions');
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-
-      it('should require a type', async () => {
-        const { status, body } = await request(ctx.getHttpServer()).get('/search/suggestions').send({});
-        expect(status).toBe(400);
-        expect(body).toEqual(
-          errorDto.badRequest([
-            'type should not be empty',
-            expect.stringContaining('type must be one of the following values:'),
-          ]),
-        );
-      });
+    it('should require a type', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get('/search/suggestions').send({});
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.badRequest([
+          'type should not be empty',
+          expect.stringContaining('type must be one of the following values:'),
+        ]),
+      );
     });
   });
 });
