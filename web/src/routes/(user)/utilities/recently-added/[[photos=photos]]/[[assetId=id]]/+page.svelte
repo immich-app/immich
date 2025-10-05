@@ -20,12 +20,12 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { AssetOrderBy, searchAssets } from '@immich/sdk';
-  import { mdiImageOffOutline, mdiDotsVertical, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
+  import { mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { onMount } from 'svelte';
 
   interface Props {
     data: PageData;
@@ -73,7 +73,7 @@
 
       nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
-      handleError(error, $t('errors.failed_to_load_recently_added_assets'));
+      handleError(error, $t('errors.failed_to_load_assets'));
     } finally {
       isLoading = false;
     }
