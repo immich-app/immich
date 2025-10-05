@@ -98,7 +98,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
 
     if (!mounted) return;
     setState(() {
-      // TODO:  happens if there are more than 3 matches with the exact same name?
+      // TODO:  What happens if there are more than 3 matches with the exact same name?
       _filteredPeople = query.isEmpty ? [] : (startsWithMatches + containsMatches).take(3).toList();
     });
   }
