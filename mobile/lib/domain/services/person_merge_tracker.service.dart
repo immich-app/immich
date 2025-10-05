@@ -9,11 +9,11 @@
 /// So when popping back to the profile page (and the user is missing) we check
 /// which other person B we have to display instead.
 class PersonMergeTrackerService {
-  // Map of merged person ID -> target person ID
+  /// Map of merged person ID -> target person ID
   final Map<String, String> _mergeForwardingMap = {};
 
-  // Set of person IDs for which the merge record has been handled (redirected)
-  // To prevent multiple redirects for the same merge
+  /// Set of person IDs for which the merge record has been handled (redirected)
+  /// To prevent multiple redirects for the same merge
   final Set<String> _handledMergeRecords = {};
 
   /// Record a person merge operation

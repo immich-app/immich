@@ -71,8 +71,8 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
     ref.watch(currentRouteNameProvider.select((name) => name ?? DriftPersonRoute.name));
 
     return personAsync.when(
-      data: (personByProvider) {
-        if (personByProvider == null) {
+      data: (personByIdProvider) {
+        if (personByIdProvider == null) {
           // Check if the person was merged and redirect if necessary
           final shouldRedirect = mergeTracker.shouldRedirectForPerson(_person.id);
           final targetPersonId = mergeTracker.getTargetPersonId(_person.id);
@@ -81,56 +81,60 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
             bool isOnPersonDetailPage = ModalRoute.of(context)?.isCurrent ?? false;
 
             // Only redirect if we're currently on the person detail page, not in a nested view, e.g. image viewer
-            if (isOnPersonDetailPage) {
-              // Person was merged, redirect to the target person
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  // Use the service directly to get the target person
-                  ref
-                      .read(driftPeopleServiceProvider)
-                      .watchPersonById(targetPersonId)
-                      .first
-                      .then((targetPerson) {
-                        if (targetPerson != null && mounted) {
-                          // Mark the merge record as handled
-                          mergeTracker.markMergeRecordHandled(_person.id);
-                          _person = targetPerson;
-                          setState(() {});
-                        } else {
-                          // Target person not found, go back
-                          context.maybePop();
-                        }
-                      })
-                      .catchError((error) {
-                        // If we can't load the target person, go back
-                        mergeLogger.severe("Error during read of targetPerson", error);
-                        if (mounted) {
-                          context.maybePop();
-                        }
-                      });
-                }
-              });
-              return const Center(child: CircularProgressIndicator());
-            } else {
-              // We're in an image viewer or other nested view, don't redirect yet
-              // Just show loading spinner to indicate something is happening
+            if (!isOnPersonDetailPage) {
               return const Center(child: CircularProgressIndicator());
             }
-          }
+            // Person was merged, redirect to the target person
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                ref
+                    .read(driftPeopleServiceProvider)
+                    .watchPersonById(targetPersonId)
+                    .first
+                    .then((targetPerson) {
+                      if (targetPerson != null && mounted) {
+                        // Mark the merge record as handled
+                        mergeTracker.markMergeRecordHandled(_person.id);
 
-          // Person not found and no merge record
-          mergeLogger.info(
-            'Person ${_person.name} (${_person.id}) not found and no merge records exist, it was probably deleted',
-          );
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              context.maybePop();
-            }
-          });
+                        // Open the target person's page
+                        if (mounted) {
+                          context.replaceRoute(
+                            DriftPersonRoute(key: ValueKey(targetPerson.id), initialPerson: targetPerson),
+                          );
+                        }
+                      } else {
+                        // Target person not found, go back
+                        context.maybePop();
+                      }
+                    })
+                    .catchError((error) {
+                      // If we can't load the target person, go back
+                      mergeLogger.severe("Error during read of targetPerson", error);
+                      if (mounted) {
+                        context.maybePop();
+                      }
+                    });
+              }
+            });
+            return const Center(child: CircularProgressIndicator());
+          } else if (shouldRedirect && targetPersonId == null) {
+            // This should never happen, but just in case
+            // Person not found and no merge record
+            mergeLogger.info(
+              'Person ${_person.name} (${_person.id}) not found and no merge records exist, it was probably deleted',
+            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                context.maybePop();
+              }
+            });
+            return const Center(child: CircularProgressIndicator());
+          }
+          // Waiting for the personByProvider to load
           return const Center(child: CircularProgressIndicator());
         }
 
-        _person = personByProvider;
+        _person = personByIdProvider;
         return ProviderScope(
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
@@ -154,7 +158,6 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
           ),
         );
       },
-      // TODO(m123): Show initialPerson data while loading new data (optimistic ui update, but we need to handle scroll state etc)
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, s) => Text('Error: $e'),
     );

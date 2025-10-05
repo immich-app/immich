@@ -11,6 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:logging/logging.dart';
 
 class DriftPersonNameEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -72,7 +73,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
     }
   }
 
-  // TODO: Add diacritic filtering? We would need to add a package.
+  // TODO: Add diacritic filtering?
   void _filterPeople(List<DriftPerson> people, String query) {
     final queryParts = query.toLowerCase().split(' ').where((e) => e.isNotEmpty).toList();
 
@@ -80,7 +81,10 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
     List<DriftPerson> containsMatches = [];
 
     for (final p in people) {
+      if (p.id == widget.person.id) continue;
+
       final nameParts = p.name.toLowerCase().split(' ').where((e) => e.isNotEmpty).toList();
+
       final allStart = queryParts.every((q) => nameParts.any((n) => n.startsWith(q)));
       final allContain = queryParts.every((q) => nameParts.any((n) => n.contains(q)));
 
@@ -94,7 +98,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
 
     if (!mounted) return;
     setState(() {
-      // TODO: What happens if there are more than 3 matches with the exact same name?
+      // TODO:  happens if there are more than 3 matches with the exact same name?
       _filteredPeople = query.isEmpty ? [] : (startsWithMatches + containsMatches).take(3).toList();
     });
   }
@@ -102,26 +106,28 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
   @override
   Widget build(BuildContext context) {
     final curatedPeople = ref.watch(driftGetAllPeopleProvider);
+    List<DriftPerson> people = [];
 
     return AlertDialog(
       title: const Text("edit_name", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
-      content: curatedPeople.when(
-        data: (people) {
-          return SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  autofocus: true,
-                  controller: _formController,
-                  decoration: InputDecoration(
-                    hintText: 'add_a_name'.tr(),
-                    border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
-                  ),
-                  onChanged: (value) => _filterPeople(people, value),
-                  onTapOutside: (event) => FocusScope.of(context).unfocus(),
-                ),
-                AnimatedSize(
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              autofocus: true,
+              controller: _formController,
+              decoration: InputDecoration(
+                hintText: 'add_a_name'.tr(),
+                border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+              ),
+              onChanged: (value) => _filterPeople(people, value),
+              onTapOutside: (event) => FocusScope.of(context).unfocus(),
+            ),
+            curatedPeople.when(
+              data: (p) {
+                people = p;
+                return AnimatedSize(
                   duration: const Duration(milliseconds: 200),
                   child: SizedBox(
                     width: double.infinity,
@@ -158,13 +164,16 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
                             ),
                           ),
                   ),
-                ),
-              ],
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) {
+                Logger('PersonEditNameModal').warning('Error loading people for name edit modal', err, stack);
+                return Center(child: Text('Error loading people for name edit modal: $err'));
+              },
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Text('Error: $err'),
+          ],
+        ),
       ),
       actions: [
         TextButton(
