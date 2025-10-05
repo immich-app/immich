@@ -1,18 +1,22 @@
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment_builder.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -33,8 +37,8 @@ class FixedSegment extends Segment {
     required super.headerExtent,
     required super.spacing,
     required super.header,
-  })  : assert(tileHeight != 0),
-        mainAxisExtend = tileHeight + spacing;
+  }) : assert(tileHeight != 0),
+       mainAxisExtend = tileHeight + spacing;
 
   @override
   double indexToLayoutOffset(int index) {
@@ -64,12 +68,7 @@ class FixedSegment extends Segment {
     final numberOfAssets = math.min(columnCount, assetCount - assetIndex);
 
     if (index == firstIndex) {
-      return TimelineHeader(
-        bucket: bucket,
-        header: header,
-        height: headerExtent,
-        assetOffset: firstAssetIndex,
-      );
+      return TimelineHeader(bucket: bucket, header: header, height: headerExtent, assetOffset: firstAssetIndex);
     }
 
     return _FixedSegmentRow(
@@ -102,12 +101,8 @@ class _FixedSegmentRow extends ConsumerWidget {
     if (isScrubbing) {
       return _buildPlaceholder(context);
     }
-
     if (timelineService.hasRange(assetIndex, assetCount)) {
-      return _buildAssetRow(
-        context,
-        timelineService.getAssets(assetIndex, assetCount),
-      );
+      return _buildAssetRow(context, timelineService.getAssets(assetIndex, assetCount), timelineService);
     }
 
     return FutureBuilder<List<BaseAsset>>(
@@ -116,31 +111,30 @@ class _FixedSegmentRow extends ConsumerWidget {
         if (snapshot.connectionState != ConnectionState.done) {
           return _buildPlaceholder(context);
         }
-        return _buildAssetRow(context, snapshot.requireData);
+        return _buildAssetRow(context, snapshot.requireData, timelineService);
       },
     );
   }
 
   Widget _buildPlaceholder(BuildContext context) {
-    return SegmentBuilder.buildPlaceholder(
-      context,
-      assetCount,
-      size: Size.square(tileHeight),
-      spacing: spacing,
-    );
+    return SegmentBuilder.buildPlaceholder(context, assetCount, size: Size.square(tileHeight), spacing: spacing);
   }
 
-  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets) {
+  Widget _buildAssetRow(BuildContext context, List<BaseAsset> assets, TimelineService timelineService) {
     return FixedTimelineRow(
       dimension: tileHeight,
       spacing: spacing,
       textDirection: Directionality.of(context),
       children: [
         for (int i = 0; i < assets.length; i++)
-          _AssetTileWidget(
-            key: ValueKey(assets[i].heroTag),
-            asset: assets[i],
+          TimelineAssetIndexWrapper(
             assetIndex: assetIndex + i,
+            segmentIndex: 0, // For simplicity, using 0 for now
+            child: _AssetTileWidget(
+              key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+              asset: assets[i],
+              assetIndex: assetIndex + i,
+            ),
           ),
       ],
     );
@@ -151,19 +145,9 @@ class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
 
-  const _AssetTileWidget({
-    super.key,
-    required this.asset,
-    required this.assetIndex,
-  });
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
 
-  Future _handleOnTap(
-    BuildContext ctx,
-    WidgetRef ref,
-    int assetIndex,
-    BaseAsset asset,
-    int? heroOffset,
-  ) async {
+  Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
@@ -171,6 +155,7 @@ class _AssetTileWidget extends ConsumerWidget {
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
+      AssetViewer.setAsset(ref, asset);
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,
@@ -192,11 +177,7 @@ class _AssetTileWidget extends ConsumerWidget {
   }
 
   bool _getLockSelectionStatus(WidgetRef ref) {
-    final lockSelectionAssets = ref.read(
-      multiSelectProvider.select(
-        (state) => state.lockedSelectionAssets,
-      ),
-    );
+    final lockSelectionAssets = ref.read(multiSelectProvider.select((state) => state.lockedSelectionAssets));
 
     if (lockSelectionAssets.isEmpty) {
       return false;
@@ -210,14 +191,13 @@ class _AssetTileWidget extends ConsumerWidget {
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final lockSelection = _getLockSelectionStatus(ref);
-    final showStorageIndicator = ref.watch(
-      timelineArgsProvider.select((args) => args.showStorageIndicator),
-    );
+    final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     return RepaintBoundary(
       child: GestureDetector(
         onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
-        onLongPress: () => lockSelection ? null : _handleOnLongPress(ref, asset),
+        onLongPress: () => lockSelection || isReadonlyModeEnabled ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
           lockSelection: lockSelection,

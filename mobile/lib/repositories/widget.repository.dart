@@ -11,10 +11,7 @@ class WidgetRepository {
   }
 
   Future<void> refresh(String iosName, String androidName) async {
-    await HomeWidget.updateWidget(
-      iOSName: iosName,
-      qualifiedAndroidName: androidName,
-    );
+    await HomeWidget.updateWidget(iOSName: iosName, qualifiedAndroidName: androidName);
   }
 
   Future<void> setAppGroupId(String appGroupId) async {

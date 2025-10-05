@@ -20,16 +20,10 @@ import 'package:immich_mobile/widgets/photo_view/src/photo_view_scale_state.dart
 import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attributes.dart';
 
 /// A type definition for a [Function] that receives a index after a page change in [PhotoViewGallery]
-typedef PhotoViewGalleryPageChangedCallback = void Function(
-  int index,
-  PhotoViewControllerBase? controller,
-);
+typedef PhotoViewGalleryPageChangedCallback = void Function(int index, PhotoViewControllerBase? controller);
 
 /// A type definition for a [Function] that defines a page in [PhotoViewGallery.build]
-typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(
-  BuildContext context,
-  int index,
-);
+typedef PhotoViewGalleryBuilder = PhotoViewGalleryPageOptions Function(BuildContext context, int index);
 
 /// A [StatefulWidget] that shows multiple [PhotoView] widgets in a [PageView]
 ///
@@ -126,8 +120,8 @@ class PhotoViewGallery extends StatefulWidget {
     this.customSize,
     this.allowImplicitScrolling = false,
     this.enablePanAlways = false,
-  })  : itemCount = null,
-        builder = null;
+  }) : itemCount = null,
+       builder = null;
 
   /// Construct a gallery with dynamic items.
   ///
@@ -151,9 +145,9 @@ class PhotoViewGallery extends StatefulWidget {
     this.customSize,
     this.allowImplicitScrolling = false,
     this.enablePanAlways = false,
-  })  : pageOptions = null,
-        assert(itemCount != null),
-        assert(builder != null);
+  }) : pageOptions = null,
+       assert(itemCount != null),
+       assert(builder != null);
 
   /// A list of options to describe the items in the gallery
   final List<PhotoViewGalleryPageOptions>? pageOptions;
@@ -273,7 +267,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             key: pageOption.key ?? ObjectKey(index),
             childSize: pageOption.childSize,
             backgroundDecoration: widget.backgroundDecoration,
-            wantKeepAlive: widget.wantKeepAlive,
+            wantKeepAlive: false,
             controller: pageOption.controller,
             scaleStateController: pageOption.scaleStateController,
             customSize: widget.customSize,
@@ -309,7 +303,7 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             loadingBuilder: widget.loadingBuilder,
             backgroundDecoration: widget.backgroundDecoration,
             semanticLabel: pageOption.semanticLabel,
-            wantKeepAlive: widget.wantKeepAlive,
+            wantKeepAlive: false,
             controller: pageOption.controller,
             onPageBuild: widget.onPageBuild,
             controllerCallbackBuilder: _getControllerCallbackBuilder,
@@ -340,15 +334,10 @@ class _PhotoViewGalleryState extends State<PhotoViewGallery> {
             heroAttributes: pageOption.heroAttributes,
           );
 
-    return ClipRect(
-      child: photoView,
-    );
+    return ClipRect(child: photoView);
   }
 
-  PhotoViewGalleryPageOptions _buildPageOption(
-    BuildContext context,
-    int index,
-  ) {
+  PhotoViewGalleryPageOptions _buildPageOption(BuildContext context, int index) {
     if (widget._isBuilder) {
       return widget.builder!(context, index);
     }
@@ -386,9 +375,9 @@ class PhotoViewGalleryPageOptions {
     this.disableScaleGestures,
     this.disableGestures,
     this.errorBuilder,
-  })  : child = null,
-        childSize = null,
-        assert(imageProvider != null);
+  }) : child = null,
+       childSize = null,
+       assert(imageProvider != null);
 
   const PhotoViewGalleryPageOptions.customChild({
     this.key,
@@ -415,8 +404,8 @@ class PhotoViewGalleryPageOptions {
     this.filterQuality,
     this.disableScaleGestures,
     this.disableGestures,
-  })  : errorBuilder = null,
-        imageProvider = null;
+  }) : errorBuilder = null,
+       imageProvider = null;
 
   final Key? key;
 

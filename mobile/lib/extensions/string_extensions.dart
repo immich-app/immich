@@ -1,10 +1,8 @@
+import 'dart:convert';
+
 extension StringExtension on String {
   String capitalize() {
-    return split(" ")
-        .map(
-          (str) => str.isEmpty ? str : str[0].toUpperCase() + str.substring(1),
-        )
-        .join(" ");
+    return split(" ").map((str) => str.isEmpty ? str : str[0].toUpperCase() + str.substring(1)).join(" ");
   }
 }
 
@@ -25,5 +23,13 @@ extension DurationExtension on String {
 
   int toInt() {
     return int.parse(this);
+  }
+}
+
+Map<String, dynamic>? tryJsonDecode(dynamic json) {
+  try {
+    return jsonDecode(json) as Map<String, dynamic>;
+  } catch (e) {
+    return null;
   }
 }

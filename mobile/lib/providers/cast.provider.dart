@@ -15,15 +15,15 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   List<(String, CastDestinationType, dynamic)> discovered = List.empty();
 
   CastNotifier(this._gCastService)
-      : super(
-          const CastManagerState(
-            isCasting: false,
-            currentTime: Duration.zero,
-            duration: Duration.zero,
-            receiverName: '',
-            castState: CastState.idle,
-          ),
-        ) {
+    : super(
+        const CastManagerState(
+          isCasting: false,
+          currentTime: Duration.zero,
+          duration: Duration.zero,
+          receiverName: '',
+          castState: CastState.idle,
+        ),
+      ) {
     _gCastService.onConnectionState = _onConnectionState;
     _gCastService.onCurrentTime = _onCurrentTime;
     _gCastService.onDuration = _onDuration;
@@ -65,8 +65,8 @@ class CastNotifier extends StateNotifier<CastManagerState> {
       type: asset.type == old_asset_entity.AssetType.image
           ? AssetType.image
           : asset.type == old_asset_entity.AssetType.video
-              ? AssetType.video
-              : AssetType.other,
+          ? AssetType.video
+          : AssetType.other,
       createdAt: asset.fileCreatedAt,
       updatedAt: asset.updatedAt,
     );

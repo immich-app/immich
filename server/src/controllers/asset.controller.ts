@@ -6,6 +6,9 @@ import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetJobsDto,
+  AssetMetadataResponseDto,
+  AssetMetadataRouteParams,
+  AssetMetadataUpsertDto,
   AssetStatsDto,
   AssetStatsResponseDto,
   DeviceIdDto,
@@ -57,15 +60,15 @@ export class AssetController {
   }
 
   @Put()
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.AssetUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
   updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
 
   @Delete()
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Authenticated({ permission: Permission.AssetDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
@@ -84,5 +87,37 @@ export class AssetController {
     @Body() dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);
+  }
+
+  @Get(':id/metadata')
+  @Authenticated({ permission: Permission.AssetRead })
+  getAssetMetadata(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetMetadataResponseDto[]> {
+    return this.service.getMetadata(auth, id);
+  }
+
+  @Put(':id/metadata')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  updateAssetMetadata(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetMetadataUpsertDto,
+  ): Promise<AssetMetadataResponseDto[]> {
+    return this.service.upsertMetadata(auth, id, dto);
+  }
+
+  @Get(':id/metadata/:key')
+  @Authenticated({ permission: Permission.AssetRead })
+  getAssetMetadataByKey(
+    @Auth() auth: AuthDto,
+    @Param() { id, key }: AssetMetadataRouteParams,
+  ): Promise<AssetMetadataResponseDto> {
+    return this.service.getMetadataByKey(auth, id, key);
+  }
+
+  @Delete(':id/metadata/:key')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteAssetMetadata(@Auth() auth: AuthDto, @Param() { id, key }: AssetMetadataRouteParams): Promise<void> {
+    return this.service.deleteMetadataByKey(auth, id, key);
   }
 }

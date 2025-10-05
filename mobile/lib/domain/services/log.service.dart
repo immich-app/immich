@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
 /// Service responsible for handling application logging.
@@ -14,8 +14,8 @@ import 'package:logging/logging.dart';
 /// writes them to a persistent [ILogRepository], and manages log levels
 /// via [IStoreRepository]
 class LogService {
-  final IsarLogRepository _logRepository;
-  final IsarStoreRepository _storeRepository;
+  final LogRepository _logRepository;
+  final IStoreRepository _storeRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -37,8 +37,8 @@ class LogService {
   }
 
   static Future<LogService> init({
-    required IsarLogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required LogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
@@ -50,8 +50,8 @@ class LogService {
   }
 
   static Future<LogService> create({
-    required IsarLogRepository logRepository,
-    required IsarStoreRepository storeRepository,
+    required LogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     final instance = LogService._(logRepository, storeRepository, shouldBuffer);
@@ -61,22 +61,17 @@ class LogService {
     return instance;
   }
 
-  LogService._(
-    this._logRepository,
-    this._storeRepository,
-    this._shouldBuffer,
-  ) {
+  LogService._(this._logRepository, this._storeRepository, this._shouldBuffer) {
     _logSubscription = Logger.root.onRecord.listen(_handleLogRecord);
   }
 
   void _handleLogRecord(LogRecord r) {
-    if (kDebugMode) {
-      debugPrint(
-        '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
-        '${r.error == null ? '' : '\nError: ${r.error}'}'
-        '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
-      );
-    }
+    dPrint(
+      () =>
+          '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
+          '${r.error == null ? '' : '\nError: ${r.error}'}'
+          '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
+    );
 
     final record = LogMessage(
       message: r.message,
@@ -89,17 +84,14 @@ class LogService {
 
     if (_shouldBuffer) {
       _msgBuffer.add(record);
-      _flushTimer ??= Timer(
-        const Duration(seconds: 5),
-        () => unawaited(flushBuffer()),
-      );
+      _flushTimer ??= Timer(const Duration(seconds: 5), () => unawaited(_flushBuffer()));
     } else {
       unawaited(_logRepository.insert(record));
     }
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _storeRepository.insert(StoreKey.logLevel, level.index);
+    await _storeRepository.upsert(StoreKey.logLevel, level.index);
     Logger.root.level = level.toLevel();
   }
 
@@ -115,23 +107,26 @@ class LogService {
     await _logRepository.deleteAll();
   }
 
-  void flush() {
+  Future<void> flush() {
     _flushTimer?.cancel();
-    // TODO: Rename enable this after moving to sqlite - #16504
-    // await _flushBufferToDatabase();
+    return _flushBuffer();
   }
 
   Future<void> dispose() {
     _flushTimer?.cancel();
     _logSubscription.cancel();
-    return flushBuffer();
+    return _flushBuffer();
   }
 
-  // TOOD: Move this to private once Isar is removed
-  Future<void> flushBuffer() async {
+  Future<void> _flushBuffer() async {
     _flushTimer = null;
     final buffer = [..._msgBuffer];
     _msgBuffer.clear();
+
+    if (buffer.isEmpty) {
+      return;
+    }
+
     await _logRepository.insertAll(buffer);
   }
 }

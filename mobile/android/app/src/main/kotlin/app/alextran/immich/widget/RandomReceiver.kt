@@ -28,17 +28,19 @@ class RandomReceiver : GlanceAppWidgetReceiver() {
 
   override fun onReceive(context: Context, intent: Intent) {
     val fromMainApp = intent.getBooleanExtra(HomeWidgetPlugin.TRIGGERED_FROM_HOME_WIDGET, false)
+    val provider = ComponentName(context, RandomReceiver::class.java)
+    val glanceIds = AppWidgetManager.getInstance(context).getAppWidgetIds(provider)
 
     // Launch coroutine to setup a single shot if the app requested the update
     if (fromMainApp) {
-      CoroutineScope(Dispatchers.Default).launch {
-        val provider = ComponentName(context, RandomReceiver::class.java)
-        val glanceIds = AppWidgetManager.getInstance(context).getAppWidgetIds(provider)
-
-        glanceIds.forEach { widgetID ->
-          ImageDownloadWorker.singleShot(context, widgetID, WidgetType.RANDOM)
-        }
+      glanceIds.forEach { widgetID ->
+        ImageDownloadWorker.singleShot(context, widgetID, WidgetType.RANDOM)
       }
+    }
+
+    // make sure the periodic jobs are running
+    glanceIds.forEach { widgetID ->
+      ImageDownloadWorker.enqueuePeriodic(context, widgetID, WidgetType.RANDOM)
     }
 
     super.onReceive(context, intent)

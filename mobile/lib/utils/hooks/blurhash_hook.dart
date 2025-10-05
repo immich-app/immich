@@ -10,9 +10,7 @@ ObjectRef<Uint8List?> useBlurHashRef(Asset? asset) {
     return useRef(null);
   }
 
-  final rbga = thumbhash.thumbHashToRGBA(
-    base64Decode(asset!.thumbhash!),
-  );
+  final rbga = thumbhash.thumbHashToRGBA(base64Decode(asset!.thumbhash!));
 
   return useRef(thumbhash.rgbaToBmp(rbga));
 }
@@ -22,9 +20,7 @@ ObjectRef<Uint8List?> useDriftBlurHashRef(RemoteAsset? asset) {
     return useRef(null);
   }
 
-  final rbga = thumbhash.thumbHashToRGBA(
-    base64Decode(asset!.thumbHash!),
-  );
+  final rbga = thumbhash.thumbHashToRGBA(base64Decode(asset!.thumbHash!));
 
   return useRef(thumbhash.rgbaToBmp(rbga));
 }

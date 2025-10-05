@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/message_format.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 extension StringTranslateExtension on String {
   String t({BuildContext? context, Map<String, Object>? args}) {
@@ -29,11 +30,7 @@ extension TextTranslateExtension on Text {
   }
 }
 
-String _translateHelper(
-  BuildContext? context,
-  String key, [
-  Map<String, Object>? args,
-]) {
+String _translateHelper(BuildContext? context, String key, [Map<String, Object>? args]) {
   if (key.isEmpty) {
     return '';
   }
@@ -43,7 +40,7 @@ String _translateHelper(
         ? MessageFormat(translatedMessage, locale: Intl.defaultLocale ?? 'en').format(args)
         : translatedMessage;
   } catch (e) {
-    debugPrint('Translation failed for key "$key". Error: $e');
+    dPrint(() => 'Translation failed for key "$key". Error: $e');
     return key;
   }
 }

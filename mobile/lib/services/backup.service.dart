@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -29,6 +28,7 @@ import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart' as pm;
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -69,14 +69,13 @@ class BackupService {
     try {
       return await _apiService.assetsApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
-      debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
+      dPrint(() => 'Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
     }
   }
 
-  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) => _assetRepository.transaction(
-        () => _assetRepository.upsertDuplicatedAssets(deviceAssetIds),
-      );
+  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) =>
+      _assetRepository.transaction(() => _assetRepository.upsertDuplicatedAssets(deviceAssetIds));
 
   /// Get duplicated asset id from database
   Future<Set<String>> getDuplicatedAssetIds() async {
@@ -135,8 +134,8 @@ class BackupService {
           backupAlbum.id,
           modifiedFrom: useTimeFilter
               ?
-              // subtract 2 seconds to prevent missing assets due to rounding issues
-              backupAlbum.lastBackup.subtract(const Duration(seconds: 2))
+                // subtract 2 seconds to prevent missing assets due to rounding issues
+                backupAlbum.lastBackup.subtract(const Duration(seconds: 2))
               : null,
           modifiedUntil: useTimeFilter ? now : null,
         );
@@ -149,9 +148,7 @@ class BackupService {
       for (final asset in assets) {
         List<String> albumNames = [localAlbum.name];
 
-        final existingAsset = candidates.firstWhereOrNull(
-          (candidate) => candidate.asset.localId == asset.localId,
-        );
+        final existingAsset = candidates.firstWhereOrNull((candidate) => candidate.asset.localId == asset.localId);
 
         if (existingAsset != null) {
           albumNames.addAll(existingAsset.albumNames);
@@ -168,17 +165,13 @@ class BackupService {
   }
 
   /// Returns a new list of assets not yet uploaded
-  Future<Set<BackupCandidate>> removeAlreadyUploadedAssets(
-    Set<BackupCandidate> candidates,
-  ) async {
+  Future<Set<BackupCandidate>> removeAlreadyUploadedAssets(Set<BackupCandidate> candidates) async {
     if (candidates.isEmpty) {
       return candidates;
     }
 
     final Set<String> duplicatedAssetIds = await getDuplicatedAssetIds();
-    candidates.removeWhere(
-      (candidate) => duplicatedAssetIds.contains(candidate.asset.localId),
-    );
+    candidates.removeWhere((candidate) => duplicatedAssetIds.contains(candidate.asset.localId));
 
     if (candidates.isEmpty) {
       return candidates;
@@ -188,10 +181,7 @@ class BackupService {
     try {
       final String deviceId = Store.get(StoreKey.deviceId);
       final CheckExistingAssetsResponseDto? duplicates = await _apiService.assetsApi.checkExistingAssets(
-        CheckExistingAssetsDto(
-          deviceAssetIds: candidates.map((c) => c.asset.localId!).toList(),
-          deviceId: deviceId,
-        ),
+        CheckExistingAssetsDto(deviceAssetIds: candidates.map((c) => c.asset.localId!).toList(), deviceId: deviceId),
       );
       if (duplicates != null) {
         existing.addAll(duplicates.existingIds);
@@ -215,8 +205,10 @@ class BackupService {
     if (Platform.isAndroid && !(await pm.Permission.accessMediaLocation.status).isGranted) {
       // double check that permission is granted here, to guard against
       // uploading corrupt assets without EXIF information
-      _log.warning("Media location permission is not granted. "
-          "Cannot access original assets for backup.");
+      _log.warning(
+        "Media location permission is not granted. "
+        "Cannot access original assets for backup.",
+      );
 
       return false;
     }
@@ -232,13 +224,11 @@ class BackupService {
   /// Upload images before video assets for background tasks
   /// these are further sorted by using their creation date
   List<BackupCandidate> _sortPhotosFirst(List<BackupCandidate> candidates) {
-    return candidates.sorted(
-      (a, b) {
-        final cmp = a.asset.type.index - b.asset.type.index;
-        if (cmp != 0) return cmp;
-        return a.asset.fileCreatedAt.compareTo(b.asset.fileCreatedAt);
-      },
-    );
+    return candidates.sorted((a, b) {
+      final cmp = a.asset.type.index - b.asset.type.index;
+      if (cmp != 0) return cmp;
+      return a.asset.fileCreatedAt.compareTo(b.asset.fileCreatedAt);
+    });
   }
 
   Future<bool> backupAsset(
@@ -295,10 +285,7 @@ class BackupService {
 
           file = await asset.local!.loadFile(progressHandler: pmProgressHandler);
           if (asset.local!.isLivePhoto) {
-            livePhotoFile = await asset.local!.loadFile(
-              withSubtype: true,
-              progressHandler: pmProgressHandler,
-            );
+            livePhotoFile = await asset.local!.loadFile(withSubtype: true, progressHandler: pmProgressHandler);
           }
         } else {
           file = await asset.local!.originFile.timeout(const Duration(seconds: 5));
@@ -314,9 +301,7 @@ class BackupService {
 
           if (asset.local!.isLivePhoto) {
             if (livePhotoFile == null) {
-              _log.warning(
-                "Failed to obtain motion part of the livePhoto - $originalFileName",
-              );
+              _log.warning("Failed to obtain motion part of the livePhoto - $originalFileName");
             }
           }
 
@@ -356,22 +341,14 @@ class BackupService {
 
           String? livePhotoVideoId;
           if (asset.local!.isLivePhoto && livePhotoFile != null) {
-            livePhotoVideoId = await uploadLivePhotoVideo(
-              originalFileName,
-              livePhotoFile,
-              baseRequest,
-              cancelToken,
-            );
+            livePhotoVideoId = await uploadLivePhotoVideo(originalFileName, livePhotoFile, baseRequest, cancelToken);
           }
 
           if (livePhotoVideoId != null) {
             baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          final response = await httpClient.send(
-            baseRequest,
-            cancellationToken: cancelToken,
-          );
+          final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
 
           final responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -379,8 +356,9 @@ class BackupService {
             final error = responseBody;
             final errorMessage = error['message'] ?? error['error'];
 
-            debugPrint(
-              "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
+            dPrint(
+              () =>
+                  "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
             );
 
             onError(
@@ -417,18 +395,15 @@ class BackupService {
           );
 
           if (shouldSyncAlbums) {
-            await _albumService.syncUploadAlbums(
-              candidate.albumNames,
-              [responseBody['id'] as String],
-            );
+            await _albumService.syncUploadAlbums(candidate.albumNames, [responseBody['id'] as String]);
           }
         }
       } on http.CancelledException {
-        debugPrint("Backup was cancelled by the user");
+        dPrint(() => "Backup was cancelled by the user");
         anyErrors = true;
         break;
       } catch (error, stackTrace) {
-        debugPrint("Error backup asset: ${error.toString()}: $stackTrace");
+        dPrint(() => "Error backup asset: ${error.toString()}: $stackTrace");
         anyErrors = true;
         continue;
       } finally {
@@ -437,7 +412,7 @@ class BackupService {
             await file?.delete();
             await livePhotoFile?.delete();
           } catch (e) {
-            debugPrint("ERROR deleting file: ${e.toString()}");
+            dPrint(() => "ERROR deleting file: ${e.toString()}");
           }
         }
       }
@@ -459,10 +434,7 @@ class BackupService {
     if (livePhotoVideoFile == null) {
       return null;
     }
-    final livePhotoTitle = p.setExtension(
-      originalFileName,
-      p.extension(livePhotoVideoFile.path),
-    );
+    final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoVideoFile.path));
     final fileStream = livePhotoVideoFile.openRead();
     final livePhotoRawUploadData = http.MultipartFile(
       "assetData",
@@ -470,28 +442,21 @@ class BackupService {
       livePhotoVideoFile.lengthSync(),
       filename: livePhotoTitle,
     );
-    final livePhotoReq = MultipartRequest(
-      baseRequest.method,
-      baseRequest.url,
-      onProgress: baseRequest.onProgress,
-    )
+    final livePhotoReq = MultipartRequest(baseRequest.method, baseRequest.url, onProgress: baseRequest.onProgress)
       ..headers.addAll(baseRequest.headers)
       ..fields.addAll(baseRequest.fields);
 
     livePhotoReq.files.add(livePhotoRawUploadData);
 
-    var response = await httpClient.send(
-      livePhotoReq,
-      cancellationToken: cancelToken,
-    );
+    var response = await httpClient.send(livePhotoReq, cancellationToken: cancelToken);
 
     var responseBody = jsonDecode(await response.stream.bytesToString());
 
     if (![200, 201].contains(response.statusCode)) {
       var error = responseBody;
 
-      debugPrint(
-        "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | ${error['error']}",
+      dPrint(
+        () => "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | ${error['error']}",
       );
     }
 
@@ -499,20 +464,16 @@ class BackupService {
   }
 
   String _getAssetType(AssetType assetType) => switch (assetType) {
-        AssetType.audio => "AUDIO",
-        AssetType.image => "IMAGE",
-        AssetType.video => "VIDEO",
-        AssetType.other => "OTHER",
-      };
+    AssetType.audio => "AUDIO",
+    AssetType.image => "IMAGE",
+    AssetType.video => "VIDEO",
+    AssetType.other => "OTHER",
+  };
 }
 
 class MultipartRequest extends http.MultipartRequest {
   /// Creates a new [MultipartRequest].
-  MultipartRequest(
-    super.method,
-    super.url, {
-    required this.onProgress,
-  });
+  MultipartRequest(super.method, super.url, {required this.onProgress});
 
   final void Function(int bytes, int totalBytes) onProgress;
 

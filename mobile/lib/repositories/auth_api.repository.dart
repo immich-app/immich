@@ -13,27 +13,20 @@ class AuthApiRepository extends ApiRepository {
   AuthApiRepository(this._apiService);
 
   Future<void> changePassword(String newPassword) async {
-    await _apiService.usersApi.updateMyUser(
-      UserUpdateMeDto(
-        password: newPassword,
-      ),
-    );
+    await _apiService.usersApi.updateMyUser(UserUpdateMeDto(password: newPassword));
   }
 
   Future<LoginResponse> login(String email, String password) async {
     final loginResponseDto = await checkNull(
-      _apiService.authenticationApi.login(
-        LoginCredentialDto(
-          email: email,
-          password: password,
-        ),
-      ),
+      _apiService.authenticationApi.login(LoginCredentialDto(email: email, password: password)),
     );
 
     return _mapLoginReponse(loginResponseDto);
   }
 
   Future<void> logout() async {
+    if (_apiService.apiClient.basePath.isEmpty) return;
+
     await _apiService.authenticationApi.logout().timeout(const Duration(seconds: 7));
   }
 

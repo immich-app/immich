@@ -28,22 +28,13 @@ class MapStateNotifier extends _$MapStateNotifier {
   }
 
   void switchTheme(ThemeMode mode) {
-    ref.read(appSettingsServiceProvider).setSetting(
-          AppSettingsEnum.mapThemeMode,
-          mode.index,
-        );
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapThemeMode, mode.index);
     state = state.copyWith(themeMode: mode);
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(appSettingsServiceProvider).setSetting(
-          AppSettingsEnum.mapShowFavoriteOnly,
-          isFavoriteOnly,
-        );
-    state = state.copyWith(
-      showFavoriteOnly: isFavoriteOnly,
-      shouldRefetchMarkers: true,
-    );
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapShowFavoriteOnly, isFavoriteOnly);
+    state = state.copyWith(showFavoriteOnly: isFavoriteOnly, shouldRefetchMarkers: true);
   }
 
   void setRefetchMarkers(bool shouldRefetch) {
@@ -51,35 +42,17 @@ class MapStateNotifier extends _$MapStateNotifier {
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(appSettingsServiceProvider).setSetting(
-          AppSettingsEnum.mapIncludeArchived,
-          isIncludeArchived,
-        );
-    state = state.copyWith(
-      includeArchived: isIncludeArchived,
-      shouldRefetchMarkers: true,
-    );
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapIncludeArchived, isIncludeArchived);
+    state = state.copyWith(includeArchived: isIncludeArchived, shouldRefetchMarkers: true);
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(appSettingsServiceProvider).setSetting(
-          AppSettingsEnum.mapwithPartners,
-          isWithPartners,
-        );
-    state = state.copyWith(
-      withPartners: isWithPartners,
-      shouldRefetchMarkers: true,
-    );
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapwithPartners, isWithPartners);
+    state = state.copyWith(withPartners: isWithPartners, shouldRefetchMarkers: true);
   }
 
   void setRelativeTime(int relativeTime) {
-    ref.read(appSettingsServiceProvider).setSetting(
-          AppSettingsEnum.mapRelativeDate,
-          relativeTime,
-        );
-    state = state.copyWith(
-      relativeTime: relativeTime,
-      shouldRefetchMarkers: true,
-    );
+    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapRelativeDate, relativeTime);
+    state = state.copyWith(relativeTime: relativeTime, shouldRefetchMarkers: true);
   }
 }

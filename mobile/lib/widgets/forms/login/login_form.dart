@@ -10,15 +10,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
@@ -54,9 +56,7 @@ class LoginForm extends HookConsumerWidget {
     final isOauthEnable = useState<bool>(false);
     final isPasswordLoginEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
-    final logoAnimationController = useAnimationController(
-      duration: const Duration(seconds: 60),
-    )..repeat();
+    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 60))..repeat();
     final serverInfo = ref.watch(serverInfoProvider);
     final warningMessage = useState<String?>(null);
     final loginFormKey = GlobalKey<FormState>();
@@ -90,11 +90,7 @@ class LoginForm extends HookConsumerWidget {
 
       // Guard empty URL
       if (serverUrl.isEmpty) {
-        ImmichToast.show(
-          context: context,
-          msg: "login_form_server_empty".tr(),
-          toastType: ToastType.error,
-        );
+        ImmichToast.show(context: context, msg: "login_form_server_empty".tr(), toastType: ToastType.error);
       }
 
       try {
@@ -148,16 +144,13 @@ class LoginForm extends HookConsumerWidget {
       isLoadingServer.value = false;
     }
 
-    useEffect(
-      () {
-        final serverUrl = getServerUrl();
-        if (serverUrl != null) {
-          serverEndpointController.text = serverUrl;
-        }
-        return null;
-      },
-      [],
-    );
+    useEffect(() {
+      final serverUrl = getServerUrl();
+      if (serverUrl != null) {
+        serverEndpointController.text = serverUrl;
+      }
+      return null;
+    }, []);
 
     populateTestLoginInfo() {
       emailController.text = 'demo@immich.app';
@@ -171,6 +164,18 @@ class LoginForm extends HookConsumerWidget {
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
+    Future<void> handleSyncFlow() async {
+      final backgroundManager = ref.read(backgroundSyncProvider);
+
+      await backgroundManager.syncLocal(full: true);
+      await backgroundManager.syncRemote();
+      await backgroundManager.hashAssets();
+
+      if (Store.get(StoreKey.syncAlbums, false)) {
+        await backgroundManager.syncLinkedAlbum();
+      }
+    }
+
     login() async {
       TextInput.finishAutofillContext();
 
@@ -180,10 +185,7 @@ class LoginForm extends HookConsumerWidget {
       invalidateAllApiRepositoryProviders(ref);
 
       try {
-        final result = await ref.read(authProvider.notifier).login(
-              emailController.text,
-              passwordController.text,
-            );
+        final result = await ref.read(authProvider.notifier).login(emailController.text, passwordController.text);
 
         if (result.shouldChangePassword && !result.isAdmin) {
           context.pushRoute(const ChangePasswordRoute());
@@ -191,7 +193,8 @@ class LoginForm extends HookConsumerWidget {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            await runNewSync(ref);
+            handleSyncFlow();
+            ref.read(websocketProvider.notifier).connect();
             context.replaceRoute(const TabShellRoute());
             return;
           }
@@ -212,12 +215,7 @@ class LoginForm extends HookConsumerWidget {
     String generateRandomString(int length) {
       const chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
       final random = Random.secure();
-      return String.fromCharCodes(
-        Iterable.generate(
-          length,
-          (_) => chars.codeUnitAt(random.nextInt(chars.length)),
-        ),
-      );
+      return String.fromCharCodes(Iterable.generate(length, (_) => chars.codeUnitAt(random.nextInt(chars.length))));
     }
 
     List<int> randomBytes(int length) {
@@ -273,23 +271,17 @@ class LoginForm extends HookConsumerWidget {
 
       if (oAuthServerUrl != null) {
         try {
-          final loginResponseDto = await oAuthService.oAuthLogin(
-            oAuthServerUrl,
-            state,
-            codeVerifier,
-          );
+          final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier);
 
           if (loginResponseDto == null) {
             return;
           }
 
-          log.info(
-            "Finished OAuth login with response: ${loginResponseDto.userEmail}",
-          );
+          log.info("Finished OAuth login with response: ${loginResponseDto.userEmail}");
 
-          final isSuccess = await ref.watch(authProvider.notifier).saveAuthInfo(
-                accessToken: loginResponseDto.accessToken,
-              );
+          final isSuccess = await ref
+              .watch(authProvider.notifier)
+              .saveAuthInfo(accessToken: loginResponseDto.accessToken);
 
           if (isSuccess) {
             isLoading.value = false;
@@ -300,7 +292,7 @@ class LoginForm extends HookConsumerWidget {
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              await runNewSync(ref);
+              handleSyncFlow();
               context.replaceRoute(const TabShellRoute());
               return;
             }
@@ -374,10 +366,7 @@ class LoginForm extends HookConsumerWidget {
                   ),
                   onPressed: isLoadingServer.value ? null : getServerAuthSettings,
                   icon: const Icon(Icons.arrow_forward_rounded),
-                  label: const Text(
-                    'next',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ).tr(),
+                  label: const Text('next', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
                 ),
               ),
             ],
@@ -401,17 +390,10 @@ class LoginForm extends HookConsumerWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(8),
-            ),
-            border: Border.all(
-              color: context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!,
-            ),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            border: Border.all(color: context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!),
           ),
-          child: Text(
-            warningMessage.value!,
-            textAlign: TextAlign.center,
-          ),
+          child: Text(warningMessage.value!, textAlign: TextAlign.center),
         ),
       );
     }
@@ -435,11 +417,7 @@ class LoginForm extends HookConsumerWidget {
                 onSubmit: passwordFocusNode.requestFocus,
               ),
               const SizedBox(height: 8),
-              PasswordInput(
-                controller: passwordController,
-                focusNode: passwordFocusNode,
-                onSubmit: login,
-              ),
+              PasswordInput(controller: passwordController, focusNode: passwordFocusNode, onSubmit: login),
             ],
 
             // Note: This used to have an AnimatedSwitcher, but was removed
@@ -455,12 +433,8 @@ class LoginForm extends HookConsumerWidget {
                       if (isOauthEnable.value) ...[
                         if (isPasswordLoginEnable.value)
                           Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
-                            child: Divider(
-                              color: context.isDarkTheme ? Colors.white : Colors.black,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Divider(color: context.isDarkTheme ? Colors.white : Colors.black),
                           ),
                         OAuthLoginButton(
                           serverEndpointController: serverEndpointController,
@@ -471,10 +445,7 @@ class LoginForm extends HookConsumerWidget {
                       ],
                     ],
                   ),
-            if (!isOauthEnable.value && !isPasswordLoginEnable.value)
-              Center(
-                child: const Text('login_disabled').tr(),
-              ),
+            if (!isOauthEnable.value && !isPasswordLoginEnable.value) Center(child: const Text('login_disabled').tr()),
             const SizedBox(height: 12),
             TextButton.icon(
               icon: const Icon(Icons.arrow_back),
@@ -498,9 +469,7 @@ class LoginForm extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    height: constraints.maxHeight / 5,
-                  ),
+                  SizedBox(height: constraints.maxHeight / 5),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -510,24 +479,16 @@ class LoginForm extends HookConsumerWidget {
                         onLongPress: () => populateTestLoginInfo1(),
                         child: RotationTransition(
                           turns: logoAnimationController,
-                          child: const ImmichLogo(
-                            heroTag: 'logo',
-                          ),
+                          child: const ImmichLogo(heroTag: 'logo'),
                         ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0, bottom: 16),
-                        child: ImmichTitleText(),
-                      ),
+                      const Padding(padding: EdgeInsets.only(top: 8.0, bottom: 16), child: ImmichTitleText()),
                     ],
                   ),
 
                   // Note: This used to have an AnimatedSwitcher, but was removed
                   // because of https://github.com/flutter/flutter/issues/120874
-                  Form(
-                    key: loginFormKey,
-                    child: serverSelectionOrLogin,
-                  ),
+                  Form(key: loginFormKey, child: serverSelectionOrLogin),
                 ],
               ),
             ),

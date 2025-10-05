@@ -1,5 +1,4 @@
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 
 abstract final class UserStub {
   const UserStub._();
@@ -10,7 +9,7 @@ abstract final class UserStub {
     name: "admin",
     isAdmin: true,
     updatedAt: DateTime(2021),
-    profileImagePath: null,
+    profileChangedAt: DateTime(2021),
     avatarColor: AvatarColor.green,
   );
 
@@ -20,7 +19,7 @@ abstract final class UserStub {
     name: "user1",
     isAdmin: false,
     updatedAt: DateTime(2022),
-    profileImagePath: null,
+    profileChangedAt: DateTime(2022),
     avatarColor: AvatarColor.red,
   );
 
@@ -30,7 +29,7 @@ abstract final class UserStub {
     name: "user2",
     isAdmin: false,
     updatedAt: DateTime(2023),
-    profileImagePath: null,
+    profileChangedAt: DateTime(2023),
     avatarColor: AvatarColor.primary,
   );
 }

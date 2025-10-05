@@ -230,6 +230,19 @@ export const user_metadata_audit = registerFunction({
     END`,
 });
 
+export const asset_metadata_audit = registerFunction({
+  name: 'asset_metadata_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_metadata_audit ("assetId", "key")
+      SELECT "assetId", "key"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
 export const asset_face_audit = registerFunction({
   name: 'asset_face_audit',
   returnType: 'TRIGGER',

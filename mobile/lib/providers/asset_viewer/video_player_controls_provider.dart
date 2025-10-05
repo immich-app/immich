@@ -2,11 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 
 class VideoPlaybackControls {
-  const VideoPlaybackControls({
-    required this.position,
-    required this.pause,
-    this.restarted = false,
-  });
+  const VideoPlaybackControls({required this.position, required this.pause, this.restarted = false});
 
   final double position;
   final bool pause;
@@ -67,9 +63,9 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
 
   void restart() {
     state = const VideoPlaybackControls(position: 0, pause: false, restarted: true);
-    ref.read(videoPlaybackValueProvider.notifier).value = ref.read(videoPlaybackValueProvider.notifier).value.copyWith(
-          state: VideoPlaybackState.playing,
-          position: Duration.zero,
-        );
+    ref.read(videoPlaybackValueProvider.notifier).value = ref
+        .read(videoPlaybackValueProvider.notifier)
+        .value
+        .copyWith(state: VideoPlaybackState.playing, position: Duration.zero);
   }
 }

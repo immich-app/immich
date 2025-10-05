@@ -1,13 +1,13 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { placesViewSettings } from '$lib/stores/preferences.store';
-  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
-  import { mdiChevronRight } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { t } from 'svelte-i18n';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { type PlacesGroup, isPlacesGroupCollapsed, togglePlacesGroupCollapsing } from '$lib/utils/places-utils';
+  import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
+  import { mdiChevronRight } from '@mdi/js';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     places: AssetResponseDto[];
@@ -28,7 +28,7 @@
       class="w-fit mt-2 pt-2 pe-2 mb-2 dark:text-immich-dark-fg"
       aria-expanded={!isCollapsed}
     >
-      <Icon path={mdiChevronRight} size="24" class="inline-block -mt-2.5 transition-all duration-250 {iconRotation}" />
+      <Icon icon={mdiChevronRight} size="24" class="inline-block -mt-2.5 transition-all duration-250 {iconRotation}" />
       <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
       <span class="ms-1.5">({$t('places_count', { values: { count: places.length } })})</span>
     </button>
@@ -52,7 +52,7 @@
             />
           </div>
           <span
-            class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
+            class="absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
           >
             {city}
           </span>

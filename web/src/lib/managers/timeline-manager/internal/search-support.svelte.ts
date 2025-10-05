@@ -1,4 +1,4 @@
-import { plainDateTimeCompare, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 import type { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
@@ -42,7 +42,7 @@ export function findMonthGroupForAsset(timelineManager: TimelineManager, id: str
 
 export function getMonthGroupByDate(
   timelineManager: TimelineManager,
-  targetYearMonth: TimelinePlainYearMonth,
+  targetYearMonth: TimelineYearMonth,
 ): MonthGroup | undefined {
   return timelineManager.months.find(
     (month) => month.yearMonth.year === targetYearMonth.year && month.yearMonth.month === targetYearMonth.month,
@@ -135,7 +135,7 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
   return range;
 }
 
-export function findMonthGroupForDate(timelineManager: TimelineManager, targetYearMonth: TimelinePlainYearMonth) {
+export function findMonthGroupForDate(timelineManager: TimelineManager, targetYearMonth: TimelineYearMonth) {
   for (const month of timelineManager.months) {
     const { year, month: monthNum } = month.yearMonth;
     if (monthNum === targetYearMonth.month && year === targetYearMonth.year) {

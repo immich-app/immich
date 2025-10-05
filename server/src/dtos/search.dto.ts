@@ -6,7 +6,7 @@ import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
@@ -126,6 +126,15 @@ export class RandomSearchDto extends BaseSearchWithResultsDto {
   withPeople?: boolean;
 }
 
+export class LargeAssetSearchDto extends BaseSearchWithResultsDto {
+  @Optional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  minFileSize?: number;
+}
+
 export class MetadataSearchDto extends RandomSearchDto {
   @ValidateUUID({ optional: true })
   id?: string;
@@ -135,9 +144,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   deviceAssetId?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   description?: string;
 
   @IsString()
@@ -145,9 +152,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   checksum?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   originalFileName?: string;
 
   @IsString()
@@ -181,16 +186,17 @@ export class MetadataSearchDto extends RandomSearchDto {
 }
 
 export class StatisticsSearchDto extends BaseSearchDto {
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   description?: string;
 }
 
 export class SmartSearchDto extends BaseSearchWithResultsDto {
-  @IsString()
-  @IsNotEmpty()
-  query!: string;
+  @ValidateString({ optional: true, trim: true })
+  query?: string;
+
+  @ValidateUUID({ optional: true })
+  @Optional()
+  queryAssetId?: string;
 
   @IsString()
   @IsNotEmpty()

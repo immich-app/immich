@@ -7,19 +7,10 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 class Memory {
   final String title;
   final List<Asset> assets;
-  const Memory({
-    required this.title,
-    required this.assets,
-  });
+  const Memory({required this.title, required this.assets});
 
-  Memory copyWith({
-    String? title,
-    List<Asset>? assets,
-  }) {
-    return Memory(
-      title: title ?? this.title,
-      assets: assets ?? this.assets,
-    );
+  Memory copyWith({String? title, List<Asset>? assets}) {
+    return Memory(title: title ?? this.title, assets: assets ?? this.assets);
   }
 
   @override

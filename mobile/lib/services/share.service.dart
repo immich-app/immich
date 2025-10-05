@@ -39,10 +39,7 @@ class ShareService {
           final res = await _apiService.assetsApi.downloadAssetWithHttpInfo(asset.remoteId!);
 
           if (res.statusCode != 200) {
-            _log.severe(
-              "Asset download for ${asset.fileName} failed",
-              res.toLoggerString(),
-            );
+            _log.severe("Asset download for ${asset.fileName} failed", res.toLoggerString());
             continue;
           }
 
@@ -57,18 +54,13 @@ class ShareService {
       }
 
       if (downloadedXFiles.length != assets.length) {
-        _log.warning(
-          "Partial share - Requested: ${assets.length}, Sharing: ${downloadedXFiles.length}",
-        );
+        _log.warning("Partial share - Requested: ${assets.length}, Sharing: ${downloadedXFiles.length}");
       }
 
       final size = MediaQuery.of(context).size;
       Share.shareXFiles(
         downloadedXFiles,
-        sharePositionOrigin: Rect.fromPoints(
-          Offset.zero,
-          Offset(size.width / 3, size.height),
-        ),
+        sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
       );
       return true;
     } catch (error) {

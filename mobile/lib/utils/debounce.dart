@@ -27,8 +27,9 @@ class Debouncer {
   }
 
   Future<void>? drain() {
-    if (_timer != null && _timer!.isActive) {
-      _timer!.cancel();
+    final timer = _timer;
+    if (timer != null && timer.isActive) {
+      timer.cancel();
       if (_lastAction != null) {
         _callAndRest();
       }
@@ -68,21 +69,10 @@ Debouncer useDebouncer({
   Duration interval = const Duration(milliseconds: 300),
   Duration? maxWaitTime,
   List<Object?>? keys,
-}) =>
-    use(
-      _DebouncerHook(
-        interval: interval,
-        maxWaitTime: maxWaitTime,
-        keys: keys,
-      ),
-    );
+}) => use(_DebouncerHook(interval: interval, maxWaitTime: maxWaitTime, keys: keys));
 
 class _DebouncerHook extends Hook<Debouncer> {
-  const _DebouncerHook({
-    required this.interval,
-    this.maxWaitTime,
-    super.keys,
-  });
+  const _DebouncerHook({required this.interval, this.maxWaitTime, super.keys});
 
   final Duration interval;
   final Duration? maxWaitTime;
@@ -92,10 +82,7 @@ class _DebouncerHook extends Hook<Debouncer> {
 }
 
 class _DebouncerHookState extends HookState<Debouncer, _DebouncerHook> {
-  late final debouncer = Debouncer(
-    interval: hook.interval,
-    maxWaitTime: hook.maxWaitTime,
-  );
+  late final debouncer = Debouncer(interval: hook.interval, maxWaitTime: hook.maxWaitTime);
 
   @override
   Debouncer build(_) => debouncer;

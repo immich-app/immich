@@ -3,9 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -26,16 +25,13 @@ final driftUsersProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async
           id: entity.id,
           name: entity.name,
           email: entity.email,
-          isAdmin: entity.isAdmin,
-          profileImagePath: entity.profileImagePath,
-          updatedAt: entity.updatedAt,
-          quotaSizeInBytes: entity.quotaSizeInBytes ?? 0,
-          quotaUsageInBytes: entity.quotaUsageInBytes,
           isPartnerSharedBy: false,
           isPartnerSharedWith: false,
-          avatarColor: AvatarColor.primary,
+          avatarColor: entity.avatarColor,
           memoryEnabled: true,
           inTimeline: true,
+          profileChangedAt: entity.profileChangedAt,
+          hasProfileImage: entity.hasProfileImage,
         ),
       )
       .toList();
@@ -49,10 +45,7 @@ final driftUsersProvider = FutureProvider.autoDispose<List<UserDto>>((ref) async
 class DriftUserSelectionPage extends HookConsumerWidget {
   final RemoteAlbum album;
 
-  const DriftUserSelectionPage({
-    super.key,
-    required this.album,
-  });
+  const DriftUserSelectionPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,17 +58,9 @@ class DriftUserSelectionPage extends HookConsumerWidget {
 
     buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
-        return CircleAvatar(
-          backgroundColor: context.primaryColor,
-          child: const Icon(
-            Icons.check_rounded,
-            size: 25,
-          ),
-        );
+        return CircleAvatar(backgroundColor: context.primaryColor, child: const Icon(Icons.check_rounded, size: 25));
       } else {
-        return UserCircleAvatar(
-          user: user,
-        );
+        return UserCircleAvatar(user: user);
       }
     }
 
@@ -88,31 +73,19 @@ class DriftUserSelectionPage extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Chip(
               backgroundColor: context.primaryColor.withValues(alpha: 0.15),
-              label: Text(
-                user.name,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              label: Text(user.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             ),
           ),
         );
       }
       return ListView(
         children: [
-          Wrap(
-            children: [...usersChip],
-          ),
+          Wrap(children: [...usersChip]),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
               'suggestions'.tr(),
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold),
             ),
           ),
           ListView.builder(
@@ -122,31 +95,15 @@ class DriftUserSelectionPage extends HookConsumerWidget {
               return ListTile(
                 leading: buildTileIcon(users[index]),
                 dense: true,
-                title: Text(
-                  users[index].name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  users[index].email,
-                  style: const TextStyle(
-                    fontSize: 12,
-                  ),
-                ),
+                title: Text(users[index].name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                subtitle: Text(users[index].email, style: const TextStyle(fontSize: 12)),
                 onTap: () {
                   if (sharedUsersList.value.contains(users[index])) {
                     sharedUsersList.value = sharedUsersList.value
-                        .where(
-                          (selectedUser) => selectedUser.id != users[index].id,
-                        )
+                        .where((selectedUser) => selectedUser.id != users[index].id)
                         .toSet();
                   } else {
-                    sharedUsersList.value = {
-                      ...sharedUsersList.value,
-                      users[index],
-                    };
+                    sharedUsersList.value = {...sharedUsersList.value, users[index]};
                   }
                 },
               );
@@ -159,9 +116,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'invite_to_album',
-        ).tr(),
+        title: const Text('invite_to_album').tr(),
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
@@ -173,10 +128,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
         actions: [
           TextButton(
             onPressed: sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
-            child: const Text(
-              "add",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ).tr(),
+            child: const Text("add", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
           ),
         ],
       ),

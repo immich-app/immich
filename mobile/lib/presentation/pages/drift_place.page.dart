@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -38,23 +39,21 @@ class DriftPlacePage extends StatelessWidget {
   }
 }
 
-class _PlaceSliverAppBar extends StatelessWidget {
+class _PlaceSliverAppBar extends HookWidget {
   const _PlaceSliverAppBar({required this.search});
 
   final ValueNotifier<String?> search;
 
   @override
   Widget build(BuildContext context) {
-    final searchFocusNode = FocusNode();
+    final searchFocusNode = useFocusNode();
 
     return SliverAppBar(
       floating: true,
       pinned: true,
       snap: false,
       backgroundColor: context.colorScheme.surfaceContainer,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
       automaticallyImplyLeading: search.value == null,
       centerTitle: true,
       title: search.value != null
@@ -94,24 +93,17 @@ class _Map extends StatelessWidget {
               child: SizedBox(
                 height: 200,
                 width: context.width,
-                // TODO: migrate to DriftMapRoute after merging #19898
                 child: MapThumbnail(
-                  onTap: (_, __) => context.pushRoute(MapRoute(initialLocation: currentLocation)),
+                  onTap: (_, __) => context.pushRoute(DriftMapRoute(initialLocation: currentLocation)),
                   zoom: 8,
-                  centre: currentLocation ??
-                      const LatLng(
-                        21.44950,
-                        -157.91959,
-                      ),
+                  centre: currentLocation ?? const LatLng(21.44950, -157.91959),
                   showAttribution: false,
                   themeMode: context.isDarkTheme ? ThemeMode.dark : ThemeMode.light,
                 ),
               ),
             ),
           )
-        : const SliverToBoxAdapter(
-            child: SizedBox.shrink(),
-          );
+        : const SliverToBoxAdapter(child: SizedBox.shrink());
   }
 }
 
@@ -127,10 +119,7 @@ class _PlaceList extends ConsumerWidget {
     return places.when(
       loading: () => const SliverToBoxAdapter(
         child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ),
+          child: Padding(padding: EdgeInsets.all(20.0), child: CircularProgressIndicator()),
         ),
       ),
       error: (error, stack) => SliverToBoxAdapter(
@@ -139,9 +128,7 @@ class _PlaceList extends ConsumerWidget {
             padding: const EdgeInsets.all(20.0),
             child: Text(
               'Error loading places: $error, stack: $stack',
-              style: TextStyle(
-                color: context.colorScheme.error,
-              ),
+              style: TextStyle(color: context.colorScheme.error),
             ),
           ),
         ),
@@ -174,20 +161,13 @@ class _PlaceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return LargeLeadingTile(
       onTap: () => context.pushRoute(DriftPlaceDetailRoute(place: place.$1)),
-      title: Text(
-        place.$1,
-        style: context.textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      title: Text(place.$1, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
       leading: ClipRRect(
-        borderRadius: const BorderRadius.all(
-          Radius.circular(20),
-        ),
-        child: Thumbnail(
-          size: const Size(80, 80),
-          fit: BoxFit.cover,
-          remoteId: place.$2,
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        child: SizedBox(
+          width: 80,
+          height: 80,
+          child: Thumbnail.remote(remoteId: place.$2, fit: BoxFit.cover),
         ),
       ),
     );

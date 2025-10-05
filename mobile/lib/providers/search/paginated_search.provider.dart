@@ -28,10 +28,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
       return false;
     }
 
-    state = SearchResult(
-      assets: [...state.assets, ...result.assets],
-      nextPage: result.nextPage,
-    );
+    state = SearchResult(assets: [...state.assets, ...result.assets], nextPage: result.nextPage);
 
     return true;
   }
@@ -42,13 +39,8 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
 }
 
 @riverpod
-Future<RenderList> paginatedSearchRenderList(
-  Ref ref,
-) {
+Future<RenderList> paginatedSearchRenderList(Ref ref) {
   final result = ref.watch(paginatedSearchProvider);
   final timelineService = ref.watch(timelineServiceProvider);
-  return timelineService.getTimelineFromAssets(
-    result.assets,
-    GroupAssetsBy.none,
-  );
+  return timelineService.getTimelineFromAssets(result.assets, GroupAssetsBy.none);
 }

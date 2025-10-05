@@ -22,11 +22,13 @@ import {
   Validate,
   ValidateBy,
   ValidateIf,
+  ValidationArguments,
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
   buildMessage,
   isDateString,
+  isDefined,
 } from 'class-validator';
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
@@ -146,6 +148,27 @@ export function Optional({ nullable, emptyToNull, ...validationOptions }: Option
   return applyDecorators(...decorators);
 }
 
+export function IsNotSiblingOf(siblings: string[], validationOptions?: ValidationOptions) {
+  return ValidateBy(
+    {
+      name: 'isNotSiblingOf',
+      constraints: siblings,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          if (!isDefined(value)) {
+            return true;
+          }
+          return args.constraints.filter((prop) => isDefined((args.object as any)[prop])).length === 0;
+        },
+        defaultMessage: (args: ValidationArguments) => {
+          return `${args.property} cannot exist alongside any of the following properties: ${args.constraints.join(', ')}`;
+        },
+      },
+    },
+    validationOptions,
+  );
+}
+
 export const ValidateHexColor = () => {
   const decorators = [
     IsHexColor(),
@@ -183,6 +206,18 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
 
   if (optional) {
     decorators.push(Optional({ nullable }));
+  }
+
+  return applyDecorators(...decorators);
+};
+
+type StringOptions = { optional?: boolean; nullable?: boolean; trim?: boolean };
+export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => {
+  const { optional, nullable, trim, ...apiPropertyOptions } = options || {};
+  const decorators = [ApiProperty(apiPropertyOptions), IsString(), optional ? Optional({ nullable }) : IsNotEmpty()];
+
+  if (trim) {
+    decorators.push(Transform(({ value }: { value: string }) => value?.trim()));
   }
 
   return applyDecorators(...decorators);

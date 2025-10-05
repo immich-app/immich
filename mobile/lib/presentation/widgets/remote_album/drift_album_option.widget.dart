@@ -13,6 +13,7 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
     this.onCreateSharedLink,
     this.onToggleAlbumOrder,
     this.onEditAlbum,
+    this.onShowOptions,
   });
 
   final VoidCallback? onAddPhotos;
@@ -22,12 +23,11 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
   final VoidCallback? onCreateSharedLink;
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
+  final VoidCallback? onShowOptions;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    TextStyle textStyle = Theme.of(context).textTheme.bodyLarge!.copyWith(
-          fontWeight: FontWeight.w600,
-        );
+    TextStyle textStyle = Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600);
 
     return SafeArea(
       child: Padding(
@@ -38,72 +38,52 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
             if (onEditAlbum != null)
               ListTile(
                 leading: const Icon(Icons.edit),
-                title: Text(
-                  'edit_album'.t(context: context),
-                  style: textStyle,
-                ),
+                title: Text('edit_album'.t(context: context), style: textStyle),
                 onTap: onEditAlbum,
               ),
             if (onAddPhotos != null)
               ListTile(
                 leading: const Icon(Icons.add_a_photo),
-                title: Text(
-                  'add_photos'.t(context: context),
-                  style: textStyle,
-                ),
+                title: Text('add_photos'.t(context: context), style: textStyle),
                 onTap: onAddPhotos,
               ),
             if (onAddUsers != null)
               ListTile(
                 leading: const Icon(Icons.group_add),
-                title: Text(
-                  'album_viewer_page_share_add_users'.t(context: context),
-                  style: textStyle,
-                ),
+                title: Text('album_viewer_page_share_add_users'.t(context: context), style: textStyle),
                 onTap: onAddUsers,
               ),
             if (onLeaveAlbum != null)
               ListTile(
                 leading: const Icon(Icons.person_remove_rounded),
-                title: Text(
-                  'leave_album'.t(context: context),
-                  style: textStyle,
-                ),
+                title: Text('leave_album'.t(context: context), style: textStyle),
                 onTap: onLeaveAlbum,
               ),
             if (onToggleAlbumOrder != null)
               ListTile(
                 leading: const Icon(Icons.swap_vert_rounded),
-                title: Text(
-                  'change_display_order'.t(context: context),
-                  style: textStyle,
-                ),
+                title: Text('change_display_order'.t(context: context), style: textStyle),
                 onTap: onToggleAlbumOrder,
               ),
             if (onCreateSharedLink != null)
               ListTile(
                 leading: const Icon(Icons.link),
-                title: Text(
-                  'create_shared_link'.t(context: context),
-                  style: textStyle,
-                ),
+                title: Text('create_shared_link'.t(context: context), style: textStyle),
                 onTap: onCreateSharedLink,
               ),
-            if (onDeleteAlbum != null) ...[
-              const Divider(
-                indent: 16,
-                endIndent: 16,
-              ),
+            if (onShowOptions != null)
               ListTile(
-                leading: Icon(
-                  Icons.delete,
-                  color: context.isDarkTheme ? Colors.red[400] : Colors.red[800],
-                ),
+                leading: const Icon(Icons.settings),
+                title: Text('options'.t(context: context), style: textStyle),
+                onTap: onShowOptions,
+              ),
+            if (onDeleteAlbum != null) ...[
+              const Divider(indent: 16, endIndent: 16),
+              ListTile(
+                leading: Icon(Icons.delete, color: context.isDarkTheme ? Colors.red[400] : Colors.red[800]),
                 title: Text(
                   'delete_album'.t(context: context),
-                  style: textStyle.copyWith(
-                    color: context.isDarkTheme ? Colors.red[400] : Colors.red[800],
-                  ),
+                  style: textStyle.copyWith(color: context.isDarkTheme ? Colors.red[400] : Colors.red[800]),
                 ),
                 onTap: onDeleteAlbum,
               ),
