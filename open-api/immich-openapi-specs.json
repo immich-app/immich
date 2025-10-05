@@ -11050,6 +11050,13 @@
         ],
         "type": "string"
       },
+      "AssetOrderBy": {
+        "enum": [
+          "DATE_ADDED",
+          "DATE_TAKEN"
+        ],
+        "type": "string"
+      },
       "AssetResponseDto": {
         "properties": {
           "checksum": {
@@ -12604,6 +12611,14 @@
               }
             ],
             "default": "desc"
+          },
+          "orderBy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrderBy"
+              }
+            ],
+            "default": "DATE_TAKEN"
           },
           "originalFileName": {
             "type": "string"

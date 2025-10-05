@@ -34,6 +34,7 @@ class MetadataSearchDto {
     this.make,
     this.model,
     this.order = AssetOrder.desc,
+    this.orderBy = AssetOrderBy.TAKEN,
     this.originalFileName,
     this.originalPath,
     this.page,
@@ -183,6 +184,8 @@ class MetadataSearchDto {
   String? model;
 
   AssetOrder order;
+
+  AssetOrderBy orderBy;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -370,6 +373,7 @@ class MetadataSearchDto {
     other.make == make &&
     other.model == model &&
     other.order == order &&
+    other.orderBy == orderBy &&
     other.originalFileName == originalFileName &&
     other.originalPath == originalPath &&
     other.page == page &&
@@ -417,6 +421,7 @@ class MetadataSearchDto {
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
     (order.hashCode) +
+    (orderBy.hashCode) +
     (originalFileName == null ? 0 : originalFileName!.hashCode) +
     (originalPath == null ? 0 : originalPath!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
@@ -441,7 +446,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, orderBy=$orderBy, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -542,6 +547,7 @@ class MetadataSearchDto {
     //  json[r'model'] = null;
     }
       json[r'order'] = this.order;
+      json[r'orderBy'] = this.orderBy;
     if (this.originalFileName != null) {
       json[r'originalFileName'] = this.originalFileName;
     } else {
@@ -683,6 +689,7 @@ class MetadataSearchDto {
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
         order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
+        orderBy: AssetOrderBy.fromJson(json[r'orderBy']) ?? AssetOrderBy.TAKEN,
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
         page: num.parse('${json[r'page']}'),
