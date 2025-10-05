@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { AssetOrder, AssetOrderBy, AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -97,7 +97,8 @@ export interface SearchAlbumOptions {
 }
 
 export interface SearchOrderOptions {
-  orderDirection?: 'asc' | 'desc';
+  orderDirection?: AssetOrder;
+  orderBy?: AssetOrderBy;
 }
 
 export interface SearchPaginationOptions {
@@ -184,9 +185,11 @@ export class SearchRepository {
   })
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
+    const orderBy = options.orderBy ?? AssetOrderBy.DateTaken;
     const items = await searchAssetBuilder(this.db, options)
       .selectAll('asset')
-      .orderBy('asset.fileCreatedAt', orderDirection)
+      .$if(orderBy === AssetOrderBy.DateAdded, (qb) => qb.orderBy('asset.createdAt', orderDirection))
+      .$if(orderBy === AssetOrderBy.DateTaken, (qb) => qb.orderBy('asset.fileCreatedAt', orderDirection))
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();

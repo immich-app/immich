@@ -18,7 +18,7 @@ import {
   SmartSearchDto,
   StatisticsSearchDto,
 } from 'src/dtos/search.dto';
-import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
+import { AssetOrder, AssetOrderBy, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -67,6 +67,7 @@ export class SearchService extends BaseService {
         checksum,
         userIds,
         orderDirection: dto.order ?? AssetOrder.Desc,
+        orderBy: dto.orderBy ?? AssetOrderBy.DateTaken,
       },
     );
 
