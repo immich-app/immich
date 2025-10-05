@@ -141,7 +141,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
                           )
                         : Container(
                             margin: const EdgeInsets.only(top: 8),
-                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+                            decoration: const BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(8))),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: _filteredPeople.map((person) {
