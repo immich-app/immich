@@ -191,6 +191,10 @@ importers:
         version: 5.9.3
 
   e2e:
+    dependencies:
+      structured-headers:
+        specifier: ^2.0.2
+        version: 2.0.2
     devDependencies:
       '@eslint/js':
         specifier: ^9.8.0

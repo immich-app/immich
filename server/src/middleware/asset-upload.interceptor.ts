@@ -16,7 +16,7 @@ export class AssetUploadInterceptor implements NestInterceptor {
     const res = context.switchToHttp().getResponse<Response<AssetMediaResponseDto>>();
 
     const checksum = fromMaybeArray(req.headers[ImmichHeader.Checksum]);
-    const response = await this.service.getUploadAssetIdByChecksum(req.auth, checksum);
+    const response = await this.service.getUploadAssetIdByChecksum(req.user, checksum);
     if (response) {
       res.status(200);
       return of({ status: AssetMediaStatus.DUPLICATE, id: response.id });

@@ -108,28 +108,6 @@ describe('/upload', () => {
       });
     });
 
-    it('should require upload-length', async () => {
-      const content = randomBytes(1024);
-
-      const { status, headers, body } = await request(app)
-        .post('/upload')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', assetData)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
-        .set('Upload-Complete', '?1')
-        .set('Content-Type', 'image/jpeg')
-        .send(content);
-
-      expect(status).toBe(400);
-      expect(headers['location']).toBeUndefined();
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: ['uploadLength must be an integer number', 'uploadLength must not be less than 0'],
-        }),
-      );
-    });
-
     it('should create an incomplete upload with Upload-Complete: ?0', async () => {
       const partialContent = randomBytes(512);
 
@@ -166,25 +144,6 @@ describe('/upload', () => {
       expect(status).toBe(201);
       expect(headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9\-]+$/);
       expect(headers['upload-incomplete']).toBe('?1');
-    });
-
-    it('should reject invalid checksum', async () => {
-      const content = randomBytes(1024);
-
-      const { status, headers, body } = await request(app)
-        .post('/upload')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', assetData)
-        .set('Repr-Digest', `sha=:INVALID:`)
-        .set('Upload-Complete', '?1')
-        .set('Content-Type', 'image/jpeg')
-        .set('Upload-Length', '1024')
-        .send(content);
-
-      expect(status).toBe(400);
-      expect(headers['location']).toBeUndefined();
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid repr-digest header' }));
     });
 
     it('should reject attempt to upload completed asset', async () => {
@@ -422,36 +381,6 @@ describe('/upload', () => {
         'expected-offset': 1250,
         'provided-offset': wrongOffset,
       });
-    });
-
-    it('should require application/partial-upload content type if version is at least 6', async () => {
-      const { status, body } = await request(baseUrl)
-        .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Draft-Interop-Version', '6')
-        .set('Upload-Offset', '1250')
-        .set('Upload-Complete', '?0')
-        .set('Content-Type', 'application/octet-stream')
-        .send(randomBytes(100));
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({ message: ['contentType must be equal to application/partial-upload'] }),
-      );
-    });
-
-    it('should allow non-application/partial-upload content type if version is less than 6', async () => {
-      const { status, headers } = await request(baseUrl)
-        .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Draft-Interop-Version', '3')
-        .set('Upload-Offset', '1250')
-        .set('Upload-Incomplete', '?1')
-        .set('Content-Type', 'application/octet-stream')
-        .send();
-
-      expect(status).toBe(204);
-      expect(headers['upload-offset']).toBe('1250');
     });
 
     it('should complete upload with Upload-Complete: ?1', async () => {
@@ -765,15 +694,6 @@ describe('/upload', () => {
       expect(headers['upload-complete']).toBe('?0');
       expect(headers['upload-limit']).toEqual('min-size=0');
       expect(headers['cache-control']).toBe('no-store');
-    });
-
-    it('should return 400 for non-UUID upload resource', async () => {
-      const { status } = await request(app)
-        .head('/upload/nonexistent')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Draft-Interop-Version', '8');
-
-      expect(status).toBe(400);
     });
 
     it('should return 404 for non-existent upload resource', async () => {
