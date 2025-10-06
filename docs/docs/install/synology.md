@@ -34,23 +34,23 @@ Follow [Step 2 in Docker Compose](/install/docker-compose#step-2---populate-the-
 ## Step 3 - Create a new project in Container Manager
 
 Open Container Manager, and select the "**Project**" action on the left navigation bar and then click "**Create**".
-![Create Project](../../static/img/synology-container-manager-create-project.png)
+![Create project](../../static/img/synology-container-manager-create-project.png)
 
 In the settings of your new project, set "**Project name**" to a name you'll remember, such as _immich-app_. When setting the "**Path**", select the `./docker/immich-app` directory you created earlier. Doing so will prompt a message to use the existing `docker-compose.yml` already present in the directory for your project. Click "**OK**" to continue.
 
-![Set Path](../../static/img/synology-container-manager-set-path.png)
+![Set path](../../static/img/synology-container-manager-set-path.png)
 
 The following screen will give you the option to further customize your `docker-compose.yml` file. Take note of `DB_STORAGE_TYPE: 'HDD'`and uncomment if applicable for your Synology setup.
 
-![DB Storage](../../static/img/synology-container-manager-customize-docker-compose.png)
+![DB storage](../../static/img/synology-container-manager-customize-docker-compose.png)
 
 Skip the section asking to set-up a portal for Web Station, and then complete the wizard which will build and start the containers for your project.
 
 Once your containers are successfully running, navigate to the "**Container**" section of Container Manager, right-click on the "**immich-server**" container, and choose the "**Details**".
 
-Scroll to the bottom of the "**Details**" section, and find the `IP Address` of the container, located in the `Network` section. Take note of the container's IP address as you will need it for **Step 4**.
+Scroll to the bottom of the "**Details**" section and find the `IP Address` listed in the `Network` section. Take note of the container's IP address as you will need it for **Step 4**.
 
-![Container Details](../../static/img/synology-container-manager-container-details.png)
+![Container details](../../static/img/synology-container-manager-container-details.png)
 
 ## Step 4 - Configure Firewall Settings
 
@@ -68,7 +68,7 @@ Click "**Edit Rules**" and add the following firewall rules:
 
 - Add a "**Ports**" rule for the port specified in the `docker-compose.yml`, which should be `2283`
   
-![custom Port rule](../../static/img/synology-custom-port-firewall-rule.png)
+![Custom port rule](../../static/img/synology-custom-port-firewall-rule.png)
 
 ## Next Steps
 
@@ -79,7 +79,7 @@ Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instr
 Check the post installation and upgrade instructions at the links above before proceeding with this section.
 
 ## Step 1. Backup
-Ensure your photos and videos are backed up. Your `.env` settings will define where they are stored.There is no need to delete any files or folders within the `docker` folder when doing a release upgrade unless instructed in the release notes, or you know what you are doing.
+Ensure your photos and videos are backed up. Your `.env` settings will define where they are stored. There is no need to delete any files or folders within the `docker` folder when doing a release upgrade unless instructed in the release notes.
 
 ## Step 2. Check release notes
 Always check the [release notes](https://github.com/immich-app/immich/releases) before proceeding with an update!
@@ -107,7 +107,7 @@ Go to **Project**, select **Action** then **Build**. This will download, unpack,
 ![Build](../../static/img/synology-build.png)
 
 ## Step 5. Update firewall rule
-The default option is to automatically start the containers once installed. If `immich_server` runs for a few seconds and then stops it may be because the firewall rule no longer matches the server IP address.
+The default behavior is to automatically start the containers once installed. If `immich_server` runs for a few seconds and then stops, it may be because the firewall rule no longer matches the server IP address.
 
 Go to the **Container** section. Click on `immich_server` and scroll down on **General** to find the IP address.
 ![Container IP](../../static/img/synology-container-ip.png)
@@ -116,7 +116,7 @@ Go to Synology **Control Panel**. Select **Security** and **Firewall**.
 
 ![Firewall](../../static/img/synology-fw-rules.png)
 
-In this example the IP addresses mismatch and the firewall rule needs to be edited to match above.
+In this example, the IP addresses mismatch and the firewall rule needs to be edited to match above.
 
 ![Edit IP](../../static/img/synology-fw-ipedit.png)
 </details>
