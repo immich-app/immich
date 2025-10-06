@@ -63,11 +63,11 @@ Open "**Control Panel**" on your Synology NAS, and select "**Security**". Naviga
 Click "**Edit Rules**" and add the following firewall rules:
 
 - Add a "**Source IP**" rule for the IP address of your container that you obtained in Step 3 above
-  
+
 ![IP address rule](../../static/img/synology-ipaddress-firewall-rule.png)
 
 - Add a "**Ports**" rule for the port specified in the `docker-compose.yml`, which should be `2283`
-  
+
 ![Custom port rule](../../static/img/synology-custom-port-firewall-rule.png)
 
 ## Next Steps
@@ -79,12 +79,15 @@ Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instr
 Check the post installation and upgrade instructions at the links above before proceeding with this section.
 
 ## Step 1. Backup
+
 Ensure your photos and videos are backed up. Your `.env` settings will define where they are stored. There is no need to delete any files or folders within the `docker` folder when doing a release upgrade unless instructed in the release notes.
 
 ## Step 2. Check release notes
+
 Always check the [release notes](https://github.com/immich-app/immich/releases) before proceeding with an update!
 
 ## Step 3. Stop containers & clean up
+
 Open **Container Manager**. Select **Project** then your Immich app
 
 ![Select project](../../static/img/synology-select-proj.png)
@@ -102,11 +105,13 @@ Go to **Image** and select **Remove Unused Images**.
 ![Remove unused](../../static/img/synology-remove-unused.png)
 
 ## Step 4. Build
+
 Go to **Project**, select **Action** then **Build**. This will download, unpack, install and start the containers.
 
 ![Build](../../static/img/synology-build.png)
 
 ## Step 5. Update firewall rule
+
 The default behavior is to automatically start the containers once installed. If `immich_server` runs for a few seconds and then stops, it may be because the firewall rule no longer matches the server IP address.
 
 Go to the **Container** section. Click on `immich_server` and scroll down on **General** to find the IP address.
@@ -119,4 +124,5 @@ Go to Synology **Control Panel**. Select **Security** and **Firewall**.
 In this example, the IP addresses mismatch and the firewall rule needs to be edited to match above.
 
 ![Edit IP](../../static/img/synology-fw-ipedit.png)
+
 </details>
