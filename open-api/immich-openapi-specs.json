@@ -8842,6 +8842,15 @@
             }
           },
           {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrderBy"
+            }
+          },
+          {
             "name": "personId",
             "required": false,
             "in": "query",
@@ -9003,6 +9012,15 @@
             "description": "Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrder"
+            }
+          },
+          {
+            "name": "orderBy",
+            "required": false,
+            "in": "query",
+            "description": "Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)",
+            "schema": {
+              "$ref": "#/components/schemas/AssetOrderBy"
             }
           },
           {
@@ -11047,6 +11065,14 @@
         "enum": [
           "asc",
           "desc"
+        ],
+        "type": "string"
+      },
+      "AssetOrderBy": {
+        "enum": [
+          "DATE_ADDED",
+          "DATE_DELETED",
+          "DATE_TAKEN"
         ],
         "type": "string"
       },

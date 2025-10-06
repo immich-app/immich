@@ -4301,12 +4301,13 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    orderBy?: AssetOrderBy;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -4326,6 +4327,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         isTrashed,
         key,
         order,
+        orderBy,
         personId,
         slug,
         tagId,
@@ -4342,12 +4344,13 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
+    orderBy?: AssetOrderBy;
     personId?: string;
     slug?: string;
     tagId?: string;
@@ -4366,6 +4369,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         isTrashed,
         key,
         order,
+        orderBy,
         personId,
         slug,
         tagId,
@@ -5039,4 +5043,9 @@ export enum LogLevel {
 export enum OAuthTokenEndpointAuthMethod {
     ClientSecretPost = "client_secret_post",
     ClientSecretBasic = "client_secret_basic"
+}
+export enum AssetOrderBy {
+    DateAdded = "DATE_ADDED",
+    DateDeleted = "DATE_DELETED",
+    DateTaken = "DATE_TAKEN"
 }
