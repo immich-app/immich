@@ -62,12 +62,12 @@ The below diagram shows the job run order for newly uploaded files
 
 ```mermaid
 graph TD
-    A[Asset Uploaded] --> B[Extract Metadata]
+    A[Asset Upload] --> B[Metadata Extraction]
     B --> C[Storage Template Migration]
-    C --> D["Generate Thumbnails (Large, small, blurred and person)"]
+    C --> D["Thumbnail Generation (Large, small, blurred and person)"]
     D --> E[Smart Search]
     D --> F[Face Detection]
-    D --> G[Transcode Video]
+    D --> G[Video Transcoding]
     E --> H[Duplicate Detection]
     F --> I[Facial Recognition]
 ```
