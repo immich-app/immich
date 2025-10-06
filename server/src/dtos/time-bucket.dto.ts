@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { IsString } from 'class-validator';
-import { AssetOrder, AssetVisibility } from 'src/enum';
+import { AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum';
 import { ValidateBoolean, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class TimeBucketDto {
@@ -45,6 +45,14 @@ export class TimeBucketDto {
     optional: true,
   })
   order?: AssetOrder;
+
+  @ValidateEnum({
+    enum: AssetOrderBy,
+    name: 'AssetOrderBy',
+    description: 'Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)',
+    optional: true,
+  })
+  orderBy?: AssetOrderBy;
 
   @ValidateEnum({
     enum: AssetVisibility,

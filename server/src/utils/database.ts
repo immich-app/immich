@@ -16,7 +16,7 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { parse } from 'pg-connection-string';
 import postgres, { Notice, PostgresError } from 'postgres';
 import { columns, Exif, Person } from 'src/database';
-import { AssetFileType, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
+import { AssetFileType, AssetOrderBy, AssetVisibility, DatabaseExtension, DatabaseSslMode } from 'src/enum';
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { DatabaseConnectionParams, VectorExtension } from 'src/types';
@@ -282,8 +282,30 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>() {
-  return sql<O>`date_trunc(${sql.lit('MONTH')}, "localDateTime" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function getTimeBucketRef(eb: ExpressionBuilder<DB, 'asset'>, orderBy: AssetOrderBy) {
+  if (orderBy === AssetOrderBy.DateAdded) {
+    return eb.ref('asset.createdAt');
+  } else if (orderBy === AssetOrderBy.DateDeleted) {
+    return eb.ref('asset.deletedAt');
+  }
+
+  return eb.ref('asset.fileCreatedAt');
+}
+
+export function getTimeBucketOffset(eb: ExpressionBuilder<DB, 'asset'>, orderBy: AssetOrderBy) {
+  if (orderBy === AssetOrderBy.DateTaken) {
+    return sql`extract(epoch from (asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`;
+  }
+
+  return sql.lit(0);
+}
+
+export function getTimeBucket<O>(
+  eb: ExpressionBuilder<DB, 'asset'>,
+  orderBy: AssetOrderBy,
+  timezone: Expression<string> = sql.lit('UTC'),
+) {
+  return sql<O>`date_trunc(${sql.lit('MONTH')}, ${getTimeBucketRef(eb, orderBy)}, ${timezone})`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {
