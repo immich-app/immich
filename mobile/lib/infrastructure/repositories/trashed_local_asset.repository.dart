@@ -239,13 +239,14 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   //attempt to reuse existing checksums
   Future<Map<String, String>> _getCachedChecksums(Iterable<TrashedAsset> trashUpdates) async {
     final ids = trashUpdates.map((e) => e.id).toSet();
-    final rows = await (_db.selectOnly(_db.localAssetEntity)
-      ..where(_db.localAssetEntity.id.isIn(ids) & _db.localAssetEntity.checksum.isNotNull())
-      ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum]))
-        .get();
+    final rows =
+        await (_db.selectOnly(_db.localAssetEntity)
+              ..where(_db.localAssetEntity.id.isIn(ids) & _db.localAssetEntity.checksum.isNotNull())
+              ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum]))
+            .get();
 
     final localChecksumById = {
-      for (final r in rows) r.read(_db.localAssetEntity.id)!: r.read(_db.localAssetEntity.checksum)!
+      for (final r in rows) r.read(_db.localAssetEntity.id)!: r.read(_db.localAssetEntity.checksum)!,
     };
     return localChecksumById;
   }

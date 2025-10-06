@@ -29,7 +29,6 @@ class TrashSyncService {
   bool get isTrashSyncMode =>
       CurrentPlatform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid);
 
-
   Future<void> handleRemoteTrashed(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
       return Future.value();
@@ -52,4 +51,3 @@ class TrashSyncService {
     }
   }
 }
-
