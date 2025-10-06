@@ -88,6 +88,7 @@ class DownloadRepository {
       final id = asset.id;
       final livePhotoVideoId = asset.livePhotoVideoId;
       final isVideo = asset.isVideo;
+      final url = getOriginalUrlForRemoteId(id);
 
       // on iOS it cannot link the image, check if the filename has .MP extension
       // to avoid downloading the video part
@@ -96,7 +97,7 @@ class DownloadRepository {
       if (Platform.isAndroid || livePhotoVideoId == null || isVideo || isAndroidMotionPhoto) {
         tasks[taskIndex++] = DownloadTask(
           taskId: id,
-          url: getOriginalUrlForRemoteId(id),
+          url: url,
           headers: headers,
           filename: asset.name,
           updates: Updates.statusAndProgress,
@@ -109,7 +110,7 @@ class DownloadRepository {
       _dummyMetadata['id'] = id;
       tasks[taskIndex++] = DownloadTask(
         taskId: id,
-        url: getOriginalUrlForRemoteId(id),
+        url: url,
         headers: headers,
         filename: asset.name,
         updates: Updates.statusAndProgress,
