@@ -51,6 +51,7 @@ class DriftEditImagePage extends ConsumerWidget {
   }
 
   void _exitEditing(BuildContext context) {
+    // this assumes that the only way to get to this page is from the AssetViewerRoute
     context.navigator.popUntil((route) => route.data?.name == AssetViewerRoute.name);
   }
 
