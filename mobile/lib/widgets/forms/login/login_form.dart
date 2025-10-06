@@ -37,6 +37,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginForm extends HookConsumerWidget {
   LoginForm({super.key});
@@ -367,6 +368,25 @@ class LoginForm extends HookConsumerWidget {
                   onPressed: isLoadingServer.value ? null : getServerAuthSettings,
                   icon: const Icon(Icons.arrow_forward_rounded),
                   label: const Text('next', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              InkWell(
+                onTap: () => launchUrl(
+                  Uri.parse('https://pixelunion.eu/about/mobile-onboarding'),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: Text(
+                  "Don't have an account yet?",
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                 ),
               ),
             ],
