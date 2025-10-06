@@ -131,10 +131,13 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B231F52D2E93A44A00BC45D1 /* Core */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Core;
+			sourceTree = "<group>";
+		};
 		B2CF7F8C2DDE4EBB00744BF6 /* Sync */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Sync;
 			sourceTree = "<group>";
 		};
@@ -247,6 +250,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				B231F52D2E93A44A00BC45D1 /* Core */,
 				B25D37792E72CA15008B6CA7 /* Connectivity */,
 				B21E34A62E5AF9760031FDB9 /* Background */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
@@ -331,6 +335,7 @@
 				F0B57D482DF764BE00DC5BCC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
+				B231F52D2E93A44A00BC45D1 /* Core */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
 			);
 			name = Runner;
@@ -521,9 +526,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -553,9 +562,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

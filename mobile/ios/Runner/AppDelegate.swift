@@ -20,7 +20,7 @@ import UIKit
 
     GeneratedPluginRegistrant.register(with: self)
     let controller: FlutterViewController = window?.rootViewController as! FlutterViewController
-    AppDelegate.registerPlugins(binaryMessenger: controller.binaryMessenger)
+    AppDelegate.registerPlugins(with: controller.engine)
     BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
 
     BackgroundServicePlugin.registerBackgroundProcessing()
@@ -51,9 +51,11 @@ import UIKit
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
   
-  public static func registerPlugins(binaryMessenger: FlutterBinaryMessenger) {
-    NativeSyncApiSetup.setUp(binaryMessenger: binaryMessenger, api: NativeSyncApiImpl())
-    ThumbnailApiSetup.setUp(binaryMessenger: binaryMessenger, api: ThumbnailApiImpl())
-    BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: binaryMessenger, api: BackgroundWorkerApiImpl())
+  public static func registerPlugins(with engine: FlutterEngine) {
+    if !engine.hasPlugin("NativeSyncApi") {
+      NativeSyncApiImpl.register(with: engine.registrar(forPlugin: "NativeSyncApi")!)
+    }
+    ThumbnailApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: ThumbnailApiImpl())
+    BackgroundWorkerFgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: BackgroundWorkerApiImpl())
   }
 }
