@@ -363,9 +363,9 @@ class NativeSyncApiImpl: NativeSyncApi {
       PHAssetResourceManager.default().cancelDataRequest(requestId)
     })
   }
-
+  
   func getTrashedAssetsForAlbum(albumId: String) throws ->[PlatformAsset] {
-throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
-}
+    throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
+  }
 
 }
