@@ -300,7 +300,6 @@ class LocalSyncService {
       return Future.value();
     }
     final trashedAssets = <TrashedAsset>[];
-    //todo try to reuse exist checksums from local assets table before they updated
     for (final update in trashUpdates) {
       final albums = delta.assetAlbums.cast<String, List<Object?>>();
       for (final String id in albums[update.id]!.cast<String?>().nonNulls) {
@@ -329,13 +328,19 @@ class LocalSyncService {
 
   Future<void> _applyRemoteRestoreToLocal() async {
     final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
+    final toRestoreIds = <String>[];
     if (remoteAssetsToRestore.isNotEmpty) {
       _log.info("remoteAssetsToRestore: $remoteAssetsToRestore");
       for (final asset in remoteAssetsToRestore) {
         _log.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
-        await _localFilesManager.restoreFromTrashById(asset.id, asset.type.index);
+        try {
+          await _localFilesManager.restoreFromTrashById(asset.id, asset.type.index);
+          toRestoreIds.add(asset.id);
+        } catch (e) {
+          _log.warning("Restoring failure: $e");
+        }
       }
-      await _trashedLocalAssetRepository.restoreLocalAssets(remoteAssetsToRestore.map((e) => e.id));
+      await _trashedLocalAssetRepository.restoreLocalAssets(toRestoreIds);
     } else {
       _log.info("No remote assets found for restoration");
     }
