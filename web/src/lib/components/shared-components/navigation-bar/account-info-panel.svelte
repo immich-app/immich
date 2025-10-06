@@ -1,14 +1,13 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -56,7 +55,7 @@
       </div>
     </div>
     <div>
-      <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
+      <p class="text-center text-lg font-medium text-primary">
         {$user.name}
       </p>
       <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
@@ -73,7 +72,7 @@
         class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
       >
         <div class="flex place-content-center place-items-center text-center gap-2 px-2">
-          <Icon path={mdiCog} size="18" ariaHidden />
+          <Icon icon={mdiCog} size="18" aria-hidden />
           {$t('account_settings')}
         </div>
       </Button>
@@ -89,7 +88,7 @@
           class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
         >
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
-            <Icon path={mdiWrench} size="18" ariaHidden />
+            <Icon icon={mdiWrench} size="18" aria-hidden />
             {$t('administration')}
           </div>
         </Button>
@@ -108,7 +107,7 @@
 
     <button
       type="button"
-      class="text-center mt-4 underline text-xs text-immich-primary dark:text-immich-dark-primary"
+      class="text-center mt-4 underline text-xs text-primary"
       onclick={async () => {
         onClose();
         if (info) {

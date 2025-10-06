@@ -38,7 +38,7 @@ export class UserAdminService extends BaseService {
     await this.eventRepository.emit('UserSignup', {
       notify: !!notify,
       id: user.id,
-      tempPassword: user.shouldChangePassword ? userDto.password : undefined,
+      password: userDto.password,
     });
 
     return mapUserAdmin(user);

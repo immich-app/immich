@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.141.1
+ * 2.0.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -1383,6 +1383,11 @@ export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
 };
+export type MachineLearningAvailabilityChecksDto = {
+    enabled: boolean;
+    interval: number;
+    timeout: number;
+};
 export type ClipConfig = {
     enabled: boolean;
     modelName: string;
@@ -1399,12 +1404,11 @@ export type FacialRecognitionConfig = {
     modelName: string;
 };
 export type SystemConfigMachineLearningDto = {
+    availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
-    /** This property was deprecated in v1.122.0 */
-    url?: string;
     urls: string[];
 };
 export type SystemConfigMapDto = {
@@ -2368,7 +2372,7 @@ export function downloadAsset({ id, key, slug }: {
     }));
 }
 /**
- * replaceAsset
+ * Replace the asset with new file, without changing its id
  */
 export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;

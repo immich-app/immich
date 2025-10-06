@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -18,6 +17,7 @@ import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
@@ -150,10 +150,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _log.severe("Error getting user information from the server [API EXCEPTION]", stackTrace);
     } catch (error, stackTrace) {
       _log.severe("Error getting user information from the server [CATCH ALL]", error, stackTrace);
-
-      if (kDebugMode) {
-        debugPrint("Error getting user information from the server [CATCH ALL] $error $stackTrace");
-      }
+      dPrint(() => "Error getting user information from the server [CATCH ALL] $error $stackTrace");
     }
 
     // If the user is null, the login was not successful

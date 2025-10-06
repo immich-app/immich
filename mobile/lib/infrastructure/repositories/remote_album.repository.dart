@@ -62,7 +62,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               .toDto(
                 assetCount: row.read(assetCount) ?? 0,
                 ownerName: row.read(_db.userEntity.name)!,
-                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
               ),
         )
         .get();
@@ -107,7 +107,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               .toDto(
                 assetCount: row.read(assetCount) ?? 0,
                 ownerName: row.read(_db.userEntity.name)!,
-                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
               ),
         )
         .getSingleOrNull();
@@ -166,8 +166,15 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     );
   }
 
-  Future<int> removeAssets(String albumId, List<String> assetIds) {
-    return _db.remoteAlbumAssetEntity.deleteWhere((tbl) => tbl.albumId.equals(albumId) & tbl.assetId.isIn(assetIds));
+  Future<void> removeAssets(String albumId, List<String> assetIds) {
+    return _db.batch((batch) {
+      for (final assetId in assetIds) {
+        batch.deleteWhere(
+          _db.remoteAlbumAssetEntity,
+          (row) => row.albumId.equals(albumId) & row.assetId.equals(assetId),
+        );
+      }
+    });
   }
 
   FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
@@ -298,8 +305,9 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
           .readTable(_db.remoteAlbumEntity)
           .toDto(
             ownerName: row.read(_db.userEntity.name)!,
-            isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 2,
+            isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
           );
+
       return album;
     }).watchSingleOrNull();
   }
