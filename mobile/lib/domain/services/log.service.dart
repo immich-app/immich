@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
 /// Service responsible for handling application logging.
@@ -66,13 +66,12 @@ class LogService {
   }
 
   void _handleLogRecord(LogRecord r) {
-    if (kDebugMode) {
-      debugPrint(
-        '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
-        '${r.error == null ? '' : '\nError: ${r.error}'}'
-        '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
-      );
-    }
+    dPrint(
+      () =>
+          '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
+          '${r.error == null ? '' : '\nError: ${r.error}'}'
+          '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
+    );
 
     final record = LogMessage(
       message: r.message,

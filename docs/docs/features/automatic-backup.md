@@ -16,7 +16,7 @@ If foreground backup is enabled: whenever the app is opened or resumed, it will 
 
 ## Background backup
 
-This feature is intended for everyday use. For initial bulk uploading, please use the foreground upload feature. For more information on why background upload is not working as expected, please refer to the [FAQ](/docs/FAQ#why-does-foreground-backup-stop-when-i-navigate-away-from-the-app-shouldnt-it-transfer-the-job-to-background-backup).
+This feature is intended for everyday use. For initial bulk uploading, please use the foreground upload feature. For more information on why background upload is not working as expected, please refer to the [FAQ](/FAQ#why-does-foreground-backup-stop-when-i-navigate-away-from-the-app-shouldnt-it-transfer-the-job-to-background-backup).
 
 If background backup is enabled. The app will periodically check if there are any new photos or videos in the selected album(s) to be uploaded to the server. If there are, it will upload them to the cloud in the background.
 

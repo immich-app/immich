@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
-import 'package:intl/intl.dart' hide TextDirection;
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/utils/debounce.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
 /// for quick navigation of the BoxScrollView.
@@ -29,6 +31,11 @@ class Scrubber extends ConsumerStatefulWidget {
 
   final double? monthSegmentSnappingOffset;
 
+  final bool snapToMonth;
+
+  /// Whether an app bar is present, affects coordinate calculations
+  final bool hasAppBar;
+
   Scrubber({
     super.key,
     Key? scrollThumbKey,
@@ -37,6 +44,8 @@ class Scrubber extends ConsumerStatefulWidget {
     this.topPadding = 0,
     this.bottomPadding = 0,
     this.monthSegmentSnappingOffset,
+    this.snapToMonth = true,
+    this.hasAppBar = true,
     required this.child,
   }) : assert(child.scrollDirection == Axis.vertical);
 
@@ -45,7 +54,7 @@ class Scrubber extends ConsumerStatefulWidget {
 }
 
 List<_Segment> _buildSegments({required List<Segment> layoutSegments, required double timelineHeight}) {
-  const double offsetThreshold = 20.0;
+  const double offsetThreshold = 40.0;
 
   final segments = <_Segment>[];
   if (layoutSegments.isEmpty || layoutSegments.first.bucket is! TimeBucket) {
@@ -79,6 +88,9 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   double _thumbTopOffset = 0.0;
   bool _isDragging = false;
   List<_Segment> _segments = [];
+  int _monthCount = 0;
+  DateTime? _currentScrubberDate;
+  Debouncer? _scrubberDebouncer;
 
   late AnimationController _thumbAnimationController;
   Timer? _fadeOutTimer;
@@ -105,6 +117,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     _thumbAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
     _thumbAnimation = CurvedAnimation(parent: _thumbAnimationController, curve: Curves.fastEaseInToSlowEaseOut);
     _labelAnimationController = AnimationController(vsync: this, duration: kTimelineScrubberFadeInDuration);
+    _monthCount = getMonthCount();
 
     _labelAnimation = CurvedAnimation(parent: _labelAnimationController, curve: Curves.fastOutSlowIn);
   }
@@ -121,6 +134,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
 
     if (oldWidget.layoutSegments.lastOrNull?.endOffset != widget.layoutSegments.lastOrNull?.endOffset) {
       _segments = _buildSegments(layoutSegments: widget.layoutSegments, timelineHeight: _scrubberHeight);
+      _monthCount = getMonthCount();
     }
   }
 
@@ -129,6 +143,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     _thumbAnimationController.dispose();
     _labelAnimationController.dispose();
     _fadeOutTimer?.cancel();
+    _scrubberDebouncer?.dispose();
     super.dispose();
   }
 
@@ -138,6 +153,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       _thumbAnimationController.reverse();
       _fadeOutTimer = null;
     });
+  }
+
+  int getMonthCount() {
+    return _segments.map((e) => "${e.date.month}_${e.date.year}").toSet().length;
   }
 
   bool _onScrollNotification(ScrollNotification notification) {
@@ -168,8 +187,25 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     return false;
   }
 
+  void _onScrubberDateChanged(DateTime date) {
+    if (_currentScrubberDate != date) {
+      // Date changed, immediately set scrubbing to true
+      _currentScrubberDate = date;
+      ref.read(timelineStateProvider.notifier).setScrubbing(true);
+
+      // Initialize debouncer if needed
+      _scrubberDebouncer ??= Debouncer(interval: const Duration(milliseconds: 50));
+
+      // Debounce setting scrubbing to false
+      _scrubberDebouncer!.run(() {
+        if (_currentScrubberDate == date) {
+          ref.read(timelineStateProvider.notifier).setScrubbing(false);
+        }
+      });
+    }
+  }
+
   void _onDragStart(DragStartDetails _) {
-    ref.read(timelineStateProvider.notifier).setScrubbing(true);
     setState(() {
       _isDragging = true;
       _labelAnimationController.forward();
@@ -191,12 +227,26 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     final nearestMonthSegment = _findNearestMonthSegment(dragPosition);
 
     if (nearestMonthSegment != null) {
-      _snapToSegment(nearestMonthSegment);
       final label = nearestMonthSegment.scrollLabel;
       if (_lastLabel != label) {
         ref.read(hapticFeedbackProvider.notifier).selectionClick();
         _lastLabel = label;
+
+        // Notify timeline state of the new scrubber date position
+        if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+          _onScrubberDateChanged(nearestMonthSegment.date);
+        }
       }
+    }
+
+    if (_monthCount < kMinMonthsToEnableScrubberSnap || !widget.snapToMonth) {
+      // If there are less than kMinMonthsToEnableScrubberSnap months, we don't need to snap to segments
+      setState(() {
+        _thumbTopOffset = dragPosition;
+        _scrollController.jumpTo((dragPosition / _scrubberHeight) * _scrollController.position.maxScrollExtent);
+      });
+    } else if (nearestMonthSegment != null) {
+      _snapToSegment(nearestMonthSegment);
     }
   }
 
@@ -216,14 +266,28 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   /// - If user drags to global Y position that's 100 pixels from the top
   /// - The relative position would be 100 - 50 = 50 (50 pixels into the scrubber area)
   double _calculateDragPosition(DragUpdateDetails details) {
+    if (widget.hasAppBar) {
+      final dragAreaTop = widget.topPadding;
+      final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
+      final dragAreaHeight = dragAreaBottom - dragAreaTop;
+
+      final relativePosition = details.globalPosition.dy - dragAreaTop;
+
+      // Make sure the position stays within the scrubber's bounds
+      return relativePosition.clamp(0.0, dragAreaHeight);
+    }
+
+    // Get the local position relative to the gesture detector
+    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final localPosition = renderBox.globalToLocal(details.globalPosition);
+      return localPosition.dy.clamp(0.0, _scrubberHeight);
+    }
+
+    // Fallback to current logic if render box is not available
     final dragAreaTop = widget.topPadding;
-    final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
-    final dragAreaHeight = dragAreaBottom - dragAreaTop;
-
     final relativePosition = details.globalPosition.dy - dragAreaTop;
-
-    // Make sure the position stays within the scrubber's bounds
-    return relativePosition.clamp(0.0, dragAreaHeight);
+    return relativePosition.clamp(0.0, _scrubberHeight);
   }
 
   /// Find the segment closest to the given position
@@ -274,11 +338,17 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragEnd(DragEndDetails _) {
-    ref.read(timelineStateProvider.notifier).setScrubbing(false);
     _labelAnimationController.reverse();
     setState(() {
       _isDragging = false;
     });
+
+    ref.read(timelineStateProvider.notifier).setScrubbing(false);
+
+    // Reset scrubber tracking when drag ends
+    _currentScrubberDate = null;
+    _scrubberDebouncer?.dispose();
+    _scrubberDebouncer = null;
 
     _resetThumbTimer();
   }
@@ -370,7 +440,7 @@ class _SegmentWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: Container(
-        margin: const EdgeInsets.only(right: 12.0),
+        margin: const EdgeInsets.only(right: 36.0),
         child: Material(
           color: context.colorScheme.surface,
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),

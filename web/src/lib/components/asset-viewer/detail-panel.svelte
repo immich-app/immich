@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate, {
     type AbsoluteResult,
     type RelativeResult,
@@ -16,22 +16,15 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { preferences, user } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { delay, isFlipped } from '$lib/utils/asset-utils';
+  import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import {
-    AssetMediaSize,
-    getAssetInfo,
-    updateAsset,
-    type AlbumResponseDto,
-    type AssetResponseDto,
-    type ExifResponseDto,
-  } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import {
     mdiCalendar,
     mdiCameraIris,
@@ -48,7 +41,6 @@
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
@@ -61,17 +53,28 @@
 
   let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
 
-  const getDimensions = (exifInfo: ExifResponseDto) => {
-    const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
-    if (isFlipped(exifInfo.orientation)) {
-      return { width: height, height: width };
-    }
-
-    return { width, height };
-  };
-
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
+  let isOwner = $derived($user?.id === asset.ownerId);
+  let people = $derived(asset.people || []);
+  let unassignedFaces = $derived(asset.unassignedFaces || []);
+  let showingHiddenPeople = $state(false);
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromISODateTimeUTC(asset.localDateTime),
+  );
+  let latlng = $derived(
+    (() => {
+      const lat = asset.exifInfo?.latitude;
+      const lng = asset.exifInfo?.longitude;
+
+      if (lat && lng) {
+        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
+      }
+    })(),
+  );
   let previousId: string | undefined = $state();
 
   $effect(() => {
@@ -84,42 +87,6 @@
     }
   });
 
-  let isOwner = $derived($user?.id === asset.ownerId);
-
-  const handleNewAsset = async (newAsset: AssetResponseDto) => {
-    // TODO: check if reloading asset data is necessary
-    if (newAsset.id && !authManager.isSharedLink) {
-      const data = await getAssetInfo({ id: asset.id });
-      people = data?.people || [];
-      unassignedFaces = data?.unassignedFaces || [];
-    }
-  };
-
-  $effect(() => {
-    handlePromiseError(handleNewAsset(asset));
-  });
-
-  let latlng = $derived(
-    (() => {
-      const lat = asset.exifInfo?.latitude;
-      const lng = asset.exifInfo?.longitude;
-
-      if (lat && lng) {
-        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
-      }
-    })(),
-  );
-
-  let people = $state(asset.people || []);
-  let unassignedFaces = $state(asset.unassignedFaces || []);
-  let showingHiddenPeople = $state(false);
-  let timeZone = $derived(asset.exifInfo?.timeZone);
-  let dateTime = $derived(
-    timeZone && asset.exifInfo?.dateTimeOriginal
-      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromISODateTimeUTC(asset.localDateTime),
-  );
-
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
 
@@ -131,10 +98,7 @@
   };
 
   const handleRefreshPeople = async () => {
-    await getAssetInfo({ id: asset.id }).then((data) => {
-      people = data?.people || [];
-      unassignedFaces = data?.unassignedFaces || [];
-    });
+    asset = await getAssetInfo({ id: asset.id });
     showEditFaces = false;
   };
 
@@ -203,7 +167,7 @@
   {#if !authManager.isSharedLink && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
-        <h2>{$t('people').toUpperCase()}</h2>
+        <h2 class="uppercase">{$t('people')}</h2>
         <div class="flex gap-2 items-center">
           {#if people.some((person) => person.isHidden)}
             <IconButton
@@ -245,9 +209,11 @@
           {#if showingHiddenPeople || !person.isHidden}
             <a
               class="w-[90px]"
-              href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
-                ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
-                : AppRoute.PHOTOS}"
+              href={resolve(
+                `${AppRoute.PEOPLE}/${person.id}?${QueryParameter.PREVIOUS_ROUTE}=${
+                  currentAlbum?.id ? `${AppRoute.ALBUMS}/${currentAlbum?.id}` : AppRoute.PHOTOS
+                }`,
+              )}
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
               onmouseover={() => ($boundingBoxesArray = people[index].faces)}
@@ -304,10 +270,10 @@
   <div class="px-4 py-4">
     {#if asset.exifInfo}
       <div class="flex h-10 w-full items-center justify-between text-sm">
-        <h2>{$t('details').toUpperCase()}</h2>
+        <h2 class="uppercase">{$t('details')}</h2>
       </div>
     {:else}
-      <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
+      <p class="uppercase text-sm">{$t('no_exif_info_available')}</p>
     {/if}
 
     {#if dateTime}
@@ -316,12 +282,11 @@
         class="flex w-full text-start justify-between place-items-start gap-4 py-4"
         onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
-        class:hover:dark:text-immich-dark-primary={isOwner}
-        class:hover:text-immich-primary={isOwner}
+        class:hover:text-primary={isOwner}
       >
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
 
           <div>
@@ -353,7 +318,7 @@
 
         {#if isOwner}
           <div class="p-1">
-            <Icon path={mdiPencil} size="20" />
+            <Icon icon={mdiPencil} size="20" />
           </div>
         {/if}
       </button>
@@ -361,11 +326,11 @@
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
-            <Icon path={mdiCalendar} size="24" />
+            <Icon icon={mdiCalendar} size="24" />
           </div>
         </div>
         <div class="p-1">
-          <Icon path={mdiPencil} size="20" />
+          <Icon icon={mdiPencil} size="20" />
         </div>
       </div>
     {/if}
@@ -381,7 +346,7 @@
     {/if}
 
     <div class="flex gap-4 py-4">
-      <div><Icon path={mdiImageOutline} size="24" /></div>
+      <div><Icon icon={mdiImageOutline} size="24" /></div>
 
       <div>
         <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
@@ -399,10 +364,8 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p
-            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
-            transition:slide={{ duration: 250 }}
-          >
+          <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
+            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
               {asset.originalPath}
             </a>
@@ -429,18 +392,20 @@
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
-        <div><Icon path={mdiCameraIris} size="24" /></div>
+        <div><Icon icon={mdiCameraIris} size="24" /></div>
 
         <div>
           {#if asset.exifInfo?.make || asset.exifInfo?.model}
             <p>
               <a
-                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({
-                  ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
-                  ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
-                })}"
+                href={resolve(
+                  `${AppRoute.SEARCH}?${getMetadataSearchQuery({
+                    ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
+                    ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
+                  })}`,
+                )}
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
-                class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+                class="hover:text-primary"
               >
                 {asset.exifInfo.make || ''}
                 {asset.exifInfo.model || ''}
@@ -452,9 +417,11 @@
             <div class="flex gap-2 text-sm">
               <p>
                 <a
-                  href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
+                  href={resolve(
+                    `${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`,
+                  )}
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
+                  class="hover:text-primary line-clamp-1"
                 >
                   {asset.exifInfo.lensModel}
                 </a>
@@ -516,7 +483,7 @@
         simplified
         useLocationPin
         showSimpleControls={!showEditFaces}
-        onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
+        onOpenInMapView={() => goto(resolve(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`))}
       >
         {#snippet popup({ marker })}
           {@const { lat, lon } = marker}
@@ -525,7 +492,7 @@
             <a
               href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
-              class="font-medium text-immich-primary"
+              class="font-medium text-primary underline focus:outline-none"
             >
               {$t('open_in_openstreetmap')}
             </a>
@@ -538,7 +505,7 @@
 
 {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
   <section class="px-6 dark:text-immich-dark-fg mt-4">
-    <p class="text-sm">{$t('shared_by').toUpperCase()}</p>
+    <p class="uppercase text-sm">{$t('shared_by')}</p>
     <div class="flex gap-4 pt-4">
       <div>
         <UserAvatar user={asset.owner} size="md" />
@@ -555,9 +522,9 @@
 
 {#if albums.length > 0}
   <section class="px-6 pt-6 dark:text-immich-dark-fg">
-    <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
+    <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
-      <a href="{AppRoute.ALBUMS}/{album.id}">
+      <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
         <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img

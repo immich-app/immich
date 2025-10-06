@@ -132,12 +132,12 @@ export class BackupService extends BaseService {
         gzip.stdout.pipe(fileStream);
 
         pgdump.on('error', (err) => {
-          this.logger.error('Backup failed with error', err);
+          this.logger.error(`Backup failed with error: ${err}`);
           reject(err);
         });
 
         gzip.on('error', (err) => {
-          this.logger.error('Gzip failed with error', err);
+          this.logger.error(`Gzip failed with error: ${err}`);
           reject(err);
         });
 
@@ -175,10 +175,10 @@ export class BackupService extends BaseService {
       });
       await this.storageRepository.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
     } catch (error) {
-      this.logger.error('Database Backup Failure', error);
+      this.logger.error(`Database Backup Failure: ${error}`);
       await this.storageRepository
         .unlink(backupFilePath)
-        .catch((error) => this.logger.error('Failed to delete failed backup file', error));
+        .catch((error) => this.logger.error(`Failed to delete failed backup file: ${error}`));
       throw error;
     }
 
