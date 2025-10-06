@@ -535,8 +535,8 @@ export enum JobName {
   AssetFileMigration = 'AssetFileMigration',
   AssetGenerateThumbnailsQueueAll = 'AssetGenerateThumbnailsQueueAll',
   AssetGenerateThumbnails = 'AssetGenerateThumbnails',
-  PartialAssetDelete = 'PartialAssetCleanup',
-  PartialAssetDeleteQueueAll = 'PartialAssetCleanupQueueAll',
+  PartialAssetCleanup = 'PartialAssetCleanup',
+  PartialAssetCleanupQueueAll = 'PartialAssetCleanupQueueAll',
 
   AuditLogCleanup = 'AuditLogCleanup',
   AuditTableCleanup = 'AuditTableCleanup',

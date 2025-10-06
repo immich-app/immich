@@ -289,8 +289,8 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
-  setComplete(assetId: string) {
-    return this.db
+  async setComplete(assetId: string) {
+    await this.db
       .updateTable('asset')
       .set({ status: AssetStatus.Active, visibility: AssetVisibility.Timeline })
       .where('id', '=', assetId)
