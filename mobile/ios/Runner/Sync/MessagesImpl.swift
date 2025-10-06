@@ -17,7 +17,17 @@ struct AssetWrapper: Hashable, Equatable {
   }
 }
 
-class NativeSyncApiImpl: NativeSyncApi {
+class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
+  static func register(with registrar: any FlutterPluginRegistrar) {
+    let instance = NativeSyncApiImpl()
+    NativeSyncApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+    registrar.publish(instance)
+  }
+  
+  func detachFromEngine(for registrar: any FlutterPluginRegistrar) {
+    super.detachFromEngine()
+  }
+  
   private let defaults: UserDefaults
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
@@ -272,7 +282,8 @@ class NativeSyncApiImpl: NativeSyncApi {
       }
       
       if Task.isCancelled {
-        return completion(Self.hashCancelled)
+        self?.completeWhenActive(for: completion, with: Self.hashCancelled)
+        return
       }
       
       await withTaskGroup(of: HashResult?.self) { taskGroup in
@@ -280,7 +291,8 @@ class NativeSyncApiImpl: NativeSyncApi {
         results.reserveCapacity(assets.count)
         for asset in assets {
           if Task.isCancelled {
-            return completion(Self.hashCancelled)
+            self?.completeWhenActive(for: completion, with: Self.hashCancelled)
+            return
           }
           taskGroup.addTask {
             guard let self = self else { return nil }
@@ -290,7 +302,8 @@ class NativeSyncApiImpl: NativeSyncApi {
         
         for await result in taskGroup {
           guard let result = result else {
-            return completion(Self.hashCancelled)
+            self?.completeWhenActive(for: completion, with: Self.hashCancelled)
+            return
           }
           results.append(result)
         }
@@ -299,7 +312,8 @@ class NativeSyncApiImpl: NativeSyncApi {
           results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
         }
         
-        completion(.success(results))
+        self?.completeWhenActive(for: completion, with: .success(results))
+        return
       }
     }
   }

@@ -95,7 +95,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     // Register plugins in the new engine
     GeneratedPluginRegistrant.register(with: engine)
     // Register custom plugins
-    AppDelegate.registerPlugins(binaryMessenger: engine.binaryMessenger)
+    AppDelegate.registerPlugins(with: engine)
     flutterApi = BackgroundWorkerFlutterApi(binaryMessenger: engine.binaryMessenger)
     BackgroundWorkerBgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: self)
     
