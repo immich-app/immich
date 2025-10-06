@@ -2,8 +2,8 @@ FROM ghcr.io/immich-app/base-server-dev:202509210934@sha256:b5ce2d7eaf379d4cf15e
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
   COREPACK_HOME=/tmp \
-  PNPM_HOME=/pnpm \
-  PATH="/pnpm:$PATH"
+  PNPM_HOME=/buildcache/pnpm-store \
+  PATH="/buildcache/pnpm-store:$PATH"
 
 RUN npm install --global corepack@latest && \
   corepack enable pnpm && \
@@ -13,7 +13,7 @@ FROM builder AS server
 
 WORKDIR /usr/src/app
 COPY ./server ./server/
-RUN --mount=type=cache,id=pnpm-server,target=/pnpm \
+RUN --mount=type=cache,id=pnpm-server,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
@@ -27,7 +27,7 @@ WORKDIR /usr/src/app
 COPY ./web ./web/
 COPY ./i18n ./i18n/
 COPY ./open-api ./open-api/
-RUN --mount=type=cache,id=pnpm-web,target=/pnpm \
+RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
@@ -39,7 +39,7 @@ FROM builder AS cli
 
 COPY ./cli ./cli/
 COPY ./open-api ./open-api/
-RUN --mount=type=cache,id=pnpm-cli,target=/pnpm \
+RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
   --mount=type=bind,source=package.json,target=package.json \
   --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
   --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
