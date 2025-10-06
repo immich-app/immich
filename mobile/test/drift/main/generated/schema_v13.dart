@@ -7184,13 +7184,6 @@ class TrashedLocalAssetEntity extends Table
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  late final GeneratedColumn<String> volume = GeneratedColumn<String>(
-    'volume',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
     'checksum',
     aliasedName,
@@ -7228,7 +7221,6 @@ class TrashedLocalAssetEntity extends Table
     durationInSeconds,
     id,
     albumId,
-    volume,
     checksum,
     isFavorite,
     orientation,
@@ -7283,10 +7275,6 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.string,
         data['${effectivePrefix}album_id'],
       )!,
-      volume: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}volume'],
-      ),
       checksum: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}checksum'],
@@ -7324,7 +7312,6 @@ class TrashedLocalAssetEntityData extends DataClass
   final int? durationInSeconds;
   final String id;
   final String albumId;
-  final String? volume;
   final String? checksum;
   final bool isFavorite;
   final int orientation;
@@ -7338,7 +7325,6 @@ class TrashedLocalAssetEntityData extends DataClass
     this.durationInSeconds,
     required this.id,
     required this.albumId,
-    this.volume,
     this.checksum,
     required this.isFavorite,
     required this.orientation,
@@ -7361,9 +7347,6 @@ class TrashedLocalAssetEntityData extends DataClass
     }
     map['id'] = Variable<String>(id);
     map['album_id'] = Variable<String>(albumId);
-    if (!nullToAbsent || volume != null) {
-      map['volume'] = Variable<String>(volume);
-    }
     if (!nullToAbsent || checksum != null) {
       map['checksum'] = Variable<String>(checksum);
     }
@@ -7387,7 +7370,6 @@ class TrashedLocalAssetEntityData extends DataClass
       durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
       id: serializer.fromJson<String>(json['id']),
       albumId: serializer.fromJson<String>(json['albumId']),
-      volume: serializer.fromJson<String?>(json['volume']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
@@ -7406,7 +7388,6 @@ class TrashedLocalAssetEntityData extends DataClass
       'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
       'id': serializer.toJson<String>(id),
       'albumId': serializer.toJson<String>(albumId),
-      'volume': serializer.toJson<String?>(volume),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
@@ -7423,7 +7404,6 @@ class TrashedLocalAssetEntityData extends DataClass
     Value<int?> durationInSeconds = const Value.absent(),
     String? id,
     String? albumId,
-    Value<String?> volume = const Value.absent(),
     Value<String?> checksum = const Value.absent(),
     bool? isFavorite,
     int? orientation,
@@ -7439,7 +7419,6 @@ class TrashedLocalAssetEntityData extends DataClass
         : this.durationInSeconds,
     id: id ?? this.id,
     albumId: albumId ?? this.albumId,
-    volume: volume.present ? volume.value : this.volume,
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
@@ -7459,7 +7438,6 @@ class TrashedLocalAssetEntityData extends DataClass
           : this.durationInSeconds,
       id: data.id.present ? data.id.value : this.id,
       albumId: data.albumId.present ? data.albumId.value : this.albumId,
-      volume: data.volume.present ? data.volume.value : this.volume,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite: data.isFavorite.present
           ? data.isFavorite.value
@@ -7482,7 +7460,6 @@ class TrashedLocalAssetEntityData extends DataClass
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('albumId: $albumId, ')
-          ..write('volume: $volume, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation')
@@ -7501,7 +7478,6 @@ class TrashedLocalAssetEntityData extends DataClass
     durationInSeconds,
     id,
     albumId,
-    volume,
     checksum,
     isFavorite,
     orientation,
@@ -7519,7 +7495,6 @@ class TrashedLocalAssetEntityData extends DataClass
           other.durationInSeconds == this.durationInSeconds &&
           other.id == this.id &&
           other.albumId == this.albumId &&
-          other.volume == this.volume &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation);
@@ -7536,7 +7511,6 @@ class TrashedLocalAssetEntityCompanion
   final Value<int?> durationInSeconds;
   final Value<String> id;
   final Value<String> albumId;
-  final Value<String?> volume;
   final Value<String?> checksum;
   final Value<bool> isFavorite;
   final Value<int> orientation;
@@ -7550,7 +7524,6 @@ class TrashedLocalAssetEntityCompanion
     this.durationInSeconds = const Value.absent(),
     this.id = const Value.absent(),
     this.albumId = const Value.absent(),
-    this.volume = const Value.absent(),
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
@@ -7565,7 +7538,6 @@ class TrashedLocalAssetEntityCompanion
     this.durationInSeconds = const Value.absent(),
     required String id,
     required String albumId,
-    this.volume = const Value.absent(),
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
@@ -7583,7 +7555,6 @@ class TrashedLocalAssetEntityCompanion
     Expression<int>? durationInSeconds,
     Expression<String>? id,
     Expression<String>? albumId,
-    Expression<String>? volume,
     Expression<String>? checksum,
     Expression<bool>? isFavorite,
     Expression<int>? orientation,
@@ -7598,7 +7569,6 @@ class TrashedLocalAssetEntityCompanion
       if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
       if (id != null) 'id': id,
       if (albumId != null) 'album_id': albumId,
-      if (volume != null) 'volume': volume,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
@@ -7615,7 +7585,6 @@ class TrashedLocalAssetEntityCompanion
     Value<int?>? durationInSeconds,
     Value<String>? id,
     Value<String>? albumId,
-    Value<String?>? volume,
     Value<String?>? checksum,
     Value<bool>? isFavorite,
     Value<int>? orientation,
@@ -7630,7 +7599,6 @@ class TrashedLocalAssetEntityCompanion
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       id: id ?? this.id,
       albumId: albumId ?? this.albumId,
-      volume: volume ?? this.volume,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
@@ -7667,9 +7635,6 @@ class TrashedLocalAssetEntityCompanion
     if (albumId.present) {
       map['album_id'] = Variable<String>(albumId.value);
     }
-    if (volume.present) {
-      map['volume'] = Variable<String>(volume.value);
-    }
     if (checksum.present) {
       map['checksum'] = Variable<String>(checksum.value);
     }
@@ -7694,7 +7659,6 @@ class TrashedLocalAssetEntityCompanion
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('albumId: $albumId, ')
-          ..write('volume: $volume, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation')

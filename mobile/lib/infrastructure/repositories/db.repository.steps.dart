@@ -5427,7 +5427,6 @@ final class Schema13 extends i0.VersionedSchema {
         _column_12,
         _column_0,
         _column_95,
-        _column_96,
         _column_22,
         _column_14,
         _column_23,
@@ -5466,8 +5465,6 @@ class Shape23 extends i0.VersionedTable {
       columnsByName['id']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get albumId =>
       columnsByName['album_id']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get volume =>
-      columnsByName['volume']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<String> get checksum =>
       columnsByName['checksum']! as i1.GeneratedColumn<String>;
   i1.GeneratedColumn<bool> get isFavorite =>
@@ -5481,13 +5478,6 @@ i1.GeneratedColumn<String> _column_95(String aliasedName) =>
       'album_id',
       aliasedName,
       false,
-      type: i1.DriftSqlType.string,
-    );
-i1.GeneratedColumn<String> _column_96(String aliasedName) =>
-    i1.GeneratedColumn<String>(
-      'volume',
-      aliasedName,
-      true,
       type: i1.DriftSqlType.string,
     );
 i0.MigrationStepWithVersion migrationSteps({

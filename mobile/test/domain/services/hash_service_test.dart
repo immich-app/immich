@@ -191,36 +191,4 @@ void main() {
     });
   });
 
-  group('HashService hashAssets (trash sync mode)', () {
-    test('hashes trashed assets and writes to trashed repo', () async {
-      final album = LocalAlbumStub.recent;
-      final trashed1 = TrashedAssetStub.trashed1.copyWith(id: 't1');
-
-      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
-      when(() => mockTrashedAssetRepo.getAssetsToHash([album.id])).thenAnswer((_) async => [trashed1]);
-
-      when(
-        () => mockNativeApi.hashAssets([trashed1.id], allowNetworkAccess: false),
-      ).thenAnswer((_) async => [HashResult(assetId: trashed1.id, hash: 't1-hash')]);
-
-      await sut.hashAssets();
-
-      verify(() => mockNativeApi.hashAssets([trashed1.id], allowNetworkAccess: false)).called(1);
-      verify(() => mockTrashedAssetRepo.updateHashes({'t1': 't1-hash'})).called(1);
-      verifyNever(() => mockAssetRepo.updateHashes(any()));
-    });
-
-    test('skips when trashed list is empty', () async {
-      final album = LocalAlbumStub.recent;
-
-      when(() => mockAlbumRepo.getBackupAlbums()).thenAnswer((_) async => [album]);
-      when(() => mockTrashedAssetRepo.getAssetsToHash([album.id])).thenAnswer((_) async => []);
-
-      await sut.hashAssets();
-
-      verifyNever(() => mockNativeApi.hashAssets(any(), allowNetworkAccess: any(named: 'allowNetworkAccess')));
-      verifyNever(() => mockTrashedAssetRepo.updateHashes(any()));
-      verifyNever(() => mockAssetRepo.updateHashes(any()));
-    });
-  });
 }

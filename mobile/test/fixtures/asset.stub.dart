@@ -75,16 +75,3 @@ abstract final class LocalAssetStub {
     updatedAt: DateTime(20021),
   );
 }
-
-abstract final class TrashedAssetStub {
-  const TrashedAssetStub._();
-
-  static final trashed1 = TrashedAsset(
-    id: "t1",
-    name: "trashed1.jpg",
-    type: AssetType.image,
-    createdAt: DateTime(2025, 1, 1),
-    updatedAt: DateTime(2025, 1, 2),
-    albumId: "album1",
-  );
-}
