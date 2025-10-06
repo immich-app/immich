@@ -71,23 +71,14 @@ jobs:
       - name: Generate platform API
         run: make pigeon
 
-      - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-changed-files
-        with:
-          files: |
-            mobile/**/*.g.dart
-            mobile/**/*.gr.dart
-            mobile/**/*.drift.dart
-
       - name: Verify files have not changed
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
-          echo "Changed files: ${CHANGED_FILES}"
-          exit 1
+          if ! git diff --exit-code --quiet 'mobile/**/*.g.dart' 'mobile/**/*.gr.dart' 'mobile/**/*.drift.dart'; then
+            echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
+            echo "Changed files:"
+            git diff --name-only 'mobile/**/*.g.dart' 'mobile/**/*.gr.dart' 'mobile/**/*.drift.dart'
+            exit 1
+          fi
 
       - name: Run dart analyze
         run: dart analyze --fatal-infos

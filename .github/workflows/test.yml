@@ -251,20 +251,14 @@ jobs:
         run: pnpm --filter=immich-web install --frozen-lockfile
       - name: Format
         run: pnpm --filter=immich-web format:i18n
-      - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-changed-files
-        with:
-          files: |
-            i18n/**
       - name: Verify files have not changed
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: i18n files not up to date!"
-          echo "Changed files: ${CHANGED_FILES}"
-          exit 1
+          if ! git diff --exit-code --quiet i18n/; then
+            echo "ERROR: i18n files not up to date!"
+            echo "Changed files:"
+            git diff --name-only i18n/
+            exit 1
+          fi
   e2e-tests-lint:
     name: End-to-End Lint
     needs: pre-job
@@ -558,22 +552,14 @@ jobs:
       - name: Run API generation
         run: ./bin/generate-open-api.sh
         working-directory: open-api
-      - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-changed-files
-        with:
-          files: |
-            mobile/openapi
-            open-api/typescript-sdk
-            open-api/immich-openapi-specs.json
       - name: Verify files have not changed
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date!"
-          echo "Changed files: ${CHANGED_FILES}"
-          exit 1
+          if ! git diff --exit-code --quiet mobile/openapi open-api/typescript-sdk open-api/immich-openapi-specs.json; then
+            echo "ERROR: Generated files not up to date!"
+            echo "Changed files:"
+            git diff --name-only mobile/openapi open-api/typescript-sdk open-api/immich-openapi-specs.json
+            exit 1
+          fi
   sql-schema-up-to-date:
     name: SQL Schema Checks
     runs-on: ubuntu-latest
@@ -617,40 +603,28 @@ jobs:
       - name: Generate new migrations
         continue-on-error: true
         run: pnpm migrations:generate src/TestMigration
-      - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-changed-files
-        with:
-          files: |
-            server/src
       - name: Verify migration files have not changed
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated migration files not up to date!"
-          echo "Changed files: ${CHANGED_FILES}"
-          cat ./src/*-TestMigration.ts
-          exit 1
+          if ! git diff --exit-code --quiet server/src; then
+            echo "ERROR: Generated migration files not up to date!"
+            echo "Changed files:"
+            git diff --name-only server/src
+            cat ./src/*-TestMigration.ts
+            exit 1
+          fi
       - name: Run SQL generation
         run: pnpm sync:sql
         env:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
-      - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-changed-sql-files
-        with:
-          files: |
-            server/src/queries
       - name: Verify SQL files have not changed
-        if: steps.verify-changed-sql-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-sql-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated SQL files not up to date!"
-          echo "Changed files: ${CHANGED_FILES}"
-          git diff
-          exit 1
+          if ! git diff --exit-code --quiet server/src/queries; then
+            echo "ERROR: Generated SQL files not up to date!"
+            echo "Changed files:"
+            git diff --name-only server/src/queries
+            git diff
+            exit 1
+          fi
 
 # mobile-integration-tests:
 #   name: Run mobile end-to-end integration tests
