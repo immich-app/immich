@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "",
   "author": "",
   "private": true,
@@ -161,7 +161,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.19.0"
+    "node": "22.20.0"
   },
   "overrides": {
     "sharp": "^0.34.3"
