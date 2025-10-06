@@ -861,6 +861,37 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should always generate full-size preview from non-web-friendly panoramas', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: false } } });
+      mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(assetStub.panoramaTif);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.panoramaTif.originalPath, {
+        colorspace: Colorspace.Srgb,
+        orientation: undefined,
+        processInvalidImages: false,
+        size: undefined,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.Srgb,
+          format: ImageFormat.Jpeg,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        expect.any(String),
+      );
+    });
+
     it('should respect encoding options when generating full-size preview', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
         image: { fullsize: { enabled: true, format: ImageFormat.Webp, quality: 90 } },
