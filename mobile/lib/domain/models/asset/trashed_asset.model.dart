@@ -1,12 +1,10 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
 class TrashedAsset extends LocalAsset {
-  final String? volume;
   final String albumId;
 
   const TrashedAsset({
     required this.albumId,
-    this.volume,
     required super.id,
     super.remoteId,
     required super.name,
@@ -38,7 +36,6 @@ class TrashedAsset extends LocalAsset {
     String? livePhotoVideoId,
     int? orientation,
     String? albumId,
-    String? volume,
   }) {
     return TrashedAsset(
       id: id ?? this.id,
@@ -55,7 +52,6 @@ class TrashedAsset extends LocalAsset {
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       orientation: orientation ?? this.orientation,
       albumId: albumId ?? this.albumId,
-      volume: volume ?? this.volume,
     );
   }
 
@@ -79,7 +75,6 @@ class TrashedAsset extends LocalAsset {
           livePhotoVideoId == other.livePhotoVideoId &&
           orientation == other.orientation &&
           // TrashedAsset extras
-          volume == other.volume &&
           albumId == other.albumId;
 
   @override
@@ -97,7 +92,6 @@ class TrashedAsset extends LocalAsset {
     isFavorite,
     livePhotoVideoId,
     orientation,
-    volume,
     albumId,
   );
 
@@ -118,7 +112,6 @@ class TrashedAsset extends LocalAsset {
         'livePhotoVideoId: $livePhotoVideoId, '
         'orientation: $orientation, '
         'albumId: $albumId, '
-        'volume: $volume'
         ')';
   }
 }

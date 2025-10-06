@@ -353,7 +353,7 @@ class _SyncStatsCounts extends ConsumerWidget {
                 ],
               ),
             ),
-            if (trashSyncService.isAutoSyncMode) ...[
+            if (trashSyncService.isTrashSyncMode) ...[
               _SectionHeaderText(text: "trash".t(context: context)),
               Consumer(
                 builder: (context, ref, _) {

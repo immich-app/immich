@@ -27,11 +27,4 @@ class NativeSyncApiImpl26(context: Context) : NativeSyncApiImplBase(context), Na
   ): List<PlatformAsset> {
     throw IllegalStateException("Method not supported on this Android version.")
   }
-
-  override fun hashTrashedAssets(
-    trashedAssets: List<TrashedAssetParams>,
-    callback: (Result<List<HashResult>>) -> Unit
-  ) {
-    throw IllegalStateException("Method not supported on this Android version.")
-  }
 }

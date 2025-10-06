@@ -2,10 +2,10 @@ import 'package:flutter/services.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
-import 'package:immich_mobile/domain/services/trash_sync.service.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:logging/logging.dart';
 
@@ -15,24 +15,24 @@ class HashService {
   final int _batchSize;
   final DriftLocalAlbumRepository _localAlbumRepository;
   final DriftLocalAssetRepository _localAssetRepository;
+  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final NativeSyncApi _nativeSyncApi;
-  final TrashSyncService _trashSyncService;
   final bool Function()? _cancelChecker;
   final _log = Logger('HashService');
 
   HashService({
     required DriftLocalAlbumRepository localAlbumRepository,
     required DriftLocalAssetRepository localAssetRepository,
+    required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required NativeSyncApi nativeSyncApi,
-    required TrashSyncService trashSyncService,
     bool Function()? cancelChecker,
     int? batchSize,
   }) : _localAlbumRepository = localAlbumRepository,
        _localAssetRepository = localAssetRepository,
+       _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _cancelChecker = cancelChecker,
        _nativeSyncApi = nativeSyncApi,
-       _batchSize = batchSize ?? kBatchHashFileLimit,
-       _trashSyncService = trashSyncService;
+       _batchSize = batchSize ?? kBatchHashFileLimit;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
@@ -54,6 +54,14 @@ class HashService {
           await _hashAssets(album, assetsToHash);
         }
       }
+      if (CurrentPlatform.isAndroid && localAlbums.isNotEmpty) {
+        final backupAlbumIds = localAlbums.map((e) => e.id);
+        final trashedToHash = await _trashedLocalAssetRepository.getAssetsToHash(backupAlbumIds);
+        if (trashedToHash.isNotEmpty) {
+          final pseudoAlbum = LocalAlbum(id: '-pseudoAlbum', name: 'Trash', updatedAt: DateTime.now());
+          await _hashAssets(pseudoAlbum, trashedToHash.toList(), isTrashed: true);
+        }
+      }
     } on PlatformException catch (e) {
       if (e.code == _kHashCancelledCode) {
         _log.warning("Hashing cancelled by platform");
@@ -63,23 +71,6 @@ class HashService {
       _log.severe("Error during hashing", e, s);
     }
 
-    if (_trashSyncService.isAutoSyncMode) {
-      final backupAlbums = await _localAlbumRepository.getBackupAlbums();
-      if (backupAlbums.isNotEmpty) {
-        final backupAlbumIds = backupAlbums.map((e) => e.id);
-        final trashedToHash = await _trashSyncService.getAssetsToHash(backupAlbumIds);
-        if (trashedToHash.isNotEmpty) {
-          for (final album in backupAlbums) {
-            if (isCancelled) {
-              _log.warning("Hashing cancelled. Stopped processing albums.");
-              break;
-            }
-            await _hashTrashedAssets(album, trashedToHash.where((e) => e.albumId == album.id));
-          }
-        }
-      }
-    }
-
     stopwatch.stop();
     _log.info("Hashing took - ${stopwatch.elapsedMilliseconds}ms");
   }
@@ -87,7 +78,7 @@ class HashService {
   /// Processes a list of [LocalAsset]s, storing their hash and updating the assets in the DB
   /// with hash for those that were successfully hashed. Hashes are looked up in a table
   /// [LocalAssetHashEntity] by local id. Only missing entries are newly hashed and added to the DB.
-  Future<void> _hashAssets(LocalAlbum album, List<LocalAsset> assetsToHash) async {
+  Future<void> _hashAssets(LocalAlbum album, List<LocalAsset> assetsToHash, {bool isTrashed = false}) async {
     final toHash = <String, LocalAsset>{};
 
     for (final asset in assetsToHash) {
@@ -98,16 +89,16 @@ class HashService {
 
       toHash[asset.id] = asset;
       if (toHash.length == _batchSize) {
-        await _processBatch(album, toHash);
+        await _processBatch(album, toHash, isTrashed);
         toHash.clear();
       }
     }
 
-    await _processBatch(album, toHash);
+    await _processBatch(album, toHash, isTrashed);
   }
 
   /// Processes a batch of assets.
-  Future<void> _processBatch(LocalAlbum album, Map<String, LocalAsset> toHash) async {
+  Future<void> _processBatch(LocalAlbum album, Map<String, LocalAsset> toHash, bool isTrashed) async {
     if (toHash.isEmpty) {
       return;
     }
@@ -142,64 +133,10 @@ class HashService {
     }
 
     _log.fine("Hashed ${hashed.length}/${toHash.length} assets");
-
-    await _localAssetRepository.updateHashes(hashed);
-  }
-
-  Future<void> _hashTrashedAssets(LocalAlbum album, Iterable<TrashedAsset> assetsToHash) async {
-    final toHash = <TrashedAsset>[];
-
-    for (final asset in assetsToHash) {
-      if (isCancelled) {
-        _log.warning("Hashing cancelled. Stopped processing assets.");
-        return;
-      }
-
-      toHash.add(asset);
-
-      if (toHash.length == _batchSize) {
-        await _processTrashedBatch(album, toHash);
-        toHash.clear();
-      }
+    if (isTrashed) {
+      await _trashedLocalAssetRepository.updateHashes(hashed);
+    } else {
+      await _localAssetRepository.updateHashes(hashed);
     }
-
-    await _processTrashedBatch(album, toHash);
-  }
-
-  Future<void> _processTrashedBatch(LocalAlbum album, List<TrashedAsset> toHash) async {
-    if (toHash.isEmpty) {
-      return;
-    }
-
-    _log.fine("Hashing ${toHash.length} trashed files");
-
-    final params = toHash.map((e) => TrashedAssetParams(id: e.id, type: e.type.index, albumId: album.id)).toList();
-    final hashResults = await _nativeSyncApi.hashTrashedAssets(params);
-
-    assert(
-      hashResults.length == toHash.length,
-      "Trashed Assets, Hashes length does not match toHash length: ${hashResults.length} != ${toHash.length}",
-    );
-    final hashed = <TrashedAsset>[];
-
-    for (int i = 0; i < hashResults.length; i++) {
-      if (isCancelled) {
-        _log.warning("Hashing cancelled. Stopped processing batch.");
-        return;
-      }
-
-      final hashResult = hashResults[i];
-      final asset = toHash[i];
-      if (hashResult.hash != null) {
-        hashed.add(asset.copyWith(checksum: hashResult.hash!));
-      } else {
-        _log.warning(
-          "Failed to hash trashed asset with id: ${hashResult.assetId}, name: ${asset.name}, createdAt: ${asset.createdAt}, from album: ${album.name}. Error: ${hashResult.error ?? "unknown"}",
-        );
-      }
-    }
-
-    _log.fine("Hashed ${hashed.length}/${toHash.length} trashed assets");
-    await _trashSyncService.updateChecksums(hashed);
   }
 }

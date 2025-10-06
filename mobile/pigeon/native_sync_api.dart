@@ -14,8 +14,10 @@ import 'package:pigeon/pigeon.dart';
 class PlatformAsset {
   final String id;
   final String name;
+
   // Follows AssetType enum from base_asset.model.dart
   final int type;
+
   // Seconds since epoch
   final int? createdAt;
   final int? updatedAt;
@@ -24,8 +26,6 @@ class PlatformAsset {
   final int durationInSeconds;
   final int orientation;
   final bool isFavorite;
-  final bool? isTrashed;
-  final String? volume;
 
   const PlatformAsset({
     required this.id,
@@ -38,14 +38,13 @@ class PlatformAsset {
     this.durationInSeconds = 0,
     this.orientation = 0,
     this.isFavorite = false,
-    this.isTrashed,
-    this.volume,
   });
 }
 
 class PlatformAlbum {
   final String id;
   final String name;
+
   // Seconds since epoch
   final int? updatedAt;
   final bool isCloud;
@@ -64,6 +63,7 @@ class SyncDelta {
   final bool hasChanges;
   final List<PlatformAsset> updates;
   final List<String> deletes;
+
   // Asset -> Album mapping
   final Map<String, List<String>> assetAlbums;
 
@@ -81,18 +81,6 @@ class HashResult {
   final String? hash;
 
   const HashResult({required this.assetId, this.error, this.hash});
-}
-
-class TrashedAssetParams {
-  final String id;
-  final int type;
-  final String? albumId;
-
-  const TrashedAssetParams({
-    required this.id,
-    required this.type,
-    this.albumId,
-  });
 }
 
 @HostApi()
@@ -126,8 +114,4 @@ abstract class NativeSyncApi {
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<PlatformAsset> getTrashedAssetsForAlbum(String albumId);
-
-  @async
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<HashResult> hashTrashedAssets(List<TrashedAssetParams> trashedAssets);
 }

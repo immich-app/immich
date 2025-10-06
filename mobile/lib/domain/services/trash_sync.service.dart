@@ -1,23 +1,14 @@
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
-import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:logging/logging.dart';
-
-typedef TrashSyncItem = ({String remoteId, String checksum, DateTime? deletedAt});
 
 class TrashSyncService {
   final AppSettingsService _appSettingsService;
-  final NativeSyncApi _nativeSyncApi;
   final DriftLocalAssetRepository _localAssetRepository;
-  final DriftLocalAlbumRepository _localAlbumRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final LocalFilesManagerRepository _localFilesManager;
   final StorageRepository _storageRepository;
@@ -25,66 +16,25 @@ class TrashSyncService {
 
   TrashSyncService({
     required AppSettingsService appSettingsService,
-    required NativeSyncApi nativeSyncApi,
     required DriftLocalAssetRepository localAssetRepository,
-    required DriftLocalAlbumRepository localAlbumRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
     required LocalFilesManagerRepository localFilesManager,
     required StorageRepository storageRepository,
   }) : _appSettingsService = appSettingsService,
-       _nativeSyncApi = nativeSyncApi,
        _localAssetRepository = localAssetRepository,
-       _localAlbumRepository = localAlbumRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
        _localFilesManager = localFilesManager,
        _storageRepository = storageRepository;
 
-  bool get isAutoSyncMode =>
+  bool get isTrashSyncMode =>
       CurrentPlatform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid);
 
-  Future<void> updateChecksums(Iterable<TrashedAsset> assets) async =>
-      _trashedLocalAssetRepository.updateChecksums(assets);
-
-  Future<Iterable<TrashedAsset>> getAssetsToHash(Iterable<String> albumIds) async =>
-      _trashedLocalAssetRepository.getToHash(albumIds);
-
-  Future<void> syncDeviceTrashSnapshot() async {
-    final backupAlbums = await _localAlbumRepository.getBackupAlbums();
-    if (backupAlbums.isEmpty) {
-      _logger.info("No backup albums found");
-      return;
-    }
-    for (final album in backupAlbums) {
-      _logger.info("deviceTrashedAssets prepare, album: ${album.id}/${album.name}");
-      final trashedPlatformAssets = await _nativeSyncApi.getTrashedAssetsForAlbum(album.id);
-      final trashedAssets = trashedPlatformAssets.toTrashedAssets(album.id);
-      await _trashedLocalAssetRepository.applyTrashSnapshot(trashedAssets, album.id);
-    }
-    await _applyRemoteRestoreToLocal();
-  }
-
-  Future<void> applyTrashDelta(SyncDelta delta) async {
-    final trashUpdates = delta.updates;
-    if (trashUpdates.isEmpty) {
-      return Future.value();
-    }
-    final trashedAssets = <TrashedAsset>[];
-    for (final update in trashUpdates) {
-      final albums = delta.assetAlbums.cast<String, List<Object?>>();
-      for (final String id in albums[update.id]!.cast<String?>().nonNulls) {
-        trashedAssets.add(update.toTrashedAsset(id));
-      }
-    }
-    _logger.info("updateLocalTrashChanges trashedAssets: ${trashedAssets.map((e) => e.id)}");
-    await _trashedLocalAssetRepository.saveTrashedAssets(trashedAssets);
-    await _applyRemoteRestoreToLocal();
-  }
 
   Future<void> handleRemoteTrashed(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
       return Future.value();
     } else {
-      final localAssetsToTrash = await _localAssetRepository.getBackupSelectedAssetsByAlbum(checksums);
+      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
       if (localAssetsToTrash.isNotEmpty) {
         final mediaUrls = await Future.wait(
           localAssetsToTrash.values
@@ -101,42 +51,5 @@ class TrashSyncService {
       }
     }
   }
-
-  Future<void> _applyRemoteRestoreToLocal() async {
-    final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    if (remoteAssetsToRestore.isNotEmpty) {
-      _logger.info("remoteAssetsToRestore: $remoteAssetsToRestore");
-      for (final asset in remoteAssetsToRestore) {
-        _logger.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
-        await _localFilesManager.restoreFromTrashById(asset.id, asset.type.index);
-      }
-      await _trashedLocalAssetRepository.restoreLocalAssets(remoteAssetsToRestore.map((e) => e.id));
-    } else {
-      _logger.info("No remote assets found for restoration");
-    }
-  }
 }
 
-extension on PlatformAsset {
-  TrashedAsset toTrashedAsset(String albumId) => TrashedAsset(
-    id: id,
-    name: name,
-    checksum: null,
-    type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
-    createdAt: tryFromSecondsSinceEpoch(createdAt) ?? DateTime.now(),
-    updatedAt: tryFromSecondsSinceEpoch(updatedAt) ?? DateTime.now(),
-    volume: volume,
-    albumId: albumId,
-    width: width,
-    height: height,
-    durationInSeconds: durationInSeconds,
-    isFavorite: isFavorite,
-    orientation: orientation,
-  );
-}
-
-extension PlatformAssetsExtension on Iterable<PlatformAsset> {
-  Iterable<TrashedAsset> toTrashedAssets(String albumId) {
-    return map((e) => e.toTrashedAsset(albumId));
-  }
-}

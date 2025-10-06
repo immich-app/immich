@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart' as old;
 
@@ -72,5 +73,18 @@ abstract final class LocalAssetStub {
     type: AssetType.image,
     createdAt: DateTime(2000),
     updatedAt: DateTime(20021),
+  );
+}
+
+abstract final class TrashedAssetStub {
+  const TrashedAssetStub._();
+
+  static final trashed1 = TrashedAsset(
+    id: "t1",
+    name: "trashed1.jpg",
+    type: AssetType.image,
+    createdAt: DateTime(2025, 1, 1),
+    updatedAt: DateTime(2025, 1, 2),
+    albumId: "album1",
   );
 }

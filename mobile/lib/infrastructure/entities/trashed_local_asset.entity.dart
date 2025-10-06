@@ -12,8 +12,6 @@ class TrashedLocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntity
 
   TextColumn get albumId => text()();
 
-  TextColumn get volume => text().nullable()();
-
   TextColumn get checksum => text().nullable()();
 
   BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
@@ -28,7 +26,6 @@ extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityD
   TrashedAsset toDto() => TrashedAsset(
     id: id,
     name: name,
-    volume: volume,
     albumId: albumId,
     checksum: checksum,
     type: type,

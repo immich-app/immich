@@ -140,8 +140,6 @@ struct PlatformAsset: Hashable {
   var durationInSeconds: Int64
   var orientation: Int64
   var isFavorite: Bool
-  var isTrashed: Bool? = nil
-  var volume: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -156,8 +154,6 @@ struct PlatformAsset: Hashable {
     let durationInSeconds = pigeonVar_list[7] as! Int64
     let orientation = pigeonVar_list[8] as! Int64
     let isFavorite = pigeonVar_list[9] as! Bool
-    let isTrashed: Bool? = nilOrValue(pigeonVar_list[10])
-    let volume: String? = nilOrValue(pigeonVar_list[11])
 
     return PlatformAsset(
       id: id,
@@ -169,9 +165,7 @@ struct PlatformAsset: Hashable {
       height: height,
       durationInSeconds: durationInSeconds,
       orientation: orientation,
-      isFavorite: isFavorite,
-      isTrashed: isTrashed,
-      volume: volume
+      isFavorite: isFavorite
     )
   }
   func toList() -> [Any?] {
@@ -186,8 +180,6 @@ struct PlatformAsset: Hashable {
       durationInSeconds,
       orientation,
       isFavorite,
-      isTrashed,
-      volume,
     ]
   }
   static func == (lhs: PlatformAsset, rhs: PlatformAsset) -> Bool {
@@ -308,39 +300,6 @@ struct HashResult: Hashable {
   }
 }
 
-/// Generated class from Pigeon that represents data sent in messages.
-struct TrashedAssetParams: Hashable {
-  var id: String
-  var type: Int64
-  var albumId: String? = nil
-
-
-  // swift-format-ignore: AlwaysUseLowerCamelCase
-  static func fromList(_ pigeonVar_list: [Any?]) -> TrashedAssetParams? {
-    let id = pigeonVar_list[0] as! String
-    let type = pigeonVar_list[1] as! Int64
-    let albumId: String? = nilOrValue(pigeonVar_list[2])
-
-    return TrashedAssetParams(
-      id: id,
-      type: type,
-      albumId: albumId
-    )
-  }
-  func toList() -> [Any?] {
-    return [
-      id,
-      type,
-      albumId,
-    ]
-  }
-  static func == (lhs: TrashedAssetParams, rhs: TrashedAssetParams) -> Bool {
-    return deepEqualsMessages(lhs.toList(), rhs.toList())  }
-  func hash(into hasher: inout Hasher) {
-    deepHashMessages(value: toList(), hasher: &hasher)
-  }
-}
-
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -352,8 +311,6 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return SyncDelta.fromList(self.readValue() as! [Any?])
     case 132:
       return HashResult.fromList(self.readValue() as! [Any?])
-    case 133:
-      return TrashedAssetParams.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -373,9 +330,6 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? HashResult {
       super.writeByte(132)
-      super.writeValue(value.toList())
-    } else if let value = value as? TrashedAssetParams {
-      super.writeByte(133)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -411,7 +365,6 @@ protocol NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func getTrashedAssetsForAlbum(albumId: String) throws -> [PlatformAsset]
-  func hashTrashedAssets(trashedAssets: [TrashedAssetParams], completion: @escaping (Result<[HashResult], Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -598,25 +551,6 @@ class NativeSyncApiSetup {
       }
     } else {
       getTrashedAssetsForAlbumChannel.setMessageHandler(nil)
-    }
-    let hashTrashedAssetsChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.hashTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
-    if let api = api {
-      hashTrashedAssetsChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let trashedAssetsArg = args[0] as! [TrashedAssetParams]
-        api.hashTrashedAssets(trashedAssets: trashedAssetsArg) { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
-        }
-      }
-    } else {
-      hashTrashedAssetsChannel.setMessageHandler(nil)
     }
   }
 }

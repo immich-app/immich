@@ -88,7 +88,7 @@ class SyncStreamService {
         return _syncStreamRepository.deletePartnerV1(data.cast());
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
-        if (_trashSyncService.isAutoSyncMode) {
+        if (_trashSyncService.isTrashSyncMode) {
           await _trashSyncService.handleRemoteTrashed(
             remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum),
           );

@@ -1,12 +1,12 @@
 // dart format width=80
 // ignore_for_file: type=lint
 import 'package:drift/drift.dart' as i0;
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart'
-    as i1;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart'
     as i3;
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart'
+    as i1;
 
 typedef $$TrashedLocalAssetEntityTableCreateCompanionBuilder =
     i1.TrashedLocalAssetEntityCompanion Function({
@@ -19,7 +19,6 @@ typedef $$TrashedLocalAssetEntityTableCreateCompanionBuilder =
       i0.Value<int?> durationInSeconds,
       required String id,
       required String albumId,
-      i0.Value<String?> volume,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
@@ -35,7 +34,6 @@ typedef $$TrashedLocalAssetEntityTableUpdateCompanionBuilder =
       i0.Value<int?> durationInSeconds,
       i0.Value<String> id,
       i0.Value<String> albumId,
-      i0.Value<String?> volume,
       i0.Value<String?> checksum,
       i0.Value<bool> isFavorite,
       i0.Value<int> orientation,
@@ -94,11 +92,6 @@ class $$TrashedLocalAssetEntityTableFilterComposer
 
   i0.ColumnFilters<String> get albumId => $composableBuilder(
     column: $table.albumId,
-    builder: (column) => i0.ColumnFilters(column),
-  );
-
-  i0.ColumnFilters<String> get volume => $composableBuilder(
-    column: $table.volume,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -173,11 +166,6 @@ class $$TrashedLocalAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i0.ColumnOrderings<String> get volume => $composableBuilder(
-    column: $table.volume,
-    builder: (column) => i0.ColumnOrderings(column),
-  );
-
   i0.ColumnOrderings<String> get checksum => $composableBuilder(
     column: $table.checksum,
     builder: (column) => i0.ColumnOrderings(column),
@@ -232,9 +220,6 @@ class $$TrashedLocalAssetEntityTableAnnotationComposer
 
   i0.GeneratedColumn<String> get albumId =>
       $composableBuilder(column: $table.albumId, builder: (column) => column);
-
-  i0.GeneratedColumn<String> get volume =>
-      $composableBuilder(column: $table.volume, builder: (column) => column);
 
   i0.GeneratedColumn<String> get checksum =>
       $composableBuilder(column: $table.checksum, builder: (column) => column);
@@ -305,7 +290,6 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<int?> durationInSeconds = const i0.Value.absent(),
                 i0.Value<String> id = const i0.Value.absent(),
                 i0.Value<String> albumId = const i0.Value.absent(),
-                i0.Value<String?> volume = const i0.Value.absent(),
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
@@ -319,7 +303,6 @@ class $$TrashedLocalAssetEntityTableTableManager
                 durationInSeconds: durationInSeconds,
                 id: id,
                 albumId: albumId,
-                volume: volume,
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
@@ -335,7 +318,6 @@ class $$TrashedLocalAssetEntityTableTableManager
                 i0.Value<int?> durationInSeconds = const i0.Value.absent(),
                 required String id,
                 required String albumId,
-                i0.Value<String?> volume = const i0.Value.absent(),
                 i0.Value<String?> checksum = const i0.Value.absent(),
                 i0.Value<bool> isFavorite = const i0.Value.absent(),
                 i0.Value<int> orientation = const i0.Value.absent(),
@@ -349,7 +331,6 @@ class $$TrashedLocalAssetEntityTableTableManager
                 durationInSeconds: durationInSeconds,
                 id: id,
                 albumId: albumId,
-                volume: volume,
                 checksum: checksum,
                 isFavorite: isFavorite,
                 orientation: orientation,
@@ -499,17 +480,6 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
     type: i0.DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const i0.VerificationMeta _volumeMeta = const i0.VerificationMeta(
-    'volume',
-  );
-  @override
-  late final i0.GeneratedColumn<String> volume = i0.GeneratedColumn<String>(
-    'volume',
-    aliasedName,
-    true,
-    type: i0.DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
   static const i0.VerificationMeta _checksumMeta = const i0.VerificationMeta(
     'checksum',
   );
@@ -559,7 +529,6 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
     durationInSeconds,
     id,
     albumId,
-    volume,
     checksum,
     isFavorite,
     orientation,
@@ -629,12 +598,6 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
       );
     } else if (isInserting) {
       context.missing(_albumIdMeta);
-    }
-    if (data.containsKey('volume')) {
-      context.handle(
-        _volumeMeta,
-        volume.isAcceptableOrUnknown(data['volume']!, _volumeMeta),
-      );
     }
     if (data.containsKey('checksum')) {
       context.handle(
@@ -707,10 +670,6 @@ class $TrashedLocalAssetEntityTable extends i3.TrashedLocalAssetEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}album_id'],
       )!,
-      volume: attachedDatabase.typeMapping.read(
-        i0.DriftSqlType.string,
-        data['${effectivePrefix}volume'],
-      ),
       checksum: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
         data['${effectivePrefix}checksum'],
@@ -750,7 +709,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
   final int? durationInSeconds;
   final String id;
   final String albumId;
-  final String? volume;
   final String? checksum;
   final bool isFavorite;
   final int orientation;
@@ -764,7 +722,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     this.durationInSeconds,
     required this.id,
     required this.albumId,
-    this.volume,
     this.checksum,
     required this.isFavorite,
     required this.orientation,
@@ -791,9 +748,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     }
     map['id'] = i0.Variable<String>(id);
     map['album_id'] = i0.Variable<String>(albumId);
-    if (!nullToAbsent || volume != null) {
-      map['volume'] = i0.Variable<String>(volume);
-    }
     if (!nullToAbsent || checksum != null) {
       map['checksum'] = i0.Variable<String>(checksum);
     }
@@ -819,7 +773,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       durationInSeconds: serializer.fromJson<int?>(json['durationInSeconds']),
       id: serializer.fromJson<String>(json['id']),
       albumId: serializer.fromJson<String>(json['albumId']),
-      volume: serializer.fromJson<String?>(json['volume']),
       checksum: serializer.fromJson<String?>(json['checksum']),
       isFavorite: serializer.fromJson<bool>(json['isFavorite']),
       orientation: serializer.fromJson<int>(json['orientation']),
@@ -840,7 +793,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
       'durationInSeconds': serializer.toJson<int?>(durationInSeconds),
       'id': serializer.toJson<String>(id),
       'albumId': serializer.toJson<String>(albumId),
-      'volume': serializer.toJson<String?>(volume),
       'checksum': serializer.toJson<String?>(checksum),
       'isFavorite': serializer.toJson<bool>(isFavorite),
       'orientation': serializer.toJson<int>(orientation),
@@ -857,7 +809,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     i0.Value<int?> durationInSeconds = const i0.Value.absent(),
     String? id,
     String? albumId,
-    i0.Value<String?> volume = const i0.Value.absent(),
     i0.Value<String?> checksum = const i0.Value.absent(),
     bool? isFavorite,
     int? orientation,
@@ -873,7 +824,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
         : this.durationInSeconds,
     id: id ?? this.id,
     albumId: albumId ?? this.albumId,
-    volume: volume.present ? volume.value : this.volume,
     checksum: checksum.present ? checksum.value : this.checksum,
     isFavorite: isFavorite ?? this.isFavorite,
     orientation: orientation ?? this.orientation,
@@ -893,7 +843,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           : this.durationInSeconds,
       id: data.id.present ? data.id.value : this.id,
       albumId: data.albumId.present ? data.albumId.value : this.albumId,
-      volume: data.volume.present ? data.volume.value : this.volume,
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
       isFavorite: data.isFavorite.present
           ? data.isFavorite.value
@@ -916,7 +865,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('albumId: $albumId, ')
-          ..write('volume: $volume, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation')
@@ -935,7 +883,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
     durationInSeconds,
     id,
     albumId,
-    volume,
     checksum,
     isFavorite,
     orientation,
@@ -953,7 +900,6 @@ class TrashedLocalAssetEntityData extends i0.DataClass
           other.durationInSeconds == this.durationInSeconds &&
           other.id == this.id &&
           other.albumId == this.albumId &&
-          other.volume == this.volume &&
           other.checksum == this.checksum &&
           other.isFavorite == this.isFavorite &&
           other.orientation == this.orientation);
@@ -970,7 +916,6 @@ class TrashedLocalAssetEntityCompanion
   final i0.Value<int?> durationInSeconds;
   final i0.Value<String> id;
   final i0.Value<String> albumId;
-  final i0.Value<String?> volume;
   final i0.Value<String?> checksum;
   final i0.Value<bool> isFavorite;
   final i0.Value<int> orientation;
@@ -984,7 +929,6 @@ class TrashedLocalAssetEntityCompanion
     this.durationInSeconds = const i0.Value.absent(),
     this.id = const i0.Value.absent(),
     this.albumId = const i0.Value.absent(),
-    this.volume = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
@@ -999,7 +943,6 @@ class TrashedLocalAssetEntityCompanion
     this.durationInSeconds = const i0.Value.absent(),
     required String id,
     required String albumId,
-    this.volume = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isFavorite = const i0.Value.absent(),
     this.orientation = const i0.Value.absent(),
@@ -1017,7 +960,6 @@ class TrashedLocalAssetEntityCompanion
     i0.Expression<int>? durationInSeconds,
     i0.Expression<String>? id,
     i0.Expression<String>? albumId,
-    i0.Expression<String>? volume,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isFavorite,
     i0.Expression<int>? orientation,
@@ -1032,7 +974,6 @@ class TrashedLocalAssetEntityCompanion
       if (durationInSeconds != null) 'duration_in_seconds': durationInSeconds,
       if (id != null) 'id': id,
       if (albumId != null) 'album_id': albumId,
-      if (volume != null) 'volume': volume,
       if (checksum != null) 'checksum': checksum,
       if (isFavorite != null) 'is_favorite': isFavorite,
       if (orientation != null) 'orientation': orientation,
@@ -1049,7 +990,6 @@ class TrashedLocalAssetEntityCompanion
     i0.Value<int?>? durationInSeconds,
     i0.Value<String>? id,
     i0.Value<String>? albumId,
-    i0.Value<String?>? volume,
     i0.Value<String?>? checksum,
     i0.Value<bool>? isFavorite,
     i0.Value<int>? orientation,
@@ -1064,7 +1004,6 @@ class TrashedLocalAssetEntityCompanion
       durationInSeconds: durationInSeconds ?? this.durationInSeconds,
       id: id ?? this.id,
       albumId: albumId ?? this.albumId,
-      volume: volume ?? this.volume,
       checksum: checksum ?? this.checksum,
       isFavorite: isFavorite ?? this.isFavorite,
       orientation: orientation ?? this.orientation,
@@ -1103,9 +1042,6 @@ class TrashedLocalAssetEntityCompanion
     if (albumId.present) {
       map['album_id'] = i0.Variable<String>(albumId.value);
     }
-    if (volume.present) {
-      map['volume'] = i0.Variable<String>(volume.value);
-    }
     if (checksum.present) {
       map['checksum'] = i0.Variable<String>(checksum.value);
     }
@@ -1130,7 +1066,6 @@ class TrashedLocalAssetEntityCompanion
           ..write('durationInSeconds: $durationInSeconds, ')
           ..write('id: $id, ')
           ..write('albumId: $albumId, ')
-          ..write('volume: $volume, ')
           ..write('checksum: $checksum, ')
           ..write('isFavorite: $isFavorite, ')
           ..write('orientation: $orientation')

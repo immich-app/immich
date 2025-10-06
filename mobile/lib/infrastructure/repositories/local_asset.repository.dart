@@ -100,26 +100,27 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<Map<AlbumId, List<LocalAsset>>> getBackupSelectedAssetsByAlbum(Iterable<String> checksums) async {
+  Future<Map<AlbumId, List<LocalAsset>>> getAssetsFromBackupAlbums(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
       return {};
     }
 
-    final lAlbumAsset = _db.localAlbumAssetEntity;
-    final lAlbum = _db.localAlbumEntity;
-    final lAsset = _db.localAssetEntity;
-
     final result = <String, List<LocalAsset>>{};
 
-    for (final slice in checksums.toSet().slices(800)) {
-      final rows = await (_db.select(lAlbumAsset).join([
-        innerJoin(lAlbum, lAlbumAsset.albumId.equalsExp(lAlbum.id)),
-        innerJoin(lAsset, lAlbumAsset.assetId.equalsExp(lAsset.id)),
-      ])..where(lAlbum.backupSelection.equalsValue(BackupSelection.selected) & lAsset.checksum.isIn(slice))).get();
+    for (final slice in checksums.toSet().slices(32000)) {
+      final rows =
+          await (_db.select(_db.localAlbumAssetEntity).join([
+                innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+                innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+              ])..where(
+                _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                    _db.localAssetEntity.checksum.isIn(slice),
+              ))
+              .get();
 
       for (final row in rows) {
-        final albumId = row.readTable(lAlbumAsset).albumId;
-        final assetData = row.readTable(lAsset);
+        final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
+        final assetData = row.readTable(_db.localAssetEntity);
         final asset = assetData.toDto();
         (result[albumId] ??= <LocalAsset>[]).add(asset);
       }
