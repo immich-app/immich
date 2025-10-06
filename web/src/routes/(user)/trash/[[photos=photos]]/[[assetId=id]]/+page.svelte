@@ -18,7 +18,7 @@
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { emptyTrash, restoreTrash } from '@immich/sdk';
+  import { AssetOrderBy, emptyTrash, restoreTrash } from '@immich/sdk';
   import { Button, HStack, modalManager, Text } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -36,7 +36,7 @@
   }
 
   const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ isTrashed: true });
+  void timelineManager.updateOptions({ isTrashed: true, orderBy: AssetOrderBy.DateDeleted });
   onDestroy(() => timelineManager.destroy());
 
   const assetInteraction = new AssetInteraction();
