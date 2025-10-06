@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { Response } from 'express';
 import { DateTime } from 'luxon';
 import { createHash } from 'node:crypto';
@@ -33,59 +33,13 @@ export class AssetUploadService extends BaseService {
     this.logger.verboseFn(() => `Starting upload: ${JSON.stringify(dto)}`);
     const { isComplete, assetData, uploadLength, contentLength, version } = dto;
 
-    const assetId = this.cryptoRepository.randomUUID();
-    const folder = StorageCore.getNestedFolder(StorageFolder.Upload, auth.user.id, assetId);
-    const extension = extname(assetData.filename);
-    const path = join(folder, `${assetId}${extension}`);
-    const type = mimeTypes.assetType(path);
-
-    if (type === AssetType.Other) {
-      throw new BadRequestException(`${assetData.filename} is an unsupported file type`);
-    }
-
-    this.validateQuota(auth, uploadLength);
-
-    try {
-      await this.assetRepository.createWithMetadata(
-        {
-          id: assetId,
-          ownerId: auth.user.id,
-          libraryId: null,
-          checksum: dto.checksum,
-          originalPath: path,
-          deviceAssetId: assetData.deviceAssetId,
-          deviceId: assetData.deviceId,
-          fileCreatedAt: assetData.fileCreatedAt,
-          fileModifiedAt: assetData.fileModifiedAt,
-          localDateTime: assetData.fileCreatedAt,
-          type: type,
-          isFavorite: assetData.isFavorite,
-          duration: assetData.duration || null,
-          visibility: AssetVisibility.Hidden,
-          originalFileName: assetData.filename,
-          status: AssetStatus.Partial,
-        },
-        uploadLength,
-        assetData.iCloudId ? [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: assetData.iCloudId } }] : undefined,
-      );
-    } catch (error: any) {
-      if (!isAssetChecksumConstraint(error)) {
-        this.logger.error(`Error creating upload asset record: ${error.message}`);
-        res.status(500).send('Error creating upload asset record');
-        return;
-      }
-
-      const duplicate = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, dto.checksum);
-      if (!duplicate) {
-        res.status(500).send('Error locating duplicate for checksum constraint');
-        return;
-      }
-
-      if (duplicate.status !== AssetStatus.Partial) {
+    const asset = await this.onStart(auth, dto);
+    if (asset.isDuplicate) {
+      if (asset.status !== AssetStatus.Partial) {
         return this.sendAlreadyCompletedProblem(res);
       }
 
-      const location = `/api/upload/${duplicate.id}`;
+      const location = `/api/upload/${asset.id}`;
       if (version <= MAX_RUFH_INTEROP_VERSION) {
         this.sendInterimResponse(res, location, version);
       }
@@ -98,14 +52,13 @@ export class AssetUploadService extends BaseService {
       return this.sendInconsistentLengthProblem(res);
     }
 
-    const location = `/api/upload/${assetId}`;
+    const location = `/api/upload/${asset.id}`;
     if (version <= MAX_RUFH_INTEROP_VERSION) {
       this.sendInterimResponse(res, location, version);
     }
 
-    await this.storageRepository.mkdir(folder);
     let checksumBuffer: Buffer | undefined;
-    const metadata = { id: assetId, path, size: contentLength, fileModifiedAt: assetData.fileModifiedAt };
+    const metadata = { id: asset.id, path: asset.path, size: contentLength, fileModifiedAt: assetData.fileModifiedAt };
     const writeStream = this.pipe(req, res, metadata);
 
     if (isComplete) {
@@ -119,15 +72,15 @@ export class AssetUploadService extends BaseService {
       if (!isComplete) {
         return res.status(201).set('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
       }
-      this.logger.log(`Finished upload to ${path}`);
+      this.logger.log(`Finished upload to ${asset.path}`);
       if (dto.checksum.compare(checksumBuffer!) !== 0) {
-        return this.sendChecksumMismatchResponse(res, assetId, path);
+        return this.sendChecksumMismatchResponse(res, asset.id, asset.path);
       }
 
       this.onComplete(metadata)
         .then(() => res.status(200).send())
         .catch((error) => {
-          this.logger.error(`Failed to complete upload for ${assetId}: ${error.message}`);
+          this.logger.error(`Failed to complete upload for ${asset.id}: ${error.message}`);
           res.status(500).send();
         });
     });
@@ -230,14 +183,14 @@ export class AssetUploadService extends BaseService {
     });
   }
 
-  @OnJob({ name: JobName.PartialAssetDeleteQueueAll, queue: QueueName.BackgroundTask })
+  @OnJob({ name: JobName.PartialAssetCleanupQueueAll, queue: QueueName.BackgroundTask })
   async removeStaleUploads(): Promise<void> {
     // TODO: make this configurable
     const createdBefore = DateTime.now().minus({ days: 7 }).toJSDate();
     let jobs: JobItem[] = [];
     const assets = this.assetJobRepository.streamForPartialAssetCleanupJob(createdBefore);
     for await (const asset of assets) {
-      jobs.push({ name: JobName.AssetFileMigration, data: asset });
+      jobs.push({ name: JobName.PartialAssetCleanup, data: asset });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(jobs);
         jobs = [];
@@ -246,8 +199,8 @@ export class AssetUploadService extends BaseService {
     await this.jobRepository.queueAll(jobs);
   }
 
-  @OnJob({ name: JobName.PartialAssetDelete, queue: QueueName.BackgroundTask })
-  removeStaleUpload({ id }: JobOf<JobName.PartialAssetDelete>): Promise<JobStatus> {
+  @OnJob({ name: JobName.PartialAssetCleanup, queue: QueueName.BackgroundTask })
+  removeStaleUpload({ id }: JobOf<JobName.PartialAssetCleanup>): Promise<JobStatus> {
     return this.databaseRepository.withUuidLock(id, async () => {
       const asset = await this.assetJobRepository.getForPartialAssetCleanupJob(id);
       if (!asset) {
@@ -266,6 +219,81 @@ export class AssetUploadService extends BaseService {
       await this.onCancel(id, path);
       return JobStatus.Success;
     });
+  }
+
+  async onStart(
+    auth: AuthDto,
+    { assetData, checksum, uploadLength }: StartUploadDto,
+  ): Promise<{ id: string; path: string; status: AssetStatus; isDuplicate: boolean }> {
+    const assetId = this.cryptoRepository.randomUUID();
+    const folder = StorageCore.getNestedFolder(StorageFolder.Upload, auth.user.id, assetId);
+    const extension = extname(assetData.filename);
+    const path = join(folder, `${assetId}${extension}`);
+    const type = mimeTypes.assetType(path);
+
+    if (type === AssetType.Other) {
+      throw new BadRequestException(`${assetData.filename} is an unsupported file type`);
+    }
+
+    this.validateQuota(auth, uploadLength);
+
+    try {
+      await this.assetRepository.createWithMetadata(
+        {
+          id: assetId,
+          ownerId: auth.user.id,
+          libraryId: null,
+          checksum,
+          originalPath: path,
+          deviceAssetId: assetData.deviceAssetId,
+          deviceId: assetData.deviceId,
+          fileCreatedAt: assetData.fileCreatedAt,
+          fileModifiedAt: assetData.fileModifiedAt,
+          localDateTime: assetData.fileCreatedAt,
+          type: type,
+          isFavorite: assetData.isFavorite,
+          duration: assetData.duration || null,
+          visibility: AssetVisibility.Hidden,
+          originalFileName: assetData.filename,
+          status: AssetStatus.Partial,
+        },
+        uploadLength,
+        assetData.iCloudId ? [{ key: AssetMetadataKey.MobileApp, value: { iCloudId: assetData.iCloudId } }] : undefined,
+      );
+    } catch (error: any) {
+      if (!isAssetChecksumConstraint(error)) {
+        this.logger.error(`Error creating upload asset record: ${error.message}`);
+        throw new InternalServerErrorException('Error creating asset');
+      }
+
+      const duplicate = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, checksum);
+      if (!duplicate) {
+        throw new InternalServerErrorException('Error locating duplicate for checksum constraint');
+      }
+
+      return { id: duplicate.id, path, status: duplicate.status, isDuplicate: true };
+    }
+
+    await this.storageRepository.mkdir(folder);
+    return { id: assetId, path, status: AssetStatus.Partial, isDuplicate: false };
+  }
+
+  async onComplete({ id, path, fileModifiedAt }: { id: string; path: string; fileModifiedAt: Date }) {
+    this.logger.debug('Completing upload for asset', id);
+    const jobData = { name: JobName.AssetExtractMetadata, data: { id: id, source: 'upload' } } as const;
+    await withRetry(() => this.assetRepository.setComplete(id));
+    try {
+      await withRetry(() => this.storageRepository.utimes(path, new Date(), fileModifiedAt));
+    } catch (error: any) {
+      this.logger.error(`Failed to update times for ${path}: ${error.message}`);
+    }
+    await withRetry(() => this.jobRepository.queue(jobData));
+  }
+
+  async onCancel(assetId: string, path: string): Promise<void> {
+    this.logger.debug('Cancelling upload for asset', assetId);
+    await withRetry(() => this.storageRepository.unlink(path));
+    await withRetry(() => this.assetRepository.removeAndDecrementQuota(assetId));
   }
 
   private pipe(req: Readable, res: Response, { id, path, size }: { id: string; path: string; size: number }) {
@@ -311,24 +339,6 @@ export class AssetUploadService extends BaseService {
     });
 
     return writeStream;
-  }
-
-  private async onComplete({ id, path, fileModifiedAt }: { id: string; path: string; fileModifiedAt: Date }) {
-    this.logger.debug('Completing upload for asset', id);
-    const jobData = { name: JobName.AssetExtractMetadata, data: { id: id, source: 'upload' } } as const;
-    await withRetry(() => this.assetRepository.setComplete(id));
-    try {
-      await withRetry(() => this.storageRepository.utimes(path, new Date(), fileModifiedAt));
-    } catch (error: any) {
-      this.logger.error(`Failed to update times for ${path}: ${error.message}`);
-    }
-    await withRetry(() => this.jobRepository.queue(jobData));
-  }
-
-  private async onCancel(assetId: string, path: string): Promise<void> {
-    this.logger.debug('Cancelling upload for asset', assetId);
-    await withRetry(() => this.storageRepository.unlink(path));
-    await withRetry(() => this.assetRepository.removeAndDecrementQuota(assetId));
   }
 
   private sendInterimResponse({ socket }: Response, location: string, interopVersion: number): void {
