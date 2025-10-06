@@ -18,6 +18,18 @@
       "name": "Immich Workers",
       "remoteRoot": "/usr/src/app/server",
       "localRoot": "${workspaceFolder}/server"
+    },
+    {
+      "name": "Immich CLI",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/cli/src/index.ts",
+      "runtimeExecutable": "tsx",
+      "args": ["put", "your", "command", "and", "params", "here"],
+      "cwd": "${workspaceFolder}/cli",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
     }
   ]
 }

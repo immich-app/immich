@@ -33,6 +33,8 @@
     "mock-fs": "^5.2.0",
     "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^4.0.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.28.0",
     "vite": "^7.0.0",
@@ -52,6 +54,7 @@
     "format:fix": "prettier --write .",
     "check": "tsc --noEmit"
   },
+  "main": "src/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/immich-app/immich.git",
