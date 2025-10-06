@@ -49,7 +49,7 @@ export class TimeBucketDto {
   @ValidateEnum({
     enum: AssetOrderBy,
     name: 'AssetOrderBy',
-    description: 'Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)',
+    description: 'The field to sort time bucket assets by (DATE_TAKEN, DATE_ADDED, DATE_DELETED)',
     optional: true,
   })
   orderBy?: AssetOrderBy;

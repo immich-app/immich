@@ -8845,7 +8845,7 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)",
+            "description": "The field to sort time bucket assets by (DATE_TAKEN, DATE_ADDED, DATE_DELETED)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrderBy"
             }
@@ -9018,7 +9018,7 @@
             "name": "orderBy",
             "required": false,
             "in": "query",
-            "description": "Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)",
+            "description": "The field to sort time bucket assets by (DATE_TAKEN, DATE_ADDED, DATE_DELETED)",
             "schema": {
               "$ref": "#/components/schemas/AssetOrderBy"
             }

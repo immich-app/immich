@@ -40,7 +40,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
+  ///   The field to sort time bucket assets by (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
@@ -155,7 +155,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
+  ///   The field to sort time bucket assets by (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
@@ -215,7 +215,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
+  ///   The field to sort time bucket assets by (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
@@ -326,7 +326,7 @@ class TimelineApi {
   ///   Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)
   ///
   /// * [AssetOrderBy] orderBy:
-  ///   Sort order by for assets within time buckets (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
+  ///   The field to sort time bucket assets by (DATE_TAKEN, DATE_ADDED, DATE_DELETED)
   ///
   /// * [String] personId:
   ///   Filter assets containing a specific person (face recognition)
