@@ -46,7 +46,7 @@ export const Authenticated = (options: AuthenticatedOptions = {}): MethodDecorat
 };
 
 export const Auth = createParamDecorator((data, context: ExecutionContext): AuthDto => {
-  return context.switchToHttp().getRequest<AuthenticatedRequest>().auth;
+  return context.switchToHttp().getRequest<AuthenticatedRequest>().user;
 });
 
 export const FileResponse = () =>
@@ -68,11 +68,11 @@ export const GetLoginDetails = createParamDecorator((data, context: ExecutionCon
 });
 
 export interface AuthRequest extends Request {
-  auth?: AuthDto;
+  user?: AuthDto;
 }
 
 export interface AuthenticatedRequest extends Request {
-  auth: AuthDto;
+  user: AuthDto;
 }
 
 @Injectable()
@@ -99,7 +99,7 @@ export class AuthGuard implements CanActivate {
     } = { sharedLink: false, admin: false, ...options };
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
-    request.auth = await this.authService.authenticate({
+    request.user = await this.authService.authenticate({
       headers: request.headers,
       queryParams: request.query as Record<string, string>,
       metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },

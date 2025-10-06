@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { ChokidarOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
-import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer, unlinkSync } from 'node:fs';
+import { constants, createReadStream, createWriteStream, existsSync, mkdirSync, ReadOptionsWithBuffer } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
@@ -133,16 +133,6 @@ export class StorageRepository {
       if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
         this.logger.warn(`File ${file} does not exist.`);
       } else {
-        throw error;
-      }
-    }
-  }
-
-  unlinkSync(file: string) {
-    try {
-      unlinkSync(file);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException)?.code !== 'ENOENT') {
         throw error;
       }
     }

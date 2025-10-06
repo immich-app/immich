@@ -43,7 +43,7 @@ export class AssetUploadService extends BaseService {
       throw new BadRequestException(`${assetData.filename} is an unsupported file type`);
     }
 
-    this.validateQuota(auth, uploadLength ?? contentLength);
+    this.validateQuota(auth, uploadLength);
 
     try {
       await this.assetRepository.createWithMetadata(
@@ -94,7 +94,7 @@ export class AssetUploadService extends BaseService {
       return;
     }
 
-    if (isComplete && uploadLength && uploadLength !== contentLength) {
+    if (isComplete && uploadLength !== contentLength) {
       return this.sendInconsistentLengthProblem(res);
     }
 

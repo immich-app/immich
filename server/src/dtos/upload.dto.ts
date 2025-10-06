@@ -114,7 +114,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
   @Expose({ name: UploadHeader.ReprDigest })
   @Transform(({ value }) => {
     if (!value) {
-      return null;
+      throw new BadRequestException(`Missing ${UploadHeader.ReprDigest} header`);
     }
 
     const checksum = parseDictionary(value).get('sha')?.[0];

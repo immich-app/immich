@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Controller,
   Delete,
   Head,
@@ -14,15 +13,13 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiHeader, ApiTags } from '@nestjs/swagger';
-import { plainToInstance } from 'class-transformer';
-import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
-import { IncomingHttpHeaders } from 'node:http';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto, UploadHeader } from 'src/dtos/upload.dto';
 import { ImmichHeader, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetUploadService } from 'src/services/asset-upload.service';
+import { validateSyncOrReject } from 'src/utils/request';
 import { UUIDParamDto } from 'src/validation';
 
 const apiInteropVersion = {
@@ -76,8 +73,7 @@ export class AssetUploadController {
   @ApiHeader(apiUploadComplete)
   @ApiHeader(apiContentLength)
   startUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response): Promise<void> {
-    const dto = this.getDto(StartUploadDto, req.headers);
-    return this.service.startUpload(auth, req, res, dto);
+    return this.service.startUpload(auth, req, res, validateSyncOrReject(StartUploadDto, req.headers));
   }
 
   @Patch(':id')
@@ -92,8 +88,7 @@ export class AssetUploadController {
   @ApiHeader(apiUploadComplete)
   @ApiHeader(apiContentLength)
   resumeUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Param() { id }: UUIDParamDto) {
-    const dto = this.getDto(ResumeUploadDto, req.headers);
-    return this.service.resumeUpload(auth, req, res, id, dto);
+    return this.service.resumeUpload(auth, req, res, id, validateSyncOrReject(ResumeUploadDto, req.headers));
   }
 
   @Delete(':id')
@@ -106,23 +101,11 @@ export class AssetUploadController {
   @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
   @ApiHeader(apiInteropVersion)
   getUploadStatus(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Param() { id }: UUIDParamDto) {
-    const dto = this.getDto(GetUploadStatusDto, req.headers);
-    return this.service.getUploadStatus(auth, res, id, dto);
+    return this.service.getUploadStatus(auth, res, id, validateSyncOrReject(GetUploadStatusDto, req.headers));
   }
 
   @Options()
   @HttpCode(HttpStatus.NO_CONTENT)
   @Header('Upload-Limit', 'min-size=0')
   getUploadOptions() {}
-
-  private getDto<T extends object>(cls: new () => T, headers: IncomingHttpHeaders): T {
-    const dto = plainToInstance(cls, headers, { excludeExtraneousValues: true });
-    const errors = validateSync(dto);
-    if (errors.length > 0) {
-      const constraints = errors.flatMap((e) => (e.constraints ? Object.values(e.constraints) : []));
-      console.warn('Upload DTO validation failed:', JSON.stringify(errors, null, 2));
-      throw new BadRequestException(constraints);
-    }
-    return dto;
-  }
 }
