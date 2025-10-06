@@ -3,8 +3,10 @@ package app.alextran.immich
 import android.content.Context
 import android.os.Build
 import android.os.ext.SdkExtensions
+import app.alextran.immich.background.BackgroundEngineLock
 import app.alextran.immich.background.BackgroundWorkerApiImpl
 import app.alextran.immich.background.BackgroundWorkerFgHostApi
+import app.alextran.immich.background.BackgroundWorkerLockApi
 import app.alextran.immich.connectivity.ConnectivityApi
 import app.alextran.immich.connectivity.ConnectivityApiImpl
 import app.alextran.immich.images.ThumbnailApi
@@ -23,10 +25,9 @@ class MainActivity : FlutterFragmentActivity() {
 
   companion object {
     fun registerPlugins(ctx: Context, flutterEngine: FlutterEngine) {
-      flutterEngine.plugins.add(BackgroundServicePlugin())
-      flutterEngine.plugins.add(HttpSSLOptionsPlugin())
-
       val messenger = flutterEngine.dartExecutor.binaryMessenger
+      val backgroundEngineLockImpl = BackgroundEngineLock(ctx)
+      BackgroundWorkerLockApi.setUp(messenger, backgroundEngineLockImpl)
       val nativeSyncApiImpl =
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R || SdkExtensions.getExtensionVersion(Build.VERSION_CODES.R) < 1) {
           NativeSyncApiImpl26(ctx)
@@ -37,6 +38,10 @@ class MainActivity : FlutterFragmentActivity() {
       ThumbnailApi.setUp(messenger, ThumbnailsImpl(ctx))
       BackgroundWorkerFgHostApi.setUp(messenger, BackgroundWorkerApiImpl(ctx))
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
+
+      flutterEngine.plugins.add(BackgroundServicePlugin())
+      flutterEngine.plugins.add(HttpSSLOptionsPlugin())
+      flutterEngine.plugins.add(backgroundEngineLockImpl)
     }
   }
 }

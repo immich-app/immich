@@ -51,6 +51,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       isArchived: isArchived,
       isTrashEnabled: isTrashEnable,
       isInLockedView: isInLockedView,
+      isStacked: asset.hasRemote && (asset as RemoteAsset).stackId != null,
       currentAlbum: currentAlbum,
       advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
@@ -185,6 +186,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
+        const SizedBox(height: 64),
       ],
     );
   }

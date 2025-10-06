@@ -11,7 +11,7 @@ The `immich-server` container contains multiple workers:
 
 ## Split workers
 
-If you prefer to throttle or distribute the workers, you can do this using the [environment variables](/docs/install/environment-variables) to specify which container should pick up which tasks.
+If you prefer to throttle or distribute the workers, you can do this using the [environment variables](/install/environment-variables) to specify which container should pick up which tasks.
 
 For example, for a simple setup with one container for the Web/API and one for all other microservices, you can do the following:
 
@@ -53,5 +53,5 @@ Additionally, some jobs (such as memories generation) run on a schedule, which i
 <img src={require('./img/admin-nightly-tasks.webp').default} width="60%" title="Admin nightly tasks" />
 
 :::note
-Some jobs ([External Libraries](/docs/features/libraries) scanning, Database Dump) are configured in their own sections in System Settings.
+Some jobs ([External Libraries](/features/libraries) scanning, Database Dump) are configured in their own sections in System Settings.
 :::

@@ -110,6 +110,16 @@ const projects: CommunityProjectProps[] = [
     description: 'A tiny, zero-login web app for collecting photos/videos from anyone into your Immich server.',
     url: 'https://github.com/Nasogaa/immich-drop',
   },
+  {
+    title: 'Immich Birthday Sync',
+    description: 'Bulk-upload and -download birthdays, with CardDAV sync support',
+    url: 'https://github.com/sid3windr/immich-birthday',
+  },
+  {
+    title: 'Immich Stack',
+    description: 'Auto-stack photos with identical filenames and differing extensions (i.e. JPG+RAW)',
+    url: 'https://github.com/sid3windr/immich-stack',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {

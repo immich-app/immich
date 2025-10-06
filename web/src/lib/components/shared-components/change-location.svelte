@@ -1,16 +1,15 @@
 <script lang="ts">
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import type Map from '$lib/components/shared-components/map/map.svelte';
   import { timeDebounceOnSearch, timeToLoadTheMap } from '$lib/constants';
+  import SearchBar from '$lib/elements/SearchBar.svelte';
   import { lastChosenLocation } from '$lib/stores/asset-editor.store';
   import { delay } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
-  import { ConfirmModal } from '@immich/ui';
+  import { ConfirmModal, LoadingSpinner } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';

@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -58,8 +59,10 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                         );
                       },
-                      error: (error, stackTrace) =>
-                          Text('Error: $error', style: TextStyle(color: context.colorScheme.error)),
+                      error: (error, stackTrace) => Text(
+                        'error_saving_image'.tr(args: [error.toString()]),
+                        style: TextStyle(color: context.colorScheme.error),
+                      ),
                       loading: () => const SizedBox(height: 16, width: 16, child: CircularProgressIndicator.adaptive()),
                     ),
                   ],
@@ -83,7 +86,7 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
           );
         },
         error: (Object error, StackTrace stackTrace) {
-          return Center(child: Text('Error: $error'));
+          return Center(child: Text('error_saving_image'.tr(args: [error.toString()])));
         },
         loading: () {
           return const SizedBox(height: 48, width: 48, child: Center(child: CircularProgressIndicator.adaptive()));

@@ -8,9 +8,10 @@ import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import io.flutter.embedding.engine.FlutterEngineCache
 import java.util.concurrent.TimeUnit
 
-private const val TAG = "BackgroundUploadImpl"
+private const val TAG = "BackgroundWorkerApiImpl"
 
 class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
   private val ctx: Context = context.applicationContext
@@ -19,25 +20,36 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     enqueueMediaObserver(ctx)
   }
 
+  override fun configure(settings: BackgroundWorkerSettings) {
+    BackgroundWorkerPreferences(ctx).updateSettings(settings)
+    enqueueMediaObserver(ctx)
+  }
+
   override fun disable() {
-    WorkManager.getInstance(ctx).cancelUniqueWork(OBSERVER_WORKER_NAME)
-    WorkManager.getInstance(ctx).cancelUniqueWork(BACKGROUND_WORKER_NAME)
+    WorkManager.getInstance(ctx).apply {
+      cancelUniqueWork(OBSERVER_WORKER_NAME)
+      cancelUniqueWork(BACKGROUND_WORKER_NAME)
+    }
     Log.i(TAG, "Cancelled background upload tasks")
   }
 
   companion object {
     private const val BACKGROUND_WORKER_NAME = "immich/BackgroundWorkerV1"
     private const val OBSERVER_WORKER_NAME = "immich/MediaObserverV1"
+    const val ENGINE_CACHE_KEY = "immich::background_worker::engine"
+
 
     fun enqueueMediaObserver(ctx: Context) {
-      val constraints = Constraints.Builder()
-        .addContentUriTrigger(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true)
-        .addContentUriTrigger(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true)
-        .addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
-        .addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
-        .setTriggerContentUpdateDelay(30, TimeUnit.SECONDS)
-        .setTriggerContentMaxDelay(3, TimeUnit.MINUTES)
-        .build()
+      val settings = BackgroundWorkerPreferences(ctx).getSettings()
+      val constraints = Constraints.Builder().apply {
+        addContentUriTrigger(MediaStore.Images.Media.INTERNAL_CONTENT_URI, true)
+        addContentUriTrigger(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true)
+        addContentUriTrigger(MediaStore.Video.Media.INTERNAL_CONTENT_URI, true)
+        addContentUriTrigger(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true)
+        setTriggerContentUpdateDelay(settings.minimumDelaySeconds, TimeUnit.SECONDS)
+        setTriggerContentMaxDelay(settings.minimumDelaySeconds * 10, TimeUnit.SECONDS)
+        setRequiresCharging(settings.requiresCharging)
+      }.build()
 
       val work = OneTimeWorkRequest.Builder(MediaObserver::class.java)
         .setConstraints(constraints)
@@ -45,7 +57,10 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
       WorkManager.getInstance(ctx)
         .enqueueUniqueWork(OBSERVER_WORKER_NAME, ExistingWorkPolicy.REPLACE, work)
 
-      Log.i(TAG, "Enqueued media observer worker with name: $OBSERVER_WORKER_NAME")
+      Log.i(
+        TAG,
+        "Enqueued media observer worker with name: $OBSERVER_WORKER_NAME and settings: $settings"
+      )
     }
 
     fun enqueueBackgroundWorker(ctx: Context) {
@@ -56,9 +71,22 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
         .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
         .build()
       WorkManager.getInstance(ctx)
-        .enqueueUniqueWork(BACKGROUND_WORKER_NAME, ExistingWorkPolicy.REPLACE, work)
+        .enqueueUniqueWork(BACKGROUND_WORKER_NAME, ExistingWorkPolicy.KEEP, work)
 
       Log.i(TAG, "Enqueued background worker with name: $BACKGROUND_WORKER_NAME")
+    }
+
+    fun isBackgroundWorkerRunning(): Boolean {
+      // Easier to check if the engine is cached as we always cache the engine when starting the worker
+      // and remove it when the worker is finished
+      return FlutterEngineCache.getInstance().get(ENGINE_CACHE_KEY) != null
+    }
+
+    fun cancelBackgroundWorker(ctx: Context) {
+      WorkManager.getInstance(ctx).cancelUniqueWork(BACKGROUND_WORKER_NAME)
+      FlutterEngineCache.getInstance().remove(ENGINE_CACHE_KEY)
+
+      Log.i(TAG, "Cancelled background upload task")
     }
   }
 }

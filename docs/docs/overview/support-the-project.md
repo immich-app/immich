@@ -10,11 +10,11 @@ By far the easiest way to help make Immich better it to use it and report issues
 
 ## Translations
 
-Support the project by localizing on [Weblate](https://hosted.weblate.org/projects/immich/immich/). For more information, see the [Translations](/docs/developer/translations) section.
+Support the project by localizing on [Weblate](https://hosted.weblate.org/projects/immich/immich/). For more information, see the [Translations](/developer/translations) section.
 
 ## Development
 
-If you are a programmer or developer, take a look at Immich's [technology stack](/docs/developer/architecture.mdx) and consider fixing bugs or building new features. The team and I are always looking for new contributors. For information about how to contribute as a developer, see the [Developer](/docs/developer/architecture.mdx) section.
+If you are a programmer or developer, take a look at Immich's [technology stack](/developer/architecture.mdx) and consider fixing bugs or building new features. The team and I are always looking for new contributors. For information about how to contribute as a developer, see the [Developer](/developer/architecture.mdx) section.
 
 ## Purchase Immich
 
