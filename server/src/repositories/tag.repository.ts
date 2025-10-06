@@ -171,7 +171,13 @@ export class TagRepository {
           eb
             .selectFrom('tag as child')
             .select('child.parentId')
-            .where('child.id', 'in', (eb2) => eb2.selectFrom('tag_asset').select('tagsId')),
+            .where('child.parentId', 'is not', null)
+            .where((eb2) =>
+              eb2.or([
+                eb2('child.id', 'in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
+                eb2('child.id', 'not in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
+              ]),
+            ),
         )
         .executeTakeFirst();
 
