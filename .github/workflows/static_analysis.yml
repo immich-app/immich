@@ -73,10 +73,10 @@ jobs:
 
       - name: Verify files have not changed
         run: |
-          if ! git diff --exit-code --quiet 'mobile/**/*.g.dart' 'mobile/**/*.gr.dart' 'mobile/**/*.drift.dart'; then
+          if ! git diff --exit-code --quiet '**/*.g.dart' '**/*.gr.dart' '**/*.drift.dart'; then
             echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
             echo "Changed files:"
-            git diff --name-only 'mobile/**/*.g.dart' 'mobile/**/*.gr.dart' 'mobile/**/*.drift.dart'
+            git diff --name-only '**/*.g.dart' '**/*.gr.dart' '**/*.drift.dart'
             exit 1
           fi
 

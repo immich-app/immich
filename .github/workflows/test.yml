@@ -605,10 +605,10 @@ jobs:
         run: pnpm migrations:generate src/TestMigration
       - name: Verify migration files have not changed
         run: |
-          if ! git diff --exit-code --quiet server/src; then
+          if ! git diff --exit-code --quiet src; then
             echo "ERROR: Generated migration files not up to date!"
             echo "Changed files:"
-            git diff --name-only server/src
+            git diff --name-only src
             cat ./src/*-TestMigration.ts
             exit 1
           fi
@@ -618,10 +618,10 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
       - name: Verify SQL files have not changed
         run: |
-          if ! git diff --exit-code --quiet server/src/queries; then
+          if ! git diff --exit-code --quiet src/queries; then
             echo "ERROR: Generated SQL files not up to date!"
             echo "Changed files:"
-            git diff --name-only server/src/queries
+            git diff --name-only src/queries
             git diff
             exit 1
           fi
