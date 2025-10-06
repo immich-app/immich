@@ -268,7 +268,7 @@ class _SheetAssetDescription extends ConsumerStatefulWidget {
   final ExifInfo exif;
   final bool isEditable;
 
-  const _SheetAssetDescription({required this.exif, this.isEditable = true, super.key});
+  const _SheetAssetDescription({required this.exif, this.isEditable = true});
 
   @override
   ConsumerState<_SheetAssetDescription> createState() => _SheetAssetDescriptionState();
