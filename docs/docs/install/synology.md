@@ -75,7 +75,7 @@ Click "**Edit Rules**" and add the following firewall rules:
 Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instructions](/install/upgrading.md).
 
 <details>
-  <summary><H2>Updating Immich using Container Manager</H2></summary>
+  <summary>Updating Immich using Container Manager</summary>
 Check the post installation and upgrade instructions at the links above before proceeding with this section.
 
 ## Step 1. Backup
