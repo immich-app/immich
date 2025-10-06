@@ -86,13 +86,13 @@ export function Chunked(
       }
 
       return Promise.all(
-        chunks(argument, chunkSize).map(async (chunk) =>
-          Reflect.apply(originalMethod, this, [
+        chunks(argument, chunkSize).map(async (chunk) => {
+          return await Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
             ...arguments_.slice(parameterIndex + 1),
-          ]),
-        ),
+          ]);
+        }),
       ).then((results) => (options.mergeFn ? options.mergeFn(results) : results));
     };
   };
