@@ -88,7 +88,6 @@ class DownloadRepository {
       final id = asset.id;
       final livePhotoVideoId = asset.livePhotoVideoId;
       final isVideo = asset.isVideo;
-      final url = getOriginalUrlForRemoteId(id);
 
       // on iOS it cannot link the image, check if the filename has .MP extension
       // to avoid downloading the video part
@@ -97,7 +96,7 @@ class DownloadRepository {
       if (Platform.isAndroid || livePhotoVideoId == null || isVideo || isAndroidMotionPhoto) {
         tasks[taskIndex++] = DownloadTask(
           taskId: id,
-          url: url,
+          url: getOriginalUrlForRemoteId(id),
           headers: headers,
           filename: asset.name,
           updates: Updates.statusAndProgress,
@@ -110,7 +109,7 @@ class DownloadRepository {
       _dummyMetadata['id'] = id;
       tasks[taskIndex++] = DownloadTask(
         taskId: id,
-        url: url,
+        url: getOriginalUrlForRemoteId(id),
         headers: headers,
         filename: asset.name,
         updates: Updates.statusAndProgress,
@@ -121,7 +120,7 @@ class DownloadRepository {
       _dummyMetadata['part'] = LivePhotosPart.video.index;
       tasks[taskIndex++] = DownloadTask(
         taskId: livePhotoVideoId,
-        url: url,
+        url: getOriginalUrlForRemoteId(livePhotoVideoId),
         headers: headers,
         filename: asset.name.toUpperCase().replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
         updates: Updates.statusAndProgress,
