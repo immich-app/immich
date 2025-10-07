@@ -203,7 +203,7 @@ class TimelineService {
   Future<void> dispose() async {
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;
-    _buffer.clear();
+    _buffer = [];
     _bufferOffset = 0;
   }
 }
