@@ -239,6 +239,41 @@
                 </div>
               {/if}
             </div>
+          {:else if reaction.type === ReactionType.Asset}
+            <div class="flex dark:bg-gray-800 bg-gray-200 py-3 ps-3 mt-3 rounded-lg gap-4 justify-start">
+              <div class="flex items-center">
+                <UserAvatar user={reaction.user} size="sm" />
+              </div>
+              <div class="w-full leading-4 overflow-hidden self-center break-words text-sm">
+                {$t('asset_added_to_album')}
+              </div>
+              {#if assetId === undefined && reaction.assetIds && reaction.assetIds.length > 0}
+                <div class="relative aspect-square w-[75px] h-[75px]">
+                  <a href={resolve(`${AppRoute.ALBUMS}/${albumId}/photos/${reaction.assetIds[0]}`)}>
+                    <img
+                      class="rounded-lg w-[75px] h-[75px] object-cover"
+                      src={getAssetThumbnailUrl(reaction.assetIds[0])}
+                      alt="Profile picture of {reaction.user.name}, who added this asset"
+                    />
+                    {#if reaction.assetIds.length > 1}
+                      <span
+                        class="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-xs rounded px-2 py-0.5 pointer-events-none select-none"
+                      >
+                        +{reaction.assetIds.length - 1}
+                      </span>
+                    {/if}
+                  </a>
+                </div>
+              {/if}
+            </div>
+            {#if (index != activityManager.activities.length - 1 && !shouldGroup(activityManager.activities[index].createdAt, activityManager.activities[index + 1].createdAt)) || index === activityManager.activities.length - 1}
+              <div
+                class="pt-1 px-2 text-right w-full text-sm text-gray-500 dark:text-gray-300"
+                title={new Date(reaction.createdAt).toLocaleDateString(undefined, timeOptions)}
+              >
+                {timeSince(luxon.DateTime.fromISO(reaction.createdAt, { locale: $locale }))}
+              </div>
+            {/if}
           {/if}
         {/each}
       </div>
