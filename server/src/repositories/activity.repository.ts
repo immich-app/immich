@@ -65,6 +65,25 @@ export class ActivityRepository {
       .executeTakeFirstOrThrow();
   }
 
+  async updateAssetIds(id: string, assetIds: string[]) {
+    await this.db.updateTable('activity').set({ assetIds }).where('id', '=', id).execute();
+  }
+
+  async findRecentAssetIdsActivity(albumId: string, userId: string, minutes = 15) {
+    const since = new Date(Date.now() - minutes * 60 * 1000);
+    return this.db
+      .selectFrom('activity')
+      .selectAll()
+      .where('albumId', '=', albumId)
+      .where('userId', '=', userId)
+      .where('assetId', 'is', null)
+      .where('isLiked', '=', false)
+      .where('assetIds', 'is not', null)
+      .where(({ eb }) => eb('createdAt', '>=', since))
+      .orderBy('createdAt', 'desc')
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
     await this.db.deleteFrom('activity').where('id', '=', asUuid(id)).execute();

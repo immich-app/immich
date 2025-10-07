@@ -70,6 +70,43 @@ export class ActivityService extends BaseService {
     return { duplicate, value: mapActivity(activity) };
   }
 
+  async upsertAssetIds(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
+    await this.requireAccess({ auth, permission: Permission.ActivityCreate, ids: [dto.albumId] });
+
+    const recent = await this.activityRepository.findRecentAssetIdsActivity(dto.albumId, auth.user.id, 15);
+    this.logger.debug(
+      `Recent activity for user ${auth.user.id} in album ${dto.albumId}: ${recent ? recent.id : 'none'}`,
+    );
+
+    let activity: Activity;
+    let duplicate = false;
+
+    if (recent) {
+      // Merge assetIds (remove duplicates)
+      const oldIds: string[] = Array.isArray(recent.assetIds) ? recent.assetIds : [];
+      const newIds: string[] = Array.isArray(dto.assetIds) ? dto.assetIds : [];
+      const merged = Array.from(new Set([...oldIds, ...newIds]));
+      await this.activityRepository.updateAssetIds(recent.id, merged);
+      // get the updated record (including user info)
+      const [updated] = await this.activityRepository.search({
+        userId: auth.user.id,
+        albumId: dto.albumId,
+        assetId: null,
+        isLiked: false,
+      });
+      activity = updated ?? { ...recent, assetIds: merged };
+      duplicate = true;
+
+      return { duplicate, value: mapActivity(activity) };
+    }
+
+    return await this.create({ user: { id: auth.user.id } } as AuthDto, {
+      assetIds: dto.assetIds,
+      albumId: dto.albumId,
+      type: ReactionType.ASSET,
+    });
+  }
+
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ActivityDelete, ids: [id] });
     await this.activityRepository.delete(id);
@@ -77,10 +114,11 @@ export class ActivityService extends BaseService {
 
   @OnEvent({ name: 'AlbumAssets' })
   async handleAlbumAssetsEvent(payload: { id: string; assetIds: string[]; userId: string }) {
-    this.logger.log(
+    this.logger.debug(
       `AlbumAssets event received: albumId=${payload.id}, userId=${payload.userId}, assetIds=${payload.assetIds.join(', ')}`,
     );
-    await this.create({ user: { id: payload.userId } } as AuthDto, {
+
+    await this.upsertAssetIds({ user: { id: payload.userId } } as AuthDto, {
       assetIds: payload.assetIds,
       albumId: payload.id,
       type: ReactionType.ASSET,
