@@ -85,7 +85,7 @@ export class ActivityService extends BaseService {
       // Merge assetIds (remove duplicates)
       const oldIds: string[] = Array.isArray(recent.assetIds) ? recent.assetIds : [];
       const newIds: string[] = Array.isArray(dto.assetIds) ? dto.assetIds : [];
-      const merged = Array.from(new Set([...oldIds, ...newIds]));
+      const merged = [...new Set([...oldIds, ...newIds])];
       await this.activityRepository.updateAssetIds(recent.id, merged);
       // get the updated record (including user info)
       const [updated] = await this.activityRepository.search({
