@@ -599,6 +599,7 @@
   "backup_controller_page_turn_on": "开启前台备份",
   "backup_controller_page_uploading_file_info": "正在上传中的文件信息",
   "backup_err_only_album": "不能移除唯一的一个相册",
+  "backup_error_sync_failed": "同步失败。无法处理备份。",
   "backup_info_card_assets": "项",
   "backup_manual_cancelled": "已取消",
   "backup_manual_in_progress": "上传正在进行中，请稍后再试",

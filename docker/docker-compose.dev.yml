@@ -1,5 +1,5 @@
 #
-# WARNING: To install Immich, follow our guide: https://immich.app/docs/install/docker-compose
+# WARNING: To install Immich, follow our guide: https://docs.immich.app/install/docker-compose
 #
 # Make sure to use the docker-compose.yml of the current release:
 #
@@ -8,8 +8,8 @@
 # The compose file on main may not be compatible with the latest release.
 
 # For development see:
-# - https://immich.app/docs/developer/setup
-# - https://immich.app/docs/developer/troubleshooting
+# - https://docs.immich.app/developer/setup
+# - https://docs.immich.app/developer/troubleshooting
 
 name: immich-dev
 
@@ -55,8 +55,8 @@ services:
       IMMICH_BUILD_IMAGE_URL: https://github.com/immich-app/immich/pkgs/container/immich-server
       IMMICH_THIRD_PARTY_SOURCE_URL: https://github.com/immich-app/immich/
       IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/immich-app/immich/issues
-      IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://immich.app/docs
-      IMMICH_THIRD_PARTY_SUPPORT_URL: https://immich.app/docs/community-guides
+      IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://docs.immich.app
+      IMMICH_THIRD_PARTY_SUPPORT_URL: https://docs.immich.app/community-guides
     ulimits:
       nofile:
         soft: 1048576

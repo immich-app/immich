@@ -51,6 +51,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           await _db.remoteAssetEntity.deleteAll();
           await _db.remoteExifEntity.deleteAll();
           await _db.stackEntity.deleteAll();
+          await _db.authUserEntity.deleteAll();
           await _db.userEntity.deleteAll();
           await _db.userMetadataEntity.deleteAll();
         });

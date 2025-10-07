@@ -387,27 +387,35 @@ To migrate from the old storage configuration to the new one, you will need to c
 3. **Copy the data** from the old datasets to the new dataset. We advise using the `rsync` command to copy the data, as it will preserve the permissions and ownership of the files. The following commands are examples:
 
 ```bash
-rsync -av /mnt/tank/immich/library/ /mnt/tank/immich/data/library/
-rsync -av /mnt/tank/immich/upload/ /mnt/tank/immich/data/upload/
-rsync -av /mnt/tank/immich/thumbs/ /mnt/tank/immich/data/thumbs/
-rsync -av /mnt/tank/immich/profile/ /mnt/tank/immich/data/profile/
-rsync -av /mnt/tank/immich/video/ /mnt/tank/immich/data/encoded-video/
-rsync -av /mnt/tank/immich/backups/ /mnt/tank/immich/data/backups/
+sudo rsync -av /mnt/tank/immich/library/ /mnt/tank/immich/data/library/
+sudo rsync -av /mnt/tank/immich/upload/ /mnt/tank/immich/data/upload/
+sudo rsync -av /mnt/tank/immich/thumbs/ /mnt/tank/immich/data/thumbs/
+sudo rsync -av /mnt/tank/immich/profile/ /mnt/tank/immich/data/profile/
+sudo rsync -av /mnt/tank/immich/video/ /mnt/tank/immich/data/encoded-video/
+sudo rsync -av /mnt/tank/immich/backups/ /mnt/tank/immich/data/backups/
 ```
 
 Make sure to replace `/mnt/tank/immich/` with the correct path to your old datasets and `/mnt/tank/immich/data/` with the correct path to your new dataset.
 
 :::tip
-If you were using **ixVolume (dataset created automatically by the system)** for Immich data storage, the path to the data should be `/mnt/.ix-apps/app_mounts/immich/`. You have to use this path instead of `/mnt/tank/immich/` in the `rsync` command above, for example:
+If you were using **ixVolume (dataset created automatically by the system)** for some of Immich data storage, the path to the data should be `/mnt/.ix-apps/app_mounts/immich/`. You have to use this path instead of `/mnt/tank/immich/` in the `rsync` command above, for example:
 
 ```bash
-rsync -av /mnt/.ix-apps/app_mounts/immich/library/ /mnt/tank/immich/data/library/
+sudo rsync -av /mnt/.ix-apps/app_mounts/immich/library/ /mnt/tank/immich/data/library/
 ```
+
+If you also were storing your files in the **ixVolume**, the **_upload_** folder is named `uploads` instead of `upload`, so the command to run should be:
+
+```bash
+sudo rsync -av /mnt/.ix-apps/app_mounts/immich/uploads/ /mnt/tank/immich/data/upload/
+```
+
+This means that depending on your old storage configuration, you might have to use a mix of paths in the `rsync` commands above.
 
 If you were also using an ixVolume for Postgres data storage, you also should, first create the pgData dataset, as described in the [Setting up Storage Datasets](#setting-up-storage-datasets) section above, and then you can use the following command to copy the Postgres data:
 
 ```bash
-rsync -av /mnt/.ix-apps/app_mounts/immich/pgData/ /mnt/tank/immich/pgData/
+sudo rsync -av /mnt/.ix-apps/app_mounts/immich/pgData/ /mnt/tank/immich/pgData/
 ```
 
 :::
@@ -416,7 +424,7 @@ rsync -av /mnt/.ix-apps/app_mounts/immich/pgData/ /mnt/tank/immich/pgData/
 Make sure that for each folder, the `.immich` file is copied as well, as it contains important metadata for Immich. If for some reason the `.immich` file is not copied, you can copy it manually with the `rsync` command, for example:
 
 ```bash
-rsync -av /mnt/tank/immich/library/.immich /mnt/tank/immich/data/library/
+sudo rsync -av /mnt/tank/immich/library/.immich /mnt/tank/immich/data/library/
 ```
 
 Replace `library` with the name of the folder where you are copying the file.
@@ -437,38 +445,37 @@ This will recreate the Immich container with the new storage configuration and s
 
 If everything went well, you should now be able to access Immich with the new storage configuration. You can verify that the data has been copied correctly by checking the Immich web interface and ensuring that all your photos and videos are still available. You may delete the old datasets, if you no longer need them, using the TrueNAS web interface.
 
+:::tip
 If you were using **ixVolume (dataset created automatically by the system)** or folders for Immich data storage, you can delete the old datasets using the following commands:
 
 ```bash
-rm -r /mnt/.ix-apps/app_mounts/immich/library
-rm -r /mnt/.ix-apps/app_mounts/immich/uploads
-rm -r /mnt/.ix-apps/app_mounts/immich/thumbs
-rm -r /mnt/.ix-apps/app_mounts/immich/profile
-rm -r /mnt/.ix-apps/app_mounts/immich/video
-rm -r /mnt/.ix-apps/app_mounts/immich/backups
+sudo rm -r /mnt/.ix-apps/app_mounts/immich/*
 ```
+
+:::
 
 </TabItem>
   <TabItem value="migrate-old-dataset" label="Keep the existing datasets">
-  
+
 To migrate from the old storage configuration to the new one without creating new datasets.
+
 1. **Stop the Immich app** from the TrueNAS web interface to ensure no data is being written while you are updating the app.
-2. **Update the datasets permissions**: Ensure that the datasets used for Immich data storage (`library`, `upload`, `thumbs`, `profile`, `video`, `backups`) have the correct permissions set for the user who will run Immich. The user should have ***modify*** permissions on these datasets. The default user for Immich is `apps` (UID 568) and the default group is `apps` (GID 568). If you are using a different user, make sure to set the permissions accordingly. You can do this from the TrueNAS web interface by going to the **Datasets** screen, selecting each dataset, clicking on the **Edit** button next to **Permissions**, and adding the user with ***modify*** permissions.
+2. **Update the datasets permissions**: Ensure that the datasets used for Immich data storage (`library`, `upload`, `thumbs`, `profile`, `video`, `backups`) have the correct permissions set for the user who will run Immich. The user should have **_modify_** permissions on these datasets. The default user for Immich is `apps` (UID 568) and the default group is `apps` (GID 568). If you are using a different user, make sure to set the permissions accordingly. You can do this from the TrueNAS web interface by going to the **Datasets** screen, selecting each dataset, clicking on the **Edit** button next to **Permissions**, and adding the user with **_modify_** permissions.
 3. **Update the Immich app** to use the existing datasets:
-    - Go to the **Installed Applications** screen and select Immich from the list of installed applications.
-    - Click **Edit** on the **Application Info** widget.
-    - In the **Storage Configuration** section, untick the **Use Old Storage Configuration (Deprecated)** checkbox.
-    - For the **Data Storage**, you can keep the **ixVolume (dataset created automatically by the system)** as no data will be directly written to it. We recommend selecting **Host Path (Path that already exists on the system)** and then select a **new** dataset you created for Immich data storage, for example, `data`.
-    - For the **Postgres Data Storage**, keep **Host Path (Path that already exists on the system)** and then select the existing dataset you used for Postgres data storage, for example, `pgData`.
-    - Following the instructions in the [Multiple Datasets for Immich Storage](#additional-storage-advanced-users) section, you can add, **for each old dataset**, a new Additional Storage with the following settings:
-        - **Type**: `Host Path (Path that already exists on the system)`
-        - **Mount Path**: `/data/<folder-name>` (e.g. `/data/library`)
-        - **Host Path**: `/mnt/<your-pool-name>/<dataset-name>` (e.g. `/mnt/tank/immich/library`)
-        :::danger Ensure using the correct paths names
-        Make sure to replace `<folder-name>` with the actual name of the folder used by Immich: `library`, `upload`, `thumbs`, `profile`, `encoded-video`, and `backups`. Also, replace `<your-pool-name>` and `<dataset-name>` with the actual names of your pool and dataset.
-        :::
-        - **Read Only**: Keep it unticked as Immich needs to write to these datasets.
-    - Click **Update** at the bottom of the page to save changes.
+   - Go to the **Installed Applications** screen and select Immich from the list of installed applications.
+   - Click **Edit** on the **Application Info** widget.
+   - In the **Storage Configuration** section, untick the **Use Old Storage Configuration (Deprecated)** checkbox.
+   - For the **Data Storage**, you can keep the **ixVolume (dataset created automatically by the system)** as no data will be directly written to it. We recommend selecting **Host Path (Path that already exists on the system)** and then select a **new** dataset you created for Immich data storage, for example, `data`.
+   - For the **Postgres Data Storage**, keep **Host Path (Path that already exists on the system)** and then select the existing dataset you used for Postgres data storage, for example, `pgData`.
+   - Following the instructions in the [Multiple Datasets for Immich Storage](#additional-storage-advanced-users) section, you can add, **for each old dataset**, a new Additional Storage with the following settings:
+     - **Type**: `Host Path (Path that already exists on the system)`
+     - **Mount Path**: `/data/<folder-name>` (e.g. `/data/library`)
+     - **Host Path**: `/mnt/<your-pool-name>/<dataset-name>` (e.g. `/mnt/tank/immich/library`)
+       :::danger Ensure using the correct paths names
+       Make sure to replace `<folder-name>` with the actual name of the folder used by Immich: `library`, `upload`, `thumbs`, `profile`, `encoded-video`, and `backups`. Also, replace `<your-pool-name>` and `<dataset-name>` with the actual names of your pool and dataset.
+       :::
+     - **Read Only**: Keep it unticked as Immich needs to write to these datasets.
+   - Click **Update** at the bottom of the page to save changes.
 4. **Start the Immich app** from the TrueNAS web interface. This will recreate the Immich container with the new storage configuration and start the app. If everything went well, you should now be able to access Immich with the new storage configuration. You can verify that the data is still available by checking the Immich web interface and ensuring that all your photos and videos are still accessible.
 
   </TabItem>

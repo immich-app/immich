@@ -1,6 +1,6 @@
 A command-line interface for interfacing with the self-hosted photo manager [Immich](https://immich.app/).
 
-Please see the [Immich CLI documentation](https://immich.app/docs/features/command-line-interface).
+Please see the [Immich CLI documentation](https://docs.immich.app/features/command-line-interface).
 
 # For developers
 
@@ -22,17 +22,12 @@ You'll need tsx, the easiest way to install it is to use pnpm:
 To run the Immich CLI from source, run the following in the cli folder:
 
     $ pnpm install
-    $ tsx .
+    $ pnpm run build
+    $ ts-node .
 
-## Debug from source (VSCode)
+You'll need ts-node, the easiest way to install it is to use pnpm:
 
-With VScode you can debug the Immich CLI. Go to the launch.json file, find the Immich CLI config and change this with the command you need to debug
-
-`"args": ["upload", "--help"],`
-
-replace that for the command of your choice.
-
-## Run from build
+    $ pnpm i -g ts-node
 
 You can also build and install the CLI using
 

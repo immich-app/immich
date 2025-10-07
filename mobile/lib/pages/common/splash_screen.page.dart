@@ -64,7 +64,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
             if (Store.isBetaTimelineEnabled) {
               bool syncSuccess = false;
               await Future.wait([
-                backgroundManager.syncLocal(full: true),
+                backgroundManager.syncLocal(),
                 backgroundManager.syncRemote().then((success) => syncSuccess = success),
               ]);
 
@@ -76,7 +76,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                   _resumeBackup(backupProvider),
                 ]);
               } else {
-                backupProvider.updateError(BackupError.syncFailed);
                 await backgroundManager.hashAssets();
               }
 

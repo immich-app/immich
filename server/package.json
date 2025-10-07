@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.144.1",
+  "version": "2.0.1",
   "description": "",
   "author": "",
   "private": true,
@@ -129,7 +129,7 @@
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
-    "@types/node": "^22.18.1",
+    "@types/node": "^22.18.8",
     "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -161,7 +161,7 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.19.0"
+    "node": "22.20.0"
   },
   "overrides": {
     "sharp": "^0.34.3"
