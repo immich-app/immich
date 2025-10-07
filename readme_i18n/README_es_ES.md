@@ -45,13 +45,13 @@
 
 ## Contenido
 
-- [Documentación oficial](https://immich.app/docs)
+- [Documentación oficial](https://docs.immich.app)
 - [Hoja de ruta](https://github.com/orgs/immich-app/projects/1)
 - [Demo](#demo)
 - [Funciones](#funciones)
-- [Introducción](https://immich.app/docs/overview/introduction)
-- [Instalación](https://immich.app/docs/install/requirements)
-- [Directrices para contribuir](https://immich.app/docs/overview/support-the-project)
+- [Introducción](https://docs.immich.app/overview/introduction)
+- [Instalación](https://docs.immich.app/install/requirements)
+- [Directrices para contribuir](https://docs.immich.app/overview/support-the-project)
 
 ## Documentación
 
@@ -99,7 +99,7 @@ contraseña: demo
 
 ## Traducciones
 
-Lea mas acerca de las traducciones [acá](https://immich.app/docs/developer/translations).
+Lea mas acerca de las traducciones [acá](https://docs.immich.app/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />

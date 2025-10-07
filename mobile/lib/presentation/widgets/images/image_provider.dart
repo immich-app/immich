@@ -123,28 +123,14 @@ ImageProvider getFullImageProvider(BaseAsset asset, {Size size = const Size(1080
   return provider;
 }
 
-ImageProvider getThumbnailImageProvider({BaseAsset? asset, String? remoteId, Size size = kThumbnailResolution}) {
-  assert(asset != null || remoteId != null, 'Either asset or remoteId must be provided');
-
-  if (remoteId != null) {
-    return RemoteThumbProvider(assetId: remoteId);
-  }
-
-  if (_shouldUseLocalAsset(asset!)) {
+ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnailResolution}) {
+  if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
     return LocalThumbProvider(id: id, size: size, assetType: asset.type);
   }
 
-  final String assetId;
-  if (asset is LocalAsset && asset.hasRemote) {
-    assetId = asset.remoteId!;
-  } else if (asset is RemoteAsset) {
-    assetId = asset.id;
-  } else {
-    throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
-  }
-
-  return RemoteThumbProvider(assetId: assetId);
+  final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
+  return assetId != null ? RemoteThumbProvider(assetId: assetId) : null;
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>

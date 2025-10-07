@@ -21,7 +21,7 @@
   <p>
     <FormatMessage key="admin.storage_template_onboarding_description_v2">
       {#snippet children({ message })}
-        <a class="underline" href="https://immich.app/docs/administration/storage-template">{message}</a>
+        <a class="underline" href="https://docs.immich.app/administration/storage-template">{message}</a>
       {/snippet}
     </FormatMessage>
   </p>

@@ -44,7 +44,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final showViewInTimelineButton =
         (previousRouteName != TabShellRoute.name || tabRoute == TabEnum.search) &&
         previousRouteName != AssetViewerRoute.name &&
-        previousRouteName != null;
+        previousRouteName != null &&
+        previousRouteName != LocalTimelineRoute.name;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
@@ -57,7 +58,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     final actions = <Widget>[
-      if (asset.hasRemote) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
+      if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
