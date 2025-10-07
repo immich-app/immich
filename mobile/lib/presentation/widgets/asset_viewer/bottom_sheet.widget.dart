@@ -51,7 +51,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       isArchived: isArchived,
       isTrashEnabled: isTrashEnable,
       isInLockedView: isInLockedView,
-      isStacked: asset.hasRemote && (asset as RemoteAsset).stackId != null,
+      isStacked: asset is RemoteAsset && asset.stackId != null,
       currentAlbum: currentAlbum,
       advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
