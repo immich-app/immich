@@ -13,8 +13,15 @@ else:
 
 module_dir = Path(__file__).parent
 
+def is_ipv6(host: str) -> bool:
+    try:
+        return ip_address(host).version == 6
+    except ValueError:
+        return False
+
+
 bind_host = non_prefixed_settings.immich_host
-if ip_address(bind_host).version == 6:
+if is_ipv6(bind_host):
     bind_host = f"[{bind_host}]"
 bind_address = f"{bind_host}:{non_prefixed_settings.immich_port}"
 
