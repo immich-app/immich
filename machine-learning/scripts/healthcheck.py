@@ -7,8 +7,16 @@ import requests
 port = os.getenv("IMMICH_PORT", 3003)
 host = os.getenv("IMMICH_HOST", "0.0.0.0")
 
+
+def is_ipv6(host: str) -> bool:
+    try:
+        return ip_address(host).version == 6
+    except ValueError:
+        return False
+
+
 host = "localhost" if host == "0.0.0.0" else host
-host = f"[{host}]" if ip_address(host).version == 6 else host
+host = f"[{host}]" if is_ipv6(host) else host
 
 try:
     response = requests.get(f"http://{host}:{port}/ping", timeout=2)
