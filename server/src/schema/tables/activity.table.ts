@@ -26,8 +26,8 @@ import {
   where: '("isLiked" = true)',
 })
 @Check({
-  name: 'activity_like_check',
-  expression: `(comment IS NULL AND "isLiked" = true) OR (comment IS NOT NULL AND "isLiked" = false)`,
+  name: 'activity_check',
+  expression: `(comment IS NULL AND "isLiked" = true) OR (comment IS NOT NULL AND "isLiked" = false) OR (comment IS NULL AND "isLiked" = false AND "assetIds" IS NOT NULL)`,
 })
 @ForeignKeyConstraint({
   columns: ['albumId', 'assetId'],
@@ -54,6 +54,8 @@ export class ActivityTable {
 
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
   assetId!: string | null;
+
+  assetIds!: string[] | null;
 
   @Column({ type: 'text', default: null })
   comment!: string | null;

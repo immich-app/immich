@@ -1,5 +1,5 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
-import { album_asset_delete_audit } from 'src/schema/functions';
+import { activity_assetids_update_on_albumasset_delete, album_asset_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import {
@@ -17,6 +17,12 @@ import {
 @AfterDeleteTrigger({
   scope: 'statement',
   function: album_asset_delete_audit,
+  referencingOldTableAs: 'old',
+  when: 'pg_trigger_depth() <= 1',
+})
+@AfterDeleteTrigger({
+  scope: 'statement',
+  function: activity_assetids_update_on_albumasset_delete,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() <= 1',
 })
