@@ -50,6 +50,11 @@ class DriftEditImagePage extends ConsumerWidget {
     return completer.future;
   }
 
+  void _exitEditing(BuildContext context) {
+    // this assumes that the only way to get to this page is from the AssetViewerRoute
+    context.navigator.popUntil((route) => route.data?.name == AssetViewerRoute.name);
+  }
+
   Future<void> _saveEditedImage(BuildContext context, BaseAsset asset, Image image, WidgetRef ref) async {
     try {
       final Uint8List imageData = await _imageToUint8List(image);
@@ -66,7 +71,7 @@ class DriftEditImagePage extends ConsumerWidget {
       }
 
       ref.read(backgroundSyncProvider).syncLocal(full: true);
-      context.navigator.popUntil((route) => route.isFirst);
+      _exitEditing(context);
       ImmichToast.show(durationInSecond: 3, context: context, msg: 'Image Saved!');
 
       if (localAsset == null) {
@@ -91,7 +96,7 @@ class DriftEditImagePage extends ConsumerWidget {
         backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(
           icon: Icon(Icons.close_rounded, color: context.primaryColor, size: 24),
-          onPressed: () => context.navigator.popUntil((route) => route.isFirst),
+          onPressed: () => _exitEditing(context),
         ),
         actions: <Widget>[
           TextButton(

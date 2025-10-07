@@ -87,7 +87,7 @@ export function Chunked(
 
       return Promise.all(
         chunks(argument, chunkSize).map(async (chunk) => {
-          await Reflect.apply(originalMethod, this, [
+          return await Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
             ...arguments_.slice(parameterIndex + 1),
@@ -103,7 +103,7 @@ export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator
 }
 
 export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: setUnion });
+  return Chunked({ ...options, mergeFn: (args: Set<any>[]) => setUnion(...args) });
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
