@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Activity } from 'src/database';
+import { OnEvent } from 'src/decorators';
 import {
   ActivityCreateDto,
   ActivityDto,
@@ -26,7 +27,7 @@ export class ActivityService extends BaseService {
       isLiked: dto.type && dto.type === ReactionType.LIKE,
     });
 
-    return activities.map((activity) => mapActivity(activity));
+    return activities.filter((a) => !a.assetIds || a.assetIds?.length > 0).map((activity) => mapActivity(activity));
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
@@ -40,6 +41,7 @@ export class ActivityService extends BaseService {
     const common = {
       userId: auth.user.id,
       assetId: dto.assetId,
+      assetIds: dto.assetIds,
       albumId: dto.albumId,
     };
 
@@ -71,5 +73,17 @@ export class ActivityService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ActivityDelete, ids: [id] });
     await this.activityRepository.delete(id);
+  }
+
+  @OnEvent({ name: 'AlbumAssets' })
+  async handleAlbumAssetsEvent(payload: { id: string; assetIds: string[]; userId: string }) {
+    this.logger.log(
+      `AlbumAssets event received: albumId=${payload.id}, userId=${payload.userId}, assetIds=${payload.assetIds.join(', ')}`,
+    );
+    await this.create({ user: { id: payload.userId } } as AuthDto, {
+      assetIds: payload.assetIds,
+      albumId: payload.id,
+      type: ReactionType.ASSET,
+    });
   }
 }

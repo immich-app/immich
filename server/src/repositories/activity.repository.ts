@@ -81,7 +81,11 @@ export class ActivityRepository {
     const result = await this.db
       .selectFrom('activity')
       .select((eb) => [
-        eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', false).as('comments'),
+        eb.fn
+          .countAll<number>()
+          .filterWhere('activity.isLiked', '=', false)
+          .filterWhere('activity.assetIds', 'is', null)
+          .as('comments'),
         eb.fn.countAll<number>().filterWhere('activity.isLiked', '=', true).as('likes'),
       ])
       .innerJoin('user', (join) => join.onRef('user.id', '=', 'activity.userId').on('user.deletedAt', 'is', null))
