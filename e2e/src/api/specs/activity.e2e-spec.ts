@@ -5,6 +5,7 @@ import {
   AssetMediaResponseDto,
   LoginResponseDto,
   ReactionType,
+  addAssetsToAlbum,
   createActivity as create,
   createAlbum,
   removeAssetFromAlbum,
@@ -157,6 +158,59 @@ describe('/activities', () => {
       expect(status).toEqual(200);
       expect(body.length).toBe(1);
       expect(body[0]).toEqual(reaction);
+    });
+
+    it('asset activity: add 2 assets to album, get activity with both asset ids', async () => {
+      const asset1 = await utils.createAsset(admin.accessToken);
+      const asset2 = await utils.createAsset(admin.accessToken);
+
+      await addAssetsToAlbum(
+        {
+          id: album.id,
+          bulkIdsDto: { ids: [asset1.id, asset2.id] },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      const { status, body } = await request(app)
+        .get('/activities')
+        .query({ albumId: album.id })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body.length).toBe(1);
+      expect(body[0].type).toBe('asset');
+      expect(body[0].assetIds).toEqual(expect.arrayContaining([asset1.id, asset2.id]));
+    });
+
+    it('asset activity: add 2 assets and remove 1 asset, get activity with remaining asset id', async () => {
+      const asset1 = await utils.createAsset(admin.accessToken);
+      const asset2 = await utils.createAsset(admin.accessToken);
+
+      await addAssetsToAlbum(
+        {
+          id: album.id,
+          bulkIdsDto: { ids: [asset1.id, asset2.id] },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+      await removeAssetFromAlbum(
+        {
+          id: album.id,
+          bulkIdsDto: {
+            ids: [asset1.id],
+          },
+        },
+        { headers: asBearerAuth(admin.accessToken) },
+      );
+
+      const { status, body } = await request(app)
+        .get('/activities')
+        .query({ albumId: album.id })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body.length).toBe(1);
+      expect(body[0].type).toBe('asset');
+      expect(body[0].assetIds).toEqual(expect.arrayContaining([asset2.id]));
     });
   });
 
