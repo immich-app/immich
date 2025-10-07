@@ -22,6 +22,8 @@ class BackgroundWorkerSettings {
 abstract class BackgroundWorkerFgHostApi {
   void enable();
 
+  void saveNotificationMessage(String title, String body);
+
   void configure(BackgroundWorkerSettings settings);
 
   void disable();
@@ -32,8 +34,6 @@ abstract class BackgroundWorkerBgHostApi {
   // Called from the background flutter engine when it has bootstrapped and established the
   // required platform channels to notify the native side to start the background upload
   void onInitialized();
-
-  void showNotification(String title, String content);
 
   // Called from the background flutter engine to request the native side to cleanup
   void close();
