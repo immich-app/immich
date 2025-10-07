@@ -1022,25 +1022,27 @@ packages:
   isar:
     dependency: "direct main"
     description:
-      name: isar
-      sha256: e17a9555bc7f22ff26568b8c64d019b4ffa2dc6bd4cb1c8d9b269aefd32e53ad
-      url: "https://pub.isar-community.dev"
-    source: hosted
+      path: "packages/isar"
+      ref: "3561848fe7f5811743b880ddd96bb18dede27306"
+      resolved-ref: "3561848fe7f5811743b880ddd96bb18dede27306"
+      url: "https://github.com/immich-app/isar"
+    source: git
     version: "3.1.8"
   isar_flutter_libs:
     dependency: "direct main"
     description:
-      name: isar_flutter_libs
-      sha256: "78710781e658ce4bff59b3f38c5b2735e899e627f4e926e1221934e77b95231a"
-      url: "https://pub.isar-community.dev"
-    source: hosted
+      path: "packages/isar_flutter_libs"
+      ref: "3561848fe7f5811743b880ddd96bb18dede27306"
+      resolved-ref: "3561848fe7f5811743b880ddd96bb18dede27306"
+      url: "https://github.com/immich-app/isar"
+    source: git
     version: "3.1.8"
   isar_generator:
     dependency: "direct dev"
     description:
       path: "packages/isar_generator"
-      ref: v3
-      resolved-ref: ad574f60ed6f39d2995cd16fc7dc3de9a646ef30
+      ref: "3561848fe7f5811743b880ddd96bb18dede27306"
+      resolved-ref: "3561848fe7f5811743b880ddd96bb18dede27306"
       url: "https://github.com/immich-app/isar"
     source: git
     version: "3.1.8"
