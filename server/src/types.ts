@@ -223,8 +223,8 @@ export interface IDeleteFilesJob extends IBaseJob {
 export interface ISidecarWriteJob extends IEntityJob {
   description?: string;
   dateTimeOriginal?: string;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | null;
+  longitude?: number | null;
   rating?: number;
   tags?: true;
 }
