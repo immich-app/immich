@@ -164,4 +164,46 @@ describe(ActivityService.name, () => {
       expect(mocks.activity.delete).toHaveBeenCalledWith(activity.id);
     });
   });
+
+  describe('upsertAssetIds', () => {
+    it('should update recent activity assetIds if recent exists', async () => {
+      const [albumId, userId] = newUuids();
+      const recent = factory.activity({ albumId, userId, assetIds: ['a', 'b'] });
+      const dto = { albumId, assetIds: ['b', 'c'], type: ReactionType.ASSET };
+
+      mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
+      mocks.activity.findRecentAssetIdsActivity.mockResolvedValue(recent);
+      mocks.activity.updateAssetIds.mockResolvedValue();
+      mocks.activity.search.mockResolvedValue([{ ...recent, assetIds: ['a', 'b', 'c'] }]);
+
+      const result = await sut.upsertAssetIds(factory.auth({ user: { id: userId } }), dto);
+
+      expect(mocks.activity.updateAssetIds).toHaveBeenCalledWith(recent.id, ['a', 'b', 'c']);
+      expect(result.duplicate).toBe(true);
+      expect(result.value.assetIds).toEqual(['a', 'b', 'c']);
+    });
+
+    it('should create new activity if no recent exists', async () => {
+      const [albumId, userId] = newUuids();
+      const dto = { albumId, assetIds: ['x', 'y'], type: ReactionType.ASSET };
+      const created = factory.activity({ albumId, userId, assetIds: ['x', 'y'] });
+
+      mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      mocks.activity.findRecentAssetIdsActivity.mockResolvedValue(undefined);
+      mocks.activity.create.mockResolvedValue(created);
+
+      const result = await sut.upsertAssetIds(factory.auth({ user: { id: userId } }), dto);
+
+      expect(mocks.activity.create).toHaveBeenCalledWith({
+        userId,
+        albumId,
+        assetIds: ['x', 'y'],
+        isLiked: false,
+        comment: undefined,
+      });
+      expect(result.duplicate).toBe(false);
+      expect(result.value.assetIds).toEqual(['x', 'y']);
+    });
+  });
 });
