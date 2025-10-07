@@ -310,10 +310,13 @@ export class AssetUploadService extends BaseService {
     req.on('data', (data: Buffer) => {
       if (receivedLength + data.length > size) {
         writeStream.destroy();
-        req.destroy();
-        void this.onCancel(id, path)
-          .catch((error: any) => this.logger.error(`Failed to remove ${id} after too much data: ${error.message}`))
-          .finally(() => res.status(400).send('Received more data than specified in content-length'));
+        void this.onCancel(id, path).catch((error: any) =>
+          this.logger.error(`Failed to remove ${id} after too much data: ${error.message}`),
+        );
+        if (!res.headersSent) {
+          res.status(400).send('Received more data than specified in content-length');
+        }
+        res.on('finish', () => req.destroy());
         return;
       }
       receivedLength += data.length;
@@ -323,15 +326,7 @@ export class AssetUploadService extends BaseService {
       }
     });
 
-    req.on('end', () => {
-      if (receivedLength === size) {
-        return writeStream.end();
-      }
-      writeStream.destroy();
-      void this.onCancel(id, path)
-        .catch((error: any) => this.logger.error(`Failed to remove ${id} after unexpected length: ${error.message}`))
-        .finally(() => res.status(400).send(`Received ${receivedLength} bytes when expecting ${size}`));
-    });
+    req.on('end', () => writeStream.end());
 
     return writeStream;
   }
