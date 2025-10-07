@@ -462,7 +462,7 @@ importers:
         version: 7.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
       nodemailer:
         specifier: ^7.0.0
-        version: 7.0.6
+        version: 7.0.7
       openid-client:
         specifier: ^6.3.3
         version: 6.8.0
@@ -8398,8 +8398,8 @@ packages:
   node-releases@2.0.19:
     resolution: {integrity: sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw==}
 
-  nodemailer@7.0.6:
-    resolution: {integrity: sha512-F44uVzgwo49xboqbFgBGkRaiMgtoBrBEWCVincJPK9+S9Adkzt/wXCLKbf7dxucmxfTI5gHGB+bEmdyzN6QKjw==}
+  nodemailer@7.0.7:
+    resolution: {integrity: sha512-jGOaRznodf62TVzdyhKt/f1Q/c3kYynk8629sgJHpRzGZj01ezbgMMWJSAjHADcwTKxco3B68/R+KHJY2T5BaA==}
     engines: {node: '>=6.0.0'}
 
   nopt@1.0.10:
@@ -20873,7 +20873,7 @@ snapshots:
 
   node-releases@2.0.19: {}
 
-  nodemailer@7.0.6: {}
+  nodemailer@7.0.7: {}
 
   nopt@1.0.10:
     dependencies:
