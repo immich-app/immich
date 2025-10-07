@@ -30,7 +30,7 @@ With VScode you can debug the Immich CLI. Go to the launch.json file, find the I
 
 `"args": ["upload", "--help"],`
 
-for the command of your choice.
+replace that for the command of your choice.
 
 ## Run from build
 
