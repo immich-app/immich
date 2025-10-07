@@ -25,7 +25,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/cli/src/index.ts",
       "runtimeExecutable": "tsx",
-      "args": ["put", "your", "command", "and", "params", "here"],
+      "args": ["upload", "--help"],
       "cwd": "${workspaceFolder}/cli",
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
