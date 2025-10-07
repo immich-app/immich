@@ -25,9 +25,9 @@ It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so
 
 ### Automatic Database Dumps
 
-:::warning
+:::info
 The automatic database dumps can be used to restore the database in the event of damage to the Postgres database files.
-There is no monitoring for these dumps and you will not be notified if they are unsuccessful.
+If the server fails to generate the database dump file, a notification will be shown in the in-app notification on the web
 :::
 
 :::caution
