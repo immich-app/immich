@@ -136,6 +136,7 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerFgHostApi {
   fun enable()
+  fun saveNotificationMessage(title: String, body: String)
   fun configure(settings: BackgroundWorkerSettings)
   fun disable()
 
@@ -154,6 +155,25 @@ interface BackgroundWorkerFgHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.enable()
+              listOf(null)
+            } catch (exception: Throwable) {
+              BackgroundWorkerPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.saveNotificationMessage$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val titleArg = args[0] as String
+            val bodyArg = args[1] as String
+            val wrapped: List<Any?> = try {
+              api.saveNotificationMessage(titleArg, bodyArg)
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)
@@ -204,7 +224,6 @@ interface BackgroundWorkerFgHostApi {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerBgHostApi {
   fun onInitialized()
-  fun showNotification(title: String, content: String)
   fun close()
 
   companion object {
@@ -222,25 +241,6 @@ interface BackgroundWorkerBgHostApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               api.onInitialized()
-              listOf(null)
-            } catch (exception: Throwable) {
-              BackgroundWorkerPigeonUtils.wrapError(exception)
-            }
-            reply.reply(wrapped)
-          }
-        } else {
-          channel.setMessageHandler(null)
-        }
-      }
-      run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.showNotification$separatedMessageChannelSuffix", codec)
-        if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val titleArg = args[0] as String
-            val contentArg = args[1] as String
-            val wrapped: List<Any?> = try {
-              api.showNotification(titleArg, contentArg)
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)

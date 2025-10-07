@@ -185,7 +185,7 @@ jobs:
       - name: Run pnpm install
         run: pnpm rebuild && pnpm install --frozen-lockfile
       - name: Run linter
-        run: pnpm lint:p
+        run: pnpm lint
         if: ${{ !cancelled() }}
       - name: Run formatter
         run: pnpm format

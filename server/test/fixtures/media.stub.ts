@@ -261,4 +261,15 @@ export const probeStub = {
       bitrate: 0,
     },
   }),
+  videoStreamReserved: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        ...probeStubDefaultVideoStream[0],
+        colorPrimaries: 'reserved',
+        colorSpace: 'reserved',
+        colorTransfer: 'reserved',
+      },
+    ],
+  }),
 };
