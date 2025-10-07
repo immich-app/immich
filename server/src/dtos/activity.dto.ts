@@ -7,6 +7,7 @@ import { ValidateEnum, ValidateUUID } from 'src/validation';
 export enum ReactionType {
   COMMENT = 'comment',
   LIKE = 'like',
+  ASSET = 'asset',
 }
 
 export enum ReactionLevel {
@@ -23,6 +24,7 @@ export class ActivityResponseDto {
   type!: ReactionType;
   user!: UserResponseDto;
   assetId!: string | null;
+  assetIds!: string[] | null;
   comment?: string | null;
 }
 
@@ -63,15 +65,18 @@ export class ActivityCreateDto extends ActivityDto {
   @IsNotEmpty()
   @IsString()
   comment?: string;
+
+  assetIds?: string[] | undefined;
 }
 
 export const mapActivity = (activity: Activity): ActivityResponseDto => {
   return {
     id: activity.id,
     assetId: activity.assetId,
+    assetIds: activity.assetIds,
     createdAt: activity.createdAt,
     comment: activity.comment,
-    type: activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT,
+    type: activity.assetIds ? ReactionType.ASSET : activity.isLiked ? ReactionType.LIKE : ReactionType.COMMENT,
     user: mapUser(activity.user),
   };
 };
