@@ -171,7 +171,7 @@ describe('/upload', () => {
         .send(partialContent);
 
       expect(status).toBe(201);
-      expect(headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9\-]+$/);
+      expect(headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9-]+$/);
       expect(headers['upload-complete']).toBe('?0');
     });
 
@@ -190,7 +190,7 @@ describe('/upload', () => {
         .send(partialContent);
 
       expect(status).toBe(201);
-      expect(headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9\-]+$/);
+      expect(headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9-]+$/);
       expect(headers['upload-incomplete']).toBe('?1');
     });
 
@@ -247,7 +247,7 @@ describe('/upload', () => {
 
       expect(firstRequest.status).toBe(201);
       expect(firstRequest.headers['upload-complete']).toBe('?0');
-      expect(firstRequest.headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9\-]+$/);
+      expect(firstRequest.headers['location']).toMatch(/^\/api\/upload\/[a-zA-Z0-9-]+$/);
 
       const secondRequest = await request(app)
         .post('/upload')
@@ -330,9 +330,9 @@ describe('/upload', () => {
       const assetData = makeAssetData({ filename: '8bit-sRGB.jxl' });
       const fullContent = await readFile(join(testAssetDir, 'formats/jxl/8bit-sRGB.jxl'));
       chunks = [
-        fullContent.subarray(0, 10000),
-        fullContent.subarray(10000, 100000),
-        fullContent.subarray(100000, fullContent.length),
+        fullContent.subarray(0, 10_000),
+        fullContent.subarray(10_000, 100_000),
+        fullContent.subarray(100_000, fullContent.length),
       ];
       checksum = createHash('sha1').update(fullContent).digest('base64');
       const response = await request(app)
@@ -431,8 +431,8 @@ describe('/upload', () => {
       expect(body).toEqual({
         type: 'https://iana.org/assignments/http-problem-types#mismatching-upload-offset',
         title: 'offset from request does not match offset of resource',
-        'expected-offset': 100000,
-        'provided-offset': 10000,
+        'expected-offset': 100_000,
+        'provided-offset': 10_000,
       });
     });
 
@@ -442,8 +442,8 @@ describe('/upload', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8');
 
-      const offset = parseInt(headResponse.headers['upload-offset']);
-      expect(offset).toBe(100000);
+      const offset = Number.parseInt(headResponse.headers['upload-offset']);
+      expect(offset).toBe(100_000);
 
       const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
@@ -534,7 +534,9 @@ describe('/upload', () => {
     it('should handle multiple interruptions and resumptions', async () => {
       const chunks = [randomBytes(2000), randomBytes(3000), randomBytes(5000)];
       const hash = createHash('sha1');
-      chunks.forEach((chunk) => hash.update(chunk));
+      for (const chunk of chunks) {
+        hash.update(chunk);
+      }
 
       const createResponse = await request(app)
         .post('/upload')

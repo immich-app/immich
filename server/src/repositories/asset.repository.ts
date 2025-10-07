@@ -277,6 +277,7 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   getCompletionMetadata(assetId: string, ownerId: string) {
     return this.db
       .selectFrom('asset')
@@ -287,6 +288,7 @@ export class AssetRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async setComplete(assetId: string) {
     await this.db
       .updateTable('asset')
@@ -296,6 +298,7 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async removeAndDecrementQuota(id: string): Promise<void> {
     await this.db
       .with('asset_exif', (qb) => qb.selectFrom('asset_exif').where('assetId', '=', id).select('fileSizeInByte'))
