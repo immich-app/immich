@@ -15,7 +15,7 @@ Then, to build the open-api client run the following in the open-api folder:
 
 ## Run from source
 
-You'll need ts-node, the easiest way to install it is to use pnpm:
+You'll need tsx, the easiest way to install it is to use pnpm:
 
     $ pnpm i -g tsx
 
