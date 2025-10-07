@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
@@ -23,10 +23,9 @@ class TrashedLocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntity
 }
 
 extension TrashedLocalAssetEntityDataDomainExtension on TrashedLocalAssetEntityData {
-  TrashedAsset toDto() => TrashedAsset(
+  LocalAsset toLocalAsset() => LocalAsset(
     id: id,
     name: name,
-    albumId: albumId,
     checksum: checksum,
     type: type,
     createdAt: createdAt,

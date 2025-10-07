@@ -4,7 +4,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
@@ -299,15 +298,9 @@ class LocalSyncService {
     if (trashUpdates.isEmpty) {
       return Future.value();
     }
-    final trashedAssets = <TrashedAsset>[];
-    for (final update in trashUpdates) {
-      final albums = delta.assetAlbums.cast<String, List<Object?>>();
-      for (final String id in albums[update.id]!.cast<String?>().nonNulls) {
-        trashedAssets.add(update.toTrashedAsset(id));
-      }
-    }
-    _log.info("updateLocalTrashChanges trashedAssets: ${trashedAssets.map((e) => e.id)}");
-    await _trashedLocalAssetRepository.saveTrashedAssets(trashedAssets);
+    final trashedAssets = delta.toTrashedAssets();
+    _log.info("updateLocalTrashChanges trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
+    await _trashedLocalAssetRepository.applyDelta(trashedAssets);
     await _applyRemoteRestoreToLocal();
   }
 
@@ -321,7 +314,7 @@ class LocalSyncService {
       _log.info("syncDeviceTrashSnapshot prepare, album: ${album.id}/${album.name}");
       final trashedPlatformAssets = await _nativeSyncApi.getTrashedAssetsForAlbum(album.id);
       final trashedAssets = trashedPlatformAssets.toTrashedAssets(album.id);
-      await _trashedLocalAssetRepository.applyTrashSnapshot(trashedAssets, album.id);
+      await _trashedLocalAssetRepository.applyTrashSnapshot(trashedAssets);
     }
     await _applyRemoteRestoreToLocal();
   }
@@ -352,33 +345,22 @@ extension on Iterable<PlatformAlbum> {
 
 extension on Iterable<PlatformAsset> {
   List<LocalAsset> toLocalAssets() {
-    return map(
-      (e) => LocalAsset(
-        id: e.id,
-        name: e.name,
-        checksum: null,
-        type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
-        createdAt: tryFromSecondsSinceEpoch(e.createdAt, isUtc: true) ?? DateTime.timestamp(),
-        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt, isUtc: true) ?? DateTime.timestamp(),
-        width: e.width,
-        height: e.height,
-        durationInSeconds: e.durationInSeconds,
-        orientation: e.orientation,
-        isFavorite: e.isFavorite,
-      ),
-    ).toList();
+    return map((e) => e.toLocalAsset()).toList();
+  }
+
+  Iterable<TrashedAsset> toTrashedAssets(String albumId) {
+    return map((e) => (albumId: albumId, asset: e.toLocalAsset()));
   }
 }
 
 extension on PlatformAsset {
-  TrashedAsset toTrashedAsset(String albumId) => TrashedAsset(
+  LocalAsset toLocalAsset() => LocalAsset(
     id: id,
     name: name,
     checksum: null,
     type: AssetType.values.elementAtOrNull(type) ?? AssetType.other,
-    createdAt: tryFromSecondsSinceEpoch(createdAt) ?? DateTime.now(),
-    updatedAt: tryFromSecondsSinceEpoch(updatedAt) ?? DateTime.now(),
-    albumId: albumId,
+    createdAt: tryFromSecondsSinceEpoch(createdAt, isUtc: true) ?? DateTime.timestamp(),
+    updatedAt: tryFromSecondsSinceEpoch(createdAt, isUtc: true) ?? DateTime.timestamp(),
     width: width,
     height: height,
     durationInSeconds: durationInSeconds,
@@ -387,8 +369,12 @@ extension on PlatformAsset {
   );
 }
 
-extension PlatformAssetsExtension on Iterable<PlatformAsset> {
-  Iterable<TrashedAsset> toTrashedAssets(String albumId) {
-    return map((e) => e.toTrashedAsset(albumId));
+extension SyncDeltaExtension on SyncDelta {
+  Iterable<TrashedAsset> toTrashedAssets() {
+    return updates.map((e) {
+      final albums = assetAlbums.cast<String, List<Object?>>();
+      final albumId = albums[e.id]!.cast<String>().first;
+      return (albumId: albumId, asset: e.toLocalAsset());
+    });
   }
 }

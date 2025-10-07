@@ -2,12 +2,13 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset/trashed_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+
+typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
 class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -30,12 +31,12 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<Iterable<TrashedAsset>> getAssetsToHash(Iterable<String> albumIds) {
+  Future<Iterable<LocalAsset>> getAssetsToHash(Iterable<String> albumIds) {
     final query = _db.trashedLocalAssetEntity.select()..where((r) => r.albumId.isIn(albumIds) & r.checksum.isNull());
-    return query.map((row) => row.toDto()).get();
+    return query.map((row) => row.toLocalAsset()).get();
   }
 
-  Future<Iterable<TrashedAsset>> getToRestore() async {
+  Future<Iterable<LocalAsset>> getToRestore() async {
     final selectedAlbumIds = (_db.selectOnly(_db.localAlbumEntity)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected)));
@@ -52,55 +53,54 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             ))
             .get();
 
-    return rows.map((result) => result.readTable(_db.trashedLocalAssetEntity).toDto());
+    return rows.map((result) => result.readTable(_db.trashedLocalAssetEntity).toLocalAsset());
   }
 
   /// Applies resulted snapshot of trashed assets:
   /// - upserts incoming rows
   /// - deletes rows that are not present in the snapshot
-  Future<void> applyTrashSnapshot(Iterable<TrashedAsset> assets, String albumId) async {
-    if (assets.isEmpty) {
+  Future<void> applyTrashSnapshot(Iterable<TrashedAsset> trashedAssets) async {
+    if (trashedAssets.isEmpty) {
       await _db.delete(_db.trashedLocalAssetEntity).go();
       return;
     }
-    Map<String, String> localChecksumById = await _getCachedChecksums(assets);
+    final assetIds = trashedAssets.map((e) => e.asset.id).toSet();
+    Map<String, String> localChecksumById = await _getCachedChecksums(assetIds);
+
     return _db.transaction(() async {
       await _db.batch((batch) {
-        for (final asset in assets) {
-          final effectiveChecksum = localChecksumById[asset.id] ?? asset.checksum;
+        for (final item in trashedAssets) {
+          final effectiveChecksum = localChecksumById[item.asset.id] ?? item.asset.checksum;
           final companion = TrashedLocalAssetEntityCompanion.insert(
-            id: asset.id,
-            albumId: albumId,
+            id: item.asset.id,
+            albumId: item.albumId,
             checksum: effectiveChecksum == null ? const Value.absent() : Value(effectiveChecksum),
-            name: asset.name,
-            type: asset.type,
-            createdAt: Value(asset.createdAt),
-            updatedAt: Value(asset.updatedAt),
-            width: Value(asset.width),
-            height: Value(asset.height),
-            durationInSeconds: Value(asset.durationInSeconds),
-            isFavorite: Value(asset.isFavorite),
-            orientation: Value(asset.orientation),
+            name: item.asset.name,
+            type: item.asset.type,
+            createdAt: Value(item.asset.createdAt),
+            updatedAt: Value(item.asset.updatedAt),
+            width: Value(item.asset.width),
+            height: Value(item.asset.height),
+            durationInSeconds: Value(item.asset.durationInSeconds),
+            isFavorite: Value(item.asset.isFavorite),
+            orientation: Value(item.asset.orientation),
           );
 
           batch.insert<$TrashedLocalAssetEntityTable, TrashedLocalAssetEntityData>(
             _db.trashedLocalAssetEntity,
             companion,
-            onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+            onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(item.asset.updatedAt)),
           );
         }
       });
 
-      final keepIds = assets.map((asset) => asset.id);
-
-      if (keepIds.length <= 32000) {
-        await (_db.delete(_db.trashedLocalAssetEntity)..where((row) => row.id.isNotIn(keepIds))).go();
+      if (assetIds.length <= 32000) {
+        await (_db.delete(_db.trashedLocalAssetEntity)..where((row) => row.id.isNotIn(assetIds))).go();
       } else {
-        final keepIdsSet = keepIds.toSet();
         final existingIds = await (_db.selectOnly(
           _db.trashedLocalAssetEntity,
         )..addColumns([_db.trashedLocalAssetEntity.id])).map((r) => r.read(_db.trashedLocalAssetEntity.id)!).get();
-        final idToDelete = existingIds.where((id) => !keepIdsSet.contains(id));
+        final idToDelete = existingIds.where((id) => !assetIds.contains(id));
         await _db.batch((batch) {
           for (final id in idToDelete) {
             batch.deleteWhere(_db.trashedLocalAssetEntity, (row) => row.id.equals(id));
@@ -110,33 +110,33 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> saveTrashedAssets(Iterable<TrashedAsset> assets) async {
-    if (assets.isEmpty) {
+  Future<void> applyDelta(Iterable<TrashedAsset> trashedAssets) async {
+    if (trashedAssets.isEmpty) {
       return;
     }
-
-    Map<String, String> localChecksumById = await _getCachedChecksums(assets);
+    final assetIds = trashedAssets.map((e) => e.asset.id).toSet();
+    Map<String, String> localChecksumById = await _getCachedChecksums(assetIds);
 
     await _db.batch((batch) {
-      for (final asset in assets) {
-        final effectiveChecksum = localChecksumById[asset.id] ?? asset.checksum;
+      for (final item in trashedAssets) {
+        final effectiveChecksum = localChecksumById[item.asset.id] ?? item.asset.checksum;
         final companion = TrashedLocalAssetEntityCompanion.insert(
-          id: asset.id,
-          albumId: asset.albumId,
-          name: asset.name,
-          type: asset.type,
+          id: item.asset.id,
+          albumId: item.albumId,
+          name: item.asset.name,
+          type: item.asset.type,
           checksum: effectiveChecksum == null ? const Value.absent() : Value(effectiveChecksum),
-          createdAt: Value(asset.createdAt),
-          width: Value(asset.width),
-          height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
-          isFavorite: Value(asset.isFavorite),
-          orientation: Value(asset.orientation),
+          createdAt: Value(item.asset.createdAt),
+          width: Value(item.asset.width),
+          height: Value(item.asset.height),
+          durationInSeconds: Value(item.asset.durationInSeconds),
+          isFavorite: Value(item.asset.isFavorite),
+          orientation: Value(item.asset.orientation),
         );
         batch.insert<$TrashedLocalAssetEntityTable, TrashedLocalAssetEntityData>(
           _db.trashedLocalAssetEntity,
           companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(asset.updatedAt)),
+          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(item.asset.updatedAt)),
         );
       }
     });
@@ -171,7 +171,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
           TrashedLocalAssetEntityCompanion(
             id: Value(asset.id),
             name: Value(asset.name),
-            albumId: Value(entry.key),
+            // albumId: Value(entry.key),
             checksum: asset.checksum == null ? const Value.absent() : Value(asset.checksum),
             type: Value(asset.type),
             width: Value(asset.width),
@@ -237,17 +237,21 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   //attempt to reuse existing checksums
-  Future<Map<String, String>> _getCachedChecksums(Iterable<TrashedAsset> trashUpdates) async {
-    final ids = trashUpdates.map((e) => e.id).toSet();
-    final rows =
-        await (_db.selectOnly(_db.localAssetEntity)
-              ..where(_db.localAssetEntity.id.isIn(ids) & _db.localAssetEntity.checksum.isNotNull())
-              ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum]))
-            .get();
+  Future<Map<String, String>> _getCachedChecksums(Set<String> assetIds) async {
+    final localChecksumById = <String, String>{};
 
-    final localChecksumById = {
-      for (final r in rows) r.read(_db.localAssetEntity.id)!: r.read(_db.localAssetEntity.checksum)!,
-    };
+    for (final slice in assetIds.slices(32000)) {
+      final rows =
+          await (_db.selectOnly(_db.localAssetEntity)
+                ..where(_db.localAssetEntity.id.isIn(slice) & _db.localAssetEntity.checksum.isNotNull())
+                ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum]))
+              .get();
+
+      for (final r in rows) {
+        localChecksumById[r.read(_db.localAssetEntity.id)!] = r.read(_db.localAssetEntity.checksum)!;
+      }
+    }
+
     return localChecksumById;
   }
 }
