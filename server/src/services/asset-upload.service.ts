@@ -7,8 +7,8 @@ import { Readable } from 'node:stream';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
+import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto } from 'src/dtos/asset-upload';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto } from 'src/dtos/upload.dto';
 import {
   AssetMetadataKey,
   AssetStatus,
@@ -78,7 +78,7 @@ export class AssetUploadService extends BaseService {
       }
 
       this.onComplete(metadata)
-        .then(() => res.status(200).send())
+        .then(() => res.status(200).send({ id: asset.id }))
         .catch((error) => {
           this.logger.error(`Failed to complete upload for ${asset.id}: ${error.message}`);
           res.status(500).send();
@@ -141,7 +141,7 @@ export class AssetUploadService extends BaseService {
         try {
           await this.onComplete(metadata);
         } finally {
-          res.status(200).send();
+          res.status(200).send({ id });
         }
       });
       await new Promise((resolve) => writeStream.on('close', resolve));

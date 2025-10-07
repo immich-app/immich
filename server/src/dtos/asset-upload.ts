@@ -153,3 +153,7 @@ export class ResumeUploadDto extends BaseUploadHeadersDto {
 }
 
 export class GetUploadStatusDto extends BaseRufhHeadersDto {}
+
+export class UploadOkDto {
+  id!: string;
+}

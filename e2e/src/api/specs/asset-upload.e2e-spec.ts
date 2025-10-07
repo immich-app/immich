@@ -1,13 +1,30 @@
 import { getMyUser, LoginResponseDto } from '@immich/sdk';
 import { createHash, randomBytes } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { Socket } from 'socket.io-client';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, baseUrl, utils } from 'src/utils';
+import { app, asBearerAuth, baseUrl, testAssetDir, utils } from 'src/utils';
 import { serializeDictionary } from 'structured-headers';
 import request from 'supertest';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+function makeAssetData(overrides?: Partial<Record<string, unknown>>) {
+  return serializeDictionary({
+    filename: 'test-image.jpg',
+    'device-asset-id': 'rufh',
+    'device-id': 'test',
+    'file-created-at': new Date('2025-01-02T00:00:00Z').toISOString(),
+    'file-modified-at': new Date('2025-01-01T00:00:00Z').toISOString(),
+    'is-favorite': true,
+    'icloud-id': 'example-icloud-id',
+    ...overrides,
+  });
+}
 
 describe('/upload', () => {
+  let websocket: Socket;
   let admin: LoginResponseDto;
   let user: LoginResponseDto;
   let quotaUser: LoginResponseDto;
@@ -18,18 +35,15 @@ describe('/upload', () => {
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
+    websocket = await utils.connectWebsocket(admin.accessToken);
     user = await utils.userSetup(admin.accessToken, createUserDto.user1);
     cancelQuotaUser = await utils.userSetup(admin.accessToken, createUserDto.user2);
     quotaUser = await utils.userSetup(admin.accessToken, createUserDto.userQuota);
-    assetData = serializeDictionary({
-      filename: 'test-image.jpg',
-      'device-asset-id': 'rufh',
-      'device-id': 'test',
-      'file-created-at': new Date('2025-01-02T00:00:00Z').toISOString(),
-      'file-modified-at': new Date('2025-01-01T00:00:00Z').toISOString(),
-      'is-favorite': false,
-      'icloud-id': 'example-icloud-id',
-    });
+    assetData = makeAssetData();
+  });
+
+  afterAll(() => {
+    utils.disconnectWebsocket(websocket);
   });
 
   describe('startUpload', () => {
@@ -51,32 +65,50 @@ describe('/upload', () => {
     });
 
     it('should create a complete upload with Upload-Complete: ?1', async () => {
-      const content = randomBytes(1024);
+      const assetData = makeAssetData({ filename: 'el_torcal_rocks.jpg' });
+      const content = await readFile(join(testAssetDir, 'formats/jpg/el_torcal_rocks.jpg'));
 
-      const { status, headers } = await request(app)
+      const { status, headers, body } = await request(app)
         .post('/upload')
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'image/jpeg')
-        .set('Upload-Length', '1024')
+        .set('Upload-Length', content.byteLength.toString())
         .send(content);
 
       expect(status).toBe(200);
       expect(headers['upload-complete']).toBe('?1');
+      expect(body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: body.id });
+      const asset = await utils.getAssetInfo(admin.accessToken, body.id);
+      expect(asset).toEqual(
+        expect.objectContaining({
+          id: body.id,
+          ownerId: admin.userId,
+          exifInfo: expect.objectContaining({ fileSizeInByte: content.byteLength }),
+          originalFileName: 'el_torcal_rocks.jpg',
+          deviceAssetId: 'rufh',
+          deviceId: 'test',
+          isFavorite: true,
+          visibility: 'timeline',
+        }),
+      );
     });
 
     it('should create a complete upload with Upload-Incomplete: ?0 if version is 3', async () => {
       const content = randomBytes(1024);
 
-      const { status, headers } = await request(app)
+      const checksum = createHash('sha1').update(content).digest('base64');
+      const { status, headers, body } = await request(app)
         .post('/upload')
         .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '3')
         .set('X-Immich-Asset-Data', assetData)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
+        .set('Repr-Digest', `sha=:${checksum}:`)
         .set('Upload-Incomplete', '?0')
         .set('Content-Type', 'image/jpeg')
         .set('Upload-Length', '1024')
@@ -84,6 +116,22 @@ describe('/upload', () => {
 
       expect(status).toBe(200);
       expect(headers['upload-incomplete']).toBe('?0');
+      expect(body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+
+      const asset = await utils.getAssetInfo(user.accessToken, body.id);
+      expect(asset).toEqual(
+        expect.objectContaining({
+          id: body.id,
+          checksum,
+          ownerId: user.userId,
+          exifInfo: expect.objectContaining({ fileSizeInByte: content.byteLength }),
+          originalFileName: 'test-image.jpg',
+          deviceAssetId: 'rufh',
+          deviceId: 'test',
+          isFavorite: true,
+          visibility: 'timeline',
+        }),
+      );
     });
 
     it('should reject when Upload-Complete: ?1 with mismatching Content-Length and Upload-Length', async () => {
@@ -275,19 +323,26 @@ describe('/upload', () => {
   describe('resumeUpload', () => {
     let uploadResource: string;
     let chunks: Buffer[];
+    let checksum: string;
 
     beforeAll(async () => {
       // Create an incomplete upload
-      chunks = [randomBytes(750), randomBytes(500), randomBytes(1500)];
-      const fullContent = Buffer.concat(chunks);
+      const assetData = makeAssetData({ filename: '8bit-sRGB.jxl' });
+      const fullContent = await readFile(join(testAssetDir, 'formats/jxl/8bit-sRGB.jxl'));
+      chunks = [
+        fullContent.subarray(0, 10000),
+        fullContent.subarray(10000, 100000),
+        fullContent.subarray(100000, fullContent.length),
+      ];
+      checksum = createHash('sha1').update(fullContent).digest('base64');
       const response = await request(app)
         .post('/upload')
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', assetData)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(fullContent).digest('base64')}:`)
+        .set('Repr-Digest', `sha=:${checksum}:`)
         .set('Upload-Complete', '?0')
-        .set('Upload-Length', '2750')
+        .set('Upload-Length', '1780777')
         .send(chunks[0]);
 
       uploadResource = response.headers['location'];
@@ -297,10 +352,10 @@ describe('/upload', () => {
       const { status, headers } = await request(baseUrl)
         .patch(uploadResource)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('Upload-Offset', '1250')
+        .set('Upload-Offset', chunks[0].length.toString())
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'application/partial-upload')
-        .send(chunks[2]);
+        .send(chunks[1]);
 
       expect(status).toBe(401);
       expect(headers['upload-complete']).toBeUndefined();
@@ -309,12 +364,12 @@ describe('/upload', () => {
     it("should reject upload to another user's asset", async () => {
       const { status, headers } = await request(baseUrl)
         .patch(uploadResource)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .set('Authorization', `Bearer ${user.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('Upload-Offset', '1250')
+        .set('Upload-Offset', chunks[0].length.toString())
         .set('Upload-Complete', '?1')
         .set('Content-Type', 'application/partial-upload')
-        .send(chunks[2]);
+        .send(chunks[1]);
 
       expect(status).toBe(404);
       expect(headers['upload-complete']).toEqual('?0');
@@ -323,9 +378,9 @@ describe('/upload', () => {
     it('should append data with correct offset', async () => {
       const { status, headers } = await request(baseUrl)
         .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('Upload-Offset', chunks[0].length.toString())
+        .set('Upload-Offset', '10000')
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
         .send(chunks[1]);
@@ -335,20 +390,20 @@ describe('/upload', () => {
 
       const headResponse = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8');
 
-      expect(headResponse.headers['upload-offset']).toBe('1250');
+      expect(headResponse.headers['upload-offset']).toBe('100000');
     });
 
     it('should reject append with different upload length than before', async () => {
       const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('Upload-Offset', '1250')
+        .set('Upload-Offset', '100000')
         .set('Upload-Complete', '?0')
-        .set('Upload-Length', '1250')
+        .set('Upload-Length', '100000') // should be 1780777
         .set('Content-Type', 'application/partial-upload')
         .send();
 
@@ -361,40 +416,38 @@ describe('/upload', () => {
     });
 
     it('should reject append with mismatching length', async () => {
-      const wrongOffset = 100;
-
       const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
-        .set('Upload-Offset', wrongOffset.toString())
+        .set('Upload-Offset', '10000')
         .set('Upload-Complete', '?0')
         .set('Content-Type', 'application/partial-upload')
         .send(randomBytes(100));
 
       expect(status).toBe(409);
-      expect(headers['upload-offset']).toBe('1250');
+      expect(headers['upload-offset']).toBe('100000');
       expect(headers['content-type']).toBe('application/problem+json; charset=utf-8');
       expect(body).toEqual({
         type: 'https://iana.org/assignments/http-problem-types#mismatching-upload-offset',
         title: 'offset from request does not match offset of resource',
-        'expected-offset': 1250,
-        'provided-offset': wrongOffset,
+        'expected-offset': 100000,
+        'provided-offset': 10000,
       });
     });
 
     it('should complete upload with Upload-Complete: ?1', async () => {
       const headResponse = await request(baseUrl)
         .head(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8');
 
       const offset = parseInt(headResponse.headers['upload-offset']);
-      expect(offset).toBe(1250);
+      expect(offset).toBe(100000);
 
-      const { status, headers } = await request(baseUrl)
+      const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', offset.toString())
         .set('Upload-Complete', '?1')
@@ -403,12 +456,31 @@ describe('/upload', () => {
 
       expect(status).toBe(200);
       expect(headers['upload-complete']).toBe('?1');
+
+      const id = uploadResource.replace('/api/upload/', '');
+      expect(body).toEqual(expect.objectContaining({ id }));
+
+      await utils.waitForWebsocketEvent({ event: 'assetUpload', id: body.id });
+      const asset = await utils.getAssetInfo(admin.accessToken, id);
+      expect(asset).toEqual(
+        expect.objectContaining({
+          id,
+          checksum,
+          ownerId: admin.userId,
+          exifInfo: expect.objectContaining({ fileSizeInByte: 1_780_777 }),
+          originalFileName: '8bit-sRGB.jxl',
+          deviceAssetId: 'rufh',
+          deviceId: 'test',
+          isFavorite: true,
+          visibility: 'timeline',
+        }),
+      );
     });
 
     it('should reject append to completed upload', async () => {
       const { status, headers, body } = await request(baseUrl)
         .patch(uploadResource)
-        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
         .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', '2750')
         .set('Upload-Complete', '?0')

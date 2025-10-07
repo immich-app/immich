@@ -12,10 +12,10 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto, UploadHeader, UploadOkDto } from 'src/dtos/asset-upload';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto, UploadHeader } from 'src/dtos/upload.dto';
 import { ImmichHeader, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetUploadService } from 'src/services/asset-upload.service';
@@ -72,6 +72,7 @@ export class AssetUploadController {
   @ApiHeader(apiInteropVersion)
   @ApiHeader(apiUploadComplete)
   @ApiHeader(apiContentLength)
+  @ApiOkResponse({ type: UploadOkDto })
   startUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response): Promise<void> {
     return this.service.startUpload(auth, req, res, validateSyncOrReject(StartUploadDto, req.headers));
   }
@@ -87,6 +88,7 @@ export class AssetUploadController {
   @ApiHeader(apiInteropVersion)
   @ApiHeader(apiUploadComplete)
   @ApiHeader(apiContentLength)
+  @ApiOkResponse({ type: UploadOkDto })
   resumeUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Param() { id }: UUIDParamDto) {
     return this.service.resumeUpload(auth, req, res, id, validateSyncOrReject(ResumeUploadDto, req.headers));
   }
