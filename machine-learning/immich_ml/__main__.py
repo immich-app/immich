@@ -13,6 +13,7 @@ else:
 
 module_dir = Path(__file__).parent
 
+
 def is_ipv6(host: str) -> bool:
     try:
         return ip_address(host).version == 6

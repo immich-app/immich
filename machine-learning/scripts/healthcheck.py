@@ -7,6 +7,7 @@ import requests
 port = os.getenv("IMMICH_PORT", 3003)
 host = os.getenv("IMMICH_HOST", "0.0.0.0")
 
+
 def is_ipv6(host: str) -> bool:
     try:
         return ip_address(host).version == 6
