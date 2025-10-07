@@ -1,13 +1,16 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/services/local_files_manager.service.dart';
+import 'package:logging/logging.dart';
 
 final localFilesManagerRepositoryProvider = Provider(
   (ref) => LocalFilesManagerRepository(ref.watch(localFileManagerServiceProvider)),
 );
 
 class LocalFilesManagerRepository {
-  const LocalFilesManagerRepository(this._service);
+  LocalFilesManagerRepository(this._service);
 
+  final Logger _logger = Logger('SyncStreamService');
   final LocalFilesManagerService _service;
 
   Future<bool> moveToTrash(List<String> mediaUrls) async {
@@ -24,5 +27,19 @@ class LocalFilesManagerRepository {
 
   Future<bool> requestManageMediaPermission() async {
     return await _service.requestManageMediaPermission();
+  }
+
+  Future<List<String>> restoreAssetsFromTrash(Iterable<LocalAsset> assets) async {
+    final restoredIds = <String>[];
+    for (final asset in assets) {
+      _logger.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
+      try {
+        await _service.restoreFromTrashById(asset.id, asset.type.index);
+        restoredIds.add(asset.id);
+      } catch (e) {
+        _logger.warning("Restoring failure: $e");
+      }
+    }
+    return restoredIds;
   }
 }

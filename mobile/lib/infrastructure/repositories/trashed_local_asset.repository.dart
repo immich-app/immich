@@ -199,7 +199,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> restoreLocalAssets(Iterable<String> ids) async {
+  Future<void> applyRestoredAssets(Iterable<String> ids) async {
     if (ids.isEmpty) {
       return;
     }

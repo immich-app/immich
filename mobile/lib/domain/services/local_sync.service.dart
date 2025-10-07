@@ -328,19 +328,9 @@ class LocalSyncService {
 
   Future<void> _applyRemoteRestoreToLocal() async {
     final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    final toRestoreIds = <String>[];
     if (remoteAssetsToRestore.isNotEmpty) {
-      _log.info("remoteAssetsToRestore: $remoteAssetsToRestore");
-      for (final asset in remoteAssetsToRestore) {
-        _log.info("Restoring from trash, localId: ${asset.id}, remoteId: ${asset.checksum}");
-        try {
-          await _localFilesManager.restoreFromTrashById(asset.id, asset.type.index);
-          toRestoreIds.add(asset.id);
-        } catch (e) {
-          _log.warning("Restoring failure: $e");
-        }
-      }
-      await _trashedLocalAssetRepository.restoreLocalAssets(toRestoreIds);
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(remoteAssetsToRestore);
+      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
       _log.info("No remote assets found for restoration");
     }

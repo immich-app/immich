@@ -1,5 +1,4 @@
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -19,4 +18,3 @@ class MockAppSettingsService extends Mock implements AppSettingsService {}
 
 class MockUploadService extends Mock implements UploadService {}
 
-class MockTrashSyncService extends Mock implements TrashSyncService {}
