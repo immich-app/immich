@@ -1,4 +1,5 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { Permission } from 'src/enum';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
@@ -50,4 +51,7 @@ export class SessionTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   pinExpiresAt!: Timestamp | null;
+
+  @Column({ array: true, type: 'character varying' })
+  permissions!: Permission[];
 }

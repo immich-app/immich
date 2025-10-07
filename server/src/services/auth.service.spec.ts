@@ -30,6 +30,7 @@ const oauthResponse = ({
   isAdmin: false,
   isOnboarded: false,
   shouldChangePassword: false,
+  permissions: [Permission.All],
 });
 
 // const token = Buffer.from('my-api-key', 'utf8').toString('base64');
@@ -104,6 +105,7 @@ describe(AuthService.name, () => {
         isAdmin: user.isAdmin,
         isOnboarded: false,
         shouldChangePassword: user.shouldChangePassword,
+        permissions: [Permission.All],
       });
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);

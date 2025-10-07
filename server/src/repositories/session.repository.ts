@@ -32,7 +32,7 @@ export class SessionRepository {
   get(id: string) {
     return this.db
       .selectFrom('session')
-      .select(['id', 'expiresAt', 'pinExpiresAt'])
+      .select(['id', 'expiresAt', 'pinExpiresAt', 'permissions'])
       .where('id', '=', id)
       .executeTakeFirst();
   }
