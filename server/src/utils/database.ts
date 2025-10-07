@@ -289,7 +289,7 @@ export function getTimeBucketRef(eb: ExpressionBuilder<DB, 'asset'>, orderBy: As
     return eb.ref('asset.deletedAt');
   }
 
-  return eb.ref('asset.fileCreatedAt');
+  return eb.ref('asset.localDateTime');
 }
 
 export function getTimeBucketOffset(eb: ExpressionBuilder<DB, 'asset'>, orderBy: AssetOrderBy) {
