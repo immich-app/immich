@@ -14,6 +14,7 @@ class ActivityResponseDto {
   /// Returns a new [ActivityResponseDto] instance.
   ActivityResponseDto({
     required this.assetId,
+    this.assetIds = const [],
     this.comment,
     required this.createdAt,
     required this.id,
@@ -22,6 +23,8 @@ class ActivityResponseDto {
   });
 
   String? assetId;
+
+  List<String>? assetIds;
 
   String? comment;
 
@@ -36,6 +39,7 @@ class ActivityResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is ActivityResponseDto &&
     other.assetId == assetId &&
+    _deepEquality.equals(other.assetIds, assetIds) &&
     other.comment == comment &&
     other.createdAt == createdAt &&
     other.id == id &&
@@ -46,6 +50,7 @@ class ActivityResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assetId == null ? 0 : assetId!.hashCode) +
+    (assetIds == null ? 0 : assetIds!.hashCode) +
     (comment == null ? 0 : comment!.hashCode) +
     (createdAt.hashCode) +
     (id.hashCode) +
@@ -53,7 +58,7 @@ class ActivityResponseDto {
     (user.hashCode);
 
   @override
-  String toString() => 'ActivityResponseDto[assetId=$assetId, comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
+  String toString() => 'ActivityResponseDto[assetId=$assetId, assetIds=$assetIds, comment=$comment, createdAt=$createdAt, id=$id, type=$type, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -61,6 +66,11 @@ class ActivityResponseDto {
       json[r'assetId'] = this.assetId;
     } else {
     //  json[r'assetId'] = null;
+    }
+    if (this.assetIds != null) {
+      json[r'assetIds'] = this.assetIds;
+    } else {
+    //  json[r'assetIds'] = null;
     }
     if (this.comment != null) {
       json[r'comment'] = this.comment;
@@ -84,6 +94,9 @@ class ActivityResponseDto {
 
       return ActivityResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId'),
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         comment: mapValueOfType<String>(json, r'comment'),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
@@ -137,6 +150,7 @@ class ActivityResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'assetId',
+    'assetIds',
     'createdAt',
     'id',
     'type',
