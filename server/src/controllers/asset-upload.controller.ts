@@ -41,6 +41,10 @@ const apiContentLength = {
   required: true,
 };
 
+// This is important to let go of the asset lock for an inactive request
+// TODO: the recommendation is for a later request to explicitly abort the inactive one rather than waiting for timeout
+const SOCKET_TIMEOUT_MS = 30_000;
+
 @ApiTags('Upload')
 @Controller('upload')
 export class AssetUploadController {
@@ -73,6 +77,7 @@ export class AssetUploadController {
   @ApiHeader(apiContentLength)
   @ApiOkResponse({ type: UploadOkDto })
   startUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response): Promise<void> {
+    res.setTimeout(SOCKET_TIMEOUT_MS);
     return this.service.startUpload(auth, req, res, validateSyncOrReject(StartUploadDto, req.headers));
   }
 
@@ -89,12 +94,14 @@ export class AssetUploadController {
   @ApiHeader(apiContentLength)
   @ApiOkResponse({ type: UploadOkDto })
   resumeUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Param() { id }: UUIDParamDto) {
+    res.setTimeout(SOCKET_TIMEOUT_MS);
     return this.service.resumeUpload(auth, req, res, id, validateSyncOrReject(ResumeUploadDto, req.headers));
   }
 
   @Delete(':id')
   @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
   cancelUpload(@Auth() auth: AuthDto, @Res() res: Response, @Param() { id }: UUIDParamDto) {
+    res.setTimeout(SOCKET_TIMEOUT_MS);
     return this.service.cancelUpload(auth, id, res);
   }
 
@@ -102,6 +109,7 @@ export class AssetUploadController {
   @Authenticated({ sharedLink: true, permission: Permission.AssetUpload })
   @ApiHeader(apiInteropVersion)
   getUploadStatus(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response, @Param() { id }: UUIDParamDto) {
+    res.setTimeout(SOCKET_TIMEOUT_MS);
     return this.service.getUploadStatus(auth, res, id, validateSyncOrReject(GetUploadStatusDto, req.headers));
   }
 
