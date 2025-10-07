@@ -9376,45 +9376,15 @@
     "/upload": {
       "options": {
         "operationId": "getUploadOptions",
-        "parameters": [
-          {
-            "name": "key",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "slug",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+        "parameters": [],
         "responses": {
-          "200": {
+          "204": {
             "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
         "tags": [
           "Upload"
-        ],
-        "x-immich-permission": "asset.upload",
-        "description": "This endpoint requires the `asset.upload` permission."
+        ]
       },
       "post": {
         "operationId": "startUpload",
@@ -9423,15 +9393,6 @@
             "name": "content-length",
             "in": "header",
             "description": "Non-negative size of the request body in bytes.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "draft-upload-interop-version",
-            "in": "header",
-            "description": "Indicates the version of the RUFH protocol supported by the client.",
             "required": true,
             "schema": {
               "type": "string"
@@ -9448,7 +9409,7 @@
           {
             "name": "repr-digest",
             "in": "header",
-            "description": "Structured dictionary containing an SHA-1 checksum used to detect duplicate files and validate data integrity.",
+            "description": "RFC 9651 structured dictionary containing an `sha` (bytesequence) checksum used to detect duplicate files and validate data integrity.",
             "required": true,
             "schema": {
               "type": "string"
@@ -9472,9 +9433,18 @@
             }
           },
           {
+            "name": "upload-draft-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "x-immich-asset-data",
             "in": "header",
-            "description": "Base64-encoded JSON of asset metadata. The expected content is the same as AssetMediaCreateDto, except that `filename` is required and `sidecarData` is ignored.",
+            "description": "RFC 9651 structured dictionary containing asset metadata with the following keys:\n- device-asset-id (string, required): Unique device asset identifier\n- device-id (string, required): Device identifier\n- file-created-at (string/date, required): ISO 8601 date string or Unix timestamp\n- file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp\n- filename (string, required): Original filename\n- is-favorite (boolean, optional): Favorite status\n- icloud-id (string, optional): iCloud identifier for assets from iOS devices",
             "required": true,
             "schema": {
               "type": "string"
@@ -9482,6 +9452,16 @@
           }
         ],
         "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadOkDto"
+                }
+              }
+            },
+            "description": ""
+          },
           "201": {
             "description": ""
           }
@@ -9560,15 +9540,6 @@
         "operationId": "getUploadStatus",
         "parameters": [
           {
-            "name": "draft-upload-interop-version",
-            "in": "header",
-            "description": "Indicates the version of the RUFH protocol supported by the client.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -9589,6 +9560,15 @@
             "name": "slug",
             "required": false,
             "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "upload-draft-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -9629,15 +9609,6 @@
             }
           },
           {
-            "name": "draft-upload-interop-version",
-            "in": "header",
-            "description": "Indicates the version of the RUFH protocol supported by the client.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "id",
             "required": true,
             "in": "path",
@@ -9672,6 +9643,15 @@
             }
           },
           {
+            "name": "upload-draft-interop-version",
+            "in": "header",
+            "description": "Indicates the version of the RUFH protocol supported by the client.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "upload-offset",
             "in": "header",
             "description": "Non-negative byte offset indicating the starting position of the data in the request body within the entire file.",
@@ -9683,6 +9663,13 @@
         ],
         "responses": {
           "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadOkDto"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -18069,6 +18056,10 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UploadOkDto": {
+        "properties": {},
         "type": "object"
       },
       "UsageByUserDto": {

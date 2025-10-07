@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { AssetUploadController } from 'src/controllers/asset-upload.controller';
 import { AssetUploadService } from 'src/services/asset-upload.service';
 import { serializeDictionary } from 'structured-headers';
@@ -31,10 +31,22 @@ describe(AssetUploadController.name, () => {
 
   beforeEach(() => {
     service.resetAllMocks();
-    service.startUpload.mockImplementation(async (auth, req, res, dto) => void res.send());
-    service.resumeUpload.mockImplementation(async (auth, req, res, id, dto) => void res.send());
-    service.cancelUpload.mockImplementation(async (auth, id, res) => void res.send());
-    service.getUploadStatus.mockImplementation(async (auth, res, id, dto) => void res.send());
+    service.startUpload.mockImplementation((_, __, res, ___) => {
+      res.send();
+      return Promise.resolve();
+    });
+    service.resumeUpload.mockImplementation((_, __, res, ___, ____) => {
+      res.send();
+      return Promise.resolve();
+    });
+    service.cancelUpload.mockImplementation((_, __, res) => {
+      res.send();
+      return Promise.resolve();
+    });
+    service.getUploadStatus.mockImplementation((_, res, __, ___) => {
+      res.send();
+      return Promise.resolve();
+    });
     ctx.reset();
 
     buffer = Buffer.from(randomUUID());
@@ -217,7 +229,7 @@ describe(AssetUploadController.name, () => {
     });
 
     it('should accept Upload-Incomplete header for version 3', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
+      const { status } = await request(ctx.getHttpServer())
         .post('/upload')
         .set('Upload-Draft-Interop-Version', '3')
         .set('X-Immich-Asset-Data', makeAssetData())
@@ -428,7 +440,7 @@ describe(AssetUploadController.name, () => {
     });
 
     it('should validate UUID parameter', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
+      const { status } = await request(ctx.getHttpServer())
         .head('/upload/invalid-uuid')
         .set('Upload-Draft-Interop-Version', '8');
 

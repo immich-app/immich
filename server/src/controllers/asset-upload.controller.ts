@@ -56,7 +56,6 @@ export class AssetUploadController {
 - file-created-at (string/date, required): ISO 8601 date string or Unix timestamp
 - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp
 - filename (string, required): Original filename
-- duration (string, optional): Duration for video assets
 - is-favorite (boolean, optional): Favorite status
 - icloud-id (string, optional): iCloud identifier for assets from iOS devices`,
     required: true,

@@ -24,7 +24,7 @@ describe(AssetUploadService.name, () => {
         fileCreatedAt: new Date('2025-01-01T00:00:00Z'),
         fileModifiedAt: new Date('2025-01-01T12:00:00Z'),
         isFavorite: false,
-        iCloudId: ''
+        iCloudId: '',
       },
       checksum: Buffer.from('checksum'),
       uploadLength: 1024,
@@ -167,6 +167,7 @@ describe(AssetUploadService.name, () => {
       (checksumError as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
       mocks.asset.createWithMetadata.mockRejectedValue(checksumError);
+      // eslint-disable-next-line unicorn/no-useless-undefined
       mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(undefined);
 
       await expect(sut.onStart(authStub.user1, mockDto)).rejects.toThrow(InternalServerErrorException);
@@ -195,29 +196,6 @@ describe(AssetUploadService.name, () => {
       expect(mocks.asset.createWithMetadata).toHaveBeenCalledWith(expect.anything(), expect.anything(), [
         { key: AssetMetadataKey.MobileApp, value: { iCloudId: 'icloud-123' } },
       ]);
-    });
-
-    it('should include duration for video assets', async () => {
-      const videoDto = {
-        ...mockDto,
-        assetData: {
-          ...mockDto.assetData,
-          filename: 'video.mp4',
-          duration: '00:05:30',
-        },
-      };
-
-      mocks.crypto.randomUUID.mockReturnValue(factory.uuid());
-
-      await sut.onStart(authStub.user1, videoDto);
-
-      expect(mocks.asset.createWithMetadata).toHaveBeenCalledWith(
-        expect.objectContaining({
-          duration: '00:05:30',
-        }),
-        expect.anything(),
-        undefined,
-      );
     });
 
     it('should set isFavorite when true', async () => {
@@ -327,6 +305,7 @@ describe(AssetUploadService.name, () => {
       const staleAssets = [{ id: factory.uuid() }, { id: factory.uuid() }, { id: factory.uuid() }];
 
       mocks.assetJob.streamForPartialAssetCleanupJob.mockReturnValue(
+        // eslint-disable-next-line @typescript-eslint/require-await
         (async function* () {
           for (const asset of staleAssets) {
             yield asset;
@@ -339,16 +318,17 @@ describe(AssetUploadService.name, () => {
       expect(mocks.assetJob.streamForPartialAssetCleanupJob).toHaveBeenCalledWith(expect.any(Date));
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-          { name: JobName.PartialAssetCleanup, data: staleAssets[0] },
-          { name: JobName.PartialAssetCleanup, data: staleAssets[1] },
-          { name: JobName.PartialAssetCleanup, data: staleAssets[2] },
-        ]);
+        { name: JobName.PartialAssetCleanup, data: staleAssets[0] },
+        { name: JobName.PartialAssetCleanup, data: staleAssets[1] },
+        { name: JobName.PartialAssetCleanup, data: staleAssets[2] },
+      ]);
     });
 
     it('should batch cleanup jobs', async () => {
       const assets = Array.from({ length: 1500 }, () => ({ id: factory.uuid() }));
 
       mocks.assetJob.streamForPartialAssetCleanupJob.mockReturnValue(
+        // eslint-disable-next-line @typescript-eslint/require-await
         (async function* () {
           for (const asset of assets) {
             yield asset;
@@ -376,6 +356,7 @@ describe(AssetUploadService.name, () => {
     const path = `/upload/${assetId}/file.jpg`;
 
     it('should skip if asset not found', async () => {
+      // eslint-disable-next-line unicorn/no-useless-undefined
       mocks.assetJob.getForPartialAssetCleanupJob.mockResolvedValue(undefined);
 
       const result = await sut.removeStaleUpload({ id: assetId });

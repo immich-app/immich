@@ -20,10 +20,6 @@ export class UploadAssetDataDto {
   @ValidateDate()
   fileModifiedAt!: Date;
 
-  @Optional()
-  @IsString()
-  duration?: string;
-
   @IsString()
   @IsNotEmpty()
   filename!: string;
@@ -105,7 +101,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
         isFavorite: dict.get('is-favorite')?.[0],
         iCloudId: dict.get('icloud-id')?.[0],
       });
-    } catch (error: any) {
+    } catch {
       throw new BadRequestException(`${ImmichHeader.AssetData} must be a valid structured dictionary`);
     }
   })

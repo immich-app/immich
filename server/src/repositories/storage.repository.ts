@@ -160,7 +160,7 @@ export class StorageRepository {
     }
   }
 
-  mkdir(filepath: string): Promise<String | undefined> {
+  mkdir(filepath: string): Promise<string | undefined> {
     return fs.mkdir(filepath, { recursive: true });
   }
 
