@@ -20,14 +20,18 @@ You'll need tsx, the easiest way to install it is to use pnpm:
     $ pnpm i -g tsx
 
 To run the Immich CLI from source, run the following in the cli folder:
-
     $ pnpm install
-    $ pnpm run build
-    $ ts-node .
+    $ tsx .
 
-You'll need ts-node, the easiest way to install it is to use pnpm:
+## Debug from source (VSCode)
 
-    $ pnpm i -g ts-node
+With VScode you can debug the Immich CLI. Go to the launch.json file, find the Immich CLI config and change this with the command you need to debug
+
+`"args": ["upload", "--help"],`
+
+replace that for the command of your choice.
+
+## Run from build
 
 You can also build and install the CLI using
 
