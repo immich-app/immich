@@ -34,7 +34,7 @@ export class AssetUploadService extends BaseService {
   // This is used to proactively abort previous requests for the same asset
   // when a new one arrives. The previous request still holds the asset lock
   // and will prevent the new request from proceeding until the previous one
-  // times out. As normal client behavior will not have concurrent requests, we
+  // times out. As normal client behavior will not have concurrent requests,
   // we can assume the previous request has already failed on the client end.
   private activeRequests = new Map<string, { req: Readable; startTime: Date }>();
 
