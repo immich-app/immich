@@ -1,5 +1,5 @@
 import { getMyUser, init, isHttpError } from '@immich/sdk';
-import fg from 'fast-glob';
+import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
@@ -109,7 +109,7 @@ export interface CrawlOptions {
 }
 
 const convertPathToPatternOnWin = (path: string) => {
-  return platform() === 'win32' ? fg.convertPathToPattern(path) : path;
+  return platform() === 'win32' ? convertPathToPattern(path) : path;
 };
 
 export const crawl = async (options: CrawlOptions): Promise<string[]> => {
@@ -153,7 +153,7 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
     return `${escapedPattern}/*.{${extensions.join(',')}}`;
   });
 
-  const globbedFiles = await fg.glob(searchPatterns, {
+  const globbedFiles = await glob(searchPatterns, {
     absolute: true,
     caseSensitiveMatch: false,
     dot: includeHidden,

@@ -101,9 +101,6 @@ importers:
       prettier-plugin-organize-imports:
         specifier: ^4.0.0
         version: 4.2.0(prettier@3.6.2)(typescript@5.9.2)
-      tsx:
-        specifier: ^4.20.6
-        version: 4.20.6
       typescript:
         specifier: ^5.3.3
         version: 5.9.2
@@ -18811,6 +18808,7 @@ snapshots:
   get-tsconfig@4.11.0:
     dependencies:
       resolve-pkg-maps: 1.0.0
+    optional: true
 
   github-slugger@1.5.0: {}
 
@@ -22310,7 +22308,8 @@ snapshots:
 
   resolve-pathname@3.0.0: {}
 
-  resolve-pkg-maps@1.0.0: {}
+  resolve-pkg-maps@1.0.0:
+    optional: true
 
   resolve-protobuf-schema@2.1.0:
     dependencies:
@@ -23455,6 +23454,7 @@ snapshots:
       get-tsconfig: 4.11.0
     optionalDependencies:
       fsevents: 2.3.3
+    optional: true
 
   tweetnacl@0.14.5: {}
 
