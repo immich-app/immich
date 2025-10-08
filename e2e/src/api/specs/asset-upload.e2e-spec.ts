@@ -586,7 +586,7 @@ describe('/upload', () => {
     });
 
     it('should abort previous request on new request for same asset', async () => {
-      const content = randomBytes(10000);
+      const content = randomBytes(10_000);
       const checksum = createHash('sha1').update(content).digest('base64');
 
       const createResponse = await request(app)
