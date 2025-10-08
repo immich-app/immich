@@ -348,6 +348,7 @@ part 'model/update_album_dto.dart';
 part 'model/update_album_user_dto.dart';
 part 'model/update_asset_dto.dart';
 part 'model/update_library_dto.dart';
+part 'model/upload_ok_dto.dart';
 part 'model/usage_by_user_dto.dart';
 part 'model/user_admin_create_dto.dart';
 part 'model/user_admin_delete_dto.dart';

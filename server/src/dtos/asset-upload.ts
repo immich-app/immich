@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
-import { Equals, IsEnum, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { Equals, IsEmpty, IsEnum, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { ImmichHeader } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 import { parseDictionary } from 'structured-headers';
@@ -39,13 +40,14 @@ export enum StructuredBoolean {
 }
 
 export enum UploadHeader {
-  UploadOffset = 'upload-offset',
   ContentLength = 'content-length',
-  UploadLength = 'upload-length',
-  UploadComplete = 'upload-complete',
-  UploadIncomplete = 'upload-incomplete',
+  ContentType = 'content-type',
   InteropVersion = 'upload-draft-interop-version',
   ReprDigest = 'repr-digest',
+  UploadComplete = 'upload-complete',
+  UploadIncomplete = 'upload-incomplete',
+  UploadLength = 'upload-length',
+  UploadOffset = 'upload-offset',
 }
 
 class BaseRufhHeadersDto {
@@ -126,10 +128,14 @@ export class StartUploadDto extends BaseUploadHeadersDto {
   @IsInt()
   @Type(() => Number)
   uploadLength!: number;
+
+  @Expose({ name: UploadHeader.UploadOffset })
+  @IsEmpty()
+  uploadOffset: string | undefined;
 }
 
 export class ResumeUploadDto extends BaseUploadHeadersDto {
-  @Expose({ name: 'content-type' })
+  @Expose({ name: UploadHeader.ContentType })
   @ValidateIf((o) => o.version && o.version >= 6)
   @Equals('application/partial-upload')
   contentType!: string;
@@ -148,8 +154,21 @@ export class ResumeUploadDto extends BaseUploadHeadersDto {
   uploadOffset!: number;
 }
 
-export class GetUploadStatusDto extends BaseRufhHeadersDto {}
+export class GetUploadStatusDto extends BaseRufhHeadersDto {
+  @Expose({ name: UploadHeader.UploadComplete })
+  @IsEmpty()
+  uploadComplete: string | undefined;
+
+  @Expose({ name: UploadHeader.UploadIncomplete })
+  @IsEmpty()
+  uploadIncomplete: string | undefined;
+
+  @Expose({ name: UploadHeader.UploadOffset })
+  @IsEmpty()
+  uploadOffset: string | undefined;
+}
 
 export class UploadOkDto {
+  @ApiProperty()
   id!: string;
 }

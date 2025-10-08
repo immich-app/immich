@@ -18059,7 +18059,14 @@
         "type": "object"
       },
       "UploadOkDto": {
-        "properties": {},
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
         "type": "object"
       },
       "UsageByUserDto": {
