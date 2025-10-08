@@ -453,15 +453,13 @@ export class DatabaseRepository {
 
   async withUuidLock<R>(uuid: string, callback: () => Promise<R>): Promise<R> {
     let res;
-    await this.asyncLock.acquire(uuid, async () => {
-      await this.db.connection().execute(async (connection) => {
-        try {
-          await this.acquireUuidLock(uuid, connection);
-          res = await callback();
-        } finally {
-          await this.releaseUuidLock(uuid, connection);
-        }
-      });
+    await this.db.connection().execute(async (connection) => {
+      try {
+        await this.acquireUuidLock(uuid, connection);
+        res = await callback();
+      } finally {
+        await this.releaseUuidLock(uuid, connection);
+      }
     });
 
     return res as R;
