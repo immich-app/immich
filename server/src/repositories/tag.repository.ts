@@ -163,21 +163,27 @@ export class TagRepository {
   }
 
   async deleteEmptyTags() {
-    // TODO rewrite as a single statement
     await this.db.transaction().execute(async (tx) => {
       const result = await tx
-        .selectFrom('asset')
-        .innerJoin('tag_asset', 'tag_asset.assetsId', 'asset.id')
-        .innerJoin('tag_closure', 'tag_closure.id_descendant', 'tag_asset.tagsId')
-        .innerJoin('tag', 'tag.id', 'tag_closure.id_descendant')
-        .select((eb) => ['tag.id', eb.fn.count<number>('asset.id').as('count')])
-        .groupBy('tag.id')
-        .execute();
+        .deleteFrom('tag')
+        .where('id', 'not in', (eb) => eb.selectFrom('tag_asset').select('tagsId'))
+        .where('id', 'not in', (eb) =>
+          eb
+            .selectFrom('tag as child')
+            .select('child.parentId')
+            .where('child.parentId', 'is not', null)
+            .where((eb2) =>
+              eb2.or([
+                eb2('child.id', 'in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
+                eb2('child.id', 'not in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
+              ]),
+            ),
+        )
+        .executeTakeFirst();
 
-      const ids = result.filter(({ count }) => count === 0).map(({ id }) => id);
-      if (ids.length > 0) {
-        await this.db.deleteFrom('tag').where('id', 'in', ids).execute();
-        this.logger.log(`Deleted ${ids.length} empty tags`);
+      const deletedRows = Number(result.numDeletedRows);
+      if (deletedRows > 0) {
+        this.logger.log(`Deleted ${deletedRows} empty tags`);
       }
     });
   }
