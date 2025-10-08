@@ -25,10 +25,9 @@
       "name": "Immich CLI",
       "program": "${workspaceFolder}/cli/dist/index.js",
       "args": ["upload", "--help"],
+      "runtimeArgs": ["--enable-source-maps"],
       "console": "integratedTerminal",
-      "resolveSourceMapLocations": [
-        "${workspaceFolder}/cli/dist/**/*.js.map",
-      ],
+      "resolveSourceMapLocations": ["${workspaceFolder}/cli/dist/**/*.js.map"],
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/cli/dist/**/*.js"],
       "skipFiles": ["<node_internals>/**"],
