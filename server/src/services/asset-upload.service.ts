@@ -38,7 +38,7 @@ export class AssetUploadService extends BaseService {
   // we can assume the previous request has already failed on the client end.
   private activeRequests = new Map<string, { req: Readable; startTime: Date }>();
 
-  @OnEvent({ name: 'UploadAbort', workers: [ImmichWorker.Api] })
+  @OnEvent({ name: 'UploadAbort', workers: [ImmichWorker.Api], server: true })
   onUploadAbort({ assetId, abortTime }: ArgOf<'UploadAbort'>) {
     const entry = this.activeRequests.get(assetId);
     if (!entry) {
@@ -80,14 +80,13 @@ export class AssetUploadService extends BaseService {
 
     this.addRequest(asset.id, req);
     let checksumBuffer: Buffer | undefined;
-    const writeStream = this.storageRepository.createOrAppendWriteStream(asset.path);
+    const writeStream = this.pipe(req, asset.path, contentLength);
     if (isComplete) {
       const hash = createHash('sha1');
       req.on('data', (data: Buffer) => hash.update(data));
       writeStream.on('finish', () => (checksumBuffer = hash.digest()));
     }
-    req.pipe(writeStream);
-    await new Promise((resolve, reject) => writeStream.on('finish', resolve).on('close', reject));
+    await new Promise((resolve, reject) => writeStream.on('close', resolve).on('error', reject));
     this.setCompleteHeader(res, dto.version, isComplete);
     if (!isComplete) {
       res.status(201).set('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
@@ -139,9 +138,8 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      const writeStream = this.storageRepository.createOrAppendWriteStream(path);
-      req.pipe(writeStream);
-      await new Promise((resolve, reject) => writeStream.on('finish', resolve).on('close', reject));
+      const writeStream = this.pipe(req, path, contentLength);
+      await new Promise((resolve, reject) => writeStream.on('close', resolve).on('error', reject));
       this.setCompleteHeader(res, version, isComplete);
       if (!isComplete) {
         try {
@@ -332,6 +330,27 @@ export class AssetUploadService extends BaseService {
     if (!this.onUploadAbort(abortEvent)) {
       this.eventRepository.serverSend('UploadAbort', abortEvent);
     }
+  }
+
+  private pipe(req: Readable, path: string, size: number) {
+    const writeStream = this.storageRepository.createOrAppendWriteStream(path);
+    let receivedLength = 0;
+    req.on('data', (data: Buffer) => {
+      receivedLength += data.length;
+      if (!writeStream.write(data)) {
+        req.pause();
+        writeStream.once('drain', () => req.resume());
+      }
+    });
+
+    req.on('close', () => {
+      if (receivedLength < size) {
+        writeStream.emit('error', new Error('Request closed before all data received'));
+      }
+      writeStream.end();
+    });
+
+    return writeStream;
   }
 
   private sendInterimResponse({ socket }: Response, location: string, interopVersion: number): void {
