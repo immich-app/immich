@@ -1,5 +1,5 @@
-import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { AssetStreamManager } from '$lib/managers/AssetStreamManager/AssetStreamManager.svelte';
+import type { TimelineAsset, UpdateGeometryOptions } from '$lib/managers/timeline-manager/types';
 import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 import { CancellableTask, TaskStatus } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
@@ -7,12 +7,12 @@ import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
 export type SegmentIdentifier = {
-  id(): string;
-  matches(segment: PhotostreamSegment): boolean;
+  get id(): string;
+  matches(segment: AssetStreamSegment): boolean;
 };
-export abstract class PhotostreamSegment {
+export abstract class AssetStreamSegment {
   #intersecting = $state(false);
-  actuallyIntersecting = $state(false);
+  #actuallyIntersecting = $state(false);
   #isLoaded = $state(false);
 
   #height = $state(0);
@@ -30,7 +30,7 @@ export abstract class PhotostreamSegment {
   );
   isHeightActual = $state(false);
 
-  abstract get timelineManager(): PhotostreamManager;
+  abstract get assetStreamManager(): AssetStreamManager;
 
   abstract get identifier(): SegmentIdentifier;
 
@@ -65,6 +65,10 @@ export abstract class PhotostreamSegment {
     return this.#intersecting;
   }
 
+  get actuallyIntersecting() {
+    return this.#actuallyIntersecting;
+  }
+
   get assets(): TimelineAsset[] {
     return this.#assets;
   }
@@ -73,39 +77,39 @@ export abstract class PhotostreamSegment {
     if (this.#height === height) {
       return;
     }
-    const { timelineManager: store, percent } = this;
-    const index = store.months.indexOf(this);
+    const { assetStreamManager: store, percent } = this;
+    const index = store.segments.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevMonthGroup = store.months[index - 1];
-    if (prevMonthGroup) {
-      const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
+    const prevSegment = store.segments[index - 1];
+    if (prevSegment) {
+      const newTop = prevSegment.#top + prevSegment.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
-    for (let cursor = index + 1; cursor < store.months.length; cursor++) {
-      const monthGroup = this.timelineManager.months[cursor];
-      const newTop = monthGroup.#top + heightDelta;
-      if (monthGroup.#top !== newTop) {
-        monthGroup.#top = newTop;
+    for (let cursor = index + 1; cursor < store.segments.length; cursor++) {
+      const segment = this.assetStreamManager.segments[cursor];
+      const newTop = segment.#top + heightDelta;
+      if (segment.#top !== newTop) {
+        segment.#top = newTop;
       }
     }
-    if (store.topIntersectingMonthGroup) {
-      const currentIndex = store.months.indexOf(store.topIntersectingMonthGroup);
+    if (store.topIntersectingSegment) {
+      const currentIndex = store.segments.indexOf(store.topIntersectingSegment);
       if (currentIndex > 0) {
         if (index < currentIndex) {
           store.scrollCompensation = {
             heightDelta,
             scrollTop: undefined,
-            monthGroup: this,
+            segment: this,
           };
         } else if (percent > 0) {
           const top = this.top + height * percent;
           store.scrollCompensation = {
             heightDelta: undefined,
             scrollTop: top,
-            monthGroup: this,
+            segment: this,
           };
         }
       }
@@ -117,7 +121,7 @@ export abstract class PhotostreamSegment {
   }
 
   get top(): number {
-    return this.#top + this.timelineManager.topSectionHeight;
+    return this.#top + this.assetStreamManager.topSectionHeight;
   }
 
   async load(cancelable: boolean): Promise<TaskStatus> {
@@ -139,6 +143,24 @@ export abstract class PhotostreamSegment {
 
   updateIntersection({ intersecting, actuallyIntersecting }: { intersecting: boolean; actuallyIntersecting: boolean }) {
     this.intersecting = intersecting;
-    this.actuallyIntersecting = actuallyIntersecting;
+    this.#actuallyIntersecting = actuallyIntersecting;
+  }
+
+  updateGeometry(options: UpdateGeometryOptions) {
+    const { invalidateHeight, noDefer = false } = options;
+    if (invalidateHeight) {
+      this.isHeightActual = false;
+    }
+    if (!this.loaded) {
+      const viewportWidth = this.assetStreamManager.viewportWidth;
+      if (!this.isHeightActual) {
+        const unwrappedWidth = (3 / 2) * this.assetsCount * this.assetStreamManager.rowHeight * (7 / 10);
+        const rows = Math.ceil(unwrappedWidth / viewportWidth);
+        const height = 51 + Math.max(1, rows) * this.assetStreamManager.rowHeight;
+        this.height = height;
+      }
+      return;
+    }
+    this.layout(noDefer);
   }
 }

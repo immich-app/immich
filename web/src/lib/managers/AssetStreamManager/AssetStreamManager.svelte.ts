@@ -1,28 +1,24 @@
-import type {
-  PhotostreamSegment,
-  SegmentIdentifier,
-} from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
-import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
-import type {
-  AssetDescriptor,
-  TimelineAsset,
-  TimelineManagerLayoutOptions,
-} from '$lib/managers/timeline-manager/types';
+import type { AssetStreamSegment, SegmentIdentifier } from '$lib/managers/AssetStreamManager/AssetStreamSegment.svelte';
+import type { AssetDescriptor, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { CancellableTask, TaskStatus } from '$lib/utils/cancellable-task';
+import { TUNABLES } from '$lib/utils/tunables';
 import { clamp, debounce } from 'lodash-es';
 
-export abstract class PhotostreamManager {
+const {
+  TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
+} = TUNABLES;
+
+export abstract class AssetStreamManager {
   isInitialized = $state(false);
   topSectionHeight = $state(0);
   bottomSectionHeight = $state(60);
 
-  timelineHeight = $derived.by(
-    () => this.months.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight,
+  streamViewerHeight = $derived.by(
+    () => this.segments.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight,
   );
-  assetCount = $derived.by(() => this.months.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
+  assetCount = $derived.by(() => this.segments.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
 
-  topIntersectingMonthGroup: PhotostreamSegment | undefined = $state();
+  topIntersectingSegment: AssetStreamSegment | undefined = $state();
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -50,16 +46,16 @@ export abstract class PhotostreamManager {
   scrollCompensation: {
     heightDelta: number | undefined;
     scrollTop: number | undefined;
-    monthGroup: PhotostreamSegment | undefined;
+    segment: AssetStreamSegment | undefined;
   } = $state({
     heightDelta: 0,
     scrollTop: 0,
-    monthGroup: undefined,
+    segment: undefined,
   });
 
   constructor() {}
 
-  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
+  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }) {
     let changed = false;
     changed ||= this.#setHeaderHeight(headerHeight);
     changed ||= this.#setGap(gap);
@@ -69,15 +65,15 @@ export abstract class PhotostreamManager {
     }
   }
 
-  abstract get months(): PhotostreamSegment[];
+  abstract get segments(): AssetStreamSegment[];
 
   get maxScrollPercent() {
-    const totalHeight = this.timelineHeight + this.bottomSectionHeight + this.topSectionHeight;
+    const totalHeight = this.streamViewerHeight + this.bottomSectionHeight + this.topSectionHeight;
     return (totalHeight - this.viewportHeight) / totalHeight;
   }
 
   get maxScroll() {
-    return this.topSectionHeight + this.bottomSectionHeight + (this.timelineHeight - this.viewportHeight);
+    return this.topSectionHeight + this.bottomSectionHeight + (this.streamViewerHeight - this.viewportHeight);
   }
 
   #setHeaderHeight(value: number) {
@@ -175,7 +171,7 @@ export abstract class PhotostreamManager {
     this.scrollCompensation = {
       heightDelta: undefined,
       scrollTop: undefined,
-      monthGroup: undefined,
+      segment: undefined,
     };
   }
 
@@ -183,25 +179,25 @@ export abstract class PhotostreamManager {
     if (!this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
       return;
     }
-    let topIntersectingMonthGroup = undefined;
-    for (const month of this.months) {
-      updateIntersectionMonthGroup(this, month);
-      if (!topIntersectingMonthGroup && month.actuallyIntersecting) {
-        topIntersectingMonthGroup = month;
+    let topIntersectingSegment = undefined;
+    for (const segment of this.segments) {
+      this.updateSegmentIntersections(segment);
+      if (!topIntersectingSegment && segment.actuallyIntersecting) {
+        topIntersectingSegment = segment;
       }
     }
-    if (topIntersectingMonthGroup !== undefined && this.topIntersectingMonthGroup !== topIntersectingMonthGroup) {
-      this.topIntersectingMonthGroup = topIntersectingMonthGroup;
+    if (topIntersectingSegment !== undefined && this.topIntersectingSegment !== topIntersectingSegment) {
+      this.topIntersectingSegment = topIntersectingSegment;
     }
-    for (const month of this.months) {
-      if (month === this.topIntersectingMonthGroup) {
-        this.topIntersectingMonthGroup.percent = clamp(
-          (this.visibleWindow.top - this.topIntersectingMonthGroup.top) / this.topIntersectingMonthGroup.height,
+    for (const segment of this.segments) {
+      if (segment === this.topIntersectingSegment) {
+        this.topIntersectingSegment.percent = clamp(
+          (this.visibleWindow.top - this.topIntersectingSegment.top) / this.topIntersectingSegment.height,
           0,
           1,
         );
       } else {
-        month.percent = 0;
+        segment.percent = 0;
       }
     }
   }
@@ -219,8 +215,8 @@ export abstract class PhotostreamManager {
     if (!this.isInitialized || this.hasEmptyViewport) {
       return;
     }
-    for (const month of this.months) {
-      updateGeometry(this, month, { invalidateHeight: changedWidth });
+    for (const segment of this.segments) {
+      segment.updateGeometry({ invalidateHeight: changedWidth });
     }
     this.updateIntersections();
   }
@@ -238,29 +234,29 @@ export abstract class PhotostreamManager {
 
   async loadSegment(identifier: SegmentIdentifier, options?: { cancelable: boolean }): Promise<void> {
     const { cancelable = true } = options ?? {};
-    const segment = this.months.find((segment) => identifier.matches(segment));
+    const segment = this.segments.find((segment) => identifier.matches(segment));
     if (!segment || segment.loader?.executed) {
       return;
     }
 
     const result = await segment.load(cancelable);
     if (result === TaskStatus.LOADED) {
-      updateIntersectionMonthGroup(this, segment);
+      this.updateSegmentIntersections(segment);
     }
   }
 
   getSegmentForAssetId(assetId: string) {
-    for (const month of this.months) {
-      const asset = month.assets.find((asset) => asset.id === assetId);
+    for (const segment of this.segments) {
+      const asset = segment.assets.find((asset) => asset.id === assetId);
       if (asset) {
-        return month;
+        return segment;
       }
     }
   }
 
   refreshLayout() {
-    for (const month of this.months) {
-      updateGeometry(this, month, { invalidateHeight: true });
+    for (const segment of this.segments) {
+      segment.updateGeometry({ invalidateHeight: true });
     }
     this.updateIntersections();
   }
@@ -269,8 +265,8 @@ export abstract class PhotostreamManager {
     const range: TimelineAsset[] = [];
     let collecting = false;
 
-    for (const month of this.months) {
-      for (const asset of month.assets) {
+    for (const segment of this.segments) {
+      for (const asset of segment.assets) {
         if (asset.id === start.id) {
           collecting = true;
         }
@@ -284,4 +280,38 @@ export abstract class PhotostreamManager {
     }
     return Promise.resolve(range);
   }
+
+  protected calculateSegmentIntersecting(segment: AssetStreamSegment, expandTop: number, expandBottom: number) {
+    const monthGroupTop = segment.top;
+    const monthGroupBottom = monthGroupTop + segment.height;
+    const topWindow = this.visibleWindow.top - expandTop;
+    const bottomWindow = this.visibleWindow.bottom + expandBottom;
+
+    return isIntersecting(monthGroupTop, monthGroupBottom, topWindow, bottomWindow);
+  }
+
+  protected updateSegmentIntersections(segment: AssetStreamSegment) {
+    const actuallyIntersecting = this.calculateSegmentIntersecting(segment, 0, 0);
+    let preIntersecting = false;
+    if (!actuallyIntersecting) {
+      preIntersecting = this.calculateSegmentIntersecting(segment, INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM);
+    }
+    segment.updateIntersection({ intersecting: actuallyIntersecting || preIntersecting, actuallyIntersecting });
+  }
+}
+
+/**
+ * General function to check if a rectangular region intersects with a window.
+ * @param regionTop - Top position of the region to check
+ * @param regionBottom - Bottom position of the region to check
+ * @param windowTop - Top position of the window
+ * @param windowBottom - Bottom position of the window
+ * @returns true if the region intersects with the window
+ */
+export function isIntersecting(regionTop: number, regionBottom: number, windowTop: number, windowBottom: number) {
+  return (
+    (regionTop >= windowTop && regionTop < windowBottom) ||
+    (regionBottom >= windowTop && regionBottom < windowBottom) ||
+    (regionTop < windowTop && regionBottom >= windowBottom)
+  );
 }

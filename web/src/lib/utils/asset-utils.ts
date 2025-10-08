@@ -512,7 +512,7 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   isSelectingAllAssets.set(true);
 
   try {
-    for (const monthGroup of timelineManager.months) {
+    for (const monthGroup of timelineManager.segments) {
       await monthGroup.load(false);
 
       if (!get(isSelectingAllAssets)) {

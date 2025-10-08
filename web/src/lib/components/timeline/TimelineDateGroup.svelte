@@ -66,7 +66,7 @@
   let hoveredDayGroup = $state();
 
   const transitionDuration = $derived.by(() =>
-    monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150,
+    monthGroup.assetStreamManager.suspendTransitions && !$isUploading ? 0 : 150,
   );
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
   const _onClick = (
@@ -125,7 +125,7 @@
   }
 
   $effect.root(() => {
-    if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
+    if (timelineManager.scrollCompensation.segment === monthGroup) {
       onScrollCompensation(timelineManager.scrollCompensation);
       timelineManager.clearScrollCompensation();
     }
@@ -138,8 +138,8 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
     class={[
-      { 'transition-all': !monthGroup.timelineManager.suspendTransitions },
-      !monthGroup.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
+      { 'transition-all': !monthGroup.assetStreamManager.suspendTransitions },
+      !monthGroup.assetStreamManager.suspendTransitions && `delay-${transitionDuration}`,
     ]}
     data-group
     style:position="absolute"
@@ -217,9 +217,9 @@
             onSelect={(asset) => assetSelectHandler(timelineManager, asset, dayGroup.getAssets(), dayGroup.groupTitle)}
             onMouseEvent={() => assetMouseEventHandler(dayGroup.groupTitle, assetSnapshot(asset))}
             selected={assetInteraction.hasSelectedAsset(asset.id) ||
-              dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
+              dayGroup.monthGroup.assetStreamManager.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            disabled={dayGroup.monthGroup.timelineManager.albumAssets.has(asset.id)}
+            disabled={dayGroup.monthGroup.assetStreamManager.albumAssets.has(asset.id)}
             thumbnailWidth={position.width}
             thumbnailHeight={position.height}
           />

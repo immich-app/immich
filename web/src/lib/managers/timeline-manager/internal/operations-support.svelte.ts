@@ -1,12 +1,10 @@
 import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
-
 import { SvelteSet } from 'svelte/reactivity';
 import { GroupInsertionCache } from '../group-insertion-cache.svelte';
 import { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
 import type { AssetOperation, TimelineAsset } from '../types';
-import { updateGeometry } from './layout-support.svelte';
 import { getMonthGroupByDate } from './search-support.svelte';
 
 export function addAssetsToMonthGroups(
@@ -17,24 +15,23 @@ export function addAssetsToMonthGroups(
   if (assets.length === 0) {
     return;
   }
-
   const addContext = new GroupInsertionCache();
   const updatedMonthGroups = new SvelteSet<MonthGroup>();
-  const monthCount = timelineManager.months.length;
+  const monthCount = timelineManager.segments.length;
   for (const asset of assets) {
     let month = getMonthGroupByDate(timelineManager, asset.localDateTime);
 
     if (!month) {
       month = new MonthGroup(timelineManager, asset.localDateTime, 1, true, options.order);
-      timelineManager.months.push(month);
+      timelineManager.segments.push(month);
     }
 
     month.addTimelineAsset(asset, addContext);
     updatedMonthGroups.add(month);
   }
 
-  if (timelineManager.months.length !== monthCount) {
-    timelineManager.months.sort((a, b) => {
+  if (timelineManager.segments.length !== monthCount) {
+    timelineManager.segments.sort((a, b) => {
       return a.yearMonth.year === b.yearMonth.year
         ? b.yearMonth.month - a.yearMonth.month
         : b.yearMonth.year - a.yearMonth.year;
@@ -51,7 +48,7 @@ export function addAssetsToMonthGroups(
 
   for (const month of addContext.updatedBuckets) {
     month.sortDayGroups();
-    updateGeometry(timelineManager, month, { invalidateHeight: true });
+    month.updateGeometry({ invalidateHeight: true });
   }
   timelineManager.updateIntersections();
 }
@@ -70,7 +67,7 @@ export function runAssetOperation(
   let idsToProcess = new SvelteSet(ids);
   const idsProcessed = new SvelteSet<string>();
   const combinedMoveAssets: { asset: TimelineAsset; date: TimelineDate }[][] = [];
-  for (const month of timelineManager.months) {
+  for (const month of timelineManager.segments) {
     if (idsToProcess.size > 0) {
       const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);
       if (moveAssets.length > 0) {
@@ -94,7 +91,7 @@ export function runAssetOperation(
   }
   const changedGeometry = changedMonthGroups.size > 0;
   for (const month of changedMonthGroups) {
-    updateGeometry(timelineManager, month, { invalidateHeight: true });
+    month.updateGeometry({ invalidateHeight: true });
   }
   if (changedGeometry) {
     timelineManager.updateIntersections();

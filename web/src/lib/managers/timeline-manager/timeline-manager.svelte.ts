@@ -1,15 +1,5 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
-
+import { AssetStreamManager } from '$lib/managers/AssetStreamManager/AssetStreamManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-
-import { CancellableTask } from '$lib/utils/cancellable-task';
-import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
-
-import { isEqual } from 'lodash-es';
-import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
-
-import { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
-import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import {
   addAssetsToMonthGroups,
   runAssetOperation,
@@ -22,6 +12,11 @@ import {
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import { CancellableTask } from '$lib/utils/cancellable-task';
+import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
+import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
+import { isEqual } from 'lodash-es';
+import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
@@ -34,18 +29,7 @@ import type {
   TimelineManagerOptions,
 } from './types';
 
-export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDateTime) => ({
-  id: () => {
-    return yearMonth.year + '-' + yearMonth.month;
-  },
-  matches: (segment: MonthGroup) => {
-    return (
-      segment.yearMonth && segment.yearMonth.year === yearMonth.year && segment.yearMonth.month === yearMonth.month
-    );
-  },
-});
-
-export class TimelineManager extends PhotostreamManager {
+export class TimelineManager extends AssetStreamManager {
   albumAssets: Set<string> = new SvelteSet();
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
@@ -71,7 +55,7 @@ export class TimelineManager extends PhotostreamManager {
   #websocketSupport: WebsocketSupport | undefined;
   #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
 
-  get months() {
+  get segments() {
     return this.#months;
   }
 
@@ -97,13 +81,13 @@ export class TimelineManager extends PhotostreamManager {
   *monthGroupIterator(options?: { direction?: Direction; startMonthGroup?: MonthGroup }) {
     const isEarlier = options?.direction === 'earlier';
     let startIndex = options?.startMonthGroup
-      ? this.months.indexOf(options.startMonthGroup)
+      ? this.segments.indexOf(options.startMonthGroup)
       : isEarlier
         ? 0
-        : this.months.length - 1;
+        : this.segments.length - 1;
 
-    while (startIndex >= 0 && startIndex < this.months.length) {
-      yield this.months[startIndex];
+    while (startIndex >= 0 && startIndex < this.segments.length) {
+      yield this.segments[startIndex];
       startIndex += isEarlier ? 1 : -1;
     }
   }
@@ -177,14 +161,14 @@ export class TimelineManager extends PhotostreamManager {
   }
 
   #createScrubberMonths() {
-    this.scrubberMonths = this.months.map((month) => ({
+    this.scrubberMonths = this.segments.map((month) => ({
       assetCount: month.assetsCount,
       year: month.yearMonth.year,
       month: month.yearMonth.month,
       title: month.monthGroupTitle,
       height: month.height,
     }));
-    this.scrubberTimelineHeight = this.timelineHeight;
+    this.scrubberTimelineHeight = this.streamViewerHeight;
   }
 
   addAssets(assets: TimelineAsset[]) {
@@ -238,7 +222,7 @@ export class TimelineManager extends PhotostreamManager {
     let accumulatedCount = 0;
 
     let randomMonth: MonthGroup | undefined = undefined;
-    for (const month of this.months) {
+    for (const month of this.segments) {
       if (randomAssetIndex < accumulatedCount + month.assetsCount) {
         randomMonth = month;
         break;
@@ -302,14 +286,14 @@ export class TimelineManager extends PhotostreamManager {
   }
 
   refreshLayout() {
-    for (const month of this.months) {
-      updateGeometry(this, month, { invalidateHeight: true });
+    for (const month of this.segments) {
+      month.updateGeometry({ invalidateHeight: true });
     }
     this.updateIntersections();
   }
 
   getFirstAsset(): TimelineAsset | undefined {
-    return this.months[0]?.getFirstAsset();
+    return this.segments[0]?.getFirstAsset();
   }
 
   async getLaterAsset(
@@ -357,3 +341,13 @@ export class TimelineManager extends PhotostreamManager {
     return this.#options.order ?? AssetOrder.Desc;
   }
 }
+export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDateTime) => ({
+  get id() {
+    return yearMonth.year + '-' + yearMonth.month;
+  },
+  matches: (segment: MonthGroup) => {
+    return (
+      segment.yearMonth && segment.yearMonth.year === yearMonth.year && segment.yearMonth.month === yearMonth.month
+    );
+  },
+});

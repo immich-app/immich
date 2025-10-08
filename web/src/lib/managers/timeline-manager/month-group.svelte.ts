@@ -1,8 +1,5 @@
-import {
-  PhotostreamSegment,
-  type SegmentIdentifier,
-} from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
-import { layoutMonthGroup, updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
+import { AssetStreamSegment, type SegmentIdentifier } from '$lib/managers/AssetStreamManager/AssetStreamSegment.svelte';
+import { layoutMonthGroup } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
 import {
   formatGroupTitle,
@@ -24,7 +21,7 @@ import { getSegmentIdentifier, type TimelineManager } from './timeline-manager.s
 import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
-export class MonthGroup extends PhotostreamSegment {
+export class MonthGroup extends AssetStreamSegment {
   dayGroups: DayGroup[] = $state([]);
 
   #sortOrder: AssetOrder = AssetOrder.Desc;
@@ -55,7 +52,7 @@ export class MonthGroup extends PhotostreamSegment {
     return this.#identifier;
   }
 
-  get timelineManager() {
+  get assetStreamManager() {
     return this.#timelineManager;
   }
 
@@ -64,7 +61,7 @@ export class MonthGroup extends PhotostreamSegment {
   }
 
   fetch(signal: AbortSignal): Promise<void> {
-    return loadFromTimeBuckets(this.timelineManager, this, this.timelineManager.options, signal);
+    return loadFromTimeBuckets(this.assetStreamManager, this, this.assetStreamManager.options, signal);
   }
 
   get lastDayGroup() {
@@ -210,15 +207,6 @@ export class MonthGroup extends PhotostreamSegment {
     addContext.changedDayGroups.add(dayGroup);
   }
 
-  get id() {
-    return this.viewId;
-  }
-
-  get viewId() {
-    const { year, month } = this.yearMonth;
-    return year + '-' + month;
-  }
-
   findDayGroupForAsset(asset: TimelineAsset) {
     for (const group of this.dayGroups) {
       if (group.viewerAssets.some((viewerAsset) => viewerAsset.id === asset.id)) {
@@ -240,7 +228,7 @@ export class MonthGroup extends PhotostreamSegment {
           console.warn('No position for asset');
           break;
         }
-        return this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight;
+        return this.top + group.top + viewerAsset.position.top + this.assetStreamManager.headerHeight;
       }
     }
     return -1;
@@ -292,13 +280,13 @@ export class MonthGroup extends PhotostreamSegment {
   }
 
   layout(noDefer: boolean) {
-    layoutMonthGroup(this.timelineManager, this, noDefer);
+    layoutMonthGroup(this.assetStreamManager, this, noDefer);
   }
 
   #clearDeferredLayout() {
     const hasDeferred = this.dayGroups.some((group) => group.deferredLayout);
     if (hasDeferred) {
-      updateGeometry(this.timelineManager, this, { invalidateHeight: true, noDefer: true });
+      this.updateGeometry({ invalidateHeight: true, noDefer: true });
       for (const group of this.dayGroups) {
         group.deferredLayout = false;
       }
@@ -306,8 +294,7 @@ export class MonthGroup extends PhotostreamSegment {
   }
 
   updateIntersection({ intersecting, actuallyIntersecting }: { intersecting: boolean; actuallyIntersecting: boolean }) {
-    this.intersecting = intersecting;
-    this.actuallyIntersecting = actuallyIntersecting;
+    super.updateIntersection({ intersecting, actuallyIntersecting });
     if (intersecting) {
       this.#clearDeferredLayout();
     }

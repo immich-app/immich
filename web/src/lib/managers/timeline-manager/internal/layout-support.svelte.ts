@@ -1,30 +1,5 @@
-import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
-import type { PhotostreamSegment } from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
 import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { MonthGroup } from '../month-group.svelte';
-import type { UpdateGeometryOptions } from '../types';
-
-export function updateGeometry(
-  timelineManager: PhotostreamManager,
-  month: PhotostreamSegment,
-  options: UpdateGeometryOptions,
-) {
-  const { invalidateHeight, noDefer = false } = options;
-  if (invalidateHeight) {
-    month.isHeightActual = false;
-  }
-  if (!month.loaded) {
-    const viewportWidth = timelineManager.viewportWidth;
-    if (!month.isHeightActual) {
-      const unwrappedWidth = (3 / 2) * month.assetsCount * timelineManager.rowHeight * (7 / 10);
-      const rows = Math.ceil(unwrappedWidth / viewportWidth);
-      const height = 51 + Math.max(1, rows) * timelineManager.rowHeight;
-      month.height = height;
-    }
-    return;
-  }
-  month.layout(noDefer);
-}
 
 export function layoutMonthGroup(timelineManager: TimelineManager, month: MonthGroup, noDefer: boolean = false) {
   let cumulativeHeight = 0;

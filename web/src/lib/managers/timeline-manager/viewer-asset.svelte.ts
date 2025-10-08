@@ -12,7 +12,7 @@ export class ViewerAsset {
       return false;
     }
 
-    const store = this.#group.monthGroup.timelineManager;
+    const store = this.#group.monthGroup.assetStreamManager;
     const positionTop = this.#group.absoluteDayGroupTop + this.position.top;
 
     return calculateViewerAssetIntersecting(store, positionTop, this.position.height);

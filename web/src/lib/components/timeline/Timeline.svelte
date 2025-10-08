@@ -107,7 +107,7 @@
   // Indicates whether the viewport is currently in the lead-out section (after all months)
   let isInLeadOutSection = $state(false);
 
-  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
+  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.segments.length === 0);
   const maxMd = $derived(mobileDevice.maxMd);
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
@@ -148,7 +148,7 @@
     // handle any scroll compensation that may have been set
     const height = monthGroup!.findAssetAbsolutePosition(assetId);
 
-    while (timelineManager.scrollCompensation.monthGroup) {
+    while (timelineManager.scrollCompensation.segment) {
       handleScrollCompensation(timelineManager.scrollCompensation);
       timelineManager.clearScrollCompensation();
     }
@@ -290,13 +290,13 @@
   const onScrub: ScrubberListener = (scrubberData) => {
     const { scrubberMonth, overallScrollPercent, scrubberMonthScrollPercent } = scrubberData;
 
-    if (!scrubberMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
+    if (!scrubberMonth || timelineManager.streamViewerHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
       const offset = maxScroll * overallScrollPercent;
       scrollTop(offset);
     } else {
-      const monthGroup = timelineManager.months.find(
+      const monthGroup = timelineManager.segments.find(
         ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
       );
       if (!monthGroup) {
@@ -314,7 +314,7 @@
       return;
     }
 
-    if (timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
+    if (timelineManager.streamViewerHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
       timelineScrollPercent = Math.min(1, element.scrollTop / maxScroll);
@@ -336,7 +336,7 @@
       let maxScrollPercent = timelineManager.maxScrollPercent;
       let found = false;
 
-      const monthsLength = timelineManager.months.length;
+      const monthsLength = timelineManager.segments.length;
       for (let i = -1; i < monthsLength + 1; i++) {
         let monthGroup: TimelineYearMonth | undefined;
         let monthGroupHeight = 0;
@@ -347,8 +347,8 @@
           // lead-out
           monthGroupHeight = bottomSectionHeight;
         } else {
-          monthGroup = timelineManager.months[i].yearMonth;
-          monthGroupHeight = timelineManager.months[i].height;
+          monthGroup = timelineManager.segments[i].yearMonth;
+          monthGroupHeight = timelineManager.segments[i].height;
         }
 
         let next = top - monthGroupHeight * maxScrollPercent;
@@ -361,7 +361,7 @@
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (viewportTopMonthScrollPercent > 0.9999 && i + 1 < monthsLength - 1) {
-            viewportTopMonth = timelineManager.months[i + 1].yearMonth;
+            viewportTopMonth = timelineManager.segments[i + 1].yearMonth;
             viewportTopMonthScrollPercent = 0;
           }
 
@@ -468,7 +468,7 @@
 
       // Select/deselect assets in range (start,end)
       let started = false;
-      for (const monthGroup of timelineManager.months) {
+      for (const monthGroup of timelineManager.segments) {
         if (monthGroup === endBucket) {
           break;
         }
@@ -489,7 +489,7 @@
 
       // Update date group selection in range [start,end]
       started = false;
-      for (const monthGroup of timelineManager.months) {
+      for (const monthGroup of timelineManager.segments) {
         if (monthGroup === startBucket) {
           started = true;
         }
@@ -565,7 +565,7 @@
   {onEscape}
 />
 
-{#if timelineManager.months.length > 0}
+{#if timelineManager.segments.length > 0}
   <Scrubber
     {timelineManager}
     height={timelineManager.viewportHeight}
@@ -610,7 +610,7 @@
     bind:this={timelineElement}
     id="virtual-timeline"
     class:invisible={showSkeleton}
-    style:height={timelineManager.timelineHeight + 'px'}
+    style:height={timelineManager.streamViewerHeight + 'px'}
   >
     <section
       use:resizeObserver={topSectionResizeObserver}
@@ -626,7 +626,7 @@
       {/if}
     </section>
 
-    {#each timelineManager.months as monthGroup (monthGroup.viewId)}
+    {#each timelineManager.segments as monthGroup (monthGroup.identifier.id)}
       {@const display = monthGroup.intersecting}
       {@const absoluteHeight = monthGroup.top}
 
@@ -638,7 +638,7 @@
           style:width="100%"
         >
           <Skeleton
-            height={monthGroup.height - monthGroup.timelineManager.headerHeight}
+            height={monthGroup.height - monthGroup.assetStreamManager.headerHeight}
             title={monthGroup.monthGroupTitle}
           />
         </div>
@@ -674,7 +674,7 @@
       style:position="absolute"
       style:left="0"
       style:right="0"
-      style:transform={`translate3d(0,${timelineManager.timelineHeight}px,0)`}
+      style:transform={`translate3d(0,${timelineManager.streamViewerHeight}px,0)`}
     ></div>
   </section>
 </section>

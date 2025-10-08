@@ -32,7 +32,7 @@ export async function getAssetWithOffset(
 }
 
 export function findMonthGroupForAsset(timelineManager: TimelineManager, id: string) {
-  for (const month of timelineManager.months) {
+  for (const month of timelineManager.segments) {
     const asset = month.findAssetById({ id });
     if (asset) {
       return { monthGroup: month, asset };
@@ -44,7 +44,7 @@ export function getMonthGroupByDate(
   timelineManager: TimelineManager,
   targetYearMonth: TimelineYearMonth,
 ): MonthGroup | undefined {
-  return timelineManager.months.find(
+  return timelineManager.segments.find(
     (month) => month.yearMonth.year === targetYearMonth.year && month.yearMonth.month === targetYearMonth.month,
   );
 }
@@ -136,7 +136,7 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
 }
 
 export function findMonthGroupForDate(timelineManager: TimelineManager, targetYearMonth: TimelineYearMonth) {
-  for (const month of timelineManager.months) {
+  for (const month of timelineManager.segments) {
     const { year, month: monthNum } = month.yearMonth;
     if (monthNum === targetYearMonth.month && year === targetYearMonth.year) {
       return month;
