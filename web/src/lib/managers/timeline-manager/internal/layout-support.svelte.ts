@@ -13,7 +13,7 @@ export function updateGeometry(
   if (invalidateHeight) {
     month.isHeightActual = false;
   }
-  if (!month.isLoaded) {
+  if (!month.loaded) {
     const viewportWidth = timelineManager.viewportWidth;
     if (!month.isHeightActual) {
       const unwrappedWidth = (3 / 2) * month.assetsCount * timelineManager.rowHeight * (7 / 10);

@@ -1,4 +1,3 @@
-import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
@@ -243,11 +242,3 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   }
   return result;
 }
-
-export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDateTime) => ({
-  matches(segment: MonthGroup) {
-    return (
-      segment.yearMonth && segment.yearMonth.year === yearMonth.year && segment.yearMonth.month === yearMonth.month
-    );
-  },
-});

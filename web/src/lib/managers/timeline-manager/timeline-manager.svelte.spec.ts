@@ -1,7 +1,7 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { AbortError } from '$lib/utils';
-import { fromISODateTimeUTCToObject, getSegmentIdentifier } from '$lib/utils/timeline-util';
+import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { TimelineManager } from './timeline-manager.svelte';
@@ -21,6 +21,14 @@ function deriveLocalDateTimeFromFileCreatedAt(arg: TimelineAsset): TimelineAsset
     localDateTime: arg.fileCreatedAt,
   };
 }
+
+const initViewport = async (timelineManager: TimelineManager, viewportHeight = 1000, viewportWidth = 1588) => {
+  timelineManager.viewportHeight = viewportHeight;
+  timelineManager.viewportWidth = viewportWidth;
+  await timelineManager.init();
+  timelineManager.updateSlidingWindow(0);
+  timelineManager.updateIntersections();
+};
 
 describe('TimelineManager', () => {
   beforeEach(() => {
@@ -63,12 +71,12 @@ describe('TimelineManager', () => {
       ]);
 
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
-      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      await initViewport(timelineManager);
     });
 
     it('should load months in viewport', () => {
       expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(3);
     });
 
     it('calculates month height', () => {
@@ -82,13 +90,13 @@ describe('TimelineManager', () => {
         expect.arrayContaining([
           expect.objectContaining({ year: 2024, month: 3, height: 165.5 }),
           expect.objectContaining({ year: 2024, month: 2, height: 11_996 }),
-          expect.objectContaining({ year: 2024, month: 1, height: 286 }),
+          expect.objectContaining({ year: 2024, month: 1, height: 404.5 }),
         ]),
       );
     });
 
     it('calculates timeline height', () => {
-      expect(timelineManager.timelineHeight).toBe(12_447.5);
+      expect(timelineManager.timelineHeight).toBe(12566);
     });
   });
 
@@ -124,19 +132,19 @@ describe('TimelineManager', () => {
         }
         return bucketAssetsResponse[timeBucket];
       });
-      await timelineManager.updateViewport({ width: 1588, height: 0 });
+      await initViewport(timelineManager);
     });
 
     it('loads a month', async () => {
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.assets.length).toEqual(0);
       await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toBeCalledTimes(2);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.assets.length).toEqual(3);
     });
 
     it('ignores invalid months', async () => {
       await timelineManager.loadSegment(getSegmentIdentifier({ year: 2023, month: 1 }));
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
+      expect(sdkMock.getTimeBucket).toBeCalledTimes(2);
     });
 
     it('cancels month loading', async () => {
@@ -154,10 +162,10 @@ describe('TimelineManager', () => {
         timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 })),
         timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 })),
       ]);
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toBeCalledTimes(2);
 
       await timelineManager.loadSegment(getSegmentIdentifier({ year: 2024, month: 1 }));
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toBeCalledTimes(2);
     });
 
     it('allows loading a canceled month', async () => {
@@ -180,7 +188,8 @@ describe('TimelineManager', () => {
       timelineManager = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
-      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      timelineManager.viewportHeight = 1000;
+      timelineManager.viewportHeight = 1588;
     });
 
     it('is empty initially', () => {
@@ -304,7 +313,8 @@ describe('TimelineManager', () => {
       timelineManager = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
-      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      timelineManager.viewportHeight = 1000;
+      timelineManager.viewportHeight = 1588;
     });
 
     it('ignores non-existing assets', () => {
@@ -359,7 +369,8 @@ describe('TimelineManager', () => {
       timelineManager = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
-      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      timelineManager.viewportHeight = 1000;
+      timelineManager.viewportHeight = 1588;
     });
 
     it('ignores invalid IDs', () => {
@@ -411,7 +422,8 @@ describe('TimelineManager', () => {
     beforeEach(async () => {
       timelineManager = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
-      await timelineManager.updateViewport({ width: 0, height: 0 });
+
+      await initViewport(timelineManager, 0, 0);
     });
 
     it('empty store returns null', () => {
@@ -468,7 +480,8 @@ describe('TimelineManager', () => {
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
       ]);
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
-      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+
+      initViewport(timelineManager);
     });
 
     it('returns null for invalid assetId', async () => {
@@ -535,7 +548,7 @@ describe('TimelineManager', () => {
       timelineManager = new TimelineManager();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
 
-      await timelineManager.updateViewport({ width: 0, height: 0 });
+      await initViewport(timelineManager, 0, 0);
     });
 
     it('returns null for invalid months', () => {
@@ -618,7 +631,7 @@ describe('TimelineManager', () => {
       ]);
 
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
-      await timelineManager.updateViewport({ width: 1588, height: 0 });
+      await initViewport(timelineManager);
     });
 
     it('gets all assets once', async () => {

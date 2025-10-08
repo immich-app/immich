@@ -3,12 +3,7 @@ import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import {
-  getSegmentIdentifier,
-  toTimelineAsset,
-  type TimelineDateTime,
-  type TimelineYearMonth,
-} from '$lib/utils/timeline-util';
+import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
 
 import { isEqual } from 'lodash-es';
 import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -38,6 +33,17 @@ import type {
   TimelineAsset,
   TimelineManagerOptions,
 } from './types';
+
+export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDateTime) => ({
+  id: () => {
+    return yearMonth.year + '-' + yearMonth.month;
+  },
+  matches: (segment: MonthGroup) => {
+    return (
+      segment.yearMonth && segment.yearMonth.year === yearMonth.year && segment.yearMonth.month === yearMonth.month
+    );
+  },
+});
 
 export class TimelineManager extends PhotostreamManager {
   albumAssets: Set<string> = new SvelteSet();

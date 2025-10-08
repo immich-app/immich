@@ -11,7 +11,7 @@
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { getSegmentIdentifier, TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -19,12 +19,7 @@
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import {
-    getSegmentIdentifier,
-    getTimes,
-    type ScrubberListener,
-    type TimelineYearMonth,
-  } from '$lib/utils/timeline-util';
+  import { getTimes, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onMount, type Snippet } from 'svelte';
@@ -272,11 +267,6 @@
     }
   });
 
-  const getMaxScrollPercent = () => {
-    const totalHeight = timelineManager.timelineHeight + bottomSectionHeight + timelineManager.topSectionHeight;
-    return (totalHeight - timelineManager.viewportHeight) / totalHeight;
-  };
-
   const getMaxScroll = () => {
     if (!element || !timelineElement) {
       return 0;
@@ -288,7 +278,7 @@
 
   const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
     const topOffset = monthGroup.top;
-    const maxScrollPercent = getMaxScrollPercent();
+    const maxScrollPercent = timelineManager.maxScrollPercent;
     const delta = monthGroup.height * monthGroupScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
@@ -343,7 +333,7 @@
         return;
       }
 
-      let maxScrollPercent = getMaxScrollPercent();
+      let maxScrollPercent = timelineManager.maxScrollPercent;
       let found = false;
 
       const monthsLength = timelineManager.months.length;
@@ -640,7 +630,7 @@
       {@const display = monthGroup.intersecting}
       {@const absoluteHeight = monthGroup.top}
 
-      {#if !monthGroup.isLoaded}
+      {#if !monthGroup.loaded}
         <div
           style:height={monthGroup.height + 'px'}
           style:position="absolute"

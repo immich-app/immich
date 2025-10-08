@@ -1,13 +1,13 @@
-import { CancellableTask } from '$lib/utils/cancellable-task';
+import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
+import { CancellableTask, TaskStatus } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
-import type { PhotostreamManager } from '$lib/managers/photostream-manager/PhotostreamManager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
-
 export type SegmentIdentifier = {
+  id(): string;
   matches(segment: PhotostreamSegment): boolean;
 };
 export abstract class PhotostreamSegment {
@@ -22,10 +22,10 @@ export abstract class PhotostreamSegment {
   initialCount = $state(0);
   percent = $state(0);
 
-  assetsCount = $derived.by(() => (this.isLoaded ? this.viewerAssets.length : this.initialCount));
+  assetsCount = $derived.by(() => (this.loaded ? this.viewerAssets.length : this.initialCount));
   loader = new CancellableTask(
-    () => this.markLoaded(),
-    () => this.markCanceled,
+    () => (this.loaded = true),
+    () => (this.loaded = false),
     () => this.handleLoadError,
   );
   isHeightActual = $state(false);
@@ -34,18 +34,18 @@ export abstract class PhotostreamSegment {
 
   abstract get identifier(): SegmentIdentifier;
 
-  abstract get id(): string;
+  abstract get viewerAssets(): ViewerAsset[];
 
-  get isLoaded() {
+  abstract findAssetAbsolutePosition(assetId: string): number;
+
+  protected abstract fetch(signal: AbortSignal): Promise<void>;
+
+  get loaded() {
     return this.#isLoaded;
   }
 
-  protected markLoaded() {
-    this.#isLoaded = true;
-  }
-
-  protected markCanceled() {
-    this.#isLoaded = false;
+  protected set loaded(newValue: boolean) {
+    this.#isLoaded = newValue;
   }
 
   set intersecting(newValue: boolean) {
@@ -65,22 +65,11 @@ export abstract class PhotostreamSegment {
     return this.#intersecting;
   }
 
-  async load(cancelable: boolean): Promise<'DONE' | 'WAITED' | 'CANCELED' | 'LOADED' | 'ERRORED'> {
-    return await this.loader?.execute(async (signal: AbortSignal) => {
-      await this.fetch(signal);
-    }, cancelable);
-  }
-
-  protected abstract fetch(signal: AbortSignal): Promise<void>;
-
   get assets(): TimelineAsset[] {
     return this.#assets;
   }
 
-  abstract get viewerAssets(): ViewerAsset[];
-
   set height(height: number) {
-    console.log('height', height);
     if (this.#height === height) {
       return;
     }
@@ -131,6 +120,12 @@ export abstract class PhotostreamSegment {
     return this.#top + this.timelineManager.topSectionHeight;
   }
 
+  async load(cancelable: boolean): Promise<TaskStatus> {
+    return await this.loader?.execute(async (signal: AbortSignal) => {
+      await this.fetch(signal);
+    }, cancelable);
+  }
+
   protected handleLoadError(error: unknown) {
     const _$t = get(t);
     handleError(error, _$t('errors.failed_to_load_assets'));
@@ -146,6 +141,4 @@ export abstract class PhotostreamSegment {
     this.intersecting = intersecting;
     this.actuallyIntersecting = actuallyIntersecting;
   }
-
-  abstract findAssetAbsolutePosition(assetId: string): number;
 }

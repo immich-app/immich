@@ -1,24 +1,22 @@
-import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
-import { CancellableTask } from '$lib/utils/cancellable-task';
-import { clamp, debounce } from 'lodash-es';
-
 import type {
   PhotostreamSegment,
   SegmentIdentifier,
 } from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
+import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import type {
   AssetDescriptor,
   TimelineAsset,
   TimelineManagerLayoutOptions,
-  Viewport,
 } from '$lib/managers/timeline-manager/types';
+import { CancellableTask, TaskStatus } from '$lib/utils/cancellable-task';
+import { clamp, debounce } from 'lodash-es';
 
 export abstract class PhotostreamManager {
   isInitialized = $state(false);
   topSectionHeight = $state(0);
   bottomSectionHeight = $state(60);
-  abstract get months(): PhotostreamSegment[];
+
   timelineHeight = $derived.by(
     () => this.months.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight,
   );
@@ -69,6 +67,17 @@ export abstract class PhotostreamManager {
     if (changed) {
       this.refreshLayout();
     }
+  }
+
+  abstract get months(): PhotostreamSegment[];
+
+  get maxScrollPercent() {
+    const totalHeight = this.timelineHeight + this.bottomSectionHeight + this.topSectionHeight;
+    return (totalHeight - this.viewportHeight) / totalHeight;
+  }
+
+  get maxScroll() {
+    return this.topSectionHeight + this.bottomSectionHeight + (this.timelineHeight - this.viewportHeight);
   }
 
   #setHeaderHeight(value: number) {
@@ -151,6 +160,10 @@ export abstract class PhotostreamManager {
     return this.#viewportHeight;
   }
 
+  get hasEmptyViewport() {
+    return this.viewportWidth === 0 || this.viewportHeight === 0;
+  }
+
   updateSlidingWindow(scrollTop: number) {
     if (this.#scrollTop !== scrollTop) {
       this.#scrollTop = scrollTop;
@@ -198,34 +211,12 @@ export abstract class PhotostreamManager {
     await this.initTask.execute(() => Promise.resolve(undefined), true);
   }
 
-  public destroy() {
+  destroy() {
     this.isInitialized = false;
   }
 
-  async updateViewport(viewport: Viewport) {
-    if (viewport.height === 0 && viewport.width === 0) {
-      return;
-    }
-
-    if (this.viewportHeight === viewport.height && this.viewportWidth === viewport.width) {
-      return;
-    }
-
-    if (!this.initTask.executed) {
-      await (this.initTask.loading ? this.initTask.waitUntilCompletion() : this.init());
-    }
-
-    const changedWidth = viewport.width !== this.viewportWidth;
-    this.viewportHeight = viewport.height;
-    this.viewportWidth = viewport.width;
-    this.updateViewportGeometry(changedWidth);
-  }
-
   protected updateViewportGeometry(changedWidth: boolean) {
-    if (!this.isInitialized) {
-      return;
-    }
-    if (this.viewportWidth === 0 || this.viewportHeight === 0) {
+    if (!this.isInitialized || this.hasEmptyViewport) {
       return;
     }
     for (const month of this.months) {
@@ -246,27 +237,16 @@ export abstract class PhotostreamManager {
   }
 
   async loadSegment(identifier: SegmentIdentifier, options?: { cancelable: boolean }): Promise<void> {
-    let cancelable = true;
-    if (options) {
-      cancelable = options.cancelable;
-    }
-    const segment = this.getSegmentByIdentifier(identifier);
-    if (!segment) {
-      return;
-    }
-
-    if (segment.loader?.executed) {
+    const { cancelable = true } = options ?? {};
+    const segment = this.months.find((segment) => identifier.matches(segment));
+    if (!segment || segment.loader?.executed) {
       return;
     }
 
     const result = await segment.load(cancelable);
-    if (result === 'LOADED') {
+    if (result === TaskStatus.LOADED) {
       updateIntersectionMonthGroup(this, segment);
     }
-  }
-
-  getSegmentByIdentifier(identifier: SegmentIdentifier) {
-    return this.months.find((segment) => identifier.matches(segment));
   }
 
   getSegmentForAssetId(assetId: string) {
@@ -283,15 +263,6 @@ export abstract class PhotostreamManager {
       updateGeometry(this, month, { invalidateHeight: true });
     }
     this.updateIntersections();
-  }
-
-  getMaxScrollPercent() {
-    const totalHeight = this.timelineHeight + this.bottomSectionHeight + this.topSectionHeight;
-    return (totalHeight - this.viewportHeight) / totalHeight;
-  }
-
-  getMaxScroll() {
-    return this.topSectionHeight + this.bottomSectionHeight + (this.timelineHeight - this.viewportHeight);
   }
 
   retrieveRange(start: AssetDescriptor, end: AssetDescriptor): Promise<TimelineAsset[]> {

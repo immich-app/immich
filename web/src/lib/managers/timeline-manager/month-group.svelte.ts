@@ -1,5 +1,9 @@
-import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
-
+import {
+  PhotostreamSegment,
+  type SegmentIdentifier,
+} from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
+import { layoutMonthGroup, updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
+import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
 import {
   formatGroupTitle,
   formatGroupTitleFull,
@@ -7,24 +11,16 @@ import {
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
-  getSegmentIdentifier,
   getTimes,
   setDifference,
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
-
-import { layoutMonthGroup, updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
-import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
-
-import {
-  PhotostreamSegment,
-  type SegmentIdentifier,
-} from '$lib/managers/photostream-manager/PhotostreamSegment.svelte';
+import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
-import type { TimelineManager } from './timeline-manager.svelte';
+import { getSegmentIdentifier, type TimelineManager } from './timeline-manager.svelte';
 import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
@@ -52,9 +48,7 @@ export class MonthGroup extends PhotostreamSegment {
     this.#timelineManager = timelineManager;
     this.#sortOrder = order;
     this.monthGroupTitle = formatMonthGroupTitle(fromTimelinePlainYearMonth(yearMonth));
-    if (loaded) {
-      this.markLoaded();
-    }
+    this.loaded = loaded;
   }
 
   get identifier() {
