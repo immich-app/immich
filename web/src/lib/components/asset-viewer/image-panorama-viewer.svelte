@@ -1,6 +1,6 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getAssetOriginalUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { AssetMediaSize, viewAsset, type AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
@@ -25,7 +25,9 @@
   {:then [data, { default: PhotoSphereViewer }]}
     <PhotoSphereViewer
       panorama={data}
-      originalPanorama={isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : undefined}
+      originalPanorama={isWebCompatibleImage(asset)
+        ? getAssetOriginalUrl(asset.id)
+        : getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Fullsize, cacheKey: asset.thumbhash })}
     />
   {:catch}
     {$t('errors.failed_to_load_asset')}

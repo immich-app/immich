@@ -185,6 +185,8 @@ class _Map extends StatelessWidget {
           initialCameraPosition: initialLocation == null
               ? const CameraPosition(target: LatLng(0, 0), zoom: 0)
               : CameraPosition(target: initialLocation, zoom: MapUtils.mapZoomToAssetLevel),
+          compassEnabled: false,
+          rotateGesturesEnabled: false,
           styleString: style,
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,

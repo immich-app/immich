@@ -88,10 +88,18 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
 
       final videoAsset = await ref.read(assetServiceProvider).getAsset(asset) ?? asset;
+      if (!context.mounted) {
+        return null;
+      }
+
       try {
         if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
           final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
           final file = await const StorageRepository().getFileForAsset(id);
+          if (!context.mounted) {
+            return null;
+          }
+
           if (file == null) {
             throw Exception('No file found for the video');
           }
@@ -289,7 +297,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       ref.read(videoPlaybackValueProvider.notifier).reset();
 
       final source = await videoSource;
-      if (source == null) {
+      if (source == null || !context.mounted) {
         return;
       }
 
@@ -314,6 +322,9 @@ class NativeVideoViewer extends HookConsumerWidget {
         removeListeners(playerController);
       }
 
+      if (value != null) {
+        isVisible.value = _isCurrentAsset(value, asset);
+      }
       final curAsset = currentAsset.value;
       if (curAsset == asset) {
         return;

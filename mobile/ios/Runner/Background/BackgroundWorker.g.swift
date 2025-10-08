@@ -182,6 +182,7 @@ class BackgroundWorkerPigeonCodec: FlutterStandardMessageCodec, @unchecked Senda
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerFgHostApi {
   func enable() throws
+  func saveNotificationMessage(title: String, body: String) throws
   func configure(settings: BackgroundWorkerSettings) throws
   func disable() throws
 }
@@ -204,6 +205,22 @@ class BackgroundWorkerFgHostApiSetup {
       }
     } else {
       enableChannel.setMessageHandler(nil)
+    }
+    let saveNotificationMessageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.saveNotificationMessage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      saveNotificationMessageChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let titleArg = args[0] as! String
+        let bodyArg = args[1] as! String
+        do {
+          try api.saveNotificationMessage(title: titleArg, body: bodyArg)
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      saveNotificationMessageChannel.setMessageHandler(nil)
     }
     let configureChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.configure\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
@@ -238,7 +255,6 @@ class BackgroundWorkerFgHostApiSetup {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerBgHostApi {
   func onInitialized() throws
-  func showNotification(title: String, content: String) throws
   func close() throws
 }
 
@@ -260,22 +276,6 @@ class BackgroundWorkerBgHostApiSetup {
       }
     } else {
       onInitializedChannel.setMessageHandler(nil)
-    }
-    let showNotificationChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.showNotification\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      showNotificationChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let titleArg = args[0] as! String
-        let contentArg = args[1] as! String
-        do {
-          try api.showNotification(title: titleArg, content: contentArg)
-          reply(wrapResult(nil))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      showNotificationChannel.setMessageHandler(nil)
     }
     let closeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerBgHostApi.close\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

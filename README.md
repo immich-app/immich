@@ -49,14 +49,14 @@
 
 ## Links
 
-- [Documentation](https://immich.app/docs)
-- [About](https://immich.app/docs/overview/introduction)
-- [Installation](https://immich.app/docs/install/requirements)
+- [Documentation](https://docs.immich.app/)
+- [About](https://docs.immich.app/overview/introduction)
+- [Installation](https://docs.immich.app/install/requirements)
 - [Roadmap](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Features](#features)
-- [Translations](https://immich.app/docs/developer/translations)
-- [Contributing](https://immich.app/docs/overview/support-the-project)
+- [Translations](https://docs.immich.app/developer/translations)
+- [Contributing](https://docs.immich.app/overview/support-the-project)
 
 ## Demo
 
@@ -105,7 +105,7 @@ Access the demo [here](https://demo.immich.app). For the mobile app, you can use
 
 ## Translations
 
-Read more about translations [here](https://immich.app/docs/developer/translations).
+Read more about translations [here](https://docs.immich.app/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
