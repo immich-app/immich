@@ -1,6 +1,6 @@
 [tools]
 node = "22.20.0"
-flutter = "3.35.4"
+flutter = "3.35.5"
 pnpm = "10.15.1"
 
 [tools."github:CQLabs/homebrew-dcm"]
