@@ -37,35 +37,56 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:immich_mobile/pages/common/error_display_screen.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
-  ImmichWidgetsBinding();
-  unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
-  final (isar, drift, logDb) = await Bootstrap.initDB();
-  await Bootstrap.initDomain(isar, drift, logDb);
-  await initApp();
-  // Warm-up isolate pool for worker manager
-  await workerManager.init(dynamicSpawning: true);
-  await migrateDatabaseIfNeeded(isar, drift);
-  HttpSSLOptions.apply();
+  try {
+    ImmichWidgetsBinding();
+    unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb);
+    await initApp();
+    // Warm-up isolate pool for worker manager
+    await workerManager.init(dynamicSpawning: true);
+    await migrateDatabaseIfNeeded(isar, drift);
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        dbProvider.overrideWithValue(isar),
-        isarProvider.overrideWithValue(isar),
-        driftProvider.overrideWith(driftOverride(drift)),
-      ],
-      child: const MainWidget(),
-    ),
-  );
+    runApp(
+      ProviderScope(
+        overrides: [
+          dbProvider.overrideWithValue(isar),
+          isarProvider.overrideWithValue(isar),
+          driftProvider.overrideWith(driftOverride(drift)),
+        ],
+        child: const MainWidget(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    // Log the error for debugging
+    debugPrint('Fatal initialization error: $e');
+    debugPrint('Stack trace: $stackTrace');
+    
+    // Display a prominent error message to the user
+    runApp(
+      MaterialApp(
+        title: 'Immich - Initialization Error',
+        home: ErrorDisplayScreen(
+          error: e.toString(),
+          stackTrace: stackTrace.toString(),
+        ),
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          primarySwatch: Colors.red,
+        ),
+      ),
+    );
+  }
 }
 
 Future<void> initApp() async {
