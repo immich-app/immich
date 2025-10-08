@@ -25,9 +25,17 @@
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
-  <application android:label="Immich" android:name=".ImmichApp" android:usesCleartextTraffic="true"
-    android:icon="@mipmap/ic_launcher" android:requestLegacyExternalStorage="true"
-    android:largeHeap="true" android:enableOnBackInvokedCallback="false" android:allowBackup="false">
+  <application 
+    android:label="Immich" 
+    android:name=".ImmichApp" 
+    android:usesCleartextTraffic="true"
+    android:networkSecurityConfig="@xml/network_security_config"
+    android:icon="@mipmap/ic_launcher" 
+    android:requestLegacyExternalStorage="true"
+    android:largeHeap="true" 
+    android:enableOnBackInvokedCallback="false" 
+    android:allowBackup="false"
+  >
 
     <profileable android:shell="true" />
 

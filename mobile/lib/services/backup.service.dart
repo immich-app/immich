@@ -5,6 +5,8 @@ import 'dart:io';
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
+import 'package:immich_mobile/common/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -43,8 +45,7 @@ final backupServiceProvider = Provider(
 );
 
 class BackupService {
-  final httpClient = http.Client();
-  final ApiService _apiService;
+  final dynamic _apiService;
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
   final AlbumService _albumService;
@@ -52,6 +53,7 @@ class BackupService {
   final FileMediaRepository _fileMediaRepository;
   final AssetRepository _assetRepository;
   final AssetMediaRepository _assetMediaRepository;
+  late final Client client;
 
   BackupService(
     this._apiService,
@@ -60,8 +62,9 @@ class BackupService {
     this._albumMediaRepository,
     this._fileMediaRepository,
     this._assetRepository,
-    this._assetMediaRepository,
-  );
+    this._assetMediaRepository, {
+    Client? client,
+  }) : client = client ?? immichHttpClient();
 
   Future<List<String>?> getDeviceBackupAsset() async {
     final String deviceId = Store.get(StoreKey.deviceId);
@@ -306,14 +309,14 @@ class BackupService {
           }
 
           final fileStream = file.openRead();
-          final assetRawUploadData = http.MultipartFile(
+          final assetRawUploadData = MultipartFile(
             "assetData",
             fileStream,
             file.lengthSync(),
             filename: originalFileName,
           );
 
-          final baseRequest = MultipartRequest(
+          final baseRequest = ProgressMultipartRequest(
             'POST',
             Uri.parse('$savedEndpoint/assets'),
             onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
@@ -348,7 +351,8 @@ class BackupService {
             baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+          // TODO: Re-add cancellation token
+          final response = await client.send(baseRequest);
 
           final responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -428,7 +432,7 @@ class BackupService {
   Future<String?> uploadLivePhotoVideo(
     String originalFileName,
     File? livePhotoVideoFile,
-    MultipartRequest baseRequest,
+    ProgressMultipartRequest baseRequest,
     http.CancellationToken cancelToken,
   ) async {
     if (livePhotoVideoFile == null) {
@@ -436,19 +440,21 @@ class BackupService {
     }
     final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoVideoFile.path));
     final fileStream = livePhotoVideoFile.openRead();
-    final livePhotoRawUploadData = http.MultipartFile(
+    final livePhotoRawUploadData = MultipartFile(
       "assetData",
       fileStream,
       livePhotoVideoFile.lengthSync(),
       filename: livePhotoTitle,
     );
-    final livePhotoReq = MultipartRequest(baseRequest.method, baseRequest.url, onProgress: baseRequest.onProgress)
-      ..headers.addAll(baseRequest.headers)
-      ..fields.addAll(baseRequest.fields);
+    final livePhotoReq =
+        ProgressMultipartRequest(baseRequest.method, baseRequest.url, onProgress: baseRequest.onProgress)
+          ..headers.addAll(baseRequest.headers)
+          ..fields.addAll(baseRequest.fields);
 
     livePhotoReq.files.add(livePhotoRawUploadData);
 
-    var response = await httpClient.send(livePhotoReq, cancellationToken: cancelToken);
+    final client = immichHttpClient();
+    var response = await client.send(livePhotoReq);
 
     var responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -471,17 +477,17 @@ class BackupService {
   };
 }
 
-class MultipartRequest extends http.MultipartRequest {
-  /// Creates a new [MultipartRequest].
-  MultipartRequest(super.method, super.url, {required this.onProgress});
+class ProgressMultipartRequest extends MultipartRequest {
+  /// Creates a new [ProgressMultipartRequest].
+  ProgressMultipartRequest(super.method, super.url, {required this.onProgress});
 
   final void Function(int bytes, int totalBytes) onProgress;
 
   /// Freezes all mutable fields and returns a
-  /// single-subscription [http.ByteStream]
+  /// single-subscription [ByteStream]
   /// that will emit the request body.
   @override
-  http.ByteStream finalize() {
+  ByteStream finalize() {
     final byteStream = super.finalize();
 
     final total = contentLength;
@@ -495,6 +501,6 @@ class MultipartRequest extends http.MultipartRequest {
       },
     );
     final stream = byteStream.transform(t);
-    return http.ByteStream(stream);
+    return ByteStream(stream);
   }
 }

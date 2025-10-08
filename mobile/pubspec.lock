@@ -919,6 +919,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  http_profile:
+    dependency: transitive
+    description:
+      name: http_profile
+      sha256: "7e679e355b09aaee2ab5010915c932cce3f2d1c11c3b2dc177891687014ffa78"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   image:
     dependency: transitive
     description:
@@ -1053,6 +1061,14 @@ packages:
       url: "https://github.com/immich-app/isar"
     source: git
     version: "3.1.8"
+  jni:
+    dependency: transitive
+    description:
+      name: jni
+      sha256: d2c361082d554d4593c3012e26f6b188f902acd291330f13d6427641a92b3da1
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.2"
   js:
     dependency: transitive
     description:
@@ -1254,6 +1270,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  ok_http:
+    dependency: "direct main"
+    description:
+      path: "pkgs/ok_http"
+      ref: "feature/ok-http-0.1.2"
+      resolved-ref: c285421e3d908f209930edb7535628bb63a7037a
+      url: "https://github.com/denysvitali/dart_lang_http"
+    source: git
+    version: "0.1.1-wip"
   openapi:
     dependency: "direct main"
     description:
