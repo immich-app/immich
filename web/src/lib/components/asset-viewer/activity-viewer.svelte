@@ -74,6 +74,7 @@
       const deleteMessages: Record<ReactionType, string> = {
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
+        [ReactionType.Asset]: '', // can not delete asset activity
       };
       notificationController.show({
         message: deleteMessages[reaction.type],
