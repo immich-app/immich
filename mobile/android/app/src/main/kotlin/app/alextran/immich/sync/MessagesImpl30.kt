@@ -89,29 +89,6 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     return SyncDelta(hasChanges, changed, deleted, assetAlbums)
   }
 
-//  override fun getTrashedAssetsForAlbum(
-//    albumId: String
-//  ): List<PlatformAsset> {
-//    val trashed = mutableListOf<PlatformAsset>()
-//    val volumes = MediaStore.getExternalVolumeNames(ctx)
-//
-//    val selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
-//    val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
-//
-//    for (volume in volumes) {
-//      val cursor = getCursor(volume, Bundle().apply {
-//        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
-//        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
-//        putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
-//      })
-//      getAssets(cursor).forEach { res ->
-//        if (res is AssetResult.ValidAsset) trashed += res.asset
-//      }
-//    }
-//
-//    return trashed
-//  }
-
   override fun getTrashedAssets(
     albumIds: List<String>,
     sinceLastCheckpoint: Boolean

@@ -112,7 +112,7 @@ class NativeSyncApiImpl: NativeSyncApi {
     return albums.sorted { $0.id < $1.id }
   }
 
-  func getMediaChanges(isTrashed: Bool) throws -> SyncDelta {
+  func getMediaChanges() throws -> SyncDelta {
     guard #available(iOS 16, *) else {
       throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature requires iOS 16 or later.", details: nil)
     }
@@ -363,8 +363,8 @@ class NativeSyncApiImpl: NativeSyncApi {
       PHAssetResourceManager.default().cancelDataRequest(requestId)
     })
   }
-  
-  func getTrashedAssetsForAlbum(albumId: String) throws ->[PlatformAsset] {
+
+  func getTrashedAssets(albumIds: [String], sinceLastCheckpoint: Bool) throws -> [String: [PlatformAsset]] {
     throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
   }
 
