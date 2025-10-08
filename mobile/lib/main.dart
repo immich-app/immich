@@ -80,10 +80,6 @@ void main() async {
           stackTrace: stackTrace.toString(),
         ),
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          primarySwatch: Colors.red,
-        ),
       ),
     );
   }

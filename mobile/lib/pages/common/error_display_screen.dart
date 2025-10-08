@@ -16,6 +16,8 @@ class ErrorDisplayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       body: Center(
         child: Padding(
@@ -37,13 +39,13 @@ class ErrorDisplayScreen extends StatelessWidget {
                     child: Container(
                       width: 24,
                       height: 24,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.error,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.error,
-                        color: Colors.white,
+                        color: theme.colorScheme.onError,
                         size: 16,
                       ),
                     ),
@@ -53,22 +55,22 @@ class ErrorDisplayScreen extends StatelessWidget {
               const SizedBox(height: 24),
               
               // Error title
-              const Text(
+              Text(
                 'Initialization Failed',
                 style: TextStyle(
-                  color: Colors.white,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               
               // Error message
-              const Text(
+              Text(
                 'Failed to start due to an error during initialization.',
                 style: TextStyle(
-                  color: Colors.grey,
+                  color: theme.colorScheme.onSurfaceVariant,
                   fontSize: 16,
                 ),
                 textAlign: TextAlign.center,
@@ -80,9 +82,9 @@ class ErrorDisplayScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900],
+                  color: theme.colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                  border: Border.all(color: theme.colorScheme.error),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,44 +92,38 @@ class ErrorDisplayScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Error Details:',
                           style: TextStyle(
-                            color: Colors.red,
+                            color: theme.colorScheme.error,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         IconButton(
                           onPressed: () async {
+                            String errorDetails;
                             try {
                               final packageInfo = await PackageInfo.fromPlatform();
                               final appVersion = '${packageInfo.version} build.${packageInfo.buildNumber}';
-                              final errorDetails = 'App Version: $appVersion\n\nError: $error\n\nStack Trace:\n$stackTrace';
-                              Clipboard.setData(ClipboardData(text: errorDetails)).then((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Error details copied to clipboard'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              });
+                              errorDetails = 'App Version: $appVersion\n\nError: $error\n\nStack Trace:\n$stackTrace';
                             } catch (e) {
                               // Fallback if package info fails
-                              final errorDetails = 'Error: $error\n\nStack Trace:\n$stackTrace';
-                              Clipboard.setData(ClipboardData(text: errorDetails)).then((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Error details copied to clipboard'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                              });
+                              errorDetails = 'Error: $error\n\nStack Trace:\n$stackTrace';
                             }
+
+                            Clipboard.setData(ClipboardData(text: errorDetails)).then((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Error details copied to clipboard'),
+                                  backgroundColor: theme.colorScheme.primary,
+                                ),
+                              );
+                            });
                           },
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.copy,
-                            color: Colors.grey,
+                            color: theme.colorScheme.onSurfaceVariant,
                             size: 18,
                           ),
                           padding: EdgeInsets.zero,
@@ -138,35 +134,37 @@ class ErrorDisplayScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       error,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
                         fontSize: 12,
                         fontFamily: 'monospace',
                       ),
                     ),
                     const SizedBox(height: 16),
                     ExpansionTile(
-                      title: const Text(
+                      title: Text(
                         'Stack Trace',
                         style: TextStyle(
-                          color: Colors.orange,
+                          color: theme.colorScheme.tertiary,
                           fontSize: 12,
                         ),
                       ),
                       tilePadding: EdgeInsets.zero,
+                      iconColor: theme.colorScheme.onSurfaceVariant,
+                      collapsedIconColor: theme.colorScheme.onSurfaceVariant,
                       children: [
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.5),
+                            color: theme.colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: SingleChildScrollView(
                             child: Text(
                               stackTrace,
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
                                 fontSize: 10,
                                 fontFamily: 'monospace',
                               ),
@@ -188,11 +186,11 @@ class ErrorDisplayScreen extends StatelessWidget {
                     exit(0);
                   }
                 },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Restart App'),
+                icon: const Icon(Icons.close),
+                label: const Text('Close App'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
+                  backgroundColor: theme.colorScheme.error,
+                  foregroundColor: theme.colorScheme.onError,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
               ),
