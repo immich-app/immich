@@ -20,30 +20,19 @@
       "localRoot": "${workspaceFolder}/server"
     },
     {
-      "name": "Immich CLI",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/cli/src/index.ts",
-      "runtimeExecutable": "tsx",
-      "args": ["upload", "--help"],
-      "cwd": "${workspaceFolder}/cli",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
-    },
-    {
       "type": "node",
       "request": "launch",
       "name": "Immich CLI",
       "program": "${workspaceFolder}/cli/dist/index.js",
-      "args": ["upload", "--help"],
+      "args": ["upload", "/--help"],
       "console": "integratedTerminal",
       "resolveSourceMapLocations": [
         "${workspaceFolder}/cli/dist/**/*.js.map",
       ],
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/cli/dist/**/*.js"],
-      "skipFiles": ["<node_internals>/**"]
+      "skipFiles": ["<node_internals>/**"],
+      "preLaunchTask": "Build Immich CLI"
     }
   ]
 }
