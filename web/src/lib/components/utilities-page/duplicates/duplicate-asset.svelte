@@ -29,6 +29,8 @@
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
 
+  let locationParts = $derived([asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country].filter(Boolean));
+
   let timeZone = $derived(asset.exifInfo?.timeZone);
   let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
@@ -143,16 +145,8 @@
 
     <div class="flex items-start gap-x-1">
       <Icon icon={mdiMapMarkerOutline} size="16" />
-      {#if asset.exifInfo?.city || asset.exifInfo?.state || asset.exifInfo?.country}
-        {#if asset.exifInfo?.city}
-          {asset.exifInfo.city}
-        {/if}
-        {#if asset.exifInfo?.state}
-          {asset.exifInfo.state}
-        {/if}
-        {#if asset.exifInfo?.country}
-          {asset.exifInfo.country}
-        {/if}
+      {#if locationParts.length > 0}
+        {locationParts.join(', ')}
       {:else}
         {$t('unknown')}
       {/if}
