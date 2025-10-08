@@ -174,6 +174,7 @@ describe('/activities', () => {
       expect(body).toEqual({
         id: expect.any(String),
         assetId: null,
+        assetIds: null,
         createdAt: expect.any(String),
         type: 'comment',
         comment: 'This is my first comment',
@@ -190,6 +191,7 @@ describe('/activities', () => {
       expect(body).toEqual({
         id: expect.any(String),
         assetId: null,
+        assetIds: null,
         createdAt: expect.any(String),
         type: 'like',
         comment: null,
@@ -235,6 +237,7 @@ describe('/activities', () => {
       expect(body).toEqual({
         id: expect.any(String),
         assetId: asset.id,
+        assetIds: null,
         createdAt: expect.any(String),
         type: 'comment',
         comment: 'This is my first comment',
@@ -251,6 +254,7 @@ describe('/activities', () => {
       expect(body).toEqual({
         id: expect.any(String),
         assetId: asset.id,
+        assetIds: null,
         createdAt: expect.any(String),
         type: 'like',
         comment: null,
