@@ -19,7 +19,7 @@ Go to the cli folder and build it:
 
     $ pnpm install
     $ pnpm run build
-    $ node /dist/index.js
+    $ node dist/index.js
 
 ## Run and Debug from source (VSCode)
 
