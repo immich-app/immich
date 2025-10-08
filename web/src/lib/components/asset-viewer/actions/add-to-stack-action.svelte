@@ -1,11 +1,11 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { createStack, deleteStack, type AssetResponseDto, type StackResponseDto } from '@immich/sdk';
-  import { mdiUploadMultiple } from '@mdi/js';
-  import type { OnAction } from './action';
   import { AssetAction } from '$lib/constants';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { createStack, type AssetResponseDto, type StackResponseDto } from '@immich/sdk';
+  import { mdiUploadMultiple } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import type { OnAction } from './action';
 
   interface Props {
     asset: AssetResponseDto;
@@ -17,21 +17,12 @@
 
   const handleAddUploadToStack = async () => {
     const newAssetIds = await openFileUploadDialog({ multiple: true });
+    // Including the old stacks primary asset ID ensures that all assets of the
+    // old stack are automatically included in the new stack.
     const primaryAssetId = stack?.primaryAssetId ?? asset.id;
 
-    // If the original asset is already in a stack, the stack needs to be
-    // deleted and a new stack needs to be created with the original assets
-    // and the new assets because updating the stack is not supported.
-    if (stack) {
-      await deleteStack({ id: stack.id });
-    }
-
     // First asset in the list will become the new primary asset.
-    const assetIds = [
-      primaryAssetId,
-      ...(stack?.assets.map((asset) => asset.id).filter((id) => id !== primaryAssetId) ?? []),
-      ...newAssetIds,
-    ];
+    const assetIds = [primaryAssetId, ...newAssetIds];
 
     const newStack = await createStack({
       stackCreateDto: {
