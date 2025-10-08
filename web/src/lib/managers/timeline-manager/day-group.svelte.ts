@@ -6,7 +6,7 @@ import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
 import { SvelteSet } from 'svelte/reactivity';
 import type { MonthGroup } from './month-group.svelte';
-import type { AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import type { Asset, AssetOperation, Direction, MoveAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class DayGroup {
@@ -82,7 +82,7 @@ export class DayGroup {
     return this.viewerAssets[0]?.asset;
   }
 
-  *assetsIterator(options: { startAsset?: TimelineAsset; direction?: Direction } = {}) {
+  *assetsIterator(options: { startAsset?: Asset; direction?: Direction } = {}) {
     const isEarlier = (options?.direction ?? 'earlier') === 'earlier';
     let assetIndex = options?.startAsset
       ? this.viewerAssets.findIndex((viewerAsset) => viewerAsset.asset.id === options.startAsset!.id)

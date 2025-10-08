@@ -3,7 +3,7 @@ import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
+import { toAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
 
 import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
@@ -27,11 +27,11 @@ import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
 import type {
+  Asset,
   AssetDescriptor,
   AssetOperation,
   Direction,
   ScrubberMonth,
-  TimelineAsset,
   TimelineManagerLayoutOptions,
   TimelineManagerOptions,
   Viewport,
@@ -192,7 +192,7 @@ export class TimelineManager {
   async *assetsIterator(options?: {
     startMonthGroup?: MonthGroup;
     startDayGroup?: DayGroup;
-    startAsset?: TimelineAsset;
+    startAsset?: Asset;
     direction?: Direction;
   }) {
     const direction = options?.direction ?? 'earlier';
@@ -409,7 +409,7 @@ export class TimelineManager {
     }
   }
 
-  addAssets(assets: TimelineAsset[]) {
+  addAssets(assets: Asset[]) {
     const assetsToUpdate = assets.filter((asset) => !this.isExcluded(asset));
     const notUpdated = this.updateAssets(assetsToUpdate);
     addAssetsToMonthGroups(this, [...notUpdated], { order: this.#options.order ?? AssetOrder.Desc });
@@ -430,7 +430,7 @@ export class TimelineManager {
       return;
     }
 
-    const asset = toTimelineAsset(response);
+    const asset = toAsset(response);
     if (!asset || this.isExcluded(asset)) {
       return;
     }
@@ -454,7 +454,7 @@ export class TimelineManager {
   // note: the `index` input is expected to be in the range [0, assetCount). This
   // value can be passed to make the method deterministic, which is mainly useful
   // for testing.
-  async getRandomAsset(index?: number): Promise<TimelineAsset | undefined> {
+  async getRandomAsset(index?: number): Promise<Asset | undefined> {
     const randomAssetIndex = index ?? Math.floor(Math.random() * this.assetCount);
 
     let accumulatedCount = 0;
@@ -493,8 +493,8 @@ export class TimelineManager {
     runAssetOperation(this, new SvelteSet(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
   }
 
-  updateAssets(assets: TimelineAsset[]) {
-    const lookup = new SvelteMap<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
+  updateAssets(assets: Asset[]) {
+    const lookup = new SvelteMap<string, Asset>(assets.map((asset) => [asset.id, asset]));
     const { unprocessedIds } = runAssetOperation(
       this,
       new SvelteSet(lookup.keys()),
@@ -504,7 +504,7 @@ export class TimelineManager {
       },
       { order: this.#options.order ?? AssetOrder.Desc },
     );
-    const result: TimelineAsset[] = [];
+    const result: Asset[] = [];
     for (const id of unprocessedIds.values()) {
       result.push(lookup.get(id)!);
     }
@@ -530,21 +530,21 @@ export class TimelineManager {
     this.updateIntersections();
   }
 
-  getFirstAsset(): TimelineAsset | undefined {
+  getFirstAsset(): Asset | undefined {
     return this.months[0]?.getFirstAsset();
   }
 
   async getLaterAsset(
     assetDescriptor: AssetDescriptor,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
-  ): Promise<TimelineAsset | undefined> {
+  ): Promise<Asset | undefined> {
     return await getAssetWithOffset(this, assetDescriptor, interval, 'later');
   }
 
   async getEarlierAsset(
     assetDescriptor: AssetDescriptor,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
-  ): Promise<TimelineAsset | undefined> {
+  ): Promise<Asset | undefined> {
     return await getAssetWithOffset(this, assetDescriptor, interval, 'earlier');
   }
 
@@ -567,7 +567,7 @@ export class TimelineManager {
     return retrieveRangeUtil(this, start, end);
   }
 
-  isExcluded(asset: TimelineAsset) {
+  isExcluded(asset: Asset) {
     return (
       isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||

@@ -8,7 +8,7 @@
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -18,12 +18,12 @@
   import { getAssetJobMessage, getSharedLink, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
     AssetTypeEnum,
-    getAssetInfo,
     getAllAlbums,
+    getAssetInfo,
     getStack,
     runAssetJobs,
     type AlbumResponseDto,
@@ -50,7 +50,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: TimelineAsset[];
+    preloadAssets?: Asset[];
     showNavigation?: boolean;
     withStacked?: boolean;
     isShared?: boolean;
@@ -126,7 +126,7 @@
 
     untrack(() => {
       if (stack && stack?.assets.length > 1) {
-        preloadAssets.push(toTimelineAsset(stack.assets[1]));
+        preloadAssets.push(toAsset(stack.assets[1]));
       }
     });
   };
@@ -156,7 +156,7 @@
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
+        slideshowHistory.queue(toAsset(asset));
         handlePromiseError(handlePlaySlideshow());
       } else if (value === SlideshowState.StopSlideshow) {
         handlePromiseError(handleStopSlideshow());
@@ -166,7 +166,7 @@
     shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
       if (value === SlideshowNavigation.Shuffle) {
         slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
+        slideshowHistory.queue(toAsset(asset));
       }
     });
 
@@ -571,7 +571,7 @@
               imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
               brokenAssetClass="text-xs"
               dimmed={stackedAsset.id !== asset.id}
-              asset={toTimelineAsset(stackedAsset)}
+              asset={toAsset(stackedAsset)}
               onClick={() => {
                 asset = stackedAsset;
                 previewStackedAsset = undefined;

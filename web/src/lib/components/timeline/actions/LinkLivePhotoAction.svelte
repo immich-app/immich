@@ -1,10 +1,10 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, updateAsset } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiLinkOff, mdiMotionPlayOutline, mdiTimerSand } from '@mdi/js';
@@ -31,14 +31,14 @@
 
   const handleLink = async () => {
     let [still, motion] = [...getOwnedAssets()];
-    if ((still as TimelineAsset).isVideo) {
+    if ((still as Asset).isVideo) {
       [still, motion] = [motion, still];
     }
 
     try {
       loading = true;
       const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: motion.id } });
-      onLink({ still: toTimelineAsset(stillResponse), motion: motion as TimelineAsset });
+      onLink({ still: toAsset(stillResponse), motion: motion as Asset });
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_link_motion_video'));
@@ -60,7 +60,7 @@
       loading = true;
       const stillResponse = await updateAsset({ id: still.id, updateAssetDto: { livePhotoVideoId: null } });
       const motionResponse = await getAssetInfo({ ...authManager.params, id: motionId });
-      onUnlink({ still: toTimelineAsset(stillResponse), motion: toTimelineAsset(motionResponse) });
+      onUnlink({ still: toAsset(stillResponse), motion: toAsset(motionResponse) });
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_unlink_motion_video'));

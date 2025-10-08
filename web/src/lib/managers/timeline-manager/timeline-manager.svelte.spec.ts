@@ -5,7 +5,7 @@ import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { TimelineManager } from './timeline-manager.svelte';
-import type { TimelineAsset } from './types';
+import type { Asset } from './types';
 
 async function getAssets(timelineManager: TimelineManager) {
   const assets = [];
@@ -15,7 +15,7 @@ async function getAssets(timelineManager: TimelineManager) {
   return assets;
 }
 
-function deriveLocalDateTimeFromFileCreatedAt(arg: TimelineAsset): TimelineAsset {
+function deriveLocalDateTimeFromFileCreatedAt(arg: Asset): Asset {
   return {
     ...arg,
     localDateTime: arg.fileCreatedAt,
@@ -29,7 +29,7 @@ describe('TimelineManager', () => {
 
   describe('init', () => {
     let timelineManager: TimelineManager;
-    const bucketAssets: Record<string, TimelineAsset[]> = {
+    const bucketAssets: Record<string, Asset[]> = {
       '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,
@@ -94,7 +94,7 @@ describe('TimelineManager', () => {
 
   describe('loadMonthGroup', () => {
     let timelineManager: TimelineManager;
-    const bucketAssets: Record<string, TimelineAsset[]> = {
+    const bucketAssets: Record<string, Asset[]> = {
       '2024-01-03T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,
@@ -436,7 +436,7 @@ describe('TimelineManager', () => {
 
   describe('getLaterAsset', () => {
     let timelineManager: TimelineManager;
-    const bucketAssets: Record<string, TimelineAsset[]> = {
+    const bucketAssets: Record<string, Asset[]> = {
       '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,
@@ -583,7 +583,7 @@ describe('TimelineManager', () => {
 
   describe('getRandomAsset', () => {
     let timelineManager: TimelineManager;
-    const bucketAssets: Record<string, TimelineAsset[]> = {
+    const bucketAssets: Record<string, Asset[]> = {
       '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
         deriveLocalDateTimeFromFileCreatedAt({
           ...asset,

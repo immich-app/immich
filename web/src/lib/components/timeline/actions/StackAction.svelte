@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
   import { deleteStack, stackAssets } from '$lib/utils/asset-utils';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { mdiImageMultipleOutline, mdiImageOffOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -35,7 +35,7 @@
     }
     const unstackedAssets = await deleteStack([stack.id]);
     if (unstackedAssets) {
-      onUnstack?.(unstackedAssets.map((a) => toTimelineAsset(a)));
+      onUnstack?.(unstackedAssets.map((a) => toAsset(a)));
     }
     clearSelect();
   };

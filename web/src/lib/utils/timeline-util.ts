@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { Asset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -160,8 +160,8 @@ export const getDateTimeOffsetLocaleString = (date: DateTime, opts?: LocaleOptio
     opts,
   );
 
-export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): TimelineAsset => {
-  if (isTimelineAsset(unknownAsset)) {
+export const toAsset = (unknownAsset: AssetResponseDto | Asset): Asset => {
+  if (isAsset(unknownAsset)) {
     return unknownAsset;
   }
   const assetResponse = unknownAsset;
@@ -198,8 +198,8 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   };
 };
 
-export const isTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): unknownAsset is TimelineAsset =>
-  (unknownAsset as TimelineAsset).ratio !== undefined;
+export const isAsset = (unknownAsset: AssetResponseDto | Asset): unknownAsset is Asset =>
+  (unknownAsset as Asset).ratio !== undefined;
 
 export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b: TimelineDateTime) => {
   const [aDateTime, bDateTime] = ascending ? [a, b] : [b, a];

@@ -34,7 +34,7 @@
   import { AlbumPageViewMode, AppRoute } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import AlbumUsersModal from '$lib/modals/AlbumUsersModal.svelte';
@@ -272,7 +272,7 @@
     await refreshAlbum();
   };
 
-  const handleUndoRemoveAssets = async (assets: TimelineAsset[]) => {
+  const handleUndoRemoveAssets = async (assets: Asset[]) => {
     timelineManager.addAssets(assets);
     await refreshAlbum();
   };

@@ -1,7 +1,7 @@
 import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-import type { PendingChange, TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { Asset, PendingChange } from '$lib/managers/timeline-manager/types';
 import { websocketEvents } from '$lib/stores/websocket';
-import { toTimelineAsset } from '$lib/utils/timeline-util';
+import { toAsset } from '$lib/utils/timeline-util';
 import { throttle } from 'lodash-es';
 import type { Unsubscriber } from 'svelte/store';
 
@@ -31,11 +31,11 @@ export class WebsocketSupport {
   connectWebsocketEvents() {
     this.#unsubscribers.push(
       websocketEvents.on('on_upload_success', (asset) =>
-        this.#addPendingChanges({ type: 'add', values: [toTimelineAsset(asset)] }),
+        this.#addPendingChanges({ type: 'add', values: [toAsset(asset)] }),
       ),
       websocketEvents.on('on_asset_trash', (ids) => this.#addPendingChanges({ type: 'trash', values: ids })),
       websocketEvents.on('on_asset_update', (asset) =>
-        this.#addPendingChanges({ type: 'update', values: [toTimelineAsset(asset)] }),
+        this.#addPendingChanges({ type: 'update', values: [toAsset(asset)] }),
       ),
       websocketEvents.on('on_asset_delete', (id: string) => this.#addPendingChanges({ type: 'delete', values: [id] })),
     );
@@ -55,8 +55,8 @@ export class WebsocketSupport {
 
   #getPendingChangeBatches() {
     const batch: {
-      add: TimelineAsset[];
-      update: TimelineAsset[];
+      add: Asset[];
+      update: Asset[];
       remove: string[];
     } = {
       add: [],

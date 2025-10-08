@@ -31,7 +31,7 @@
   import { getAssetJobName, getSharedLink } from '$lib/utils';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import {
     AssetJobName,
     AssetTypeEnum,
@@ -165,7 +165,7 @@
     {/if}
 
     {#if !isOwner && showDownloadButton}
-      <DownloadAction asset={toTimelineAsset(asset)} />
+      <DownloadAction asset={toAsset(asset)} />
     {/if}
 
     {#if showDetailButton}
@@ -184,7 +184,7 @@
           <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={onPlaySlideshow} />
         {/if}
         {#if showDownloadButton}
-          <DownloadAction asset={toTimelineAsset(asset)} menuItem />
+          <DownloadAction asset={toAsset(asset)} menuItem />
         {/if}
 
         {#if !isLocked}
@@ -243,7 +243,7 @@
           {/if}
 
           {#if !asset.isTrashed}
-            <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
+            <SetVisibilityAction asset={toAsset(asset)} {onAction} {preAction} />
           {/if}
           <hr />
           <MenuOption

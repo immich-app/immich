@@ -7,12 +7,12 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { setQueryValue } from '$lib/utils/navigation';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, getAssetInfo, updateAssets } from '@immich/sdk';
   import { Button, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
@@ -59,7 +59,7 @@
     const updatedAssets = await Promise.all(
       assetInteraction.selectedAssets.map(async (asset) => {
         const updatedAsset = await getAssetInfo({ ...authManager.params, id: asset.id });
-        return toTimelineAsset(updatedAsset);
+        return toAsset(updatedAsset);
       }),
     );
 
@@ -106,20 +106,15 @@
     }
   };
 
-  const hasGps = (asset: TimelineAsset) => {
+  const hasGps = (asset: Asset) => {
     return !!asset.latitude && !!asset.longitude;
   };
 
   const handleThumbnailClick = (
-    asset: TimelineAsset,
+    asset: Asset,
     timelineManager: TimelineManager,
     dayGroup: DayGroup,
-    onClick: (
-      timelineManager: TimelineManager,
-      assets: TimelineAsset[],
-      groupTitle: string,
-      asset: TimelineAsset,
-    ) => void,
+    onClick: (timelineManager: TimelineManager, assets: Asset[], groupTitle: string, asset: Asset) => void,
   ) => {
     if (hasGps(asset)) {
       locationUpdated = true;
@@ -195,7 +190,7 @@
     withStacked
     onThumbnailClick={handleThumbnailClick}
   >
-    {#snippet customLayout(asset: TimelineAsset)}
+    {#snippet customLayout(asset: Asset)}
       {#if hasGps(asset)}
         <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-success text-black">
           {asset.city || $t('gps')}

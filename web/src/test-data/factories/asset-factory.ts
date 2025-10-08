@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { Asset } from '$lib/managers/timeline-manager/types';
 import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { faker } from '@faker-js/faker';
 import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
@@ -30,7 +30,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   visibility: AssetVisibility.Timeline,
 });
 
-export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
+export const timelineAssetFactory = Sync.makeFactory<Asset>({
   id: Sync.each(() => faker.string.uuid()),
   ratio: Sync.each(() => faker.number.int()),
   ownerId: Sync.each(() => faker.string.uuid()),
@@ -51,7 +51,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   people: [faker.person.fullName()],
 });
 
-export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
+export const toResponseDto = (...timelineAsset: Asset[]) => {
   const bucketAssets: TimeBucketAssetResponseDto = {
     city: [],
     country: [],

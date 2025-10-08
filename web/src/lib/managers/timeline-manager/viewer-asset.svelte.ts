@@ -2,7 +2,7 @@ import type { CommonPosition } from '$lib/utils/layout-utils';
 
 import type { DayGroup } from './day-group.svelte';
 import { calculateViewerAssetIntersecting } from './internal/intersection-support.svelte';
-import type { TimelineAsset } from './types';
+import type { Asset } from './types';
 
 export class ViewerAsset {
   readonly #group: DayGroup;
@@ -19,10 +19,10 @@ export class ViewerAsset {
   });
 
   position: CommonPosition | undefined = $state();
-  asset: TimelineAsset = <TimelineAsset>$state();
+  asset: Asset = <Asset>$state();
   id: string = $derived(this.asset.id);
 
-  constructor(group: DayGroup, asset: TimelineAsset) {
+  constructor(group: DayGroup, asset: Asset) {
     this.#group = group;
     this.asset = asset;
   }

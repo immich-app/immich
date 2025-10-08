@@ -2,14 +2,14 @@ import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timelin
 import { AssetOrder } from '@immich/sdk';
 import type { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
-import type { AssetDescriptor, Direction, TimelineAsset } from '../types';
+import type { Asset, AssetDescriptor, Direction } from '../types';
 
 export async function getAssetWithOffset(
   timelineManager: TimelineManager,
   assetDescriptor: AssetDescriptor,
   interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   direction: Direction,
-): Promise<TimelineAsset | undefined> {
+): Promise<Asset | undefined> {
   const { asset, monthGroup } = findMonthGroupForAsset(timelineManager, assetDescriptor.id) ?? {};
   if (!monthGroup || !asset) {
     return;
@@ -51,7 +51,7 @@ export function getMonthGroupByDate(
 
 async function getAssetByAssetOffset(
   timelineManager: TimelineManager,
-  asset: TimelineAsset,
+  asset: Asset,
   monthGroup: MonthGroup,
   direction: Direction,
 ) {
@@ -70,7 +70,7 @@ async function getAssetByAssetOffset(
 
 async function getAssetByDayOffset(
   timelineManager: TimelineManager,
-  asset: TimelineAsset,
+  asset: Asset,
   monthGroup: MonthGroup,
   direction: Direction,
 ) {
@@ -120,7 +120,7 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
     [startMonthGroup, endMonthGroup] = [endMonthGroup, startMonthGroup];
   }
 
-  const range: TimelineAsset[] = [];
+  const range: Asset[] = [];
   const startDayGroup = startMonthGroup.findDayGroupForAsset(startAsset);
   for await (const targetAsset of timelineManager.assetsIterator({
     startMonthGroup,

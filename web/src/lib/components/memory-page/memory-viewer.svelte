@@ -27,7 +27,7 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import type { Asset, Viewport } from '$lib/managers/timeline-manager/types';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
@@ -35,7 +35,7 @@
   import { preferences } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { fromISODateTimeUTC, toAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import {
@@ -71,7 +71,7 @@
   let currentMemoryAssetFull = $derived.by(async () =>
     current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
   );
-  let currentTimelineAssets = $derived(current?.memory.assets.map((asset) => toTimelineAsset(asset)) || []);
+  let currentAssets = $derived(current?.memory.assets.map((asset) => toAsset(asset)) || []);
 
   let isSaved = $derived(current?.memory.isSaved);
   let viewerHeight = $state(0);
@@ -97,7 +97,7 @@
     await goto(asHref(asset));
   };
 
-  const setProgressDuration = (asset: TimelineAsset) => {
+  const setProgressDuration = (asset: Asset) => {
     if (asset.isVideo) {
       const timeParts = asset.duration!.split(':').map(Number);
       const durationInMilliseconds = (timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]) * 1000;
@@ -116,8 +116,7 @@
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
   const handleEscape = async () => goto(AppRoute.PHOTOS);
-  const handleSelectAll = () =>
-    assetInteraction.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
+  const handleSelectAll = () => assetInteraction.selectAssets(current?.memory.assets.map((a) => toAsset(a)) || []);
 
   const handleAction = async (callingContext: string, action: 'reset' | 'pause' | 'play') => {
     // leaving these log statements here as comments. Very useful to figure out what's going on during dev!
@@ -658,7 +657,7 @@
       <GalleryViewer
         onNext={handleNextAsset}
         onPrevious={handlePreviousAsset}
-        assets={currentTimelineAssets}
+        assets={currentAssets}
         viewport={galleryViewport}
         {assetInteraction}
         slidingWindowOffset={viewerHeight}

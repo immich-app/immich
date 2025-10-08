@@ -21,7 +21,7 @@ import { SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import type { TimelineManager } from './timeline-manager.svelte';
-import type { AssetDescriptor, AssetOperation, Direction, MoveAsset, TimelineAsset } from './types';
+import type { Asset, AssetDescriptor, AssetOperation, Direction, MoveAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
 export class MonthGroup {
@@ -101,7 +101,7 @@ export class MonthGroup {
 
   getAssets() {
     // eslint-disable-next-line unicorn/no-array-reduce
-    return this.dayGroups.reduce((accumulator: TimelineAsset[], g: DayGroup) => accumulator.concat(g.getAssets()), []);
+    return this.dayGroups.reduce((accumulator: Asset[], g: DayGroup) => accumulator.concat(g.getAssets()), []);
   }
 
   sortDayGroups() {
@@ -161,7 +161,7 @@ export class MonthGroup {
         bucketAssets.localOffsetHours[i],
       );
 
-      const timelineAsset: TimelineAsset = {
+      const timelineAsset: Asset = {
         city: bucketAssets.city[i],
         country: bucketAssets.country[i],
         duration: bucketAssets.duration[i],
@@ -192,7 +192,7 @@ export class MonthGroup {
         timelineAsset.latitude = bucketAssets.latitude?.[i];
         timelineAsset.longitude = bucketAssets.longitude?.[i];
       }
-      this.addTimelineAsset(timelineAsset, addContext);
+      this.addAsset(timelineAsset, addContext);
     }
 
     for (const group of addContext.existingDayGroups) {
@@ -208,7 +208,7 @@ export class MonthGroup {
     return addContext.unprocessedAssets;
   }
 
-  addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
+  addAsset(timelineAsset: Asset, addContext: GroupInsertionCache) {
     const { localDateTime } = timelineAsset;
 
     const { year, month } = this.yearMonth;
@@ -294,7 +294,7 @@ export class MonthGroup {
     handleError(error, _$t('errors.failed_to_load_assets'));
   }
 
-  findDayGroupForAsset(asset: TimelineAsset) {
+  findDayGroupForAsset(asset: Asset) {
     for (const group of this.dayGroups) {
       if (group.viewerAssets.some((viewerAsset) => viewerAsset.id === asset.id)) {
         return group;
@@ -321,7 +321,7 @@ export class MonthGroup {
     return -1;
   }
 
-  *assetsIterator(options?: { startDayGroup?: DayGroup; startAsset?: TimelineAsset; direction?: Direction }) {
+  *assetsIterator(options?: { startDayGroup?: DayGroup; startAsset?: Asset; direction?: Direction }) {
     const direction = options?.direction ?? 'earlier';
     let { startAsset } = options ?? {};
     const isEarlier = direction === 'earlier';

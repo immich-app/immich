@@ -3,13 +3,13 @@ import { AssetOrder } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import type { DayGroup } from './day-group.svelte';
 import type { MonthGroup } from './month-group.svelte';
-import type { TimelineAsset } from './types';
+import type { Asset } from './types';
 
 export class GroupInsertionCache {
   #lookupCache: {
     [year: number]: { [month: number]: { [day: number]: DayGroup } };
   } = {};
-  unprocessedAssets: TimelineAsset[] = [];
+  unprocessedAssets: Asset[] = [];
   changedDayGroups = new SvelteSet<DayGroup>();
   newDayGroups = new SvelteSet<DayGroup>();
 

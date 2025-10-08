@@ -4,7 +4,7 @@
   import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -89,7 +89,7 @@
           <img
             class="h-full w-full rounded-xl object-cover"
             src={getAssetThumbnailUrl(memory.assets[0].id)}
-            alt={$t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } })}
+            alt={$t('memory_lane_title', { values: { title: $getAltText(toAsset(memory.assets[0])) } })}
             draggable="false"
           />
           <div

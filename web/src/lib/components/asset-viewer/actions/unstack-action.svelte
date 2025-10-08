@@ -2,7 +2,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
   import { deleteStack } from '$lib/utils/asset-utils';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import type { StackResponseDto } from '@immich/sdk';
   import { mdiImageOffOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -18,7 +18,7 @@
   const handleUnstack = async () => {
     const unstackedAssets = await deleteStack([stack.id]);
     if (unstackedAssets) {
-      onAction({ type: AssetAction.UNSTACK, assets: unstackedAssets.map((asset) => toTimelineAsset(asset)) });
+      onAction({ type: AssetAction.UNSTACK, assets: unstackedAssets.map((asset) => toAsset(asset)) });
     }
   };
 </script>

@@ -31,7 +31,7 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -204,7 +204,7 @@
     data = { ...data, person };
   };
 
-  const handleSelectFeaturePhoto = async (asset: TimelineAsset) => {
+  const handleSelectFeaturePhoto = async (asset: Asset) => {
     if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }
@@ -354,7 +354,7 @@
     await updateAssetCount();
   };
 
-  const handleUndoDeleteAssets = async (assets: TimelineAsset[]) => {
+  const handleUndoDeleteAssets = async (assets: Asset[]) => {
     timelineManager.addAssets(assets);
     await updateAssetCount();
   };

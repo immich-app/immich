@@ -4,7 +4,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
   import { toggleArchive } from '$lib/utils/asset-utils';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -19,11 +19,11 @@
 
   const onArchive = async () => {
     if (!asset.isArchived) {
-      preAction({ type: AssetAction.ARCHIVE, asset: toTimelineAsset(asset) });
+      preAction({ type: AssetAction.ARCHIVE, asset: toAsset(asset) });
     }
     const updatedAsset = await toggleArchive(asset);
     if (updatedAsset) {
-      onAction({ type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: toTimelineAsset(asset) });
+      onAction({ type: asset.isArchived ? AssetAction.ARCHIVE : AssetAction.UNARCHIVE, asset: toAsset(asset) });
     }
   };
 </script>

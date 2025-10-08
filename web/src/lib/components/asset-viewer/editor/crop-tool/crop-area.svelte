@@ -12,7 +12,7 @@
     resetGlobalCropStore,
     rotateDegrees,
   } from '$lib/stores/asset-editor.store';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { animateCropChange, recalculateCrop } from './crop-settings';
   import { cropAreaEl, cropFrame, imgElement, isResizingOrDragging, overlayEl, resetCropStore } from './crop-store';
@@ -80,7 +80,7 @@
     aria-label="Crop area"
     type="button"
   >
-    <img draggable="false" src={img?.src} alt={$getAltText(toTimelineAsset(asset))} />
+    <img draggable="false" src={img?.src} alt={$getAltText(toAsset(asset))} />
     <div class={`${$isResizingOrDragging ? 'resizing' : ''} crop-frame`} bind:this={$cropFrame}>
       <div class="grid"></div>
       <div class="corner top-left"></div>

@@ -4,8 +4,8 @@
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
-    getAssets: () => TimelineAsset[]; // All assets includes partners' assets
-    getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
+    getAssets: () => Asset[]; // All assets includes partners' assets
+    getOwnedAssets: () => Asset[]; // Only assets owned by the user
     clearSelect: () => void;
   }
 
@@ -14,13 +14,13 @@
 </script>
 
 <script lang="ts">
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
 
   interface Props {
-    assets: TimelineAsset[];
+    assets: Asset[];
     clearSelect: () => void;
     ownerId?: string | undefined;
     children?: Snippet;
