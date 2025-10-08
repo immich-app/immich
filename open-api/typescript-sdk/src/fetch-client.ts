@@ -1595,7 +1595,9 @@ export type TimeBucketsResponseDto = {
 export type TrashResponseDto = {
     count: number;
 };
-export type UploadOkDto = {};
+export type UploadOkDto = {
+    id: string;
+};
 export type UserUpdateMeDto = {
     avatarColor?: (UserAvatarColor) | null;
     email?: string;

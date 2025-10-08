@@ -259,7 +259,7 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Object?> resumeUpload(String contentLength, String id, String uploadComplete, String uploadDraftInteropVersion, String uploadOffset, { String? key, String? slug, }) async {
+  Future<UploadOkDto?> resumeUpload(String contentLength, String id, String uploadComplete, String uploadDraftInteropVersion, String uploadOffset, { String? key, String? slug, }) async {
     final response = await resumeUploadWithHttpInfo(contentLength, id, uploadComplete, uploadDraftInteropVersion, uploadOffset,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -268,7 +268,7 @@ class UploadApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UploadOkDto',) as UploadOkDto;
     
     }
     return null;
@@ -358,7 +358,7 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Object?> startUpload(String contentLength, String reprDigest, String uploadComplete, String uploadDraftInteropVersion, String xImmichAssetData, { String? key, String? slug, }) async {
+  Future<UploadOkDto?> startUpload(String contentLength, String reprDigest, String uploadComplete, String uploadDraftInteropVersion, String xImmichAssetData, { String? key, String? slug, }) async {
     final response = await startUploadWithHttpInfo(contentLength, reprDigest, uploadComplete, uploadDraftInteropVersion, xImmichAssetData,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -367,7 +367,7 @@ class UploadApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'Object',) as Object;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UploadOkDto',) as UploadOkDto;
     
     }
     return null;
