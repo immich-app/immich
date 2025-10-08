@@ -21,6 +21,10 @@ Restart Immich by running `docker compose up -d`.
 
 # Create the library
 
+:::info
+External library management requires administrator access and the steps below assume you are using an admin account.
+:::
+
 In the Immich web UI:
 
 - click the **Administration** link in the upper right corner.
