@@ -24,7 +24,7 @@
       "request": "launch",
       "name": "Immich CLI",
       "program": "${workspaceFolder}/cli/dist/index.js",
-      "args": ["upload", "/--help"],
+      "args": ["upload", "--help"],
       "console": "integratedTerminal",
       "resolveSourceMapLocations": [
         "${workspaceFolder}/cli/dist/**/*.js.map",
