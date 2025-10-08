@@ -74,7 +74,7 @@
     {
       "label": "Build Immich CLI",
       "type": "shell",
-      "command": "pnpm --filter cli build"
+      "command": "pnpm --filter cli build:dev"
     }
   ]
 }

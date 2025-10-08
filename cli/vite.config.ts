@@ -11,7 +11,6 @@ export default defineConfig({
       },
     },
     ssr: true,
-    sourcemap: true
   },
   ssr: {
     // bundle everything except for Node built-ins
