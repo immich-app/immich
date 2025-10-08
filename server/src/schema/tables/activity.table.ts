@@ -55,6 +55,7 @@ export class ActivityTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
   assetId!: string | null;
 
+  @Column({ array: true, type: 'uuid', default: null })
   assetIds!: string[] | null;
 
   @Column({ type: 'text', default: null })
