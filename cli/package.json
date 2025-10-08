@@ -52,7 +52,6 @@
     "format:fix": "prettier --write .",
     "check": "tsc --noEmit"
   },
-  "main": "src/index.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/immich-app/immich.git",
