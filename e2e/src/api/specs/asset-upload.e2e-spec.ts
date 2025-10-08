@@ -627,7 +627,6 @@ describe('/upload', () => {
         );
 
         req.on('error', (err) => {
-          console.log('First request error:', err.message);
           if (err.message === 'socket hang up') {
             resolve(true);
           } else {
