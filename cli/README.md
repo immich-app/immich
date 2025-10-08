@@ -13,15 +13,23 @@ Then, to build the open-api client run the following in the open-api folder:
 
     $ ./bin/generate-open-api.sh
 
-To run the Immich CLI from source, run the following in the cli folder:
+## Run from build
+
+Go to the cli folder and build it:
 
     $ pnpm install
     $ pnpm run build
-    $ ts-node .
+    $ node dist/index.js
 
-You'll need ts-node, the easiest way to install it is to use pnpm:
+## Run and Debug from source (VSCode)
 
-    $ pnpm i -g ts-node
+With VScode you can run and debug the Immich CLI. Go to the launch.json file, find the Immich CLI config and change this with the command you need to debug
+
+`"args": ["upload", "--help"],`
+
+replace that for the command of your choice.
+
+## Install from build
 
 You can also build and install the CLI using
 

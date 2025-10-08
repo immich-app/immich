@@ -43,6 +43,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "build:dev": "vite build --sourcemap true",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "prepack": "npm run build",
