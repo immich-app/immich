@@ -131,7 +131,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
 
   @Expose({ name: UploadHeader.UploadOffset })
   @IsEmpty()
-  uploadOffset: string | undefined;
+  uploadOffset?: string;
 }
 
 export class ResumeUploadDto extends BaseUploadHeadersDto {
@@ -157,15 +157,15 @@ export class ResumeUploadDto extends BaseUploadHeadersDto {
 export class GetUploadStatusDto extends BaseRufhHeadersDto {
   @Expose({ name: UploadHeader.UploadComplete })
   @IsEmpty()
-  uploadComplete: string | undefined;
+  uploadComplete?: string;
 
   @Expose({ name: UploadHeader.UploadIncomplete })
   @IsEmpty()
-  uploadIncomplete: string | undefined;
+  uploadIncomplete?: string;
 
   @Expose({ name: UploadHeader.UploadOffset })
   @IsEmpty()
-  uploadOffset: string | undefined;
+  uploadOffset?: string;
 }
 
 export class UploadOkDto {
