@@ -580,4 +580,60 @@ describe('TimelineManager', () => {
       expect(timelineManager.getMonthGroupByAssetId(assetOne.id)?.yearMonth.month).toEqual(1);
     });
   });
+
+  describe('getRandomAsset', () => {
+    let timelineManager: TimelineManager;
+    const bucketAssets: Record<string, TimelineAsset[]> = {
+      '2024-03-01T00:00:00.000Z': timelineAssetFactory.buildList(1).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-03-01T00:00:00.000Z'),
+        }),
+      ),
+      '2024-02-01T00:00:00.000Z': timelineAssetFactory.buildList(10).map((asset, idx) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          // here we make sure that not all assets are on the first day of the month
+          fileCreatedAt: fromISODateTimeUTCToObject(`2024-02-0${idx < 7 ? 1 : 2}T00:00:00.000Z`),
+        }),
+      ),
+      '2024-01-01T00:00:00.000Z': timelineAssetFactory.buildList(3).map((asset) =>
+        deriveLocalDateTimeFromFileCreatedAt({
+          ...asset,
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-01T00:00:00.000Z'),
+        }),
+      ),
+    };
+
+    const bucketAssetsResponse: Record<string, TimeBucketAssetResponseDto> = Object.fromEntries(
+      Object.entries(bucketAssets).map(([key, assets]) => [key, toResponseDto(...assets)]),
+    );
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([
+        { count: 1, timeBucket: '2024-03-01' },
+        { count: 10, timeBucket: '2024-02-01' },
+        { count: 3, timeBucket: '2024-01-01' },
+      ]);
+
+      sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
+      await timelineManager.updateViewport({ width: 1588, height: 0 });
+    });
+
+    it('gets all assets once', async () => {
+      const assetCount = timelineManager.assetCount;
+      expect(assetCount).toBe(14);
+      const discoveredAssets: Set<string> = new Set();
+      for (let idx = 0; idx < assetCount; idx++) {
+        const asset = await timelineManager.getRandomAsset(idx);
+        expect(asset).toBeDefined();
+        const id = asset!.id;
+        expect(discoveredAssets.has(id)).toBeFalsy();
+        discoveredAssets.add(id);
+      }
+
+      expect(discoveredAssets.size).toBe(assetCount);
+    });
+  });
 });
