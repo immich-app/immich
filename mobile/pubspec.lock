@@ -317,10 +317,10 @@ packages:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: "33bae12a398f841c6cda09d1064212957265869104c478e5ad51e2fb26c3973c"
+      sha256: b5e72753cf63becce2c61fd04dfe0f1c430cc5278b53a1342dc5ad839eab29ec
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.0"
+    version: "6.1.5"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
@@ -1023,26 +1023,33 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/isar"
-      ref: "3561848fe7f5811743b880ddd96bb18dede27306"
-      resolved-ref: "3561848fe7f5811743b880ddd96bb18dede27306"
+      ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
+      resolved-ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
       url: "https://github.com/immich-app/isar"
     source: git
     version: "3.1.8"
-  isar_flutter_libs:
+  isar_community:
+    dependency: transitive
+    description:
+      name: isar_community
+      sha256: "28f59e54636c45ba0bb1b3b7f2656f1c50325f740cea6efcd101900be3fba546"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.0-dev.3"
+  isar_community_flutter_libs:
     dependency: "direct main"
     description:
-      path: "packages/isar_flutter_libs"
-      ref: "3561848fe7f5811743b880ddd96bb18dede27306"
-      resolved-ref: "3561848fe7f5811743b880ddd96bb18dede27306"
-      url: "https://github.com/immich-app/isar"
-    source: git
-    version: "3.1.8"
+      name: isar_community_flutter_libs
+      sha256: c2934fe755bb3181cb67602fd5df0d080b3d3eb52799f98623aa4fc5acbea010
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.0-dev.3"
   isar_generator:
     dependency: "direct dev"
     description:
       path: "packages/isar_generator"
-      ref: "3561848fe7f5811743b880ddd96bb18dede27306"
-      resolved-ref: "3561848fe7f5811743b880ddd96bb18dede27306"
+      ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
+      resolved-ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
       url: "https://github.com/immich-app/isar"
     source: git
     version: "3.1.8"
