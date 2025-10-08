@@ -451,16 +451,42 @@ export class TimelineManager {
     return monthGroupInfo?.monthGroup;
   }
 
-  async getRandomMonthGroup() {
-    const random = Math.floor(Math.random() * this.months.length);
-    const month = this.months[random];
-    await this.loadMonthGroup(month.yearMonth, { cancelable: false });
-    return month;
-  }
+  // note: the `index` input is expected to be in the range [0, assetCount). This
+  // value can be passed to make the method deterministic, which is mainly useful
+  // for testing.
+  async getRandomAsset(index?: number): Promise<TimelineAsset | undefined> {
+    const randomAssetIndex = index ?? Math.floor(Math.random() * this.assetCount);
 
-  async getRandomAsset() {
-    const month = await this.getRandomMonthGroup();
-    return month?.getRandomAsset();
+    let accumulatedCount = 0;
+
+    let randomMonth: MonthGroup | undefined = undefined;
+    for (const month of this.months) {
+      if (randomAssetIndex < accumulatedCount + month.assetsCount) {
+        randomMonth = month;
+        break;
+      }
+
+      accumulatedCount += month.assetsCount;
+    }
+    if (!randomMonth) {
+      return;
+    }
+    await this.loadMonthGroup(randomMonth.yearMonth, { cancelable: false });
+
+    let randomDay: DayGroup | undefined = undefined;
+    for (const day of randomMonth.dayGroups) {
+      if (randomAssetIndex < accumulatedCount + day.viewerAssets.length) {
+        randomDay = day;
+        break;
+      }
+
+      accumulatedCount += day.viewerAssets.length;
+    }
+    if (!randomDay) {
+      return;
+    }
+
+    return randomDay.viewerAssets[randomAssetIndex - accumulatedCount].asset;
   }
 
   updateAssetOperation(ids: string[], operation: AssetOperation) {
