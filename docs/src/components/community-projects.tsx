@@ -115,6 +115,11 @@ const projects: CommunityProjectProps[] = [
     description: 'Auto-stack photos with identical filenames and differing extensions (i.e. JPG+RAW)',
     url: 'https://github.com/sid3windr/immich-stack',
   },
+  {
+    title: 'Immich Stack',
+    description: 'Automatically groups similar photos into stacks within the Immich photo management system.',
+    url: 'https://github.com/Majorfi/immich-stack/',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
