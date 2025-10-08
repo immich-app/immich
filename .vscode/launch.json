@@ -30,6 +30,20 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**", "${workspaceFolder}/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Immich CLI",
+      "program": "${workspaceFolder}/cli/dist/index.js",
+      "args": ["upload", "--help"],
+      "console": "integratedTerminal",
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/cli/dist/**/*.js.map",
+      ],
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/cli/dist/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
     }
   ]
 }
