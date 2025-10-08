@@ -41,12 +41,13 @@ export class AssetUploadService extends BaseService {
   @OnEvent({ name: 'UploadAbort', workers: [ImmichWorker.Api] })
   onUploadAbort({ assetId, abortTime }: ArgOf<'UploadAbort'>) {
     const entry = this.activeRequests.get(assetId);
-    if (entry && abortTime > entry.startTime) {
-      this.activeRequests.delete(assetId);
-      entry.req.destroy();
-      return true;
+    if (!entry) {
+      return false;
     }
-    return false;
+    if (abortTime > entry.startTime) {
+      entry.req.destroy();
+    }
+    return this.activeRequests.delete(assetId);
   }
 
   async startUpload(auth: AuthDto, req: Readable, res: Response, dto: StartUploadDto): Promise<void> {
