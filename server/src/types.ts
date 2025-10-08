@@ -493,6 +493,7 @@ export interface UserPreferences {
   };
   memories: {
     enabled: boolean;
+    duration: number;
   };
   people: {
     enabled: boolean;
