@@ -37,6 +37,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/cache/widgets_binding.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
 import 'package:immich_mobile/pages/common/error_display_screen.dart';
@@ -55,6 +56,7 @@ void main() async {
     // Warm-up isolate pool for worker manager
     await workerManager.init(dynamicSpawning: true);
     await migrateDatabaseIfNeeded(isar, drift);
+    HttpSSLOptions.apply();
 
     runApp(
       ProviderScope(
