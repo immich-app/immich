@@ -42,7 +42,6 @@ const apiContentLength = {
 };
 
 // This is important to let go of the asset lock for an inactive request
-// TODO: the recommendation is for a later request to explicitly abort the inactive one rather than waiting for timeout
 const SOCKET_TIMEOUT_MS = 30_000;
 
 @ApiTags('Upload')

@@ -16,7 +16,7 @@ import { ArgsOf, EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { handlePromiseError } from 'src/utils/misc';
 
-export const serverEvents = ['ConfigUpdate'] as const;
+export const serverEvents = ['ConfigUpdate', 'UploadAbort'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export interface ClientEventMap {

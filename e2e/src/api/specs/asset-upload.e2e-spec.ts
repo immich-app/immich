@@ -318,6 +318,24 @@ describe('/upload', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Quota has been exceeded!'));
     });
+
+    it('should reject when request body is larger than declared content length', async () => {
+      const length = 1024 * 1024;
+      const content = randomBytes(length);
+
+      const { status } = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
+        .set('X-Immich-Asset-Data', assetData)
+        .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
+        .set('Upload-Complete', '?0')
+        .set('Upload-Length', length.toString())
+        .set('Content-Length', (length - 1).toString())
+        .send(content);
+
+      expect(status).toBe(400);
+    });
   });
 
   describe('resumeUpload', () => {
@@ -531,7 +549,7 @@ describe('/upload', () => {
       expect(resumeResponse.headers['upload-complete']).toBe('?1');
     });
 
-    it('should handle multiple interruptions and resumptions', async () => {
+    it('should handle multiple chunks', async () => {
       const chunks = [randomBytes(2000), randomBytes(3000), randomBytes(5000)];
       const hash = createHash('sha1');
       for (const chunk of chunks) {
