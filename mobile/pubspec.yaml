@@ -81,13 +81,9 @@ dependencies:
   isar:
     git:
       url: https://github.com/immich-app/isar
-      ref: '3561848fe7f5811743b880ddd96bb18dede27306'
+      ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
       path: packages/isar/
-  isar_flutter_libs:
-    git:
-      url: https://github.com/immich-app/isar
-      ref: '3561848fe7f5811743b880ddd96bb18dede27306'
-      path: packages/isar_flutter_libs/
+  isar_community_flutter_libs: 3.3.0-dev.3
   # DB
   drift: ^2.23.1
   drift_flutter: ^0.2.4
@@ -103,7 +99,7 @@ dev_dependencies:
   isar_generator:
     git:
       url: https://github.com/immich-app/isar
-      ref: '3561848fe7f5811743b880ddd96bb18dede27306'
+      ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
       path: packages/isar_generator/
   integration_test:
     sdk: flutter
