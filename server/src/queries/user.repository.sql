@@ -32,7 +32,28 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "session"."id",
+          "session"."createdAt",
+          "session"."updatedAt",
+          "session"."expiresAt",
+          "session"."deviceOS",
+          "session"."deviceType",
+          "session"."appVersion",
+          "session"."pinExpiresAt",
+          "session"."isPendingSyncReset"
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
@@ -71,7 +92,28 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "session"."id",
+          "session"."createdAt",
+          "session"."updatedAt",
+          "session"."expiresAt",
+          "session"."deviceOS",
+          "session"."deviceType",
+          "session"."appVersion",
+          "session"."pinExpiresAt",
+          "session"."isPendingSyncReset"
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
@@ -150,7 +192,28 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "session"."id",
+          "session"."createdAt",
+          "session"."updatedAt",
+          "session"."expiresAt",
+          "session"."deviceOS",
+          "session"."deviceType",
+          "session"."appVersion",
+          "session"."pinExpiresAt",
+          "session"."isPendingSyncReset"
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
@@ -175,7 +238,42 @@ select
   "shouldChangePassword",
   "storageLabel",
   "quotaSizeInBytes",
-  "quotaUsageInBytes"
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata"."key",
+          "user_metadata"."value"
+        from
+          "user_metadata"
+        where
+          "user"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "session"."id",
+          "session"."createdAt",
+          "session"."updatedAt",
+          "session"."expiresAt",
+          "session"."deviceOS",
+          "session"."deviceType",
+          "session"."appVersion",
+          "session"."pinExpiresAt",
+          "session"."isPendingSyncReset"
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
@@ -214,7 +312,28 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "session"."id",
+          "session"."createdAt",
+          "session"."updatedAt",
+          "session"."expiresAt",
+          "session"."deviceOS",
+          "session"."deviceType",
+          "session"."appVersion",
+          "session"."pinExpiresAt",
+          "session"."isPendingSyncReset"
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
@@ -261,7 +380,28 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "session"."id",
+          "session"."createdAt",
+          "session"."updatedAt",
+          "session"."expiresAt",
+          "session"."deviceOS",
+          "session"."deviceType",
+          "session"."appVersion",
+          "session"."pinExpiresAt",
+          "session"."isPendingSyncReset"
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 order by
@@ -299,7 +439,28 @@ select
         where
           "user"."id" = "user_metadata"."userId"
       ) as agg
-  ) as "metadata"
+  ) as "metadata",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "session"."id",
+          "session"."createdAt",
+          "session"."updatedAt",
+          "session"."expiresAt",
+          "session"."deviceOS",
+          "session"."deviceType",
+          "session"."appVersion",
+          "session"."pinExpiresAt",
+          "session"."isPendingSyncReset"
+        from
+          "session"
+        where
+          "session"."userId" = "user"."id"
+      ) as agg
+  ) as "sessions"
 from
   "user"
 where
