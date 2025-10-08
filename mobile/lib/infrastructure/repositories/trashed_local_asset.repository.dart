@@ -59,7 +59,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   /// Applies resulted snapshot of trashed assets:
   /// - upserts incoming rows
   /// - deletes rows that are not present in the snapshot
-  Future<void> applyTrashSnapshot(Iterable<TrashedAsset> trashedAssets) async {
+  Future<void> applySnapshot(Iterable<TrashedAsset> trashedAssets) async {
     if (trashedAssets.isEmpty) {
       await _db.delete(_db.trashedLocalAssetEntity).go();
       return;

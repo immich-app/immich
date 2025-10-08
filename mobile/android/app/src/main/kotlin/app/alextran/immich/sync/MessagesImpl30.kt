@@ -1,23 +1,13 @@
 package app.alextran.immich.sync
 
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.content.Context
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
-import kotlin.coroutines.cancellation.CancellationException
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @RequiresExtension(extension = Build.VERSION_CODES.R, version = 1)
@@ -59,7 +49,7 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
-  override fun getMediaChanges(isTrashed: Boolean): SyncDelta {
+  override fun getMediaChanges(): SyncDelta {
     val genMap = getSavedGenerationMap()
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
     val changed = mutableListOf<PlatformAsset>()
@@ -83,17 +73,8 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
         storedGen.toString(),
         storedGen.toString()
       )
-      val cursor = if (isTrashed) {
-        val queryArgs = Bundle().apply {
-          putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
-          putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs)
-          putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
-        }
-        getCursor(volume, queryArgs)
-      } else {
-        getCursor(volume, selection, selectionArgs)
-      }
-      getAssets(cursor).forEach {
+
+      getAssets(getCursor(volume, selection, selectionArgs)).forEach {
         when (it) {
           is AssetResult.ValidAsset -> {
             changed.add(it.asset)
@@ -108,26 +89,81 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     return SyncDelta(hasChanges, changed, deleted, assetAlbums)
   }
 
-  override fun getTrashedAssetsForAlbum(
-    albumId: String
-  ): List<PlatformAsset> {
-    val trashed = mutableListOf<PlatformAsset>()
+//  override fun getTrashedAssetsForAlbum(
+//    albumId: String
+//  ): List<PlatformAsset> {
+//    val trashed = mutableListOf<PlatformAsset>()
+//    val volumes = MediaStore.getExternalVolumeNames(ctx)
+//
+//    val selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
+//    val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
+//
+//    for (volume in volumes) {
+//      val cursor = getCursor(volume, Bundle().apply {
+//        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
+//        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
+//        putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
+//      })
+//      getAssets(cursor).forEach { res ->
+//        if (res is AssetResult.ValidAsset) trashed += res.asset
+//      }
+//    }
+//
+//    return trashed
+//  }
+
+  override fun getTrashedAssets(
+    albumIds: List<String>,
+    sinceLastCheckpoint: Boolean
+  ): Map<String, List<PlatformAsset>> {
+    if (albumIds.isEmpty()) return emptyMap()
+
+    val result = LinkedHashMap<String, MutableList<PlatformAsset>>(albumIds.size)
     val volumes = MediaStore.getExternalVolumeNames(ctx)
 
-    val selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
-    val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
+    val placeholders = albumIds.joinToString(",") { "?" }
+    val bucketIn = "(${MediaStore.Files.FileColumns.BUCKET_ID} IN ($placeholders))"
+    val baseSelection = "$bucketIn AND $MEDIA_SELECTION"
+
+    val baseSelectionArgs = ArrayList<String>(albumIds.size + MEDIA_SELECTION_ARGS.size).apply {
+      addAll(albumIds)
+      addAll(MEDIA_SELECTION_ARGS)
+    }
+
+    val genMap = if (sinceLastCheckpoint) getSavedGenerationMap() else emptyMap()
 
     for (volume in volumes) {
-      val cursor = getCursor(volume, Bundle().apply {
+      var selection = baseSelection
+      val selectionArgs = ArrayList<String>(baseSelectionArgs.size + if (sinceLastCheckpoint) 2 else 0).apply {
+        addAll(baseSelectionArgs)
+      }
+
+      if (sinceLastCheckpoint) {
+        val currentGen = MediaStore.getGeneration(ctx, volume)
+        val storedGen = genMap[volume] ?: 0L
+        if (currentGen <= storedGen) {
+          continue
+        }
+        selection += " AND (${MediaStore.MediaColumns.GENERATION_MODIFIED} > ? OR ${MediaStore.MediaColumns.GENERATION_ADDED} > ?)"
+        selectionArgs += storedGen.toString()
+        selectionArgs += storedGen.toString()
+      }
+
+      val queryArgs = Bundle().apply {
         putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
         putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
         putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
-      })
-      getAssets(cursor).forEach { res ->
-        if (res is AssetResult.ValidAsset) trashed += res.asset
+      }
+
+      getCursor(volume, queryArgs).use { cursor ->
+        getAssets(cursor).forEach { res ->
+          if (res is AssetResult.ValidAsset) {
+            result.getOrPut(res.albumId) { mutableListOf() }.add(res.asset)
+          }
+        }
       }
     }
 
-    return trashed
+    return result.mapValues { it.value.toList() }
   }
 }

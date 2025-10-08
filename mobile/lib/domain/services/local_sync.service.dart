@@ -39,9 +39,7 @@ class LocalSyncService {
       }
 
       if (CurrentPlatform.isAndroid) {
-        final delta = await _nativeSyncApi.getMediaChanges(isTrashed: true);
-        _log.fine("Delta updated in trash: ${delta.updates.length - delta.updates.length}");
-        await _applyTrashDelta(delta);
+        await _syncTrashedAssets(sinceLastCheckpoint: true);
       }
 
       final delta = await _nativeSyncApi.getMediaChanges();
@@ -98,10 +96,6 @@ class LocalSyncService {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
 
-      if (CurrentPlatform.isAndroid) {
-        await _syncDeviceTrashSnapshot();
-      }
-
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       final dbAlbums = await _localAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id});
 
@@ -113,6 +107,9 @@ class LocalSyncService {
         onlyFirst: removeAlbum,
         onlySecond: addAlbum,
       );
+      if (CurrentPlatform.isAndroid) {
+        await _syncTrashedAssets(sinceLastCheckpoint: false);
+      }
 
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
@@ -293,39 +290,37 @@ class LocalSyncService {
     return a.name == b.name && a.assetCount == b.assetCount && a.updatedAt.isAtSameMomentAs(b.updatedAt);
   }
 
-  Future<void> _applyTrashDelta(SyncDelta delta) async {
-    final trashUpdates = delta.updates;
-    if (trashUpdates.isEmpty) {
-      return Future.value();
-    }
-    final trashedAssets = delta.toTrashedAssets();
-    _log.info("updateLocalTrashChanges trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
-    await _trashedLocalAssetRepository.applyDelta(trashedAssets);
-    await _applyRemoteRestoreToLocal();
-  }
-
-  Future<void> _syncDeviceTrashSnapshot() async {
+  Future<void> _syncTrashedAssets({required bool sinceLastCheckpoint}) async {
     final backupAlbums = await _localAlbumRepository.getBackupAlbums();
     if (backupAlbums.isEmpty) {
-      _log.info("syncDeviceTrashSnapshot, No backup albums found");
+      _log.info("syncTrashedAssets, No local backup albums found");
       return;
     }
-    for (final album in backupAlbums) {
-      _log.info("syncDeviceTrashSnapshot prepare, album: ${album.id}/${album.name}");
-      final trashedPlatformAssets = await _nativeSyncApi.getTrashedAssetsForAlbum(album.id);
-      final trashedAssets = trashedPlatformAssets.toTrashedAssets(album.id);
-      await _trashedLocalAssetRepository.applyTrashSnapshot(trashedAssets);
+    final albumIds = backupAlbums.map((e) => e.id).toList();
+    final trashedAssetMap = await _nativeSyncApi.getTrashedAssets(
+      albumIds: albumIds,
+      sinceLastCheckpoint: sinceLastCheckpoint,
+    );
+    if (trashedAssetMap.isEmpty) {
+      _log.info("syncTrashedAssets, No trashed assets found ${sinceLastCheckpoint ? "since Last Checkpoint" : ""}");
     }
-    await _applyRemoteRestoreToLocal();
-  }
+    final trashedAssets = trashedAssetMap.cast<String, List<Object?>>().entries.expand(
+      (entry) => entry.value.cast<PlatformAsset>().toTrashedAssets(entry.key),
+    );
 
-  Future<void> _applyRemoteRestoreToLocal() async {
+    _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
+    if (sinceLastCheckpoint) {
+      await _trashedLocalAssetRepository.applyDelta(trashedAssets);
+    } else {
+      await _trashedLocalAssetRepository.applySnapshot(trashedAssets);
+    }
+
     final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (remoteAssetsToRestore.isNotEmpty) {
       final restoredIds = await _localFilesManager.restoreAssetsFromTrash(remoteAssetsToRestore);
       await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
-      _log.info("No remote assets found for restoration");
+      _log.info("syncTrashedAssets, No remote assets found for restoration");
     }
   }
 }

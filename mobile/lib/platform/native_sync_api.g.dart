@@ -326,7 +326,7 @@ class NativeSyncApi {
     }
   }
 
-  Future<SyncDelta> getMediaChanges({bool isTrashed = false}) async {
+  Future<SyncDelta> getMediaChanges() async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -334,7 +334,7 @@ class NativeSyncApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[isTrashed]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -563,15 +563,18 @@ class NativeSyncApi {
     }
   }
 
-  Future<List<PlatformAsset>> getTrashedAssetsForAlbum(String albumId) async {
+  Future<Map<String, List<PlatformAsset>>> getTrashedAssets({
+    required List<String> albumIds,
+    required bool sinceLastCheckpoint,
+  }) async {
     final String pigeonVar_channelName =
-        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumId]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[albumIds, sinceLastCheckpoint]);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
@@ -587,7 +590,7 @@ class NativeSyncApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<PlatformAsset>();
+      return (pigeonVar_replyList[0] as Map<Object?, Object?>?)!.cast<String, List<PlatformAsset>>();
     }
   }
 }

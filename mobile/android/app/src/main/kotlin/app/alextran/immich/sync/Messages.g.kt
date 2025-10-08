@@ -296,7 +296,7 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NativeSyncApi {
   fun shouldFullSync(): Boolean
-  fun getMediaChanges(isTrashed: Boolean): SyncDelta
+  fun getMediaChanges(): SyncDelta
   fun checkpointSync()
   fun clearSyncCheckpoint()
   fun getAssetIdsForAlbum(albumId: String): List<String>
@@ -305,7 +305,7 @@ interface NativeSyncApi {
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
   fun cancelHashing()
-  fun getTrashedAssetsForAlbum(albumId: String): List<PlatformAsset>
+  fun getTrashedAssets(albumIds: List<String>, sinceLastCheckpoint: Boolean): Map<String, List<PlatformAsset>>
 
   companion object {
     /** The codec used by NativeSyncApi. */
@@ -335,11 +335,9 @@ interface NativeSyncApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val isTrashedArg = args[0] as Boolean
+          channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
-              listOf(api.getMediaChanges(isTrashedArg))
+              listOf(api.getMediaChanges())
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }
@@ -487,13 +485,14 @@ interface NativeSyncApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum$separatedMessageChannelSuffix", codec, taskQueue)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets$separatedMessageChannelSuffix", codec, taskQueue)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val albumIdArg = args[0] as String
+            val albumIdsArg = args[0] as List<String>
+            val sinceLastCheckpointArg = args[1] as Boolean
             val wrapped: List<Any?> = try {
-              listOf(api.getTrashedAssetsForAlbum(albumIdArg))
+              listOf(api.getTrashedAssets(albumIdsArg, sinceLastCheckpointArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

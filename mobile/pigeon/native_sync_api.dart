@@ -88,7 +88,7 @@ abstract class NativeSyncApi {
   bool shouldFullSync();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  SyncDelta getMediaChanges({bool isTrashed = false});
+  SyncDelta getMediaChanges();
 
   void checkpointSync();
 
@@ -113,5 +113,8 @@ abstract class NativeSyncApi {
   void cancelHashing();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  List<PlatformAsset> getTrashedAssetsForAlbum(String albumId);
+  Map<String, List<PlatformAsset>> getTrashedAssets({
+    required List<String> albumIds,
+    required bool sinceLastCheckpoint,
+  });
 }

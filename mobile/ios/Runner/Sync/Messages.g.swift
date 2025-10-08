@@ -355,7 +355,7 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NativeSyncApi {
   func shouldFullSync() throws -> Bool
-  func getMediaChanges(isTrashed: Bool) throws -> SyncDelta
+  func getMediaChanges() throws -> SyncDelta
   func checkpointSync() throws
   func clearSyncCheckpoint() throws
   func getAssetIdsForAlbum(albumId: String) throws -> [String]
@@ -364,7 +364,7 @@ protocol NativeSyncApi {
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
-  func getTrashedAssetsForAlbum(albumId: String) throws -> [PlatformAsset]
+  func getTrashedAssets(albumIds: [String], sinceLastCheckpoint: Bool) throws -> [String: [PlatformAsset]]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -395,11 +395,9 @@ class NativeSyncApiSetup {
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
-      getMediaChangesChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let isTrashedArg = args[0] as! Bool
+      getMediaChangesChannel.setMessageHandler { _, reply in
         do {
-          let result = try api.getMediaChanges(isTrashed: isTrashedArg)
+          let result = try api.getMediaChanges()
           reply(wrapResult(result))
         } catch {
           reply(wrapError(error))
@@ -535,22 +533,23 @@ class NativeSyncApiSetup {
     } else {
       cancelHashingChannel.setMessageHandler(nil)
     }
-    let getTrashedAssetsForAlbumChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    let getTrashedAssetsChannel = taskQueue == nil
+      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
     if let api = api {
-      getTrashedAssetsForAlbumChannel.setMessageHandler { message, reply in
+      getTrashedAssetsChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let albumIdArg = args[0] as! String
+        let albumIdsArg = args[0] as! [String]
+        let sinceLastCheckpointArg = args[1] as! Bool
         do {
-          let result = try api.getTrashedAssetsForAlbum(albumId: albumIdArg)
+          let result = try api.getTrashedAssets(albumIds: albumIdsArg, sinceLastCheckpoint: sinceLastCheckpointArg)
           reply(wrapResult(result))
         } catch {
           reply(wrapError(error))
         }
       }
     } else {
-      getTrashedAssetsForAlbumChannel.setMessageHandler(nil)
+      getTrashedAssetsChannel.setMessageHandler(nil)
     }
   }
 }
