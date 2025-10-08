@@ -319,23 +319,28 @@ describe('/upload', () => {
       expect(body).toEqual(errorDto.badRequest('Quota has been exceeded!'));
     });
 
-    it('should reject when request body is larger than declared content length', async () => {
-      const length = 1024 * 1024;
-      const content = randomBytes(length);
+    // The current implementation depends on the web server to enforce
+    // this as this case does not even reach app code, but we test a few
+    // values here to make sure it stays that way.
+    it.each([1337, 27, 1024 * 1024 + 5, 512 * 512 + 1])(
+      'should reject when request body is larger than declared content length of %d bytes',
+      async (length) => {
+        const content = randomBytes(length);
 
-      const { status } = await request(app)
-        .post('/upload')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .set('Upload-Draft-Interop-Version', '8')
-        .set('X-Immich-Asset-Data', assetData)
-        .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
-        .set('Upload-Complete', '?0')
-        .set('Upload-Length', length.toString())
-        .set('Content-Length', (length - 1).toString())
-        .send(content);
+        const { status } = await request(app)
+          .post('/upload')
+          .set('Authorization', `Bearer ${user.accessToken}`)
+          .set('Upload-Draft-Interop-Version', '8')
+          .set('X-Immich-Asset-Data', assetData)
+          .set('Repr-Digest', `sha=:${createHash('sha1').update(content).digest('base64')}:`)
+          .set('Upload-Complete', '?0')
+          .set('Upload-Length', length.toString())
+          .set('Content-Length', (length - 1).toString())
+          .send(content);
 
-      expect(status).toBe(400);
-    });
+        expect(status).toBe(400);
+      },
+    );
   });
 
   describe('resumeUpload', () => {
