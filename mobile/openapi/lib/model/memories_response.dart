@@ -13,25 +13,31 @@ part of openapi.api;
 class MemoriesResponse {
   /// Returns a new [MemoriesResponse] instance.
   MemoriesResponse({
+    this.duration = 5,
     this.enabled = true,
   });
+
+  int duration;
 
   bool enabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoriesResponse &&
+    other.duration == duration &&
     other.enabled == enabled;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (duration.hashCode) +
     (enabled.hashCode);
 
   @override
-  String toString() => 'MemoriesResponse[enabled=$enabled]';
+  String toString() => 'MemoriesResponse[duration=$duration, enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'duration'] = this.duration;
       json[r'enabled'] = this.enabled;
     return json;
   }
@@ -45,6 +51,7 @@ class MemoriesResponse {
       final json = value.cast<String, dynamic>();
 
       return MemoriesResponse(
+        duration: mapValueOfType<int>(json, r'duration')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
       );
     }
@@ -93,6 +100,7 @@ class MemoriesResponse {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'duration',
     'enabled',
   };
 }
