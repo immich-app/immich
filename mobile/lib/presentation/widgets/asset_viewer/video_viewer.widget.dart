@@ -322,6 +322,9 @@ class NativeVideoViewer extends HookConsumerWidget {
         removeListeners(playerController);
       }
 
+      if (value != null) {
+        isVisible.value = _isCurrentAsset(value, asset);
+      }
       final curAsset = currentAsset.value;
       if (curAsset == asset) {
         return;
