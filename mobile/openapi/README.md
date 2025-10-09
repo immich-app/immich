@@ -552,6 +552,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigNotificationsDto](doc//SystemConfigNotificationsDto.md)
  - [SystemConfigOAuthDto](doc//SystemConfigOAuthDto.md)
  - [SystemConfigPasswordLoginDto](doc//SystemConfigPasswordLoginDto.md)
+ - [SystemConfigRemovePartialUploadsDto](doc//SystemConfigRemovePartialUploadsDto.md)
  - [SystemConfigReverseGeocodingDto](doc//SystemConfigReverseGeocodingDto.md)
  - [SystemConfigServerDto](doc//SystemConfigServerDto.md)
  - [SystemConfigSmtpDto](doc//SystemConfigSmtpDto.md)

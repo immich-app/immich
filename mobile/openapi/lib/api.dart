@@ -316,6 +316,7 @@ part 'model/system_config_nightly_tasks_dto.dart';
 part 'model/system_config_notifications_dto.dart';
 part 'model/system_config_o_auth_dto.dart';
 part 'model/system_config_password_login_dto.dart';
+part 'model/system_config_remove_partial_uploads_dto.dart';
 part 'model/system_config_reverse_geocoding_dto.dart';
 part 'model/system_config_server_dto.dart';
 part 'model/system_config_smtp_dto.dart';

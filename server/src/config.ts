@@ -140,6 +140,10 @@ export interface SystemConfig {
     clusterNewFaces: boolean;
     generateMemories: boolean;
     syncQuotaUsage: boolean;
+    removeStaleUploads: {
+      enabled: boolean;
+      hoursAgo: number;
+    };
   };
   trash: {
     enabled: boolean;
@@ -341,6 +345,10 @@ export const defaults = Object.freeze<SystemConfig>({
     syncQuotaUsage: true,
     missingThumbnails: true,
     clusterNewFaces: true,
+    removeStaleUploads: {
+      enabled: true,
+      hoursAgo: 72,
+    },
   },
   trash: {
     enabled: true,

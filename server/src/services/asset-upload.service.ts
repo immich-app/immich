@@ -202,8 +202,8 @@ export class AssetUploadService extends BaseService {
 
   @OnJob({ name: JobName.PartialAssetCleanupQueueAll, queue: QueueName.BackgroundTask })
   async removeStaleUploads(): Promise<void> {
-    // TODO: make this configurable
-    const createdBefore = DateTime.now().minus({ days: 7 }).toJSDate();
+    const config = await this.getConfig({ withCache: false });
+    const createdBefore = DateTime.now().minus({ hours: config.nightlyTasks.removeStaleUploads.hoursAgo }).toJSDate();
     let jobs: JobItem[] = [];
     const assets = this.assetJobRepository.streamForPartialAssetCleanupJob(createdBefore);
     for await (const asset of assets) {
@@ -329,7 +329,7 @@ export class AssetUploadService extends BaseService {
     const abortEvent = { assetId, abortTime };
     // only emit if we didn't just abort it ourselves
     if (!this.onUploadAbort(abortEvent)) {
-      this.eventRepository.serverSend('UploadAbort', abortEvent);
+      this.websocketRepository.serverSend('UploadAbort', abortEvent);
     }
   }
 

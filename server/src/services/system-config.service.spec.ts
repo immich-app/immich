@@ -123,6 +123,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     missingThumbnails: true,
     generateMemories: true,
     syncQuotaUsage: true,
+    removeStaleUploads: {
+      enabled: true,
+      hoursAgo: 72,
+    },
   },
   reverseGeocoding: {
     enabled: true,
