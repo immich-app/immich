@@ -56,10 +56,18 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     return rows.map((result) => result.readTable(_db.trashedLocalAssetEntity).toLocalAsset());
   }
 
+  Future<void> applyTrashedAssets(Iterable<TrashedAsset> trashedAssets, bool asDelta) async {
+    if (asDelta){
+      return _applyDelta(trashedAssets);
+    } else {
+      return _applySnapshot(trashedAssets);
+    }
+  }
+
   /// Applies resulted snapshot of trashed assets:
   /// - upserts incoming rows
   /// - deletes rows that are not present in the snapshot
-  Future<void> applySnapshot(Iterable<TrashedAsset> trashedAssets) async {
+  Future<void> _applySnapshot(Iterable<TrashedAsset> trashedAssets) async {
     if (trashedAssets.isEmpty) {
       await _db.delete(_db.trashedLocalAssetEntity).go();
       return;
@@ -110,7 +118,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> applyDelta(Iterable<TrashedAsset> trashedAssets) async {
+  Future<void> _applyDelta(Iterable<TrashedAsset> trashedAssets) async {
     if (trashedAssets.isEmpty) {
       return;
     }

@@ -96,6 +96,10 @@ class LocalSyncService {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
 
+      if (CurrentPlatform.isAndroid) {
+        await _syncTrashedAssets(sinceLastCheckpoint: false);
+      }
+
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       final dbAlbums = await _localAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id});
 
@@ -107,9 +111,6 @@ class LocalSyncService {
         onlyFirst: removeAlbum,
         onlySecond: addAlbum,
       );
-      if (CurrentPlatform.isAndroid) {
-        await _syncTrashedAssets(sinceLastCheckpoint: false);
-      }
 
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
@@ -309,11 +310,7 @@ class LocalSyncService {
     );
 
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
-    if (sinceLastCheckpoint) {
-      await _trashedLocalAssetRepository.applyDelta(trashedAssets);
-    } else {
-      await _trashedLocalAssetRepository.applySnapshot(trashedAssets);
-    }
+    await _trashedLocalAssetRepository.applyTrashedAssets(trashedAssets, sinceLastCheckpoint);
 
     final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (remoteAssetsToRestore.isNotEmpty) {
