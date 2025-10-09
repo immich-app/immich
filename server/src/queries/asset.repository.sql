@@ -64,10 +64,16 @@ where
 -- AssetRepository.setComplete
 update "asset"
 set
-  "status" = $1,
-  "visibility" = $2
+  "status" = 'active',
+  "visibility" = (
+    case
+      when type = 'VIDEO'
+      and "livePhotoVideoId" is not null then 'hidden'
+      else 'timeline'
+    end
+  )::asset_visibility_enum
 where
-  "id" = $3
+  "id" = $1
   and "status" = 'partial'
 
 -- AssetRepository.removeAndDecrementQuota

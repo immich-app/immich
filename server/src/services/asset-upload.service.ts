@@ -7,7 +7,7 @@ import { Readable } from 'node:stream';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto } from 'src/dtos/asset-upload';
+import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto } from 'src/dtos/asset-upload.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetMetadataKey,
@@ -269,6 +269,7 @@ export class AssetUploadService extends BaseService {
           localDateTime: assetData.fileCreatedAt,
           type,
           isFavorite: assetData.isFavorite,
+          livePhotoVideoId: assetData.livePhotoVideoId,
           visibility: AssetVisibility.Hidden,
           originalFileName: assetData.filename,
           status: AssetStatus.Partial,
