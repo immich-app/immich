@@ -46,8 +46,9 @@ export class AssetUploadService extends BaseService {
     }
     if (abortTime > entry.startTime) {
       entry.req.destroy();
+      this.activeRequests.delete(assetId);
     }
-    return this.activeRequests.delete(assetId);
+    return true;
   }
 
   async startUpload(auth: AuthDto, req: Readable, res: Response, dto: StartUploadDto): Promise<void> {
