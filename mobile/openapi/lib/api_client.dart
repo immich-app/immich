@@ -676,6 +676,8 @@ class ApiClient {
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
           return SystemConfigPasswordLoginDto.fromJson(value);
+        case 'SystemConfigRemovePartialUploadsDto':
+          return SystemConfigRemovePartialUploadsDto.fromJson(value);
         case 'SystemConfigReverseGeocodingDto':
           return SystemConfigReverseGeocodingDto.fromJson(value);
         case 'SystemConfigServerDto':

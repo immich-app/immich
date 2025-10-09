@@ -1425,11 +1425,16 @@ export type SystemConfigMetadataDto = {
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
 };
+export type SystemConfigRemovePartialUploadsDto = {
+    enabled: boolean;
+    hoursAgo: number;
+};
 export type SystemConfigNightlyTasksDto = {
     clusterNewFaces: boolean;
     databaseCleanup: boolean;
     generateMemories: boolean;
     missingThumbnails: boolean;
+    removeStaleUploads: SystemConfigRemovePartialUploadsDto;
     startTime: string;
     syncQuotaUsage: boolean;
 };

@@ -16824,6 +16824,9 @@
           "missingThumbnails": {
             "type": "boolean"
           },
+          "removeStaleUploads": {
+            "$ref": "#/components/schemas/SystemConfigRemovePartialUploadsDto"
+          },
           "startTime": {
             "type": "string"
           },
@@ -16836,6 +16839,7 @@
           "databaseCleanup",
           "generateMemories",
           "missingThumbnails",
+          "removeStaleUploads",
           "startTime",
           "syncQuotaUsage"
         ],
@@ -16948,6 +16952,22 @@
         },
         "required": [
           "enabled"
+        ],
+        "type": "object"
+      },
+      "SystemConfigRemovePartialUploadsDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "hoursAgo": {
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "hoursAgo"
         ],
         "type": "object"
       },

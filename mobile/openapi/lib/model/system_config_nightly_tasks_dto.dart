@@ -17,6 +17,7 @@ class SystemConfigNightlyTasksDto {
     required this.databaseCleanup,
     required this.generateMemories,
     required this.missingThumbnails,
+    required this.removeStaleUploads,
     required this.startTime,
     required this.syncQuotaUsage,
   });
@@ -29,6 +30,8 @@ class SystemConfigNightlyTasksDto {
 
   bool missingThumbnails;
 
+  SystemConfigRemovePartialUploadsDto removeStaleUploads;
+
   String startTime;
 
   bool syncQuotaUsage;
@@ -39,6 +42,7 @@ class SystemConfigNightlyTasksDto {
     other.databaseCleanup == databaseCleanup &&
     other.generateMemories == generateMemories &&
     other.missingThumbnails == missingThumbnails &&
+    other.removeStaleUploads == removeStaleUploads &&
     other.startTime == startTime &&
     other.syncQuotaUsage == syncQuotaUsage;
 
@@ -49,11 +53,12 @@ class SystemConfigNightlyTasksDto {
     (databaseCleanup.hashCode) +
     (generateMemories.hashCode) +
     (missingThumbnails.hashCode) +
+    (removeStaleUploads.hashCode) +
     (startTime.hashCode) +
     (syncQuotaUsage.hashCode);
 
   @override
-  String toString() => 'SystemConfigNightlyTasksDto[clusterNewFaces=$clusterNewFaces, databaseCleanup=$databaseCleanup, generateMemories=$generateMemories, missingThumbnails=$missingThumbnails, startTime=$startTime, syncQuotaUsage=$syncQuotaUsage]';
+  String toString() => 'SystemConfigNightlyTasksDto[clusterNewFaces=$clusterNewFaces, databaseCleanup=$databaseCleanup, generateMemories=$generateMemories, missingThumbnails=$missingThumbnails, removeStaleUploads=$removeStaleUploads, startTime=$startTime, syncQuotaUsage=$syncQuotaUsage]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -61,6 +66,7 @@ class SystemConfigNightlyTasksDto {
       json[r'databaseCleanup'] = this.databaseCleanup;
       json[r'generateMemories'] = this.generateMemories;
       json[r'missingThumbnails'] = this.missingThumbnails;
+      json[r'removeStaleUploads'] = this.removeStaleUploads;
       json[r'startTime'] = this.startTime;
       json[r'syncQuotaUsage'] = this.syncQuotaUsage;
     return json;
@@ -79,6 +85,7 @@ class SystemConfigNightlyTasksDto {
         databaseCleanup: mapValueOfType<bool>(json, r'databaseCleanup')!,
         generateMemories: mapValueOfType<bool>(json, r'generateMemories')!,
         missingThumbnails: mapValueOfType<bool>(json, r'missingThumbnails')!,
+        removeStaleUploads: SystemConfigRemovePartialUploadsDto.fromJson(json[r'removeStaleUploads'])!,
         startTime: mapValueOfType<String>(json, r'startTime')!,
         syncQuotaUsage: mapValueOfType<bool>(json, r'syncQuotaUsage')!,
       );
@@ -132,6 +139,7 @@ class SystemConfigNightlyTasksDto {
     'databaseCleanup',
     'generateMemories',
     'missingThumbnails',
+    'removeStaleUploads',
     'startTime',
     'syncQuotaUsage',
   };
