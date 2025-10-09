@@ -1,4 +1,4 @@
-import { getMyUser, LoginResponseDto } from '@immich/sdk';
+import { AssetVisibility, getMyUser, LoginResponseDto } from '@immich/sdk';
 import { createHash, randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { request as httpRequest } from 'node:http';
@@ -319,6 +319,132 @@ describe('/upload', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Quota has been exceeded!'));
+    });
+
+    it('should link a motion photo', async () => {
+      const videoContent = randomBytes(1024);
+      const videoChecksum = createHash('sha1').update(videoContent).digest('base64');
+      const videoResponse = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
+        .set('X-Immich-Asset-Data', makeAssetData({ filename: 'motion-photo.mp4' }))
+        .set('Repr-Digest', `sha=:${videoChecksum}:`)
+        .set('Upload-Complete', '?1')
+        .set('Content-Type', 'video/mp4')
+        .set('Upload-Length', '1024')
+        .send(videoContent);
+      expect(videoResponse.status).toBe(200);
+      expect(videoResponse.body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+      const videoAssetId = videoResponse.body.id;
+
+      const imageContent = randomBytes(1024);
+      const imageChecksum = createHash('sha1').update(imageContent).digest('base64');
+      const imageResponse = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
+        .set('X-Immich-Asset-Data', makeAssetData({ 'live-photo-video-id': videoAssetId }))
+        .set('Repr-Digest', `sha=:${imageChecksum}:`)
+        .set('Upload-Complete', '?1')
+        .set('Content-Type', 'image/jpeg')
+        .set('Upload-Length', '1024')
+        .send(imageContent);
+
+      expect(imageResponse.status).toBe(200);
+      expect(imageResponse.body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+      const imageAssetId = imageResponse.body.id;
+
+      const [videoAsset, imageAsset] = await Promise.all([
+        utils.getAssetInfo(user.accessToken, videoAssetId),
+        utils.getAssetInfo(user.accessToken, imageAssetId),
+      ]);
+      expect(imageAsset).toEqual(expect.objectContaining({ livePhotoVideoId: videoAssetId }));
+      expect(videoAsset).toEqual(expect.objectContaining({ visibility: AssetVisibility.Hidden }));
+    });
+
+    it("should not link to another user's video asset", async () => {
+      const videoContent = randomBytes(1024);
+      const videoChecksum = createHash('sha1').update(videoContent).digest('base64');
+      const videoResponse = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
+        .set('X-Immich-Asset-Data', makeAssetData({ filename: 'motion-photo.mp4' }))
+        .set('Repr-Digest', `sha=:${videoChecksum}:`)
+        .set('Upload-Complete', '?1')
+        .set('Content-Type', 'video/mp4')
+        .set('Upload-Length', '1024')
+        .send(videoContent);
+      expect(videoResponse.status).toBe(200);
+      expect(videoResponse.body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+      const videoAssetId = videoResponse.body.id;
+
+      const imageContent = randomBytes(1024);
+      const imageChecksum = createHash('sha1').update(imageContent).digest('base64');
+      const imageResponse = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
+        .set('X-Immich-Asset-Data', makeAssetData({ 'live-photo-video-id': videoAssetId }))
+        .set('Repr-Digest', `sha=:${imageChecksum}:`)
+        .set('Upload-Complete', '?1')
+        .set('Content-Type', 'image/jpeg')
+        .set('Upload-Length', '1024')
+        .send(imageContent);
+
+      expect(imageResponse.status).toBe(200);
+      expect(imageResponse.body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+      const imageAssetId = imageResponse.body.id;
+
+      const [videoAsset, imageAsset] = await Promise.all([
+        utils.getAssetInfo(admin.accessToken, videoAssetId),
+        utils.getAssetInfo(user.accessToken, imageAssetId),
+      ]);
+      expect(imageAsset).toEqual(expect.objectContaining({ livePhotoVideoId: null }));
+      expect(videoAsset).toEqual(expect.objectContaining({ visibility: AssetVisibility.Timeline }));
+    });
+
+    it('should not link to a photo', async () => {
+      const image1Content = randomBytes(1024);
+      const image1Checksum = createHash('sha1').update(image1Content).digest('base64');
+      const image1Response = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
+        .set('X-Immich-Asset-Data', assetData)
+        .set('Repr-Digest', `sha=:${image1Checksum}:`)
+        .set('Upload-Complete', '?1')
+        .set('Content-Type', 'image/jpeg')
+        .set('Upload-Length', '1024')
+        .send(image1Content);
+      expect(image1Response.status).toBe(200);
+      expect(image1Response.body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+      const image1AssetId = image1Response.body.id;
+
+      const image2Content = randomBytes(1024);
+      const image2Checksum = createHash('sha1').update(image2Content).digest('base64');
+      const image2Response = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('Upload-Draft-Interop-Version', '8')
+        .set('X-Immich-Asset-Data', makeAssetData({ 'live-photo-video-id': image1AssetId }))
+        .set('Repr-Digest', `sha=:${image2Checksum}:`)
+        .set('Upload-Complete', '?1')
+        .set('Content-Type', 'image/jpeg')
+        .set('Upload-Length', '1024')
+        .send(image2Content);
+
+      expect(image2Response.status).toBe(200);
+      expect(image2Response.body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+      const image2AssetId = image2Response.body.id;
+
+      const [image1Asset, image2Asset] = await Promise.all([
+        utils.getAssetInfo(user.accessToken, image1AssetId),
+        utils.getAssetInfo(user.accessToken, image2AssetId),
+      ]);
+      expect(image1Asset).toEqual(expect.objectContaining({ livePhotoVideoId: null }));
+      expect(image2Asset).toEqual(expect.objectContaining({ visibility: AssetVisibility.Timeline }));
     });
   });
 

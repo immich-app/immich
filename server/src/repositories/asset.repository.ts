@@ -256,8 +256,28 @@ export class AssetRepository {
   }
 
   createWithMetadata(asset: Insertable<AssetTable> & { id: string }, size: number, metadata?: AssetMetadataItem[]) {
-    let query = this.db
-      .with('asset', (qb) => qb.insertInto('asset').values(asset).returning(['id', 'ownerId']))
+    let query = this.db;
+    if (asset.livePhotoVideoId) {
+      (query as any) = query.with('motion_asset', (qb) =>
+        qb
+          .updateTable('asset')
+          .set({ visibility: AssetVisibility.Hidden })
+          .where('id', '=', asset.livePhotoVideoId!)
+          .where('type', '=', sql.lit(AssetType.Video))
+          .where('ownerId', '=', asset.ownerId)
+          .returning('id'),
+      );
+    }
+
+    (query as any) = query
+      .with('asset', (qb) =>
+        qb
+          .insertInto('asset')
+          .values(
+            asset.livePhotoVideoId ? { ...asset, livePhotoVideoId: sql<string>`(select id from motion_asset)` } : asset,
+          )
+          .returning(['id', 'ownerId']),
+      )
       .with('exif', (qb) =>
         qb
           .insertInto('asset_exif')
@@ -293,11 +313,21 @@ export class AssetRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async setComplete(assetId: string) {
     await this.db
-      .updateTable('asset')
-      .set({
+      .updateTable('asset as complete_asset')
+      .set((eb) => ({
         status: sql.lit(AssetStatus.Active),
-        visibility: sql`(case when type = 'VIDEO' and "livePhotoVideoId" is not null then 'hidden' else 'timeline' end)::asset_visibility_enum`,
-      })
+        visibility: eb
+          .case()
+          .when(
+            eb.and([
+              eb('complete_asset.type', '=', sql.lit(AssetType.Video)),
+              eb.exists(eb.selectFrom('asset').whereRef('complete_asset.id', '=', 'asset.livePhotoVideoId')),
+            ]),
+          )
+          .then(sql<AssetVisibility>`'hidden'::asset_visibility_enum`)
+          .else(sql<AssetVisibility>`'timeline'::asset_visibility_enum`)
+          .end(),
+      }))
       .where('id', '=', assetId)
       .where('status', '=', sql.lit(AssetStatus.Partial))
       .execute();
