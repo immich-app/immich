@@ -217,6 +217,7 @@ export class BaseService {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
 
+    this.telemetryRepository.api.addToGauge(`immich.users.total`, 1);
     return this.userRepository.create(payload);
   }
 }

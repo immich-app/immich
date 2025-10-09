@@ -44,10 +44,7 @@ class DriftTrashPage extends StatelessWidget {
             return SliverPadding(
               padding: const EdgeInsets.all(16.0),
               sliver: SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 24.0,
-                  child: const Text("trash_page_info").t(context: context, args: {"days": "$trashDays"}),
-                ),
+                child: const Text("trash_page_info").t(context: context, args: {"days": "$trashDays"}),
               ),
             );
           },

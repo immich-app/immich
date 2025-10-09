@@ -621,9 +621,9 @@ class _SearchResultGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final searchResult = ref.watch(paginatedSearchProvider);
+    final assets = ref.watch(paginatedSearchProvider.select((s) => s.assets));
 
-    if (searchResult.totalAssets == 0) {
+    if (assets.isEmpty) {
       return const _SearchEmptyContent();
     }
 
@@ -637,6 +637,7 @@ class _SearchResultGrid extends ConsumerWidget {
 
         if (metrics.pixels >= metrics.maxScrollExtent && isVerticalScroll && !isBottomSheetNotification) {
           onScrollEnd();
+          ref.read(paginatedSearchProvider.notifier).setScrollOffset(metrics.maxScrollExtent);
         }
 
         return true;
@@ -645,17 +646,18 @@ class _SearchResultGrid extends ConsumerWidget {
         child: ProviderScope(
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
-              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(searchResult.assets);
+              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets);
               ref.onDispose(timelineService.dispose);
               return timelineService;
             }),
           ],
           child: Timeline(
-            key: ValueKey(searchResult.totalAssets),
+            key: ValueKey(assets.length),
             groupBy: GroupAssetsBy.none,
             appBar: null,
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
             snapToMonth: false,
+            initialScrollOffset: ref.read(paginatedSearchProvider.select((s) => s.scrollOffset)),
           ),
         ),
       ),

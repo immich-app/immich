@@ -233,15 +233,6 @@ export class MonthGroup {
     addContext.changedDayGroups.add(dayGroup);
   }
 
-  getRandomDayGroup() {
-    const random = Math.floor(Math.random() * this.dayGroups.length);
-    return this.dayGroups[random];
-  }
-
-  getRandomAsset() {
-    return this.getRandomDayGroup()?.getRandomAsset()?.asset;
-  }
-
   get viewId() {
     const { year, month } = this.yearMonth;
     return year + '-' + month;

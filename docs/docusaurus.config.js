@@ -7,7 +7,7 @@ const prism = require('prism-react-renderer');
 const config = {
   title: 'Immich',
   tagline: 'High performance self-hosted photo and video backup solution directly from your mobile phone',
-  url: 'https://immich.app',
+  url: 'https://docs.immich.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -42,26 +42,19 @@ const config = {
   ],
   presets: [
     [
-      'docusaurus-preset-openapi',
-      /** @type {import('docusaurus-preset-openapi').Options} */
+      'classic',
+      /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
           showLastUpdateAuthor: true,
           showLastUpdateTime: true,
+          routeBasePath: '/',
 
           sidebarPath: require.resolve('./sidebars.js'),
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/immich-app/immich/tree/main/docs/',
         },
-        api: {
-          path: '../open-api/immich-openapi-specs.json',
-          routeBasePath: '/docs/api',
-        },
-        // blog: {
-        //   showReadingTime: true,
-        //   editUrl: "https://github.com/immich-app/immich/tree/main/docs/",
-        // },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -72,11 +65,6 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      announcementBar: {
-        id: 'site_announcement_immich',
-        content: `⚠️ The project is under <strong>very active</strong> development. Expect bugs and changes. Do not use it as <strong>the only way</strong> to store your photos and videos!`,
-        isCloseable: false,
-      },
       docs: {
         sidebar: {
           autoCollapseCategories: false,
@@ -95,17 +83,17 @@ const config = {
             position: 'right',
           },
           {
-            to: '/docs/overview/welcome',
+            to: '/overview/quick-start',
             position: 'right',
             label: 'Docs',
           },
           {
-            to: '/roadmap',
+            href: 'https://immich.app/roadmap',
             position: 'right',
             label: 'Roadmap',
           },
           {
-            to: '/docs/api',
+            href: 'https://api.immich.app/',
             position: 'right',
             label: 'API',
           },
@@ -139,16 +127,16 @@ const config = {
             title: 'Overview',
             items: [
               {
-                label: 'Welcome',
-                to: '/docs/overview/welcome',
+                label: 'Quick start',
+                to: '/overview/quick-start',
               },
               {
                 label: 'Installation',
-                to: '/docs/install/requirements',
+                to: '/install/requirements',
               },
               {
                 label: 'Contributing',
-                to: '/docs/overview/support-the-project',
+                to: '/overview/support-the-project',
               },
               {
                 label: 'Privacy Policy',
@@ -161,15 +149,15 @@ const config = {
             items: [
               {
                 label: 'Roadmap',
-                to: '/roadmap',
+                href: 'https://immich.app/roadmap',
               },
               {
                 label: 'API',
-                to: '/docs/api',
+                href: 'https://api.immich.app/',
               },
               {
                 label: 'Cursed Knowledge',
-                to: '/cursed-knowledge',
+                href: 'https://immich.app/cursed-knowledge',
               },
             ],
           },
