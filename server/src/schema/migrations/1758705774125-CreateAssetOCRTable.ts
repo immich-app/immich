@@ -5,7 +5,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     db,
   );
   await sql`ALTER TABLE "asset_ocr" ADD CONSTRAINT "PK_5c37b36ceef9ac1f688b6c6bf22" PRIMARY KEY ("id");`.execute(db);
-  await sql`ALTER TABLE "asset_ocr" ADD CONSTRAINT "FK_dc592ec504976f5636e28bb84c6" FOREIGN KEY ("assetId") REFERENCES "assets" ("id") ON UPDATE CASCADE ON DELETE CASCADE;`.execute(db);
+  await sql`ALTER TABLE "asset_ocr" ADD CONSTRAINT "FK_dc592ec504976f5636e28bb84c6" FOREIGN KEY ("assetId") REFERENCES "asset" ("id") ON UPDATE CASCADE ON DELETE CASCADE;`.execute(db);
   await sql`CREATE INDEX "IDX_dc592ec504976f5636e28bb84c" ON "asset_ocr" ("assetId")`.execute(db);
 }
 

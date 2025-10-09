@@ -245,7 +245,7 @@ export class MachineLearningRepository {
         [ModelType.RECOGNITION]: { modelName, options: { minScore: minRecognitionScore } },
       },
     };
-    const response = await this.predict<OcrResponse>(urls, { imagePath }, request);
+    const response = await this.predict<OcrResponse>({ imagePath }, request);
     return response[ModelTask.OCR];
   }
 }
