@@ -341,7 +341,6 @@
       scrubberMonthScrollPercent: monthGroupPercentY,
     });
   };
-  /* eslint-disable tscompat/tscompat */
   const getTouch = (event: TouchEvent) => {
     if (event.touches.length === 1) {
       return event.touches[0];
@@ -386,7 +385,6 @@
       isHover = false;
     }
   };
-  /* eslint-enable tscompat/tscompat */
   onMount(() => {
     document.addEventListener('touchmove', onTouchMove, { capture: true, passive: true });
     return () => {
