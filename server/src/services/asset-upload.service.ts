@@ -93,7 +93,6 @@ export class AssetUploadService extends BaseService {
       res.status(201).set('Location', location).setHeader('Upload-Limit', 'min-size=0').send();
       return;
     }
-    this.logger.log(`Finished upload to ${asset.path}`);
     if (dto.checksum.compare(checksumBuffer!) !== 0) {
       return await this.sendChecksumMismatch(res, asset.id, asset.path);
     }
@@ -153,7 +152,6 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      this.logger.log(`Finished upload to ${path}`);
       const checksum = await this.cryptoRepository.hashFile(path);
       if (providedChecksum.compare(checksum) !== 0) {
         return await this.sendChecksumMismatch(res, id, path);
@@ -297,7 +295,7 @@ export class AssetUploadService extends BaseService {
   }
 
   async onComplete({ id, path, fileModifiedAt }: { id: string; path: string; fileModifiedAt: Date }) {
-    this.logger.debug('Completing upload for asset', id);
+    this.logger.log('Completing upload for asset', id);
     const jobData = { name: JobName.AssetExtractMetadata, data: { id, source: 'upload' } } as const;
     await withRetry(() => this.assetRepository.setComplete(id));
     try {
@@ -309,7 +307,7 @@ export class AssetUploadService extends BaseService {
   }
 
   async onCancel(assetId: string, path: string): Promise<void> {
-    this.logger.debug('Cancelling upload for asset', assetId);
+    this.logger.log('Cancelling upload for asset', assetId);
     await withRetry(() => this.storageRepository.unlink(path));
     await withRetry(() => this.assetRepository.removeAndDecrementQuota(assetId));
   }

@@ -62,16 +62,22 @@ where
   and "ownerId" = $2
 
 -- AssetRepository.setComplete
-update "asset"
+update "asset" as "complete_asset"
 set
   "status" = 'active',
-  "visibility" = (
-    case
-      when type = 'VIDEO'
-      and "livePhotoVideoId" is not null then 'hidden'
-      else 'timeline'
-    end
-  )::asset_visibility_enum
+  "visibility" = case
+    when (
+      "complete_asset"."type" = 'VIDEO'
+      and exists (
+        select
+        from
+          "asset"
+        where
+          "complete_asset"."id" = "asset"."livePhotoVideoId"
+      )
+    ) then 'hidden'::asset_visibility_enum
+    else 'timeline'::asset_visibility_enum
+  end
 where
   "id" = $1
   and "status" = 'partial'
