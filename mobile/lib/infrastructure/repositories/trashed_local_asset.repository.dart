@@ -57,7 +57,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<void> applyTrashedAssets(Iterable<TrashedAsset> trashedAssets, bool asDelta) async {
-    if (asDelta){
+    if (asDelta) {
       return _applyDelta(trashedAssets);
     } else {
       return _applySnapshot(trashedAssets);
