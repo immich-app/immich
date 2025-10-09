@@ -26,26 +26,18 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'permission_onboarding_request',
-            style: context.textTheme.titleMedium,
-            textAlign: TextAlign.center,
-          ).tr(),
+          Text('permission_onboarding_request', style: context.textTheme.titleMedium, textAlign: TextAlign.center).tr(),
           const SizedBox(height: 18),
           ElevatedButton(
-            onPressed: () => ref
-                .read(galleryPermissionNotifier.notifier)
-                .requestGalleryPermission()
-                .then((permission) async {
-              if (permission.isGranted) {
-                // If permission is limited, we will show the limited
-                // permission page
-                goToBackup();
-              }
-            }),
-            child: const Text(
-              'continue',
-            ).tr(),
+            onPressed: () =>
+                ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission().then((permission) async {
+                  if (permission.isGranted) {
+                    // If permission is limited, we will show the limited
+                    // permission page
+                    goToBackup();
+                  }
+                }),
+            child: const Text('continue').tr(),
           ),
         ],
       );
@@ -64,10 +56,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
             textAlign: TextAlign.center,
           ).tr(),
           const SizedBox(height: 18),
-          ElevatedButton(
-            onPressed: () => goToBackup(),
-            child: const Text('permission_onboarding_get_started').tr(),
-          ),
+          ElevatedButton(onPressed: () => goToBackup(), child: const Text('permission_onboarding_get_started').tr()),
         ],
       );
     }
@@ -80,11 +69,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.warning_outlined,
-            color: Colors.yellow,
-            size: 48,
-          ),
+          const Icon(Icons.warning_outlined, color: Colors.yellow, size: 48),
           const SizedBox(height: 8),
           Text(
             'permission_onboarding_permission_limited',
@@ -94,17 +79,10 @@ class PermissionOnboardingPage extends HookConsumerWidget {
           const SizedBox(height: 18),
           ElevatedButton(
             onPressed: () => openAppSettings(),
-            child: const Text(
-              'permission_onboarding_go_to_settings',
-            ).tr(),
+            child: const Text('permission_onboarding_go_to_settings').tr(),
           ),
           const SizedBox(height: 8.0),
-          TextButton(
-            onPressed: () => goToBackup(),
-            child: const Text(
-              'permission_onboarding_continue_anyway',
-            ).tr(),
-          ),
+          TextButton(onPressed: () => goToBackup(), child: const Text('permission_onboarding_continue_anyway').tr()),
         ],
       );
     }
@@ -114,11 +92,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.warning_outlined,
-            color: Colors.red,
-            size: 48,
-          ),
+          const Icon(Icons.warning_outlined, color: Colors.red, size: 48),
           const SizedBox(height: 8),
           Text(
             'permission_onboarding_permission_denied',
@@ -128,9 +102,7 @@ class PermissionOnboardingPage extends HookConsumerWidget {
           const SizedBox(height: 18),
           ElevatedButton(
             onPressed: () => openAppSettings(),
-            child: const Text(
-              'permission_onboarding_go_to_settings',
-            ).tr(),
+            child: const Text('permission_onboarding_go_to_settings').tr(),
           ),
         ],
       );
@@ -139,12 +111,8 @@ class PermissionOnboardingPage extends HookConsumerWidget {
     final Widget child = switch (permission) {
       PermissionStatus.limited => buildPermissionLimited(),
       PermissionStatus.denied => buildRequestPermission(),
-      PermissionStatus.granted ||
-      PermissionStatus.provisional =>
-        buildPermissionGranted(),
-      PermissionStatus.restricted ||
-      PermissionStatus.permanentlyDenied =>
-        buildPermissionDenied()
+      PermissionStatus.granted || PermissionStatus.provisional => buildPermissionGranted(),
+      PermissionStatus.restricted || PermissionStatus.permanentlyDenied => buildPermissionDenied(),
     };
 
     return Scaffold(
@@ -156,21 +124,13 @@ class PermissionOnboardingPage extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const ImmichLogo(
-                  heroTag: 'logo',
-                ),
+                const ImmichLogo(heroTag: 'logo'),
                 const ImmichTitleText(),
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 500),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18.0),
-                    child: child,
-                  ),
+                  child: Padding(padding: const EdgeInsets.all(18.0), child: child),
                 ),
-                TextButton(
-                  child: const Text('back').tr(),
-                  onPressed: () => context.maybePop(),
-                ),
+                TextButton(child: const Text('back').tr(), onPressed: () => context.maybePop()),
               ],
             ),
           ),

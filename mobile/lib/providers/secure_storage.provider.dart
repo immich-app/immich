@@ -1,7 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-final secureStorageProvider =
-    StateNotifierProvider<SecureStorageProvider, void>((ref) {
+final secureStorageProvider = StateNotifierProvider<SecureStorageProvider, void>((ref) {
   return SecureStorageProvider();
 });
 

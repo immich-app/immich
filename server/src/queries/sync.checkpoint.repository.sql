@@ -13,3 +13,7 @@ where
 delete from "session_sync_checkpoint"
 where
   "sessionId" = $1
+
+-- SyncCheckpointRepository.getNow
+select
+  immich_uuid_v7 (now() - interval '1 millisecond') as "nowId"

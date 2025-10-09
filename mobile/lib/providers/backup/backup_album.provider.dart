@@ -4,11 +4,8 @@ import 'package:immich_mobile/domain/services/local_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
-final backupAlbumProvider =
-    StateNotifierProvider<BackupAlbumNotifier, List<LocalAlbum>>(
-  (ref) => BackupAlbumNotifier(
-    ref.watch(localAlbumServiceProvider),
-  ),
+final backupAlbumProvider = StateNotifierProvider<BackupAlbumNotifier, List<LocalAlbum>>(
+  (ref) => BackupAlbumNotifier(ref.watch(localAlbumServiceProvider)),
 );
 
 class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
@@ -19,8 +16,7 @@ class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
   final LocalAlbumService _localAlbumService;
 
   Future<void> getAll() async {
-    state =
-        await _localAlbumService.getAll(sortBy: {SortLocalAlbumsBy.assetCount});
+    state = await _localAlbumService.getAll(sortBy: {SortLocalAlbumsBy.assetCount});
   }
 
   Future<void> selectAlbum(LocalAlbum album) async {
@@ -42,9 +38,8 @@ class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
 
     state = state
         .map(
-          (currentAlbum) => currentAlbum.id == album.id
-              ? currentAlbum.copyWith(backupSelection: BackupSelection.none)
-              : currentAlbum,
+          (currentAlbum) =>
+              currentAlbum.id == album.id ? currentAlbum.copyWith(backupSelection: BackupSelection.none) : currentAlbum,
         )
         .toList();
   }

@@ -3,10 +3,10 @@ import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { toTimelineAsset, type TimelinePlainDateTime, type TimelinePlainYearMonth } from '$lib/utils/timeline-util';
+import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
 
 import { clamp, debounce, isEqual } from 'lodash-es';
-import { SvelteSet } from 'svelte/reactivity';
+import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
@@ -288,12 +288,12 @@ export class TimelineManager {
 
   async #initializeMonthGroups() {
     const timebuckets = await getTimeBuckets({
+      ...authManager.params,
       ...this.#options,
-      key: authManager.key,
     });
 
     this.months = timebuckets.map((timeBucket) => {
-      const date = new Date(timeBucket.timeBucket);
+      const date = new SvelteDate(timeBucket.timeBucket);
       return new MonthGroup(
         this,
         { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 },
@@ -387,7 +387,7 @@ export class TimelineManager {
     };
   }
 
-  async loadMonthGroup(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }): Promise<void> {
+  async loadMonthGroup(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
     if (options) {
       cancelable = options.cancelable;
@@ -419,21 +419,29 @@ export class TimelineManager {
     if (!this.isInitialized) {
       await this.initTask.waitUntilCompletion();
     }
+
     let { monthGroup } = findMonthGroupForAssetUtil(this, id) ?? {};
     if (monthGroup) {
       return monthGroup;
     }
-    const asset = toTimelineAsset(await getAssetInfo({ id, key: authManager.key }));
+
+    const response = await getAssetInfo({ ...authManager.params, id }).catch(() => null);
+    if (!response) {
+      return;
+    }
+
+    const asset = toTimelineAsset(response);
     if (!asset || this.isExcluded(asset)) {
       return;
     }
+
     monthGroup = await this.#loadMonthGroupAtTime(asset.localDateTime, { cancelable: false });
     if (monthGroup?.findAssetById({ id })) {
       return monthGroup;
     }
   }
 
-  async #loadMonthGroupAtTime(yearMonth: TimelinePlainYearMonth, options?: { cancelable: boolean }) {
+  async #loadMonthGroupAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
     await this.loadMonthGroup(yearMonth, options);
     return getMonthGroupByDate(this, yearMonth);
   }
@@ -443,27 +451,53 @@ export class TimelineManager {
     return monthGroupInfo?.monthGroup;
   }
 
-  async getRandomMonthGroup() {
-    const random = Math.floor(Math.random() * this.months.length);
-    const month = this.months[random];
-    await this.loadMonthGroup(month.yearMonth, { cancelable: false });
-    return month;
-  }
+  // note: the `index` input is expected to be in the range [0, assetCount). This
+  // value can be passed to make the method deterministic, which is mainly useful
+  // for testing.
+  async getRandomAsset(index?: number): Promise<TimelineAsset | undefined> {
+    const randomAssetIndex = index ?? Math.floor(Math.random() * this.assetCount);
 
-  async getRandomAsset() {
-    const month = await this.getRandomMonthGroup();
-    return month?.getRandomAsset();
+    let accumulatedCount = 0;
+
+    let randomMonth: MonthGroup | undefined = undefined;
+    for (const month of this.months) {
+      if (randomAssetIndex < accumulatedCount + month.assetsCount) {
+        randomMonth = month;
+        break;
+      }
+
+      accumulatedCount += month.assetsCount;
+    }
+    if (!randomMonth) {
+      return;
+    }
+    await this.loadMonthGroup(randomMonth.yearMonth, { cancelable: false });
+
+    let randomDay: DayGroup | undefined = undefined;
+    for (const day of randomMonth.dayGroups) {
+      if (randomAssetIndex < accumulatedCount + day.viewerAssets.length) {
+        randomDay = day;
+        break;
+      }
+
+      accumulatedCount += day.viewerAssets.length;
+    }
+    if (!randomDay) {
+      return;
+    }
+
+    return randomDay.viewerAssets[randomAssetIndex - accumulatedCount].asset;
   }
 
   updateAssetOperation(ids: string[], operation: AssetOperation) {
-    runAssetOperation(this, new Set(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
+    runAssetOperation(this, new SvelteSet(ids), operation, { order: this.#options.order ?? AssetOrder.Desc });
   }
 
   updateAssets(assets: TimelineAsset[]) {
-    const lookup = new Map<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
+    const lookup = new SvelteMap<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
     const { unprocessedIds } = runAssetOperation(
       this,
-      new Set(lookup.keys()),
+      new SvelteSet(lookup.keys()),
       (asset) => {
         updateObject(asset, lookup.get(asset.id));
         return { remove: false };
@@ -480,7 +514,7 @@ export class TimelineManager {
   removeAssets(ids: string[]) {
     const { unprocessedIds } = runAssetOperation(
       this,
-      new Set(ids),
+      new SvelteSet(ids),
       () => {
         return { remove: true };
       },
@@ -514,7 +548,7 @@ export class TimelineManager {
     return await getAssetWithOffset(this, assetDescriptor, interval, 'earlier');
   }
 
-  async getClosestAssetToDate(dateTime: TimelinePlainDateTime) {
+  async getClosestAssetToDate(dateTime: TimelineDateTime) {
     const monthGroup = findMonthGroupForDate(this, dateTime);
     if (!monthGroup) {
       return;
@@ -539,5 +573,9 @@ export class TimelineManager {
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
       isMismatched(this.#options.isTrashed, asset.isTrashed)
     );
+  }
+
+  getAssetOrder() {
+    return this.#options.order ?? AssetOrder.Desc;
   }
 }

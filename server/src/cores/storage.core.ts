@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
-import { APP_MEDIA_LOCATION } from 'src/constants';
 import { StorageAsset } from 'src/database';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -32,6 +31,8 @@ export type ThumbnailPathEntity = { id: string; ownerId: string };
 
 let instance: StorageCore | null;
 
+let mediaLocation: string | undefined;
+
 export class StorageCore {
   private constructor(
     private assetRepository: AssetRepository,
@@ -42,7 +43,9 @@ export class StorageCore {
     private storageRepository: StorageRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private logger: LoggingRepository,
-  ) {}
+  ) {
+    this.logger.setContext(StorageCore.name);
+  }
 
   static create(
     assetRepository: AssetRepository,
@@ -74,6 +77,18 @@ export class StorageCore {
     instance = null;
   }
 
+  static getMediaLocation(): string {
+    if (mediaLocation === undefined) {
+      throw new Error('Media location is not set.');
+    }
+
+    return mediaLocation;
+  }
+
+  static setMediaLocation(location: string) {
+    mediaLocation = location;
+  }
+
   static getFolderLocation(folder: StorageFolder, userId: string) {
     return join(StorageCore.getBaseFolder(folder), userId);
   }
@@ -83,7 +98,7 @@ export class StorageCore {
   }
 
   static getBaseFolder(folder: StorageFolder) {
-    return join(APP_MEDIA_LOCATION, folder);
+    return join(StorageCore.getMediaLocation(), folder);
   }
 
   static getPersonThumbnailPath(person: ThumbnailPathEntity) {
@@ -108,7 +123,7 @@ export class StorageCore {
 
   static isImmichPath(path: string) {
     const resolvedPath = resolve(path);
-    const resolvedAppMediaLocation = resolve(APP_MEDIA_LOCATION);
+    const resolvedAppMediaLocation = StorageCore.getMediaLocation();
     const normalizedPath = resolvedPath.endsWith('/') ? resolvedPath : resolvedPath + '/';
     const normalizedAppMediaLocation = resolvedAppMediaLocation.endsWith('/')
       ? resolvedAppMediaLocation

@@ -18,7 +18,7 @@ class SyncUserMetadataV1 {
     required this.value,
   });
 
-  String key;
+  UserMetadataKey key;
 
   String userId;
 
@@ -57,7 +57,7 @@ class SyncUserMetadataV1 {
       final json = value.cast<String, dynamic>();
 
       return SyncUserMetadataV1(
-        key: mapValueOfType<String>(json, r'key')!,
+        key: UserMetadataKey.fromJson(json[r'key'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
         value: mapValueOfType<Object>(json, r'value')!,
       );

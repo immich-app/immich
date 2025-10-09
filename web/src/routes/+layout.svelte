@@ -9,7 +9,6 @@
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
@@ -19,10 +18,10 @@
     websocketStore,
     type ReleaseEvent,
   } from '$lib/stores/websocket';
-  import { copyToClipboard } from '$lib/utils';
+  import { copyToClipboard, getReleaseType } from '$lib/utils';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import type { ServerVersionResponseDto } from '@immich/sdk';
-  import { setTranslations } from '@immich/ui';
+  import { modalManager, setTranslations } from '@immich/ui';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { run } from 'svelte/legacy';
@@ -37,6 +36,8 @@
       close: $t('close'),
       show_password: $t('show_password'),
       hide_password: $t('hide_password'),
+      confirm: $t('confirm'),
+      cancel: $t('cancel'),
     });
   });
 
@@ -84,8 +85,9 @@
 
     const releaseVersion = semverToName(release.releaseVersion);
     const serverVersion = semverToName(release.serverVersion);
+    const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
-    if (localStorage.getItem('appVersion') === releaseVersion) {
+    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
       return;
     }
 

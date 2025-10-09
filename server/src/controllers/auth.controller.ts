@@ -16,7 +16,7 @@ import {
   ValidateAccessTokenResponseDto,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto } from 'src/dtos/user.dto';
-import { AuthType, ImmichCookie } from 'src/enum';
+import { AuthType, ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie, respondWithoutCookie } from 'src/utils/response';
@@ -49,22 +49,22 @@ export class AuthController {
   }
 
   @Post('validateToken')
+  @Authenticated({ permission: false })
   @HttpCode(HttpStatus.OK)
-  @Authenticated()
   validateAccessToken(): ValidateAccessTokenResponseDto {
     return { authStatus: true };
   }
 
   @Post('change-password')
+  @Authenticated({ permission: Permission.AuthChangePassword })
   @HttpCode(HttpStatus.OK)
-  @Authenticated()
   changePassword(@Auth() auth: AuthDto, @Body() dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     return this.service.changePassword(auth, dto);
   }
 
   @Post('logout')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   async logout(
     @Req() request: Request,
     @Res({ passthrough: true }) res: Response,
@@ -87,33 +87,36 @@ export class AuthController {
   }
 
   @Post('pin-code')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PinCodeCreate })
+  @HttpCode(HttpStatus.NO_CONTENT)
   setupPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeSetupDto): Promise<void> {
     return this.service.setupPinCode(auth, dto);
   }
 
   @Put('pin-code')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PinCodeUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
   async changePinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeChangeDto): Promise<void> {
     return this.service.changePinCode(auth, dto);
   }
 
   @Delete('pin-code')
-  @Authenticated()
+  @Authenticated({ permission: Permission.PinCodeDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
   async resetPinCode(@Auth() auth: AuthDto, @Body() dto: PinCodeResetDto): Promise<void> {
     return this.service.resetPinCode(auth, dto);
   }
 
   @Post('session/unlock')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.NO_CONTENT)
   async unlockAuthSession(@Auth() auth: AuthDto, @Body() dto: SessionUnlockDto): Promise<void> {
     return this.service.unlockSession(auth, dto);
   }
 
   @Post('session/lock')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.NO_CONTENT)
   async lockAuthSession(@Auth() auth: AuthDto): Promise<void> {
     return this.service.lockSession(auth);
   }

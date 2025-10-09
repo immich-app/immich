@@ -2,13 +2,12 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import ProgressBar from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import { ProgressBarStatus } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import SlideshowSettingsModal from '$lib/modals/SlideshowSettingsModal.svelte';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, modalManager } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
-  import { swipe } from 'svelte-gestures';
+  import { useSwipe } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
@@ -132,6 +131,13 @@
       document.removeEventListener('webkitfullscreenchange', exitFullscreenHandler);
     };
   });
+
+  const { swipe, onswipe, onswipedown } = useSwipe(
+    () => {},
+    () => ({ touchAction: 'pan-x' }),
+    { onswipedown: showControlBar },
+    true,
+  );
 </script>
 
 <svelte:document
@@ -154,7 +160,8 @@
   ]}
 />
 
-<svelte:body use:swipe={() => ({ touchAction: 'pan-x' })} onswipedown={showControlBar} />
+{/* @ts-expect-error https://github.com/Rezi/svelte-gestures/issues/38#issuecomment-3315953573 */ null}
+<svelte:body {@attach swipe} {onswipe} {onswipedown} />
 
 {#if showControls}
   <div

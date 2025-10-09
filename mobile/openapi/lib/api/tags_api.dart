@@ -16,7 +16,10 @@ class TagsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /tags/assets' operation and returns the [Response].
+  /// This endpoint requires the `tag.asset` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [TagBulkAssetsDto] tagBulkAssetsDto (required):
@@ -45,6 +48,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.asset` permission.
+  ///
   /// Parameters:
   ///
   /// * [TagBulkAssetsDto] tagBulkAssetsDto (required):
@@ -63,7 +68,10 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /tags' operation and returns the [Response].
+  /// This endpoint requires the `tag.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [TagCreateDto] tagCreateDto (required):
@@ -92,6 +100,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [TagCreateDto] tagCreateDto (required):
@@ -110,7 +120,10 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /tags/{id}' operation and returns the [Response].
+  /// This endpoint requires the `tag.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -140,6 +153,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -150,7 +165,9 @@ class TagsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /tags' operation and returns the [Response].
+  /// This endpoint requires the `tag.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAllTagsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/tags';
@@ -176,6 +193,7 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.read` permission.
   Future<List<TagResponseDto>?> getAllTags() async {
     final response = await getAllTagsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -194,7 +212,10 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /tags/{id}' operation and returns the [Response].
+  /// This endpoint requires the `tag.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -224,6 +245,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -242,7 +265,10 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /tags/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `tag.asset` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -274,6 +300,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.asset` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -297,7 +325,10 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /tags/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `tag.asset` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -329,6 +360,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.asset` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -352,7 +385,10 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /tags/{id}' operation and returns the [Response].
+  /// This endpoint requires the `tag.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -384,6 +420,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -404,7 +442,10 @@ class TagsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /tags' operation and returns the [Response].
+  /// This endpoint requires the `tag.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [TagUpsertDto] tagUpsertDto (required):
@@ -433,6 +474,8 @@ class TagsApi {
     );
   }
 
+  /// This endpoint requires the `tag.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [TagUpsertDto] tagUpsertDto (required):

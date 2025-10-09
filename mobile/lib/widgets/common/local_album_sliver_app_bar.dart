@@ -12,14 +12,10 @@ class LocalAlbumsSliverAppBar extends StatelessWidget {
       pinned: true,
       snap: false,
       backgroundColor: context.colorScheme.surfaceContainer,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(5)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(5))),
       automaticallyImplyLeading: true,
       centerTitle: true,
-      title: Text(
-        "on_this_device".t(context: context),
-      ),
+      title: Text("on_this_device".t(context: context)),
     );
   }
 }

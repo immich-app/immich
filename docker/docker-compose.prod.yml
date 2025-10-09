@@ -1,5 +1,5 @@
 #
-# WARNING: To install Immich, follow our guide: https://immich.app/docs/install/docker-compose
+# WARNING: To install Immich, follow our guide: https://docs.immich.app/install/docker-compose
 #
 # Make sure to use the docker-compose.yml of the current release:
 #
@@ -20,7 +20,7 @@ services:
       context: ../
       dockerfile: server/Dockerfile
     volumes:
-      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos:/data
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -56,14 +56,14 @@ services:
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:facc1d2c3462975c34e10fccb167bfa92b0e0dbd992fc282c29a61c3243afb11
+    image: docker.io/valkey/valkey:8-bookworm@sha256:fea8b3e67b15729d4bb70589eb03367bab9ad1ee89c876f54327fc7c6e618571
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
 
   database:
     container_name: immich_postgres
-    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:5f6a838e4e44c8e0e019d0ebfe3ee8952b69afc2809b2c25f7b0119641978e91
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:41eacbe83eca995561fe43814fd4891e16e39632806253848efaf04d3c8a8b84
     env_file:
       - .env
     environment:
@@ -95,7 +95,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:12.0.2-ubuntu@sha256:0512d81cdeaaff0e370a9aa66027b465d1f1f04379c3a9c801a905fabbdbc7a5
+    image: grafana/grafana:12.1.1-ubuntu@sha256:d1da838234ff2de93e0065ee1bf0e66d38f948dcc5d718c25fa6237e14b4424a
     volumes:
       - grafana-data:/var/lib/grafana
 

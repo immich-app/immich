@@ -22,10 +22,7 @@ class PartnerPage extends HookConsumerWidget {
     addNewUsersHandler() async {
       final users = availableUsers.value;
       if (users == null || users.isEmpty) {
-        ImmichToast.show(
-          context: context,
-          msg: "partner_page_no_more_users".tr(),
-        );
+        ImmichToast.show(context: context, msg: "partner_page_no_more_users".tr());
         return;
       }
 
@@ -40,10 +37,7 @@ class PartnerPage extends HookConsumerWidget {
                   onPressed: () => context.pop(u),
                   child: Row(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: userAvatar(context, u),
-                      ),
+                      Padding(padding: const EdgeInsets.only(right: 8), child: userAvatar(context, u)),
                       Text(u.name),
                     ],
                   ),
@@ -53,16 +47,11 @@ class PartnerPage extends HookConsumerWidget {
         },
       );
       if (selectedUser != null) {
-        final ok =
-            await ref.read(partnerServiceProvider).addPartner(selectedUser);
+        final ok = await ref.read(partnerServiceProvider).addPartner(selectedUser);
         if (ok) {
           ref.invalidate(partnerSharedByProvider);
         } else {
-          ImmichToast.show(
-            context: context,
-            msg: "partner_page_partner_add_failed".tr(),
-            toastType: ToastType.error,
-          );
+          ImmichToast.show(context: context, msg: "partner_page_partner_add_failed".tr(), toastType: ToastType.error);
         }
       }
     }
@@ -73,8 +62,7 @@ class PartnerPage extends HookConsumerWidget {
         builder: (BuildContext context) {
           return ConfirmDialog(
             title: "stop_photo_sharing",
-            content: "partner_page_stop_sharing_content"
-                .tr(namedArgs: {'partner': u.name}),
+            content: "partner_page_stop_sharing_content".tr(namedArgs: {'partner': u.name}),
             onOk: () => ref.read(partnerServiceProvider).removePartner(u),
           );
         },
@@ -89,9 +77,7 @@ class PartnerPage extends HookConsumerWidget {
             padding: const EdgeInsets.only(left: 16.0, top: 16.0),
             child: Text(
               "partner_page_shared_to_title",
-              style: context.textTheme.titleSmall?.copyWith(
-                color: context.colorScheme.onSurface.withAlpha(200),
-              ),
+              style: context.textTheme.titleSmall?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
             ).tr(),
           ),
           if (users.isNotEmpty)
@@ -101,10 +87,7 @@ class PartnerPage extends HookConsumerWidget {
               itemBuilder: ((context, index) {
                 return ListTile(
                   leading: userAvatar(context, users[index]),
-                  title: Text(
-                    users[index].email,
-                    style: context.textTheme.bodyLarge,
-                  ),
+                  title: Text(users[index].email, style: context.textTheme.bodyLarge),
                   trailing: IconButton(
                     icon: const Icon(Icons.person_remove),
                     onPressed: () => onDeleteUser(users[index]),
@@ -120,17 +103,12 @@ class PartnerPage extends HookConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: const Text(
-                      "partner_page_empty_message",
-                      style: TextStyle(fontSize: 14),
-                    ).tr(),
+                    child: const Text("partner_page_empty_message", style: TextStyle(fontSize: 14)).tr(),
                   ),
                   Align(
                     alignment: Alignment.center,
                     child: ElevatedButton.icon(
-                      onPressed: availableUsers.whenOrNull(
-                        data: (data) => addNewUsersHandler,
-                      ),
+                      onPressed: availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
                       icon: const Icon(Icons.person_add),
                       label: const Text("add_partner").tr(),
                     ),
@@ -149,8 +127,7 @@ class PartnerPage extends HookConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed:
-                availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
+            onPressed: availableUsers.whenOrNull(data: (data) => addNewUsersHandler),
             icon: const Icon(Icons.person_add),
             tooltip: "add_partner".tr(),
           ),

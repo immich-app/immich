@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -16,14 +17,7 @@ class DriftLocalAlbumsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          LocalAlbumsSliverAppBar(),
-          _AlbumList(),
-        ],
-      ),
-    );
+    return const Scaffold(body: CustomScrollView(slivers: [LocalAlbumsSliverAppBar(), _AlbumList()]));
   }
 }
 
@@ -37,10 +31,7 @@ class _AlbumList extends ConsumerWidget {
     return albums.when(
       loading: () => const SliverToBoxAdapter(
         child: Center(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: CircularProgressIndicator(),
-          ),
+          child: Padding(padding: EdgeInsets.all(20.0), child: CircularProgressIndicator()),
         ),
       ),
       error: (error, stack) => SliverToBoxAdapter(
@@ -49,21 +40,16 @@ class _AlbumList extends ConsumerWidget {
             padding: const EdgeInsets.all(20.0),
             child: Text(
               'Error loading albums: $error, stack: $stack',
-              style: TextStyle(
-                color: context.colorScheme.error,
-              ),
+              style: TextStyle(color: context.colorScheme.error),
             ),
           ),
         ),
       ),
       data: (albums) {
         if (albums.isEmpty) {
-          return const SliverToBoxAdapter(
+          return SliverToBoxAdapter(
             child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Text('No albums found'),
-              ),
+              child: Padding(padding: const EdgeInsets.all(20.0), child: Text('no_albums_yet'.tr())),
             ),
           );
         }
@@ -77,33 +63,14 @@ class _AlbumList extends ConsumerWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: LargeLeadingTile(
-                  leadingPadding: const EdgeInsets.only(
-                    right: 16,
-                  ),
-                  leading: SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: LocalAlbumThumbnail(
-                      albumId: album.id,
-                    ),
-                  ),
-                  title: Text(
-                    album.name,
-                    style: context.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  leadingPadding: const EdgeInsets.only(right: 16),
+                  leading: SizedBox(width: 80, height: 80, child: LocalAlbumThumbnail(albumId: album.id)),
+                  title: Text(album.name, style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                   subtitle: Text(
-                    'items_count'.t(
-                      context: context,
-                      args: {'count': album.assetCount},
-                    ),
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.colorScheme.onSurfaceSecondary,
-                    ),
+                    'items_count'.t(context: context, args: {'count': album.assetCount}),
+                    style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                   ),
-                  onTap: () =>
-                      context.pushRoute(LocalTimelineRoute(album: album)),
+                  onTap: () => context.pushRoute(LocalTimelineRoute(album: album)),
                 ),
               );
             },

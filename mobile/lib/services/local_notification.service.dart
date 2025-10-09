@@ -1,20 +1,16 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final localNotificationService = Provider(
-  (ref) => LocalNotificationService(
-    ref.watch(notificationPermissionProvider),
-    ref,
-  ),
+  (ref) => LocalNotificationService(ref.watch(notificationPermissionProvider), ref),
 );
 
 class LocalNotificationService {
-  final FlutterLocalNotificationsPlugin _localNotificationPlugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localNotificationPlugin = FlutterLocalNotificationsPlugin();
   final PermissionStatus _permissionStatus;
   final Ref ref;
 
@@ -29,17 +25,14 @@ class LocalNotificationService {
   static const cancelUploadActionID = 'cancel_upload';
 
   Future<void> setup() async {
-    const androidSetting =
-        AndroidInitializationSettings('@drawable/notification_icon');
+    const androidSetting = AndroidInitializationSettings('@drawable/notification_icon');
     const iosSetting = DarwinInitializationSettings();
 
-    const initSettings =
-        InitializationSettings(android: androidSetting, iOS: iosSetting);
+    const initSettings = InitializationSettings(android: androidSetting, iOS: iosSetting);
 
     await _localNotificationPlugin.initialize(
       initSettings,
-      onDidReceiveNotificationResponse:
-          _onDidReceiveForegroundNotificationResponse,
+      onDidReceiveNotificationResponse: _onDidReceiveForegroundNotificationResponse,
     );
   }
 
@@ -50,10 +43,7 @@ class LocalNotificationService {
     AndroidNotificationDetails androidNotificationDetails,
     DarwinNotificationDetails iosNotificationDetails,
   ) async {
-    final notificationDetails = NotificationDetails(
-      android: androidNotificationDetails,
-      iOS: iosNotificationDetails,
-    );
+    final notificationDetails = NotificationDetails(android: androidNotificationDetails, iOS: iosNotificationDetails);
 
     if (_permissionStatus == PermissionStatus.granted) {
       await _localNotificationPlugin.show(id, title, body, notificationDetails);
@@ -99,20 +89,12 @@ class LocalNotificationService {
             ongoing: true,
             actions: (showActions ?? false)
                 ? <AndroidNotificationAction>[
-                    const AndroidNotificationAction(
-                      cancelUploadActionID,
-                      'Cancel',
-                      showsUserInterface: true,
-                    ),
+                    const AndroidNotificationAction(cancelUploadActionID, 'Cancel', showsUserInterface: true),
                   ]
                 : null,
           )
         // Non-progress notification
-        : AndroidNotificationDetails(
-            androidChannelID,
-            androidChannelName,
-            playSound: false,
-          );
+        : AndroidNotificationDetails(androidChannelID, androidChannelName, playSound: false);
 
     final iosNotificationDetails = DarwinNotificationDetails(
       presentBadge: true,
@@ -120,23 +102,15 @@ class LocalNotificationService {
       presentBanner: presentBanner,
     );
 
-    return _showOrUpdateNotification(
-      notificationlId,
-      title,
-      body,
-      androidNotificationDetails,
-      iosNotificationDetails,
-    );
+    return _showOrUpdateNotification(notificationlId, title, body, androidNotificationDetails, iosNotificationDetails);
   }
 
-  void _onDidReceiveForegroundNotificationResponse(
-    NotificationResponse notificationResponse,
-  ) {
+  void _onDidReceiveForegroundNotificationResponse(NotificationResponse notificationResponse) {
     // Handle notification actions
     switch (notificationResponse.actionId) {
       case cancelUploadActionID:
         {
-          debugPrint("User cancelled manual upload operation");
+          dPrint(() => "User cancelled manual upload operation");
           ref.read(manualUploadProvider.notifier).cancelBackup();
         }
     }

@@ -16,7 +16,10 @@ class SyncApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'DELETE /sync/ack' operation and returns the [Response].
+  /// This endpoint requires the `syncCheckpoint.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
@@ -45,6 +48,8 @@ class SyncApi {
     );
   }
 
+  /// This endpoint requires the `syncCheckpoint.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
@@ -152,7 +157,9 @@ class SyncApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /sync/ack' operation and returns the [Response].
+  /// This endpoint requires the `syncCheckpoint.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getSyncAckWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
@@ -178,6 +185,7 @@ class SyncApi {
     );
   }
 
+  /// This endpoint requires the `syncCheckpoint.read` permission.
   Future<List<SyncAckDto>?> getSyncAck() async {
     final response = await getSyncAckWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -196,7 +204,10 @@ class SyncApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /sync/stream' operation and returns the [Response].
+  /// This endpoint requires the `sync.stream` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
@@ -225,6 +236,8 @@ class SyncApi {
     );
   }
 
+  /// This endpoint requires the `sync.stream` permission.
+  ///
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
@@ -235,7 +248,10 @@ class SyncApi {
     }
   }
 
-  /// Performs an HTTP 'POST /sync/ack' operation and returns the [Response].
+  /// This endpoint requires the `syncCheckpoint.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):
@@ -264,6 +280,8 @@ class SyncApi {
     );
   }
 
+  /// This endpoint requires the `syncCheckpoint.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):

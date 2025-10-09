@@ -1,3 +1,4 @@
+import 'package:immich_mobile/constants/errors.dart';
 import 'package:immich_mobile/mixins/error_logger.mixin.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/repositories/activity_api.repository.dart';
@@ -11,10 +12,7 @@ class ActivityService with ErrorLoggerMixin {
 
   ActivityService(this._activityApiRepository);
 
-  Future<List<Activity>> getAllActivities(
-    String albumId, {
-    String? assetId,
-  }) async {
+  Future<List<Activity>> getAllActivities(String albumId, {String? assetId}) async {
     return logError(
       () => _activityApiRepository.getAll(albumId, assetId: assetId),
       defaultValue: [],
@@ -33,7 +31,11 @@ class ActivityService with ErrorLoggerMixin {
   Future<bool> removeActivity(String id) async {
     return logError(
       () async {
-        await _activityApiRepository.delete(id);
+        try {
+          await _activityApiRepository.delete(id);
+        } on NoResponseDtoError {
+          return true;
+        }
         return true;
       },
       defaultValue: false,
@@ -41,19 +43,9 @@ class ActivityService with ErrorLoggerMixin {
     );
   }
 
-  AsyncFuture<Activity> addActivity(
-    String albumId,
-    ActivityType type, {
-    String? assetId,
-    String? comment,
-  }) async {
+  AsyncFuture<Activity> addActivity(String albumId, ActivityType type, {String? assetId, String? comment}) async {
     return guardError(
-      () => _activityApiRepository.create(
-        albumId,
-        type,
-        assetId: assetId,
-        comment: comment,
-      ),
+      () => _activityApiRepository.create(albumId, type, assetId: assetId, comment: comment),
       errorMessage: "Failed to create $type for album $albumId",
     );
   }

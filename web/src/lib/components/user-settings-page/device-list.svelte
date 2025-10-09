@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, modalManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { handleError } from '../../utils/handle-error';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
@@ -57,16 +56,16 @@
 <section class="my-4">
   {#if currentDevice}
     <div class="mb-6">
-      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">
-        {$t('current_device').toUpperCase()}
+      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+        {$t('current_device')}
       </h3>
       <DeviceCard device={currentDevice} />
     </div>
   {/if}
   {#if otherDevices.length > 0}
     <div class="mb-6">
-      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">
-        {$t('other_devices').toUpperCase()}
+      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+        {$t('other_devices')}
       </h3>
       {#each otherDevices as device, index (device.id)}
         <DeviceCard {device} onDelete={() => handleDelete(device)} />
@@ -75,8 +74,8 @@
         {/if}
       {/each}
     </div>
-    <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">
-      {$t('log_out_all_devices').toUpperCase()}
+    <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+      {$t('log_out_all_devices')}
     </h3>
     <div class="flex justify-end">
       <Button shape="round" color="danger" size="small" onclick={handleDeleteAll}>{$t('log_out_all_devices')}</Button>

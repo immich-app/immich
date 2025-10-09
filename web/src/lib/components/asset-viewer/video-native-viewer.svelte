@@ -1,18 +1,15 @@
 <script lang="ts">
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { loopVideo as loopVideoPreference, videoViewerMuted, videoViewerVolume } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
-  import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
-  import type { SwipeCustomEvent } from 'svelte-gestures';
-  import { swipe } from 'svelte-gestures';
-  import { t } from 'svelte-i18n';
+  import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -40,7 +37,6 @@
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
   let assetFileUrl = $state('');
-  let forceMuted = $state(false);
   let isScrubbing = $state(false);
   let showVideo = $state(false);
 
@@ -49,7 +45,6 @@
     showVideo = true;
     assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
     if (videoPlayer) {
-      forceMuted = false;
       videoPlayer.load();
     }
   });
@@ -67,23 +62,27 @@
         onVideoStarted();
       }
     } catch (error) {
-      if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
+      if (error instanceof DOMException && error.name === 'NotAllowedError') {
         await tryForceMutedPlay(video);
         return;
       }
 
-      handleError(error, $t('errors.unable_to_play_video'));
+      // auto-play failed
     } finally {
       isLoading = false;
     }
   };
 
   const tryForceMutedPlay = async (video: HTMLVideoElement) => {
+    if (video.muted) {
+      return;
+    }
+
     try {
       video.muted = true;
       await handleCanPlay(video);
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_play_video'));
+    } catch {
+      // muted auto-play failed
     }
   };
 
@@ -130,22 +129,17 @@
         playsinline
         controls
         class="h-full object-contain"
-        use:swipe={() => ({})}
-        onswipe={onSwipe}
+        {...useSwipe(onSwipe)}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}
         onended={onVideoEnded}
-        onvolumechange={(e) => {
-          if (!forceMuted) {
-            $videoViewerMuted = e.currentTarget.muted;
-          }
-        }}
+        onvolumechange={(e) => ($videoViewerMuted = e.currentTarget.muted)}
         onseeking={() => (isScrubbing = true)}
         onseeked={() => (isScrubbing = false)}
         onplaying={(e) => {
           e.currentTarget.focus();
         }}
         onclose={() => onClose()}
-        muted={forceMuted || $videoViewerMuted}
+        muted={$videoViewerMuted}
         bind:volume={$videoViewerVolume}
         poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
         src={assetFileUrl}

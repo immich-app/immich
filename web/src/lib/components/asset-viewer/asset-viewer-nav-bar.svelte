@@ -1,14 +1,17 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import CastButton from '$lib/cast/cast-button.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
+  import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
+  import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/remove-asset-from-stack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
@@ -21,6 +24,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
@@ -40,6 +45,7 @@
   import {
     mdiAlertOutline,
     mdiCogRefreshOutline,
+    mdiCompare,
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
@@ -97,6 +103,7 @@
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   let isLocked = $derived(asset.visibility === AssetVisibility.Locked);
+  let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
 
   // $: showEditorButton =
   //   isOwner &&
@@ -146,7 +153,7 @@
         onclick={onZoomImage}
       />
     {/if}
-    {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
+    {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image && $photoViewerImgElement}
       <IconButton
         color="secondary"
         variant="ghost"
@@ -190,18 +197,22 @@
         {/if}
 
         {#if isOwner}
+          <AddToStackAction {asset} {stack} {onAction} />
           {#if stack}
             <UnstackAction {stack} {onAction} />
             <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
             {#if stack?.primaryAssetId !== asset.id}
               <SetStackPrimaryAsset {stack} {asset} {onAction} />
+              {#if stack?.assets?.length > 2}
+                <RemoveAssetFromStack {asset} {stack} {onAction} />
+              {/if}
             {/if}
           {/if}
           {#if album}
             <SetAlbumCoverAction {asset} {album} />
           {/if}
           {#if person}
-            <SetFeaturedPhotoAction {asset} {person} />
+            <SetFeaturedPhotoAction {asset} {person} {onAction} />
           {/if}
           {#if asset.type === AssetTypeEnum.Image && !isLocked}
             <SetProfilePictureAction {asset} />
@@ -217,8 +228,16 @@
             {#if !asset.isArchived && !asset.isTrashed}
               <MenuOption
                 icon={mdiImageSearch}
-                onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
+                onClick={() => goto(resolve(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`))}
                 text={$t('view_in_timeline')}
+              />
+            {/if}
+            {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
+              <MenuOption
+                icon={mdiCompare}
+                onClick={() =>
+                  goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
+                text={$t('view_similar_photos')}
               />
             {/if}
           {/if}

@@ -22,11 +22,13 @@ import {
   Validate,
   ValidateBy,
   ValidateIf,
+  ValidationArguments,
   ValidationOptions,
   ValidatorConstraint,
   ValidatorConstraintInterface,
   buildMessage,
   isDateString,
+  isDefined,
 } from 'class-validator';
 import { CronJob } from 'cron';
 import { DateTime } from 'luxon';
@@ -63,11 +65,35 @@ export class FileNotEmptyValidator extends FileValidator {
   }
 }
 
+type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
+export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
+  const { optional, each, nullable, ...apiPropertyOptions } = {
+    optional: false,
+    each: false,
+    nullable: false,
+    ...options,
+  };
+  return applyDecorators(
+    IsUUID('4', { each }),
+    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
+    optional ? Optional({ nullable }) : IsNotEmpty(),
+    each ? IsArray() : IsString(),
+  );
+};
+
 export class UUIDParamDto {
   @IsNotEmpty()
   @IsUUID('4')
   @ApiProperty({ format: 'uuid' })
   id!: string;
+}
+
+export class UUIDAssetIDParamDto {
+  @ValidateUUID()
+  id!: string;
+
+  @ValidateUUID()
+  assetId!: string;
 }
 
 type PinCodeOptions = { optional?: boolean } & OptionalOptions;
@@ -122,6 +148,27 @@ export function Optional({ nullable, emptyToNull, ...validationOptions }: Option
   return applyDecorators(...decorators);
 }
 
+export function IsNotSiblingOf(siblings: string[], validationOptions?: ValidationOptions) {
+  return ValidateBy(
+    {
+      name: 'isNotSiblingOf',
+      constraints: siblings,
+      validator: {
+        validate(value: any, args: ValidationArguments) {
+          if (!isDefined(value)) {
+            return true;
+          }
+          return args.constraints.filter((prop) => isDefined((args.object as any)[prop])).length === 0;
+        },
+        defaultMessage: (args: ValidationArguments) => {
+          return `${args.property} cannot exist alongside any of the following properties: ${args.constraints.join(', ')}`;
+        },
+      },
+    },
+    validationOptions,
+  );
+}
+
 export const ValidateHexColor = () => {
   const decorators = [
     IsHexColor(),
@@ -129,22 +176,6 @@ export const ValidateHexColor = () => {
   ];
 
   return applyDecorators(...decorators);
-};
-
-type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
-export const ValidateUUID = (options?: UUIDOptions & ApiPropertyOptions) => {
-  const { optional, each, nullable, ...apiPropertyOptions } = {
-    optional: false,
-    each: false,
-    nullable: false,
-    ...options,
-  };
-  return applyDecorators(
-    IsUUID('4', { each }),
-    ApiProperty({ format: 'uuid', ...apiPropertyOptions }),
-    optional ? Optional({ nullable }) : IsNotEmpty(),
-    each ? IsArray() : IsString(),
-  );
 };
 
 type DateOptions = { optional?: boolean; nullable?: boolean; format?: 'date' | 'date-time' };
@@ -175,6 +206,18 @@ export const ValidateDate = (options?: DateOptions & ApiPropertyOptions) => {
 
   if (optional) {
     decorators.push(Optional({ nullable }));
+  }
+
+  return applyDecorators(...decorators);
+};
+
+type StringOptions = { optional?: boolean; nullable?: boolean; trim?: boolean };
+export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => {
+  const { optional, nullable, trim, ...apiPropertyOptions } = options || {};
+  const decorators = [ApiProperty(apiPropertyOptions), IsString(), optional ? Optional({ nullable }) : IsNotEmpty()];
+
+  if (trim) {
+    decorators.push(Transform(({ value }: { value: string }) => value?.trim()));
   }
 
   return applyDecorators(...decorators);

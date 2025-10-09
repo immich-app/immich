@@ -38,7 +38,11 @@ from
     select
       "album".*,
       coalesce(
-        json_agg("assets") filter (
+        json_agg(
+          "assets"
+          order by
+            "assets"."fileCreatedAt" asc
+        ) filter (
           where
             "assets"."id" is not null
         ),
@@ -188,9 +192,47 @@ from
   "shared_link"
   left join "album" on "album"."id" = "shared_link"."albumId"
 where
-  "shared_link"."key" = $1
-  and "album"."deletedAt" is null
+  "album"."deletedAt" is null
   and (
-    "shared_link"."type" = $2
+    "shared_link"."type" = $1
     or "album"."id" is not null
   )
+  and "shared_link"."key" = $2
+
+-- SharedLinkRepository.getBySlug
+select
+  "shared_link"."id",
+  "shared_link"."userId",
+  "shared_link"."expiresAt",
+  "shared_link"."showExif",
+  "shared_link"."allowUpload",
+  "shared_link"."allowDownload",
+  "shared_link"."password",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "user"."id",
+          "user"."name",
+          "user"."email",
+          "user"."isAdmin",
+          "user"."quotaUsageInBytes",
+          "user"."quotaSizeInBytes"
+        from
+          "user"
+        where
+          "user"."id" = "shared_link"."userId"
+      ) as obj
+  ) as "user"
+from
+  "shared_link"
+  left join "album" on "album"."id" = "shared_link"."albumId"
+where
+  "album"."deletedAt" is null
+  and (
+    "shared_link"."type" = $1
+    or "album"."id" is not null
+  )
+  and "shared_link"."slug" = $2

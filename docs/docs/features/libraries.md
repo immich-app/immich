@@ -1,5 +1,9 @@
 # External Libraries
 
+:::info
+Currently an external library can only belong to a single user which is selected when the library is initially created.
+:::
+
 External libraries track assets stored in the filesystem outside of Immich. When the external library is scanned, Immich will load videos and photos from disk and create the corresponding assets. These assets will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc. Later, if a file is modified outside of Immich, you need to scan the library for the changes to show up.
 
 If an external asset is deleted from disk, Immich will move it to trash on rescan. To restore the asset, you need to restore the original file. After 30 days the file will be removed from trash, and any changes to metadata within Immich will be lost.
@@ -33,7 +37,7 @@ Sometimes, an external library will not scan correctly. This can happen if Immic
 - Are the permissions set correctly?
 - Make sure you are using forward slashes (`/`) and not backward slashes.
 
-To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/data/import/photos`, check it with `ls /data/import/photos`. Do the same check for the same in any microservices containers.
+To validate that Immich can reach your external library, start a shell inside the container. Run `docker exec -it immich_server bash` to a bash shell. If your import path is `/mnt/photos`, check it with `ls /mnt/photos`. If you are using a dedicated microservices container, make sure to add the same mount point and check for availability within the microservices container as well.
 
 ### Exclusion Patterns
 
@@ -58,7 +62,7 @@ Internally, Immich uses the [glob](https://www.npmjs.com/package/glob) package t
 
 This feature is considered experimental and for advanced users only. If enabled, it will allow automatic watching of the filesystem which means new assets are automatically imported to Immich without needing to rescan.
 
-If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a periodic library refresh to pull in your changes.
+If your photos are on a network drive, automatic file watching likely won't work. In that case, you will have to rely on a [periodic library refresh](#set-custom-scan-interval) to pull in your changes.
 
 #### Troubleshooting
 
@@ -72,7 +76,9 @@ In rare cases, the library watcher can hang, preventing Immich from starting up.
 
 ### Nightly job
 
-There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
+There is an automatic scan job that is scheduled to run once a day. Its schedule is configurable, see [Set Custom Scan Interval](#set-custom-scan-interval).
+
+This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library management page.
 
 ## Usage
 
@@ -91,7 +97,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 ```diff title="docker-compose.yml"
   immich-server:
     volumes:
-      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}:/data
 +     - /mnt/nas/christmas-trip:/mnt/media/christmas-trip:ro
 +     - /home/user/old-pics:/mnt/media/old-pics:ro
 +     - /mnt/media/videos:/mnt/media/videos:ro
@@ -101,7 +107,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 
 :::tip
 The `ro` flag at the end only gives read-only access to the volumes.
-This will disallow the images from being deleted in the web UI, or adding metadata to the library ([XMP sidecars](/docs/features/xmp-sidecars)).
+This will disallow the images from being deleted in the web UI, or adding metadata to the library ([XMP sidecars](/features/xmp-sidecars)).
 :::
 
 :::info

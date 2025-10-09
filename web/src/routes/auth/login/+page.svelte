@@ -30,8 +30,8 @@
     eventManager.emit('auth.login', user);
   };
 
-  const onFirstLogin = async () => await goto(AppRoute.AUTH_CHANGE_PASSWORD);
-  const onOnboarding = async () => await goto(AppRoute.AUTH_ONBOARDING);
+  const onFirstLogin = () => goto(AppRoute.AUTH_CHANGE_PASSWORD);
+  const onOnboarding = () => goto(AppRoute.AUTH_ONBOARDING);
 
   onMount(async () => {
     if (!$featureFlags.oauth) {
@@ -54,6 +54,7 @@
         console.error('Error [login-form] [oauth.callback]', error);
         oauthError = getServerErrorMessage(error) || $t('errors.unable_to_complete_oauth_login');
         oauthLoading = false;
+        return;
       }
     }
 
@@ -155,9 +156,9 @@
           <div class="inline-flex w-full items-center justify-center my-4">
             <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
             <span
-              class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white"
+              class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white uppercase"
             >
-              {$t('or').toUpperCase()}
+              {$t('or')}
             </span>
           </div>
         {/if}

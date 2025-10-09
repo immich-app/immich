@@ -6,6 +6,9 @@ import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
   AssetJobsDto,
+  AssetMetadataResponseDto,
+  AssetMetadataRouteParams,
+  AssetMetadataUpsertDto,
   AssetStatsDto,
   AssetStatsResponseDto,
   DeviceIdDto,
@@ -13,7 +16,7 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { RouteKey } from 'src/enum';
+import { Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
 import { UUIDParamDto } from 'src/validation';
@@ -24,7 +27,7 @@ export class AssetController {
   constructor(private service: AssetService) {}
 
   @Get('random')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetRead })
   @EndpointLifecycle({ deprecatedAt: 'v1.116.0' })
   getRandom(@Auth() auth: AuthDto, @Query() dto: RandomAssetsDto): Promise<AssetResponseDto[]> {
     return this.service.getRandom(auth, dto.count ?? 1);
@@ -44,7 +47,7 @@ export class AssetController {
   }
 
   @Get('statistics')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetStatistics })
   getAssetStatistics(@Auth() auth: AuthDto, @Query() dto: AssetStatsDto): Promise<AssetStatsResponseDto> {
     return this.service.getStatistics(auth, dto);
   }
@@ -57,32 +60,64 @@ export class AssetController {
   }
 
   @Put()
+  @Authenticated({ permission: Permission.AssetUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
   updateAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkUpdateDto): Promise<void> {
     return this.service.updateAll(auth, dto);
   }
 
   @Delete()
+  @Authenticated({ permission: Permission.AssetDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
   deleteAssets(@Auth() auth: AuthDto, @Body() dto: AssetBulkDeleteDto): Promise<void> {
     return this.service.deleteAll(auth, dto);
   }
 
   @Get(':id')
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   @Put(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.AssetUpdate })
   updateAsset(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Body() dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);
+  }
+
+  @Get(':id/metadata')
+  @Authenticated({ permission: Permission.AssetRead })
+  getAssetMetadata(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetMetadataResponseDto[]> {
+    return this.service.getMetadata(auth, id);
+  }
+
+  @Put(':id/metadata')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  updateAssetMetadata(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: AssetMetadataUpsertDto,
+  ): Promise<AssetMetadataResponseDto[]> {
+    return this.service.upsertMetadata(auth, id, dto);
+  }
+
+  @Get(':id/metadata/:key')
+  @Authenticated({ permission: Permission.AssetRead })
+  getAssetMetadataByKey(
+    @Auth() auth: AuthDto,
+    @Param() { id, key }: AssetMetadataRouteParams,
+  ): Promise<AssetMetadataResponseDto> {
+    return this.service.getMetadataByKey(auth, id, key);
+  }
+
+  @Delete(':id/metadata/:key')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteAssetMetadata(@Auth() auth: AuthDto, @Param() { id, key }: AssetMetadataRouteParams): Promise<void> {
+    return this.service.deleteMetadataByKey(auth, id, key);
   }
 }

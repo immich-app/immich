@@ -5,11 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
   NotificationPermissionNotifier()
-      : super(
-          Platform.isAndroid
-              ? PermissionStatus.granted
-              : PermissionStatus.restricted,
-        ) {
+    : super(Platform.isAndroid ? PermissionStatus.granted : PermissionStatus.restricted) {
     // Sets the initial state
     getNotificationPermission().then((p) => state = p);
   }
@@ -40,7 +36,6 @@ class NotificationPermissionNotifier extends StateNotifier<PermissionStatus> {
   }
 }
 
-final notificationPermissionProvider =
-    StateNotifierProvider<NotificationPermissionNotifier, PermissionStatus>(
+final notificationPermissionProvider = StateNotifierProvider<NotificationPermissionNotifier, PermissionStatus>(
   (ref) => NotificationPermissionNotifier(),
 );

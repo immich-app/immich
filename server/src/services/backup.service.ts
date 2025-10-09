@@ -53,11 +53,16 @@ export class BackupService extends BaseService {
 
     const backupsFolder = StorageCore.getBaseFolder(StorageFolder.Backups);
     const files = await this.storageRepository.readdir(backupsFolder);
-    const failedBackups = files.filter((file) => file.match(/immich-db-backup-\d+\.sql\.gz\.tmp$/));
+    const failedBackups = files.filter((file) => file.match(/immich-db-backup-.*\.sql\.gz\.tmp$/));
     const backups = files
-      .filter((file) => file.match(/immich-db-backup-\d+\.sql\.gz$/))
+      .filter((file) => {
+        const oldBackupStyle = file.match(/immich-db-backup-\d+\.sql\.gz$/);
+        //immich-db-backup-20250729T114018-v1.136.0-pg14.17.sql.gz
+        const newBackupStyle = file.match(/immich-db-backup-\d{8}T\d{6}-v.*-pg.*\.sql\.gz$/);
+        return oldBackupStyle || newBackupStyle;
+      })
       .sort()
-      .reverse();
+      .toReversed();
 
     const toDelete = backups.slice(config.keepLastAmount);
     toDelete.push(...failedBackups);
@@ -113,7 +118,7 @@ export class BackupService extends BaseService {
           {
             env: {
               PATH: process.env.PATH,
-              PGPASSWORD: isUrlConnection ? undefined : config.password,
+              PGPASSWORD: isUrlConnection ? new URL(config.url).password : config.password,
             },
           },
         );
@@ -127,12 +132,12 @@ export class BackupService extends BaseService {
         gzip.stdout.pipe(fileStream);
 
         pgdump.on('error', (err) => {
-          this.logger.error('Backup failed with error', err);
+          this.logger.error(`Backup failed with error: ${err}`);
           reject(err);
         });
 
         gzip.on('error', (err) => {
-          this.logger.error('Gzip failed with error', err);
+          this.logger.error(`Gzip failed with error: ${err}`);
           reject(err);
         });
 
@@ -170,10 +175,10 @@ export class BackupService extends BaseService {
       });
       await this.storageRepository.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
     } catch (error) {
-      this.logger.error('Database Backup Failure', error);
+      this.logger.error(`Database Backup Failure: ${error}`);
       await this.storageRepository
         .unlink(backupFilePath)
-        .catch((error) => this.logger.error('Failed to delete failed backup file', error));
+        .catch((error) => this.logger.error(`Failed to delete failed backup file: ${error}`));
       throw error;
     }
 

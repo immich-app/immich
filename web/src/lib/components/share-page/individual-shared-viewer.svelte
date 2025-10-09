@@ -2,10 +2,13 @@
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
+  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
+  import RemoveFromSharedLink from '$lib/components/timeline/actions/RemoveFromSharedLinkAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { handlePromiseError } from '$lib/utils';
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
@@ -13,16 +16,13 @@
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
-  import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import { IconButton } from '@immich/ui';
+  import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../asset-viewer/asset-viewer.svelte';
-  import DownloadAction from '../photos-page/actions/download-action.svelte';
-  import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
-  import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -54,11 +54,11 @@
         ? openFileUploadDialog()
         : fileUploadHandler({ files }));
       const data = await addSharedLinkAssets({
+        ...authManager.params,
         id: sharedLink.id,
         assetIdsDto: {
           assetIds: results.filter((id) => !!id) as string[],
         },
-        key: authManager.key,
       });
 
       const added = data.filter((item) => item.success).length;
@@ -135,7 +135,7 @@
               variant="ghost"
               aria-label={$t('download')}
               onclick={downloadAssets}
-              icon={mdiFolderDownloadOutline}
+              icon={mdiDownload}
             />
           {/if}
         {/snippet}
@@ -145,7 +145,7 @@
       <GalleryViewer {assets} {assetInteraction} {viewport} />
     </section>
   {:else if assets.length === 1}
-    {#await getAssetInfo({ id: assets[0].id, key: authManager.key }) then asset}
+    {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
       <AssetViewer
         {asset}
         showCloseButton={false}

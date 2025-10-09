@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { Button } from '@immich/ui';
+  import { Button, Icon } from '@immich/ui';
   import { mdiArrowLeft, mdiArrowRight, mdiCheck } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -31,17 +30,17 @@
 
 <div
   id="onboarding-card"
-  class="flex w-full max-w-4xl flex-col gap-4 rounded-3xl border-2 border-gray-500 px-8 py-8 dark:border-immich-dark-gray dark:bg-immich-dark-gray text-black dark:text-immich-dark-fg bg-gray-50"
+  class="flex w-full max-w-4xl flex-col gap-4 rounded-3xl border-2 border-gray-500 px-8 py-8 dark:border-gray-700 dark:bg-immich-dark-gray text-black dark:text-immich-dark-fg bg-gray-50"
   in:fade={{ duration: 250 }}
 >
   {#if title || icon}
     <div class="flex gap-2 items-center justify-center w-fit">
       {#if icon}
-        <Icon path={icon} size="30" class="text-immich-primary dark:text-immich-dark-primary" />
+        <Icon {icon} size="30" class="text-primary" />
       {/if}
       {#if title}
-        <p class="text-xl text-immich-primary dark:text-immich-dark-primary">
-          {title.toUpperCase()}
+        <p class="uppercase text-xl text-primary">
+          {title}
         </p>
       {/if}
     </div>

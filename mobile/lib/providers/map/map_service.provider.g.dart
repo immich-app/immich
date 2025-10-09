@@ -13,8 +13,9 @@ String _$mapServiceHash() => r'ffc8f38b726083452b9df236ed58903879348987';
 final mapServiceProvider = AutoDisposeProvider<MapService>.internal(
   mapService,
   name: r'mapServiceProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$mapServiceHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$mapServiceHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

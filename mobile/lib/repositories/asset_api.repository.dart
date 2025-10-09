@@ -13,6 +13,7 @@ final assetApiRepositoryProvider = Provider(
     ref.watch(apiServiceProvider).assetsApi,
     ref.watch(apiServiceProvider).searchApi,
     ref.watch(apiServiceProvider).stacksApi,
+    ref.watch(apiServiceProvider).trashApi,
   ),
 );
 
@@ -20,13 +21,12 @@ class AssetApiRepository extends ApiRepository {
   final AssetsApi _api;
   final SearchApi _searchApi;
   final StacksApi _stacksApi;
+  final TrashApi _trashApi;
 
-  AssetApiRepository(this._api, this._searchApi, this._stacksApi);
+  AssetApiRepository(this._api, this._searchApi, this._stacksApi, this._trashApi);
 
   Future<Asset> update(String id, {String? description}) async {
-    final response = await checkNull(
-      _api.updateAsset(id, UpdateAssetDto(description: description)),
-    );
+    final response = await checkNull(_api.updateAsset(id, UpdateAssetDto(description: description)));
     return Asset.remote(response);
   }
 
@@ -37,13 +37,7 @@ class AssetApiRepository extends ApiRepository {
     int currentPage = 1;
     while (hasNext) {
       final response = await checkNull(
-        _searchApi.searchAssets(
-          MetadataSearchDto(
-            personIds: personIds,
-            page: currentPage,
-            size: 1000,
-          ),
-        ),
+        _searchApi.searchAssets(MetadataSearchDto(personIds: personIds, page: currentPage, size: 1000)),
       );
       result.addAll(response.assets.items.map(Asset.remote));
       hasNext = response.assets.nextPage != null;
@@ -56,40 +50,28 @@ class AssetApiRepository extends ApiRepository {
     return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: force));
   }
 
-  Future<void> updateVisibility(
-    List<String> ids,
-    AssetVisibilityEnum visibility,
-  ) async {
-    return _api.updateAssets(
-      AssetBulkUpdateDto(ids: ids, visibility: _mapVisibility(visibility)),
-    );
+  Future<void> restoreTrash(List<String> ids) async {
+    await _trashApi.restoreAssets(BulkIdsDto(ids: ids));
   }
 
-  Future<void> updateFavorite(
-    List<String> ids,
-    bool isFavorite,
-  ) async {
-    return _api.updateAssets(
-      AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite),
-    );
+  Future<void> updateVisibility(List<String> ids, AssetVisibilityEnum visibility) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, visibility: _mapVisibility(visibility)));
   }
 
-  Future<void> updateLocation(
-    List<String> ids,
-    LatLng location,
-  ) async {
-    return _api.updateAssets(
-      AssetBulkUpdateDto(
-        ids: ids,
-        latitude: location.latitude,
-        longitude: location.longitude,
-      ),
-    );
+  Future<void> updateFavorite(List<String> ids, bool isFavorite) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite));
+  }
+
+  Future<void> updateLocation(List<String> ids, LatLng location) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, latitude: location.latitude, longitude: location.longitude));
+  }
+
+  Future<void> updateDateTime(List<String> ids, DateTime dateTime) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: dateTime.toIso8601String()));
   }
 
   Future<StackResponse> stack(List<String> ids) async {
-    final responseDto =
-        await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
+    final responseDto = await checkNull(_stacksApi.createStack(StackCreateDto(assetIds: ids)));
 
     return responseDto.toStack();
   }
@@ -103,11 +85,11 @@ class AssetApiRepository extends ApiRepository {
   }
 
   _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
-        AssetVisibilityEnum.timeline => AssetVisibility.timeline,
-        AssetVisibilityEnum.hidden => AssetVisibility.hidden,
-        AssetVisibilityEnum.locked => AssetVisibility.locked,
-        AssetVisibilityEnum.archive => AssetVisibility.archive,
-      };
+    AssetVisibilityEnum.timeline => AssetVisibility.timeline,
+    AssetVisibilityEnum.hidden => AssetVisibility.hidden,
+    AssetVisibilityEnum.locked => AssetVisibility.locked,
+    AssetVisibilityEnum.archive => AssetVisibility.archive,
+  };
 
   Future<String?> getAssetMIMEType(String assetId) async {
     final response = await checkNull(_api.getAssetInfo(assetId));
@@ -115,14 +97,14 @@ class AssetApiRepository extends ApiRepository {
     // we need to get the MIME of the thumbnail once that gets added to the API
     return response.originalMimeType;
   }
+
+  Future<void> updateDescription(String assetId, String description) {
+    return _api.updateAsset(assetId, UpdateAssetDto(description: description));
+  }
 }
 
 extension on StackResponseDto {
   StackResponse toStack() {
-    return StackResponse(
-      id: id,
-      primaryAssetId: primaryAssetId,
-      assetIds: assets.map((asset) => asset.id).toList(),
-    );
+    return StackResponse(id: id, primaryAssetId: primaryAssetId, assetIds: assets.map((asset) => asset.id).toList());
   }
 }

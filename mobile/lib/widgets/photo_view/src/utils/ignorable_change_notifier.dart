@@ -8,8 +8,7 @@ import 'package:flutter/foundation.dart';
 /// The common collection of listeners inherited from [ChangeNotifier] will be fired
 /// every time.
 class IgnorableChangeNotifier extends ChangeNotifier {
-  ObserverList<VoidCallback>? _ignorableListeners =
-      ObserverList<VoidCallback>();
+  ObserverList<VoidCallback>? _ignorableListeners = ObserverList<VoidCallback>();
 
   bool _debugAssertNotDisposed() {
     assert(() {
@@ -51,8 +50,7 @@ class IgnorableChangeNotifier extends ChangeNotifier {
   void notifyListeners() {
     super.notifyListeners();
     if (_ignorableListeners != null) {
-      final List<VoidCallback> localListeners =
-          List<VoidCallback>.from(_ignorableListeners!);
+      final List<VoidCallback> localListeners = List<VoidCallback>.from(_ignorableListeners!);
       for (VoidCallback listener in localListeners) {
         try {
           if (_ignorableListeners!.contains(listener)) {
@@ -60,11 +58,7 @@ class IgnorableChangeNotifier extends ChangeNotifier {
           }
         } catch (exception, stack) {
           FlutterError.reportError(
-            FlutterErrorDetails(
-              exception: exception,
-              stack: stack,
-              library: 'Photoview library',
-            ),
+            FlutterErrorDetails(exception: exception, stack: stack, library: 'Photoview library'),
           );
         }
       }
@@ -80,8 +74,7 @@ class IgnorableChangeNotifier extends ChangeNotifier {
 
 /// Just like [ValueNotifier] except it extends [IgnorableChangeNotifier] which has
 /// listeners that wont fire when [updateIgnoring] is called.
-class IgnorableValueNotifier<T> extends IgnorableChangeNotifier
-    implements ValueListenable<T> {
+class IgnorableValueNotifier<T> extends IgnorableChangeNotifier implements ValueListenable<T> {
   IgnorableValueNotifier(this._value);
 
   @override

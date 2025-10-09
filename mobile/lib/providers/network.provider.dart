@@ -2,9 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/network.service.dart';
 
 final networkProvider = StateNotifierProvider<NetworkNotifier, String>((ref) {
-  return NetworkNotifier(
-    ref.watch(networkServiceProvider),
-  );
+  return NetworkNotifier(ref.watch(networkServiceProvider));
 });
 
 class NetworkNotifier extends StateNotifier<String> {

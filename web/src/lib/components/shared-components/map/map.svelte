@@ -8,15 +8,14 @@
 
 <script lang="ts">
   import { afterNavigate } from '$app/navigation';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
+  import { Icon, modalManager } from '@immich/ui';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
@@ -56,6 +55,7 @@
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
     showSimpleControls?: boolean;
+    autoFitBounds?: boolean;
   }
 
   let {
@@ -73,9 +73,21 @@
     popup,
     rounded = false,
     showSimpleControls = true,
+    autoFitBounds = true,
   }: Props = $props();
 
-  const initialCenter = center;
+  // Calculate initial bounds from markers once during initialization
+  const initialBounds = (() => {
+    if (!autoFitBounds || center || zoom !== undefined || !mapMarkers || mapMarkers.length === 0) {
+      return undefined;
+    }
+
+    const bounds = new maplibregl.LngLatBounds();
+    for (const marker of mapMarkers) {
+      bounds.extend([marker.lon, marker.lat]);
+    }
+    return bounds;
+  })();
 
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
@@ -189,7 +201,7 @@
 
     return await getMapMarkers(
       {
-        isArchived: includeArchived && undefined,
+        isArchived: includeArchived || undefined,
         isFavorite: onlyFavorites || undefined,
         fileCreatedAfter: fileCreatedAfter || undefined,
         fileCreatedBefore,
@@ -277,7 +289,9 @@
   style=""
   class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
   {zoom}
-  center={initialCenter}
+  {center}
+  bounds={initialBounds}
+  fitBoundsOptions={{ padding: 50, maxZoom: 15 }}
   attributionControl={false}
   diffStyleUpdates={true}
   onload={(event) => {
@@ -304,9 +318,9 @@
     {#if showSettings}
       <Control>
         <ControlGroup>
-          <ControlButton onclick={handleSettingsClick}
-            ><Icon path={mdiCog} size="100%" class="text-black/80" /></ControlButton
-          >
+          <ControlButton onclick={handleSettingsClick}>
+            <Icon icon={mdiCog} size="100%" class="text-black/80" />
+          </ControlButton>
         </ControlGroup>
       </Control>
     {/if}
@@ -315,7 +329,7 @@
       <Control position="top-right">
         <ControlGroup>
           <ControlButton onclick={() => onOpenInMapView()}>
-            <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" class="text-black/80" />
+            <Icon title={$t('open_in_map_view')} icon={mdiMap} size="100%" class="text-black/80" />
           </ControlButton>
         </ControlGroup>
       </Control>
@@ -338,7 +352,7 @@
           <div
             class="rounded-full w-[40px] h-[40px] bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
           >
-            {feature.properties?.point_count}
+            {feature.properties?.point_count?.toLocaleString()}
           </div>
         {/snippet}
       </MarkerLayer>
@@ -353,11 +367,7 @@
       >
         {#snippet children({ feature }: { feature: Feature<Geometry, GeoJsonProperties> })}
           {#if useLocationPin}
-            <Icon
-              path={mdiMapMarker}
-              size="50px"
-              class="dark:text-immich-dark-primary text-immich-primary -translate-y-[50%]"
-            />
+            <Icon icon={mdiMapMarker} size="50px" class="text-primary -translate-y-[50%]" />
           {:else}
             <img
               src={getAssetThumbnailUrl(feature.properties?.id)}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
@@ -23,6 +22,7 @@
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
+  import { Icon } from '@immich/ui';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
@@ -197,7 +197,7 @@
 <div
   class={[
     'focus-visible:outline-none flex overflow-hidden',
-    disabled ? 'bg-gray-300' : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20',
+    disabled ? 'bg-gray-300' : 'dark:bg-neutral-700 bg-neutral-200',
   ]}
   style:width="{width}px"
   style:height="{height}px"
@@ -230,15 +230,6 @@
     ]}
     data-outline
   ></div>
-  {#if (!loaded || thumbError) && asset.thumbhash}
-    <canvas
-      use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-1"
-      style:width="{width}px"
-      style:height="{height}px"
-      out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-    ></canvas>
-  {/if}
 
   <div
     class={['group absolute -top-[0px] -bottom-[0px]', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
@@ -270,22 +261,22 @@
         {/if}
 
         <!-- Favorite asset star -->
-        {#if !authManager.key && asset.isFavorite}
+        {#if !authManager.isSharedLink && asset.isFavorite}
           <div class="absolute bottom-2 start-2">
-            <Icon path={mdiHeart} size="24" class="text-white" />
+            <Icon icon={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
-        {#if !authManager.key && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
+        {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
           <div class={['absolute start-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
-            <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+            <Icon icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
-              <Icon path={mdiRotate360} size="24" />
+              <Icon icon={mdiRotate360} size="24" />
             </span>
           </div>
         {/if}
@@ -300,7 +291,7 @@
           >
             <span class="pe-2 pt-2 flex place-items-center gap-1">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
-              <Icon path={mdiCameraBurst} size="24" />
+              <Icon icon={mdiCameraBurst} size="24" />
             </span>
           </div>
         {/if}
@@ -330,7 +321,7 @@
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.isVideo}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -340,7 +331,7 @@
           />
         </div>
       {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute top-0 h-full w-full">
+        <div class="absolute top-0 h-full w-full pointer-events-none">
           <VideoThumbnail
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
@@ -352,7 +343,21 @@
           />
         </div>
       {/if}
+
+      {#if (!loaded || thumbError) && asset.thumbhash}
+        <canvas
+          use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+          data-testid="thumbhash"
+          class="absolute top-0 object-cover"
+          style:width="{width}px"
+          style:height="{height}px"
+          class:rounded-xl={selected}
+          draggable="false"
+          out:fade={{ duration: THUMBHASH_FADE_DURATION }}
+        ></canvas>
+      {/if}
     </div>
+
     {#if selectionCandidate}
       <div
         class="absolute top-0 h-full w-full bg-immich-primary opacity-40"
@@ -373,13 +378,13 @@
         {disabled}
       >
         {#if disabled}
-          <Icon path={mdiCheckCircle} size="24" class="text-zinc-800" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
         {/if}
       </button>
     {/if}
