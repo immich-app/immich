@@ -1052,7 +1052,9 @@
         ],
         "tags": [
           "Albums"
-        ]
+        ],
+        "x-immich-permission": "album.read",
+        "description": "This endpoint requires the `album.read` permission."
       }
     },
     "/albums/statistics": {

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAllAlbumsSlim, type AlbumResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -80,7 +80,7 @@
             title={$t('remove_album')}
             onclick={() => handleRemove(albumId)}
           >
-            <Icon path={mdiClose} />
+            <Icon icon={mdiClose} />
           </button>
         </div>
       {/if}
