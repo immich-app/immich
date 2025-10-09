@@ -14,7 +14,13 @@ import {
 } from '@nestjs/common';
 import { ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
-import { GetUploadStatusDto, ResumeUploadDto, StartUploadDto, UploadHeader, UploadOkDto } from 'src/dtos/asset-upload';
+import {
+  GetUploadStatusDto,
+  ResumeUploadDto,
+  StartUploadDto,
+  UploadHeader,
+  UploadOkDto,
+} from 'src/dtos/asset-upload.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichHeader, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -60,6 +66,7 @@ export class AssetUploadController {
 - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp
 - filename (string, required): Original filename
 - is-favorite (boolean, optional): Favorite status
+- live-photo-video-id (string, optional): Live photo ID for assets from iOS devices
 - icloud-id (string, optional): iCloud identifier for assets from iOS devices`,
     required: true,
     example:

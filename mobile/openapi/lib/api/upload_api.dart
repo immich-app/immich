@@ -293,7 +293,7 @@ class UploadApi {
   ///   Indicates the version of the RUFH protocol supported by the client.
   ///
   /// * [String] xImmichAssetData (required):
-  ///   RFC 9651 structured dictionary containing asset metadata with the following keys: - device-asset-id (string, required): Unique device asset identifier - device-id (string, required): Device identifier - file-created-at (string/date, required): ISO 8601 date string or Unix timestamp - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp - filename (string, required): Original filename - is-favorite (boolean, optional): Favorite status - icloud-id (string, optional): iCloud identifier for assets from iOS devices
+  ///   RFC 9651 structured dictionary containing asset metadata with the following keys: - device-asset-id (string, required): Unique device asset identifier - device-id (string, required): Device identifier - file-created-at (string/date, required): ISO 8601 date string or Unix timestamp - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp - filename (string, required): Original filename - is-favorite (boolean, optional): Favorite status - live-photo-video-id (string, optional): Live photo ID for assets from iOS devices - icloud-id (string, optional): iCloud identifier for assets from iOS devices
   ///
   /// * [String] key:
   ///
@@ -353,7 +353,7 @@ class UploadApi {
   ///   Indicates the version of the RUFH protocol supported by the client.
   ///
   /// * [String] xImmichAssetData (required):
-  ///   RFC 9651 structured dictionary containing asset metadata with the following keys: - device-asset-id (string, required): Unique device asset identifier - device-id (string, required): Device identifier - file-created-at (string/date, required): ISO 8601 date string or Unix timestamp - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp - filename (string, required): Original filename - is-favorite (boolean, optional): Favorite status - icloud-id (string, optional): iCloud identifier for assets from iOS devices
+  ///   RFC 9651 structured dictionary containing asset metadata with the following keys: - device-asset-id (string, required): Unique device asset identifier - device-id (string, required): Device identifier - file-created-at (string/date, required): ISO 8601 date string or Unix timestamp - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp - filename (string, required): Original filename - is-favorite (boolean, optional): Favorite status - live-photo-video-id (string, optional): Live photo ID for assets from iOS devices - icloud-id (string, optional): iCloud identifier for assets from iOS devices
   ///
   /// * [String] key:
   ///

@@ -31,6 +31,11 @@ export class UploadAssetDataDto {
   @Optional()
   @IsString()
   @IsNotEmpty()
+  livePhotoVideoId?: string;
+
+  @Optional()
+  @IsString()
+  @IsNotEmpty()
   iCloudId!: string;
 }
 
@@ -101,6 +106,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
         fileCreatedAt: dict.get('file-created-at')?.[0],
         fileModifiedAt: dict.get('file-modified-at')?.[0],
         isFavorite: dict.get('is-favorite')?.[0],
+        livePhotoVideoId: dict.get('live-photo-video-id')?.[0],
         iCloudId: dict.get('icloud-id')?.[0],
       });
     } catch {
@@ -126,7 +132,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
   @Expose({ name: UploadHeader.UploadLength })
   @Min(0)
   @IsInt()
-  @Type(() => Number)
+  @Transform(({ obj, value }) => Number(value === undefined ? obj['x-upload-length'] : value))
   uploadLength!: number;
 
   @Expose({ name: UploadHeader.UploadOffset })

@@ -294,7 +294,10 @@ export class AssetRepository {
   async setComplete(assetId: string) {
     await this.db
       .updateTable('asset')
-      .set({ status: AssetStatus.Active, visibility: AssetVisibility.Timeline })
+      .set({
+        status: sql.lit(AssetStatus.Active),
+        visibility: sql`(case when type = 'VIDEO' and "livePhotoVideoId" is not null then 'hidden' else 'timeline' end)::asset_visibility_enum`,
+      })
       .where('id', '=', assetId)
       .where('status', '=', sql.lit(AssetStatus.Partial))
       .execute();
