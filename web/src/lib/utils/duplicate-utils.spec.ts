@@ -11,6 +11,22 @@ describe('choosing a duplicate', () => {
     expect(suggestDuplicate(assets as AssetResponseDto[])).toEqual(assets[0]);
   });
 
+  it('prefers DNG over CR2 even when the DNG is smaller', () => {
+    const assets = [
+      { originalMimeType: 'image/x-canon-cr2', exifInfo: { fileSizeInByte: 500 } },
+      { originalMimeType: 'image/x-adobe-dng', exifInfo: { fileSizeInByte: 200 } },
+    ];
+    expect(suggestDuplicate(assets as AssetResponseDto[])).toEqual(assets[1]);
+  });
+
+  it('prefers HEIC over JPEG even when the HEIC is smaller', () => {
+    const assets = [
+      { originalMimeType: 'image/jpeg', exifInfo: { fileSizeInByte: 400 } },
+      { originalMimeType: 'image/heic', exifInfo: { fileSizeInByte: 150 } },
+    ];
+    expect(suggestDuplicate(assets as AssetResponseDto[])).toEqual(assets[1]);
+  });
+
   it('picks the asset with the most exif data if multiple assets have the same file size', () => {
     const assets = [
       { exifInfo: { fileSizeInByte: 200, rating: 5, fNumber: 1 } },
