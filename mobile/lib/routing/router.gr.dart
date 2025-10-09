@@ -689,6 +689,22 @@ class CropImageRouteArgs {
 }
 
 /// generated route for
+/// [DownloadInfoPage]
+class DownloadInfoRoute extends PageRouteInfo<void> {
+  const DownloadInfoRoute({List<PageRouteInfo>? children})
+    : super(DownloadInfoRoute.name, initialChildren: children);
+
+  static const String name = 'DownloadInfoRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DownloadInfoPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftActivitiesPage]
 class DriftActivitiesRoute extends PageRouteInfo<void> {
   const DriftActivitiesRoute({List<PageRouteInfo>? children})

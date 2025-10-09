@@ -36,7 +36,7 @@
       >
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
-            <h1 class="font-medium text-immich-primary dark:text-immich-dark-primary">
+            <h1 class="font-medium text-primary">
               🚨 {$t('error_title')}
             </h1>
             <div class="flex justify-end">
@@ -91,7 +91,7 @@
             </a>
 
             <a
-              href="https://immich.app/docs/guides/docker-help"
+              href="https://docs.immich.app/guides/docker-help"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"

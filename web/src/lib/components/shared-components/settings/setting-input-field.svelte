@@ -81,9 +81,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex place-items-center gap-1">
-    <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm min-h-6 uppercase" for={label}
-      >{label}</label
-    >
+    <label class="font-medium text-primary text-sm min-h-6 uppercase" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
     {/if}
@@ -107,7 +105,7 @@
   {/if}
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
-    <div class="flex place-items-center place-content-center">
+    <div class="flex place-items-center place-content-center gap-2">
       {#if inputType === SettingInputFieldType.COLOR}
         <input
           bind:this={input}

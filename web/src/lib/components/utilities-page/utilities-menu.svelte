@@ -16,7 +16,7 @@
 
   {#each links as link (link.href)}
     <a href={link.href} class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4">
-      <span><Icon icon={link.icon} class="text-immich-primary dark:text-immich-dark-primary" size="24" /> </span>
+      <span><Icon icon={link.icon} class="text-primary" size="24" /> </span>
       {link.label}
     </a>
   {/each}

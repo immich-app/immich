@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
-import android.provider.MediaStore
 import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
@@ -18,8 +17,8 @@ import java.util.concurrent.Executors
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Priority
 import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.request.target.Target.SIZE_ORIGINAL
 import java.util.Base64
-import java.util.HashMap
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Future
@@ -122,15 +121,14 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     signal: CancellationSignal
   ) {
     signal.throwIfCanceled()
-    val targetWidth = width.toInt()
-    val targetHeight = height.toInt()
+    val size = Size(width.toInt(), height.toInt())
     val id = assetId.toLong()
 
     signal.throwIfCanceled()
     val bitmap = if (isVideo) {
-      decodeVideoThumbnail(id, targetWidth, targetHeight, signal)
+      decodeVideoThumbnail(id, size, signal)
     } else {
-      decodeImage(id, targetWidth, targetHeight, signal)
+      decodeImage(id, size, signal)
     }
 
     processBitmap(bitmap, callback, signal)
@@ -153,9 +151,7 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
       bitmap.recycle()
       signal.throwIfCanceled()
       val res = mapOf(
-        "pointer" to pointer,
-        "width" to actualWidth.toLong(),
-        "height" to actualHeight.toLong()
+        "pointer" to pointer, "width" to actualWidth.toLong(), "height" to actualHeight.toLong()
       )
       callback(Result.success(res))
     } catch (e: Exception) {
@@ -164,53 +160,54 @@ class ThumbnailsImpl(context: Context) : ThumbnailApi {
     }
   }
 
-  private fun decodeImage(
-    id: Long, targetWidth: Int, targetHeight: Int, signal: CancellationSignal
-  ): Bitmap {
+  private fun decodeImage(id: Long, size: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     val uri = ContentUris.withAppendedId(Images.Media.EXTERNAL_CONTENT_URI, id)
-    if (targetHeight > 768 || targetWidth > 768) {
-      return decodeSource(uri, targetWidth, targetHeight, signal)
+    if (size.width <= 0 || size.height <= 0 || size.width > 768 || size.height > 768) {
+      return decodeSource(uri, size, signal)
     }
 
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      resolver.loadThumbnail(uri, Size(targetWidth, targetHeight), signal)
+      resolver.loadThumbnail(uri, size, signal)
     } else {
       signal.setOnCancelListener { Images.Thumbnails.cancelThumbnailRequest(resolver, id) }
       Images.Thumbnails.getThumbnail(resolver, id, Images.Thumbnails.MINI_KIND, OPTIONS)
     }
   }
 
-  private fun decodeVideoThumbnail(
-    id: Long, targetWidth: Int, targetHeight: Int, signal: CancellationSignal
-  ): Bitmap {
+  private fun decodeVideoThumbnail(id: Long, target: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       val uri = ContentUris.withAppendedId(Video.Media.EXTERNAL_CONTENT_URI, id)
-      resolver.loadThumbnail(uri, Size(targetWidth, targetHeight), signal)
+      // ensure a valid resolution as the thumbnail is used for videos even when no scaling is needed
+      val size = if (target.width > 0 && target.height > 0) target else Size(768, 768)
+      resolver.loadThumbnail(uri, size, signal)
     } else {
       signal.setOnCancelListener { Video.Thumbnails.cancelThumbnailRequest(resolver, id) }
       Video.Thumbnails.getThumbnail(resolver, id, Video.Thumbnails.MINI_KIND, OPTIONS)
     }
   }
 
-  private fun decodeSource(
-    uri: Uri, targetWidth: Int, targetHeight: Int, signal: CancellationSignal
-  ): Bitmap {
+  private fun decodeSource(uri: Uri, target: Size, signal: CancellationSignal): Bitmap {
     signal.throwIfCanceled()
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       val source = ImageDecoder.createSource(resolver, uri)
       signal.throwIfCanceled()
       ImageDecoder.decodeBitmap(source) { decoder, info, _ ->
-        val sampleSize = max(1, min(info.size.width / targetWidth, info.size.height / targetHeight))
-        decoder.setTargetSampleSize(sampleSize)
+        if (target.width > 0 && target.height > 0) {
+          val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
+          decoder.setTargetSampleSize(sample)
+        }
         decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
         decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
       }
     } else {
-      val ref = Glide.with(ctx).asBitmap().priority(Priority.IMMEDIATE).load(uri)
-        .disallowHardwareConfig().format(DecodeFormat.PREFER_ARGB_8888)
-        .submit(targetWidth, targetHeight)
+      val ref =
+        Glide.with(ctx).asBitmap().priority(Priority.IMMEDIATE).load(uri).disallowHardwareConfig()
+          .format(DecodeFormat.PREFER_ARGB_8888).submit(
+            if (target.width > 0) target.width else SIZE_ORIGINAL,
+            if (target.height > 0) target.height else SIZE_ORIGINAL,
+          )
       signal.setOnCancelListener { Glide.with(ctx).clear(ref) }
       ref.get()
     }

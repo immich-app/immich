@@ -11,6 +11,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/utils/debounce.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 
 /// A widget that will display a BoxScrollView with a ScrollThumb that can be dragged
@@ -30,6 +31,11 @@ class Scrubber extends ConsumerStatefulWidget {
 
   final double? monthSegmentSnappingOffset;
 
+  final bool snapToMonth;
+
+  /// Whether an app bar is present, affects coordinate calculations
+  final bool hasAppBar;
+
   Scrubber({
     super.key,
     Key? scrollThumbKey,
@@ -38,6 +44,8 @@ class Scrubber extends ConsumerStatefulWidget {
     this.topPadding = 0,
     this.bottomPadding = 0,
     this.monthSegmentSnappingOffset,
+    this.snapToMonth = true,
+    this.hasAppBar = true,
     required this.child,
   }) : assert(child.scrollDirection == Axis.vertical);
 
@@ -81,6 +89,8 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   bool _isDragging = false;
   List<_Segment> _segments = [];
   int _monthCount = 0;
+  DateTime? _currentScrubberDate;
+  Debouncer? _scrubberDebouncer;
 
   late AnimationController _thumbAnimationController;
   Timer? _fadeOutTimer;
@@ -133,6 +143,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     _thumbAnimationController.dispose();
     _labelAnimationController.dispose();
     _fadeOutTimer?.cancel();
+    _scrubberDebouncer?.dispose();
     super.dispose();
   }
 
@@ -176,11 +187,25 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     return false;
   }
 
-  void _onDragStart(DragStartDetails _) {
-    if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+  void _onScrubberDateChanged(DateTime date) {
+    if (_currentScrubberDate != date) {
+      // Date changed, immediately set scrubbing to true
+      _currentScrubberDate = date;
       ref.read(timelineStateProvider.notifier).setScrubbing(true);
-    }
 
+      // Initialize debouncer if needed
+      _scrubberDebouncer ??= Debouncer(interval: const Duration(milliseconds: 50));
+
+      // Debounce setting scrubbing to false
+      _scrubberDebouncer!.run(() {
+        if (_currentScrubberDate == date) {
+          ref.read(timelineStateProvider.notifier).setScrubbing(false);
+        }
+      });
+    }
+  }
+
+  void _onDragStart(DragStartDetails _) {
     setState(() {
       _isDragging = true;
       _labelAnimationController.forward();
@@ -206,10 +231,15 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       if (_lastLabel != label) {
         ref.read(hapticFeedbackProvider.notifier).selectionClick();
         _lastLabel = label;
+
+        // Notify timeline state of the new scrubber date position
+        if (_monthCount >= kMinMonthsToEnableScrubberSnap) {
+          _onScrubberDateChanged(nearestMonthSegment.date);
+        }
       }
     }
 
-    if (_monthCount < kMinMonthsToEnableScrubberSnap) {
+    if (_monthCount < kMinMonthsToEnableScrubberSnap || !widget.snapToMonth) {
       // If there are less than kMinMonthsToEnableScrubberSnap months, we don't need to snap to segments
       setState(() {
         _thumbTopOffset = dragPosition;
@@ -236,14 +266,28 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   /// - If user drags to global Y position that's 100 pixels from the top
   /// - The relative position would be 100 - 50 = 50 (50 pixels into the scrubber area)
   double _calculateDragPosition(DragUpdateDetails details) {
+    if (widget.hasAppBar) {
+      final dragAreaTop = widget.topPadding;
+      final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
+      final dragAreaHeight = dragAreaBottom - dragAreaTop;
+
+      final relativePosition = details.globalPosition.dy - dragAreaTop;
+
+      // Make sure the position stays within the scrubber's bounds
+      return relativePosition.clamp(0.0, dragAreaHeight);
+    }
+
+    // Get the local position relative to the gesture detector
+    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final localPosition = renderBox.globalToLocal(details.globalPosition);
+      return localPosition.dy.clamp(0.0, _scrubberHeight);
+    }
+
+    // Fallback to current logic if render box is not available
     final dragAreaTop = widget.topPadding;
-    final dragAreaBottom = widget.timelineHeight - widget.bottomPadding;
-    final dragAreaHeight = dragAreaBottom - dragAreaTop;
-
     final relativePosition = details.globalPosition.dy - dragAreaTop;
-
-    // Make sure the position stays within the scrubber's bounds
-    return relativePosition.clamp(0.0, dragAreaHeight);
+    return relativePosition.clamp(0.0, _scrubberHeight);
   }
 
   /// Find the segment closest to the given position
@@ -294,11 +338,17 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragEnd(DragEndDetails _) {
-    ref.read(timelineStateProvider.notifier).setScrubbing(false);
     _labelAnimationController.reverse();
     setState(() {
       _isDragging = false;
     });
+
+    ref.read(timelineStateProvider.notifier).setScrubbing(false);
+
+    // Reset scrubber tracking when drag ends
+    _currentScrubberDate = null;
+    _scrubberDebouncer?.dispose();
+    _scrubberDebouncer = null;
 
     _resetThumbTimer();
   }
