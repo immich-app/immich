@@ -7,7 +7,7 @@ settings:
 
 overrides:
   canvas: 2.11.2
-  sharp: ^0.34.3
+  sharp: ^0.34.4
 
 packageExtensionsChecksum: sha256-DAYr0FTkvKYnvBH4muAER9UE1FVGKhqfRU4/QwA2xPQ=
 
@@ -265,7 +265,7 @@ importers:
         specifier: ^4.0.0
         version: 4.3.0(prettier@3.6.2)(typescript@5.9.3)
       sharp:
-        specifier: ^0.34.3
+        specifier: ^0.34.4
         version: 0.34.4
       socket.io-client:
         specifier: ^4.7.4
@@ -503,7 +503,7 @@ importers:
         specifier: ^7.6.2
         version: 7.7.3
       sharp:
-        specifier: ^0.34.3
+        specifier: ^0.34.4
         version: 0.34.4
       sirv:
         specifier: ^3.0.0
