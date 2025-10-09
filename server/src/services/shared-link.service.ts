@@ -179,8 +179,8 @@ export class SharedLinkService extends BaseService {
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const hasAsset = removedAssetIds.find((id) => id === assetId);
-      if (!hasAsset) {
+      const wasRemoved = removedAssetIds.find((id) => id === assetId);
+      if (!wasRemoved) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
         continue;
       }
