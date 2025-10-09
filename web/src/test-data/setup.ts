@@ -16,3 +16,11 @@ Object.defineProperty(globalThis, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 });
+
+vi.mock('$env/dynamic/public', () => {
+  return {
+    env: {
+      PUBLIC_IMMICH_HOSTNAME: '',
+    },
+  };
+});
