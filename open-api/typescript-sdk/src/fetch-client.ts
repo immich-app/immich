@@ -4650,6 +4650,8 @@ export enum NotificationType {
     JobFailed = "JobFailed",
     BackupFailed = "BackupFailed",
     SystemMessage = "SystemMessage",
+    AlbumInvite = "AlbumInvite",
+    AlbumUpdate = "AlbumUpdate",
     Custom = "Custom"
 }
 export enum UserStatus {

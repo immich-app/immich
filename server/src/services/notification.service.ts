@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
+import { MapAlbumDto } from 'src/dtos/album.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -295,6 +296,8 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    await this.sendAlbumInviteLocalNotification(album, recipientId, album.owner.name);
+
     const { emailNotifications } = getPreferences(recipient.metadata);
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
@@ -343,6 +346,8 @@ export class NotificationService extends BaseService {
     if (!owner) {
       return JobStatus.Skipped;
     }
+
+    await this.sendAlbumUpdateLocalNotification(album, recipientId);
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
@@ -430,5 +435,31 @@ export class NotificationService extends BaseService {
       path: albumThumbnailFiles[0].path,
       cid: 'album-thumbnail',
     };
+  }
+
+  private async sendAlbumInviteLocalNotification(album: MapAlbumDto, userId: string, senderName: string) {
+    const item = await this.notificationRepository.create({
+      userId: userId,
+      type: NotificationType.AlbumInvite,
+      level: NotificationLevel.Success,
+      title: 'You are invited to a shared album',
+      description: `${senderName} shared an album (${album.albumName}) with you`,
+      data: JSON.stringify({ albumId: album.id }),
+    });
+
+    this.eventRepository.clientSend('on_notification', userId, mapNotification(item));
+  }
+
+  private async sendAlbumUpdateLocalNotification(album: MapAlbumDto, userId: string) {
+    const item = await this.notificationRepository.create({
+      userId: userId,
+      type: NotificationType.AlbumUpdate,
+      level: NotificationLevel.Info,
+      title: 'Shared album updated',
+      description: `New media has been added to the album (${album.albumName})`,
+      data: JSON.stringify({ albumId: album.id }),
+    });
+
+    this.eventRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 }

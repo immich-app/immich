@@ -19,6 +19,7 @@
   import { user } from '$lib/stores/user.store';
   import { Button, IconButton } from '@immich/ui';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
@@ -37,6 +38,10 @@
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
+
+  onMount(() => {
+    notificationManager.refresh().catch((_) => void 0);
+  });
 </script>
 
 <svelte:window bind:innerWidth />
