@@ -3,6 +3,7 @@ import { init } from 'svelte-i18n';
 
 beforeAll(async () => {
   await init({ fallbackLocale: 'dev' });
+  Element.prototype.animate = vi.fn().mockImplementation(() => ({ cancel: () => {}, finished: Promise.resolve() }));
 });
 
 Object.defineProperty(globalThis, 'matchMedia', {
