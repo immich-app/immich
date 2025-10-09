@@ -16,7 +16,10 @@ class AlbumsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'PUT /albums/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `albumAsset.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -24,7 +27,9 @@ class AlbumsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
+  ///
+  /// * [String] slug:
+  Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}/assets'
       .replaceAll('{id}', id);
@@ -38,6 +43,9 @@ class AlbumsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
 
     const contentTypes = <String>['application/json'];
@@ -54,6 +62,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumAsset.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -61,8 +71,10 @@ class AlbumsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   ///
   /// * [String] key:
-  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
-    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, );
+  ///
+  /// * [String] slug:
+  Future<List<BulkIdResponseDto>?> addAssetsToAlbum(String id, BulkIdsDto bulkIdsDto, { String? key, String? slug, }) async {
+    final response = await addAssetsToAlbumWithHttpInfo(id, bulkIdsDto,  key: key, slug: slug, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -79,7 +91,77 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /albums/{id}/users' operation and returns the [Response].
+  /// This endpoint requires the `albumAsset.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<Response> addAssetsToAlbumsWithHttpInfo(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/albums/assets';
+
+    // ignore: prefer_final_locals
+    Object? postBody = albumsAddAssetsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (key != null) {
+      queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
+    }
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `albumAsset.create` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [AlbumsAddAssetsDto] albumsAddAssetsDto (required):
+  ///
+  /// * [String] key:
+  ///
+  /// * [String] slug:
+  Future<AlbumsAddAssetsResponseDto?> addAssetsToAlbums(AlbumsAddAssetsDto albumsAddAssetsDto, { String? key, String? slug, }) async {
+    final response = await addAssetsToAlbumsWithHttpInfo(albumsAddAssetsDto,  key: key, slug: slug, );
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumsAddAssetsResponseDto',) as AlbumsAddAssetsResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `albumUser.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -111,6 +193,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumUser.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -131,7 +215,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /albums' operation and returns the [Response].
+  /// This endpoint requires the `album.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -160,6 +247,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [CreateAlbumDto] createAlbumDto (required):
@@ -178,7 +267,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /albums/{id}' operation and returns the [Response].
+  /// This endpoint requires the `album.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -208,6 +300,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -218,15 +312,20 @@ class AlbumsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /albums/{id}' operation and returns the [Response].
+  /// This endpoint requires the `album.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [bool] withoutAssets:
-  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, bool? withoutAssets, }) async {
+  Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/{id}'
       .replaceAll('{id}', id);
@@ -240,6 +339,9 @@ class AlbumsApi {
 
     if (key != null) {
       queryParams.addAll(_queryParams('', 'key', key));
+    }
+    if (slug != null) {
+      queryParams.addAll(_queryParams('', 'slug', slug));
     }
     if (withoutAssets != null) {
       queryParams.addAll(_queryParams('', 'withoutAssets', withoutAssets));
@@ -259,15 +361,19 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
   ///
   /// * [String] key:
   ///
+  /// * [String] slug:
+  ///
   /// * [bool] withoutAssets:
-  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, bool? withoutAssets, }) async {
-    final response = await getAlbumInfoWithHttpInfo(id,  key: key, withoutAssets: withoutAssets, );
+  Future<AlbumResponseDto?> getAlbumInfo(String id, { String? key, String? slug, bool? withoutAssets, }) async {
+    final response = await getAlbumInfoWithHttpInfo(id,  key: key, slug: slug, withoutAssets: withoutAssets, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -281,7 +387,9 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /albums/statistics' operation and returns the [Response].
+  /// This endpoint requires the `album.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAlbumStatisticsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/albums/statistics';
@@ -307,6 +415,7 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.statistics` permission.
   Future<AlbumStatisticsResponseDto?> getAlbumStatistics() async {
     final response = await getAlbumStatisticsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -322,7 +431,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /albums' operation and returns the [Response].
+  /// This endpoint requires the `album.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] assetId:
@@ -361,6 +473,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] assetId:
@@ -385,7 +499,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /albums/slim' operation and returns the [Response].
+  /// This endpoint requires the `album.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] assetId:
@@ -424,6 +541,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] assetId:
@@ -448,7 +567,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /albums/{id}/assets' operation and returns the [Response].
+  /// This endpoint requires the `albumAsset.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -480,6 +602,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumAsset.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -503,7 +627,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /albums/{id}/user/{userId}' operation and returns the [Response].
+  /// This endpoint requires the `albumUser.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -536,6 +663,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumUser.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -548,7 +677,10 @@ class AlbumsApi {
     }
   }
 
-  /// Performs an HTTP 'PATCH /albums/{id}' operation and returns the [Response].
+  /// This endpoint requires the `album.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -580,6 +712,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `album.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -600,7 +734,10 @@ class AlbumsApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /albums/{id}/user/{userId}' operation and returns the [Response].
+  /// This endpoint requires the `albumUser.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -635,6 +772,8 @@ class AlbumsApi {
     );
   }
 
+  /// This endpoint requires the `albumUser.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

@@ -1899,20 +1899,6 @@ export function createAlbum({ createAlbumDto }: {
         body: createAlbumDto
     })));
 }
-export function getAllAlbumsSlim({ assetId, shared }: {
-    assetId?: string;
-    shared?: boolean;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AlbumResponseDto[];
-    }>(`/albums/slim${QS.query(QS.explode({
-        assetId,
-        shared
-    }))}`, {
-        ...opts
-    }));
-}
 /**
  * This endpoint requires the `albumAsset.create` permission.
  */
@@ -1932,6 +1918,23 @@ export function addAssetsToAlbums({ key, slug, albumsAddAssetsDto }: {
         method: "PUT",
         body: albumsAddAssetsDto
     })));
+}
+/**
+ * This endpoint requires the `album.read` permission.
+ */
+export function getAllAlbumsSlim({ assetId, shared }: {
+    assetId?: string;
+    shared?: boolean;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumResponseDto[];
+    }>(`/albums/slim${QS.query(QS.explode({
+        assetId,
+        shared
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * This endpoint requires the `album.statistics` permission.
