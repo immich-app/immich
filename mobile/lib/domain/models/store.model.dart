@@ -66,10 +66,11 @@ enum StoreKey<T> {
   // Video settings
   loadOriginalVideo<bool>._(136),
   manageLocalMediaAndroid<bool>._(137),
-  autoPlayVideo<bool>._(138),
 
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
+
+  autoPlayVideo<bool>._(139),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
