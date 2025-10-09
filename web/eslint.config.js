@@ -10,6 +10,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
+import immichEslintRules from './immich.eslint.rules.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -79,6 +80,11 @@ export default typescriptEslint.config(
   {
     plugins: {
       svelte: eslintPluginSvelte,
+      immich: {
+        rules: {
+          'no-unlocalized-strings': immichEslintRules,
+        },
+      },
     },
 
     languageOptions: {
@@ -99,7 +105,7 @@ export default typescriptEslint.config(
       },
     },
 
-    ignores: ['**/service-worker/**'],
+    ignores: ['**/service-worker/**', '**/*.svelte.ts'],
 
     rules: {
       '@typescript-eslint/no-unused-vars': [
@@ -129,6 +135,7 @@ export default typescriptEslint.config(
       '@typescript-eslint/require-await': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      'immich/no-unlocalized-strings': 'error',
     },
   },
   {
