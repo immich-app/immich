@@ -221,10 +221,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     context.scaffoldMessenger.hideCurrentSnackBar();
 
     // send image to casting if the server has it
-    if (asset.hasRemote) {
-      final remoteAsset = asset as RemoteAsset;
-
-      ref.read(castProvider.notifier).loadMedia(remoteAsset, false);
+    if (asset is RemoteAsset) {
+      ref.read(castProvider.notifier).loadMedia(asset, false);
     } else {
       // casting cannot show local assets
       context.scaffoldMessenger.clearSnackBars();
