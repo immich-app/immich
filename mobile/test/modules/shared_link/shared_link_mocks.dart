@@ -30,7 +30,6 @@ class MockSharedLinksNotifier extends StateNotifier<AsyncValue<List<SharedLink>>
   MockSharedLinksNotifier() : super(const AsyncValue.loading());
 }
 
-/// Creates a mock ServerInfo for testing
 ServerInfo createMockServerInfo({
   String externalDomain = 'https://demo.immich.app',
 }) {
@@ -52,7 +51,6 @@ ServerInfo createMockServerInfo({
   );
 }
 
-/// Creates a shared link with slug for testing
 SharedLink createSharedLinkWithSlug() {
   return SharedLink(
     id: '1',
@@ -70,7 +68,6 @@ SharedLink createSharedLinkWithSlug() {
   );
 }
 
-/// Creates a shared link without slug for testing
 SharedLink createSharedLinkWithoutSlug() {
   return SharedLink(
     id: '2',
@@ -88,12 +85,10 @@ SharedLink createSharedLinkWithoutSlug() {
   );
 }
 
-/// Sets up server info with external domain for testing
 void setupServerInfo(MockServerInfoNotifier mockServerInfoNotifier, String domain) {
   mockServerInfoNotifier.state = createMockServerInfo(externalDomain: domain);
 }
 
-/// Sets up mock response for shared link service
 void setupMockResponse(SharedLinkServiceMock mockSharedLinkService, String slug) {
   when(
     () => mockSharedLinkService.createSharedLink(

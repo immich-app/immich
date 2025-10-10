@@ -6,7 +6,6 @@ import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link_edit.page.dart';
 import 'package:mocktail/mocktail.dart';
 
-/// Test utility to capture clipboard operations for verification
 class ClipboardCapturer {
   String text = '';
 
@@ -15,7 +14,6 @@ class ClipboardCapturer {
   }
 }
 
-/// Sets up a mock clipboard handler for tests that captures clipboard operations
 void setupClipboardMock(ClipboardCapturer capturer) {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (
     methodCall,
@@ -30,7 +28,6 @@ void setupClipboardMock(ClipboardCapturer capturer) {
   });
 }
 
-/// Cleans up the clipboard mock after tests to prevent interference
 void cleanupClipboardMock() {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
     SystemChannels.platform,
@@ -38,13 +35,11 @@ void cleanupClipboardMock() {
   );
 }
 
-/// Sets up larger viewport for test button visibility
 void setupTestViewport() {
   TestWidgetsFlutterBinding.instance.platformDispatcher.views.first.physicalSize = const Size(1200, 2000);
   TestWidgetsFlutterBinding.instance.platformDispatcher.views.first.devicePixelRatio = 1.0;
 }
 
-/// Test helper to create a shared link by filling form and clicking create button
 Future<void> createSharedLink(WidgetTester tester) async {
   await tester.enterText(find.byType(TextField).at(0), 'Test Description');
   await tester.pump();
@@ -55,7 +50,6 @@ Future<void> createSharedLink(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// Test helper to pump the SharedLinkEditPage widget
 Future<void> pumpSharedLinkEditPage(
   WidgetTester tester,
   ProviderContainer container, {
