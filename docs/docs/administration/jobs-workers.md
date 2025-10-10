@@ -55,3 +55,19 @@ Additionally, some jobs (such as memories generation) run on a schedule, which i
 :::note
 Some jobs ([External Libraries](/features/libraries) scanning, Database Dump) are configured in their own sections in System Settings.
 :::
+
+## Job processing order
+
+The below diagram shows the job run order for newly uploaded files
+
+```mermaid
+graph TD
+    A[Asset Upload] --> B[Metadata Extraction]
+    B --> C[Storage Template Migration]
+    C --> D["Thumbnail Generation (Large, small, blurred and person)"]
+    D --> E[Smart Search]
+    D --> F[Face Detection]
+    D --> G[Video Transcoding]
+    E --> H[Duplicate Detection]
+    F --> I[Facial Recognition]
+```

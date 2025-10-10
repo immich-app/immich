@@ -1,5 +1,5 @@
 #
-# WARNING: To install Immich, follow our guide: https://immich.app/docs/install/docker-compose
+# WARNING: To install Immich, follow our guide: https://docs.immich.app/install/docker-compose
 #
 # Make sure to use the docker-compose.yml of the current release:
 #
@@ -36,7 +36,7 @@ services:
     # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
     # Example tag: ${IMMICH_VERSION:-release}-cuda
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
-    # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
+    # extends: # uncomment this section for hardware acceleration - see https://docs.immich.app/features/ml-hardware-acceleration
     #   file: hwaccel.ml.yml
     #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
     volumes:

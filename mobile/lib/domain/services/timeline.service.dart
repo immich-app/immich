@@ -59,7 +59,8 @@ class TimelineFactory {
 
   TimelineService fromAssets(List<BaseAsset> assets) => TimelineService(_timelineRepository.fromAssets(assets));
 
-  TimelineService map(LatLngBounds bounds) => TimelineService(_timelineRepository.map(bounds, groupBy));
+  TimelineService map(String userId, LatLngBounds bounds) =>
+      TimelineService(_timelineRepository.map(userId, bounds, groupBy));
 }
 
 class TimelineService {
@@ -202,7 +203,7 @@ class TimelineService {
   Future<void> dispose() async {
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;
-    _buffer.clear();
+    _buffer = [];
     _bufferOffset = 0;
   }
 }

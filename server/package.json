@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.144.1",
+  "version": "2.0.1",
   "description": "",
   "author": "",
   "private": true,
@@ -47,7 +47,7 @@
     "@opentelemetry/exporter-prometheus": "^0.205.0",
     "@opentelemetry/instrumentation-http": "^0.205.0",
     "@opentelemetry/instrumentation-ioredis": "^0.53.0",
-    "@opentelemetry/instrumentation-nestjs-core": "^0.51.0",
+    "@opentelemetry/instrumentation-nestjs-core": "^0.52.0",
     "@opentelemetry/instrumentation-pg": "^0.58.0",
     "@opentelemetry/resources": "^2.0.1",
     "@opentelemetry/sdk-metrics": "^2.0.1",
@@ -67,7 +67,7 @@
     "compression": "^1.8.0",
     "cookie": "^1.0.2",
     "cookie-parser": "^1.4.7",
-    "cron": "4.3.0",
+    "cron": "4.3.3",
     "exiftool-vendored": "^28.8.0",
     "express": "^5.1.0",
     "fast-glob": "^3.3.2",
@@ -85,7 +85,7 @@
     "multer": "^2.0.2",
     "nest-commander": "^3.16.0",
     "nestjs-cls": "^5.0.0",
-    "nestjs-kysely": "^3.0.0",
+    "nestjs-kysely": "3.0.0",
     "nestjs-otel": "^7.0.0",
     "nodemailer": "^7.0.0",
     "openid-client": "^6.3.3",
@@ -101,7 +101,7 @@
     "sanitize-filename": "^1.6.3",
     "sanitize-html": "^2.14.0",
     "semver": "^7.6.2",
-    "sharp": "^0.34.3",
+    "sharp": "^0.34.4",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",
     "tailwindcss-preset-email": "^1.4.0",
@@ -129,7 +129,7 @@
     "@types/luxon": "^3.6.2",
     "@types/mock-fs": "^4.13.1",
     "@types/multer": "^2.0.0",
-    "@types/node": "^22.18.1",
+    "@types/node": "^22.18.8",
     "@types/nodemailer": "^7.0.0",
     "@types/picomatch": "^4.0.0",
     "@types/pngjs": "^6.0.5",
@@ -161,9 +161,9 @@
     "vitest": "^3.0.0"
   },
   "volta": {
-    "node": "22.19.0"
+    "node": "22.20.0"
   },
   "overrides": {
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.4"
   }
 }

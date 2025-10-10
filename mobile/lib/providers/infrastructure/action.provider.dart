@@ -77,11 +77,14 @@ class ActionNotifier extends Notifier<void> {
     return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
-  List<String> _getLocalIdsForSource(ActionSource source) {
+  List<String> _getLocalIdsForSource(ActionSource source, {bool ignoreLocalOnly = false}) {
     final Set<BaseAsset> assets = _getAssets(source);
     final List<String> localIds = [];
 
     for (final asset in assets) {
+      if (ignoreLocalOnly && asset.storage != AssetState.merged) {
+        continue;
+      }
       if (asset is LocalAsset) {
         localIds.add(asset.id);
       } else if (asset is RemoteAsset && asset.localId != null) {
@@ -189,7 +192,7 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> moveToLockFolder(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source);
+    final localIds = _getLocalIdsForSource(source, ignoreLocalOnly: true);
     try {
       await _service.moveToLockFolder(ids, localIds);
       return ActionResult(count: ids.length, success: true);

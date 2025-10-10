@@ -88,7 +88,7 @@
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
+  let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
   // Use a fixed modern date to calculate stable timezone offsets for the list
   // This ensures that the offsets shown in the combobox are always current,
   // regardless of the historical date selected by the user.
@@ -106,7 +106,7 @@
     const { offsetMinutes, offsetFormat: zoneOffsetAtDate } = getModernOffsetForZoneAndDate(zone, date);
     // For validity, we still need to check if the exact date/time exists in the *original* timezone (for gaps/overlaps).
     const dateForValidity = DateTime.fromISO(date, { zone });
-    const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm");
+    const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
     return {
       value: zone,
       offsetMinutes,
