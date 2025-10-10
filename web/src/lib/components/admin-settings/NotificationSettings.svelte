@@ -45,6 +45,7 @@
           transport: {
             host: config.notifications.smtp.transport.host,
             port: config.notifications.smtp.transport.port,
+            secure: config.notifications.smtp.transport.secure,
             username: config.notifications.smtp.transport.username,
             password: config.notifications.smtp.transport.password,
             ignoreCert: config.notifications.smtp.transport.ignoreCert,
@@ -106,6 +107,16 @@
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.port}
               isEdited={config.notifications.smtp.transport.port !== savedConfig.notifications.smtp.transport.port}
+            />
+
+            <SettingInputField
+              inputType={SettingInputFieldType.BOOL}
+              required
+              label={$t('secure')}
+              description={$t('admin.notification_email_secure_description')}
+              disabled={disabled || !config.notifications.smtp.enabled}
+              bind:value={config.notifications.smtp.transport.secure}
+              isEdited={config.notifications.smtp.transport.secure !== savedConfig.notifications.smtp.transport.secure}
             />
 
             <SettingInputField
