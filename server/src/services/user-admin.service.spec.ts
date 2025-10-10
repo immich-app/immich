@@ -25,12 +25,14 @@ describe(UserAdminService.name, () => {
     it('should set latestSession for each user', async () => {
       const { user1, admin } = userStub;
       const users = [admin, user1];
-      // Session型にuserIdを含める
       const session = { ...factory.session(), userId: user1.id };
       mocks.user.getList.mockResolvedValue(users);
-      mocks.session.getLatestByUserId.mockImplementation(async (userId) => {
-        if (userId === user1.id) return session;
-        return undefined;
+      mocks.session.getLatestByUserId.mockImplementation((userId) => {
+        if (userId === user1.id) {
+          return Promise.resolve(session);
+        }
+        // eslint-disable-next-line unicorn/no-useless-undefined
+        return Promise.resolve(undefined);
       });
       const mapSessionSpy = vitest.spyOn(sessionDto, 'mapSession');
 
