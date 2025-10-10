@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import * as sessionDto from 'src/dtos/session.dto';
 import { mapUserAdmin } from 'src/dtos/user.dto';
 import { JobName, UserStatus } from 'src/enum';
 import { UserAdminService } from 'src/services/user-admin.service';
@@ -18,6 +19,29 @@ describe(UserAdminService.name, () => {
     mocks.user.get.mockImplementation((userId) =>
       Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? undefined),
     );
+  });
+
+  describe('search', () => {
+    it('should set latestSession for each user', async () => {
+      const { user1, admin } = userStub;
+      const users = [admin, user1];
+      // Session型にuserIdを含める
+      const session = { ...factory.session(), userId: user1.id };
+      mocks.user.getList.mockResolvedValue(users);
+      mocks.session.getLatestByUserId.mockImplementation(async (userId) => {
+        if (userId === user1.id) return session;
+        return undefined;
+      });
+      const mapSessionSpy = vitest.spyOn(sessionDto, 'mapSession');
+
+      const results = await sut.search(authStub.user1, { withDeleted: false });
+
+      expect(results.find((u) => u.id === user1.id)?.latestSession).toBeDefined();
+      expect(results.find((u) => u.id === admin.id)?.latestSession).toBeUndefined();
+      expect(mocks.session.getLatestByUserId).toHaveBeenCalledWith(user1.id);
+      expect(mocks.session.getLatestByUserId).toHaveBeenCalledWith(admin.id);
+      expect(mapSessionSpy).toHaveBeenCalledWith(session, authStub.user1.user.id);
+    });
   });
 
   describe('create', () => {
