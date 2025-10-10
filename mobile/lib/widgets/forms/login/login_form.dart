@@ -376,16 +376,16 @@ class LoginForm extends HookConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              InkWell(
-                onTap: () => launchUrl(
-                  Uri.parse('https://pixelunion.eu/about/mobile-onboarding'),
+              TextButton.icon(
+                onPressed: () => launchUrl(
+                  Uri.parse('https://pixelunion.eu/#pricing'),
                   mode: LaunchMode.externalApplication,
                 ),
-                child: Text(
+                icon: const Icon(Icons.open_in_new_rounded),
+                label: Text(
                   "Don't have an account yet?",
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontSize: 16,
-                        color: Theme.of(context).colorScheme.primary,
                       ),
                 ),
               ),
