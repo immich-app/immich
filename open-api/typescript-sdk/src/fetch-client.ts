@@ -71,6 +71,7 @@ export type SystemConfigSmtpTransportDto = {
     ignoreCert: boolean;
     password: string;
     port: number;
+    secure: boolean;
     username: string;
 };
 export type SystemConfigSmtpDto = {
