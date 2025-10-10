@@ -68,6 +68,19 @@ order by
   "session"."updatedAt" desc,
   "session"."createdAt" desc
 
+-- SessionRepository.getLatestByUserId
+select
+  "session".*
+from
+  "session"
+where
+  "session"."userId" = $1
+order by
+  "session"."updatedAt" desc,
+  "session"."createdAt" desc
+limit
+  $2
+
 -- SessionRepository.delete
 delete from "session"
 where
