@@ -1,8 +1,11 @@
 package app.alextran.immich
 
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import app.alextran.immich.background.BackgroundEngineLock
 import app.alextran.immich.background.BackgroundWorkerApiImpl
 
 class ImmichApp : Application() {
@@ -17,6 +20,11 @@ class ImmichApp : Application() {
     // As a workaround, we also run a backup check when initializing the application
 
     ContentObserverWorker.startBackupWorker(context = this, delayMilliseconds = 0)
-    BackgroundWorkerApiImpl.enqueueBackgroundWorker(this)
+    Handler(Looper.getMainLooper()).postDelayed({
+      // We can only check the engine count and not the status of the lock here,
+      // as the previous start might have been killed without unlocking.
+      if (BackgroundEngineLock.connectEngines > 0) return@postDelayed
+      BackgroundWorkerApiImpl.enqueueBackgroundWorker(this)
+    }, 5000)
   }
 }

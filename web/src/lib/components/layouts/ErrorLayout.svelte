@@ -91,7 +91,7 @@
             </a>
 
             <a
-              href="https://immich.app/docs/guides/docker-help"
+              href="https://docs.immich.app/guides/docker-help"
               target="_blank"
               rel="noopener noreferrer"
               class="flex grow basis-0 justify-center p-4"
