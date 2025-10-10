@@ -134,26 +134,12 @@
       element.scrollTop = top;
     }
   };
-  const scrollBy = (y: number) => {
-    if (element) {
-      element.scrollBy(0, y);
-    }
-  };
+
   const scrollToTop = () => {
     scrollTo(0);
   };
 
-  const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => {
-    // the following method may trigger any layouts, so need to
-    // handle any scroll compensation that may have been set
-    const height = monthGroup!.findAssetAbsolutePosition(assetId);
-
-    while (timelineManager.scrollCompensation.monthGroup) {
-      handleScrollCompensation(timelineManager.scrollCompensation);
-      timelineManager.clearScrollCompensation();
-    }
-    return height;
-  };
+  const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
 
   const assetIsVisible = (assetTop: number): boolean => {
     if (!element) {
@@ -245,19 +231,6 @@
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
-
-  const handleScrollCompensation = ({ heightDelta, scrollTop }: { heightDelta?: number; scrollTop?: number }) => {
-    if (heightDelta !== undefined) {
-      scrollBy(heightDelta);
-    } else if (scrollTop !== undefined) {
-      scrollTo(scrollTop);
-    }
-    // Yes, updateSlideWindow() is called by the onScroll event triggered as a result of
-    // the above calls. However, this delay is enough time to set the intersecting property
-    // of the monthGroup to false, then true, which causes the DOM nodes to be recreated,
-    // causing bad perf, and also, disrupting focus of those elements.
-    updateSlidingWindow();
-  };
 
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
@@ -666,7 +639,6 @@
             onSelect={({ title, assets }) => handleGroupSelect(timelineManager, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}
-            onScrollCompensation={handleScrollCompensation}
             {customLayout}
             {onThumbnailClick}
           />
