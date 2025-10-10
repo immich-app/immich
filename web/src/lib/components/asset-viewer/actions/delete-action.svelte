@@ -10,7 +10,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
@@ -43,9 +43,9 @@
 
   const trashAsset = async () => {
     try {
-      preAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
+      preAction({ type: AssetAction.TRASH, asset: toAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
-      onAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
+      onAction({ type: AssetAction.TRASH, asset: toAsset(asset) });
 
       notificationController.show({
         message: $t('moved_to_trash'),
@@ -58,9 +58,9 @@
 
   const deleteAsset = async () => {
     try {
-      preAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
+      preAction({ type: AssetAction.DELETE, asset: toAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
-      onAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
+      onAction({ type: AssetAction.DELETE, asset: toAsset(asset) });
 
       notificationController.show({
         message: $t('permanently_deleted_asset'),

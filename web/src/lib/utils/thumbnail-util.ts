@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { Asset } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { t } from 'svelte-i18n';
@@ -39,7 +39,7 @@ export function getThumbnailSize(assetCount: number, viewWidth: number): number 
 }
 
 export const getAltText = derived(t, ($t) => {
-  return (asset: TimelineAsset) => {
+  return (asset: Asset) => {
     const date = fromTimelinePlainDateTime(asset.localDateTime).toJSDate().toLocaleString(get(locale), {
       dateStyle: 'long',
       timeZone: 'UTC',

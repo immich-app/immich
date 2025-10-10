@@ -6,7 +6,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { navigate } from '$lib/utils/navigation';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
 
   let { asset: viewingAsset, gridScrollTarget, mutex, preloadAssets } = assetViewingStore;
@@ -135,12 +135,12 @@
         break;
       }
       case AssetAction.REMOVE_ASSET_FROM_STACK: {
-        timelineManager.addAssets([toTimelineAsset(action.asset)]);
+        timelineManager.addAssets([toAsset(action.asset)]);
         if (action.stack) {
           //Have to unstack then restack assets in timeline in order to update the stack count in the timeline.
           updateUnstackedAssetInTimeline(
             timelineManager,
-            action.stack.assets.map((asset) => toTimelineAsset(asset)),
+            action.stack.assets.map((asset) => toAsset(asset)),
           );
           updateStackedAssetInTimeline(timelineManager, {
             stack: action.stack,
@@ -155,7 +155,7 @@
         //Have to unstack then restack assets in timeline in order for the currently removed new primary asset to be made visible.
         updateUnstackedAssetInTimeline(
           timelineManager,
-          action.stack.assets.map((asset) => toTimelineAsset(asset)),
+          action.stack.assets.map((asset) => toAsset(asset)),
         );
         updateStackedAssetInTimeline(timelineManager, {
           stack: action.stack,

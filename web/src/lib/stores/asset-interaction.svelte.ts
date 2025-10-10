@@ -1,20 +1,20 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { Asset } from '$lib/managers/timeline-manager/types';
 import { user } from '$lib/stores/user.store';
 import { AssetVisibility, type UserAdminResponseDto } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
 
 export class AssetInteraction {
-  selectedAssets = $state<TimelineAsset[]>([]);
+  selectedAssets = $state<Asset[]>([]);
   hasSelectedAsset(assetId: string) {
     return this.selectedAssets.some((asset) => asset.id === assetId);
   }
   selectedGroup = new SvelteSet<string>();
-  assetSelectionCandidates = $state<TimelineAsset[]>([]);
+  assetSelectionCandidates = $state<Asset[]>([]);
   hasSelectionCandidate(assetId: string) {
     return this.assetSelectionCandidates.some((asset) => asset.id === assetId);
   }
-  assetSelectionStart = $state<TimelineAsset | null>(null);
+  assetSelectionStart = $state<Asset | null>(null);
   selectionActive = $derived(this.selectedAssets.length > 0);
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
@@ -25,13 +25,13 @@ export class AssetInteraction {
   isAllFavorite = $derived(this.selectedAssets.every((asset) => asset.isFavorite));
   isAllUserOwned = $derived(this.selectedAssets.every((asset) => asset.ownerId === this.userId));
 
-  selectAsset(asset: TimelineAsset) {
+  selectAsset(asset: Asset) {
     if (!this.hasSelectedAsset(asset.id)) {
       this.selectedAssets.push(asset);
     }
   }
 
-  selectAssets(assets: TimelineAsset[]) {
+  selectAssets(assets: Asset[]) {
     for (const asset of assets) {
       this.selectAsset(asset);
     }
@@ -52,11 +52,11 @@ export class AssetInteraction {
     this.selectedGroup.delete(group);
   }
 
-  setAssetSelectionStart(asset: TimelineAsset | null) {
+  setAssetSelectionStart(asset: Asset | null) {
     this.assetSelectionStart = asset;
   }
 
-  setAssetSelectionCandidates(assets: TimelineAsset[]) {
+  setAssetSelectionCandidates(assets: Asset[]) {
     this.assetSelectionCandidates = assets;
   }
 

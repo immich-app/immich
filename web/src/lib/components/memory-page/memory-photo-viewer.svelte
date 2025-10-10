@@ -1,6 +1,6 @@
 <script lang="ts">
   import { assetViewerFadeDuration } from '$lib/constants';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize } from '@immich/sdk';
@@ -9,7 +9,7 @@
   import { fade } from 'svelte/transition';
 
   interface Props {
-    asset: TimelineAsset;
+    asset: Asset;
     onImageLoad: () => void;
   }
 

@@ -12,7 +12,7 @@
   } from '$lib/components/timeline/actions/focus-actions';
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -32,7 +32,7 @@
     assetInteraction: AssetInteraction;
     isShowDeleteConfirmation: boolean;
     onEscape?: () => void;
-    scrollToAsset: (asset: TimelineAsset) => boolean;
+    scrollToAsset: (asset: Asset) => boolean;
   }
 
   let {

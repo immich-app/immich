@@ -6,12 +6,12 @@
   } from '$lib/components/shared-components/notification/notification';
   import { AssetAction } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
   import { mdiHeart, mdiHeartOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
-  import { IconButton } from '@immich/ui';
 
   interface Props {
     asset: AssetResponseDto;
@@ -33,7 +33,7 @@
 
       onAction({
         type: asset.isFavorite ? AssetAction.FAVORITE : AssetAction.UNFAVORITE,
-        asset: toTimelineAsset(asset),
+        asset: toAsset(asset),
       });
 
       notificationController.show({

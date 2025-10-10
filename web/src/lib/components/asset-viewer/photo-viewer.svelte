@@ -5,7 +5,7 @@
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { assetViewerFadeDuration } from '$lib/constants';
   import { castManager } from '$lib/managers/cast-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
@@ -18,7 +18,7 @@
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
@@ -29,7 +29,7 @@
 
   interface Props {
     asset: AssetResponseDto;
-    preloadAssets?: TimelineAsset[] | undefined;
+    preloadAssets?: Asset[] | undefined;
     element?: HTMLDivElement | undefined;
     haveFadeTransition?: boolean;
     sharedLink?: SharedLinkResponseDto | undefined;
@@ -72,7 +72,7 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: TimelineAsset[]) => {
+  const preload = (targetSize: AssetMediaSize | 'original', preloadAssets?: Asset[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.isImage) {
         let img = new Image();
@@ -249,7 +249,7 @@
       <img
         bind:this={$photoViewerImgElement}
         src={assetFileUrl}
-        alt={$getAltText(toTimelineAsset(asset))}
+        alt={$getAltText(toAsset(asset))}
         class="h-full w-full {$slideshowState === SlideshowState.None
           ? 'object-contain'
           : slideshowLookCssMapping[$slideshowLook]}"

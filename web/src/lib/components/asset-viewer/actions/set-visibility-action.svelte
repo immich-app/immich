@@ -1,7 +1,7 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetVisibility, updateAssets } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
@@ -10,7 +10,7 @@
   import type { OnAction, PreAction } from './action';
 
   interface Props {
-    asset: TimelineAsset;
+    asset: Asset;
     onAction: OnAction;
     preAction: PreAction;
   }

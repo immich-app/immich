@@ -26,7 +26,7 @@
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
   import { IconButton } from '@immich/ui';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
@@ -72,7 +72,7 @@
       return;
     }
 
-    assetInteraction.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
+    assetInteraction.selectAssets(data.pathAssets.map((asset) => toAsset(asset)));
   }
 </script>
 

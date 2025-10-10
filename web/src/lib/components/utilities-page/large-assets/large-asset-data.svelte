@@ -1,7 +1,7 @@
 <script lang="ts">
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { getFileSize } from '$lib/utils/asset-utils';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
 
   interface Props {
@@ -22,7 +22,7 @@
   title={assetData}
 >
   <div class="relative w-full h-full overflow-hidden rounded-lg">
-    <Thumbnail asset={toTimelineAsset(asset)} readonly onClick={() => onViewAsset(asset)} thumbnailSize={boxWidth} />
+    <Thumbnail asset={toAsset(asset)} readonly onClick={() => onViewAsset(asset)} thumbnailSize={boxWidth} />
 
     {#if !!asset.libraryId}
       <div class="absolute bottom-1 end-3 px-4 py-1 rounded-xl text-xs transition-colors bg-red-500">External</div>

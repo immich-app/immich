@@ -1,13 +1,13 @@
 <script lang="ts">
   import { assetViewerFadeDuration } from '$lib/constants';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 
   interface Props {
-    asset: TimelineAsset;
+    asset: Asset;
     videoPlayer: HTMLVideoElement | undefined;
     videoViewerMuted?: boolean;
     videoViewerVolume?: number;

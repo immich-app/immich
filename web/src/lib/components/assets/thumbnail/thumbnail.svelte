@@ -17,7 +17,7 @@
 
   import { thumbhash } from '$lib/actions/thumbhash';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
@@ -30,7 +30,7 @@
   import VideoThumbnail from './video-thumbnail.svelte';
 
   interface Props {
-    asset: TimelineAsset;
+    asset: Asset;
     groupIndex?: number;
     thumbnailSize?: number;
     thumbnailWidth?: number;
@@ -45,8 +45,8 @@
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
     dimmed?: boolean;
-    onClick?: (asset: TimelineAsset) => void;
-    onSelect?: (asset: TimelineAsset) => void;
+    onClick?: (asset: Asset) => void;
+    onSelect?: (asset: Asset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
   }
 

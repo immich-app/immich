@@ -5,13 +5,13 @@ import { SvelteSet } from 'svelte/reactivity';
 import { GroupInsertionCache } from '../group-insertion-cache.svelte';
 import { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
-import type { AssetOperation, TimelineAsset } from '../types';
+import type { Asset, AssetOperation } from '../types';
 import { updateGeometry } from './layout-support.svelte';
 import { getMonthGroupByDate } from './search-support.svelte';
 
 export function addAssetsToMonthGroups(
   timelineManager: TimelineManager,
-  assets: TimelineAsset[],
+  assets: Asset[],
   options: { order: AssetOrder },
 ) {
   if (assets.length === 0) {
@@ -30,7 +30,7 @@ export function addAssetsToMonthGroups(
       timelineManager.months.push(month);
     }
 
-    month.addTimelineAsset(asset, addContext);
+    month.addAsset(asset, addContext);
     updatedMonthGroups.add(month);
   }
 
@@ -70,7 +70,7 @@ export function runAssetOperation(
   const changedMonthGroups = new SvelteSet<MonthGroup>();
   let idsToProcess = new SvelteSet(ids);
   const idsProcessed = new SvelteSet<string>();
-  const combinedMoveAssets: { asset: TimelineAsset; date: TimelineDate }[][] = [];
+  const combinedMoveAssets: { asset: Asset; date: TimelineDate }[][] = [];
   for (const month of timelineManager.months) {
     if (idsToProcess.size > 0) {
       const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);

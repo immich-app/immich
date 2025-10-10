@@ -5,7 +5,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
-  import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+  import type { Asset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -18,7 +18,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { isAsset, toAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
@@ -28,7 +28,7 @@
 
   interface Props {
     initialAssetId?: string;
-    assets: (TimelineAsset | AssetResponseDto)[];
+    assets: (Asset | AssetResponseDto)[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -130,7 +130,7 @@
   }
 
   let shiftKeyIsDown = $state(false);
-  let lastAssetMouseEvent: TimelineAsset | null = $state(null);
+  let lastAssetMouseEvent: Asset | null = $state(null);
   let slidingWindow = $state({ top: 0, bottom: 0 });
 
   const updateSlidingWindow = () => {
@@ -157,14 +157,14 @@
       }
     }
   });
-  const viewAssetHandler = async (asset: TimelineAsset) => {
+  const viewAssetHandler = async (asset: Asset) => {
     currentIndex = assets.findIndex((a) => a.id == asset.id);
     await setAssetId(assets[currentIndex].id);
     await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
   };
 
   const selectAllAssets = () => {
-    assetInteraction.selectAssets(assets.map((a) => toTimelineAsset(a)));
+    assetInteraction.selectAssets(assets.map((a) => toAsset(a)));
   };
 
   const deselectAllAssets = () => {
@@ -186,7 +186,7 @@
     }
   };
 
-  const handleSelectAssets = (asset: TimelineAsset) => {
+  const handleSelectAssets = (asset: Asset) => {
     if (!asset) {
       return;
     }
@@ -209,14 +209,14 @@
     assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
+  const handleSelectAssetCandidates = (asset: Asset | null) => {
     if (asset) {
       selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
 
-  const selectAssetCandidates = (endAsset: TimelineAsset) => {
+  const selectAssetCandidates = (endAsset: Asset) => {
     if (!shiftKeyIsDown) {
       return;
     }
@@ -233,7 +233,7 @@
       [start, end] = [end, start];
     }
 
-    assetInteraction.setAssetSelectionCandidates(assets.slice(start, end + 1).map((a) => toTimelineAsset(a)));
+    assetInteraction.setAssetSelectionCandidates(assets.slice(start, end + 1).map((a) => toAsset(a)));
   };
 
   const onSelectStart = (event: Event) => {
@@ -434,7 +434,7 @@
     }
   };
 
-  const assetMouseEventHandler = (asset: TimelineAsset | null) => {
+  const assetMouseEventHandler = (asset: Asset | null) => {
     if (assetInteraction.selectionActive) {
       handleSelectAssetCandidates(asset);
     }
@@ -496,21 +496,21 @@
             readonly={disableAssetSelect}
             onClick={() => {
               if (assetInteraction.selectionActive) {
-                handleSelectAssets(toTimelineAsset(currentAsset));
+                handleSelectAssets(toAsset(currentAsset));
                 return;
               }
-              void viewAssetHandler(toTimelineAsset(currentAsset));
+              void viewAssetHandler(toAsset(currentAsset));
             }}
-            onSelect={() => handleSelectAssets(toTimelineAsset(currentAsset))}
-            onMouseEvent={() => assetMouseEventHandler(toTimelineAsset(currentAsset))}
+            onSelect={() => handleSelectAssets(toAsset(currentAsset))}
+            onMouseEvent={() => assetMouseEventHandler(toAsset(currentAsset))}
             {showArchiveIcon}
-            asset={toTimelineAsset(currentAsset)}
+            asset={toAsset(currentAsset)}
             selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />
-          {#if showAssetName && !isTimelineAsset(currentAsset)}
+          {#if showAssetName && !isAsset(currentAsset)}
             <div
               class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >

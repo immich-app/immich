@@ -14,7 +14,7 @@
   import { cancelMultiselect, downloadArchive } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
@@ -34,7 +34,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
 
-  let assets = $derived(sharedLink.assets.map((a) => toTimelineAsset(a)));
+  let assets = $derived(sharedLink.assets.map((a) => toAsset(a)));
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {

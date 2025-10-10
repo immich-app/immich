@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
-  import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
+  import AssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
@@ -12,7 +12,7 @@
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -48,21 +48,16 @@
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
-    onSelect?: (asset: TimelineAsset) => void;
+    onSelect?: (asset: Asset) => void;
     onEscape?: () => void;
     children?: Snippet;
     empty?: Snippet;
-    customLayout?: Snippet<[TimelineAsset]>;
+    customLayout?: Snippet<[Asset]>;
     onThumbnailClick?: (
-      asset: TimelineAsset,
+      asset: Asset,
       timelineManager: TimelineManager,
       dayGroup: DayGroup,
-      onClick: (
-        timelineManager: TimelineManager,
-        assets: TimelineAsset[],
-        groupTitle: string,
-        asset: TimelineAsset,
-      ) => void,
+      onClick: (timelineManager: TimelineManager, assets: Asset[], groupTitle: string, asset: Asset) => void,
     ) => void;
   }
 
@@ -182,7 +177,7 @@
     return true;
   };
 
-  const scrollToAsset = (asset: TimelineAsset) => {
+  const scrollToAsset = (asset: Asset) => {
     const monthGroup = timelineManager.getMonthGroupByAssetId(asset.id);
     if (!monthGroup) {
       return false;
@@ -384,13 +379,13 @@
     }
   };
 
-  const handleSelectAsset = (asset: TimelineAsset) => {
+  const handleSelectAsset = (asset: Asset) => {
     if (!timelineManager.albumAssets.has(asset.id)) {
       assetInteraction.selectAsset(asset);
     }
   };
 
-  let lastAssetMouseEvent: TimelineAsset | null = $state(null);
+  let lastAssetMouseEvent: Asset | null = $state(null);
 
   let shiftKeyIsDown = $state(false);
 
@@ -407,14 +402,14 @@
       shiftKeyIsDown = false;
     }
   };
-  const handleSelectAssetCandidates = (asset: TimelineAsset | null) => {
+  const handleSelectAssetCandidates = (asset: Asset | null) => {
     if (asset) {
       void selectAssetCandidates(asset);
     }
     lastAssetMouseEvent = asset;
   };
 
-  const handleGroupSelect = (timelineManager: TimelineManager, group: string, assets: TimelineAsset[]) => {
+  const handleGroupSelect = (timelineManager: TimelineManager, group: string, assets: Asset[]) => {
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
@@ -434,7 +429,7 @@
     }
   };
 
-  const handleSelectAssets = async (asset: TimelineAsset) => {
+  const handleSelectAssets = async (asset: Asset) => {
     if (!asset) {
       return;
     }
@@ -518,7 +513,7 @@
     assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const selectAssetCandidates = async (endAsset: TimelineAsset) => {
+  const selectAssetCandidates = async (endAsset: Asset) => {
     if (!shiftKeyIsDown) {
       return;
     }
@@ -686,7 +681,7 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <TimelineAssetViewer bind:showSkeleton {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
+    <AssetViewer bind:showSkeleton {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
   {/if}
 </Portal>
 

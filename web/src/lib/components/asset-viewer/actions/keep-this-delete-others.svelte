@@ -2,7 +2,7 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
   import { keepThisDeleteOthers } from '$lib/utils/asset-utils';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { toAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto, StackResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiPinOutline } from '@mdi/js';
@@ -30,7 +30,7 @@
 
     const keptAsset = await keepThisDeleteOthers(asset, stack);
     if (keptAsset) {
-      onAction({ type: AssetAction.UNSTACK, assets: [toTimelineAsset(keptAsset)] });
+      onAction({ type: AssetAction.UNSTACK, assets: [toAsset(keptAsset)] });
     }
   };
 </script>

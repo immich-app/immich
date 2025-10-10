@@ -12,7 +12,7 @@ export type AssetDescriptor = { id: string };
 
 export type Direction = 'earlier' | 'later';
 
-export type TimelineAsset = {
+export type Asset = {
   id: string;
   ownerId: string;
   ratio: number;
@@ -35,9 +35,9 @@ export type TimelineAsset = {
   longitude?: number | null;
 };
 
-export type AssetOperation = (asset: TimelineAsset) => { remove: boolean };
+export type AssetOperation = (asset: Asset) => { remove: boolean };
 
-export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };
+export type MoveAsset = { asset: Asset; date: TimelineDate };
 
 export interface Viewport {
   width: number;
@@ -51,12 +51,12 @@ export type ViewportXY = Viewport & {
 
 export interface AddAsset {
   type: 'add';
-  values: TimelineAsset[];
+  values: Asset[];
 }
 
 export interface UpdateAsset {
   type: 'update';
-  values: TimelineAsset[];
+  values: Asset[];
 }
 
 export interface DeleteAsset {

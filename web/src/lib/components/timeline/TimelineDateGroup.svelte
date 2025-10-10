@@ -3,7 +3,7 @@
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import type { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { Asset } from '$lib/managers/timeline-manager/types';
   import { assetSnapshot, assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
@@ -28,22 +28,17 @@
     monthGroup: MonthGroup;
     timelineManager: TimelineManager;
     assetInteraction: AssetInteraction;
-    customLayout?: Snippet<[TimelineAsset]>;
+    customLayout?: Snippet<[Asset]>;
 
-    onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
-    onSelectAssets: (asset: TimelineAsset) => void;
-    onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
+    onSelect: ({ title, assets }: { title: string; assets: Asset[] }) => void;
+    onSelectAssets: (asset: Asset) => void;
+    onSelectAssetCandidates: (asset: Asset | null) => void;
     onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
     onThumbnailClick?: (
-      asset: TimelineAsset,
+      asset: Asset,
       timelineManager: TimelineManager,
       dayGroup: DayGroup,
-      onClick: (
-        timelineManager: TimelineManager,
-        assets: TimelineAsset[],
-        groupTitle: string,
-        asset: TimelineAsset,
-      ) => void,
+      onClick: (timelineManager: TimelineManager, assets: Asset[], groupTitle: string, asset: Asset) => void,
     ) => void;
   }
 
@@ -70,12 +65,7 @@
     monthGroup.timelineManager.suspendTransitions && !$isUploading ? 0 : 150,
   );
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-  const _onClick = (
-    timelineManager: TimelineManager,
-    assets: TimelineAsset[],
-    groupTitle: string,
-    asset: TimelineAsset,
-  ) => {
+  const _onClick = (timelineManager: TimelineManager, assets: Asset[], groupTitle: string, asset: Asset) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
       assetSelectHandler(timelineManager, asset, assets, groupTitle);
       return;
@@ -83,12 +73,12 @@
     void navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
-  const handleSelectGroup = (title: string, assets: TimelineAsset[]) => onSelect({ title, assets });
+  const handleSelectGroup = (title: string, assets: Asset[]) => onSelect({ title, assets });
 
   const assetSelectHandler = (
     timelineManager: TimelineManager,
-    asset: TimelineAsset,
-    assetsInDayGroup: TimelineAsset[],
+    asset: Asset,
+    assetsInDayGroup: Asset[],
     groupTitle: string,
   ) => {
     onSelectAssets(asset);
@@ -112,7 +102,7 @@
     }
   };
 
-  const assetMouseEventHandler = (groupTitle: string, asset: TimelineAsset | null) => {
+  const assetMouseEventHandler = (groupTitle: string, asset: Asset | null) => {
     // Show multi select icon on hover on date group
     hoveredDayGroup = groupTitle;
 

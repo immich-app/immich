@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { Asset } from '$lib/managers/timeline-manager/types';
 import { getAltText } from '$lib/utils/thumbnail-util';
 import { AssetVisibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
@@ -57,7 +57,7 @@ describe('getAltText', () => {
       expected: string;
     }) => {
       const testDate = new Date('2024-01-01T12:00:00.000Z');
-      const asset: TimelineAsset = {
+      const asset: Asset = {
         id: 'test-id',
         ownerId: 'test-owner',
         ratio: 1,
