@@ -71,6 +71,8 @@ describe('/admin/users', () => {
           expect.objectContaining({ email: userToDelete.userEmail }),
         ]),
       );
+      expect(body.find((u: any) => u.id === admin.userId)?.latestSession).toBeDefined();
+      expect(body.find((u: any) => u.id === admin.userId)?.latestSession.updatedAt).toBeInstanceOf(Date);
     });
 
     it('should include deleted users', async () => {
