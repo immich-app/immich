@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -8,6 +9,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart' as asset_entity;
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/response_extensions.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -24,7 +26,28 @@ class AssetMediaRepository {
 
   const AssetMediaRepository(this._assetApiRepository);
 
-  Future<List<String>> deleteAll(List<String> ids) => PhotoManager.editor.deleteWithIds(ids);
+  Future<bool> _androidSupportsTrash() async {
+    if (Platform.isAndroid) {
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      int sdkVersion = androidInfo.version.sdkInt;
+      return sdkVersion >= 31;
+    }
+    return false;
+  }
+
+  Future<List<String>> deleteAll(List<String> ids) async {
+    if (CurrentPlatform.isAndroid) {
+      if (await _androidSupportsTrash()) {
+        return PhotoManager.editor.android.moveToTrash(
+          ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
+        );
+      } else {
+        return PhotoManager.editor.deleteWithIds(ids);
+      }
+    }
+    return PhotoManager.editor.deleteWithIds(ids);
+  }
 
   Future<asset_entity.Asset?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
@@ -72,6 +95,7 @@ class AssetMediaRepository {
   // TODO: make this more efficient
   Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) async {
     final downloadedXFiles = <XFile>[];
+    final tempFiles = <File>[];
 
     for (var asset in assets) {
       final localId = (asset is LocalAsset)
@@ -82,6 +106,9 @@ class AssetMediaRepository {
       if (localId != null) {
         File? f = await AssetEntity(id: localId, width: 1, height: 1, typeInt: 0).originFile;
         downloadedXFiles.add(XFile(f!.path));
+        if (CurrentPlatform.isIOS) {
+          tempFiles.add(f);
+        }
       } else if (asset is RemoteAsset) {
         final tempDir = await getTemporaryDirectory();
         final name = asset.name;
@@ -95,6 +122,7 @@ class AssetMediaRepository {
 
         await tempFile.writeAsBytes(res.bodyBytes);
         downloadedXFiles.add(XFile(tempFile.path));
+        tempFiles.add(tempFile);
       } else {
         _log.warning("Asset type not supported for sharing: $asset");
         continue;
@@ -113,9 +141,9 @@ class AssetMediaRepository {
       downloadedXFiles,
       sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
     ).then((result) async {
-      for (var file in downloadedXFiles) {
+      for (var file in tempFiles) {
         try {
-          await File(file.path).delete();
+          await file.delete();
         } catch (e) {
           _log.warning("Failed to delete temporary file: ${file.path}", e);
         }

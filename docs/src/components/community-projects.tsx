@@ -24,11 +24,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://git.orenit.solutions/open/immichalbumpull',
   },
   {
-    title: 'Remove offline files',
-    description: 'A simple way to remove orphaned offline assets from the Immich database',
-    url: 'https://github.com/Thoroslives/immich_remove_offline_files',
-  },
-  {
     title: 'Immich-Tools',
     description: 'Provides scripts for handling problems on the repair page.',
     url: 'https://github.com/clumsyCoder00/Immich-Tools',
@@ -119,6 +114,11 @@ const projects: CommunityProjectProps[] = [
     title: 'Immich Stack',
     description: 'Auto-stack photos with identical filenames and differing extensions (i.e. JPG+RAW)',
     url: 'https://github.com/sid3windr/immich-stack',
+  },
+  {
+    title: 'Immich Stack',
+    description: 'Automatically groups similar photos into stacks within the Immich photo management system.',
+    url: 'https://github.com/Majorfi/immich-stack/',
   },
 ];
 

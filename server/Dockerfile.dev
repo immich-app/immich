@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202509210934@sha256:b5ce2d7eaf379d4cf15efd4bab180d8afc8a80d20b36c9800f4091aca6ae267e AS dev
+FROM ghcr.io/immich-app/base-server-dev:202510092146@sha256:124ec9659cba4a206924de5e3691f84acde16d75fa2b10b7007542424b696b96 AS dev
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
@@ -27,8 +27,8 @@ ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 FROM dev AS dev-container-server
 
 RUN apt-get update --allow-releaseinfo-change && \
-  apt-get install sudo inetutils-ping openjdk-11-jre-headless \
-  vim nano \
+  apt-get install sudo inetutils-ping openjdk-21-jre-headless \
+  vim nano curl \
   -y --no-install-recommends --fix-missing
 
 RUN usermod -aG sudo node && \
@@ -44,13 +44,18 @@ FROM dev-container-server AS dev-container-mobile
 USER root
 # Enable multiarch for arm64 if necessary
 RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
-  dpkg --add-architecture amd64 && \
-  apt-get update && \
-  apt-get install -y --no-install-recommends \
-  qemu-user-static \
-  libc6:amd64 \
-  libstdc++6:amd64 \
-  libgcc1:amd64; \
+    dpkg --add-architecture amd64 && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gnupg \
+    qemu-user-static \
+    libc6:amd64 \
+    libstdc++6:amd64 \
+    libgcc1:amd64; \
+  else \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gnupg; \
   fi
 
 # Flutter SDK
@@ -65,11 +70,11 @@ RUN mkdir -p ${FLUTTER_HOME} \
   && curl -C - --output flutter.tar.xz https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER_CHANNEL}/linux/flutter_linux_${FLUTTER_VERSION}-${FLUTTER_CHANNEL}.tar.xz \
   && tar -xf flutter.tar.xz --strip-components=1 -C ${FLUTTER_HOME} \
   && rm flutter.tar.xz \
-  && chown -R node ${FLUTTER_HOME}
+  && chown -R node ${FLUTTER_HOME} \
+  && git config --global --add safe.directory ${FLUTTER_HOME}
 
 
-RUN apt-get update \
-  && wget -qO- https://dcm.dev/pgp-key.public | gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
+RUN wget -qO- https://dcm.dev/pgp-key.public | gpg --dearmor -o /usr/share/keyrings/dcm.gpg \
   && echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | tee /etc/apt/sources.list.d/dart_stable.list \
   && apt-get update \
   && apt-get install dcm -y

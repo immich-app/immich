@@ -1,12 +1,10 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
@@ -16,10 +14,9 @@ class BetaTimelineListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final betaTimelineValue = ref.watch(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.betaTimeline);
-    final serverInfo = ref.watch(serverInfoProvider);
     final auth = ref.watch(authProvider);
 
-    if (!auth.isAuthenticated || (serverInfo.serverVersion.minor < 136 && kReleaseMode)) {
+    if (!auth.isAuthenticated) {
       return const SizedBox.shrink();
     }
 

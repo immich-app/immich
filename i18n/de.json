@@ -599,6 +599,7 @@
   "backup_controller_page_turn_on": "Sicherung im Vordergrund einschalten",
   "backup_controller_page_uploading_file_info": "Informationen",
   "backup_err_only_album": "Das einzige Album kann nicht entfernt werden",
+  "backup_error_sync_failed": "Synchronisierung fehlgeschlagen. Backup kann nicht verarbeitet werden.",
   "backup_info_card_assets": "Elemente",
   "backup_manual_cancelled": "Abgebrochen",
   "backup_manual_in_progress": "Sicherung läuft bereits. Bitte versuche es später erneut",
