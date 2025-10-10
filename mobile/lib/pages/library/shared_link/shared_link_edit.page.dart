@@ -274,7 +274,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
       }
 
       if (newLink != null && serverUrl != null) {
-        final fullPath = getShareUrlPath(newLink);
+        final fullPath = newLink.getShareUrlPath();
         newShareLink.value = "$serverUrl$fullPath";
         copyLinkToClipboard();
       } else if (newLink == null) {

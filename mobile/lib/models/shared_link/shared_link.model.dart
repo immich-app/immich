@@ -81,6 +81,11 @@ class SharedLink {
           ? dto.assets[0].id
           : null;
 
+  String getShareUrlPath() {
+    final slug = this.slug?.trim();
+    return slug?.isNotEmpty == true ? 's/$slug' : 'share/$key';
+  }
+
   @override
   String toString() =>
       'SharedLink(id=$id, title=$title, thumbAssetId=$thumbAssetId, allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, password=$password, expiresAt=$expiresAt, key=$key, showMetadata=$showMetadata, slug=$slug, type=$type)';

@@ -78,7 +78,7 @@ class SharedLinkItem extends ConsumerWidget {
         return;
       }
 
-      final fullPath = getShareUrlPath(sharedLink);
+      final fullPath = sharedLink.getShareUrlPath();
 
       Clipboard.setData(ClipboardData(text: "$serverUrl$fullPath")).then((_) {
         context.scaffoldMessenger.showSnackBar(
