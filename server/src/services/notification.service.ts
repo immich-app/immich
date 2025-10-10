@@ -296,7 +296,7 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    await this.sendAlbumInviteLocalNotification(album, recipientId, album.owner.name);
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, album.owner.name);
 
     const { emailNotifications } = getPreferences(recipient.metadata);
 
@@ -347,7 +347,7 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    await this.sendAlbumUpdateLocalNotification(album, recipientId);
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumUpdate);
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
@@ -437,26 +437,21 @@ export class NotificationService extends BaseService {
     };
   }
 
-  private async sendAlbumInviteLocalNotification(album: MapAlbumDto, userId: string, senderName: string) {
+  private async sendAlbumLocalNotification(
+    album: MapAlbumDto,
+    userId: string,
+    type: NotificationType.AlbumInvite | NotificationType.AlbumUpdate,
+    senderName?: string,
+  ) {
+    const isInvite = type === NotificationType.AlbumInvite;
     const item = await this.notificationRepository.create({
       userId: userId,
-      type: NotificationType.AlbumInvite,
-      level: NotificationLevel.Success,
-      title: 'You are invited to a shared album',
-      description: `${senderName} shared an album (${album.albumName}) with you`,
-      data: JSON.stringify({ albumId: album.id }),
-    });
-
-    this.eventRepository.clientSend('on_notification', userId, mapNotification(item));
-  }
-
-  private async sendAlbumUpdateLocalNotification(album: MapAlbumDto, userId: string) {
-    const item = await this.notificationRepository.create({
-      userId: userId,
-      type: NotificationType.AlbumUpdate,
-      level: NotificationLevel.Info,
-      title: 'Shared album updated',
-      description: `New media has been added to the album (${album.albumName})`,
+      type,
+      level: isInvite ? NotificationLevel.Success : NotificationLevel.Info,
+      title: isInvite ? 'Shared Album Invitation' : 'Shared Album Update',
+      description: isInvite
+        ? `${senderName} shared an album (${album.albumName}) with you`
+        : `New media has been added to the album (${album.albumName})`,
       data: JSON.stringify({ albumId: album.id }),
     });
 

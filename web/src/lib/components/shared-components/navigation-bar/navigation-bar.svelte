@@ -39,8 +39,12 @@
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
 
-  onMount(() => {
-    notificationManager.refresh().catch((_) => void 0);
+  onMount(async () => {
+    try {
+      await notificationManager.refresh();
+    } catch (error) {
+      console.error('Failed to load notifications on mount', error);
+    }
   });
 </script>
 
