@@ -55,11 +55,23 @@ export class DatabaseBackupConfig {
   keepLastAmount!: number;
 }
 
+export class UploadBackupConfig {
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  maxAgeHours!: number;
+}
+
 export class SystemConfigBackupsDto {
   @Type(() => DatabaseBackupConfig)
   @ValidateNested()
   @IsObject()
   database!: DatabaseBackupConfig;
+
+  @Type(() => UploadBackupConfig)
+  @ValidateNested()
+  @IsObject()
+  upload!: UploadBackupConfig;
 }
 
 export class SystemConfigFFmpegDto {
@@ -337,17 +349,6 @@ class SystemConfigNewVersionCheckDto {
   enabled!: boolean;
 }
 
-class SystemConfigRemovePartialUploadsDto {
-  @ValidateBoolean()
-  enabled!: boolean;
-
-  @IsInt()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  hoursAgo!: number;
-}
-
 class SystemConfigNightlyTasksDto {
   @IsDateStringFormat('HH:mm', { message: 'startTime must be in HH:mm format' })
   startTime!: string;
@@ -367,10 +368,8 @@ class SystemConfigNightlyTasksDto {
   @ValidateBoolean()
   syncQuotaUsage!: boolean;
 
-  @Type(() => SystemConfigRemovePartialUploadsDto)
-  @ValidateNested()
-  @IsObject()
-  removeStaleUploads!: SystemConfigRemovePartialUploadsDto;
+  @ValidateBoolean()
+  removeStaleUploads!: boolean;
 }
 
 class SystemConfigOAuthDto {
