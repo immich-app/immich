@@ -684,8 +684,6 @@ class ApiClient {
           return SystemConfigOAuthDto.fromJson(value);
         case 'SystemConfigPasswordLoginDto':
           return SystemConfigPasswordLoginDto.fromJson(value);
-        case 'SystemConfigRemovePartialUploadsDto':
-          return SystemConfigRemovePartialUploadsDto.fromJson(value);
         case 'SystemConfigReverseGeocodingDto':
           return SystemConfigReverseGeocodingDto.fromJson(value);
         case 'SystemConfigServerDto':
@@ -750,6 +748,8 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':
           return UpdateLibraryDto.fromJson(value);
+        case 'UploadBackupConfig':
+          return UploadBackupConfig.fromJson(value);
         case 'UploadOkDto':
           return UploadOkDto.fromJson(value);
         case 'UsageByUserDto':

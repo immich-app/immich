@@ -16658,10 +16658,14 @@
         "properties": {
           "database": {
             "$ref": "#/components/schemas/DatabaseBackupConfig"
+          },
+          "upload": {
+            "$ref": "#/components/schemas/UploadBackupConfig"
           }
         },
         "required": [
-          "database"
+          "database",
+          "upload"
         ],
         "type": "object"
       },
@@ -17195,7 +17199,7 @@
             "type": "boolean"
           },
           "removeStaleUploads": {
-            "$ref": "#/components/schemas/SystemConfigRemovePartialUploadsDto"
+            "type": "boolean"
           },
           "startTime": {
             "type": "string"
@@ -17322,22 +17326,6 @@
         },
         "required": [
           "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigRemovePartialUploadsDto": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "hoursAgo": {
-            "minimum": 1,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "enabled",
-          "hoursAgo"
         ],
         "type": "object"
       },
@@ -18076,6 +18064,18 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UploadBackupConfig": {
+        "properties": {
+          "maxAgeHours": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "maxAgeHours"
+        ],
         "type": "object"
       },
       "UploadOkDto": {

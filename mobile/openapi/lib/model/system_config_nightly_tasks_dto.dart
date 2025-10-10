@@ -30,7 +30,7 @@ class SystemConfigNightlyTasksDto {
 
   bool missingThumbnails;
 
-  SystemConfigRemovePartialUploadsDto removeStaleUploads;
+  bool removeStaleUploads;
 
   String startTime;
 
@@ -85,7 +85,7 @@ class SystemConfigNightlyTasksDto {
         databaseCleanup: mapValueOfType<bool>(json, r'databaseCleanup')!,
         generateMemories: mapValueOfType<bool>(json, r'generateMemories')!,
         missingThumbnails: mapValueOfType<bool>(json, r'missingThumbnails')!,
-        removeStaleUploads: SystemConfigRemovePartialUploadsDto.fromJson(json[r'removeStaleUploads'])!,
+        removeStaleUploads: mapValueOfType<bool>(json, r'removeStaleUploads')!,
         startTime: mapValueOfType<String>(json, r'startTime')!,
         syncQuotaUsage: mapValueOfType<bool>(json, r'syncQuotaUsage')!,
       );

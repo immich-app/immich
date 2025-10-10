@@ -1359,8 +1359,12 @@ export type DatabaseBackupConfig = {
     enabled: boolean;
     keepLastAmount: number;
 };
+export type UploadBackupConfig = {
+    maxAgeHours: number;
+};
 export type SystemConfigBackupsDto = {
     database: DatabaseBackupConfig;
+    upload: UploadBackupConfig;
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -1484,16 +1488,12 @@ export type SystemConfigMetadataDto = {
 export type SystemConfigNewVersionCheckDto = {
     enabled: boolean;
 };
-export type SystemConfigRemovePartialUploadsDto = {
-    enabled: boolean;
-    hoursAgo: number;
-};
 export type SystemConfigNightlyTasksDto = {
     clusterNewFaces: boolean;
     databaseCleanup: boolean;
     generateMemories: boolean;
     missingThumbnails: boolean;
-    removeStaleUploads: SystemConfigRemovePartialUploadsDto;
+    removeStaleUploads: boolean;
     startTime: string;
     syncQuotaUsage: boolean;
 };
