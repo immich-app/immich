@@ -83,6 +83,18 @@ export class SessionRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getLatestByUserId(userId: string) {
+    return this.db
+      .selectFrom('session')
+      .selectAll('session')
+      .where('session.userId', '=', userId)
+      .orderBy('session.updatedAt', 'desc')
+      .orderBy('session.createdAt', 'desc')
+      .limit(1)
+      .executeTakeFirst();
+  }
+
   create(dto: Insertable<SessionTable>) {
     return this.db.insertInto('session').values(dto).returningAll().executeTakeFirstOrThrow();
   }

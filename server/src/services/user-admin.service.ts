@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { SALT_ROUNDS } from 'src/constants';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { mapSession } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
   UserAdminCreateDto,
@@ -23,7 +24,19 @@ export class UserAdminService extends BaseService {
       id: dto.id,
       withDeleted: dto.withDeleted,
     });
-    return users.map((user) => mapUserAdmin(user));
+
+    const results = users.map((user) => mapUserAdmin(user));
+    await this.fillLatestSessions(results, auth);
+    return results;
+  }
+
+  private async fillLatestSessions(results: UserAdminResponseDto[], auth: AuthDto) {
+    for (const result of results) {
+      const latestSession = await this.sessionRepository.getLatestByUserId(result.id);
+      if (latestSession) {
+        result.latestSession = mapSession(latestSession, auth.user.id);
+      }
+    }
   }
 
   async create(dto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
