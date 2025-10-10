@@ -36,6 +36,7 @@ export class MonthGroup {
 
   #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
+  percent: number = $state(0);
 
   assetsCount: number = $derived(
     this.isLoaded
@@ -266,6 +267,20 @@ export class MonthGroup {
     }
     if (needsIntersectionUpdate) {
       timelineManager.updateIntersections();
+
+      const topMonth = timelineManager.topIntersectingMonthGroup;
+      if (!topMonth) {
+        return;
+      }
+
+      const currentIndex = timelineManager.months.indexOf(topMonth);
+      if (currentIndex <= 0) {
+        return;
+      }
+
+      if (index < currentIndex || timelineManager.topIntersectingMonthGroupPercent > 0) {
+        timelineManager.scrollBy(heightDelta);
+      }
     }
   }
 
