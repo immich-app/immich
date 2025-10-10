@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
@@ -18,7 +18,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
-  import { navigate } from '$lib/utils/navigation';
+  import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -135,20 +135,7 @@
     }
   };
 
-  const scrollToTop = () => {
-    scrollTo(0);
-  };
-
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
-
-  const assetIsVisible = (assetTop: number): boolean => {
-    if (!element) {
-      return false;
-    }
-
-    const { clientHeight, scrollTop } = element;
-    return assetTop >= scrollTop && assetTop < scrollTop + clientHeight;
-  };
 
   const scrollToAssetId = async (assetId: string) => {
     const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
@@ -157,14 +144,7 @@
     }
 
     const height = getAssetHeight(assetId, monthGroup);
-
-    // If the asset is already visible, then don't scroll.
-    if (assetIsVisible(height)) {
-      return true;
-    }
-
     scrollTo(height);
-    updateSlidingWindow();
     return true;
   };
 
@@ -179,46 +159,68 @@
     return true;
   };
 
-  const completeNav = async () => {
-    const scrollTarget = $gridScrollTarget?.at;
-    let scrolled = false;
-    if (scrollTarget) {
-      scrolled = await scrollToAssetId(scrollTarget);
+  export const scrollAfterNavigate = async ({ scrollToAssetQueryParam }: { scrollToAssetQueryParam: boolean }) => {
+    if (timelineManager.viewportHeight === 0 || timelineManager.viewportWidth === 0) {
+      // this can happen if you do the following navigation order
+      // /photos?at=<id>, /photos/<id>, http://example.com, browser back, browser back
+      const rect = element?.getBoundingClientRect();
+      if (rect) {
+        timelineManager.viewportHeight = rect.height;
+        timelineManager.viewportWidth = rect.width;
+      }
     }
-    if (!scrolled) {
-      // if the asset is not found, scroll to the top
-      scrollToTop();
+    if (scrollToAssetQueryParam) {
+      const scrollTarget = $gridScrollTarget?.at;
+      let scrolled = false;
+      if (scrollTarget) {
+        scrolled = await scrollToAssetId(scrollTarget);
+      }
+      if (!scrolled) {
+        // if the asset is not found, scroll to the top
+        scrollTo(0);
+      }
     }
     showSkeleton = false;
   };
 
-  beforeNavigate(() => (timelineManager.suspendTransitions = true));
-
-  afterNavigate((nav) => {
-    const { complete } = nav;
-    complete.then(completeNav, completeNav);
+  beforeNavigate(({ from, to }) => {
+    timelineManager.suspendTransitions = true;
+    hasNavigatedToOrFromAssetViewer = isAssetViewerRoute(to) || isAssetViewerRoute(from);
   });
 
-  const handleAfterUpdate = (payload: UpdatePayload) => {
-    const timelineUpdate = payload.updates.some(
-      (update) => update.path.endsWith('Timeline.svelte') || update.path.endsWith('assets-store.ts'),
-    );
+  // tri-state boolean
+  let initialLoadWasAssetViewer: boolean | null = null;
+  let hasNavigatedToOrFromAssetViewer: boolean = false;
+  let timelineScrollPositionInitialized = false;
 
-    if (timelineUpdate) {
-      setTimeout(() => {
-        const asset = $page.url.searchParams.get('at');
-        if (asset) {
-          $gridScrollTarget = { at: asset };
-          void navigate(
-            { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget },
-            { replaceState: true, forceNavigate: true },
-          );
-        } else {
-          scrollToTop();
-        }
-        showSkeleton = false;
-      }, 500);
+  const completeAfterNavigate = () => {
+    const assetViewerPage = !!(page.route.id?.endsWith('/[[assetId=id]]') && page.params.assetId);
+    let isInitial = false;
+    // Set initial load state only once
+    if (initialLoadWasAssetViewer === null) {
+      initialLoadWasAssetViewer = assetViewerPage && !hasNavigatedToOrFromAssetViewer;
+      isInitial = true;
     }
+    let scrollToAssetQueryParam = false;
+    if (
+      !timelineScrollPositionInitialized &&
+      ((isInitial && !assetViewerPage) || // Direct timeline load
+        (!isInitial && hasNavigatedToOrFromAssetViewer)) // Navigated from asset viewer
+    ) {
+      scrollToAssetQueryParam = true;
+      timelineScrollPositionInitialized = true;
+    }
+    return scrollAfterNavigate({ scrollToAssetQueryParam });
+  };
+
+  afterNavigate(({ complete }) => void complete.then(completeAfterNavigate, completeAfterNavigate));
+
+  const handleAfterUpdate = () => {
+    const asset = page.url.searchParams.get('at');
+    if (asset) {
+      $gridScrollTarget = { at: asset };
+    }
+    void scrollAfterNavigate({ scrollToAssetQueryParam: true });
   };
 
   const handleBeforeUpdate = (payload: UpdatePayload) => {
