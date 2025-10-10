@@ -21,7 +21,6 @@
   import { emptyTrash, restoreTrash } from '@immich/sdk';
   import { Button, HStack, modalManager, Text } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -35,9 +34,8 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ isTrashed: true });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { isTrashed: true };
 
   const assetInteraction = new AssetInteraction();
 
@@ -116,7 +114,7 @@
       </HStack>
     {/snippet}
 
-    <Timeline enableRouting={true} {timelineManager} {assetInteraction} onEscape={handleEscape}>
+    <Timeline enableRouting={true} {options} {assetInteraction} onEscape={handleEscape}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>

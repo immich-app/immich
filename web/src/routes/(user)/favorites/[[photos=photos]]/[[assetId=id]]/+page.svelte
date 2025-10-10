@@ -21,7 +21,6 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -31,9 +30,8 @@
 
   let { data }: Props = $props();
 
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({ isFavorite: true, withStacked: true });
-  onDestroy(() => timelineManager.destroy());
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = { isFavorite: true, withStacked: true };
 
   const assetInteraction = new AssetInteraction();
 
@@ -54,7 +52,8 @@
   <Timeline
     enableRouting={true}
     withStacked={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.UNFAVORITE}
     onEscape={handleEscape}
