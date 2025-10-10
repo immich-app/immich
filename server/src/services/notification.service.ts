@@ -445,7 +445,7 @@ export class NotificationService extends BaseService {
   ) {
     const isInvite = type === NotificationType.AlbumInvite;
     const item = await this.notificationRepository.create({
-      userId: userId,
+      userId,
       type,
       level: isInvite ? NotificationLevel.Success : NotificationLevel.Info,
       title: isInvite ? 'Shared Album Invitation' : 'Shared Album Update',
