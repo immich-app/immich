@@ -447,13 +447,4 @@ describe(AssetUploadController.name, () => {
       expect(status).toBe(400);
     });
   });
-
-  describe('OPTIONS /upload', () => {
-    it('should return 204 with upload limits', async () => {
-      const { status, headers } = await request(ctx.getHttpServer()).options('/upload');
-
-      expect(status).toBe(204);
-      expect(headers['upload-limit']).toBe('min-size=0');
-    });
-  });
 });

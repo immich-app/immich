@@ -1,17 +1,4 @@
-import {
-  Controller,
-  Delete,
-  Head,
-  Header,
-  HttpCode,
-  HttpStatus,
-  Options,
-  Param,
-  Patch,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Controller, Delete, Head, Options, Param, Patch, Post, Req, Res } from '@nestjs/common';
 import { ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
@@ -120,7 +107,7 @@ export class AssetUploadController {
   }
 
   @Options()
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Header('Upload-Limit', 'min-size=0')
-  getUploadOptions() {}
+  getUploadOptions(@Res() res: Response) {
+    return this.service.getUploadOptions(res);
+  }
 }
