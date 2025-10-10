@@ -17492,6 +17492,9 @@
           "isAdmin": {
             "type": "boolean"
           },
+          "latestSession": {
+            "$ref": "#/components/schemas/SessionResponseDto"
+          },
           "license": {
             "allOf": [
               {
