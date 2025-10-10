@@ -16,7 +16,6 @@
   import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, modalManager, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -28,13 +27,12 @@
 
   const assetInteraction = new AssetInteraction();
 
-  const timelineManager = new TimelineManager();
-  $effect(() => void timelineManager.updateOptions({ deferInit: !tag, tagId: tag?.id }));
-  onDestroy(() => timelineManager.destroy());
-
   let tags = $derived<TagResponseDto[]>(data.tags);
   const tree = $derived(TreeNode.fromTags(tags));
   const tag = $derived(tree.traverse(data.path));
+
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = $derived({ deferInit: !tag, tagId: tag?.id });
 
   const handleNavigation = (tag: string) => navigateToView(joinPaths(data.path, tag));
 
@@ -117,7 +115,13 @@
 
   <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
     {#if tag.hasAssets}
-      <Timeline enableRouting={true} {timelineManager} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
+      <Timeline
+        enableRouting={true}
+        bind:timelineManager
+        {options}
+        {assetInteraction}
+        removeAction={AssetAction.UNARCHIVE}
+      >
         {#snippet empty()}
           <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}

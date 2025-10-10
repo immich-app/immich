@@ -97,8 +97,6 @@ export class TimelineManager {
     monthGroup: undefined,
   });
 
-  constructor() {}
-
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
     let changed = false;
     changed ||= this.#setHeaderHeight(headerHeight);

@@ -63,7 +63,7 @@
     mdiPlus,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { onDestroy, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -76,10 +76,8 @@
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const timelineManager = new TimelineManager();
-  $effect(() => void timelineManager.updateOptions({ visibility: AssetVisibility.Timeline, personId: data.person.id }));
-  onDestroy(() => timelineManager.destroy());
-
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
   const assetInteraction = new AssetInteraction();
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
@@ -388,7 +386,8 @@
     <Timeline
       enableRouting={true}
       {person}
-      {timelineManager}
+      bind:timelineManager
+      {options}
       {assetInteraction}
       isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
