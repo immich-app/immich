@@ -90,5 +90,3 @@ String? punycodeDecodeUrl(String? serverUrl) {
 
   return Uri.decodeFull(serverUri.replace(host: decodedHost).toString());
 }
-
-
