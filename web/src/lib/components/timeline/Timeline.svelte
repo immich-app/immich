@@ -129,10 +129,6 @@
     timelineManager.scrollableElement = scrollableElement;
   });
 
-  const scrollToTop = () => {
-    timelineManager.scrollTo(0);
-  };
-
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
 
   const scrollToAssetId = async (assetId: string) => {
@@ -142,7 +138,6 @@
     }
 
     const height = getAssetHeight(assetId, monthGroup);
-
     timelineManager.scrollTo(height);
     return true;
   };
@@ -175,7 +170,7 @@
       }
       if (!scrolled) {
         // if the asset is not found, scroll to the top
-        scrollToTop(0);
+        timelineManager.scrollToTop(0);
       }
     }
     invisible = false;
@@ -183,7 +178,9 @@
 
   beforeNavigate(({ from, to }) => {
     timelineManager.suspendTransitions = true;
-    hasNavigatedToOrFromAssetViewer = isAssetViewerRoute(to) || isAssetViewerRoute(from);
+    const toViewer = isAssetViewerRoute(to);
+    const fromViewer = isAssetViewerRoute(from);
+    hasNavigatedToOrFromAssetViewer = (toViewer && !fromViewer) || (fromViewer && !toViewer);
   });
 
   // tri-state boolean
@@ -237,13 +234,29 @@
     }
   });
 
-  const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, monthGroupScrollPercent: number) => {
-    const topOffset = segmentTop;
-    const maxScrollPercent = timelineManager.maxScrollPercent;
-    const delta = segmentHeight * monthGroupScrollPercent;
+  const getMaxScrollPercent = () => {
+    const totalHeight = timelineManager.timelineHeight + bottomSectionHeight + timelineManager.topSectionHeight;
+    return (totalHeight - timelineManager.viewportHeight) / totalHeight;
+  };
+
+  const getMaxScroll = () => {
+    if (!scrollableElement || !timelineElement) {
+      return 0;
+    }
+    return (
+      timelineManager.topSectionHeight +
+      bottomSectionHeight +
+      (timelineElement.clientHeight - scrollableElement.clientHeight)
+    );
+  };
+
+  const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
+    const topOffset = monthGroup.top;
+    const maxScrollPercent = getMaxScrollPercent();
+    const delta = monthGroup.height * monthGroupScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
-    timelineManager.scrollTo(scrollToTop);
+    timelineManager.scrollTo(offset);
   };
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   // this function scrolls the timeline to the specified month group and offset, based on scrubber interaction
