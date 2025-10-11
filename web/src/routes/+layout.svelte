@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { shortcut } from '$lib/actions/shortcut.svelte';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
@@ -137,10 +137,9 @@
 </svelte:head>
 
 <svelte:document
-  use:shortcut={{
-    shortcut: { ctrl: true, shift: true, key: 'm' },
-    onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
-  }}
+  {@attach shortcut({ key: 'm', ctrl: true, shift: true }, $t('get_my_immich_link'), () =>
+    copyToClipboard(getMyImmichLink().toString()),
+  )}
 />
 
 {#if page.data.error}

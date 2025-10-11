@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Category, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AlbumPickerModal from '$lib/modals/AlbumPickerModal.svelte';
@@ -11,9 +12,10 @@
   interface Props {
     shared?: boolean;
     onAddToAlbum?: OnAddToAlbum;
+    shortcutCategory?: Category;
   }
 
-  let { shared = false, onAddToAlbum = () => {} }: Props = $props();
+  let { shared = false, onAddToAlbum = () => {}, shortcutCategory }: Props = $props();
 
   const { getAssets } = getAssetControlContext();
 
@@ -43,4 +45,6 @@
   text={shared ? $t('add_to_shared_album') : $t('add_to_album')}
   icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
   shortcut={{ key: 'l', shift: shared }}
+  {shortcutCategory}
+  variant={shared ? ShortcutVariant.AddSharedAlbum : ShortcutVariant.AddAlbum}
 />

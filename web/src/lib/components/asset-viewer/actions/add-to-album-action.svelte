@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { Category, category, shortcut, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
@@ -40,7 +40,15 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'l', shift: shared }, onShortcut: onClick }} />
+<svelte:document
+  {@attach shortcut(
+    { key: 'l', shift: shared },
+    shared
+      ? category(Category.AssetActions, $t('add_to_shared_album'), ShortcutVariant.AddSharedAlbum)
+      : category(Category.AssetActions, $t('add_to_album'), ShortcutVariant.AddAlbum),
+    onClick,
+  )}
+/>
 
 <MenuOption
   icon={shared ? mdiShareVariantOutline : mdiImageAlbum}

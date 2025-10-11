@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { blurOnEnter } from '$lib/actions/input';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -36,7 +36,6 @@
 </script>
 
 <input
-  use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
   onblur={handleUpdateName}
   class="w-[99%] mb-2 border-b-2 border-transparent text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all {isOwned
     ? 'hover:border-gray-400'
@@ -46,4 +45,5 @@
   disabled={!isOwned}
   title={$t('edit_title')}
   placeholder={$t('add_a_title')}
+  {@attach blurOnEnter}
 />

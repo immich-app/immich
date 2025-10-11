@@ -1,6 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import { ctrlKey, shiftKey } from '$lib/actions/input';
+  import {
+    Category,
+    category,
+    conditionalShortcut,
+    registerShortcutVariant,
+    shortcut,
+    ShortcutVariant,
+  } from '$lib/actions/shortcut.svelte';
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import ChangeDate, {
     type AbsoluteResult,
@@ -13,9 +21,7 @@
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -23,9 +29,8 @@
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
   import { DateTime } from 'luxon';
-  let { isViewing: showAssetViewer } = assetViewingStore;
+  import { t } from 'svelte-i18n';
 
   interface Props {
     timelineManager: TimelineManager;
@@ -129,17 +134,6 @@
   const isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
   const idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
-  let isShortcutModalOpen = false;
-
-  const handleOpenShortcutModal = async () => {
-    if (isShortcutModalOpen) {
-      return;
-    }
-
-    isShortcutModalOpen = true;
-    await modalManager.show(ShortcutsModal, {});
-    isShortcutModalOpen = false;
-  };
 
   $effect(() => {
     if (isEmpty) {
@@ -149,47 +143,64 @@
 
   const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
   const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
-
-  let shortcutList = $derived(
-    (() => {
-      if (searchStore.isSearchEnabled || $showAssetViewer) {
-        return [];
-      }
-
-      const shortcuts: ShortcutOptions[] = [
-        { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
-        { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(timelineManager, assetInteraction) },
-        { shortcut: { key: 'ArrowRight' }, onShortcut: () => setFocusTo('earlier', 'asset') },
-        { shortcut: { key: 'ArrowLeft' }, onShortcut: () => setFocusTo('later', 'asset') },
-        { shortcut: { key: 'D' }, onShortcut: () => setFocusTo('earlier', 'day') },
-        { shortcut: { key: 'D', shift: true }, onShortcut: () => setFocusTo('later', 'day') },
-        { shortcut: { key: 'M' }, onShortcut: () => setFocusTo('earlier', 'month') },
-        { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
-        { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
-        { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
-        { shortcut: { key: 'G' }, onShortcut: () => (isShowSelectDate = true) },
-      ];
-      if (onEscape) {
-        shortcuts.push({ shortcut: { key: 'Escape' }, onShortcut: onEscape });
-      }
-
-      if (assetInteraction.selectionActive) {
-        shortcuts.push(
-          { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
-          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-          { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
-          { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
-        );
-      }
-
-      return shortcuts;
-    })(),
-  );
 </script>
 
-<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:document
+  onkeydown={onKeyDown}
+  onkeyup={onKeyUp}
+  onselectstart={onSelectStart}
+  {@attach shortcut('/', $t('explore'), () => goto(AppRoute.EXPLORE))}
+  {@attach shortcut(ctrlKey('a'), category(Category.Selection, $t('select_all'), ShortcutVariant.SelectAll), () =>
+    selectAllAssets(timelineManager, assetInteraction),
+  )}
+  {@attach conditionalShortcut(
+    () => !!onEscape,
+    () => shortcut('Escape', category(Category.Selection, $t('deselect_all'), ShortcutVariant.DeselectAll), onEscape!),
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.SelectAll, ShortcutVariant.DeselectAll)}
+  {@attach shortcut('ArrowLeft', category(Category.Navigation, $t('move_left'), ShortcutVariant.NextAsset), () =>
+    setFocusTo('later', 'asset'),
+  )}
+  {@attach shortcut('ArrowRight', category(Category.Navigation, $t('move_right'), ShortcutVariant.PreviousAsset), () =>
+    setFocusTo('earlier', 'asset'),
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.NextAsset, ShortcutVariant.PreviousAsset)}
+  {@attach shortcut('d', category(Category.Navigation, $t('previous_day'), ShortcutVariant.PreviousDay), () =>
+    setFocusTo('earlier', 'day'),
+  )}
+  {@attach shortcut(shiftKey('d'), category(Category.Navigation, $t('next_day'), ShortcutVariant.NextDay), () =>
+    setFocusTo('later', 'day'),
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.PreviousDay, ShortcutVariant.NextDay)}
+  {@attach shortcut('m', category(Category.Navigation, $t('previous_month'), ShortcutVariant.PreviousMonth), () =>
+    setFocusTo('earlier', 'day'),
+  )}
+  {@attach shortcut(shiftKey('m'), category(Category.Navigation, $t('next_month'), ShortcutVariant.NextMonth), () =>
+    setFocusTo('later', 'day'),
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.PreviousMonth, ShortcutVariant.NextMonth)}
+  {@attach shortcut('y', category(Category.Navigation, $t('previous_year'), ShortcutVariant.PreviousYear), () =>
+    setFocusTo('earlier', 'year'),
+  )}
+  {@attach shortcut(shiftKey('y'), category(Category.Navigation, $t('next_year'), ShortcutVariant.NextYear), () =>
+    setFocusTo('later', 'year'),
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.PreviousYear, ShortcutVariant.NextYear)}
+  {@attach shortcut('g', category(Category.Navigation, $t('go_to_date')), () => (isShowSelectDate = true))}
+  {@attach shortcut(
+    'Delete',
+    category(Category.Selection, isTrashEnabled ? $t('move_to_trash') : $t('delete'), ShortcutVariant.Trash),
+    onDelete,
+  )}
+  {@attach shortcut(
+    shiftKey('Delete'),
+    category(Category.Selection, isTrashEnabled ? $t('delete_skip_trash') : $t('delete'), ShortcutVariant.Delete),
+    onForceDelete,
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.Trash, ShortcutVariant.Delete)}
+  {@attach shortcut('s', category(Category.Selection, $t('stack')), onStackAssets)}
+  {@attach shortcut(shiftKey('a'), category(Category.Selection, $t('archive')), toggleArchive)}
+/>
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -212,7 +223,7 @@
           (DateTime.fromISO(dateString.date) as DateTime<true>).toObject(),
         );
         if (asset) {
-          setFocusAsset(asset);
+          void setFocusAsset(asset);
         }
       }
     }}

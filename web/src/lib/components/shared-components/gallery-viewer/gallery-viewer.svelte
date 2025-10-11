@@ -1,12 +1,21 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import { ctrlKey, shiftKey } from '$lib/actions/input';
+  import {
+    Category,
+    category,
+    conditionalShortcut,
+    newShortcutScope,
+    registerShortcutVariant,
+    shortcut,
+    ShortcutVariant,
+  } from '$lib/actions/shortcut.svelte';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+  import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
@@ -20,11 +29,9 @@
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
-  import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
   interface Props {
     initialAssetId?: string;
@@ -282,53 +289,11 @@
     }
   };
 
-  const focusNextAsset = () => moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
+  const focusNextAsset = () => {
+    moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'next');
+  };
   const focusPreviousAsset = () =>
     moveFocus((element) => element.dataset.thumbnailFocusContainer !== undefined, 'previous');
-
-  let isShortcutModalOpen = false;
-
-  const handleOpenShortcutModal = async () => {
-    if (isShortcutModalOpen) {
-      return;
-    }
-
-    isShortcutModalOpen = true;
-    await modalManager.show(ShortcutsModal, {});
-    isShortcutModalOpen = false;
-  };
-
-  const shortcutList = $derived(
-    (() => {
-      if ($isViewerOpen) {
-        return [];
-      }
-
-      const shortcuts: ShortcutOptions[] = [
-        { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
-        { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
-        ...(arrowNavigation
-          ? [
-              { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
-              { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
-            ]
-          : []),
-      ];
-
-      if (assetInteraction.selectionActive) {
-        shortcuts.push(
-          { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
-          { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
-          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-          { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
-        );
-      }
-
-      return shortcuts;
-    })(),
-  );
 
   const handleNext = async (): Promise<boolean> => {
     try {
@@ -465,8 +430,51 @@
   onkeydown={onKeyDown}
   onkeyup={onKeyUp}
   onselectstart={onSelectStart}
-  use:shortcuts={shortcutList}
   onscroll={() => updateSlidingWindow()}
+  {@attach newShortcutScope}
+  {@attach shortcut('/', $t('places'), () => goto(AppRoute.EXPLORE))}
+  {@attach shortcut(
+    ctrlKey('a'),
+    category(Category.Selection, $t('select_all'), ShortcutVariant.SelectAll),
+    selectAllAssets,
+  )}
+  {@attach shortcut(
+    [{ key: 'Escape' }, ctrlKey('d')],
+    category(Category.Selection, $t('deselect_all'), ShortcutVariant.DeselectAll),
+    deselectAllAssets,
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.SelectAll, ShortcutVariant.DeselectAll)}
+  {@attach shortcut(
+    'Delete',
+    category(Category.Selection, isTrashEnabled ? $t('move_to_trash') : $t('delete'), ShortcutVariant.Trash),
+    onDelete,
+  )}
+  {@attach shortcut(
+    shiftKey('Delete'),
+    category(Category.Selection, isTrashEnabled ? $t('delete_skip_trash') : $t('delete'), ShortcutVariant.Delete),
+    onForceDelete,
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.Trash, ShortcutVariant.Delete)}
+  {@attach shortcut(shiftKey('a'), category(Category.Selection, $t('archive')), toggleArchive)}
+  {@attach conditionalShortcut(
+    () => arrowNavigation,
+    () =>
+      shortcut(
+        'ArrowRight',
+        category(Category.Navigation, $t('focus_next'), ShortcutVariant.FocusNext),
+        focusNextAsset,
+      ),
+  )}
+  {@attach conditionalShortcut(
+    () => arrowNavigation,
+    () =>
+      shortcut(
+        'ArrowLeft',
+        category(Category.Navigation, $t('focus_previous'), ShortcutVariant.FocusPrevious),
+        focusPreviousAsset,
+      ),
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.FocusNext, ShortcutVariant.FocusPrevious)}
 />
 
 {#if isShowDeleteConfirmation}

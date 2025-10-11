@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { shortcut, showShortcutsModal } from '$lib/actions/shortcut.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import {
     notificationController,
@@ -10,7 +10,6 @@
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { AppRoute } from '$lib/constants';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -39,26 +38,16 @@
 
   let { data = $bindable() }: Props = $props();
 
-  interface Shortcuts {
-    general: ExplainedShortcut[];
-    actions: ExplainedShortcut[];
-  }
-  interface ExplainedShortcut {
-    key: string[];
-    action: string;
-    info?: string;
-  }
-
-  const duplicateShortcuts: Shortcuts = {
-    general: [],
-    actions: [
-      { key: ['a'], action: $t('select_all_duplicates') },
-      { key: ['s'], action: $t('view') },
-      { key: ['d'], action: $t('unselect_all_duplicates') },
-      { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
-      { key: ['⇧', 's'], action: $t('stack_duplicates') },
-    ],
-  };
+  // const duplicateShortcuts: Shortcuts = {
+  //   general: [],
+  //   actions: [
+  //     { key: ['a'], action: $t('select_all_duplicates') },
+  //     { key: ['s'], action: $t('view') },
+  //     { key: ['d'], action: $t('unselect_all_duplicates') },
+  //     { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
+  //     { key: ['⇧', 's'], action: $t('stack_duplicates') },
+  //   ],
+  // };
 
   let duplicates = $state(data.duplicates);
   const { isViewing: showAssetViewer } = assetViewingStore;
@@ -216,10 +205,8 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: 'ArrowLeft' }, onShortcut: handlePreviousShortcut },
-    { shortcut: { key: 'ArrowRight' }, onShortcut: handleNextShortcut },
-  ]}
+  {@attach shortcut('ArrowLeft', $t('previous'), handlePreviousShortcut)}
+  {@attach shortcut('ArrowRight', $t('next'), handleNextShortcut)}
 />
 
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
@@ -251,7 +238,7 @@
         color="secondary"
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
-        onclick={() => modalManager.show(ShortcutsModal, { shortcuts: duplicateShortcuts })}
+        onclick={() => showShortcutsModal()}
         aria-label={$t('show_keyboard_shortcuts')}
       />
     </HStack>

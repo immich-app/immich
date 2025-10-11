@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { shouldIgnoreEvent } from '$lib/actions/shortcut';
+  import { shouldIgnoreEvent } from '$lib/actions/input';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';

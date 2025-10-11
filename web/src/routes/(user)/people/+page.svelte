@@ -2,8 +2,8 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { blurOnEnter } from '$lib/actions/input';
   import { scrollMemory } from '$lib/actions/scroll-memory';
-  import { shortcut } from '$lib/actions/shortcut';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
@@ -377,7 +377,7 @@
             class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-primary"
             value={person.name}
             placeholder={$t('add_a_name')}
-            use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
+            {@attach blurOnEnter}
             onfocusin={() => onNameChangeInputFocus(person)}
             onfocusout={() => onNameChangeSubmit(newName, person)}
             oninput={(event) => onNameChangeInputUpdate(event)}
