@@ -1,5 +1,4 @@
 import { BadRequestException, InternalServerErrorException } from '@nestjs/common';
-import { StructuredBoolean } from 'src/dtos/asset-upload.dto';
 import { AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetUploadService } from 'src/services/asset-upload.service';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
@@ -28,8 +27,7 @@ describe(AssetUploadService.name, () => {
       },
       checksum: Buffer.from('checksum'),
       uploadLength: 1024,
-      uploadComplete: StructuredBoolean.True,
-      uploadIncomplete: StructuredBoolean.False,
+      uploadComplete: true,
       contentLength: 1024,
       isComplete: true,
       version: 8,

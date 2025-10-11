@@ -54,7 +54,7 @@ export class AssetUploadService extends BaseService {
 
   async startUpload(auth: AuthDto, req: Readable, res: Response, dto: StartUploadDto): Promise<void> {
     this.logger.verboseFn(() => `Starting upload: ${JSON.stringify(dto)}`);
-    const { isComplete, assetData, uploadLength, contentLength, version } = dto;
+    const { uploadComplete, assetData, uploadLength, contentLength, version } = dto;
     const { backup } = await this.getConfig({ withCache: true });
 
     const asset = await this.onStart(auth, dto);
@@ -72,7 +72,7 @@ export class AssetUploadService extends BaseService {
       return;
     }
 
-    if (isComplete && uploadLength !== contentLength) {
+    if (uploadComplete && uploadLength !== contentLength) {
       return this.sendInconsistentLength(res);
     }
 
@@ -85,14 +85,14 @@ export class AssetUploadService extends BaseService {
     await this.databaseRepository.withUuidLock(asset.id, async () => {
       let checksumBuffer: Buffer | undefined;
       const writeStream = this.pipe(req, asset.path, contentLength);
-      if (isComplete) {
+      if (uploadComplete) {
         const hash = createHash('sha1');
         req.on('data', (data: Buffer) => hash.update(data));
         writeStream.on('finish', () => (checksumBuffer = hash.digest()));
       }
       await new Promise((resolve, reject) => writeStream.on('close', resolve).on('error', reject));
-      this.setCompleteHeader(res, dto.version, isComplete);
-      if (!isComplete) {
+      this.setCompleteHeader(res, dto.version, uploadComplete);
+      if (!uploadComplete) {
         res.status(201).set('Location', location).setHeader('Upload-Limit', this.getUploadLimits(backup)).send();
         return;
       }
@@ -107,7 +107,7 @@ export class AssetUploadService extends BaseService {
 
   resumeUpload(auth: AuthDto, req: Readable, res: Response, id: string, dto: ResumeUploadDto): Promise<void> {
     this.logger.verboseFn(() => `Resuming upload for ${id}: ${JSON.stringify(dto)}`);
-    const { isComplete, uploadLength, uploadOffset, contentLength, version } = dto;
+    const { uploadComplete, uploadLength, uploadOffset, contentLength, version } = dto;
     this.setCompleteHeader(res, version, false);
     this.addRequest(id, req);
     return this.databaseRepository.withUuidLock(id, async () => {
@@ -137,15 +137,15 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      if (contentLength === 0 && !isComplete) {
+      if (contentLength === 0 && !uploadComplete) {
         res.status(204).setHeader('Upload-Offset', expectedOffset.toString()).send();
         return;
       }
 
       const writeStream = this.pipe(req, path, contentLength);
       await new Promise((resolve, reject) => writeStream.on('close', resolve).on('error', reject));
-      this.setCompleteHeader(res, version, isComplete);
-      if (!isComplete) {
+      this.setCompleteHeader(res, version, uploadComplete);
+      if (!uploadComplete) {
         try {
           const offset = await this.getCurrentOffset(path);
           res.status(204).setHeader('Upload-Offset', offset.toString()).send();
