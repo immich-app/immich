@@ -79,12 +79,26 @@ export class AlbumService extends BaseService {
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
+    // Determine if the album is shared (shared users or shared link)
+    const hasSharedUsers = (album.albumUsers?.length ?? 0) > 0;
+    const hasSharedLink = (album.sharedLinks?.length ?? 0) > 0;
+    const isShared = hasSharedUsers || hasSharedLink;
+
+    // Fetch contributor counts only for shared albums
+    let contributorCounts: { userId: string; assetCount: number }[] | undefined;
+    if (isShared) {
+      const rows = await this.albumRepository.getContributorCountsForId(album.id);
+      // Hide zeros as per requirements
+      contributorCounts = rows.filter(({ assetCount }) => assetCount > 0);
+    }
+
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
+      ...(contributorCounts && contributorCounts.length > 0 ? { contributorCounts } : {}),
     };
   }
 

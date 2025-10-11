@@ -314,6 +314,8 @@ class ApiClient {
           return CheckExistingAssetsResponseDto.fromJson(value);
         case 'Colorspace':
           return ColorspaceTypeTransformer().decode(value);
+        case 'ContributorCountResponseDto':
+          return ContributorCountResponseDto.fromJson(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
         case 'CreateLibraryDto':
