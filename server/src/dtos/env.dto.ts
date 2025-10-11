@@ -1,5 +1,5 @@
 import { Transform, Type } from 'class-transformer';
-import { IsEnum, IsInt, IsString, Matches } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsString, Matches } from 'class-validator';
 import { DatabaseSslMode, ImmichEnvironment, LogLevel } from 'src/enum';
 import { IsIPRange, Optional, ValidateBoolean } from 'src/validation';
 
@@ -195,4 +195,9 @@ export class EnvDto {
   @IsString()
   @Optional()
   REDIS_URL?: string;
+
+  @IsIn([0, 4, 6])
+  @Optional()
+  @Type(() => Number)
+  REDIS_IP_FAMILY?: 0 | 4 | 6;
 }

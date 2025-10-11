@@ -163,6 +163,7 @@ const getEnv = (): EnvData => {
     username: dto.REDIS_USERNAME || undefined,
     password: dto.REDIS_PASSWORD || undefined,
     path: dto.REDIS_SOCKET || undefined,
+    family: dto.REDIS_IP_FAMILY || 0,
   };
 
   const redisUrl = dto.REDIS_URL;

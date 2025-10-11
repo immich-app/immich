@@ -35,6 +35,7 @@ const resetEnv = () => {
     'REDIS_PASSWORD',
     'REDIS_SOCKET',
     'REDIS_URL',
+    'REDIS_IP_FAMILY',
 
     'NO_COLOR',
   ]) {
@@ -138,6 +139,7 @@ describe('getEnv', () => {
         username: undefined,
         password: undefined,
         path: undefined,
+        family: 0,
       });
     });
 
