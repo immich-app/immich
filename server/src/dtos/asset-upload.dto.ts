@@ -112,7 +112,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
   checksum!: Buffer;
 
   @Expose()
-  @Min(0)
+  @Min(1)
   @IsInt()
   @Transform(({ obj }) => {
     const uploadLength = obj[Header.UploadLength];
@@ -121,7 +121,7 @@ export class StartUploadDto extends BaseUploadHeadersDto {
     }
 
     const contentLength = obj[Header.ContentLength];
-    if (contentLength != undefined && isUploadComplete(obj)) {
+    if (contentLength && isUploadComplete(obj)) {
       return Number(contentLength);
     }
     throw new BadRequestException(`Missing ${Header.UploadLength} header`);
@@ -136,7 +136,7 @@ export class ResumeUploadDto extends BaseUploadHeadersDto {
   contentType!: string;
 
   @Expose({ name: Header.UploadLength })
-  @Min(0)
+  @Min(1)
   @IsInt()
   @Type(() => Number)
   @Optional()

@@ -974,7 +974,7 @@ describe('/upload', () => {
       expect(status).toBe(204);
       expect(headers['upload-offset']).toBe('512');
       expect(headers['upload-complete']).toBe('?0');
-      expect(headers['upload-limit']).toEqual('min-size=0, max-age=259200');
+      expect(headers['upload-limit']).toEqual('min-size=1, max-age=259200');
       expect(headers['cache-control']).toBe('no-store');
     });
 
@@ -993,7 +993,7 @@ describe('/upload', () => {
       const { status, headers } = await request(app).options('/upload');
 
       expect(status).toBe(204);
-      expect(headers['upload-limit']).toEqual('min-size=0, max-age=259200');
+      expect(headers['upload-limit']).toEqual('min-size=1, max-age=259200');
     });
   });
 });
