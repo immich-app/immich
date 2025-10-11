@@ -6,9 +6,9 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 class DriftPersonBirthdayEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -16,10 +16,10 @@ class DriftPersonBirthdayEditForm extends ConsumerStatefulWidget {
   const DriftPersonBirthdayEditForm({super.key, required this.person});
 
   @override
-  ConsumerState<DriftPersonBirthdayEditForm> createState() => _DriftPersonNameEditFormState();
+  ConsumerState<DriftPersonBirthdayEditForm> createState() => _DriftPersonBirthdayEditFormState();
 }
 
-class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEditForm> {
+class _DriftPersonBirthdayEditFormState extends ConsumerState<DriftPersonBirthdayEditForm> {
   late DateTime _selectedDate;
 
   @override

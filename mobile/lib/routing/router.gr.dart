@@ -1280,12 +1280,12 @@ class DriftPeopleCollectionRoute extends PageRouteInfo<void> {
 /// [DriftPersonPage]
 class DriftPersonRoute extends PageRouteInfo<DriftPersonRouteArgs> {
   DriftPersonRoute({
+    required DriftPerson initialPerson,
     Key? key,
-    required DriftPerson person,
     List<PageRouteInfo>? children,
   }) : super(
          DriftPersonRoute.name,
-         args: DriftPersonRouteArgs(key: key, person: person),
+         args: DriftPersonRouteArgs(initialPerson: initialPerson, key: key),
          initialChildren: children,
        );
 
@@ -1295,21 +1295,21 @@ class DriftPersonRoute extends PageRouteInfo<DriftPersonRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<DriftPersonRouteArgs>();
-      return DriftPersonPage(key: args.key, person: args.person);
+      return DriftPersonPage(args.initialPerson, key: args.key);
     },
   );
 }
 
 class DriftPersonRouteArgs {
-  const DriftPersonRouteArgs({this.key, required this.person});
+  const DriftPersonRouteArgs({required this.initialPerson, this.key});
+
+  final DriftPerson initialPerson;
 
   final Key? key;
 
-  final DriftPerson person;
-
   @override
   String toString() {
-    return 'DriftPersonRouteArgs{key: $key, person: $person}';
+    return 'DriftPersonRouteArgs{initialPerson: $initialPerson, key: $key}';
   }
 }
 
