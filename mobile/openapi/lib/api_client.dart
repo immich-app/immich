@@ -276,6 +276,8 @@ class ApiClient {
           return AssetMetadataUpsertItemDto.fromJson(value);
         case 'AssetOrder':
           return AssetOrderTypeTransformer().decode(value);
+        case 'AssetOrderBy':
+          return AssetOrderByTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
         case 'AssetStackResponseDto':

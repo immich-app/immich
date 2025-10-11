@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
+import { AssetOrder, AssetOrderBy } from 'src/enum';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -21,6 +22,37 @@ describe(SearchService.name, () => {
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('searchMetadata', () => {
+    it('should pass options to search', async () => {
+      mocks.search.searchMetadata.mockResolvedValue({
+        items: [],
+        hasNextPage: false,
+      });
+
+      await sut.searchMetadata(authStub.user1, {});
+
+      expect(mocks.search.searchMetadata).toHaveBeenCalledWith(
+        { page: 1, size: 250 },
+        {
+          orderBy: AssetOrderBy.DateTaken,
+          orderDirection: AssetOrder.Desc,
+          userIds: [authStub.user1.user.id],
+        },
+      );
+
+      const pagination = { page: 2, size: 100 };
+      const dto = { order: AssetOrder.Asc, orderBy: AssetOrderBy.DateAdded, ...pagination };
+      await sut.searchMetadata(authStub.user1, dto);
+
+      expect(mocks.search.searchMetadata).toHaveBeenCalledWith(pagination, {
+        ...dto,
+        orderBy: AssetOrderBy.DateAdded,
+        orderDirection: AssetOrder.Asc,
+        userIds: [authStub.user1.user.id],
+      });
+    });
   });
 
   describe('searchPerson', () => {
