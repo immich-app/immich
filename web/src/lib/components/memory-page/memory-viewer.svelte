@@ -403,16 +403,19 @@
           </p>
         </div>
 
-        <div class="w-[50px] dark">
-          <IconButton
-            shape="round"
-            variant="ghost"
-            color="secondary"
-            aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
-            icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
-            onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
-          />
-        </div>
+        <!-- Only show the mute button if the current memory contains at least one video -->
+        {#if currentTimelineAssets.some((a: TimelineAsset) => a.isVideo) }
+          <div class="w-[50px] dark">
+            <IconButton
+              shape="round"
+              variant="ghost"
+              color="secondary"
+              aria-label={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
+              icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
+              onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
+            />
+          </div>
+        {/if}
       </div>
     </ControlAppBar>
 
