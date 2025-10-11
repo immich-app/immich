@@ -12,6 +12,7 @@ import {
   AuthStatusResponseDto,
   ChangePasswordDto,
   LoginCredentialDto,
+  LoginResponseDto,
   LogoutResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
@@ -20,12 +21,21 @@ import {
   PinCodeSetupDto,
   SessionUnlockDto,
   SignUpDto,
-  mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission, StorageFolder } from 'src/enum';
+import {
+  AuthType,
+  ImmichCookie,
+  ImmichHeader,
+  ImmichQuery,
+  JobName,
+  Permission,
+  StorageFolder,
+  UserMetadataKey,
+} from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
+import { UserMetadataItem } from 'src/types';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -75,7 +85,7 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Incorrect email or password');
     }
 
-    return this.createLoginResponse(user, details);
+    return this.createLoginResponse(user, details, [Permission.All]);
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
@@ -177,6 +187,7 @@ export class AuthService extends BaseService {
     const authDto = await this.validate({ headers, queryParams });
     const { adminRoute, sharedLinkRoute, uri } = metadata;
     const requestedPermission = metadata.permission ?? Permission.All;
+    const currentPermissions = authDto.apiKey?.permissions || authDto.session?.permissions;
 
     if (!authDto.user.isAdmin && adminRoute) {
       this.logger.warn(`Denied access to admin only route: ${uri}`);
@@ -189,9 +200,9 @@ export class AuthService extends BaseService {
     }
 
     if (
-      authDto.apiKey &&
       requestedPermission !== false &&
-      !isGranted({ requested: [requestedPermission], current: authDto.apiKey.permissions })
+      currentPermissions &&
+      !isGranted({ requested: [requestedPermission], current: currentPermissions })
     ) {
       throw new ForbiddenException(`Missing required permission: ${requestedPermission}`);
     }
@@ -322,7 +333,7 @@ export class AuthService extends BaseService {
       await this.syncProfilePicture(user, profile.picture);
     }
 
-    return this.createLoginResponse(user, loginDetails);
+    return this.createLoginResponse(user, loginDetails, [Permission.All]);
   }
 
   private async syncProfilePicture(user: UserAdmin, url: string) {
@@ -492,6 +503,7 @@ export class AuthService extends BaseService {
         user: session.user,
         session: {
           id: session.id,
+          permissions: session.permissions,
           hasElevatedPermission,
         },
       };
@@ -521,18 +533,31 @@ export class AuthService extends BaseService {
     await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
   }
 
-  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails) {
+  private async createLoginResponse(
+    user: UserAdmin,
+    { deviceOS, deviceType }: LoginDetails,
+    permissions: Permission[],
+  ): Promise<LoginResponseDto> {
     const token = this.cryptoRepository.randomBytesAsText(32);
     const tokenHashed = this.cryptoRepository.hashSha256(token);
 
-    await this.sessionRepository.create({
-      token: tokenHashed,
-      deviceOS: loginDetails.deviceOS,
-      deviceType: loginDetails.deviceType,
-      userId: user.id,
-    });
+    await this.sessionRepository.create({ token: tokenHashed, deviceOS, deviceType, userId: user.id, permissions });
 
-    return mapLoginResponse(user, token);
+    const onboardingMetadata = user.metadata.find(
+      (item): item is UserMetadataItem<UserMetadataKey.Onboarding> => item.key === UserMetadataKey.Onboarding,
+    )?.value;
+
+    return {
+      accessToken: token,
+      userId: user.id,
+      userEmail: user.email,
+      name: user.name,
+      isAdmin: user.isAdmin,
+      profileImagePath: user.profileImagePath,
+      shouldChangePassword: user.shouldChangePassword,
+      isOnboarded: onboardingMetadata?.isOnboarded ?? false,
+      permissions,
+    };
   }
 
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {

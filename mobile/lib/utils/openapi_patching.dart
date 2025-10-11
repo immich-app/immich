@@ -39,6 +39,17 @@ dynamic upgradeDto(dynamic value, String targetType) {
     case 'LoginResponseDto':
       if (value is Map) {
         addDefault(value, 'isOnboarded', false);
+        addDefault(value, 'permissions', ['all']);
+      }
+      break;
+    case 'SessionResponseDto':
+      if (value is Map) {
+        addDefault(value, 'permissions', ['all']);
+      }
+      break;
+    case 'SessionCreateResponseDto':
+      if (value is Map) {
+        addDefault(value, 'permissions', ['all']);
       }
       break;
     case 'SyncUserV1':

@@ -31,15 +31,21 @@ export class SessionService extends BaseService {
       throw new BadRequestException('This endpoint can only be used with a session token');
     }
 
+    const parent = await this.sessionRepository.get(auth.session.id);
+    if (!parent) {
+      throw new BadRequestException('Session not found');
+    }
+
     const token = this.cryptoRepository.randomBytesAsText(32);
     const tokenHashed = this.cryptoRepository.hashSha256(token);
     const session = await this.sessionRepository.create({
-      parentId: auth.session.id,
+      parentId: parent.id,
       userId: auth.user.id,
       expiresAt: dto.duration ? DateTime.now().plus({ seconds: dto.duration }).toJSDate() : null,
       deviceType: dto.deviceType,
       deviceOS: dto.deviceOS,
       token: tokenHashed,
+      permissions: parent.permissions,
     });
 
     return { ...mapSession(session), token };

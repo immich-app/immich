@@ -1,6 +1,7 @@
 import { Equals, IsInt, IsPositive, IsString } from 'class-validator';
 import { Session } from 'src/database';
-import { Optional, ValidateBoolean } from 'src/validation';
+import { Permission } from 'src/enum';
+import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class SessionCreateDto {
   /**
@@ -35,6 +36,8 @@ export class SessionResponseDto {
   deviceType!: string;
   deviceOS!: string;
   isPendingSyncReset!: boolean;
+  @ValidateEnum({ enum: Permission, name: 'Permission', each: true })
+  permissions!: Permission[];
 }
 
 export class SessionCreateResponseDto extends SessionResponseDto {
@@ -50,4 +53,5 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   deviceOS: entity.deviceOS,
   deviceType: entity.deviceType,
   isPendingSyncReset: entity.isPendingSyncReset,
+  permissions: entity.permissions,
 });
