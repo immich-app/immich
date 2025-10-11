@@ -16,6 +16,8 @@
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
+    mdiClock,
+    mdiClockOutline,
     mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
@@ -40,6 +42,7 @@
   let isMapSelected: boolean = $state(false);
   let isPeopleSelected: boolean = $state(false);
   let isPhotosSelected: boolean = $state(false);
+  let isRecentlyAddedSelected: boolean = $state(false);
   let isSharingSelected: boolean = $state(false);
   let isTrashSelected: boolean = $state(false);
   let isUtilitiesSelected: boolean = $state(false);
@@ -117,6 +120,13 @@
   {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb}
     <SideBarLink title={$t('folders')} href={resolve('/(user)/folders')} icon={mdiFolderOutline} flippedLogo />
   {/if}
+
+  <SideBarLink
+    title={$t('recently_added_page_title')}
+    href={resolve('/(user)/recently-added')}
+    bind:isSelected={isRecentlyAddedSelected}
+    icon={isRecentlyAddedSelected ? mdiClock : mdiClockOutline}
+  ></SideBarLink>
 
   <SideBarLink
     title={$t('utilities')}

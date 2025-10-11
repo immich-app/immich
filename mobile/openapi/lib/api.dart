@@ -111,6 +111,7 @@ part 'model/asset_metadata_response_dto.dart';
 part 'model/asset_metadata_upsert_dto.dart';
 part 'model/asset_metadata_upsert_item_dto.dart';
 part 'model/asset_order.dart';
+part 'model/asset_order_by.dart';
 part 'model/asset_response_dto.dart';
 part 'model/asset_stack_response_dto.dart';
 part 'model/asset_stats_response_dto.dart';
