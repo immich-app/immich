@@ -592,6 +592,40 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       rethrow;
     }
   }
+
+  Future<void> pruneAssets() async {
+    try {
+      await _db.transaction(() async {
+        final authQuery = _db.authUserEntity.selectOnly()
+          ..addColumns([_db.authUserEntity.id])
+          ..limit(1);
+        final currentUserId = await authQuery.map((row) => row.read(_db.authUserEntity.id)).getSingleOrNull();
+        if (currentUserId == null) {
+          _logger.warning('No authenticated user found during pruneAssets. Skipping asset pruning.');
+          return;
+        }
+
+        final partnerQuery = _db.partnerEntity.selectOnly()
+          ..addColumns([_db.partnerEntity.sharedById])
+          ..where(_db.partnerEntity.sharedWithId.equals(currentUserId));
+        final partnerIds = await partnerQuery.map((row) => row.read(_db.partnerEntity.sharedById)).get();
+
+        final validUsers = {currentUserId, ...partnerIds.nonNulls};
+
+        // Asset is not owned by the current user or any of their partners and is not part of any (shared) album
+        // Likely a stale asset that was previously shared but has been removed
+        await _db.remoteAssetEntity.deleteWhere((asset) {
+          return asset.ownerId.isNotIn(validUsers) &
+              asset.id.isNotInQuery(
+                _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]),
+              );
+        });
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: pruneAssets', error, stack);
+      // We do not rethrow here as this is a client-only cleanup and should not affect the sync process
+    }
+  }
 }
 
 extension on AssetTypeEnum {
