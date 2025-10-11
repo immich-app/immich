@@ -440,6 +440,6 @@ export class AssetUploadService extends BaseService {
   }
 
   private getUploadLimits({ upload }: SystemConfig['backup']) {
-    return `min-size=0, max-age=${upload.maxAgeHours * 3600}`;
+    return `min-size=1, max-age=${upload.maxAgeHours * 3600}`;
   }
 }
