@@ -63,6 +63,7 @@ export type Activity = {
   userId: string;
   user: User;
   assetId: string | null;
+  assetIds: string[] | null;
   comment: string | null;
   isLiked: boolean;
   updateId: string;

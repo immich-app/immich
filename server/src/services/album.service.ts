@@ -183,6 +183,9 @@ export class AlbumService extends BaseService {
       for (const recipientId of allUsersExceptUs) {
         await this.eventRepository.emit('AlbumUpdate', { id, recipientId });
       }
+
+      const newAssetIds = results.filter(({ success }) => success).map(({ id }) => id);
+      await this.eventRepository.emit('AlbumAssets', { id, assetIds: newAssetIds, userId: auth.user.id });
     }
 
     return results;
@@ -221,6 +224,12 @@ export class AlbumService extends BaseService {
       const album = await this.findOrFail(albumId, { withAssets: false });
       results.error = undefined;
       results.success = true;
+
+      await this.eventRepository.emit('AlbumAssets', {
+        id: albumId,
+        assetIds: notPresentAssetIds,
+        userId: auth.user.id,
+      });
 
       for (const assetId of notPresentAssetIds) {
         albumAssetValues.push({ albumsId: albumId, assetsId: assetId });

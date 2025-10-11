@@ -9977,6 +9977,12 @@
             "format": "uuid",
             "type": "string"
           },
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "comment": {
             "type": "string"
           },
@@ -9999,6 +10005,13 @@
           "assetId": {
             "nullable": true,
             "type": "string"
+          },
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
           },
           "comment": {
             "nullable": true,
@@ -10024,6 +10037,7 @@
         },
         "required": [
           "assetId",
+          "assetIds",
           "createdAt",
           "id",
           "type",
@@ -13687,7 +13701,8 @@
       "ReactionType": {
         "enum": [
           "comment",
-          "like"
+          "like",
+          "asset"
         ],
         "type": "string"
       },

@@ -145,6 +145,23 @@ export const album_asset_delete_audit = registerFunction({
     END`,
 });
 
+export const activity_assetids_update_on_albumasset_delete = registerFunction({
+  name: 'activity_assetids_update_on_albumasset_delete',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+      DECLARE
+      r RECORD;
+    BEGIN
+      FOR r IN SELECT "albumsId", "assetsId" FROM old LOOP
+        UPDATE activity
+        SET "assetIds" = array_remove("assetIds", r."assetsId")
+        WHERE "albumId" = r."albumsId" AND "assetIds" IS NOT NULL AND r."assetsId" = ANY("assetIds");
+      END LOOP;
+      RETURN NULL;
+    END;`,
+});
+
 export const album_user_delete_audit = registerFunction({
   name: 'album_user_delete_audit',
   returnType: 'TRIGGER',

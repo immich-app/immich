@@ -25,11 +25,13 @@ class ReactionType {
 
   static const comment = ReactionType._(r'comment');
   static const like = ReactionType._(r'like');
+  static const asset = ReactionType._(r'asset');
 
   /// List of all possible values in this [enum][ReactionType].
   static const values = <ReactionType>[
     comment,
     like,
+    asset,
   ];
 
   static ReactionType? fromJson(dynamic value) => ReactionTypeTypeTransformer().decode(value);
@@ -70,6 +72,7 @@ class ReactionTypeTypeTransformer {
       switch (data) {
         case r'comment': return ReactionType.comment;
         case r'like': return ReactionType.like;
+        case r'asset': return ReactionType.asset;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

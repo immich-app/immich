@@ -24,6 +24,7 @@ export type UserResponseDto = {
 };
 export type ActivityResponseDto = {
     assetId: string | null;
+    assetIds: string[] | null;
     comment?: string | null;
     createdAt: string;
     id: string;
@@ -33,6 +34,7 @@ export type ActivityResponseDto = {
 export type ActivityCreateDto = {
     albumId: string;
     assetId?: string;
+    assetIds?: string[];
     comment?: string;
     "type": ReactionType;
 };
@@ -4626,7 +4628,8 @@ export enum ReactionLevel {
 }
 export enum ReactionType {
     Comment = "comment",
-    Like = "like"
+    Like = "like",
+    Asset = "asset"
 }
 export enum UserAvatarColor {
     Primary = "primary",
