@@ -20,6 +20,7 @@ export const newDatabaseRepositoryMock = (): Mocked<RepositoryInterface<Database
     prewarm: vitest.fn(),
     runMigrations: vitest.fn(),
     withLock: vitest.fn().mockImplementation((_, function_: <R>() => Promise<R>) => function_()),
+    withUuidLock: vitest.fn().mockImplementation((_, function_: <R>() => Promise<R>) => function_()),
     tryLock: vitest.fn(),
     isBusy: vitest.fn(),
     wait: vitest.fn(),
