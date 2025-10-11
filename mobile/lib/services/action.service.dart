@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -50,7 +52,7 @@ class ActionService {
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
-    context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds));
+    unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
   }
 
   Future<void> favorite(List<String> remoteIds) async {
