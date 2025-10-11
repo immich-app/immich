@@ -75,6 +75,8 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
 @Injectable()
 export class MetadataRepository {
+  private readonly baseWriteArgs = ['-api', 'largefilesupport=1', '-overwrite_original'];
+
   private exiftool = new ExifTool({
     defaultVideosToUTC: true,
     backfillTimezones: true,
@@ -86,7 +88,6 @@ export class MetadataRepository {
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     // Enable exiftool LFS to parse metadata for files larger than 2GB.
     readArgs: ['-api', 'largefilesupport=1'],
-    writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
   });
 
   constructor(private logger: LoggingRepository) {
@@ -114,7 +115,21 @@ export class MetadataRepository {
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
     try {
-      await this.exiftool.write(path, tags);
+      // handle special case for empty tags, otherwise exiftool will just remove them
+      const specialEmptyTags = ['Description', 'ImageDescription'];
+      // create a copy, to keep tags inmutable
+      const tagsToWrite: Partial<Tags> = { ...tags };
+      const rawArgs = [];
+      for (const tag of specialEmptyTags) {
+        if (Object.prototype.hasOwnProperty.call(tagsToWrite, tag)) {
+          const value = (tagsToWrite as any)[tag];
+          if (value === '') {
+            delete (tagsToWrite as any)[tag];
+            rawArgs.push(`-${tag}^=`);
+          }
+        }
+      }
+      await this.exiftool.write(path, tagsToWrite, { writeArgs: [...this.baseWriteArgs, ...rawArgs] });
     } catch (error) {
       this.logger.warn(`Error writing exif data (${path}): ${error}`);
     }
