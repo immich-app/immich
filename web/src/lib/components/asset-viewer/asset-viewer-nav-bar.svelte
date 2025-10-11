@@ -235,8 +235,7 @@
             {#if !asset.isArchived && !asset.isTrashed && smartSearchEnabled}
               <MenuOption
                 icon={mdiCompare}
-                onClick={() =>
-                  goto(resolve(`${AppRoute.SEARCH}?query={"queryAssetId":"${stack?.primaryAssetId ?? asset.id}"}`))}
+                onClick={() => goto(`${AppRoute.SEARCH}?queryAssetId=${stack?.primaryAssetId ?? asset.id}`)}
                 text={$t('view_similar_photos')}
               />
             {/if}
