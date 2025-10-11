@@ -12820,6 +12820,8 @@
           "JobFailed",
           "BackupFailed",
           "SystemMessage",
+          "AlbumInvite",
+          "AlbumUpdate",
           "Custom"
         ],
         "type": "string"

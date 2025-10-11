@@ -7,6 +7,7 @@ import { NotificationService } from 'src/services/notification.service';
 import { INotifyAlbumUpdateJob } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
+import { notificationStub } from 'test/fixtures/notification.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -282,6 +283,7 @@ describe(NotificationService.name, () => {
           },
         ],
       });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Skipped);
     });
@@ -297,6 +299,7 @@ describe(NotificationService.name, () => {
           },
         ],
       });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Skipped);
     });
@@ -313,6 +316,7 @@ describe(NotificationService.name, () => {
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
 
       await expect(sut.handleAlbumInvite({ id: '', recipientId: '' })).resolves.toBe(JobStatus.Success);
@@ -334,6 +338,7 @@ describe(NotificationService.name, () => {
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
@@ -363,6 +368,7 @@ describe(NotificationService.name, () => {
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([
         { id: '1', type: AssetFileType.Thumbnail, path: 'path-to-thumb.jpg' },
@@ -394,6 +400,7 @@ describe(NotificationService.name, () => {
         ],
       });
       mocks.systemMetadata.get.mockResolvedValue({ server: {} });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([assetStub.image.files[2]]);
 
@@ -431,6 +438,7 @@ describe(NotificationService.name, () => {
         albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValueOnce(userStub.user1);
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
@@ -453,6 +461,7 @@ describe(NotificationService.name, () => {
           },
         ],
       });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
@@ -475,6 +484,7 @@ describe(NotificationService.name, () => {
           },
         ],
       });
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
@@ -489,6 +499,7 @@ describe(NotificationService.name, () => {
         albumUsers: [{ user: { id: userStub.user1.id } } as AlbumUser],
       });
       mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.notification.create.mockResolvedValue(notificationStub.albumEvent);
       mocks.email.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.assetJob.getAlbumThumbnailFiles.mockResolvedValue([]);
 
