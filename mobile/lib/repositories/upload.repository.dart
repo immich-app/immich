@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
+import 'package:cancellation_token_http/http.dart' as http;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
+import 'package:immich_mobile/common/http.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -92,8 +94,8 @@ class UploadRepository {
     );
   }
 
-  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {
-    final httpClient = Client();
+  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, http.CancellationToken cancelToken) async {
+    final httpClient = immichHttpClient();
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
 
     Logger logger = Logger('UploadRepository');
@@ -118,7 +120,7 @@ class UploadRepository {
         baseRequest.fields.addAll(candidate.task.fields);
         baseRequest.files.add(assetRawUploadData);
 
-        final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+        final response = await httpClient.send(baseRequest);
 
         final responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -131,7 +133,7 @@ class UploadRepository {
 
           continue;
         }
-      } on CancelledException {
+      } on http.CancelledException {
         logger.warning("Backup was cancelled by the user");
         break;
       } catch (error, stackTrace) {

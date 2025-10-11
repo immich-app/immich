@@ -2,6 +2,8 @@ package app.alextran.immich
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.security.KeyChain
+import android.security.KeyChainException
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -10,6 +12,8 @@ import java.io.ByteArrayInputStream
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.security.KeyStore
+import java.security.Principal
+import java.security.PrivateKey
 import java.security.cert.X509Certificate
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
@@ -21,18 +25,21 @@ import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509ExtendedTrustManager
+import javax.net.ssl.X509KeyManager
 
 /**
  * Android plugin for Dart `HttpSSLOptions`
  */
 class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
   private var methodChannel: MethodChannel? = null
+  private var context: Context? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     onAttachedToEngine(binding.applicationContext, binding.binaryMessenger)
   }
 
   private fun onAttachedToEngine(ctx: Context, messenger: BinaryMessenger) {
+    context = ctx
     methodChannel = MethodChannel(messenger, "immich/httpSSLOptions")
     methodChannel?.setMethodCallHandler(this)
   }
@@ -44,6 +51,7 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
   private fun onDetachedFromEngine() {
     methodChannel?.setMethodCallHandler(null)
     methodChannel = null
+    context = null
   }
 
   override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -57,25 +65,59 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
             tm = arrayOf(AllowSelfSignedTrustManager(args[1] as? String))
           }
 
-          var km: Array<KeyManager>? = null
-          if (args[2] != null) {
-            val cert = ByteArrayInputStream(args[2] as ByteArray)
-            val password = (args[3] as String).toCharArray()
-            val keyStore = KeyStore.getInstance("PKCS12")
-            keyStore.load(cert, password)
-            val keyManagerFactory =
-              KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
-            keyManagerFactory.init(keyStore, null)
-            km = keyManagerFactory.keyManagers
-          }
+          // var km: Array<KeyManager>? = null
+          // if (args[2] != null) {
+          //   val cert = ByteArrayInputStream(args[2] as ByteArray)
+          //   val password = (args[3] as String).toCharArray()
+          //   val keyStore = KeyStore.getInstance("PKCS12")
+          //   keyStore.load(cert, password)
+          //   val keyManagerFactory =
+          //     KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm())
+          //   keyManagerFactory.init(keyStore, null)
+          //   km = keyManagerFactory.keyManagers
+          // }
 
-          val sslContext = SSLContext.getInstance("TLS")
-          sslContext.init(km, tm, null)
-          HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+          // val sslContext = SSLContext.getInstance("TLS")
+          // sslContext.init(km, tm, null)
+          // HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
 
-          HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as? String))
+          // HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as? String))
 
           result.success(true)
+        }
+        
+        "applyWithUserCertificates" -> {
+          // val args = call.arguments<ArrayList<*>>()!!
+          // val serverHost = args[0] as? String
+          // val allowSelfSigned = args[1] as Boolean
+
+          // var tm: Array<TrustManager>? = null
+          // if (allowSelfSigned) {
+          //   tm = arrayOf(AllowSelfSignedTrustManager(serverHost))
+          // } else {
+          //   // Use system trust store with user certificates
+          //   tm = createSystemTrustManagers()
+          // }
+
+          // // Create key managers that can access user certificates
+          // val km = createUserKeyManagers()
+
+          // val sslContext = SSLContext.getInstance("TLS")
+          // sslContext.init(km, tm, null)
+          // HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+
+          // HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(serverHost))
+
+          result.success(true)
+        }
+        
+        "getAvailableCertificates" -> {
+          try {
+            val certificates = getAvailableUserCertificates()
+            result.success(certificates)
+          } catch (e: Exception) {
+            result.error("CERT_ERROR", e.message, null)
+          }
         }
 
         else -> result.notImplemented()
@@ -141,6 +183,114 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       } else {
         return _defaultHostnameVerifier.verify(hostname, session)
       }
+    }
+  }
+
+  /**
+   * Creates trust managers that use the system trust store including user-installed certificates
+   */
+  private fun createSystemTrustManagers(): Array<TrustManager> {
+    val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+    
+    // Use AndroidKeyStore which includes user-installed certificates
+    val keyStore = KeyStore.getInstance("AndroidKeyStore")
+    keyStore.load(null)
+    
+    trustManagerFactory.init(keyStore)
+    return trustManagerFactory.trustManagers
+  }
+
+  /**
+   * Creates key managers that can access user certificates from the Android KeyChain
+   */
+  private fun createUserKeyManagers(): Array<KeyManager>? {
+    return try {
+      val ctx = context ?: return null
+      // Create a key manager that can access certificates from KeyChain
+      arrayOf(UserCertificateKeyManager(ctx))
+    } catch (e: Exception) {
+      null
+    }
+  }
+
+  /**
+   * Gets available user certificates from the Android KeyChain
+   */
+  private fun getAvailableUserCertificates(): List<Map<String, String>> {
+    val certificates = mutableListOf<Map<String, String>>()
+    
+    try {
+      // This would require implementing certificate enumeration
+      // For now, return empty list as KeyChain doesn't provide direct enumeration
+      // In a real implementation, you might need to use KeyChain.choosePrivateKeyAlias
+      // with a callback to let the user select certificates
+    } catch (e: Exception) {
+      // Log error but don't fail
+    }
+    
+    return certificates
+  }
+
+  /**
+   * Custom KeyManager that can access user certificates from Android KeyChain
+   */
+  private inner class UserCertificateKeyManager(private val context: Context) : X509KeyManager {
+    override fun chooseClientAlias(
+      keyTypes: Array<out String>?,
+      issuers: Array<out Principal>?,
+      socket: Socket?
+    ): String? {
+      // This would need to be implemented to prompt user for certificate selection
+      // For now, return null to let the system handle it
+      return null
+    }
+
+    override fun chooseServerAlias(
+      keyType: String?,
+      issuers: Array<out Principal>?,
+      socket: Socket?
+    ): String? {
+      return null
+    }
+
+    override fun getCertificateChain(alias: String?): Array<X509Certificate>? {
+      return try {
+        // Retrieve certificate chain from KeyChain
+        if (alias != null) {
+          KeyChain.getCertificateChain(context, alias)
+        } else {
+          null
+        }
+      } catch (e: KeyChainException) {
+        null
+      }
+    }
+
+    override fun getPrivateKey(alias: String?): PrivateKey? {
+      return try {
+        // Retrieve private key from KeyChain
+        if (alias != null) {
+          KeyChain.getPrivateKey(context, alias)
+        } else {
+          null
+        }
+      } catch (e: KeyChainException) {
+        null
+      }
+    }
+
+    override fun getClientAliases(
+      keyType: String?,
+      issuers: Array<out Principal>?
+    ): Array<String>? {
+      return null
+    }
+
+    override fun getServerAliases(
+      keyType: String?,
+      issuers: Array<out Principal>?
+    ): Array<String>? {
+      return null
     }
   }
 }

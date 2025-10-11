@@ -17,8 +17,8 @@ enum StoreKey<T> {
   serverEndpoint<String>._(12),
   autoBackup<bool>._(13),
   backgroundBackup<bool>._(14),
-  sslClientCertData<String>._(15),
-  sslClientPasswd<String>._(16),
+  sslClientCertData<String>._(15), // deprecated!
+  sslClientPasswd<String>._(16), // deprecated!
   // user settings from [AppSettingsEnum] below:
   loadPreview<bool>._(100),
   loadOriginal<bool>._(101),
@@ -42,33 +42,34 @@ enum StoreKey<T> {
   mapShowFavoriteOnly<bool>._(118),
   mapRelativeDate<int>._(119),
   selfSignedCert<bool>._(120),
-  mapIncludeArchived<bool>._(121),
-  ignoreIcloudAssets<bool>._(122),
-  selectedAlbumSortReverse<bool>._(123),
-  mapThemeMode<int>._(124),
-  mapwithPartners<bool>._(125),
-  enableHapticFeedback<bool>._(126),
-  customHeaders<String>._(127),
+  useUserCertificates<bool>._(121),
+  mapIncludeArchived<bool>._(122),
+  ignoreIcloudAssets<bool>._(123),
+  selectedAlbumSortReverse<bool>._(124),
+  mapThemeMode<int>._(125),
+  mapwithPartners<bool>._(126),
+  enableHapticFeedback<bool>._(127),
+  customHeaders<String>._(128),
 
   // theme settings
-  primaryColor<String>._(128),
-  dynamicTheme<bool>._(129),
-  colorfulInterface<bool>._(130),
+  primaryColor<String>._(129),
+  dynamicTheme<bool>._(130),
+  colorfulInterface<bool>._(131),
 
-  syncAlbums<bool>._(131),
+  syncAlbums<bool>._(132),
 
   // Auto endpoint switching
-  autoEndpointSwitching<bool>._(132),
-  preferredWifiName<String>._(133),
-  localEndpoint<String>._(134),
-  externalEndpointList<String>._(135),
+  autoEndpointSwitching<bool>._(133),
+  preferredWifiName<String>._(134),
+  localEndpoint<String>._(135),
+  externalEndpointList<String>._(136),
 
   // Video settings
-  loadOriginalVideo<bool>._(136),
-  manageLocalMediaAndroid<bool>._(137),
+  loadOriginalVideo<bool>._(137),
+  manageLocalMediaAndroid<bool>._(138),
 
   // Read-only Mode settings
-  readonlyModeEnabled<bool>._(138),
+  readonlyModeEnabled<bool>._(139),
 
   // Experimental stuff
   photoManagerCustomFilter<bool>._(1000),
@@ -79,7 +80,10 @@ enum StoreKey<T> {
   useWifiForUploadPhotos<bool>._(1005),
   needBetaMigration<bool>._(1006),
   // TODO: Remove this after patching open-api
-  shouldResetSync<bool>._(1007);
+  shouldResetSync<bool>._(1007),
+
+  // mTLS
+  mTlsSelectedPrivateKey<String>._(1008);
 
   const StoreKey._(this.id);
   final int id;

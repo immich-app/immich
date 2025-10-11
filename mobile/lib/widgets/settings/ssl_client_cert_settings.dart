@@ -1,14 +1,10 @@
-import 'dart:io';
-
 import 'package:easy_localization/easy_localization.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:immich_mobile/common/http.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
-import 'package:immich_mobile/utils/http_ssl_options.dart';
+import 'package:ok_http/ok_http.dart';
 
 class SslClientCertSettings extends StatefulWidget {
   const SslClientCertSettings({super.key, required this.isLoggedIn});
@@ -20,9 +16,9 @@ class SslClientCertSettings extends StatefulWidget {
 }
 
 class _SslClientCertSettingsState extends State<SslClientCertSettings> {
-  _SslClientCertSettingsState() : isCertExist = SSLClientCertStoreVal.load() != null;
+  _SslClientCertSettingsState() : pKeyAlias = SSLClientCertStoreVal.load()?.privateKeyAlias ?? "";
 
-  bool isCertExist;
+  String pKeyAlias = "";
 
   @override
   Widget build(BuildContext context) {
@@ -39,21 +35,57 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
             style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
           ),
           const SizedBox(height: 6),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: widget.isLoggedIn ? null : () => importCert(context),
-                child: Text("client_cert_import".tr()),
+          if (pKeyAlias != "")
+            Center(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(0, 6, 0, 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: context.colorScheme.primary.withValues(alpha: 0.3), width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock_outline, size: 16, color: context.colorScheme.primary),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        pKeyAlias,
+                        style: context.textTheme.bodySmall?.copyWith(
+                          color: context.colorScheme.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 15),
-              ElevatedButton(
-                onPressed: widget.isLoggedIn || !isCertExist ? null : () async => await removeCert(context),
-                child: Text("remove".tr()),
+            ),
+          if (pKeyAlias == "")
+            Center(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(0, 6, 0, 6),
+                child: Text("no_certificate_selected".tr(), style: const TextStyle(fontStyle: FontStyle.italic)),
               ),
-            ],
+            ),
+          Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 6,
+              children: [
+                ElevatedButton(
+                  onPressed: widget.isLoggedIn ? null : () async => await selectCert(context),
+                  child: Text("select".tr()),
+                ),
+                ElevatedButton(
+                  onPressed: widget.isLoggedIn || pKeyAlias == "" ? null : () async => await removeCert(context),
+                  child: Text("remove".tr()),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -70,61 +102,19 @@ class _SslClientCertSettingsState extends State<SslClientCertSettings> {
     );
   }
 
-  Future<void> storeCert(BuildContext context, Uint8List data, String? password) async {
-    if (password != null && password.isEmpty) {
-      password = null;
-    }
-    final cert = SSLClientCertStoreVal(data, password);
-    // Test whether the certificate is valid
-    final isCertValid = HttpSSLCertOverride.setClientCert(SecurityContext(withTrustedRoots: true), cert);
-    if (!isCertValid) {
-      showMessage(context, "client_cert_invalid_msg".tr());
+  Future<void> selectCert(BuildContext context) async {
+    String? chosenAlias = await choosePrivateKeyAlias();
+    if (chosenAlias == null) {
       return;
     }
-    await cert.save();
-    HttpSSLOptions.apply();
-    setState(() => isCertExist = true);
-    showMessage(context, "client_cert_import_success_msg".tr());
-  }
-
-  void setPassword(BuildContext context, Uint8List data) {
-    final password = TextEditingController();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        content: TextField(
-          controller: password,
-          obscureText: true,
-          obscuringCharacter: "*",
-          decoration: InputDecoration(hintText: "client_cert_enter_password".tr()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async => {ctx.pop(), await storeCert(context, data, password.text)},
-            child: Text("client_cert_dialog_msg_confirm".tr()),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> importCert(BuildContext ctx) async {
-    FilePickerResult? res = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['p12', 'pfx'],
-    );
-    if (res != null) {
-      File file = File(res.files.single.path!);
-      final bytes = await file.readAsBytes();
-      setPassword(ctx, bytes);
-    }
+    setState(() => pKeyAlias = chosenAlias);
+    await SSLClientCertStoreVal(chosenAlias).save();
+    await refreshClient();
   }
 
   Future<void> removeCert(BuildContext context) async {
-    await SSLClientCertStoreVal.delete();
-    HttpSSLOptions.apply();
-    setState(() => isCertExist = false);
-    showMessage(context, "client_cert_remove_msg".tr());
+    setState(() => pKeyAlias = "");
+    await const SSLClientCertStoreVal("").save();
+    await refreshClient();
   }
 }

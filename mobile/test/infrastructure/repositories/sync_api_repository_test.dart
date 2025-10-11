@@ -61,7 +61,7 @@ void main() {
     when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(responseStreamController.stream));
     when(() => mockHttpClient.close()).thenAnswer((_) => {});
 
-    sut = SyncApiRepository(mockApiService);
+    sut = SyncApiRepository(mockApiService, httpClient: mockHttpClient);
   });
 
   tearDown(() async {
@@ -73,7 +73,7 @@ void main() {
   Future<void> streamChanges(
     Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onDataCallback,
   ) {
-    return sut.streamChanges(onDataCallback, batchSize: testBatchSize, httpClient: mockHttpClient);
+    return sut.streamChanges(onDataCallback, batchSize: testBatchSize);
   }
 
   test('streamChanges stops processing stream when abort is called', () async {

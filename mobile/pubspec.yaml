@@ -71,6 +71,14 @@ dependencies:
   worker_manager: ^7.2.3
   scroll_date_picker: ^3.8.0
   ffi: ^2.1.4
+  ok_http: 
+    # TODO: Replace with 0.1.2 when 
+    # - https://github.com/dart-lang/http/pull/1830 and 
+    # - https://github.com/dart-lang/http/pull/1831 are merged
+    git:
+      url: https://github.com/denysvitali/dart_lang_http
+      ref: feature/ok-http-0.1.2
+      path: pkgs/ok_http
 
   native_video_player:
     git:

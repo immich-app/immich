@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/common/http.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
@@ -40,32 +41,51 @@ import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/utils/licenses.dart';
 import 'package:immich_mobile/utils/migration.dart';
+import 'package:immich_mobile/pages/common/error_display_screen.dart';
+import 'package:immich_mobile/common/package_info.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:logging/logging.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 void main() async {
-  ImmichWidgetsBinding();
-  unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
-  final (isar, drift, logDb) = await Bootstrap.initDB();
-  await Bootstrap.initDomain(isar, drift, logDb);
-  await initApp();
-  // Warm-up isolate pool for worker manager
-  await workerManager.init(dynamicSpawning: true);
-  await migrateDatabaseIfNeeded(isar, drift);
-  HttpSSLOptions.apply();
+  try {
+    ImmichWidgetsBinding();
+    unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb);
+    await initApp();
+    await setPackageInfo();
+    await refreshClient();
+    // Warm-up isolate pool for worker manager
+    await workerManager.init(dynamicSpawning: true);
+    await migrateDatabaseIfNeeded(isar, drift);
+    HttpSSLOptions.apply();
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        dbProvider.overrideWithValue(isar),
-        isarProvider.overrideWithValue(isar),
-        driftProvider.overrideWith(driftOverride(drift)),
-      ],
-      child: const MainWidget(),
-    ),
-  );
+    runApp(
+      ProviderScope(
+        overrides: [
+          dbProvider.overrideWithValue(isar),
+          isarProvider.overrideWithValue(isar),
+          driftProvider.overrideWith(driftOverride(drift)),
+        ],
+        child: const MainWidget(),
+      ),
+    );
+  } catch (e, stackTrace) {
+    // Log the error for debugging
+    debugPrint('Fatal initialization error: $e');
+    debugPrint('Stack trace: $stackTrace');
+
+    // Display a prominent error message to the user
+    runApp(
+      MaterialApp(
+        title: 'Immich - Initialization Error',
+        home: ErrorDisplayScreen(error: e.toString(), stackTrace: stackTrace.toString()),
+        debugShowCheckedModeBanner: false,
+      ),
+    );
+  }
 }
 
 Future<void> initApp() async {
@@ -118,6 +138,10 @@ Future<void> initApp() async {
       yield LicenseEntryWithLineBreaks([license.key], license.value);
     }
   });
+}
+
+Future<void> setPackageInfo() async {
+  await PackageInfoSingleton.instance.init();
 }
 
 class ImmichApp extends ConsumerStatefulWidget {
