@@ -5,7 +5,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
 
-import { clamp, debounce, isEqual } from 'lodash-es';
+import { debounce, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
@@ -49,7 +49,6 @@ export class TimelineManager {
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
   topIntersectingMonthGroup: MonthGroup | undefined = $state();
-  topIntersectingMonthGroupPercent = $state(0);
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -246,13 +245,6 @@ export class TimelineManager {
     }
   }
 
-  #calculateMonthGroupPercent(month: MonthGroup): number {
-    const windowHeight = this.visibleWindow.bottom - this.visibleWindow.top;
-    const bottomOfMonth = month.top + month.height;
-    const bottomOfMonthInViewport = bottomOfMonth - this.visibleWindow.top;
-    return clamp(bottomOfMonthInViewport / windowHeight, 0, 1);
-  }
-
   updateIntersections() {
     if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
       return;
@@ -263,13 +255,7 @@ export class TimelineManager {
       updateIntersectionMonthGroup(this, month);
     }
 
-    const topIntersectingMonthGroup = this.months.find((month) => month.actuallyIntersecting);
-    if (topIntersectingMonthGroup && this.topIntersectingMonthGroup !== topIntersectingMonthGroup) {
-      this.topIntersectingMonthGroup = topIntersectingMonthGroup;
-      this.topIntersectingMonthGroupPercent = this.#calculateMonthGroupPercent(topIntersectingMonthGroup);
-    } else {
-      this.topIntersectingMonthGroupPercent = 0;
-    }
+    this.topIntersectingMonthGroup = this.months.find((month) => month.actuallyIntersecting);
     this.#updatingIntersections = false;
   }
 
