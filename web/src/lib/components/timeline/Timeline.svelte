@@ -92,7 +92,7 @@
   let scrollableElement: HTMLElement | undefined = $state();
 
   let timelineElement: HTMLElement | undefined = $state();
-  let showSkeleton = $state(true);
+  let invisible = $state(true);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
   // Note: There may be multiple months visible within the viewport at any given time.
   let viewportTopMonthScrollPercent = $state(0);
@@ -194,7 +194,7 @@
       // if the asset is not found, scroll to the top
       scrollToTop();
     }
-    showSkeleton = false;
+    invisible = false;
   };
 
   beforeNavigate(() => (timelineManager.suspendTransitions = true));
@@ -221,7 +221,7 @@
         } else {
           scrollToTop();
         }
-        showSkeleton = false;
+        invisible = false;
       }, 500);
     }
   };
@@ -241,7 +241,7 @@
 
   onMount(() => {
     if (!enableRouting) {
-      showSkeleton = false;
+      invisible = false;
     }
   });
 
@@ -594,12 +594,12 @@
   <section
     bind:this={timelineElement}
     id="virtual-timeline"
-    class:invisible={showSkeleton}
+    class:invisible
     style:height={timelineManager.timelineHeight + 'px'}
   >
     <section
       use:resizeObserver={topSectionResizeObserver}
-      class:invisible={showSkeleton}
+      class:invisible
       style:position="absolute"
       style:left="0"
       style:right="0"
@@ -622,7 +622,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton height={monthGroup.height} title={monthGroup.monthGroupTitle} />
+          <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
         </div>
       {:else if display}
         <div
@@ -662,7 +662,7 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <TimelineAssetViewer bind:showSkeleton {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
+    <TimelineAssetViewer bind:invisible {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
   {/if}
 </Portal>
 
