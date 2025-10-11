@@ -86,8 +86,6 @@ export class TimelineManager {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
 
-  constructor() {}
-
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
     let changed = false;
     changed ||= this.#setHeaderHeight(headerHeight);
