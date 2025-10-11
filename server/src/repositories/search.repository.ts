@@ -86,6 +86,7 @@ export interface SearchEmbeddingOptions {
 
 export interface SearchPeopleOptions {
   personIds?: string[];
+  searchOnlyThem?: boolean;
 }
 
 export interface SearchTagOptions {
