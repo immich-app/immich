@@ -1,10 +1,21 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
-import { Equals, IsEmpty, IsEnum, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { Equals, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { ImmichHeader } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 import { parseDictionary } from 'structured-headers';
+
+export enum Header {
+  ContentLength = 'content-length',
+  ContentType = 'content-type',
+  InteropVersion = 'upload-draft-interop-version',
+  ReprDigest = 'repr-digest',
+  UploadComplete = 'upload-complete',
+  UploadIncomplete = 'upload-incomplete',
+  UploadLength = 'upload-length',
+  UploadOffset = 'upload-offset',
+}
 
 export class UploadAssetDataDto {
   @IsNotEmpty()
@@ -39,24 +50,8 @@ export class UploadAssetDataDto {
   iCloudId!: string;
 }
 
-export enum StructuredBoolean {
-  False = '?0',
-  True = '?1',
-}
-
-export enum UploadHeader {
-  ContentLength = 'content-length',
-  ContentType = 'content-type',
-  InteropVersion = 'upload-draft-interop-version',
-  ReprDigest = 'repr-digest',
-  UploadComplete = 'upload-complete',
-  UploadIncomplete = 'upload-incomplete',
-  UploadLength = 'upload-length',
-  UploadOffset = 'upload-offset',
-}
-
 class BaseRufhHeadersDto {
-  @Expose({ name: UploadHeader.InteropVersion })
+  @Expose({ name: Header.InteropVersion })
   @Min(3)
   @IsInt()
   @Type(() => Number)
@@ -64,28 +59,15 @@ class BaseRufhHeadersDto {
 }
 
 export class BaseUploadHeadersDto extends BaseRufhHeadersDto {
-  @Expose({ name: UploadHeader.ContentLength })
+  @Expose({ name: Header.ContentLength })
   @Min(0)
   @IsInt()
   @Type(() => Number)
   contentLength!: number;
 
-  @Expose({ name: UploadHeader.UploadComplete })
-  @ValidateIf((o) => o.version === null || o.version > 3)
-  @IsEnum(StructuredBoolean)
-  uploadComplete!: StructuredBoolean;
-
-  @Expose({ name: UploadHeader.UploadIncomplete })
-  @ValidateIf((o) => o.version !== null && o.version <= 3)
-  @IsEnum(StructuredBoolean)
-  uploadIncomplete!: StructuredBoolean;
-
-  get isComplete(): boolean {
-    if (this.version <= 3) {
-      return this.uploadIncomplete === StructuredBoolean.False;
-    }
-    return this.uploadComplete === StructuredBoolean.True;
-  }
+  @Expose()
+  @Transform(({ obj }) => isUploadComplete(obj))
+  uploadComplete!: boolean;
 }
 
 export class StartUploadDto extends BaseUploadHeadersDto {
@@ -115,66 +97,81 @@ export class StartUploadDto extends BaseUploadHeadersDto {
   })
   assetData!: UploadAssetDataDto;
 
-  @Expose({ name: UploadHeader.ReprDigest })
+  @Expose({ name: Header.ReprDigest })
   @Transform(({ value }) => {
     if (!value) {
-      throw new BadRequestException(`Missing ${UploadHeader.ReprDigest} header`);
+      throw new BadRequestException(`Missing ${Header.ReprDigest} header`);
     }
 
     const checksum = parseDictionary(value).get('sha')?.[0];
     if (checksum instanceof ArrayBuffer && checksum.byteLength === 20) {
       return Buffer.from(checksum);
     }
-    throw new BadRequestException(`Invalid ${UploadHeader.ReprDigest} header`);
+    throw new BadRequestException(`Invalid ${Header.ReprDigest} header`);
   })
   checksum!: Buffer;
 
-  @Expose({ name: UploadHeader.UploadLength })
+  @Expose()
   @Min(0)
   @IsInt()
-  @Transform(({ obj, value }) => Number(value === undefined ? obj['x-upload-length'] : value))
-  uploadLength!: number;
+  @Transform(({ obj }) => {
+    const uploadLength = obj[Header.UploadLength];
+    if (uploadLength != undefined) {
+      return Number(uploadLength);
+    }
 
-  @Expose({ name: UploadHeader.UploadOffset })
-  @IsEmpty()
-  uploadOffset?: string;
+    const contentLength = obj[Header.ContentLength];
+    if (contentLength != undefined && isUploadComplete(obj)) {
+      return Number(contentLength);
+    }
+    throw new BadRequestException(`Missing ${Header.UploadLength} header`);
+  })
+  uploadLength!: number;
 }
 
 export class ResumeUploadDto extends BaseUploadHeadersDto {
-  @Expose({ name: UploadHeader.ContentType })
+  @Expose({ name: Header.ContentType })
   @ValidateIf((o) => o.version && o.version >= 6)
   @Equals('application/partial-upload')
   contentType!: string;
 
-  @Expose({ name: UploadHeader.UploadLength })
+  @Expose({ name: Header.UploadLength })
   @Min(0)
   @IsInt()
   @Type(() => Number)
   @Optional()
   uploadLength?: number;
 
-  @Expose({ name: UploadHeader.UploadOffset })
+  @Expose({ name: Header.UploadOffset })
   @Min(0)
   @IsInt()
   @Type(() => Number)
   uploadOffset!: number;
 }
 
-export class GetUploadStatusDto extends BaseRufhHeadersDto {
-  @Expose({ name: UploadHeader.UploadComplete })
-  @IsEmpty()
-  uploadComplete?: string;
-
-  @Expose({ name: UploadHeader.UploadIncomplete })
-  @IsEmpty()
-  uploadIncomplete?: string;
-
-  @Expose({ name: UploadHeader.UploadOffset })
-  @IsEmpty()
-  uploadOffset?: string;
-}
+export class GetUploadStatusDto extends BaseRufhHeadersDto {}
 
 export class UploadOkDto {
   @ApiProperty()
   id!: string;
+}
+
+const STRUCTURED_TRUE = '?1';
+const STRUCTURED_FALSE = '?0';
+
+function isUploadComplete(obj: any): boolean {
+  const uploadComplete = obj[Header.UploadComplete];
+  if (uploadComplete === STRUCTURED_TRUE) {
+    return true;
+  } else if (uploadComplete === STRUCTURED_FALSE) {
+    return false;
+  }
+
+  const uploadIncomplete = obj[Header.UploadIncomplete];
+  if (uploadIncomplete === STRUCTURED_TRUE) {
+    return false;
+  } else if (uploadIncomplete === STRUCTURED_FALSE) {
+    return true;
+  }
+  throw new BadRequestException(`Expected valid ${Header.UploadComplete} header`);
 }
