@@ -82,6 +82,16 @@ export type SystemConfigSmtpDto = {
 export type TestEmailResponseDto = {
     messageId: string;
 };
+export type SessionResponseDto = {
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    expiresAt?: string;
+    id: string;
+    isPendingSyncReset: boolean;
+    updatedAt: string;
+};
 export type UserLicense = {
     activatedAt: string;
     activationKey: string;
@@ -94,6 +104,7 @@ export type UserAdminResponseDto = {
     email: string;
     id: string;
     isAdmin: boolean;
+    latestSession?: SessionResponseDto;
     license: (UserLicense) | null;
     name: string;
     oauthId: string;
@@ -1185,16 +1196,6 @@ export type ServerVersionHistoryResponseDto = {
     createdAt: string;
     id: string;
     version: string;
-};
-export type SessionResponseDto = {
-    createdAt: string;
-    current: boolean;
-    deviceOS: string;
-    deviceType: string;
-    expiresAt?: string;
-    id: string;
-    isPendingSyncReset: boolean;
-    updatedAt: string;
 };
 export type SessionCreateDto = {
     deviceOS?: string;

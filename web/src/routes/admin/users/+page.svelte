@@ -17,6 +17,7 @@
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { Button, HStack, Icon, IconButton, Text, modalManager } from '@immich/ui';
   import { mdiDeleteRestore, mdiEyeOutline, mdiInfinity, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
+  import * as luxon from 'luxon';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -29,6 +30,8 @@
   let { data }: Props = $props();
 
   let allUsers: UserAdminResponseDto[] = $state([]);
+
+  const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
@@ -73,6 +76,16 @@
       await refresh();
     }
   };
+
+  const timeSince = (dateTime: luxon.DateTime) => {
+    const diff = dateTime.diffNow().shiftTo(...units);
+    const unit = units.find((unit) => diff.get(unit) !== 0) || 'second';
+
+    const relativeFormatter = new Intl.RelativeTimeFormat($locale, {
+      numeric: 'auto',
+    });
+    return relativeFormatter.format(Math.trunc(diff.as(unit)), unit);
+  };
 </script>
 
 <AdminPageLayout title={data.meta.title}>
@@ -90,11 +103,12 @@
           class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
         >
           <tr class="flex w-full place-items-center">
-            <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium"
-              >{$t('email')}</th
-            >
+            <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-3/12 2xl:w-4/12 text-center text-sm font-medium">
+              {$t('email')}
+            </th>
             <th class="hidden sm:block w-3/12 text-center text-sm font-medium">{$t('name')}</th>
             <th class="hidden xl:block w-3/12 2xl:w-2/12 text-center text-sm font-medium">{$t('has_quota')}</th>
+            <th class="hidden sm:block w-3/12 text-center text-sm font-medium font-medium">{$t('last_session')}</th>
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">{$t('action')}</th>
           </tr>
         </thead>
@@ -106,7 +120,7 @@
                   ? 'bg-red-300 dark:bg-red-900'
                   : 'even:bg-subtle/20 odd:bg-subtle/80'}"
               >
-                <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-ellipsis break-all px-2 text-sm">
+                <td class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-3/12 2xl:w-4/12 text-ellipsis break-all px-2 text-sm">
                   {immichUser.email}
                 </td>
                 <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">{immichUser.name}</td>
@@ -118,6 +132,21 @@
                       <Icon icon={mdiInfinity} size="16" />
                     {/if}
                   </div>
+                </td>
+                <td class="hidden sm:block w-3/12 text-ellipsis break-all px-2 text-sm">
+                  {#if immichUser.latestSession}
+                    <span
+                      >{timeSince(
+                        luxon.DateTime.fromISO(immichUser.latestSession.updatedAt, { locale: $locale }),
+                      )}</span
+                    >
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {immichUser.latestSession.deviceType || '-'}
+                      {immichUser.latestSession.deviceOS ? ` (${immichUser.latestSession.deviceOS})` : ''}
+                    </div>
+                  {:else}
+                    -
+                  {/if}
                 </td>
                 <td
                   class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-4/12 lg:w-3/12 xl:w-2/12 text-ellipsis break-all text-sm"
