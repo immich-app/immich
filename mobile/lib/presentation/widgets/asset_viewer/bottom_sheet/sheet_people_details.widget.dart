@@ -86,7 +86,7 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                           // and the asset viewer goes black
                           // TODO: Preferably we would replace the timeline provider, and let it listen to the new person id (Relevant function is the ```TimelineService person(String userId, String personId)``` in timeline.service.dart)
                           if (newPerson != null && newPerson.id != person.id && previousPersonId == person.id) {
-                            context.pop();
+                            await context.maybePop();
                           }
 
                           ref.invalidate(driftPeopleAssetProvider(asset.id));

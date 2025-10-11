@@ -74,10 +74,8 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
       data: (personByIdProvider) {
         if (personByIdProvider == null) {
           // Check if the person was merged and redirect if necessary
-          final shouldRedirect = mergeTracker.shouldRedirectForPerson(_person.id);
           final targetPersonId = mergeTracker.getTargetPersonId(_person.id);
-
-          if (shouldRedirect && targetPersonId != null) {
+          if (targetPersonId != null) {
             bool isOnPersonDetailPage = ModalRoute.of(context)?.isCurrent ?? false;
 
             // Only redirect if we're currently on the person detail page, not in a nested view, e.g. image viewer
@@ -93,13 +91,10 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
                     .first
                     .then((targetPerson) {
                       if (targetPerson != null && mounted) {
-                        mergeTracker.markMergeRecordHandled(_person.id);
-
                         // Open the target person's page
                         if (mounted) {
-                          context.replaceRoute(
-                            DriftPersonRoute(key: ValueKey(targetPerson.id), initialPerson: targetPerson),
-                          );
+                          context.pop();
+                          context.pushRoute(DriftPersonRoute(initialPerson: targetPerson));
                         }
                       } else {
                         // Target person not found, go back
@@ -116,12 +111,11 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
               }
             });
             return const Center(child: CircularProgressIndicator());
-          } else if (shouldRedirect && targetPersonId == null) {
-            // This should never happen, but just in case
-            // Person not found and no merge record
+          } else {
             mergeLogger.info(
               'Person ${_person.name} (${_person.id}) not found and no merge records exist, it was probably deleted',
             );
+
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 context.maybePop();
@@ -129,10 +123,7 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
             });
             return const Center(child: CircularProgressIndicator());
           }
-          // Waiting for the personByProvider to load
-          return const Center(child: CircularProgressIndicator());
         }
-
         _person = personByIdProvider;
         return ProviderScope(
           overrides: [
