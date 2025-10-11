@@ -2,24 +2,21 @@
   interface Props {
     height: number;
     title?: string;
+    invisible?: boolean;
   }
 
-  let { height = 0, title }: Props = $props();
+  let { height = 0, title, invisible = false }: Props = $props();
 </script>
 
-<div class="overflow-clip" style:height={height + 'px'}>
+<div class={['overflow-clip', { invisible }]} style:height={height + 'px'}>
   {#if title}
     <div
-      class="flex pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-light dark:text-immich-dark-fg md:text-sm"
+      class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
     >
       {title}
     </div>
   {/if}
-  <div
-    class="animate-pulse absolute h-full ms-[10px] me-[10px]"
-    style:width="calc(100% - 20px)"
-    data-skeleton="true"
-  ></div>
+  <div class="animate-pulse h-full w-full" data-skeleton="true"></div>
 </div>
 
 <style>
@@ -46,5 +43,8 @@
     animation:
       0s linear 0.1s forwards delayedVisibility,
       pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  .invisible [data-skeleton] {
+    visibility: hidden !important;
   }
 </style>

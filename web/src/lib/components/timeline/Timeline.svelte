@@ -89,10 +89,10 @@
 
   let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
-  let element: HTMLElement | undefined = $state();
+  let scrollableElement: HTMLElement | undefined = $state();
 
   let timelineElement: HTMLElement | undefined = $state();
-  let showSkeleton = $state(true);
+  let invisible = $state(true);
   // The percentage of scroll through the month that is currently intersecting the top boundary of the viewport.
   // Note: There may be multiple months visible within the viewport at any given time.
   let viewportTopMonthScrollPercent = $state(0);
@@ -124,14 +124,19 @@
     timelineManager.setLayoutOptions(layoutOptions);
   });
 
+  $effect(() => {
+    timelineManager.scrollableElement = scrollableElement;
+  });
+
   const scrollTo = (top: number) => {
-    if (element) {
-      element.scrollTo({ top });
+    if (scrollableElement) {
+      scrollableElement.scrollTo({ top });
     }
   };
+
   const scrollTop = (top: number) => {
-    if (element) {
-      element.scrollTop = top;
+    if (scrollableElement) {
+      scrollableElement.scrollTop = top;
     }
   };
 
@@ -142,11 +147,11 @@
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
 
   const assetIsVisible = (assetTop: number): boolean => {
-    if (!element) {
+    if (!scrollableElement) {
       return false;
     }
 
-    const { clientHeight, scrollTop } = element;
+    const { clientHeight, scrollTop } = scrollableElement;
     return assetTop >= scrollTop && assetTop < scrollTop + clientHeight;
   };
 
@@ -189,7 +194,7 @@
       // if the asset is not found, scroll to the top
       scrollToTop();
     }
-    showSkeleton = false;
+    invisible = false;
   };
 
   beforeNavigate(() => (timelineManager.suspendTransitions = true));
@@ -216,7 +221,7 @@
         } else {
           scrollToTop();
         }
-        showSkeleton = false;
+        invisible = false;
       }, 500);
     }
   };
@@ -230,13 +235,13 @@
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
-  const updateSlidingWindow = () => timelineManager.updateSlidingWindow(element?.scrollTop || 0);
+  const updateSlidingWindow = () => timelineManager.updateSlidingWindow(scrollableElement?.scrollTop || 0);
 
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
   onMount(() => {
     if (!enableRouting) {
-      showSkeleton = false;
+      invisible = false;
     }
   });
 
@@ -246,11 +251,13 @@
   };
 
   const getMaxScroll = () => {
-    if (!element || !timelineElement) {
+    if (!scrollableElement || !timelineElement) {
       return 0;
     }
     return (
-      timelineManager.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight)
+      timelineManager.topSectionHeight +
+      bottomSectionHeight +
+      (timelineElement.clientHeight - scrollableElement.clientHeight)
     );
   };
 
@@ -288,26 +295,26 @@
   const handleTimelineScroll = () => {
     isInLeadOutSection = false;
 
-    if (!element) {
+    if (!scrollableElement) {
       return;
     }
 
     if (timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
-      timelineScrollPercent = Math.min(1, element.scrollTop / maxScroll);
+      timelineScrollPercent = Math.min(1, scrollableElement.scrollTop / maxScroll);
 
       viewportTopMonth = undefined;
       viewportTopMonthScrollPercent = 0;
     } else {
-      let top = element.scrollTop;
+      let top = scrollableElement.scrollTop;
       if (top < timelineManager.topSectionHeight) {
         // in the lead-in area
         viewportTopMonth = undefined;
         viewportTopMonthScrollPercent = 0;
         const maxScroll = getMaxScroll();
 
-        timelineScrollPercent = Math.min(1, element.scrollTop / maxScroll);
+        timelineScrollPercent = Math.min(1, scrollableElement.scrollTop / maxScroll);
         return;
       }
 
@@ -564,10 +571,10 @@
       if (evt.key === 'ArrowUp') {
         amount = -amount;
         if (shiftKeyIsDown) {
-          element?.scrollBy({ top: amount, behavior: 'smooth' });
+          scrollableElement?.scrollBy({ top: amount, behavior: 'smooth' });
         }
       } else if (evt.key === 'ArrowDown') {
-        element?.scrollBy({ top: amount, behavior: 'smooth' });
+        scrollableElement?.scrollBy({ top: amount, behavior: 'smooth' });
       }
     }}
   />
@@ -581,18 +588,18 @@
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
-  bind:this={element}
+  bind:this={scrollableElement}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}
     id="virtual-timeline"
-    class:invisible={showSkeleton}
+    class:invisible
     style:height={timelineManager.timelineHeight + 'px'}
   >
     <section
       use:resizeObserver={topSectionResizeObserver}
-      class:invisible={showSkeleton}
+      class:invisible
       style:position="absolute"
       style:left="0"
       style:right="0"
@@ -615,10 +622,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton
-            height={monthGroup.height - monthGroup.timelineManager.headerHeight}
-            title={monthGroup.monthGroupTitle}
-          />
+          <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
         </div>
       {:else if display}
         <div
@@ -658,7 +662,7 @@
 
 <Portal target="body">
   {#if $showAssetViewer}
-    <TimelineAssetViewer bind:showSkeleton {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
+    <TimelineAssetViewer bind:invisible {timelineManager} {removeAction} {withStacked} {isShared} {album} {person} />
   {/if}
 </Portal>
 

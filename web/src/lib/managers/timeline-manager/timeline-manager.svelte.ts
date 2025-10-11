@@ -48,6 +48,7 @@ export class TimelineManager {
 
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
+  topIntersectingMonthGroup: MonthGroup | undefined = $state();
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -85,6 +86,8 @@ export class TimelineManager {
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
+  #updatingIntersections = false;
+  #element: HTMLElement | undefined;
 
   constructor() {}
 
@@ -96,6 +99,18 @@ export class TimelineManager {
     if (changed) {
       this.refreshLayout();
     }
+  }
+
+  set scrollableElement(element: HTMLElement | undefined) {
+    this.#element = element;
+  }
+
+  scrollTo(top: number) {
+    this.#element?.scrollTo({ top });
+  }
+
+  scrollBy(y: number) {
+    this.#element?.scrollBy(0, y);
   }
 
   #setHeaderHeight(value: number) {
@@ -231,12 +246,17 @@ export class TimelineManager {
   }
 
   updateIntersections() {
-    if (!this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
+    if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
       return;
     }
+    this.#updatingIntersections = true;
+
     for (const month of this.months) {
       updateIntersectionMonthGroup(this, month);
     }
+
+    this.topIntersectingMonthGroup = this.months.find((month) => month.actuallyIntersecting);
+    this.#updatingIntersections = false;
   }
 
   clearDeferredLayout(month: MonthGroup) {

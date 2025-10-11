@@ -68,7 +68,7 @@ describe('TimelineManager', () => {
 
     it('should load months in viewport', () => {
       expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(3);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
     it('calculates month height', () => {
@@ -82,13 +82,13 @@ describe('TimelineManager', () => {
         expect.arrayContaining([
           expect.objectContaining({ year: 2024, month: 3, height: 165.5 }),
           expect.objectContaining({ year: 2024, month: 2, height: 11_996 }),
-          expect.objectContaining({ year: 2024, month: 1, height: 48 }),
+          expect.objectContaining({ year: 2024, month: 1, height: 286 }),
         ]),
       );
     });
 
     it('calculates timeline height', () => {
-      expect(timelineManager.timelineHeight).toBe(12_209.5);
+      expect(timelineManager.timelineHeight).toBe(12_447.5);
     });
   });
 
