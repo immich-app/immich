@@ -21,4 +21,11 @@ class NativeSyncApiImpl26(context: Context) : NativeSyncApiImplBase(context), Na
   override fun getMediaChanges(): SyncDelta {
     throw IllegalStateException("Method not supported on this Android version.")
   }
+
+  override fun getTrashedAssets(
+    albumIds: List<String>,
+    sinceLastCheckpoint: Boolean
+  ): Map<String, List<PlatformAsset>> {
+    throw IllegalStateException("Method not supported on this Android version.")
+  }
 }

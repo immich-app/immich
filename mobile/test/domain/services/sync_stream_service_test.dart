@@ -3,12 +3,17 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/sync_stream.stub.dart';
 import '../../infrastructure/repository.mock.dart';
+import '../../repository.mocks.dart';
 
 class _AbortCallbackWrapper {
   const _AbortCallbackWrapper();
@@ -30,6 +35,10 @@ void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
   late SyncApiRepository mockSyncApiRepo;
+  late DriftLocalAssetRepository mockLocalAssetRepo;
+  late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
+  late LocalFilesManagerRepository mockLocalFilesManagerRepo;
+  late StorageRepository mockStorageRepo;
   late Future<void> Function(List<SyncEvent>, Function(), Function()) handleEventsCallback;
   late _MockAbortCallbackWrapper mockAbortCallbackWrapper;
   late _MockAbortCallbackWrapper mockResetCallbackWrapper;
@@ -39,6 +48,10 @@ void main() {
   setUp(() {
     mockSyncStreamRepo = MockSyncStreamRepository();
     mockSyncApiRepo = MockSyncApiRepository();
+    mockLocalAssetRepo = MockLocalAssetRepository();
+    mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
+    mockLocalFilesManagerRepo = MockLocalFilesManagerRepository();
+    mockStorageRepo = MockStorageRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
     mockResetCallbackWrapper = _MockAbortCallbackWrapper();
 
@@ -87,7 +100,14 @@ void main() {
     when(() => mockSyncStreamRepo.updateAssetFacesV1(any())).thenAnswer(successHandler);
     when(() => mockSyncStreamRepo.deleteAssetFacesV1(any())).thenAnswer(successHandler);
 
-    sut = SyncStreamService(syncApiRepository: mockSyncApiRepo, syncStreamRepository: mockSyncStreamRepo);
+    sut = SyncStreamService(
+      syncApiRepository: mockSyncApiRepo,
+      syncStreamRepository: mockSyncStreamRepo,
+      localAssetRepository: mockLocalAssetRepo,
+      trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+      localFilesManager: mockLocalFilesManagerRepo,
+      storageRepository: mockStorageRepo,
+    );
   });
 
   Future<void> simulateEvents(List<SyncEvent> events) async {
@@ -152,6 +172,10 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
+        localAssetRepository: mockLocalAssetRepo,
+        trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+        localFilesManager: mockLocalFilesManagerRepo,
+        storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
       );
       await sut.sync();
@@ -187,6 +211,10 @@ void main() {
       sut = SyncStreamService(
         syncApiRepository: mockSyncApiRepo,
         syncStreamRepository: mockSyncStreamRepo,
+        localAssetRepository: mockLocalAssetRepo,
+        trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+        localFilesManager: mockLocalFilesManagerRepo,
+        storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
       );
 
