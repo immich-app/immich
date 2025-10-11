@@ -28,7 +28,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: handleTagAssets }} />
+<svelte:document use:shortcut={{ shortcut: { key: 't' /* i18n-ignore */ }, onShortcut: handleTagAssets }} />
 
 {#if menuItem}
   <MenuOption {text} {icon} onClick={handleTagAssets} />
