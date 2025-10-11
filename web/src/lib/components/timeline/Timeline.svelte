@@ -185,7 +185,9 @@
 
   beforeNavigate(({ from, to }) => {
     timelineManager.suspendTransitions = true;
-    hasNavigatedToOrFromAssetViewer = isAssetViewerRoute(to) || isAssetViewerRoute(from);
+    const toViewer = isAssetViewerRoute(to);
+    const fromViewer = isAssetViewerRoute(from);
+    hasNavigatedToOrFromAssetViewer = (toViewer && !fromViewer) || (fromViewer && !toViewer);
   });
 
   // tri-state boolean
