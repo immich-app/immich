@@ -242,15 +242,22 @@
     }
   };
 
-  const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
+const onDelete = () => {
+  const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
 
-    if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
-      isShowDeleteConfirmation = true;
-      return;
-    }
-    handlePromiseError(trashOrDelete(hasTrashedAsset));
-  };
+  if (isSharedLinkView) {
+    removeFromSharedLink(link.id, assetInteraction.selectedAssets.map(a => a.id));
+    return;
+  }
+
+  if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
+    isShowDeleteConfirmation = true;
+    return;
+  }
+
+  handlePromiseError(trashOrDelete(hasTrashedAsset));
+};
+
 
   const onForceDelete = () => {
     if ($showDeleteModal) {
