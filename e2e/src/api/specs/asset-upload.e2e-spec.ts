@@ -175,7 +175,7 @@ describe('/upload', () => {
     });
 
     it('overwrite partial duplicate if conventional upload', { timeout: 1000 }, async () => {
-      const content = randomBytes(10240);
+      const content = randomBytes(10_240);
 
       const checksum = createHash('sha1').update(content).digest('base64');
 
