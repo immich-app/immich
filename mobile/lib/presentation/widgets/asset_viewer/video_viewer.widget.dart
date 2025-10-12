@@ -87,10 +87,19 @@ class NativeVideoViewer extends HookConsumerWidget {
         return null;
       }
 
+      final videoAsset = await ref.read(assetServiceProvider).getAsset(asset) ?? asset;
+      if (!context.mounted) {
+        return null;
+      }
+
       try {
-        if (asset.hasLocal && asset.livePhotoVideoId == null) {
-          final id = asset is LocalAsset ? (asset as LocalAsset).id : (asset as RemoteAsset).localId!;
+        if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
+          final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
           final file = await const StorageRepository().getFileForAsset(id);
+          if (!context.mounted) {
+            return null;
+          }
+
           if (file == null) {
             throw Exception('No file found for the video');
           }
@@ -99,14 +108,14 @@ class NativeVideoViewer extends HookConsumerWidget {
           return source;
         }
 
-        final remoteId = (asset as RemoteAsset).id;
+        final remoteId = (videoAsset as RemoteAsset).id;
 
         // Use a network URL for the video player controller
         final serverEndpoint = Store.get(StoreKey.serverEndpoint);
         final isOriginalVideo = ref.read(settingsProvider).get<bool>(Setting.loadOriginalVideo);
         final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
-        final String videoUrl = asset.livePhotoVideoId != null
-            ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/$postfixUrl'
+        final String videoUrl = videoAsset.livePhotoVideoId != null
+            ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
             : '$serverEndpoint/assets/$remoteId/$postfixUrl';
 
         final source = await VideoSource.init(
@@ -116,7 +125,7 @@ class NativeVideoViewer extends HookConsumerWidget {
         );
         return source;
       } catch (error) {
-        log.severe('Error creating video source for asset ${asset.name}: $error');
+        log.severe('Error creating video source for asset ${videoAsset.name}: $error');
         return null;
       }
     }
@@ -288,7 +297,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       ref.read(videoPlaybackValueProvider.notifier).reset();
 
       final source = await videoSource;
-      if (source == null) {
+      if (source == null || !context.mounted) {
         return;
       }
 
@@ -313,6 +322,9 @@ class NativeVideoViewer extends HookConsumerWidget {
         removeListeners(playerController);
       }
 
+      if (value != null) {
+        isVisible.value = _isCurrentAsset(value, asset);
+      }
       final curAsset = currentAsset.value;
       if (curAsset == asset) {
         return;

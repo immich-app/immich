@@ -19,6 +19,33 @@ returning
   "dateTimeOriginal",
   "timeZone"
 
+-- AssetRepository.getMetadata
+select
+  "key",
+  "value",
+  "updatedAt"
+from
+  "asset_metadata"
+where
+  "assetId" = $1
+
+-- AssetRepository.getMetadataByKey
+select
+  "key",
+  "value",
+  "updatedAt"
+from
+  "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+
+-- AssetRepository.deleteMetadataByKey
+delete from "asset_metadata"
+where
+  "assetId" = $1
+  and "key" = $2
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (
@@ -277,7 +304,7 @@ with
         epoch
         from
           (
-            asset."localDateTime" - asset."fileCreatedAt" at time zone 'UTC'
+            asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'
           )
       )::real / 3600 as "localOffsetHours",
       "asset"."ownerId",

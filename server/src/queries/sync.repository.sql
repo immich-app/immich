@@ -539,6 +539,37 @@ where
 order by
   "asset_face"."updateId" asc
 
+-- SyncRepository.assetMetadata.getDeletes
+select
+  "asset_metadata_audit"."id",
+  "assetId",
+  "key"
+from
+  "asset_metadata_audit" as "asset_metadata_audit"
+  left join "asset" on "asset"."id" = "asset_metadata_audit"."assetId"
+where
+  "asset_metadata_audit"."id" < $1
+  and "asset_metadata_audit"."id" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_metadata_audit"."id" asc
+
+-- SyncRepository.assetMetadata.getUpserts
+select
+  "assetId",
+  "key",
+  "value",
+  "asset_metadata"."updateId"
+from
+  "asset_metadata" as "asset_metadata"
+  inner join "asset" on "asset"."id" = "asset_metadata"."assetId"
+where
+  "asset_metadata"."updateId" < $1
+  and "asset_metadata"."updateId" > $2
+  and "asset"."ownerId" = $3
+order by
+  "asset_metadata"."updateId" asc
+
 -- SyncRepository.authUser.getUpserts
 select
   "id",
@@ -560,6 +591,7 @@ from
 where
   "user"."updateId" < $1
   and "user"."updateId" > $2
+  and "id" = $3
 order by
   "user"."updateId" asc
 
@@ -926,7 +958,7 @@ where
 order by
   "stack"."updateId" asc
 
--- SyncRepository.people.getDeletes
+-- SyncRepository.person.getDeletes
 select
   "id",
   "personId"
@@ -939,7 +971,7 @@ where
 order by
   "person_audit"."id" asc
 
--- SyncRepository.people.getUpserts
+-- SyncRepository.person.getUpserts
 select
   "id",
   "createdAt",

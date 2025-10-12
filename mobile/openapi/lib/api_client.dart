@@ -266,6 +266,14 @@ class ApiClient {
           return AssetMediaSizeTypeTransformer().decode(value);
         case 'AssetMediaStatus':
           return AssetMediaStatusTypeTransformer().decode(value);
+        case 'AssetMetadataKey':
+          return AssetMetadataKeyTypeTransformer().decode(value);
+        case 'AssetMetadataResponseDto':
+          return AssetMetadataResponseDto.fromJson(value);
+        case 'AssetMetadataUpsertDto':
+          return AssetMetadataUpsertDto.fromJson(value);
+        case 'AssetMetadataUpsertItemDto':
+          return AssetMetadataUpsertItemDto.fromJson(value);
         case 'AssetOrder':
           return AssetOrderTypeTransformer().decode(value);
         case 'AssetResponseDto':
@@ -374,6 +382,8 @@ class ApiClient {
           return LoginResponseDto.fromJson(value);
         case 'LogoutResponseDto':
           return LogoutResponseDto.fromJson(value);
+        case 'MachineLearningAvailabilityChecksDto':
+          return MachineLearningAvailabilityChecksDto.fromJson(value);
         case 'ManualJobName':
           return ManualJobNameTypeTransformer().decode(value);
         case 'MapMarkerResponseDto':
@@ -426,10 +436,14 @@ class ApiClient {
           return OnboardingDto.fromJson(value);
         case 'OnboardingResponseDto':
           return OnboardingResponseDto.fromJson(value);
+        case 'PartnerCreateDto':
+          return PartnerCreateDto.fromJson(value);
         case 'PartnerDirection':
           return PartnerDirectionTypeTransformer().decode(value);
         case 'PartnerResponseDto':
           return PartnerResponseDto.fromJson(value);
+        case 'PartnerUpdateDto':
+          return PartnerUpdateDto.fromJson(value);
         case 'PeopleResponse':
           return PeopleResponse.fromJson(value);
         case 'PeopleResponseDto':
@@ -580,6 +594,10 @@ class ApiClient {
           return SyncAssetFaceDeleteV1.fromJson(value);
         case 'SyncAssetFaceV1':
           return SyncAssetFaceV1.fromJson(value);
+        case 'SyncAssetMetadataDeleteV1':
+          return SyncAssetMetadataDeleteV1.fromJson(value);
+        case 'SyncAssetMetadataV1':
+          return SyncAssetMetadataV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
         case 'SyncAuthUserV1':
@@ -722,8 +740,6 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':
           return UpdateLibraryDto.fromJson(value);
-        case 'UpdatePartnerDto':
-          return UpdatePartnerDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserAdminCreateDto':

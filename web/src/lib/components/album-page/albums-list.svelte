@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -315,7 +316,7 @@
       button: {
         text: $t('view_album'),
         onClick() {
-          return goto(`${AppRoute.ALBUMS}/${album.id}`);
+          return goto(resolve(`${AppRoute.ALBUMS}/${album.id}`));
         },
       },
     });

@@ -29,7 +29,7 @@ class CastDialog extends ConsumerWidget {
           future: ref.read(castProvider.notifier).getDevices(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Text('Error: ${snapshot.error.toString()}');
+              return Text('error_saving_image'.tr(args: [snapshot.error.toString()]));
             } else if (!snapshot.hasData) {
               return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
             }

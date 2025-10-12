@@ -52,7 +52,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     threads: 0,
     preset: 'ultrafast',
     targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus, AudioCodec.PcmS16le],
+    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
@@ -82,6 +82,11 @@ const updatedConfig = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: true,
     urls: ['http://immich-machine-learning:3003'],
+    availabilityChecks: {
+      enabled: true,
+      interval: 30_000,
+      timeout: 2000,
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',

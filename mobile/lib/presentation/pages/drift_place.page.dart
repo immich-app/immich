@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -38,14 +39,14 @@ class DriftPlacePage extends StatelessWidget {
   }
 }
 
-class _PlaceSliverAppBar extends StatelessWidget {
+class _PlaceSliverAppBar extends HookWidget {
   const _PlaceSliverAppBar({required this.search});
 
   final ValueNotifier<String?> search;
 
   @override
   Widget build(BuildContext context) {
-    final searchFocusNode = FocusNode();
+    final searchFocusNode = useFocusNode();
 
     return SliverAppBar(
       floating: true,
@@ -163,7 +164,11 @@ class _PlaceTile extends StatelessWidget {
       title: Text(place.$1, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500)),
       leading: ClipRRect(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
-        child: Thumbnail(size: const Size(80, 80), fit: BoxFit.cover, remoteId: place.$2),
+        child: SizedBox(
+          width: 80,
+          height: 80,
+          child: Thumbnail.remote(remoteId: place.$2, fit: BoxFit.cover),
+        ),
       ),
     );
   }

@@ -33,11 +33,13 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { DB } from 'src/schema';
@@ -53,6 +55,7 @@ import { StackTable } from 'src/schema/tables/stack.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { SyncService } from 'src/services/sync.service';
+import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
 import { automock, wait } from 'test/utils';
 import { Mocked } from 'vitest';
@@ -257,6 +260,12 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     return stream.getResponse();
   }
 
+  async assertSyncIsComplete(auth: AuthDto, types: SyncRequestType[]) {
+    await expect(this.syncStream(auth, types)).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+  }
+
   async syncAckAll(auth: AuthDto, response: Array<{ type: string; ack: string }>) {
     const acks: Record<string, string> = {};
     const syncAcks: string[] = [];
@@ -286,6 +295,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case PersonRepository:
     case SearchRepository:
     case SessionRepository:
+    case SharedLinkRepository:
     case StackRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
@@ -337,6 +347,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case UserRepository:
     case VersionHistoryRepository: {
       return automock(key);
+    }
+
+    case TelemetryRepository: {
+      return newTelemetryRepositoryMock();
     }
 
     case DatabaseRepository: {
@@ -391,7 +405,7 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     checksum: randomBytes(32),
     type: AssetType.Image,
     originalPath: '/path/to/something.jpg',
-    ownerId: '@immich.cloud',
+    ownerId: 'not-a-valid-uuid',
     isFavorite: false,
     fileCreatedAt: now,
     fileModifiedAt: now,

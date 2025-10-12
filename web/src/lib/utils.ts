@@ -21,6 +21,7 @@ import {
   unlinkOAuthAccount,
   type MemoryResponseDto,
   type PersonResponseDto,
+  type ServerVersionResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -73,6 +74,10 @@ class ApiError extends Error {
     super(message);
   }
 }
+
+export const sleep = (ms: number) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
 
 export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{ data: T; status: number }> => {
   const { onUploadProgress: onProgress, data, url } = options;
@@ -381,3 +386,22 @@ export function createDateFormatter(localeCode: string | undefined): DateFormatt
     },
   };
 }
+
+export const getReleaseType = (
+  current: ServerVersionResponseDto,
+  newVersion: ServerVersionResponseDto,
+): 'major' | 'minor' | 'patch' | 'none' => {
+  if (current.major !== newVersion.major) {
+    return 'major';
+  }
+
+  if (current.minor !== newVersion.minor) {
+    return 'minor';
+  }
+
+  if (current.patch !== newVersion.patch) {
+    return 'patch';
+  }
+
+  return 'none';
+};

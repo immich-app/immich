@@ -2,7 +2,7 @@ part of 'image_request.dart';
 
 class RemoteImageRequest extends ImageRequest {
   static final log = Logger('RemoteImageRequest');
-  static final client = HttpClient()..maxConnectionsPerHost = 32;
+  static final client = HttpClient()..maxConnectionsPerHost = 16;
   final RemoteCacheManager? cacheManager;
   final String uri;
   final Map<String, String> headers;
@@ -24,18 +24,11 @@ class RemoteImageRequest extends ImageRequest {
     }
 
     try {
-      Stopwatch? stopwatch;
-      if (!kReleaseMode) {
-        stopwatch = Stopwatch()..start();
-      }
       final buffer = await _downloadImage(uri);
       if (buffer == null) {
         return null;
       }
-      if (!kReleaseMode) {
-        stopwatch!.stop();
-        debugPrint('Remote image download $requestId took ${stopwatch.elapsedMilliseconds}ms for $uri');
-      }
+
       return await _decodeBuffer(buffer, decode, scale);
     } catch (e) {
       if (_isCancelled) {
@@ -71,19 +64,62 @@ class RemoteImageRequest extends ImageRequest {
     if (_isCancelled) {
       return null;
     }
-    final bytes = Uint8List(response.contentLength);
-    int offset = 0;
-    final subscription = response.listen((List<int> chunk) {
-      // this is important to break the response stream if the request is cancelled
+
+    final cacheManager = this.cacheManager;
+    final streamController = StreamController<List<int>>(sync: true);
+    final Stream<List<int>> stream;
+    cacheManager?.putStreamedFile(url, streamController.stream);
+    stream = response.map((chunk) {
       if (_isCancelled) {
         throw StateError('Cancelled request');
       }
-      bytes.setAll(offset, chunk);
-      offset += chunk.length;
-    }, cancelOnError: true);
-    cacheManager?.putStreamedFile(url, response);
-    await subscription.asFuture();
-    return await ImmutableBuffer.fromUint8List(bytes);
+      if (cacheManager != null) {
+        streamController.add(chunk);
+      }
+      return chunk;
+    });
+
+    try {
+      final Uint8List bytes = await _downloadBytes(stream, response.contentLength);
+      streamController.close();
+      return await ImmutableBuffer.fromUint8List(bytes);
+    } catch (e) {
+      streamController.addError(e);
+      streamController.close();
+      if (_isCancelled) {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
+  Future<Uint8List> _downloadBytes(Stream<List<int>> stream, int length) async {
+    final Uint8List bytes;
+    int offset = 0;
+    if (length > 0) {
+      // Known content length - use pre-allocated buffer
+      bytes = Uint8List(length);
+      await stream.listen((chunk) {
+        bytes.setAll(offset, chunk);
+        offset += chunk.length;
+      }, cancelOnError: true).asFuture();
+    } else {
+      // Unknown content length - collect chunks dynamically
+      final chunks = <List<int>>[];
+      int totalLength = 0;
+      await stream.listen((chunk) {
+        chunks.add(chunk);
+        totalLength += chunk.length;
+      }, cancelOnError: true).asFuture();
+
+      bytes = Uint8List(totalLength);
+      for (final chunk in chunks) {
+        bytes.setAll(offset, chunk);
+        offset += chunk.length;
+      }
+    }
+
+    return bytes;
   }
 
   Future<ImageInfo?> _loadCachedFile(
@@ -139,8 +175,5 @@ class RemoteImageRequest extends ImageRequest {
   void _onCancelled() {
     _request?.abort();
     _request = null;
-    if (!kReleaseMode) {
-      debugPrint('Cancelled remote image request $requestId for $uri');
-    }
   }
 }

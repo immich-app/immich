@@ -31,11 +31,12 @@ class RemoteThumbProvider extends CancellableImageProvider<RemoteThumbProvider>
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
       ],
-    )..addOnLastListenerRemovedCallback(cancel);
+      onDispose: cancel,
+    );
   }
 
   Stream<ImageInfo> _codec(RemoteThumbProvider key, ImageDecoderCallback decode) {
-    final request = RemoteImageRequest(
+    final request = this.request = RemoteImageRequest(
       uri: getThumbnailUrlForRemoteId(key.assetId),
       headers: ApiService.getRequestHeaders(),
       cacheManager: cacheManager,
@@ -73,7 +74,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   ImageStreamCompleter loadImage(RemoteFullImageProvider key, ImageDecoderCallback decode) {
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
-      initialImage: getCachedImage(RemoteThumbProvider(assetId: key.assetId)),
+      initialImage: getInitialImage(RemoteThumbProvider(assetId: key.assetId)),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),
         DiagnosticsProperty<String>('Asset Id', key.assetId),
@@ -91,16 +92,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     final headers = ApiService.getRequestHeaders();
-    try {
-      final request = RemoteImageRequest(
-        uri: getPreviewUrlForRemoteId(key.assetId),
-        headers: headers,
-        cacheManager: cacheManager,
-      );
-      yield* loadRequest(request, decode);
-    } finally {
-      request = null;
-    }
+    final request = this.request = RemoteImageRequest(
+      uri: getPreviewUrlForRemoteId(key.assetId),
+      headers: headers,
+      cacheManager: cacheManager,
+    );
+    yield* loadRequest(request, decode);
 
     if (isCancelled) {
       evict();
@@ -108,12 +105,8 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     }
 
     if (AppSetting.get(Setting.loadOriginal)) {
-      try {
-        final request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
-        yield* loadRequest(request, decode);
-      } finally {
-        request = null;
-      }
+      final request = this.request = RemoteImageRequest(uri: getOriginalUrlForRemoteId(key.assetId), headers: headers);
+      yield* loadRequest(request, decode);
     }
   }
 

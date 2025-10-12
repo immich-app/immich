@@ -36,7 +36,6 @@ export class MonthGroup {
 
   #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
-  percent: number = $state(0);
 
   assetsCount: number = $derived(
     this.isLoaded
@@ -187,6 +186,11 @@ export class MonthGroup {
         thumbhash: bucketAssets.thumbhash[i],
         people: null, // People are not included in the bucket assets
       };
+
+      if (bucketAssets.latitude?.[i] && bucketAssets.longitude?.[i]) {
+        timelineAsset.latitude = bucketAssets.latitude?.[i];
+        timelineAsset.longitude = bucketAssets.longitude?.[i];
+      }
       this.addTimelineAsset(timelineAsset, addContext);
     }
 
@@ -228,15 +232,6 @@ export class MonthGroup {
     addContext.changedDayGroups.add(dayGroup);
   }
 
-  getRandomDayGroup() {
-    const random = Math.floor(Math.random() * this.dayGroups.length);
-    return this.dayGroups[random];
-  }
-
-  getRandomAsset() {
-    return this.getRandomDayGroup()?.getRandomAsset()?.asset;
-  }
-
   get viewId() {
     const { year, month } = this.yearMonth;
     return year + '-' + month;
@@ -246,42 +241,31 @@ export class MonthGroup {
     if (this.#height === height) {
       return;
     }
-    const { timelineManager: store, percent } = this;
-    const index = store.months.indexOf(this);
+    let needsIntersectionUpdate = false;
+    const timelineManager = this.timelineManager;
+    const index = timelineManager.months.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevMonthGroup = store.months[index - 1];
+    const prevMonthGroup = timelineManager.months[index - 1];
     if (prevMonthGroup) {
       const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
-    for (let cursor = index + 1; cursor < store.months.length; cursor++) {
+    if (heightDelta === 0) {
+      return;
+    }
+    for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
       const monthGroup = this.timelineManager.months[cursor];
       const newTop = monthGroup.#top + heightDelta;
       if (monthGroup.#top !== newTop) {
         monthGroup.#top = newTop;
+        needsIntersectionUpdate = true;
       }
     }
-    if (store.topIntersectingMonthGroup) {
-      const currentIndex = store.months.indexOf(store.topIntersectingMonthGroup);
-      if (currentIndex > 0) {
-        if (index < currentIndex) {
-          store.scrollCompensation = {
-            heightDelta,
-            scrollTop: undefined,
-            monthGroup: this,
-          };
-        } else if (percent > 0) {
-          const top = this.top + height * percent;
-          store.scrollCompensation = {
-            heightDelta: undefined,
-            scrollTop: top,
-            monthGroup: this,
-          };
-        }
-      }
+    if (needsIntersectionUpdate) {
+      timelineManager.updateIntersections();
     }
   }
 
