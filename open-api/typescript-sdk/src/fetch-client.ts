@@ -4439,8 +4439,8 @@ export function startUpload({ contentLength, key, reprDigest, slug, uploadComple
     key?: string;
     reprDigest: string;
     slug?: string;
-    uploadComplete: string;
-    uploadDraftInteropVersion: string;
+    uploadComplete?: string;
+    uploadDraftInteropVersion?: string;
     xImmichAssetData: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{

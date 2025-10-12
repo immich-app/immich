@@ -286,19 +286,19 @@ class UploadApi {
   /// * [String] reprDigest (required):
   ///   RFC 9651 structured dictionary containing an `sha` (bytesequence) checksum used to detect duplicate files and validate data integrity.
   ///
-  /// * [String] uploadComplete (required):
-  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
-  ///
-  /// * [String] uploadDraftInteropVersion (required):
-  ///   Indicates the version of the RUFH protocol supported by the client.
-  ///
   /// * [String] xImmichAssetData (required):
   ///   RFC 9651 structured dictionary containing asset metadata with the following keys: - device-asset-id (string, required): Unique device asset identifier - device-id (string, required): Device identifier - file-created-at (string/date, required): ISO 8601 date string or Unix timestamp - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp - filename (string, required): Original filename - is-favorite (boolean, optional): Favorite status - live-photo-video-id (string, optional): Live photo ID for assets from iOS devices - icloud-id (string, optional): iCloud identifier for assets from iOS devices
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> startUploadWithHttpInfo(String contentLength, String reprDigest, String uploadComplete, String uploadDraftInteropVersion, String xImmichAssetData, { String? key, String? slug, }) async {
+  ///
+  /// * [String] uploadComplete:
+  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
+  ///
+  /// * [String] uploadDraftInteropVersion:
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  Future<Response> startUploadWithHttpInfo(String contentLength, String reprDigest, String xImmichAssetData, { String? key, String? slug, String? uploadComplete, String? uploadDraftInteropVersion, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload';
 
@@ -318,8 +318,12 @@ class UploadApi {
 
     headerParams[r'content-length'] = parameterToString(contentLength);
     headerParams[r'repr-digest'] = parameterToString(reprDigest);
-    headerParams[r'upload-complete'] = parameterToString(uploadComplete);
-    headerParams[r'upload-draft-interop-version'] = parameterToString(uploadDraftInteropVersion);
+    if (uploadComplete != null) {
+      headerParams[r'upload-complete'] = parameterToString(uploadComplete);
+    }
+    if (uploadDraftInteropVersion != null) {
+      headerParams[r'upload-draft-interop-version'] = parameterToString(uploadDraftInteropVersion);
+    }
     headerParams[r'x-immich-asset-data'] = parameterToString(xImmichAssetData);
 
     const contentTypes = <String>[];
@@ -346,20 +350,20 @@ class UploadApi {
   /// * [String] reprDigest (required):
   ///   RFC 9651 structured dictionary containing an `sha` (bytesequence) checksum used to detect duplicate files and validate data integrity.
   ///
-  /// * [String] uploadComplete (required):
-  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
-  ///
-  /// * [String] uploadDraftInteropVersion (required):
-  ///   Indicates the version of the RUFH protocol supported by the client.
-  ///
   /// * [String] xImmichAssetData (required):
   ///   RFC 9651 structured dictionary containing asset metadata with the following keys: - device-asset-id (string, required): Unique device asset identifier - device-id (string, required): Device identifier - file-created-at (string/date, required): ISO 8601 date string or Unix timestamp - file-modified-at (string/date, required): ISO 8601 date string or Unix timestamp - filename (string, required): Original filename - is-favorite (boolean, optional): Favorite status - live-photo-video-id (string, optional): Live photo ID for assets from iOS devices - icloud-id (string, optional): iCloud identifier for assets from iOS devices
   ///
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<UploadOkDto?> startUpload(String contentLength, String reprDigest, String uploadComplete, String uploadDraftInteropVersion, String xImmichAssetData, { String? key, String? slug, }) async {
-    final response = await startUploadWithHttpInfo(contentLength, reprDigest, uploadComplete, uploadDraftInteropVersion, xImmichAssetData,  key: key, slug: slug, );
+  ///
+  /// * [String] uploadComplete:
+  ///   Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.
+  ///
+  /// * [String] uploadDraftInteropVersion:
+  ///   Indicates the version of the RUFH protocol supported by the client.
+  Future<UploadOkDto?> startUpload(String contentLength, String reprDigest, String xImmichAssetData, { String? key, String? slug, String? uploadComplete, String? uploadDraftInteropVersion, }) async {
+    final response = await startUploadWithHttpInfo(contentLength, reprDigest, xImmichAssetData,  key: key, slug: slug, uploadComplete: uploadComplete, uploadDraftInteropVersion: uploadDraftInteropVersion, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
