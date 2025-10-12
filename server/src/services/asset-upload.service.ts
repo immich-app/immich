@@ -56,7 +56,7 @@ export class AssetUploadService extends BaseService {
     this.logger.verboseFn(() => `Starting upload: ${JSON.stringify(dto)}`);
     const { uploadComplete, assetData, uploadLength, contentLength, version } = dto;
     const isComplete = uploadComplete !== false;
-    const isResumable = version && version >= 3 && uploadComplete !== undefined;
+    const isResumable = version && uploadComplete !== undefined;
     const { backup } = await this.getConfig({ withCache: true });
 
     const asset = await this.onStart(auth, dto);
