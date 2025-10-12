@@ -45,7 +45,7 @@ program
   .usage('[paths...] [options]')
   .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
   .addOption(new Option('-i, --ignore <pattern>', 'Pattern to ignore').env('IMMICH_IGNORE_PATHS'))
-  .addOption(new Option('-s, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
+  .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
   .addOption(new Option('-H, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
   .addOption(
     new Option('-a, --album', 'Automatically create albums based on folder name')
@@ -53,12 +53,9 @@ program
       .default(false),
   )
   .addOption(
-    new Option('-A, --album-name <n>', 'Add all assets to specified album').env('IMMICH_ALBUM_NAME').conflicts('album'),
-  )
-  .addOption(
-    new Option('-f, --format-album-names', 'Format album names (remove leading numbers, clean up spaces and dashes)')
-      .env('IMMICH_FORMAT_ALBUM_NAMES')
-      .default(false),
+    new Option('-A, --album-name <name>', 'Add all assets to specified album')
+      .env('IMMICH_ALBUM_NAME')
+      .conflicts('album'),
   )
   .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")
