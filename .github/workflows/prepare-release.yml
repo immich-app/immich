@@ -128,7 +128,7 @@ jobs:
           name: release-apk-signed
 
       - name: Create draft release
-        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2.3.3
+        uses: softprops/action-gh-release@aec2ec56f94eb8180ceec724245f64ef008b89f5 # v2.4.0
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}
