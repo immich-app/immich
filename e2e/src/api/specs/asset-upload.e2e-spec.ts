@@ -99,6 +99,9 @@ describe('/upload', () => {
           visibility: 'timeline',
         }),
       );
+      const downloaded = await utils.downloadAsset(admin.accessToken, body.id);
+      expect(downloaded.size).toBe(content.byteLength);
+      expect(content.compare(await downloaded.bytes())).toBe(0);
     });
 
     it('should create a complete upload with Upload-Incomplete: ?0 if version is 3', async () => {
@@ -134,6 +137,99 @@ describe('/upload', () => {
           visibility: 'timeline',
         }),
       );
+    });
+
+    it('should support conventional upload', async () => {
+      const content = randomBytes(1024);
+
+      const checksum = createHash('sha1').update(content).digest('base64');
+      const { status, headers, body } = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('X-Immich-Asset-Data', assetData)
+        .set('Repr-Digest', `sha=:${checksum}:`)
+        .set('Content-Type', 'image/jpeg')
+        .set('Upload-Length', '1024')
+        .send(content);
+
+      expect(status).toBe(200);
+      expect(headers['upload-complete']).toBeUndefined();
+      expect(headers['upload-incomplete']).toBeUndefined();
+      expect(headers['location']).toBeUndefined();
+      expect(body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+
+      const asset = await utils.getAssetInfo(user.accessToken, body.id);
+      expect(asset).toEqual(
+        expect.objectContaining({
+          id: body.id,
+          checksum,
+          ownerId: user.userId,
+          exifInfo: expect.objectContaining({ fileSizeInByte: content.byteLength }),
+          originalFileName: 'test-image.jpg',
+          deviceAssetId: 'rufh',
+          deviceId: 'test',
+          isFavorite: true,
+          visibility: 'timeline',
+        }),
+      );
+    });
+
+    it('overwrite partial duplicate if conventional upload', { timeout: 1000 }, async () => {
+      const content = randomBytes(10240);
+
+      const checksum = createHash('sha1').update(content).digest('base64');
+
+      // simulate interrupted upload by starting a request and not completing it
+      const req = httpRequest({
+        hostname: 'localhost',
+        port: 2285,
+        path: '/upload',
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${user.accessToken}`,
+          'X-Immich-Asset-Data': assetData,
+          'Repr-Digest': `sha=:${checksum}:`,
+          'Upload-Length': '1024',
+          'Content-Length': '1024',
+          'Content-Type': 'image/jpeg',
+        },
+      });
+      req.write(content.subarray(0, 512));
+
+      await setTimeout(50);
+
+      const { status, headers, body } = await request(app)
+        .post('/upload')
+        .set('Authorization', `Bearer ${user.accessToken}`)
+        .set('X-Immich-Asset-Data', assetData)
+        .set('Repr-Digest', `sha=:${checksum}:`)
+        .set('Content-Type', 'image/jpeg')
+        .set('Upload-Length', '10240')
+        .send(content);
+
+      expect(status).toBe(200);
+      expect(headers['upload-complete']).toBeUndefined();
+      expect(headers['upload-incomplete']).toBeUndefined();
+      expect(headers['location']).toBeUndefined();
+      expect(body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+
+      const asset = await utils.getAssetInfo(user.accessToken, body.id);
+      expect(asset).toEqual(
+        expect.objectContaining({
+          id: body.id,
+          checksum,
+          ownerId: user.userId,
+          exifInfo: expect.objectContaining({ fileSizeInByte: content.byteLength }),
+          originalFileName: 'test-image.jpg',
+          deviceAssetId: 'rufh',
+          deviceId: 'test',
+          isFavorite: true,
+          visibility: 'timeline',
+        }),
+      );
+      const downloaded = await utils.downloadAsset(user.accessToken, body.id);
+      expect(downloaded.size).toBe(content.byteLength);
+      expect(content.compare(await downloaded.bytes())).toBe(0);
     });
 
     it('should reject when Upload-Complete: ?1 with mismatching Content-Length and Upload-Length', async () => {
@@ -789,6 +885,12 @@ describe('/upload', () => {
         .send(content.subarray(2000));
 
       expect(secondResponse.status).toBe(200);
+      expect(secondResponse.headers['upload-complete']).toBe('?1');
+      expect(secondResponse.body).toEqual(expect.objectContaining({ id: expect.any(String) }));
+
+      const downloaded = await utils.downloadAsset(user.accessToken, secondResponse.body.id);
+      expect(downloaded.size).toBe(content.byteLength);
+      expect(content.compare(await downloaded.bytes())).toBe(0);
     });
   });
 

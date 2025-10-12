@@ -64,8 +64,6 @@ describe(AssetUploadService.name, () => {
         1024,
         undefined,
       );
-
-      expect(mocks.storage.mkdir).toHaveBeenCalledWith(expect.stringContaining(authStub.user1.user.id));
     });
 
     it('should determine asset type from filename extension', async () => {

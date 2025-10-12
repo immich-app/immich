@@ -561,6 +561,16 @@ export const utils = {
     await utils.waitForQueueFinish(accessToken, 'sidecar');
     await utils.waitForQueueFinish(accessToken, 'metadataExtraction');
   },
+
+  downloadAsset: async (accessToken: string, id: string) => {
+    const downloadedRes = await fetch(`${baseUrl}/api/assets/${id}/original`, {
+      headers: asBearerAuth(accessToken),
+    });
+    if (!downloadedRes.ok) {
+      throw new Error(`Failed to download asset ${id}: ${downloadedRes.status} ${await downloadedRes.text()}`);
+    }
+    return await downloadedRes.blob();
+  },
 };
 
 utils.initSdk();

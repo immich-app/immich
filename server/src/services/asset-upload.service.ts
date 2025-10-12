@@ -2,8 +2,8 @@ import { BadRequestException, Injectable, InternalServerErrorException } from '@
 import { Response } from 'express';
 import { DateTime } from 'luxon';
 import { createHash } from 'node:crypto';
-import { extname, join } from 'node:path';
-import { Readable } from 'node:stream';
+import { dirname, extname, join } from 'node:path';
+import { Readable, Writable } from 'node:stream';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
@@ -55,6 +55,8 @@ export class AssetUploadService extends BaseService {
   async startUpload(auth: AuthDto, req: Readable, res: Response, dto: StartUploadDto): Promise<void> {
     this.logger.verboseFn(() => `Starting upload: ${JSON.stringify(dto)}`);
     const { uploadComplete, assetData, uploadLength, contentLength, version } = dto;
+    const isComplete = uploadComplete !== false;
+    const isResumable = version && version >= 3 && uploadComplete !== undefined;
     const { backup } = await this.getConfig({ withCache: true });
 
     const asset = await this.onStart(auth, dto);
@@ -64,35 +66,49 @@ export class AssetUploadService extends BaseService {
       }
 
       const location = `/api/upload/${asset.id}`;
-      if (version <= MAX_RUFH_INTEROP_VERSION) {
+      if (isResumable) {
         this.sendInterimResponse(res, location, version, this.getUploadLimits(backup));
+        // this is a 5xx to indicate the client should do offset retrieval and resume
+        res.status(500).send('Incomplete asset already exists');
+        return;
       }
-      // this is a 5xx to indicate the client should do offset retrieval and resume
-      res.status(500).send('Incomplete asset already exists');
-      return;
     }
 
-    if (uploadComplete && uploadLength !== contentLength) {
+    if (isComplete && uploadLength !== contentLength) {
       return this.sendInconsistentLength(res);
     }
 
     const location = `/api/upload/${asset.id}`;
-    if (version <= MAX_RUFH_INTEROP_VERSION) {
+    if (isResumable) {
       this.sendInterimResponse(res, location, version, this.getUploadLimits(backup));
     }
 
     this.addRequest(asset.id, req);
     await this.databaseRepository.withUuidLock(asset.id, async () => {
+      // conventional upload, check status again with lock acquired before overwriting
+      if (asset.isDuplicate) {
+        const existingAsset = await this.assetRepository.getCompletionMetadata(asset.id, auth.user.id);
+        if (existingAsset?.status !== AssetStatus.Partial) {
+          return this.sendAlreadyCompleted(res);
+        }
+      }
+      await this.storageRepository.mkdir(dirname(asset.path));
+
       let checksumBuffer: Buffer | undefined;
-      const writeStream = this.pipe(req, asset.path, contentLength);
-      if (uploadComplete) {
+      const writeStream = asset.isDuplicate
+        ? this.storageRepository.createWriteStream(asset.path)
+        : this.storageRepository.createOrAppendWriteStream(asset.path);
+      this.pipe(req, writeStream, contentLength);
+      if (isComplete) {
         const hash = createHash('sha1');
         req.on('data', (data: Buffer) => hash.update(data));
         writeStream.on('finish', () => (checksumBuffer = hash.digest()));
       }
       await new Promise((resolve, reject) => writeStream.on('close', resolve).on('error', reject));
-      this.setCompleteHeader(res, dto.version, uploadComplete);
-      if (!uploadComplete) {
+      if (isResumable) {
+        this.setCompleteHeader(res, version, uploadComplete);
+      }
+      if (!isComplete) {
         res.status(201).set('Location', location).setHeader('Upload-Limit', this.getUploadLimits(backup)).send();
         return;
       }
@@ -142,7 +158,8 @@ export class AssetUploadService extends BaseService {
         return;
       }
 
-      const writeStream = this.pipe(req, path, contentLength);
+      const writeStream = this.storageRepository.createOrAppendWriteStream(path);
+      this.pipe(req, writeStream, contentLength);
       await new Promise((resolve, reject) => writeStream.on('close', resolve).on('error', reject));
       this.setCompleteHeader(res, version, uploadComplete);
       if (!uploadComplete) {
@@ -300,7 +317,6 @@ export class AssetUploadService extends BaseService {
       return { id: duplicate.id, path, status: duplicate.status, isDuplicate: true };
     }
 
-    await this.storageRepository.mkdir(folder);
     return { id: assetId, path, status: AssetStatus.Partial, isDuplicate: false };
   }
 
@@ -342,8 +358,7 @@ export class AssetUploadService extends BaseService {
     }
   }
 
-  private pipe(req: Readable, path: string, size: number) {
-    const writeStream = this.storageRepository.createOrAppendWriteStream(path);
+  private pipe(req: Readable, writeStream: Writable, size: number) {
     let receivedLength = 0;
     req.on('data', (data: Buffer) => {
       receivedLength += data.length;
@@ -359,8 +374,6 @@ export class AssetUploadService extends BaseService {
       }
       writeStream.end();
     });
-
-    return writeStream;
   }
 
   private sendInterimResponse({ socket }: Response, location: string, interopVersion: number, limits: string): void {
@@ -427,12 +440,8 @@ export class AssetUploadService extends BaseService {
     }
   }
 
-  private setCompleteHeader(res: Response, interopVersion: number | null, isComplete: boolean): void {
-    if (!interopVersion) {
-      return;
-    }
-
-    if (interopVersion > 3) {
+  private setCompleteHeader(res: Response, interopVersion: number | undefined, isComplete: boolean): void {
+    if (interopVersion === undefined || interopVersion > 3) {
       res.setHeader('Upload-Complete', isComplete ? '?1' : '?0');
     } else {
       res.setHeader('Upload-Incomplete', isComplete ? '?0' : '?1');
