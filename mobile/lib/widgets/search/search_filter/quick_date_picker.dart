@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 
 class QuickDatePicker extends HookWidget {
   const QuickDatePicker({super.key, required this.onSelect, required this.onRequestPicker});
@@ -18,10 +19,8 @@ class QuickDatePicker extends HookWidget {
     onSelect(range);
   }
 
-  ListTile _monthListTile(int monthsFromNow) {
-    String label = monthsFromNow == 1
-        ? 'last_month'.tr()
-        : 'last_nth_month'.tr(namedArgs: {"months": monthsFromNow.toString()});
+  ListTile _monthListTile(BuildContext context, int monthsFromNow) {
+    String label = 'last_months'.t(context: context, args: {"count": monthsFromNow.toString()});
     return ListTile(
       title: Text(label),
       onTap: () {
@@ -46,11 +45,11 @@ class QuickDatePicker extends HookWidget {
             },
           );
         } else if (index == 1) {
-          return _monthListTile(1);
+          return _monthListTile(context, 1);
         } else if (index == 2) {
-          return _monthListTile(3);
+          return _monthListTile(context, 3);
         } else if (index == 3) {
-          return _monthListTile(9);
+          return _monthListTile(context, 9);
         } else {
           final now = DateTime.now();
           final years = index - 4;
