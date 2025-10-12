@@ -33,7 +33,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
   
-  private var hashTask: Task<Void, Error>?
+  private var hashTask: Task<Void?, Error>?
   private static let hashCancelledCode = "HASH_CANCELLED"
   private static let hashCancelled = Result<[HashResult], Error>.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil))
   
@@ -282,8 +282,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       }
       
       if Task.isCancelled {
-        self?.completeWhenActive(for: completion, with: Self.hashCancelled)
-        return
+        return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
       }
       
       await withTaskGroup(of: HashResult?.self) { taskGroup in
@@ -291,8 +290,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         results.reserveCapacity(assets.count)
         for asset in assets {
           if Task.isCancelled {
-            self?.completeWhenActive(for: completion, with: Self.hashCancelled)
-            return
+            return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
           }
           taskGroup.addTask {
             guard let self = self else { return nil }
@@ -302,8 +300,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         
         for await result in taskGroup {
           guard let result = result else {
-            self?.completeWhenActive(for: completion, with: Self.hashCancelled)
-            return
+            return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
           }
           results.append(result)
         }
@@ -312,8 +309,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
           results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
         }
         
-        self?.completeWhenActive(for: completion, with: .success(results))
-        return
+        return self?.completeWhenActive(for: completion, with: .success(results))
       }
     }
   }
