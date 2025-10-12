@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
-import { Equals, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { Equals, IsBoolean, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { ImmichHeader } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
 import { parseDictionary } from 'structured-headers';
@@ -50,27 +50,22 @@ export class UploadAssetDataDto {
   iCloudId!: string;
 }
 
-class BaseRufhHeadersDto {
-  @Expose({ name: Header.InteropVersion })
-  @Min(3)
-  @IsInt()
-  @Type(() => Number)
-  version!: number;
-}
-
-export class BaseUploadHeadersDto extends BaseRufhHeadersDto {
+export class BaseUploadHeadersDto {
   @Expose({ name: Header.ContentLength })
   @Min(0)
   @IsInt()
   @Type(() => Number)
   contentLength!: number;
-
-  @Expose()
-  @Transform(({ obj }) => isUploadComplete(obj))
-  uploadComplete!: boolean;
 }
 
 export class StartUploadDto extends BaseUploadHeadersDto {
+  @Expose({ name: Header.InteropVersion })
+  @Optional()
+  @Min(3)
+  @IsInt()
+  @Type(() => Number)
+  version?: number;
+
   @Expose({ name: ImmichHeader.AssetData })
   @ValidateNested()
   @Transform(({ value }) => {
@@ -121,15 +116,25 @@ export class StartUploadDto extends BaseUploadHeadersDto {
     }
 
     const contentLength = obj[Header.ContentLength];
-    if (contentLength && isUploadComplete(obj)) {
+    if (contentLength && isUploadComplete(obj) !== false) {
       return Number(contentLength);
     }
     throw new BadRequestException(`Missing ${Header.UploadLength} header`);
   })
   uploadLength!: number;
+
+  @Expose()
+  @Transform(({ obj }) => isUploadComplete(obj))
+  uploadComplete?: boolean;
 }
 
 export class ResumeUploadDto extends BaseUploadHeadersDto {
+  @Expose({ name: Header.InteropVersion })
+  @Min(3)
+  @IsInt()
+  @Type(() => Number)
+  version!: number;
+
   @Expose({ name: Header.ContentType })
   @ValidateIf((o) => o.version && o.version >= 6)
   @Equals('application/partial-upload')
@@ -147,9 +152,20 @@ export class ResumeUploadDto extends BaseUploadHeadersDto {
   @IsInt()
   @Type(() => Number)
   uploadOffset!: number;
+
+  @Expose()
+  @IsBoolean()
+  @Transform(({ obj }) => isUploadComplete(obj))
+  uploadComplete!: boolean;
 }
 
-export class GetUploadStatusDto extends BaseRufhHeadersDto {}
+export class GetUploadStatusDto {
+  @Expose({ name: Header.InteropVersion })
+  @Min(3)
+  @IsInt()
+  @Type(() => Number)
+  version!: number;
+}
 
 export class UploadOkDto {
   @ApiProperty()
@@ -159,12 +175,14 @@ export class UploadOkDto {
 const STRUCTURED_TRUE = '?1';
 const STRUCTURED_FALSE = '?0';
 
-function isUploadComplete(obj: any): boolean {
+function isUploadComplete(obj: any) {
   const uploadComplete = obj[Header.UploadComplete];
   if (uploadComplete === STRUCTURED_TRUE) {
     return true;
   } else if (uploadComplete === STRUCTURED_FALSE) {
     return false;
+  } else if (uploadComplete !== undefined) {
+    throw new BadRequestException('upload-complete must be a structured boolean value');
   }
 
   const uploadIncomplete = obj[Header.UploadIncomplete];
@@ -172,6 +190,7 @@ function isUploadComplete(obj: any): boolean {
     return false;
   } else if (uploadIncomplete === STRUCTURED_FALSE) {
     return true;
+  } else if (uploadComplete !== undefined) {
+    throw new BadRequestException('upload-incomplete must be a structured boolean value');
   }
-  throw new BadRequestException(`Expected valid ${Header.UploadComplete} header`);
 }

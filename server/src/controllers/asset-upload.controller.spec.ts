@@ -59,10 +59,11 @@ describe(AssetUploadController.name, () => {
       expect(ctx.authenticate).toHaveBeenCalled();
     });
 
-    it('should require Upload-Draft-Interop-Version header', async () => {
+    it('should require at least version 3 of Upload-Draft-Interop-Version header if provided', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/upload')
         .set('X-Immich-Asset-Data', makeAssetData())
+        .set('Upload-Draft-Interop-Version', '2')
         .set('Repr-Digest', checksum)
         .set('Upload-Complete', '?1')
         .set('Upload-Length', '1024')
@@ -71,7 +72,7 @@ describe(AssetUploadController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(
         expect.objectContaining({
-          message: expect.arrayContaining(['version must be an integer number', 'version must not be less than 3']),
+          message: expect.arrayContaining(['version must not be less than 3']),
         }),
       );
     });
@@ -102,17 +103,15 @@ describe(AssetUploadController.name, () => {
       expect(body).toEqual(expect.objectContaining({ message: 'Missing repr-digest header' }));
     });
 
-    it('should require Upload-Complete header', async () => {
+    it('should allow conventional upload without Upload-Complete header', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/upload')
-        .set('Upload-Draft-Interop-Version', '8')
         .set('X-Immich-Asset-Data', makeAssetData())
         .set('Repr-Digest', checksum)
         .set('Upload-Length', '1024')
         .send(buffer);
 
-      expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Expected valid upload-complete header' }));
+      expect(status).toBe(201);
     });
 
     it('should require Upload-Length header for incomplete upload', async () => {
@@ -255,7 +254,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Expected valid upload-complete header' }));
+      expect(body).toEqual(expect.objectContaining({ message: 'upload-complete must be a structured boolean value' }));
     });
 
     it('should validate Upload-Length is a positive integer', async () => {
@@ -323,10 +322,11 @@ describe(AssetUploadController.name, () => {
         .patch(`/upload/${uploadId}`)
         .set('Upload-Draft-Interop-Version', '8')
         .set('Upload-Offset', '0')
+        .set('Content-Type', 'application/partial-upload')
         .send(Buffer.from('test'));
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Expected valid upload-complete header' }));
+      expect(body).toEqual(expect.objectContaining({ message: ['uploadComplete must be a boolean value'] }));
     });
 
     it('should validate UUID parameter', async () => {
