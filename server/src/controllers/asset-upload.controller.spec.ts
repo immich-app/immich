@@ -104,7 +104,7 @@ describe(AssetUploadController.name, () => {
     });
 
     it('should allow conventional upload without Upload-Complete header', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
+      const { status } = await request(ctx.getHttpServer())
         .post('/upload')
         .set('X-Immich-Asset-Data', makeAssetData())
         .set('Repr-Digest', checksum)
