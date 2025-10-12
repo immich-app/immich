@@ -8,7 +8,6 @@ import { serverInfo } from 'src/commands/server-info';
 import { version } from '../package.json';
 
 const defaultConfigDirectory = path.join(os.homedir(), '.config/immich/');
-const defaultConcurrency = Math.max(1, os.cpus().length - 1);
 
 const program = new Command()
   .name('immich')
@@ -54,9 +53,7 @@ program
       .default(false),
   )
   .addOption(
-    new Option('-A, --album-name <n>', 'Add all assets to specified album')
-      .env('IMMICH_ALBUM_NAME')
-      .conflicts('album')
+    new Option('-A, --album-name <n>', 'Add all assets to specified album').env('IMMICH_ALBUM_NAME').conflicts('album'),
   )
   .addOption(
     new Option('-f, --format-album-names', 'Format album names (remove leading numbers, clean up spaces and dashes)')
@@ -72,7 +69,7 @@ program
   .addOption(
     new Option('-c, --concurrency <number>', 'Number of assets to upload at the same time')
       .env('IMMICH_UPLOAD_CONCURRENCY')
-      .default(defaultConcurrency),
+      .default(4),
   )
   .addOption(
     new Option('-j, --json-output', 'Output detailed information in json format')
