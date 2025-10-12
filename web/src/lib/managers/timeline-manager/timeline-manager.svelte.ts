@@ -5,7 +5,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
 
-import { debounce, isEqual } from 'lodash-es';
+import { clamp, debounce, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
@@ -37,6 +37,13 @@ import type {
   Viewport,
 } from './types';
 
+type ViewportTopMonthIntersection = {
+  month: MonthGroup | undefined;
+  // Where viewport top intersects month (0 = month top, 1 = month bottom)
+  viewportTopRatioInMonth: number;
+  // Where month bottom is in viewport (0 = viewport top, 1 = viewport bottom)
+  monthBottomViewportRatio: number;
+};
 export class TimelineManager {
   isInitialized = $state(false);
   months: MonthGroup[] = $state([]);
@@ -48,7 +55,8 @@ export class TimelineManager {
 
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
-  topIntersectingMonthGroup: MonthGroup | undefined = $state();
+
+  viewportTopMonthIntersection: ViewportTopMonthIntersection | undefined;
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -87,7 +95,7 @@ export class TimelineManager {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
   #updatingIntersections = false;
-  #element: HTMLElement | undefined;
+  #scrollableElement: HTMLElement | undefined = $state();
 
   constructor() {}
 
@@ -102,15 +110,17 @@ export class TimelineManager {
   }
 
   set scrollableElement(element: HTMLElement | undefined) {
-    this.#element = element;
+    this.#scrollableElement = element;
   }
 
   scrollTo(top: number) {
-    this.#element?.scrollTo({ top });
+    this.#scrollableElement?.scrollTo({ top });
+    this.updateSlidingWindow();
   }
 
   scrollBy(y: number) {
-    this.#element?.scrollBy(0, y);
+    this.#scrollableElement?.scrollBy(0, y);
+    this.updateSlidingWindow();
   }
 
   #setHeaderHeight(value: number) {
@@ -176,7 +186,8 @@ export class TimelineManager {
     const changed = value !== this.#viewportWidth;
     this.#viewportWidth = value;
     this.suspendTransitions = true;
-    void this.#updateViewportGeometry(changed);
+    this.#updateViewportGeometry(changed);
+    this.updateSlidingWindow();
   }
 
   get viewportWidth() {
@@ -238,11 +249,29 @@ export class TimelineManager {
     this.#websocketSupport = undefined;
   }
 
-  updateSlidingWindow(scrollTop: number) {
+  updateSlidingWindow() {
+    const scrollTop = this.#scrollableElement?.scrollTop ?? 0;
     if (this.#scrollTop !== scrollTop) {
       this.#scrollTop = scrollTop;
       this.updateIntersections();
     }
+  }
+
+  #calculateMonthBottomViewportRatio(month: MonthGroup | undefined) {
+    if (!month) {
+      return 0;
+    }
+    const windowHeight = this.visibleWindow.bottom - this.visibleWindow.top;
+    const bottomOfMonth = month.top + month.height;
+    const bottomOfMonthInViewport = bottomOfMonth - this.visibleWindow.top;
+    return clamp(bottomOfMonthInViewport / windowHeight, 0, 1);
+  }
+
+  #calculateVewportTopRatioInMonth(month: MonthGroup | undefined) {
+    if (!month) {
+      return 0;
+    }
+    return clamp((this.visibleWindow.top - month.top) / month.height, 0, 1);
   }
 
   updateIntersections() {
@@ -255,7 +284,16 @@ export class TimelineManager {
       updateIntersectionMonthGroup(this, month);
     }
 
-    this.topIntersectingMonthGroup = this.months.find((month) => month.actuallyIntersecting);
+    const month = this.months.find((month) => month.actuallyIntersecting);
+    const viewportTopRatioInMonth = this.#calculateVewportTopRatioInMonth(month);
+    const monthBottomViewportRatio = this.#calculateMonthBottomViewportRatio(month);
+
+    this.viewportTopMonthIntersection = {
+      month,
+      monthBottomViewportRatio,
+      viewportTopRatioInMonth,
+    };
+
     this.#updatingIntersections = false;
   }
 
@@ -388,7 +426,8 @@ export class TimelineManager {
       await loadFromTimeBuckets(this, monthGroup, this.#options, signal);
     }, cancelable);
     if (executionStatus === 'LOADED') {
-      updateIntersectionMonthGroup(this, monthGroup);
+      updateGeometry(this, monthGroup, { invalidateHeight: false });
+      this.updateIntersections();
     }
   }
 

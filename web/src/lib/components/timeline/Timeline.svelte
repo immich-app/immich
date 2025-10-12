@@ -128,20 +128,8 @@
     timelineManager.scrollableElement = scrollableElement;
   });
 
-  const scrollTo = (top: number) => {
-    if (scrollableElement) {
-      scrollableElement.scrollTo({ top });
-    }
-  };
-
-  const scrollTop = (top: number) => {
-    if (scrollableElement) {
-      scrollableElement.scrollTop = top;
-    }
-  };
-
   const scrollToTop = () => {
-    scrollTo(0);
+    timelineManager.scrollTo(0);
   };
 
   const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
@@ -168,8 +156,7 @@
       return true;
     }
 
-    scrollTo(height);
-    updateSlidingWindow();
+    timelineManager.scrollTo(height);
     return true;
   };
 
@@ -179,8 +166,7 @@
       return false;
     }
     const height = getAssetHeight(asset.id, monthGroup);
-    scrollTo(height);
-    updateSlidingWindow();
+    timelineManager.scrollTo(height);
     return true;
   };
 
@@ -235,7 +221,6 @@
 
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
-  const updateSlidingWindow = () => timelineManager.updateSlidingWindow(scrollableElement?.scrollTop || 0);
 
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (timelineManager.topSectionHeight = height);
 
@@ -267,7 +252,7 @@
     const delta = monthGroup.height * monthGroupScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
-    scrollTop(scrollToTop);
+    timelineManager.scrollTo(scrollToTop);
   };
 
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
@@ -279,7 +264,7 @@
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
       const offset = maxScroll * overallScrollPercent;
-      scrollTop(offset);
+      timelineManager.scrollTo(offset);
     } else {
       const monthGroup = timelineManager.months.find(
         ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
@@ -421,7 +406,7 @@
     onSelect(asset);
 
     if (singleSelect) {
-      scrollTop(0);
+      timelineManager.scrollTo(0);
       return;
     }
 
@@ -587,9 +572,9 @@
   style:margin-right={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}
-  bind:clientWidth={null, (v: number) => ((timelineManager.viewportWidth = v), updateSlidingWindow())}
+  bind:clientWidth={timelineManager.viewportWidth}
   bind:this={scrollableElement}
-  onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
+  onscroll={() => (handleTimelineScroll(), timelineManager.updateSlidingWindow(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}

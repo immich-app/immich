@@ -4,6 +4,7 @@ import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import { tick } from 'svelte';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -64,6 +65,7 @@ describe('TimelineManager', () => {
 
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      await tick();
     });
 
     it('should load months in viewport', () => {

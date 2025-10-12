@@ -263,14 +263,19 @@ export class MonthGroup {
         monthGroup.#top = newTop;
       }
     }
-    const intersectingMonth = timelineManager.topIntersectingMonthGroup;
-    const currentIndex = intersectingMonth ? timelineManager.months.indexOf(intersectingMonth) : -1;
-    if (!intersectingMonth || currentIndex <= 0) {
+    if (!timelineManager.viewportTopMonthIntersection) {
       return;
     }
-
-    if (index <= currentIndex) {
+    const { month, monthBottomViewportRatio, viewportTopRatioInMonth } = timelineManager.viewportTopMonthIntersection;
+    const currentIndex = month ? timelineManager.months.indexOf(month) : -1;
+    if (!month || currentIndex <= 0 || index > currentIndex) {
+      return;
+    }
+    if (index < currentIndex || monthBottomViewportRatio < 1) {
       timelineManager.scrollBy(heightDelta);
+    } else if (index === currentIndex) {
+      const scrollTo = this.top + height * viewportTopRatioInMonth;
+      timelineManager.scrollTo(scrollTo);
     }
   }
 
