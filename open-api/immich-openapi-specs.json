@@ -9427,7 +9427,7 @@
             "name": "upload-complete",
             "in": "header",
             "description": "Structured boolean indicating whether this request completes the file. Use Upload-Incomplete instead for version <= 3.",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
             }
@@ -9436,7 +9436,7 @@
             "name": "upload-draft-interop-version",
             "in": "header",
             "description": "Indicates the version of the RUFH protocol supported by the client.",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
             }

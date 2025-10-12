@@ -59,8 +59,8 @@ export class AssetUploadController {
       'RFC 9651 structured dictionary containing an `sha` (bytesequence) checksum used to detect duplicate files and validate data integrity.',
     required: true,
   })
-  @ApiHeader(apiInteropVersion)
-  @ApiHeader(apiUploadComplete)
+  @ApiHeader({ ...apiInteropVersion, required: false })
+  @ApiHeader({ ...apiUploadComplete, required: false })
   @ApiHeader(apiContentLength)
   @ApiOkResponse({ type: UploadOkDto })
   startUpload(@Auth() auth: AuthDto, @Req() req: Request, @Res() res: Response): Promise<void> {
