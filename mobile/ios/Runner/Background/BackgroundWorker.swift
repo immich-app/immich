@@ -168,6 +168,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     }
     
     isComplete = true
+    AppDelegate.cancelPlugins(with: engine)
     engine.destroyContext()
     flutterApi = nil
     completionHandler(success)

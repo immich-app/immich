@@ -18,6 +18,8 @@ struct AssetWrapper: Hashable, Equatable {
 }
 
 class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
+  static let name = "NativeSyncApi"
+  
   static func register(with registrar: any FlutterPluginRegistrar) {
     let instance = NativeSyncApiImpl()
     NativeSyncApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
