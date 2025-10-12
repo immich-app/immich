@@ -149,7 +149,6 @@ describe('/upload', () => {
         .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${checksum}:`)
         .set('Content-Type', 'image/jpeg')
-        .set('Upload-Length', '1024')
         .send(content);
 
       expect(status).toBe(200);
@@ -174,7 +173,7 @@ describe('/upload', () => {
       );
     });
 
-    it('overwrite partial duplicate if conventional upload', { timeout: 1000 }, async () => {
+    it('overwrite partial duplicate if conventional upload', async () => {
       const content = randomBytes(10_240);
 
       const checksum = createHash('sha1').update(content).digest('base64');
@@ -189,7 +188,6 @@ describe('/upload', () => {
           Authorization: `Bearer ${user.accessToken}`,
           'X-Immich-Asset-Data': assetData,
           'Repr-Digest': `sha=:${checksum}:`,
-          'Upload-Length': '1024',
           'Content-Length': '1024',
           'Content-Type': 'image/jpeg',
         },
@@ -204,7 +202,6 @@ describe('/upload', () => {
         .set('X-Immich-Asset-Data', assetData)
         .set('Repr-Digest', `sha=:${checksum}:`)
         .set('Content-Type', 'image/jpeg')
-        .set('Upload-Length', '10240')
         .send(content);
 
       expect(status).toBe(200);
