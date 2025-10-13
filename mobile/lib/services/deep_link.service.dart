@@ -149,7 +149,7 @@ class DeepLinkService {
         return null;
       }
 
-      AssetViewer.setAsset(ref, asset, TimelineType.deepLink);
+      AssetViewer.setAsset(ref, asset);
       return AssetViewerRoute(
         initialIndex: 0,
         timelineService: _betaTimelineFactory.fromAssets([asset], TimelineType.deepLink),
