@@ -112,6 +112,9 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@697a75e2c3186d3c037c2c159855cf2d566542ba # use-mise-action-0.0.1
+
       - name: Load parameters
         id: parameters
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
@@ -150,12 +153,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@aee21a7df999be8b471c2a8564c6cd853cb674e1 # v2.1.8
-        with:
-          tg_version: '0.58.12'
-          tofu_version: '1.7.1'
-          tg_dir: 'deployment/modules/cloudflare/docs'
-          tg_command: 'apply'
+        working-directory: 'deployment/modules/cloudflare/docs'
+        run: 'mise run tf apply'
 
       - name: Deploy Docs Subdomain Output
         id: docs-output
@@ -165,12 +164,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@aee21a7df999be8b471c2a8564c6cd853cb674e1 # v2.1.8
-        with:
-          tg_version: '0.58.12'
-          tofu_version: '1.7.1'
-          tg_dir: 'deployment/modules/cloudflare/docs'
-          tg_command: 'output -json'
+        working-directory: 'deployment/modules/cloudflare/docs'
+        run: 'mise run tf output -json'
 
       - name: Output Cleaning
         id: clean
@@ -199,12 +194,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@aee21a7df999be8b471c2a8564c6cd853cb674e1 # v2.1.8
-        with:
-          tg_version: '0.58.12'
-          tofu_version: '1.7.1'
-          tg_dir: 'deployment/modules/cloudflare/docs-release'
-          tg_command: 'apply'
+        working-directory: 'deployment/modules/cloudflare/docs-release'
+        run: 'mise run tf apply'
 
       - name: Comment
         uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3.2.0
