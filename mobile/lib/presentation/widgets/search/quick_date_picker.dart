@@ -85,17 +85,14 @@ class CustomDateFilter extends DateFilterInputModel {
 enum _QuickPickerType { last1Month, last3Months, last9Months, year, custom }
 
 class QuickDatePicker extends HookWidget {
-  QuickDatePicker({
-    super.key,
-    required DateFilterInputModel? currentInput,
-    required this.onSelect,
-    required this.onRequestPicker,
-  }) : _selection = _selectionFromModel(currentInput),
-       _initialYear = _initialYearFromModel(currentInput);
+  QuickDatePicker({super.key, required this.currentInput, required this.onSelect, required this.onRequestPicker})
+    : _selection = _selectionFromModel(currentInput),
+      _initialYear = _initialYearFromModel(currentInput);
 
   final Function() onRequestPicker;
   final Function(DateFilterInputModel range) onSelect;
 
+  final DateFilterInputModel? currentInput;
   final _QuickPickerType? _selection;
   final int _initialYear;
 
@@ -155,53 +152,69 @@ class QuickDatePicker extends HookWidget {
   // We want the exact date picker to always be selectable.
   // Even if it's already toggled it should always open the full date picker, RadioListTiles don't do that by default
   // so we wrap it in a InkWell
-  Widget _exactPicker(BuildContext context) => InkWell(
-    onTap: onRequestPicker,
-    child: IgnorePointer(
-      ignoring: true,
-      child: RadioListTile(title: const Text('pick_exact_date').tr(), value: _QuickPickerType.custom, toggleable: true),
-    ),
-  );
+  Widget _exactPicker(BuildContext context) {
+    final hasPreviousInput = currentInput != null && currentInput is CustomDateFilter;
+
+    return InkWell(
+      onTap: onRequestPicker,
+      child: IgnorePointer(
+        ignoring: true,
+        child: RadioListTile(
+          title: const Text('pick_custom_range').tr(),
+          subtitle: hasPreviousInput ? Text(currentInput!.asHumanReadable(context)) : null,
+          secondary: hasPreviousInput ? const Icon(Icons.edit) : null,
+          value: _QuickPickerType.custom,
+          toggleable: true,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: SingleChildScrollView(
-        clipBehavior: Clip.none,
-        child: RadioGroup(
-          onChanged: (value) {
-            switch (value) {
-              case _QuickPickerType.custom:
-                onRequestPicker();
-                break;
-              case _QuickPickerType.last1Month:
-                onSelect(RecentMonthRangeFilter(1));
-                break;
-              case _QuickPickerType.last3Months:
-                onSelect(RecentMonthRangeFilter(3));
-                break;
-              case _QuickPickerType.last9Months:
-                onSelect(RecentMonthRangeFilter(9));
-                break;
-              case _QuickPickerType.year:
-                // The combobox triggers the onSelect event on its own so if this is ever selected it can only be on
-                // the default value set by the constructor
-                onSelect(YearFilter(_initialYear));
-                break;
-              default:
-                break;
-            }
-          },
-          groupValue: _selection,
-          child: Column(
-            children: [
-              RadioListTile(title: _monthLabel(context, 1), value: _QuickPickerType.last1Month, toggleable: true),
-              RadioListTile(title: _monthLabel(context, 3), value: _QuickPickerType.last3Months, toggleable: true),
-              RadioListTile(title: _monthLabel(context, 9), value: _QuickPickerType.last9Months, toggleable: true),
-              RadioListTile(title: _yearPicker(context), value: _QuickPickerType.year, toggleable: true),
-              _exactPicker(context),
-            ],
+      child: Scrollbar(
+        // Depending on the screen size the last option might get cut off
+        // Add a clear visual cue that there are more options when scrolling
+        // When the screen size is large enough the scrollbar is hidden automatically
+        trackVisibility: true,
+        thumbVisibility: true,
+        child: SingleChildScrollView(
+          child: RadioGroup(
+            onChanged: (value) {
+              switch (value) {
+                case _QuickPickerType.custom:
+                  onRequestPicker();
+                  break;
+                case _QuickPickerType.last1Month:
+                  onSelect(RecentMonthRangeFilter(1));
+                  break;
+                case _QuickPickerType.last3Months:
+                  onSelect(RecentMonthRangeFilter(3));
+                  break;
+                case _QuickPickerType.last9Months:
+                  onSelect(RecentMonthRangeFilter(9));
+                  break;
+                case _QuickPickerType.year:
+                  // The combobox triggers the onSelect event on its own so if this is ever selected it can only be on
+                  // the default value set by the constructor
+                  onSelect(YearFilter(_initialYear));
+                  break;
+                default:
+                  break;
+              }
+            },
+            groupValue: _selection,
+            child: Column(
+              children: [
+                RadioListTile(title: _monthLabel(context, 1), value: _QuickPickerType.last1Month, toggleable: true),
+                RadioListTile(title: _monthLabel(context, 3), value: _QuickPickerType.last3Months, toggleable: true),
+                RadioListTile(title: _monthLabel(context, 9), value: _QuickPickerType.last9Months, toggleable: true),
+                RadioListTile(title: _yearPicker(context), value: _QuickPickerType.year, toggleable: true),
+                _exactPicker(context),
+              ],
+            ),
           ),
         ),
       ),
