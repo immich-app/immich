@@ -40,11 +40,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
-    final timelineType = ref.read(timelineServiceProvider).type;
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final showViewInTimelineButton =
-        timelineType != TimelineType.main &&
-        timelineType != TimelineType.deepLink &&
-        timelineType != TimelineType.localAlbum;
+        timelineOrigin != TimelineOrigin.main &&
+        timelineOrigin != TimelineOrigin.deepLink &&
+        timelineOrigin != TimelineOrigin.trash &&
+        timelineOrigin != TimelineOrigin.archive &&
+        timelineOrigin != TimelineOrigin.localAlbum;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));

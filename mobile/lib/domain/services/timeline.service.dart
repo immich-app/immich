@@ -16,9 +16,9 @@ typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int co
 
 typedef TimelineBucketSource = Stream<List<Bucket>> Function();
 
-typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource bucketSource, TimelineType type});
+typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource bucketSource, TimelineOrigin origin});
 
-enum TimelineType {
+enum TimelineOrigin {
   main,
   localAlbum,
   remoteAlbum,
@@ -74,7 +74,7 @@ class TimelineFactory {
   TimelineService person(String userId, String personId) =>
       TimelineService(_timelineRepository.person(userId, personId, groupBy));
 
-  TimelineService fromAssets(List<BaseAsset> assets, TimelineType type) =>
+  TimelineService fromAssets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssets(assets, type));
 
   TimelineService map(String userId, LatLngBounds bounds) =>
@@ -84,7 +84,7 @@ class TimelineFactory {
 class TimelineService {
   final TimelineAssetSource _assetSource;
   final TimelineBucketSource _bucketSource;
-  final TimelineType type;
+  final TimelineOrigin origin;
   final AsyncMutex _mutex = AsyncMutex();
   int _bufferOffset = 0;
   List<BaseAsset> _buffer = [];
@@ -94,12 +94,12 @@ class TimelineService {
   int get totalAssets => _totalAssets;
 
   TimelineService(TimelineQuery query)
-    : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, type: query.type);
+    : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
   TimelineService._({
     required TimelineAssetSource assetSource,
     required TimelineBucketSource bucketSource,
-    required this.type,
+    required this.origin,
   }) : _assetSource = assetSource,
        _bucketSource = bucketSource {
     _bucketSubscription = _bucketSource().listen((buckets) {

@@ -625,7 +625,7 @@ class _SearchResultGrid extends ConsumerWidget {
         child: ProviderScope(
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
-              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets, TimelineType.search);
+              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets, TimelineOrigin.search);
               ref.onDispose(timelineService.dispose);
               return timelineService;
             }),
