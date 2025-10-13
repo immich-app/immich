@@ -15,6 +15,7 @@ import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.w
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -140,6 +141,84 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                       syncSuccess = null;
                       await stopBackup();
                     },
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.all(Radius.circular(20)),
+                      gradient: LinearGradient(
+                        colors: [
+                          context.primaryColor.withValues(alpha: 0.5),
+                          context.primaryColor.withValues(alpha: 0.4),
+                          context.primaryColor.withValues(alpha: 0.5),
+                        ],
+                        stops: const [0.0, 0.5, 1.0],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: context.primaryColor.withValues(alpha: 0.1),
+                          blurRadius: 12,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.all(1.5),
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.all(Radius.circular(18.5)),
+                        color: context.colorScheme.surfaceContainerLow,
+                      ),
+                      child: Material(
+                        color: context.colorScheme.surfaceContainerLow,
+                        borderRadius: const BorderRadius.all(Radius.circular(20.5)),
+                        child: InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(20.5)),
+                          onTap: () => ref.read(nativeSyncApiProvider).uploadAsset(),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        context.primaryColor.withValues(alpha: 0.2),
+                                        context.primaryColor.withValues(alpha: 0.1),
+                                      ],
+                                    ),
+                                  ),
+                                  child: Icon(Icons.upload, color: context.primaryColor, size: 24),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "Upload Asset (for testing)",
+                                            style: context.textTheme.titleMedium?.copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              color: context.primaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                   switch (error) {
                     BackupError.none => const SizedBox.shrink(),

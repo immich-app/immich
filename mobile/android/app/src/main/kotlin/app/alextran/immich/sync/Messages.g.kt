@@ -304,6 +304,7 @@ interface NativeSyncApi {
   fun getAssetsCountSince(albumId: String, timestamp: Long): Long
   fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset>
   fun hashAssets(assetIds: List<String>, allowNetworkAccess: Boolean, callback: (Result<List<HashResult>>) -> Unit)
+  fun uploadAsset(callback: (Result<Boolean>) -> Unit)
   fun cancelHashing()
 
   companion object {
@@ -454,6 +455,24 @@ interface NativeSyncApi {
             val assetIdsArg = args[0] as List<String>
             val allowNetworkAccessArg = args[1] as Boolean
             api.hashAssets(assetIdsArg, allowNetworkAccessArg) { result: Result<List<HashResult>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.NativeSyncApi.uploadAsset$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.uploadAsset{ result: Result<Boolean> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(MessagesPigeonUtils.wrapError(error))

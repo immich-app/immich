@@ -363,4 +363,38 @@ class NativeSyncApiImpl: NativeSyncApi {
       PHAssetResourceManager.default().cancelDataRequest(requestId)
     })
   }
+
+  func uploadAsset(completion: @escaping (Result<Bool, Error>) -> Void) {
+    let bufferSize = 200 * 1024 * 1024
+    var buffer = Data(count: bufferSize)
+    buffer.withUnsafeMutableBytes { bufferPointer in
+        arc4random_buf(bufferPointer.baseAddress!, bufferSize)
+    }
+    var hasher = Insecure.SHA1()
+    hasher.update(data: buffer)
+    let checksum = Data(hasher.finalize()).base64EncodedString()
+    let tempDirectory = FileManager.default.temporaryDirectory
+
+    let tempFileURL = tempDirectory.appendingPathComponent("buffer.tmp")
+    do {
+        try buffer.write(to: tempFileURL)
+        print("File saved to: \(tempFileURL.path)")
+    } catch {
+        print("Error writing file: \(error)")
+        return completion(Result.failure(error))
+    }
+    
+    let config = URLSessionConfiguration.background(withIdentifier: "app.mertalev.immich.upload")
+    let session = URLSession(configuration: config)
+    
+    var request = URLRequest(url: URL(string: "https://<hardcoded-host>/api/upload")!)
+    request.httpMethod = "POST"
+    request.setValue("<hardcoded-api-key>", forHTTPHeaderField: "X-Api-Key")
+    request.setValue("filename=\"test-image.jpg\", device-asset-id=\"rufh\", device-id=\"test\", file-created-at=\"2025-01-02T00:00:00.000Z\", file-modified-at=\"2025-01-01T00:00:00.000Z\", is-favorite, icloud-id=\"example-icloud-id\"", forHTTPHeaderField: "X-Immich-Asset-Data")
+    request.setValue("sha=:\(checksum):", forHTTPHeaderField: "Repr-Digest")
+    
+    let task = session.uploadTask(with: request, fromFile: tempFileURL)
+    task.resume()
+    completion(Result.success(true))
+  }
 }
