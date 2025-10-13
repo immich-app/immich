@@ -111,7 +111,7 @@ class QuickDatePicker extends HookWidget {
           return _QuickPickerType.last1Month;
         case 3:
           return _QuickPickerType.last3Months;
-        case 6:
+        case 9:
           return _QuickPickerType.last9Months;
         default:
           return _QuickPickerType.custom;
