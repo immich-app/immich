@@ -409,14 +409,8 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-const deleteFiles = async (
-  uploaded: string[],
-  duplicates: string[],
-  options: UploadOptionsDto): Promise<void> => {
-  const files: string[] = [
-    ...(options.delete ? uploaded : []),
-    ...(options.deleteDuplicates ? duplicates : [])
-  ];
+const deleteFiles = async (uploaded: string[], duplicates: string[], options: UploadOptionsDto): Promise<void> => {
+  const files: string[] = [...(options.delete ? uploaded : []), ...(options.deleteDuplicates ? duplicates : [])];
   if (options.dryRun) {
     console.log(`Would have deleted ${files.length} local asset${s(files.length)}`);
     return;
