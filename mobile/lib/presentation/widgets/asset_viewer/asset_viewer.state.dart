@@ -68,10 +68,14 @@ class AssetViewerState {
       stackIndex.hashCode;
 }
 
-class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
+class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
   @override
   AssetViewerState build() {
     return const AssetViewerState();
+  }
+
+  void reset() {
+    state = const AssetViewerState();
   }
 
   void setAsset(BaseAsset? asset) {
@@ -117,6 +121,4 @@ class AssetViewerStateNotifier extends AutoDisposeNotifier<AssetViewerState> {
   }
 }
 
-final assetViewerProvider = AutoDisposeNotifierProvider<AssetViewerStateNotifier, AssetViewerState>(
-  AssetViewerStateNotifier.new,
-);
+final assetViewerProvider = NotifierProvider<AssetViewerStateNotifier, AssetViewerState>(AssetViewerStateNotifier.new);

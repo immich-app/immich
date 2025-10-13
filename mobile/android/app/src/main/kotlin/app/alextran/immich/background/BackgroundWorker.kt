@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.embedding.engine.loader.FlutterLoader
 import java.util.concurrent.TimeUnit
@@ -54,12 +55,6 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
   private var foregroundFuture: ListenableFuture<Void>? = null
 
-  init {
-    if (!loader.initialized()) {
-      loader.startInitialization(ctx)
-    }
-  }
-
   companion object {
     private const val NOTIFICATION_CHANNEL_ID = "immich::background_worker::notif"
     private const val NOTIFICATION_ID = 100
@@ -68,15 +63,22 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   override fun startWork(): ListenableFuture<Result> {
     Log.i(TAG, "Starting background upload worker")
 
+    if (!loader.initialized()) {
+      loader.startInitialization(ctx)
+    }
+
     val notificationChannel = NotificationChannel(
       NOTIFICATION_CHANNEL_ID,
       NOTIFICATION_CHANNEL_ID,
       NotificationManager.IMPORTANCE_LOW
     )
     notificationManager.createNotificationChannel(notificationChannel)
+    val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
+    showNotification(notificationConfig.first, notificationConfig.second)
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
+      FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
 
       // Register custom plugins
       MainActivity.registerPlugins(ctx, engine!!)
@@ -109,7 +111,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   }
 
   // TODO: Move this to a separate NotificationManager class
-  override fun showNotification(title: String, content: String) {
+  private fun showNotification(title: String, content: String) {
     val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
       .setSmallIcon(R.drawable.notification_icon)
       .setOnlyAlertOnce(true)
@@ -192,6 +194,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     engine = null
     flutterApi = null
     notificationManager.cancel(NOTIFICATION_ID)
+    FlutterEngineCache.getInstance().remove(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY)
     waitForForegroundPromotion()
     completionHandler.set(success)
   }

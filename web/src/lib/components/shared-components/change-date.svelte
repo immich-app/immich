@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { ConfirmModal } from '@immich/ui';
+  import DateInput from '$lib/elements/DateInput.svelte';
+  import DurationInput from '$lib/elements/DurationInput.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util.js';
+  import { ConfirmModal, Field, Switch } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
-  import DateInput from '../elements/date-input.svelte';
-  import Combobox, { type ComboBoxOption } from './combobox.svelte';
-  import DurationInput from '../elements/duration-input.svelte';
-  import { Field, Switch } from '@immich/ui';
-  import { getDateTimeOffsetLocaleString } from '$lib/utils/timeline-util.js';
-  import { locale } from '$lib/stores/preferences.store';
   import { get } from 'svelte/store';
+  import Combobox, { type ComboBoxOption } from './combobox.svelte';
 
   interface Props {
     title?: string;
@@ -89,7 +88,7 @@
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
+  let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
   // Use a fixed modern date to calculate stable timezone offsets for the list
   // This ensures that the offsets shown in the combobox are always current,
   // regardless of the historical date selected by the user.
@@ -107,7 +106,7 @@
     const { offsetMinutes, offsetFormat: zoneOffsetAtDate } = getModernOffsetForZoneAndDate(zone, date);
     // For validity, we still need to check if the exact date/time exists in the *original* timezone (for gaps/overlaps).
     const dateForValidity = DateTime.fromISO(date, { zone });
-    const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm");
+    const valid = dateForValidity.isValid && date === dateForValidity.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
     return {
       value: zone,
       offsetMinutes,

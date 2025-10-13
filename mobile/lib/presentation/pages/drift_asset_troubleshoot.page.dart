@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -14,7 +15,7 @@ class AssetTroubleshootPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Asset Troubleshoot")),
+      appBar: AppBar(title: Text('asset_troubleshoot'.tr())),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -37,20 +38,23 @@ class _AssetDetailsView extends ConsumerWidget {
       children: [
         _AssetPropertiesSection(asset: asset),
         const SizedBox(height: 16),
-        Text('Matching Assets', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          'matching_assets'.tr(),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
         if (asset.checksum != null) ...[
           _LocalAssetsSection(asset: asset),
           const SizedBox(height: 16),
           _RemoteAssetSection(asset: asset),
         ] else ...[
-          const _PropertySectionCard(
+          _PropertySectionCard(
             title: 'Local Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'No checksum available - cannot fetch local assets')],
+            properties: [_PropertyItem(label: 'Status', value: 'no_checksum_local'.tr())],
           ),
           const SizedBox(height: 16),
-          const _PropertySectionCard(
+          _PropertySectionCard(
             title: 'Remote Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'No checksum available - cannot fetch remote asset')],
+            properties: [_PropertyItem(label: 'Status', value: 'no_checksum_remote'.tr())],
           ),
         ],
       ],
@@ -222,9 +226,9 @@ class _LocalAssetsSection extends ConsumerWidget {
         }
 
         if (localAssets.isEmpty) {
-          return const _PropertySectionCard(
+          return _PropertySectionCard(
             title: 'Local Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'No local assets found with this checksum')],
+            properties: [_PropertyItem(label: 'Status', value: 'no_local_assets_found'.tr())],
           );
         }
 
@@ -281,9 +285,9 @@ class _RemoteAssetSection extends ConsumerWidget {
         final remoteAsset = snapshot.data;
 
         if (remoteAsset == null) {
-          return const _PropertySectionCard(
+          return _PropertySectionCard(
             title: 'Remote Assets',
-            properties: [_PropertyItem(label: 'Status', value: 'No remote asset found with this checksum')],
+            properties: [_PropertyItem(label: 'Status', value: 'no_remote_assets_found'.tr())],
           );
         }
 
@@ -336,7 +340,10 @@ class _PropertyItem extends StatelessWidget {
             child: Text('$label:', style: const TextStyle(fontWeight: FontWeight.w500)),
           ),
           Expanded(
-            child: Text(value ?? 'N/A', style: TextStyle(color: Theme.of(context).colorScheme.secondary)),
+            child: Text(
+              value ?? 'not_available'.tr(),
+              style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+            ),
           ),
         ],
       ),

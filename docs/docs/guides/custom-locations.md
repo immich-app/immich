@@ -9,7 +9,7 @@ It is important to remember to update the backup settings after following the gu
 In our `.env` file, we will define the paths we want to use. Note that you don't have to define all of these: UPLOAD_LOCATION will be the base folder that files are stored in by default, with the other paths acting as overrides.
 
 ```diff title=".env"
-# You can find documentation for all the supported environment variables [here](/docs/install/environment-variables)
+# You can find documentation for all the supported environment variables [here](/install/environment-variables)
 
 # Custom location where your uploaded, thumbnails, and transcoded video files are stored
 - UPLOAD_LOCATION=./library

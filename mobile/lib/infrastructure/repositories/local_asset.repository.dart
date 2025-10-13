@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -36,17 +35,17 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
 
   Stream<LocalAsset?> watch(String id) => _assetSelectable(id).watchSingleOrNull();
 
-  Future<void> updateHashes(Iterable<LocalAsset> hashes) {
+  Future<void> updateHashes(Map<String, String> hashes) {
     if (hashes.isEmpty) {
       return Future.value();
     }
 
     return _db.batch((batch) async {
-      for (final asset in hashes) {
+      for (final entry in hashes.entries) {
         batch.update(
           _db.localAssetEntity,
-          LocalAssetEntityCompanion(checksum: Value(asset.checksum)),
-          where: (e) => e.id.equals(asset.id),
+          LocalAssetEntityCompanion(checksum: Value(entry.value)),
+          where: (e) => e.id.equals(entry.key),
         );
       }
     });
@@ -58,8 +57,8 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     }
 
     return _db.batch((batch) {
-      for (final slice in ids.slices(32000)) {
-        batch.deleteWhere(_db.localAssetEntity, (e) => e.id.isIn(slice));
+      for (final id in ids) {
+        batch.deleteWhere(_db.localAssetEntity, (e) => e.id.equals(id));
       }
     });
   }
