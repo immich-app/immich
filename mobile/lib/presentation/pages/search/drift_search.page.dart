@@ -55,6 +55,7 @@ class DriftSearchPage extends HookConsumerWidget {
     );
 
     final previousFilter = useState<SearchFilter?>(null);
+    final dateInputFilter = useState<DateFilterInputModel?>(null);
 
     final peopleCurrentFilterWidget = useState<Widget?>(null);
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
@@ -246,14 +247,17 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    datePicked(DateTimeRange<DateTime>? date) {
-      if (date == null) {
+    datePicked(DateFilterInputModel? selectedDate) {
+      dateInputFilter.value = selectedDate;
+      if (selectedDate == null) {
         filter.value = filter.value.copyWith(date: SearchDateFilter());
 
         dateRangeCurrentFilterWidget.value = null;
         unawaited(search());
         return;
       }
+
+      final date = selectedDate.asDateTimeRange();
 
       filter.value = filter.value.copyWith(
         date: SearchDateFilter(
@@ -262,24 +266,10 @@ class DriftSearchPage extends HookConsumerWidget {
         ),
       );
 
-      // If date range is less than 24 hours, set the end date to the end of the day
-      if (date.end.difference(date.start).inHours < 24) {
-        dateRangeCurrentFilterWidget.value = Text(
-          DateFormat.yMMMd().format(date.start.toLocal()),
-          style: context.textTheme.labelLarge,
-        );
-      } else {
-        dateRangeCurrentFilterWidget.value = Text(
-          'search_filter_date_interval'.t(
-            context: context,
-            args: {
-              "start": DateFormat.yMMMd().format(date.start.toLocal()),
-              "end": DateFormat.yMMMd().format(date.end.toLocal()),
-            },
-          ),
-          style: context.textTheme.labelLarge,
-        );
-      }
+      dateRangeCurrentFilterWidget.value = Text(
+        selectedDate.asHumanReadable(context),
+        style: context.textTheme.labelLarge,
+      );
 
       unawaited(search());
     }
@@ -317,7 +307,11 @@ class DriftSearchPage extends HookConsumerWidget {
         keyboardType: TextInputType.text,
       );
 
-      datePicked(date);
+      if (date == null) {
+        datePicked(null);
+      } else {
+        datePicked(CustomDateFilter.fromRange(date));
+      }
     }
 
     showQuickDatePicker() {
@@ -328,6 +322,7 @@ class DriftSearchPage extends HookConsumerWidget {
           expanded: true,
           onClear: () => datePicked(null),
           child: QuickDatePicker(
+            currentRange: dateInputFilter.value,
             onRequestPicker: () {
               context.pop();
               showDatePicker();

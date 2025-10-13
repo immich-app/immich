@@ -1197,6 +1197,7 @@
   "in_albums": "In {count, plural, one {# album} other {# albums}}",
   "in_archive": "In archive",
   "in_year": "In {year}",
+  "in_year_selector": "In",
   "include_archived": "Include archived",
   "include_shared_albums": "Include shared albums",
   "include_shared_partner_assets": "Include shared partner assets",
