@@ -11220,6 +11220,179 @@
         ],
         "type": "object"
       },
+      "AssetSearchResponseDto": {
+        "properties": {
+          "checksum": {
+            "description": "base64 encoded sha1 hash",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "The UTC timestamp when the asset was originally uploaded to Immich.",
+            "example": "2024-01-15T20:30:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "distance": {
+            "type": "number"
+          },
+          "duplicateId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "exifInfo": {
+            "$ref": "#/components/schemas/ExifResponseDto"
+          },
+          "fileCreatedAt": {
+            "description": "The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.",
+            "example": "2024-01-15T19:30:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "description": "The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken.",
+            "example": "2024-01-16T10:15:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "hasMetadata": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isOffline": {
+            "type": "boolean"
+          },
+          "isTrashed": {
+            "type": "boolean"
+          },
+          "libraryId": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.106.0",
+            "nullable": true,
+            "type": "string"
+          },
+          "livePhotoVideoId": {
+            "nullable": true,
+            "type": "string"
+          },
+          "localDateTime": {
+            "description": "The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.",
+            "example": "2024-01-15T14:30:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "originalFileName": {
+            "type": "string"
+          },
+          "originalMimeType": {
+            "type": "string"
+          },
+          "originalPath": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserResponseDto"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "people": {
+            "items": {
+              "$ref": "#/components/schemas/PersonWithFacesResponseDto"
+            },
+            "type": "array"
+          },
+          "resized": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.113.0",
+            "type": "boolean"
+          },
+          "stack": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetStackResponseDto"
+              }
+            ],
+            "nullable": true
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagResponseDto"
+            },
+            "type": "array"
+          },
+          "thumbhash": {
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
+          },
+          "unassignedFaces": {
+            "items": {
+              "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "description": "The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.",
+            "example": "2024-01-16T12:45:30.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "visibility": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetVisibility"
+              }
+            ]
+          }
+        },
+        "required": [
+          "checksum",
+          "createdAt",
+          "deviceAssetId",
+          "deviceId",
+          "duration",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "hasMetadata",
+          "id",
+          "isArchived",
+          "isFavorite",
+          "isOffline",
+          "isTrashed",
+          "localDateTime",
+          "originalFileName",
+          "originalPath",
+          "ownerId",
+          "thumbhash",
+          "type",
+          "updatedAt",
+          "visibility"
+        ],
+        "type": "object"
+      },
       "AssetStackResponseDto": {
         "properties": {
           "assetCount": {
@@ -13750,7 +13923,7 @@
           },
           "items": {
             "items": {
-              "$ref": "#/components/schemas/AssetResponseDto"
+              "$ref": "#/components/schemas/AssetSearchResponseDto"
             },
             "type": "array"
           },

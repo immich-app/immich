@@ -278,6 +278,8 @@ class ApiClient {
           return AssetOrderTypeTransformer().decode(value);
         case 'AssetResponseDto':
           return AssetResponseDto.fromJson(value);
+        case 'AssetSearchResponseDto':
+          return AssetSearchResponseDto.fromJson(value);
         case 'AssetStackResponseDto':
           return AssetStackResponseDto.fromJson(value);
         case 'AssetStatsResponseDto':

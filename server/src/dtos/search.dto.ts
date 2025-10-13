@@ -296,12 +296,16 @@ class SearchAlbumResponseDto {
   facets!: SearchFacetResponseDto[];
 }
 
+class AssetSearchResponseDto extends AssetResponseDto {
+  distance?: number;
+}
+
 class SearchAssetResponseDto {
   @ApiProperty({ type: 'integer' })
   total!: number;
   @ApiProperty({ type: 'integer' })
   count!: number;
-  items!: AssetResponseDto[];
+  items!: AssetSearchResponseDto[];
   facets!: SearchFacetResponseDto[];
   nextPage!: string | null;
 }

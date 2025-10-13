@@ -130,6 +130,7 @@ export type MapAsset = {
   tags?: Tag[];
   thumbhash: Buffer<ArrayBufferLike> | null;
   type: AssetType;
+  distance?: number;
 };
 
 export class AssetStackResponseDto {

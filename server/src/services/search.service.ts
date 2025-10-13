@@ -198,7 +198,7 @@ export class SearchService extends BaseService {
       assets: {
         total: assets.length,
         count: assets.length,
-        items: assets.map((asset) => mapAsset(asset, options)),
+        items: assets.map((asset) => ({ ...mapAsset(asset, options), distance: asset.distance })),
         facets: [],
         nextPage,
       },

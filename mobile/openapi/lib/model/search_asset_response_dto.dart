@@ -24,7 +24,7 @@ class SearchAssetResponseDto {
 
   List<SearchFacetResponseDto> facets;
 
-  List<AssetResponseDto> items;
+  List<AssetSearchResponseDto> items;
 
   String? nextPage;
 
@@ -75,7 +75,7 @@ class SearchAssetResponseDto {
       return SearchAssetResponseDto(
         count: mapValueOfType<int>(json, r'count')!,
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
-        items: AssetResponseDto.listFromJson(json[r'items']),
+        items: AssetSearchResponseDto.listFromJson(json[r'items']),
         nextPage: mapValueOfType<String>(json, r'nextPage'),
         total: mapValueOfType<int>(json, r'total')!,
       );
