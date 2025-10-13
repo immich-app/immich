@@ -7,7 +7,7 @@ sealed class DateFilterInputModel {
   DateTimeRange<DateTime> asDateTimeRange();
 
   String asHumanReadable(BuildContext context) {
-    // Generail implementation for arbitrary date and time ranges
+    // General implementation for arbitrary date and time ranges
     // If date range is less than 24 hours, set the end date to the end of the day
     final date = asDateTimeRange();
     if (date.end.difference(date.start).inHours < 24) {
@@ -85,13 +85,17 @@ class CustomDateFilter extends DateFilterInputModel {
 enum _QuickPickerType { last1Month, last3Months, last9Months, year, custom }
 
 class QuickDatePicker extends HookWidget {
-  QuickDatePicker({super.key, required this.currentRange, required this.onSelect, required this.onRequestPicker})
-    : _selection = _inputModelToType(currentRange),
-      _initialYear = _initialYearFromModel(currentRange);
+  QuickDatePicker({
+    super.key,
+    required DateFilterInputModel? currentInput,
+    required this.onSelect,
+    required this.onRequestPicker,
+  }) : _selection = _selectionFromModel(currentInput),
+       _initialYear = _initialYearFromModel(currentInput);
 
   final Function() onRequestPicker;
   final Function(DateFilterInputModel range) onSelect;
-  final DateFilterInputModel? currentRange;
+
   final _QuickPickerType? _selection;
   final int _initialYear;
 
@@ -104,7 +108,7 @@ class QuickDatePicker extends HookWidget {
     return model?.asDateTimeRange().start.year ?? DateTime.now().year;
   }
 
-  static _QuickPickerType? _inputModelToType(DateFilterInputModel? model) {
+  static _QuickPickerType? _selectionFromModel(DateFilterInputModel? model) {
     if (model is RecentMonthRangeFilter) {
       switch (model.monthDelta) {
         case 1:
@@ -149,7 +153,8 @@ class QuickDatePicker extends HookWidget {
   }
 
   // We want the exact date picker to always be selectable.
-  // Even if it's already toggled it should always open the full date picker, RadioListTiles don't allow that by default so we wrap it in a GestureDetector
+  // Even if it's already toggled it should always open the full date picker, RadioListTiles don't do that by default
+  // so we wrap it in a InkWell
   Widget _exactPicker(BuildContext context) => InkWell(
     onTap: onRequestPicker,
     child: IgnorePointer(
