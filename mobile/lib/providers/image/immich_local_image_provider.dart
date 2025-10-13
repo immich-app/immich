@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
@@ -77,7 +76,7 @@ class ImmichLocalImageProvider extends ImageProvider<ImmichLocalImageProvider> {
     } catch (error, stack) {
       log.severe('Error loading local image ${asset.fileName}', error, stack);
     } finally {
-      chunkEvents.close();
+      unawaited(chunkEvents.close());
     }
   }
 

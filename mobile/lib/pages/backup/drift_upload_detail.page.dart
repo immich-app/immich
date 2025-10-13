@@ -170,8 +170,8 @@ class DriftUploadDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _showFileDetailDialog(BuildContext context, DriftUploadStatus item) async {
-    showDialog(
+  Future<void> _showFileDetailDialog(BuildContext context, DriftUploadStatus item) {
+    return showDialog(
       context: context,
       builder: (context) => FileDetailDialog(uploadStatus: item),
     );
