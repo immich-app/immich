@@ -31,6 +31,8 @@ jobs:
               - 'open-api/immich-openapi-specs.json'
           force-filters: |
             - '.github/workflows/docs-build.yml'
+            - '.github/workflows/docs-deploy.yml'
+            - 'deployment/**'
           force-events: 'release'
           force-branches: 'main'
 
