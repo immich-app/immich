@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -17,6 +18,7 @@ class AssetViewerState {
   final bool showingControls;
   final BaseAsset? currentAsset;
   final int stackIndex;
+  final TimelineType timelineType;
 
   const AssetViewerState({
     this.backgroundOpacity = 255,
@@ -24,6 +26,7 @@ class AssetViewerState {
     this.showingControls = true,
     this.currentAsset,
     this.stackIndex = 0,
+    this.timelineType = TimelineType.main,
   });
 
   AssetViewerState copyWith({
@@ -32,6 +35,7 @@ class AssetViewerState {
     bool? showingControls,
     BaseAsset? currentAsset,
     int? stackIndex,
+    TimelineType? timelineType,
   }) {
     return AssetViewerState(
       backgroundOpacity: backgroundOpacity ?? this.backgroundOpacity,
@@ -39,6 +43,7 @@ class AssetViewerState {
       showingControls: showingControls ?? this.showingControls,
       currentAsset: currentAsset ?? this.currentAsset,
       stackIndex: stackIndex ?? this.stackIndex,
+      timelineType: timelineType ?? this.timelineType,
     );
   }
 
@@ -118,6 +123,13 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
       return;
     }
     state = state.copyWith(stackIndex: index);
+  }
+
+  void setTimelineType(TimelineType type) {
+    if (type == state.timelineType) {
+      return;
+    }
+    state = state.copyWith(timelineType: type);
   }
 }
 

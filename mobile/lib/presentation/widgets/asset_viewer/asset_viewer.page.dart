@@ -61,8 +61,9 @@ class AssetViewer extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _AssetViewerState();
 
-  static void setAsset(WidgetRef ref, BaseAsset asset) {
+  static void setAsset(WidgetRef ref, BaseAsset asset, TimelineType timelineType) {
     ref.read(assetViewerProvider.notifier).reset();
+    ref.read(assetViewerProvider.notifier).setTimelineType(timelineType);
     _setAsset(ref, asset);
   }
 

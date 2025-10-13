@@ -15,8 +15,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -134,6 +134,7 @@ class _FixedSegmentRow extends ConsumerWidget {
               key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
               asset: assets[i],
               assetIndex: assetIndex + i,
+              timelineType: timelineService.type,
             ),
           ),
       ],
@@ -144,8 +145,9 @@ class _FixedSegmentRow extends ConsumerWidget {
 class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
+  final TimelineType timelineType;
 
-  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex, required this.timelineType});
 
   Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
     final multiSelectState = ref.read(multiSelectProvider);
@@ -155,7 +157,7 @@ class _AssetTileWidget extends ConsumerWidget {
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
-      AssetViewer.setAsset(ref, asset);
+      AssetViewer.setAsset(ref, asset, timelineType);
       ctx.pushRoute(
         AssetViewerRoute(
           initialIndex: assetIndex,

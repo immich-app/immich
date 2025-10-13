@@ -8,8 +8,8 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -149,8 +149,11 @@ class DeepLinkService {
         return null;
       }
 
-      AssetViewer.setAsset(ref, asset);
-      return AssetViewerRoute(initialIndex: 0, timelineService: _betaTimelineFactory.fromAssets([asset]));
+      AssetViewer.setAsset(ref, asset, TimelineType.deepLink);
+      return AssetViewerRoute(
+        initialIndex: 0,
+        timelineService: _betaTimelineFactory.fromAssets([asset], TimelineType.deepLink),
+      );
     } else {
       // TODO: Remove this when beta is default
       final asset = await _assetService.getAssetByRemoteId(assetId);

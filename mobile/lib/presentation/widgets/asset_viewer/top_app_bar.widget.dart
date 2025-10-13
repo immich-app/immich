@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -18,7 +19,6 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asse
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -39,13 +39,11 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
-    final previousRouteName = ref.watch(previousRouteNameProvider);
-    final tabRoute = ref.watch(tabProvider);
+    final timelineType = ref.read(assetViewerProvider).timelineType;
     final showViewInTimelineButton =
-        (previousRouteName != TabShellRoute.name || tabRoute == TabEnum.search) &&
-        previousRouteName != AssetViewerRoute.name &&
-        previousRouteName != null &&
-        previousRouteName != LocalTimelineRoute.name;
+        timelineType != TimelineType.main &&
+        timelineType != TimelineType.deepLink &&
+        timelineType != TimelineType.localAlbum;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
