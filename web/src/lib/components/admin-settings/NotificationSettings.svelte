@@ -110,16 +110,6 @@
             />
 
             <SettingInputField
-              inputType={SettingInputFieldType.BOOL}
-              required
-              label={$t('secure')}
-              description={$t('admin.notification_email_secure_description')}
-              disabled={disabled || !config.notifications.smtp.enabled}
-              bind:value={config.notifications.smtp.transport.secure}
-              isEdited={config.notifications.smtp.transport.secure !== savedConfig.notifications.smtp.transport.secure}
-            />
-
-            <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('username')}
               description={$t('admin.notification_email_username_description')}
@@ -137,6 +127,13 @@
               bind:value={config.notifications.smtp.transport.password}
               isEdited={config.notifications.smtp.transport.password !==
                 savedConfig.notifications.smtp.transport.password}
+            />
+
+            <SettingSwitch
+              title={$t('admin.notification_email_secure')}
+              subtitle={$t('admin.notification_email_secure_description')}
+              disabled={disabled || !config.notifications.smtp.enabled}
+              bind:checked={config.notifications.smtp.transport.secure}
             />
 
             <SettingSwitch
