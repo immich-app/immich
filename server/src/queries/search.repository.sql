@@ -103,20 +103,21 @@ begin
 set
   local vchordrq.probes = 1
 select
-  "asset".*
+  "asset".*,
+  smart_search.embedding <=> $1 as "distance"
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."visibility" = $2
+  and "asset"."fileCreatedAt" >= $3
+  and "asset_exif"."lensModel" = $4
+  and "asset"."ownerId" = any ($5::uuid[])
+  and "asset"."isFavorite" = $6
   and "asset"."deletedAt" is null
 order by
-  smart_search.embedding <=> $6
+  "distance"
 limit
   $7
 offset
