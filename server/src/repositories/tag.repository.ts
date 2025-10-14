@@ -163,28 +163,26 @@ export class TagRepository {
   }
 
   async deleteEmptyTags() {
-    await this.db.transaction().execute(async (tx) => {
-      const result = await tx
-        .deleteFrom('tag')
-        .where('id', 'not in', (eb) => eb.selectFrom('tag_asset').select('tagsId'))
-        .where('id', 'not in', (eb) =>
-          eb
-            .selectFrom('tag as child')
-            .select('child.parentId')
-            .where('child.parentId', 'is not', null)
-            .where((eb2) =>
-              eb2.or([
-                eb2('child.id', 'in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
-                eb2('child.id', 'not in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
-              ]),
-            ),
-        )
-        .executeTakeFirst();
+    const result = await this.db
+      .deleteFrom('tag')
+      .where('id', 'not in', (eb) => eb.selectFrom('tag_asset').select('tagsId'))
+      .where('id', 'not in', (eb) =>
+        eb
+          .selectFrom('tag as child')
+          .select('child.parentId')
+          .where('child.parentId', 'is not', null)
+          .where((eb2) =>
+            eb2.or([
+              eb2('child.id', 'in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
+              eb2('child.id', 'not in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
+            ]),
+          ),
+      )
+      .executeTakeFirst();
 
-      const deletedRows = Number(result.numDeletedRows);
-      if (deletedRows > 0) {
-        this.logger.log(`Deleted ${deletedRows} empty tags`);
-      }
-    });
+    const deletedRows = Number(result.numDeletedRows);
+    if (deletedRows > 0) {
+      this.logger.log(`Deleted ${deletedRows} empty tags`);
+    }
   }
 }

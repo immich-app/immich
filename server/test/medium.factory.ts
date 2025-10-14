@@ -39,8 +39,8 @@ import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { DB } from 'src/schema';
@@ -250,7 +250,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { tag, result };
   }
 
-  async newTagAsset(tagBulkAssets: { tagIds: string[], assetIds: string[] }) {
+  async newTagAsset(tagBulkAssets: { tagIds: string[]; assetIds: string[] }) {
     const tagsAssets: Insertable<TagAssetTable>[] = [];
     for (const tagsId of tagBulkAssets.tagIds) {
       for (const assetsId of tagBulkAssets.assetIds) {
@@ -370,7 +370,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
-    case VersionHistoryRepository: 
+    case VersionHistoryRepository:
     case TagRepository: {
       return automock(key);
     }
@@ -605,10 +605,10 @@ const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
     color: '',
     parentId: null,
     updateId: newUuid(),
-  }
+  };
 
   return { ...defaults, ...tag, id };
-}
+};
 
 class CustomWritable extends Writable {
   private data = '';
