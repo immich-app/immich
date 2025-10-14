@@ -22,6 +22,7 @@ final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
+
   static final Logger _log = Logger("AssetMediaRepository");
 
   const AssetMediaRepository(this._assetApiRepository);
