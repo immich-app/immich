@@ -46,7 +46,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         timelineOrigin != TimelineOrigin.deepLink &&
         timelineOrigin != TimelineOrigin.trash &&
         timelineOrigin != TimelineOrigin.archive &&
-        timelineOrigin != TimelineOrigin.localAlbum;
+        timelineOrigin != TimelineOrigin.localAlbum &&
+        isOwner;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
