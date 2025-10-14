@@ -80,8 +80,8 @@ export class AlbumService extends BaseService {
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
     // Determine if the album is shared (shared users or shared link)
-    const hasSharedUsers = (album.albumUsers?.length ?? 0) > 0;
-    const hasSharedLink = (album.sharedLinks?.length ?? 0) > 0;
+    const hasSharedUsers = album.albumUsers && album.albumUsers.length > 0;
+    const hasSharedLink = album.sharedLinks && album.sharedLinks.length > 0;
     const isShared = hasSharedUsers || hasSharedLink;
 
     return {
