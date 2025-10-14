@@ -434,8 +434,8 @@ importers:
         specifier: 0.28.2
         version: 0.28.2
       kysely-postgres-js:
-        specifier: ^2.0.0
-        version: 2.0.0(kysely@0.28.2)(postgres@3.4.7)
+        specifier: ^3.0.0
+        version: 3.0.0(kysely@0.28.2)(postgres@3.4.7)
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -7677,11 +7677,15 @@ packages:
     resolution: {integrity: sha512-oDxVkRwPOHhGlxKIDiDB2h+/l05QPtefD7nSqRgDfZt8P+QVYFWjfeK8jANf5O2YXjk8egd7KntvXKYx82wOag==}
     engines: {node: '>= 18'}
 
-  kysely-postgres-js@2.0.0:
-    resolution: {integrity: sha512-R1tWx6/x3tSatWvsmbHJxpBZYhNNxcnMw52QzZaHKg7ZOWtHib4iZyEaw4gb2hNKVctWQ3jfMxZT/ZaEMK6kBQ==}
+  kysely-postgres-js@3.0.0:
+    resolution: {integrity: sha512-o2t/xNSYJQDW6rVGGFPXKmZ0BEz2dGn66c2B+cO/k9ZNcU2qPWPycQPQ+B+P2MBXbKYq0xV9BZmFIvkUrmFWAQ==}
+    engines: {bun: '>=1.2', node: '>=20'}
     peerDependencies:
       kysely: '>= 0.24.0 < 1'
-      postgres: '>= 3.4.0 < 4'
+      postgres: ^3.4.0
+    peerDependenciesMeta:
+      postgres:
+        optional: true
 
   kysely@0.28.2:
     resolution: {integrity: sha512-4YAVLoF0Sf0UTqlhgQMFU9iQECdah7n+13ANkiuVfRvlK+uI0Etbgd7bVP36dKlG+NXWbhGua8vnGt+sdhvT7A==}
@@ -19996,9 +20000,10 @@ snapshots:
       type-is: 2.0.1
       vary: 1.1.2
 
-  kysely-postgres-js@2.0.0(kysely@0.28.2)(postgres@3.4.7):
+  kysely-postgres-js@3.0.0(kysely@0.28.2)(postgres@3.4.7):
     dependencies:
       kysely: 0.28.2
+    optionalDependencies:
       postgres: 3.4.7
 
   kysely@0.28.2: {}
