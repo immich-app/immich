@@ -385,7 +385,7 @@ export class AlbumRepository {
    * Excludes deleted assets, orders by count desc.
    */
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getContributorCounts(id: string) {
+  getContributorCounts(id: string) {
     return this.db
       .selectFrom('album_asset')
       .innerJoin('asset', 'asset.id', 'assetsId')
