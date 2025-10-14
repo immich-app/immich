@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import DateSelectionModal from '$lib/modals/DateSelectionModal.svelte';
   import { user } from '$lib/stores/user.store';
   import { getSelectedAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -43,7 +43,7 @@
   };
 
   const showChangeDate = async () => {
-    const result = await modalManager.show(ChangeDate, {
+    const result = await modalManager.show(DateSelectionModal, {
       initialDate: DateTime.now(),
       currentInterval: getCurrentInterval(),
     });

@@ -5,9 +5,9 @@
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
+  import DateSelectionModal from '$lib/modals/DateSelectionModal.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
@@ -110,7 +110,7 @@
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
   const showChangeDate = async () => {
-    const result = await modalManager.show(ChangeDate, {
+    const result = await modalManager.show(DateSelectionModal, {
       initialDate: dateTime,
       initialTimeZone: timeZone ?? '',
       withDuration: false,

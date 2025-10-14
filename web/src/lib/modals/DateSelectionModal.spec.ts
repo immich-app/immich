@@ -3,9 +3,9 @@ import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { DateTime } from 'luxon';
-import ChangeDate from './change-date.svelte';
+import DateSelectionModal from './DateSelectionModal.svelte';
 
-describe('ChangeDate component', () => {
+describe('DateSelectionModal component', () => {
   const initialDate = DateTime.fromISO('2024-01-01');
   const initialTimeZone = 'Europe/Berlin';
   const targetDate = DateTime.fromISO('2024-01-01').setZone('UTC+1', {
@@ -40,13 +40,13 @@ describe('ChangeDate component', () => {
   });
 
   test('should render correct values', () => {
-    render(ChangeDate, { initialDate, initialTimeZone, onClose });
+    render(DateSelectionModal, { initialDate, initialTimeZone, onClose });
     expect(getDateInput().value).toBe('2024-01-01T00:00');
     expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
   });
 
   test('calls onConfirm with correct date on confirm', async () => {
-    render(ChangeDate, {
+    render(DateSelectionModal, {
       props: { initialDate, initialTimeZone, onClose },
     });
 
@@ -60,7 +60,7 @@ describe('ChangeDate component', () => {
   });
 
   test('calls onCancel on cancel', async () => {
-    render(ChangeDate, {
+    render(DateSelectionModal, {
       props: { initialDate, initialTimeZone, onClose },
     });
 
@@ -75,13 +75,13 @@ describe('ChangeDate component', () => {
       keepLocalTime: true,
     });
     test('should render correct timezone with offset', () => {
-      render(ChangeDate, { initialDate: dstDate, initialTimeZone, onClose });
+      render(DateSelectionModal, { initialDate: dstDate, initialTimeZone, onClose });
 
       expect(getTimeZoneInput().value).toBe('Europe/Berlin (+02:00)');
     });
 
     test('calls onConfirm with correct date on confirm', async () => {
-      render(ChangeDate, {
+      render(DateSelectionModal, {
         props: { initialDate: dstDate, initialTimeZone, onClose },
       });
 
@@ -96,7 +96,7 @@ describe('ChangeDate component', () => {
   });
 
   test('calls onConfirm with correct offset in relative mode', async () => {
-    render(ChangeDate, {
+    render(DateSelectionModal, {
       props: { initialDate, initialTimeZone, currentInterval, onClose },
     });
 
@@ -125,7 +125,7 @@ describe('ChangeDate component', () => {
 
   test('calls onConfirm with correct timeZone in relative mode', async () => {
     const user = userEvent.setup();
-    render(ChangeDate, {
+    render(DateSelectionModal, {
       props: { initialDate, initialTimeZone, currentInterval, onClose },
     });
 
@@ -188,7 +188,7 @@ describe('ChangeDate component', () => {
       },
     ];
 
-    const component = render(ChangeDate, {
+    const component = render(DateSelectionModal, {
       props: { initialDate, initialTimeZone, currentInterval, onClose },
     });
 

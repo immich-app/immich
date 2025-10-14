@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
-  import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import {
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
@@ -10,6 +9,7 @@
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import DateSelectionModal from '$lib/modals/DateSelectionModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -143,8 +143,8 @@
     }
   });
 
-  const openChangeDateDialog = async () => {
-    const result = await modalManager.show(ChangeDate, {
+  const handleOpenDateModal = async () => {
+    const result = await modalManager.show(DateSelectionModal, {
       withDuration: false,
       title: $t('navigate_to_time'),
       initialDate: DateTime.now(),
@@ -183,7 +183,7 @@
         { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
         { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
         { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
-        { shortcut: { key: 'G' }, onShortcut: openChangeDateDialog },
+        { shortcut: { key: 'G' }, onShortcut: handleOpenDateModal },
       ];
       if (onEscape) {
         shortcuts.push({ shortcut: { key: 'Escape' }, onShortcut: onEscape });
