@@ -13,11 +13,7 @@ import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 
 @RoutePage()
 class AlbumAssetSelectionPage extends HookConsumerWidget {
-  const AlbumAssetSelectionPage({
-    super.key,
-    required this.existingAssets,
-    this.canDeselect = false,
-  });
+  const AlbumAssetSelectionPage({super.key, required this.existingAssets, this.canDeselect = false});
 
   final Set<Asset> existingAssets;
   final bool canDeselect;
@@ -52,10 +48,7 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
           },
         ),
         title: selected.value.isEmpty
-            ? const Text(
-                'add_photos',
-                style: TextStyle(fontSize: 18),
-              ).tr()
+            ? const Text('add_photos', style: TextStyle(fontSize: 18)).tr()
             : const Text(
                 'share_assets_selected',
                 style: TextStyle(fontSize: 18),
@@ -65,24 +58,17 @@ class AlbumAssetSelectionPage extends HookConsumerWidget {
           if (selected.value.isNotEmpty || canDeselect)
             TextButton(
               onPressed: () {
-                var payload =
-                    AssetSelectionPageResult(selectedAssets: selected.value);
-                AutoRouter.of(context)
-                    .popForced<AssetSelectionPageResult>(payload);
+                var payload = AssetSelectionPageResult(selectedAssets: selected.value);
+                AutoRouter.of(context).popForced<AssetSelectionPageResult>(payload);
               },
               child: Text(
                 canDeselect ? "done" : "add",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: context.primaryColor,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, color: context.primaryColor),
               ).tr(),
             ),
         ],
       ),
-      body: assetSelectionRenderList.widgetWhen(
-        onData: (data) => buildBody(data),
-      ),
+      body: assetSelectionRenderList.widgetWhen(onData: (data) => buildBody(data)),
     );
   }
 }

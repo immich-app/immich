@@ -39,16 +39,17 @@ class ImmichTestHelper {
   static Future<void> loadApp(WidgetTester tester) async {
     await EasyLocalization.ensureInitialized();
     // Clear all data from Isar (reuse existing instance if available)
-    final db = await Bootstrap.initIsar();
-    await Bootstrap.initDomain(db);
+    final (isar, drift, logDb) = await Bootstrap.initDB();
+    await Bootstrap.initDomain(isar, drift, logDb);
     await Store.clear();
-    await db.writeTxn(() => db.clear());
+    await isar.writeTxn(() => isar.clear());
     // Load main Widget
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          dbProvider.overrideWithValue(db),
-          isarProvider.overrideWithValue(db),
+          dbProvider.overrideWithValue(isar),
+          isarProvider.overrideWithValue(isar),
+          driftProvider.overrideWith(driftOverride(drift)),
         ],
         child: const app.MainWidget(),
       ),
@@ -59,18 +60,11 @@ class ImmichTestHelper {
 }
 
 @isTest
-void immichWidgetTest(
-  String description,
-  Future<void> Function(WidgetTester, ImmichTestHelper) test,
-) {
-  testWidgets(
-    description,
-    (widgetTester) async {
-      await ImmichTestHelper.loadApp(widgetTester);
-      await test(widgetTester, ImmichTestHelper(widgetTester));
-    },
-    semanticsEnabled: false,
-  );
+void immichWidgetTest(String description, Future<void> Function(WidgetTester, ImmichTestHelper) test) {
+  testWidgets(description, (widgetTester) async {
+    await ImmichTestHelper.loadApp(widgetTester);
+    await test(widgetTester, ImmichTestHelper(widgetTester));
+  }, semanticsEnabled: false);
 }
 
 Future<void> pumpUntilFound(
@@ -79,8 +73,7 @@ Future<void> pumpUntilFound(
   Duration timeout = const Duration(seconds: 120),
 }) async {
   bool found = false;
-  final timer =
-      Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
+  final timer = Timer(timeout, () => throw TimeoutException("Pump until has timed out"));
   while (found != true) {
     await tester.pump();
     found = tester.any(finder);

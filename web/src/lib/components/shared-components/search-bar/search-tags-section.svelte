@@ -1,15 +1,15 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { Checkbox, Icon, Label } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
-    selectedTags: SvelteSet<string>;
+    selectedTags: SvelteSet<string> | null;
   }
 
   let { selectedTags = $bindable() }: Props = $props();
@@ -23,7 +23,7 @@
   });
 
   const handleSelect = (option?: ComboBoxOption) => {
-    if (!option || !option.id) {
+    if (!option || !option.id || selectedTags === null) {
       return;
     }
 
@@ -32,6 +32,10 @@
   };
 
   const handleRemove = (tag: string) => {
+    if (selectedTags === null) {
+      return;
+    }
+
     selectedTags.delete(tag);
   };
 </script>
@@ -40,19 +44,33 @@
   <div id="location-selection">
     <form autocomplete="off" id="create-tag-form">
       <div class="my-4 flex flex-col gap-2">
-        <Combobox
-          onSelect={handleSelect}
-          label={$t('tags').toUpperCase()}
-          defaultFirstOption
-          options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
-          bind:selectedOption
-          placeholder={$t('search_tags')}
+        <div class="[&_label]:uppercase">
+          <Combobox
+            disabled={selectedTags === null}
+            onSelect={handleSelect}
+            label={$t('tags')}
+            defaultFirstOption
+            options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
+            bind:selectedOption
+            placeholder={$t('search_tags')}
+          />
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <Checkbox
+          id="untagged-checkbox"
+          size="tiny"
+          checked={selectedTags === null}
+          onCheckedChange={(checked) => {
+            selectedTags = checked ? null : new SvelteSet();
+          }}
         />
+        <Label label={$t('untagged')} for="untagged-checkbox" />
       </div>
     </form>
 
     <section class="flex flex-wrap pt-2 gap-1">
-      {#each selectedTags as tagId (tagId)}
+      {#each selectedTags ?? [] as tagId (tagId)}
         {@const tag = tagMap[tagId]}
         {#if tag}
           <div class="flex group transition-all">
@@ -70,7 +88,7 @@
               title={$t('remove_tag')}
               onclick={() => handleRemove(tagId)}
             >
-              <Icon path={mdiClose} />
+              <Icon icon={mdiClose} />
             </button>
           </div>
         {/if}

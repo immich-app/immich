@@ -154,7 +154,7 @@ describe(AuthService.name, () => {
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
 
-      await expect(sut.logout(auth, AuthType.OAUTH)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
         successful: true,
         redirectUri: 'http://end-session-endpoint',
       });
@@ -163,7 +163,7 @@ describe(AuthService.name, () => {
     it('should return the default redirect', async () => {
       const auth = factory.auth();
 
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
@@ -173,19 +173,19 @@ describe(AuthService.name, () => {
       const auth = { user: { id: '123' }, session: { id: 'token123' } } as AuthDto;
       mocks.session.delete.mockResolvedValue();
 
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
 
       expect(mocks.session.delete).toHaveBeenCalledWith('token123');
-      expect(mocks.event.emit).toHaveBeenCalledWith('session.delete', { sessionId: 'token123' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('SessionDelete', { sessionId: 'token123' });
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
       const auth = { user: { id: '123' } } as AuthDto;
 
-      await expect(sut.logout(auth, AuthType.OAUTH)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
@@ -255,7 +255,10 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id, hasElevatedPermission: false },
+        session: {
+          id: session.id,
+          hasElevatedPermission: false,
+        },
       });
     });
   });
@@ -317,15 +320,18 @@ describe(AuthService.name, () => {
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
       mocks.user.get.mockResolvedValue(user);
 
+      const buffer = sharedLink.key;
+      const key = buffer.toString('base64url');
+
       await expect(
         sut.authenticate({
-          headers: { 'x-immich-share-key': sharedLink.key.toString('base64url') },
+          headers: { 'x-immich-share-key': key },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLink.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer);
     });
 
     it('should accept a hex key', async () => {
@@ -335,15 +341,50 @@ describe(AuthService.name, () => {
       mocks.sharedLink.getByKey.mockResolvedValue(sharedLink);
       mocks.user.get.mockResolvedValue(user);
 
+      const buffer = sharedLink.key;
+      const key = buffer.toString('hex');
+
       await expect(
         sut.authenticate({
-          headers: { 'x-immich-share-key': sharedLink.key.toString('hex') },
+          headers: { 'x-immich-share-key': key },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
         }),
       ).resolves.toEqual({ user, sharedLink });
 
-      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLink.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(buffer);
+    });
+  });
+
+  describe('validate - shared link slug', () => {
+    it('should not accept a non-existent slug', async () => {
+      mocks.sharedLink.getBySlug.mockResolvedValue(void 0);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-slug': 'slug' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+
+    it('should accept a valid slug', async () => {
+      const user = factory.userAdmin();
+      const sharedLink = { ...sharedLinkStub.valid, slug: 'slug-123', user } as any;
+
+      mocks.sharedLink.getBySlug.mockResolvedValue(sharedLink);
+      mocks.user.get.mockResolvedValue(user);
+
+      await expect(
+        sut.authenticate({
+          headers: { 'x-immich-share-slug': 'slug-123' },
+          queryParams: {},
+          metadata: { adminRoute: false, sharedLinkRoute: true, uri: 'test' },
+        }),
+      ).resolves.toEqual({ user, sharedLink });
+
+      expect(mocks.sharedLink.getBySlug).toHaveBeenCalledWith('slug-123');
     });
   });
 
@@ -379,7 +420,10 @@ describe(AuthService.name, () => {
         }),
       ).resolves.toEqual({
         user: sessionWithToken.user,
-        session: { id: session.id, hasElevatedPermission: false },
+        session: {
+          id: session.id,
+          hasElevatedPermission: false,
+        },
       });
     });
 
@@ -389,6 +433,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        isPendingSyncReset: false,
         pinExpiresAt: null,
       };
 
@@ -409,6 +454,7 @@ describe(AuthService.name, () => {
         id: session.id,
         updatedAt: session.updatedAt,
         user: factory.authUser(),
+        isPendingSyncReset: false,
         pinExpiresAt: null,
       };
 
@@ -447,18 +493,48 @@ describe(AuthService.name, () => {
 
       mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
 
-      await expect(
-        sut.authenticate({
-          headers: { 'x-api-key': 'auth_token' },
-          queryParams: {},
-          metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: Permission.ASSET_READ },
-        }),
-      ).rejects.toBeInstanceOf(ForbiddenException);
+      const result = sut.authenticate({
+        headers: { 'x-api-key': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: Permission.AssetRead },
+      });
+
+      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(result).rejects.toThrow('Missing required permission: asset.read');
+    });
+
+    it('should default to requiring the all permission when omitted', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [Permission.AssetRead] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+
+      const result = sut.authenticate({
+        headers: { 'x-api-key': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+      });
+      await expect(result).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(result).rejects.toThrow('Missing required permission: all');
+    });
+
+    it('should not require any permission when metadata is set to `false`', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [Permission.ActivityRead] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+
+      const result = sut.authenticate({
+        headers: { 'x-api-key': 'auth_token' },
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test', permission: false },
+      });
+      await expect(result).resolves.toEqual({ user: authUser, apiKey: expect.objectContaining(authApiKey) });
     });
 
     it('should return an auth dto', async () => {
       const authUser = factory.authUser();
-      const authApiKey = factory.authApiKey({ permissions: [] });
+      const authApiKey = factory.authApiKey({ permissions: [Permission.All] });
 
       mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
 
@@ -763,7 +839,7 @@ describe(AuthService.name, () => {
       mocks.crypto.randomUUID.mockReturnValue(fileId);
       mocks.oauth.getProfilePicture.mockResolvedValue({
         contentType: 'image/jpeg',
-        data: new Uint8Array([1, 2, 3, 4, 5]),
+        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
       });
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(factory.session());
@@ -777,7 +853,7 @@ describe(AuthService.name, () => {
       ).resolves.toEqual(oauthResponse(user));
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
-        profileImagePath: `upload/profile/${user.id}/${fileId}.jpg`,
+        profileImagePath: expect.stringContaining(`/data/profile/${user.id}/${fileId}.jpg`),
         profileChangedAt: expect.any(Date),
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(pictureUrl);

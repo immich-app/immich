@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression, Interval } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import sanitizeHtml from 'sanitize-html';
@@ -54,11 +54,6 @@ export class ApiService {
     await this.versionService.handleQueueVersionCheck();
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async onNightlyJob() {
-    await this.jobService.handleNightlyJobs();
-  }
-
   ssr(excludePaths: string[]) {
     const { resourcePaths } = this.configRepository.getEnv();
 
@@ -81,21 +76,34 @@ export class ApiService {
       let status = 200;
       let html = index;
 
-      const shareMatches = request.url.match(/^\/share\/(.+)$/);
-      if (shareMatches) {
+      const defaultDomain = request.host ? `${request.protocol}://${request.host}` : undefined;
+
+      let meta: OpenGraphTags | null = null;
+
+      const shareKey = request.url.match(/^\/share\/(.+)$/);
+      if (shareKey) {
         try {
-          const key = shareMatches[1];
-          const auth = await this.authService.validateSharedLink(key);
-          const meta = await this.sharedLinkService.getMetadataTags(
-            auth,
-            request.host ? `${request.protocol}://${request.host}` : undefined,
-          );
-          if (meta) {
-            html = render(index, meta);
-          }
+          const key = shareKey[1];
+          const auth = await this.authService.validateSharedLinkKey(key);
+          meta = await this.sharedLinkService.getMetadataTags(auth, defaultDomain);
         } catch {
           status = 404;
         }
+      }
+
+      const shareSlug = request.url.match(/^\/s\/(.+)$/);
+      if (shareSlug) {
+        try {
+          const slug = shareSlug[1];
+          const auth = await this.authService.validateSharedLinkSlug(slug);
+          meta = await this.sharedLinkService.getMetadataTags(auth, defaultDomain);
+        } catch {
+          status = 404;
+        }
+      }
+
+      if (meta) {
+        html = render(index, meta);
       }
 
       res.status(status).type('text/html').header('Cache-Control', 'no-store').send(html);

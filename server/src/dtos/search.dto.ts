@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
-import { Optional, ValidateAssetVisibility, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
   @ValidateUUID({ optional: true, nullable: true })
@@ -17,9 +17,7 @@ class BaseSearchDto {
   @Optional()
   deviceId?: string;
 
-  @IsEnum(AssetType)
-  @Optional()
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum', optional: true })
   type?: AssetType;
 
   @ValidateBoolean({ optional: true })
@@ -34,7 +32,7 @@ class BaseSearchDto {
   @ValidateBoolean({ optional: true })
   isOffline?: boolean;
 
-  @ValidateAssetVisibility({ optional: true })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility', optional: true })
   visibility?: AssetVisibility;
 
   @ValidateDate({ optional: true })
@@ -92,8 +90,8 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
 
-  @ValidateUUID({ each: true, optional: true })
-  tagIds?: string[];
+  @ValidateUUID({ each: true, optional: true, nullable: true })
+  tagIds?: string[] | null;
 
   @ValidateUUID({ each: true, optional: true })
   albumIds?: string[];
@@ -128,6 +126,15 @@ export class RandomSearchDto extends BaseSearchWithResultsDto {
   withPeople?: boolean;
 }
 
+export class LargeAssetSearchDto extends BaseSearchWithResultsDto {
+  @Optional()
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  minFileSize?: number;
+}
+
 export class MetadataSearchDto extends RandomSearchDto {
   @ValidateUUID({ optional: true })
   id?: string;
@@ -137,9 +144,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   deviceAssetId?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   description?: string;
 
   @IsString()
@@ -147,9 +152,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   checksum?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   originalFileName?: string;
 
   @IsString()
@@ -172,9 +175,7 @@ export class MetadataSearchDto extends RandomSearchDto {
   @Optional()
   encodedVideoPath?: string;
 
-  @IsEnum(AssetOrder)
-  @Optional()
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder, default: AssetOrder.DESC })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, default: AssetOrder.Desc })
   order?: AssetOrder;
 
   @IsInt()
@@ -185,16 +186,17 @@ export class MetadataSearchDto extends RandomSearchDto {
 }
 
 export class StatisticsSearchDto extends BaseSearchDto {
-  @IsString()
-  @IsNotEmpty()
-  @Optional()
+  @ValidateString({ optional: true, trim: true })
   description?: string;
 }
 
 export class SmartSearchDto extends BaseSearchWithResultsDto {
-  @IsString()
-  @IsNotEmpty()
-  query!: string;
+  @ValidateString({ optional: true, trim: true })
+  query?: string;
+
+  @ValidateUUID({ optional: true })
+  @Optional()
+  queryAssetId?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -250,9 +252,7 @@ export enum SearchSuggestionType {
 }
 
 export class SearchSuggestionRequestDto {
-  @IsEnum(SearchSuggestionType)
-  @IsNotEmpty()
-  @ApiProperty({ enumName: 'SearchSuggestionType', enum: SearchSuggestionType })
+  @ValidateEnum({ enum: SearchSuggestionType, name: 'SearchSuggestionType' })
   type!: SearchSuggestionType;
 
   @IsString()

@@ -9,6 +9,9 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+formatter:  
+  page_width: 120
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`
@@ -40,8 +43,9 @@ analyzer:
     - lib/**/*.g.dart
     - lib/**/*.drift.dart
 
-  plugins:
-    - custom_lint
+  # TODO: Re-enable after upgrading custom_lint
+  # plugins:
+  #   - custom_lint
 
 custom_lint:
   debug: true
@@ -78,6 +82,7 @@ custom_lint:
         # acceptable exceptions for the time being (until Isar is fully replaced)
         - lib/providers/app_life_cycle.provider.dart
         - integration_test/test_utils/general_helper.dart
+        - lib/domain/services/background_worker.service.dart
         - lib/main.dart
         - lib/pages/album/album_asset_selection.page.dart
         - lib/routing/router.dart
@@ -106,6 +111,7 @@ custom_lint:
         - lib/utils/{image_url_builder,openapi_patching}.dart # utils are fine
         - test/modules/utils/openapi_patching_test.dart # filename is self-explanatory...
         - lib/domain/services/sync_stream.service.dart # Making sure to comply with the type from database
+        - lib/domain/services/search.service.dart
 
         # refactor
         - lib/models/map/map_marker.model.dart
@@ -129,6 +135,13 @@ custom_lint:
 
 dart_code_metrics:
   rules:
+    - banned-usage:
+        entries:
+          - name: debugPrint
+            description: Use dPrint instead of debugPrint for proper tree-shaking in release builds.
+            exclude-paths:
+              - 'lib/utils/debug_print.dart'
+            severity: perf
     # All rules from "recommended" preset
     # Show potential errors
   #  - avoid-cascade-after-if-null

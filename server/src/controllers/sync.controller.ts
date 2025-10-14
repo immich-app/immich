@@ -12,6 +12,7 @@ import {
   SyncAckSetDto,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
+import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { SyncService } from 'src/services/sync.service';
@@ -25,23 +26,23 @@ export class SyncController {
   ) {}
 
   @Post('full-sync')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   getFullSyncForUser(@Auth() auth: AuthDto, @Body() dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     return this.service.getFullSync(auth, dto);
   }
 
   @Post('delta-sync')
-  @HttpCode(HttpStatus.OK)
   @Authenticated()
+  @HttpCode(HttpStatus.OK)
   getDeltaSync(@Auth() auth: AuthDto, @Body() dto: AssetDeltaSyncDto): Promise<AssetDeltaSyncResponseDto> {
     return this.service.getDeltaSync(auth, dto);
   }
 
   @Post('stream')
+  @Authenticated({ permission: Permission.SyncStream })
   @Header('Content-Type', 'application/jsonlines+json')
   @HttpCode(HttpStatus.OK)
-  @Authenticated()
   async getSyncStream(@Auth() auth: AuthDto, @Res() res: Response, @Body() dto: SyncStreamDto) {
     try {
       await this.service.stream(auth, res, dto);
@@ -52,22 +53,22 @@ export class SyncController {
   }
 
   @Get('ack')
-  @Authenticated()
+  @Authenticated({ permission: Permission.SyncCheckpointRead })
   getSyncAck(@Auth() auth: AuthDto): Promise<SyncAckDto[]> {
     return this.service.getAcks(auth);
   }
 
   @Post('ack')
+  @Authenticated({ permission: Permission.SyncCheckpointUpdate })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
   sendSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckSetDto) {
     return this.service.setAcks(auth, dto);
   }
 
   @Delete('ack')
+  @Authenticated({ permission: Permission.SyncCheckpointDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated()
-  deleteSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckDeleteDto) {
+  deleteSyncAck(@Auth() auth: AuthDto, @Body() dto: SyncAckDeleteDto): Promise<void> {
     return this.service.deleteAcks(auth, dto);
   }
 }

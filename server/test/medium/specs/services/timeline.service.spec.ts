@@ -46,7 +46,7 @@ describe(TimelineService.name, () => {
     it('should return error if time bucket is requested with partners asset and archived', async () => {
       const { sut } = setup();
       const auth = factory.auth();
-      const response1 = sut.getTimeBuckets(auth, { withPartners: true, visibility: AssetVisibility.ARCHIVE });
+      const response1 = sut.getTimeBuckets(auth, { withPartners: true, visibility: AssetVisibility.Archive });
       await expect(response1).rejects.toBeInstanceOf(BadRequestException);
       await expect(response1).rejects.toThrow(
         'withPartners is only supported for non-archived, non-trashed, non-favorited assets',

@@ -1,15 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMinSize, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { ArrayMinSize, IsNotEmpty, IsString } from 'class-validator';
 import { Permission } from 'src/enum';
-import { Optional } from 'src/validation';
+import { Optional, ValidateEnum } from 'src/validation';
 export class APIKeyCreateDto {
   @IsString()
   @IsNotEmpty()
   @Optional()
   name?: string;
 
-  @IsEnum(Permission, { each: true })
-  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
+  @ValidateEnum({ enum: Permission, name: 'Permission', each: true })
   @ArrayMinSize(1)
   permissions!: Permission[];
 }
@@ -20,9 +18,7 @@ export class APIKeyUpdateDto {
   @IsNotEmpty()
   name?: string;
 
-  @Optional()
-  @IsEnum(Permission, { each: true })
-  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
+  @ValidateEnum({ enum: Permission, name: 'Permission', each: true, optional: true })
   @ArrayMinSize(1)
   permissions?: Permission[];
 }
@@ -37,6 +33,6 @@ export class APIKeyResponseDto {
   name!: string;
   createdAt!: Date;
   updatedAt!: Date;
-  @ApiProperty({ enum: Permission, enumName: 'Permission', isArray: true })
+  @ValidateEnum({ enum: Permission, name: 'Permission', each: true })
   permissions!: Permission[];
 }

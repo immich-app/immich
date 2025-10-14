@@ -18,10 +18,7 @@ extension PumpConsumerWidget on WidgetTester {
     return pumpWidget(
       ProviderScope(
         overrides: overrides,
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: Material(child: widget),
-        ),
+        child: MaterialApp(debugShowCheckedModeBanner: false, home: Material(child: widget)),
       ),
       duration: duration,
       phase: phase,

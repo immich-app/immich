@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { modalManager } from '$lib/managers/modal-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import MapModal from '$lib/modals/MapModal.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { getAlbumInfo, type AlbumResponseDto, type MapMarkerResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, modalManager } from '@immich/ui';
   import { mdiMapOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -33,7 +33,7 @@
     }
     abortController = new AbortController();
 
-    let albumInfo: AlbumResponseDto = await getAlbumInfo({ id: album.id, withoutAssets: false });
+    let albumInfo: AlbumResponseDto = await getAlbumInfo({ id: album.id, withoutAssets: false, ...authManager.params });
 
     let markers: MapMarkerResponseDto[] = [];
     for (const asset of albumInfo.assets) {

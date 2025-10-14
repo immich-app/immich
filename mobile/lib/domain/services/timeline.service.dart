@@ -10,99 +10,57 @@ import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
-typedef TimelineAssetSource = Future<List<BaseAsset>> Function(
-  int index,
-  int count,
-);
+typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
 typedef TimelineBucketSource = Stream<List<Bucket>> Function();
+
+typedef TimelineQuery = ({TimelineAssetSource assetSource, TimelineBucketSource bucketSource});
 
 class TimelineFactory {
   final DriftTimelineRepository _timelineRepository;
   final SettingsService _settingsService;
 
-  const TimelineFactory({
-    required DriftTimelineRepository timelineRepository,
-    required SettingsService settingsService,
-  })  : _timelineRepository = timelineRepository,
-        _settingsService = settingsService;
+  const TimelineFactory({required DriftTimelineRepository timelineRepository, required SettingsService settingsService})
+    : _timelineRepository = timelineRepository,
+      _settingsService = settingsService;
 
-  GroupAssetsBy get groupBy =>
-      GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
+  GroupAssetsBy get groupBy {
+    final group = GroupAssetsBy.values[_settingsService.get(Setting.groupAssetsBy)];
+    // We do not support auto grouping in the new timeline yet, fallback to day grouping
+    return group == GroupAssetsBy.auto ? GroupAssetsBy.day : group;
+  }
 
-  TimelineService main(List<String> timelineUsers) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getMainBucketAssets(timelineUsers, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchMainBucket(
-          timelineUsers,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService main(List<String> timelineUsers) => TimelineService(_timelineRepository.main(timelineUsers, groupBy));
 
-  TimelineService localAlbum({required String albumId}) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchLocalAlbumBucket(
-          albumId,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService localAlbum({required String albumId}) =>
+      TimelineService(_timelineRepository.localAlbum(albumId, groupBy));
 
-  TimelineService remoteAlbum({required String albumId}) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getRemoteAlbumBucketAssets(albumId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchRemoteAlbumBucket(
-          albumId,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService remoteAlbum({required String albumId}) =>
+      TimelineService(_timelineRepository.remoteAlbum(albumId, groupBy));
 
-  TimelineService remoteAssets(String ownerId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getRemoteBucketAssets(ownerId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchRemoteBucket(
-          ownerId,
-          groupBy: GroupAssetsBy.month,
-        ),
-      );
+  TimelineService remoteAssets(String userId) => TimelineService(_timelineRepository.remote(userId, groupBy));
 
-  TimelineService favorite(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getFavoriteBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchFavoriteBucket(userId, groupBy: groupBy),
-      );
+  TimelineService favorite(String userId) => TimelineService(_timelineRepository.favorite(userId, groupBy));
 
-  TimelineService trash(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getTrashBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchTrashBucket(userId, groupBy: groupBy),
-      );
+  TimelineService trash(String userId) => TimelineService(_timelineRepository.trash(userId, groupBy));
 
-  TimelineService archive(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getArchiveBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchArchiveBucket(userId, groupBy: groupBy),
-      );
+  TimelineService archive(String userId) => TimelineService(_timelineRepository.archived(userId, groupBy));
 
-  TimelineService lockedFolder(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getLockedFolderBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () => _timelineRepository.watchLockedFolderBucket(
-          userId,
-          groupBy: groupBy,
-        ),
-      );
+  TimelineService lockedFolder(String userId) => TimelineService(_timelineRepository.locked(userId, groupBy));
 
-  TimelineService video(String userId) => TimelineService(
-        assetSource: (offset, count) => _timelineRepository
-            .getVideoBucketAssets(userId, offset: offset, count: count),
-        bucketSource: () =>
-            _timelineRepository.watchVideoBucket(userId, groupBy: groupBy),
-      );
+  TimelineService video(String userId) => TimelineService(_timelineRepository.video(userId, groupBy));
+
+  TimelineService place(String place) => TimelineService(_timelineRepository.place(place, groupBy));
+
+  TimelineService person(String userId, String personId) =>
+      TimelineService(_timelineRepository.person(userId, personId, groupBy));
+
+  TimelineService fromAssets(List<BaseAsset> assets) => TimelineService(_timelineRepository.fromAssets(assets));
+
+  TimelineService map(String userId, LatLngBounds bounds) =>
+      TimelineService(_timelineRepository.map(userId, bounds, groupBy));
 }
 
 class TimelineService {
@@ -116,15 +74,14 @@ class TimelineService {
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
 
-  TimelineService({
-    required TimelineAssetSource assetSource,
-    required TimelineBucketSource bucketSource,
-  })  : _assetSource = assetSource,
-        _bucketSource = bucketSource {
+  TimelineService(TimelineQuery query) : this._(assetSource: query.assetSource, bucketSource: query.bucketSource);
+
+  TimelineService._({required TimelineAssetSource assetSource, required TimelineBucketSource bucketSource})
+    : _assetSource = assetSource,
+      _bucketSource = bucketSource {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _mutex.run(() async {
-        final totalAssets =
-            buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+        final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
 
         if (totalAssets == 0) {
           _bufferOffset = 0;
@@ -139,10 +96,7 @@ class TimelineService {
             count = kTimelineAssetLoadBatchSize;
           } else {
             offset = _bufferOffset;
-            count = math.min(
-              _buffer.length,
-              totalAssets - _bufferOffset,
-            );
+            count = math.min(_buffer.length, totalAssets - _bufferOffset);
           }
           _buffer = await _assetSource(offset, count);
           _bufferOffset = offset;
@@ -157,8 +111,7 @@ class TimelineService {
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
 
-  Future<List<BaseAsset>> loadAssets(int index, int count) =>
-      _mutex.run(() => _loadAssets(index, count));
+  Future<List<BaseAsset>> loadAssets(int index, int count) => _mutex.run(() => _loadAssets(index, count));
 
   Future<List<BaseAsset>> _loadAssets(int index, int count) async {
     if (hasRange(index, count)) {
@@ -171,10 +124,7 @@ class TimelineService {
     // make sure to load a meaningful amount of data (and not only the requested slice)
     // otherwise, each call to [loadAssets] would result in DB call trashing performance
     // fills small requests to [kTimelineAssetLoadBatchSize], adds some legroom into the opposite scroll direction for large requests
-    final len = math.max(
-      kTimelineAssetLoadBatchSize,
-      count + kTimelineAssetLoadOppositeSize,
-    );
+    final len = math.max(kTimelineAssetLoadBatchSize, count + kTimelineAssetLoadOppositeSize);
     // when scrolling forward, start shortly before the requested offset
     // when scrolling backward, end shortly after the requested offset to guard against the user scrolling
     // in the other direction a tiny bit resulting in another required load from the DB
@@ -207,8 +157,9 @@ class TimelineService {
   }
 
   // Pre-cache assets around the given index for asset viewer
-  Future<void> preCacheAssets(int index) =>
-      _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
+  Future<void> preCacheAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
+
+  BaseAsset getRandomAsset() => _buffer.elementAt(math.Random().nextInt(_buffer.length));
 
   BaseAsset getAsset(int index) {
     if (!hasRange(index, 1)) {
@@ -219,10 +170,40 @@ class TimelineService {
     return _buffer.elementAt(index - _bufferOffset);
   }
 
+  /// Gets an asset at the given index, automatically loading the buffer if needed.
+  /// This is an async version that can handle out-of-range indices by loading the appropriate buffer.
+  Future<BaseAsset?> getAssetAsync(int index) async {
+    if (index < 0 || index >= _totalAssets) {
+      return null;
+    }
+
+    if (hasRange(index, 1)) {
+      return _buffer.elementAt(index - _bufferOffset);
+    }
+
+    // Load the buffer containing the requested index
+    try {
+      final assets = await loadAssets(index, 1);
+      return assets.isNotEmpty ? assets.first : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Safely gets an asset at the given index without throwing a RangeError.
+  /// Returns null if the index is out of bounds or not currently in the buffer.
+  /// For automatic buffer loading, use getAssetAsync instead.
+  BaseAsset? getAssetSafe(int index) {
+    if (index < 0 || index >= _totalAssets || !hasRange(index, 1)) {
+      return null;
+    }
+    return _buffer.elementAt(index - _bufferOffset);
+  }
+
   Future<void> dispose() async {
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;
-    _buffer.clear();
+    _buffer = [];
     _bufferOffset = 0;
   }
 }

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 const testColumn: DatabaseColumn = {
   name: 'test',
   tableName: 'table1',
+  primary: false,
   nullable: false,
   isArray: false,
   type: 'character varying',
@@ -56,6 +57,23 @@ describe('compareColumns', () => {
         {
           type: 'ColumnAdd',
           column: source,
+          reason,
+        },
+      ]);
+    });
+
+    it('should detect a change in default', () => {
+      const source: DatabaseColumn = { ...testColumn, nullable: true };
+      const target: DatabaseColumn = { ...testColumn, nullable: true, default: "''" };
+      const reason = `default is different (null vs '')`;
+      expect(compareColumns.onCompare(source, target)).toEqual([
+        {
+          columnName: 'test',
+          tableName: 'table1',
+          type: 'ColumnAlter',
+          changes: {
+            default: 'NULL',
+          },
           reason,
         },
       ]);

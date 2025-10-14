@@ -1,4 +1,3 @@
-import { asForeignKeyConstraintName } from 'src/sql-tools/helpers';
 import { ActionType, ConstraintType, Processor } from 'src/sql-tools/types';
 
 export const processForeignKeyConstraints: Processor = (ctx, items) => {
@@ -46,18 +45,27 @@ export const processForeignKeyConstraints: Processor = (ctx, items) => {
       continue;
     }
 
-    const referenceColumns =
+    const referenceTableName = referenceTable.name;
+    const referenceColumnNames =
       options.referenceColumns || referenceTable.columns.filter(({ primary }) => primary).map(({ name }) => name);
 
-    const name = options.name || asForeignKeyConstraintName(table.name, options.columns);
+    const name =
+      options.name ||
+      ctx.getNameFor({
+        type: 'foreignKey',
+        tableName: table.name,
+        columnNames: options.columns,
+        referenceTableName,
+        referenceColumnNames,
+      });
 
     table.constraints.push({
       type: ConstraintType.FOREIGN_KEY,
       name,
       tableName: table.name,
       columnNames: options.columns,
-      referenceTableName: referenceTable.name,
-      referenceColumnNames: referenceColumns,
+      referenceTableName,
+      referenceColumnNames,
       onUpdate: options.onUpdate as ActionType,
       onDelete: options.onDelete as ActionType,
       synchronize: options.synchronize ?? true,
@@ -68,8 +76,15 @@ export const processForeignKeyConstraints: Processor = (ctx, items) => {
     }
 
     if (options.index || options.indexName || ctx.options.createForeignKeyIndexes) {
+      const indexName =
+        options.indexName ||
+        ctx.getNameFor({
+          type: 'index',
+          tableName: table.name,
+          columnNames: options.columns,
+        });
       table.indexes.push({
-        name: options.indexName || ctx.asIndexName(table.name, options.columns),
+        name: indexName,
         tableName: table.name,
         columnNames: options.columns,
         unique: false,

@@ -1,17 +1,15 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart' show AlbumAssetOrder, RemoteAlbum;
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
-    as entity;
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart' as entity;
 import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
 import 'package:openapi/api.dart';
 
-final albumApiRepositoryProvider = Provider(
-  (ref) => AlbumApiRepository(ref.watch(apiServiceProvider).albumsApi),
-);
+final albumApiRepositoryProvider = Provider((ref) => AlbumApiRepository(ref.watch(apiServiceProvider).albumsApi));
 
 class AlbumApiRepository extends ApiRepository {
   final AlbumsApi _api;
@@ -34,9 +32,7 @@ class AlbumApiRepository extends ApiRepository {
     Iterable<String> sharedUserIds = const [],
     String? description,
   }) async {
-    final users = sharedUserIds.map(
-      (id) => AlbumUserCreateDto(userId: id, role: AlbumUserRole.editor),
-    );
+    final users = sharedUserIds.map((id) => AlbumUserCreateDto(userId: id, role: AlbumUserRole.editor));
     final responseDto = await checkNull(
       _api.createAlbum(
         CreateAlbumDto(
@@ -48,6 +44,15 @@ class AlbumApiRepository extends ApiRepository {
       ),
     );
     return _toAlbum(responseDto);
+  }
+
+  // TODO: Change name after removing old method
+  Future<RemoteAlbum> createDriftAlbum(String name, {required Iterable<String> assetIds, String? description}) async {
+    final responseDto = await checkNull(
+      _api.createAlbum(CreateAlbumDto(albumName: name, description: description, assetIds: assetIds.toList())),
+    );
+
+    return _toRemoteAlbum(responseDto);
   }
 
   Future<Album> update(
@@ -83,16 +88,8 @@ class AlbumApiRepository extends ApiRepository {
     return _api.deleteAlbum(albumId);
   }
 
-  Future<({List<String> added, List<String> duplicates})> addAssets(
-    String albumId,
-    Iterable<String> assetIds,
-  ) async {
-    final response = await checkNull(
-      _api.addAssetsToAlbum(
-        albumId,
-        BulkIdsDto(ids: assetIds.toList()),
-      ),
-    );
+  Future<({List<String> added, List<String> duplicates})> addAssets(String albumId, Iterable<String> assetIds) async {
+    final response = await checkNull(_api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
 
     final List<String> added = [];
     final List<String> duplicates = [];
@@ -107,16 +104,8 @@ class AlbumApiRepository extends ApiRepository {
     return (added: added, duplicates: duplicates);
   }
 
-  Future<({List<String> removed, List<String> failed})> removeAssets(
-    String albumId,
-    Iterable<String> assetIds,
-  ) async {
-    final response = await checkNull(
-      _api.removeAssetFromAlbum(
-        albumId,
-        BulkIdsDto(ids: assetIds.toList()),
-      ),
-    );
+  Future<({List<String> removed, List<String> failed})> removeAssets(String albumId, Iterable<String> assetIds) async {
+    final response = await checkNull(_api.removeAssetFromAlbum(albumId, BulkIdsDto(ids: assetIds.toList())));
     final List<String> removed = [], failed = [];
     for (final dto in response) {
       if (dto.success) {
@@ -129,14 +118,8 @@ class AlbumApiRepository extends ApiRepository {
   }
 
   Future<Album> addUsers(String albumId, Iterable<String> userIds) async {
-    final albumUsers =
-        userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
-    final response = await checkNull(
-      _api.addUsersToAlbum(
-        albumId,
-        AddUsersDto(albumUsers: albumUsers),
-      ),
-    );
+    final albumUsers = userIds.map((userId) => AlbumUserAddDto(userId: userId)).toList();
+    final response = await checkNull(_api.addUsersToAlbum(albumId, AddUsersDto(albumUsers: albumUsers)));
     return _toAlbum(response);
   }
 
@@ -159,15 +142,30 @@ class AlbumApiRepository extends ApiRepository {
       sortOrder: dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc,
     );
     album.remoteAssetCount = dto.assetCount;
-    album.owner.value =
-        entity.User.fromDto(UserConverter.fromSimpleUserDto(dto.owner));
+    album.owner.value = entity.User.fromDto(UserConverter.fromSimpleUserDto(dto.owner));
     album.remoteThumbnailAssetId = dto.albumThumbnailAssetId;
-    final users = dto.albumUsers
-        .map((albumUser) => UserConverter.fromSimpleUserDto(albumUser.user));
+    final users = dto.albumUsers.map((albumUser) => UserConverter.fromSimpleUserDto(albumUser.user));
     album.sharedUsers.addAll(users.map(entity.User.fromDto));
     final assets = dto.assets.map(Asset.remote).toList();
     album.assets.addAll(assets);
 
     return album;
+  }
+
+  static RemoteAlbum _toRemoteAlbum(AlbumResponseDto dto) {
+    return RemoteAlbum(
+      id: dto.id,
+      name: dto.albumName,
+      ownerId: dto.owner.id,
+      description: dto.description,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+      thumbnailAssetId: dto.albumThumbnailAssetId,
+      isActivityEnabled: dto.isActivityEnabled,
+      order: dto.order == AssetOrder.asc ? AlbumAssetOrder.asc : AlbumAssetOrder.desc,
+      assetCount: dto.assetCount,
+      ownerName: dto.owner.name,
+      isShared: dto.albumUsers.length > 2,
+    );
   }
 }

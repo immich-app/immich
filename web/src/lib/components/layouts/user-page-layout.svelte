@@ -49,7 +49,7 @@
 <div
   tabindex="-1"
   class="relative z-0 grid grid-cols-[--spacing(0)_auto] overflow-hidden sidebar:grid-cols-[--spacing(64)_auto]
-    {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))]'}
+    {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))] max-md:h-[calc(100dvh-var(--navbar-height-md))]'}
     {hideNavbar ? 'pt-(--navbar-height)' : ''}
     {hideNavbar ? 'max-md:pt-(--navbar-height-md)' : ''}"
 >
@@ -68,7 +68,7 @@
       <div class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 text-dark">
         <div class="flex gap-2 items-center">
           {#if title}
-            <div class="font-medium outline-none" tabindex="-1" id={headerId}>{title}</div>
+            <div class="font-medium outline-none pe-8" tabindex="-1" id={headerId}>{title}</div>
           {/if}
           {#if description}
             <p class="text-sm text-gray-400 dark:text-gray-600">{description}</p>

@@ -11,7 +11,7 @@ enum AlbumUserRole {
 }
 
 // Model for an album stored in the server
-class Album {
+class RemoteAlbum {
   final String id;
   final String name;
   final String ownerId;
@@ -23,8 +23,9 @@ class Album {
   final AlbumAssetOrder order;
   final int assetCount;
   final String ownerName;
+  final bool isShared;
 
-  const Album({
+  const RemoteAlbum({
     required this.id,
     required this.name,
     required this.ownerId,
@@ -36,6 +37,7 @@ class Album {
     required this.order,
     required this.assetCount,
     required this.ownerName,
+    required this.isShared,
   });
 
   @override
@@ -52,12 +54,13 @@ class Album {
     thumbnailAssetId: ${thumbnailAssetId ?? "<NA>"}
     assetCount: $assetCount
     ownerName: $ownerName
+    isShared: $isShared
  }''';
   }
 
   @override
   bool operator ==(Object other) {
-    if (other is! Album) return false;
+    if (other is! RemoteAlbum) return false;
     if (identical(this, other)) return true;
     return id == other.id &&
         name == other.name &&
@@ -69,7 +72,8 @@ class Album {
         isActivityEnabled == other.isActivityEnabled &&
         order == other.order &&
         assetCount == other.assetCount &&
-        ownerName == other.ownerName;
+        ownerName == other.ownerName &&
+        isShared == other.isShared;
   }
 
   @override
@@ -84,6 +88,37 @@ class Album {
         isActivityEnabled.hashCode ^
         order.hashCode ^
         assetCount.hashCode ^
-        ownerName.hashCode;
+        ownerName.hashCode ^
+        isShared.hashCode;
+  }
+
+  RemoteAlbum copyWith({
+    String? id,
+    String? name,
+    String? ownerId,
+    String? description,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? thumbnailAssetId,
+    bool? isActivityEnabled,
+    AlbumAssetOrder? order,
+    int? assetCount,
+    String? ownerName,
+    bool? isShared,
+  }) {
+    return RemoteAlbum(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      description: description ?? this.description,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      thumbnailAssetId: thumbnailAssetId ?? this.thumbnailAssetId,
+      isActivityEnabled: isActivityEnabled ?? this.isActivityEnabled,
+      order: order ?? this.order,
+      assetCount: assetCount ?? this.assetCount,
+      ownerName: ownerName ?? this.ownerName,
+      isShared: isShared ?? this.isShared,
+    );
   }
 }

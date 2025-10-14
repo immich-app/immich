@@ -1,4 +1,4 @@
-import { haveEqualColumns } from 'src/sql-tools/helpers';
+import { asRenameKey, haveEqualColumns } from 'src/sql-tools/helpers';
 import {
   CompareFunction,
   Comparer,
@@ -13,6 +13,38 @@ import {
 } from 'src/sql-tools/types';
 
 export const compareConstraints: Comparer<DatabaseConstraint> = {
+  getRenameKey: (constraint) => {
+    switch (constraint.type) {
+      case ConstraintType.PRIMARY_KEY:
+      case ConstraintType.UNIQUE: {
+        return asRenameKey([constraint.type, constraint.tableName, ...constraint.columnNames.toSorted()]);
+      }
+
+      case ConstraintType.FOREIGN_KEY: {
+        return asRenameKey([
+          constraint.type,
+          constraint.tableName,
+          ...constraint.columnNames.toSorted(),
+          constraint.referenceTableName,
+          ...constraint.referenceColumnNames.toSorted(),
+        ]);
+      }
+
+      case ConstraintType.CHECK: {
+        const expression = constraint.expression.replaceAll('(', '').replaceAll(')', '');
+        return asRenameKey([constraint.type, constraint.tableName, expression]);
+      }
+    }
+  },
+  onRename: (source, target) => [
+    {
+      type: 'ConstraintRename',
+      tableName: target.tableName,
+      oldName: target.name,
+      newName: source.name,
+      reason: Reason.Rename,
+    },
+  ],
   onMissing: (source) => [
     {
       type: 'ConstraintAdd',

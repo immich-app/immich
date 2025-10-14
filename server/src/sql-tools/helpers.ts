@@ -2,13 +2,6 @@ import { createHash } from 'node:crypto';
 import { ColumnValue } from 'src/sql-tools/decorators/column.decorator';
 import { Comparer, DatabaseColumn, DatabaseOverride, IgnoreOptions, SchemaDiff } from 'src/sql-tools/types';
 
-export const asMetadataKey = (name: string) => `sql-tools:${name}`;
-
-export const asSnakeCase = (name: string): string => name.replaceAll(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-// match TypeORM
-export const asKey = (prefix: string, tableName: string, values: string[]) =>
-  (prefix + sha1(`${tableName}_${values.toSorted().join('_')}`)).slice(0, 30);
-
 export const asOptions = <T extends { name?: string }>(options: string | T): T => {
   if (typeof options === 'string') {
     return { name: options } as T;
@@ -79,6 +72,10 @@ export const compare = <T extends { name: string; synchronize: boolean }>(
   const items: SchemaDiff[] = [];
 
   const keys = new Set([...Object.keys(sourceMap), ...Object.keys(targetMap)]);
+  const missingKeys = new Set<string>();
+  const extraKeys = new Set<string>();
+
+  // common keys
   for (const key of keys) {
     const source = sourceMap[key];
     const target = targetMap[key];
@@ -92,20 +89,61 @@ export const compare = <T extends { name: string; synchronize: boolean }>(
     }
 
     if (source && !target) {
-      items.push(...comparer.onMissing(source));
-    } else if (!source && target) {
-      items.push(...comparer.onExtra(target));
-    } else {
-      if (
-        haveEqualOverrides(
-          source as unknown as { override?: DatabaseOverride },
-          target as unknown as { override?: DatabaseOverride },
-        )
-      ) {
+      missingKeys.add(key);
+      continue;
+    }
+
+    if (!source && target) {
+      extraKeys.add(key);
+      continue;
+    }
+
+    if (
+      haveEqualOverrides(
+        source as unknown as { override?: DatabaseOverride },
+        target as unknown as { override?: DatabaseOverride },
+      )
+    ) {
+      continue;
+    }
+
+    items.push(...comparer.onCompare(source, target));
+  }
+
+  // renames
+  if (comparer.getRenameKey && comparer.onRename) {
+    const renameMap: Record<string, string> = {};
+    for (const sourceKey of missingKeys) {
+      const source = sourceMap[sourceKey];
+      const renameKey = comparer.getRenameKey(source);
+      renameMap[renameKey] = sourceKey;
+    }
+
+    for (const targetKey of extraKeys) {
+      const target = targetMap[targetKey];
+      const renameKey = comparer.getRenameKey(target);
+      const sourceKey = renameMap[renameKey];
+      if (!sourceKey) {
         continue;
       }
-      items.push(...comparer.onCompare(source, target));
+
+      const source = sourceMap[sourceKey];
+
+      items.push(...comparer.onRename(source, target));
+
+      missingKeys.delete(sourceKey);
+      extraKeys.delete(targetKey);
     }
+  }
+
+  // missing
+  for (const key of missingKeys) {
+    items.push(...comparer.onMissing(sourceMap[key]));
+  }
+
+  // extra
+  for (const key of extraKeys) {
+    items.push(...comparer.onExtra(targetMap[key]));
   }
 
   return items;
@@ -137,7 +175,7 @@ export const isDefaultEqual = (source: DatabaseColumn, target: DatabaseColumn) =
 
   if (
     withTypeCast(source.default, getColumnType(source)) === target.default ||
-    source.default === withTypeCast(target.default, getColumnType(target))
+    withTypeCast(target.default, getColumnType(target)) === source.default
   ) {
     return true;
   }
@@ -186,8 +224,6 @@ export const asColumnComment = (tableName: string, columnName: string, comment: 
 
 export const asColumnList = (columns: string[]) => columns.map((column) => `"${column}"`).join(', ');
 
-export const asForeignKeyConstraintName = (table: string, columns: string[]) => asKey('FK_', table, [...columns]);
-
 export const asJsonString = (value: unknown): string => {
   return `'${escape(JSON.stringify(value))}'::jsonb`;
 };
@@ -202,3 +238,6 @@ const escape = (value: string) => {
     .replaceAll(/[\r]/g, String.raw`\r`)
     .replaceAll(/[\t]/g, String.raw`\t`);
 };
+
+export const asRenameKey = (values: Array<string | boolean | number | undefined>) =>
+  values.map((value) => value ?? '').join('|');

@@ -16,7 +16,10 @@ class FacesApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /faces' operation and returns the [Response].
+  /// This endpoint requires the `face.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
@@ -45,6 +48,8 @@ class FacesApi {
     );
   }
 
+  /// This endpoint requires the `face.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
@@ -55,7 +60,10 @@ class FacesApi {
     }
   }
 
-  /// Performs an HTTP 'DELETE /faces/{id}' operation and returns the [Response].
+  /// This endpoint requires the `face.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -87,6 +95,8 @@ class FacesApi {
     );
   }
 
+  /// This endpoint requires the `face.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -99,7 +109,10 @@ class FacesApi {
     }
   }
 
-  /// Performs an HTTP 'GET /faces' operation and returns the [Response].
+  /// This endpoint requires the `face.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -130,6 +143,8 @@ class FacesApi {
     );
   }
 
+  /// This endpoint requires the `face.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -151,7 +166,10 @@ class FacesApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /faces/{id}' operation and returns the [Response].
+  /// This endpoint requires the `face.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -183,6 +201,8 @@ class FacesApi {
     );
   }
 
+  /// This endpoint requires the `face.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

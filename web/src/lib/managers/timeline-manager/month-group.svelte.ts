@@ -10,13 +10,14 @@ import {
   fromTimelinePlainYearMonth,
   getTimes,
   setDifference,
-  type TimelinePlainDateTime,
-  type TimelinePlainYearMonth,
+  type TimelineDateTime,
+  type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
 
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
+import { SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import type { TimelineManager } from './timeline-manager.svelte';
@@ -46,11 +47,11 @@ export class MonthGroup {
   isHeightActual: boolean = $state(false);
 
   readonly monthGroupTitle: string;
-  readonly yearMonth: TimelinePlainYearMonth;
+  readonly yearMonth: TimelineYearMonth;
 
   constructor(
     store: TimelineManager,
-    yearMonth: TimelinePlainYearMonth,
+    yearMonth: TimelineYearMonth,
     initialCount: number,
     order: AssetOrder = AssetOrder.Desc,
   ) {
@@ -115,15 +116,15 @@ export class MonthGroup {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
-        processedIds: new Set<string>(),
+        processedIds: new SvelteSet<string>(),
         unprocessedIds: ids,
         changedGeometry: false,
       };
     }
     const { dayGroups } = this;
     let combinedChangedGeometry = false;
-    let idsToProcess = new Set(ids);
-    const idsProcessed = new Set<string>();
+    let idsToProcess = new SvelteSet(ids);
+    const idsProcessed = new SvelteSet<string>();
     const combinedMoveAssets: MoveAsset[][] = [];
     let index = dayGroups.length;
     while (index--) {
@@ -186,6 +187,11 @@ export class MonthGroup {
         thumbhash: bucketAssets.thumbhash[i],
         people: null, // People are not included in the bucket assets
       };
+
+      if (bucketAssets.latitude?.[i] && bucketAssets.longitude?.[i]) {
+        timelineAsset.latitude = bucketAssets.latitude?.[i];
+        timelineAsset.longitude = bucketAssets.longitude?.[i];
+      }
       this.addTimelineAsset(timelineAsset, addContext);
     }
 
@@ -227,15 +233,6 @@ export class MonthGroup {
     addContext.changedDayGroups.add(dayGroup);
   }
 
-  getRandomDayGroup() {
-    const random = Math.floor(Math.random() * this.dayGroups.length);
-    return this.dayGroups[random];
-  }
-
-  getRandomAsset() {
-    return this.getRandomDayGroup()?.getRandomAsset()?.asset;
-  }
-
   get viewId() {
     const { year, month } = this.yearMonth;
     return year + '-' + month;
@@ -245,42 +242,40 @@ export class MonthGroup {
     if (this.#height === height) {
       return;
     }
-    const { timelineManager: store, percent } = this;
-    const index = store.months.indexOf(this);
+    const timelineManager = this.timelineManager;
+    const index = timelineManager.months.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevMonthGroup = store.months[index - 1];
+    const prevMonthGroup = timelineManager.months[index - 1];
     if (prevMonthGroup) {
       const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
     }
-    for (let cursor = index + 1; cursor < store.months.length; cursor++) {
+    if (heightDelta === 0) {
+      return;
+    }
+    for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
       const monthGroup = this.timelineManager.months[cursor];
       const newTop = monthGroup.#top + heightDelta;
       if (monthGroup.#top !== newTop) {
         monthGroup.#top = newTop;
       }
     }
-    if (store.topIntersectingMonthGroup) {
-      const currentIndex = store.months.indexOf(store.topIntersectingMonthGroup);
-      if (currentIndex > 0) {
-        if (index < currentIndex) {
-          store.scrollCompensation = {
-            heightDelta,
-            scrollTop: undefined,
-            monthGroup: this,
-          };
-        } else if (percent > 0) {
-          const top = this.top + height * percent;
-          store.scrollCompensation = {
-            heightDelta: undefined,
-            scrollTop: top,
-            monthGroup: this,
-          };
-        }
-      }
+    if (!timelineManager.viewportTopMonthIntersection) {
+      return;
+    }
+    const { month, monthBottomViewportRatio, viewportTopRatioInMonth } = timelineManager.viewportTopMonthIntersection;
+    const currentIndex = month ? timelineManager.months.indexOf(month) : -1;
+    if (!month || currentIndex <= 0 || index > currentIndex) {
+      return;
+    }
+    if (index < currentIndex || monthBottomViewportRatio < 1) {
+      timelineManager.scrollBy(heightDelta);
+    } else if (index === currentIndex) {
+      const scrollTo = this.top + height * viewportTopRatioInMonth;
+      timelineManager.scrollTo(scrollTo);
     }
   }
 
@@ -350,7 +345,7 @@ export class MonthGroup {
     }
   }
 
-  findClosest(target: TimelinePlainDateTime) {
+  findClosest(target: TimelineDateTime) {
     const targetDate = fromTimelinePlainDateTime(target);
     let closest = undefined;
     let smallestDiff = Infinity;

@@ -31,7 +31,7 @@
   };
 </script>
 
-<div class="mx-4 my-2 border bg-subtle dark:bg-black/30 dark:border-black p-4 rounded-2xl">
+<div class="border bg-subtle dark:bg-black/30 dark:border-black p-4 rounded-2xl">
   <div class="flex items-center gap-2">
     <Checkbox
       id="permission-{title}"

@@ -44,18 +44,12 @@ void main() {
     activityMock = MockAlbumActivity();
     overrides = [
       currentAlbumProvider.overrideWith(() => mockCurrentAlbumProvider),
-      albumActivityProvider(AlbumStub.twoAsset.remoteId!)
-          .overrideWith(() => activityMock),
+      albumActivityProvider(AlbumStub.twoAsset.remoteId!).overrideWith(() => activityMock),
     ];
   });
 
   testWidgets('Returns an Input text field', (tester) async {
-    await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (_) {},
-      ),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(ActivityTextField(onSubmit: (_) {}), overrides: overrides);
 
     expect(find.byType(TextField), findsOneWidget);
   });
@@ -64,76 +58,38 @@ void main() {
     final userProvider = MockCurrentUserProvider();
 
     await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (_) {},
-      ),
-      overrides: [
-        currentUserProvider.overrideWith((ref) => userProvider),
-        ...overrides,
-      ],
+      ActivityTextField(onSubmit: (_) {}),
+      overrides: [currentUserProvider.overrideWith((ref) => userProvider), ...overrides],
     );
 
     expect(find.byType(UserCircleAvatar), findsNothing);
   });
 
   testWidgets('UserCircleAvatar displayed when user != null', (tester) async {
-    await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (_) {},
-      ),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(ActivityTextField(onSubmit: (_) {}), overrides: overrides);
 
     expect(find.byType(UserCircleAvatar), findsOneWidget);
   });
 
-  testWidgets(
-    'Filled icon if likedId != null',
-    (tester) async {
-      await tester.pumpConsumerWidget(
-        ActivityTextField(
-          onSubmit: (_) {},
-          likeId: '1',
-        ),
-        overrides: overrides,
-      );
-
-      expect(
-        find.widgetWithIcon(IconButton, Icons.favorite_rounded),
-        findsOneWidget,
-      );
-      expect(
-        find.widgetWithIcon(IconButton, Icons.favorite_border_rounded),
-        findsNothing,
-      );
-    },
-  );
-
-  testWidgets('Bordered icon if likedId == null', (tester) async {
+  testWidgets('Filled icon if likedId != null', (tester) async {
     await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (_) {},
-      ),
+      ActivityTextField(onSubmit: (_) {}, likeId: '1'),
       overrides: overrides,
     );
 
-    expect(
-      find.widgetWithIcon(IconButton, Icons.favorite_border_rounded),
-      findsOneWidget,
-    );
-    expect(
-      find.widgetWithIcon(IconButton, Icons.favorite_rounded),
-      findsNothing,
-    );
+    expect(find.widgetWithIcon(IconButton, Icons.favorite_rounded), findsOneWidget);
+    expect(find.widgetWithIcon(IconButton, Icons.favorite_border_rounded), findsNothing);
+  });
+
+  testWidgets('Bordered icon if likedId == null', (tester) async {
+    await tester.pumpConsumerWidget(ActivityTextField(onSubmit: (_) {}), overrides: overrides);
+
+    expect(find.widgetWithIcon(IconButton, Icons.favorite_border_rounded), findsOneWidget);
+    expect(find.widgetWithIcon(IconButton, Icons.favorite_rounded), findsNothing);
   });
 
   testWidgets('Adds new like', (tester) async {
-    await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (_) {},
-      ),
-      overrides: overrides,
-    );
+    await tester.pumpConsumerWidget(ActivityTextField(onSubmit: (_) {}), overrides: overrides);
 
     when(() => activityMock.addLike()).thenAnswer((_) => Future.value());
 
@@ -145,15 +101,11 @@ void main() {
 
   testWidgets('Removes like if already liked', (tester) async {
     await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (_) {},
-        likeId: 'test-suffix',
-      ),
+      ActivityTextField(onSubmit: (_) {}, likeId: 'test-suffix'),
       overrides: overrides,
     );
 
-    when(() => activityMock.removeActivity(any()))
-        .thenAnswer((_) => Future.value());
+    when(() => activityMock.removeActivity(any())).thenAnswer((_) => Future.value());
 
     final suffixIcon = find.byType(IconButton);
     await tester.tap(suffixIcon);
@@ -165,10 +117,7 @@ void main() {
     String? receivedText;
 
     await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (text) => receivedText = text,
-        likeId: 'test-suffix',
-      ),
+      ActivityTextField(onSubmit: (text) => receivedText = text, likeId: 'test-suffix'),
       overrides: overrides,
     );
 
@@ -182,11 +131,7 @@ void main() {
     String? receviedText;
 
     await tester.pumpConsumerWidget(
-      ActivityTextField(
-        onSubmit: (text) => receviedText = text,
-        isEnabled: false,
-        likeId: 'test-suffix',
-      ),
+      ActivityTextField(onSubmit: (text) => receviedText = text, isEnabled: false, likeId: 'test-suffix'),
       overrides: overrides,
     );
 

@@ -34,7 +34,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |   `./upload`<sup>\*3</sup>   | server                   | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |           `/data`            | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
 | `CPU_CORES`                         | Number of cores available to the Immich server                                            | auto-detected CPU core count | server                   |                    |
@@ -42,15 +42,12 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                        |                              | server                   | api                |
-| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/docs/administration/system-integrity)                             |                              | server                   | api, microservices |
+| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/administration/system-integrity)                                  |                              | server                   | api, microservices |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
 
 \*2: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
-
-\*3: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
-It only needs to be set if the Immich deployment method is changing.
 
 ## Workers
 
@@ -60,7 +57,7 @@ It only needs to be set if the Immich deployment method is changing.
 | `IMMICH_WORKERS_EXCLUDE` | Do not run these workers. Matches against default workers, or `IMMICH_WORKERS_INCLUDE` if specified. |         | server     |
 
 :::info
-Information on the current workers can be found [here](/docs/administration/jobs-workers).
+Information on the current workers can be found [here](/administration/jobs-workers).
 :::
 
 ## Ports
@@ -172,8 +169,6 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_ANN_TUNING_LEVEL`                         | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                        |               `2`               | machine learning |
 | `MACHINE_LEARNING_DEVICE_IDS`<sup>\*4</sup>                 | Device IDs to use in multi-GPU environments                                                         |               `0`               | machine learning |
 | `MACHINE_LEARNING_MAX_BATCH_SIZE__FACIAL_RECOGNITION`       | Set the maximum number of faces that will be processed at once by the facial recognition model      |  None (`1` if using OpenVINO)   | machine learning |
-| `MACHINE_LEARNING_PING_TIMEOUT`                             | How long (ms) to wait for a PING response when checking if an ML server is available                |             `2000`              | server           |
-| `MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME`                | How long to ignore ML servers that are offline before trying again                                  |             `30000`             | server           |
 | `MACHINE_LEARNING_RKNN`                                     | Enable RKNN hardware acceleration if supported                                                      |             `True`              | machine learning |
 | `MACHINE_LEARNING_RKNN_THREADS`                             | How many threads of RKNN runtime should be spinned up while inferencing.                            |               `1`               | machine learning |
 
@@ -202,12 +197,11 @@ Additional machine learning parameters can be tuned from the admin UI.
 | `IMMICH_TELEMETRY_INCLUDE` | Collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`. Note: You can also specify `all` to enable all |         | server     | api, microservices |
 | `IMMICH_TELEMETRY_EXCLUDE` | Do not collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`                                          |         | server     | api, microservices |
 
-## Docker Secrets
+## Secrets
 
-The following variables support the use of [Docker secrets][docker-secrets] for additional security.
+The following variables support reading from files, either via [Systemd Credentials][systemd-creds] or [Docker secrets][docker-secrets] for additional security.
 
-To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
-the `_FILE` variable should be set to the path of a file containing the variable value.
+To use any of these, either set `CREDENTIALS_DIRECTORY` to a directory that contains files whose name is the “regular variable” name, and whose content is the secret. If using Docker Secrets, setting `CREDENTIALS_DIRECTORY=/run/secrets` will cause all secrets present to be used. Alternatively, replace the regular variable with the equivalent `_FILE` environment variable as below. The value of the `_FILE` variable should be set to the path of a file containing the variable value.
 
 | Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
 | :----------------- | :------------------------------------------ |
@@ -229,3 +223,4 @@ to use a Docker secret for the password in the Redis container.
 [docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
 [docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
 [ioredis]: https://ioredis.readthedocs.io/en/latest/README/#connect-to-redis
+[systemd-creds]: https://systemd.io/CREDENTIALS/

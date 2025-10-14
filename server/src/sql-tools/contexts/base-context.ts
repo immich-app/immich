@@ -1,3 +1,6 @@
+import { DefaultNamingStrategy } from 'src/sql-tools/naming/default.naming';
+import { HashNamingStrategy } from 'src/sql-tools/naming/hash.naming';
+import { NamingInterface, NamingItem } from 'src/sql-tools/naming/naming.interface';
 import {
   BaseContextOptions,
   DatabaseEnum,
@@ -10,6 +13,26 @@ import {
 } from 'src/sql-tools/types';
 
 const asOverrideKey = (type: string, name: string) => `${type}:${name}`;
+
+const isNamingInterface = (strategy: any): strategy is NamingInterface => {
+  return typeof strategy === 'object' && typeof strategy.getName === 'function';
+};
+
+const asNamingStrategy = (strategy: 'hash' | 'default' | NamingInterface): NamingInterface => {
+  if (isNamingInterface(strategy)) {
+    return strategy;
+  }
+
+  switch (strategy) {
+    case 'hash': {
+      return new HashNamingStrategy();
+    }
+
+    default: {
+      return new DefaultNamingStrategy();
+    }
+  }
+};
 
 export class BaseContext {
   databaseName: string;
@@ -24,10 +47,17 @@ export class BaseContext {
   overrides: DatabaseOverride[] = [];
   warnings: string[] = [];
 
+  private namingStrategy: NamingInterface;
+
   constructor(options: BaseContextOptions) {
     this.databaseName = options.databaseName ?? 'postgres';
     this.schemaName = options.schemaName ?? 'public';
     this.overrideTableName = options.overrideTableName ?? 'migration_overrides';
+    this.namingStrategy = asNamingStrategy(options.namingStrategy ?? 'hash');
+  }
+
+  getNameFor(item: NamingItem) {
+    return this.namingStrategy.getName(item);
   }
 
   getTableByName(name: string) {

@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_album.repository
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
+import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 
 final localAlbumRepository = Provider<DriftLocalAlbumRepository>(
   (ref) => DriftLocalAlbumRepository(ref.watch(driftProvider)),
@@ -17,12 +18,13 @@ final localAlbumServiceProvider = Provider<LocalAlbumService>(
 );
 
 final localAlbumProvider = FutureProvider<List<LocalAlbum>>(
-  (ref) => LocalAlbumService(ref.watch(localAlbumRepository)).getAll(),
+  (ref) => LocalAlbumService(ref.watch(localAlbumRepository))
+      .getAll(sortBy: {SortLocalAlbumsBy.newestAsset})
+      .then((albums) => albums.where((album) => album.assetCount > 0).toList()),
 );
 
 final localAlbumThumbnailProvider = FutureProvider.family<LocalAsset?, String>(
-  (ref, albumId) =>
-      LocalAlbumService(ref.watch(localAlbumRepository)).getThumbnail(albumId),
+  (ref, albumId) => LocalAlbumService(ref.watch(localAlbumRepository)).getThumbnail(albumId),
 );
 
 final remoteAlbumRepository = Provider<DriftRemoteAlbumRepository>(
@@ -30,12 +32,11 @@ final remoteAlbumRepository = Provider<DriftRemoteAlbumRepository>(
 );
 
 final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
-  (ref) => RemoteAlbumService(ref.watch(remoteAlbumRepository)),
+  (ref) => RemoteAlbumService(ref.watch(remoteAlbumRepository), ref.watch(driftAlbumApiRepositoryProvider)),
   dependencies: [remoteAlbumRepository],
 );
 
-final remoteAlbumProvider =
-    NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
+final remoteAlbumProvider = NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
   RemoteAlbumNotifier.new,
   dependencies: [remoteAlbumServiceProvider],
 );

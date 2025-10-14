@@ -19,54 +19,54 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.LIBRARY_READ, admin: true })
+  @Authenticated({ permission: Permission.LibraryRead, admin: true })
   getAllLibraries(): Promise<LibraryResponseDto[]> {
     return this.service.getAll();
   }
 
   @Post()
-  @Authenticated({ permission: Permission.LIBRARY_CREATE, admin: true })
+  @Authenticated({ permission: Permission.LibraryCreate, admin: true })
   createLibrary(@Body() dto: CreateLibraryDto): Promise<LibraryResponseDto> {
     return this.service.create(dto);
   }
 
   @Get(':id')
-  @Authenticated({ permission: Permission.LIBRARY_READ, admin: true })
+  @Authenticated({ permission: Permission.LibraryRead, admin: true })
   getLibrary(@Param() { id }: UUIDParamDto): Promise<LibraryResponseDto> {
     return this.service.get(id);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.LIBRARY_UPDATE, admin: true })
+  @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
   updateLibrary(@Param() { id }: UUIDParamDto, @Body() dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
+  @Authenticated({ permission: Permission.LibraryDelete, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.LIBRARY_DELETE, admin: true })
   deleteLibrary(@Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(id);
   }
 
   @Post(':id/validate')
-  @HttpCode(200)
   @Authenticated({ admin: true })
+  @HttpCode(HttpStatus.OK)
   // TODO: change endpoint to validate current settings instead
   validate(@Param() { id }: UUIDParamDto, @Body() dto: ValidateLibraryDto): Promise<ValidateLibraryResponseDto> {
     return this.service.validate(id, dto);
   }
 
   @Get(':id/statistics')
-  @Authenticated({ permission: Permission.LIBRARY_STATISTICS, admin: true })
+  @Authenticated({ permission: Permission.LibraryStatistics, admin: true })
   getLibraryStatistics(@Param() { id }: UUIDParamDto): Promise<LibraryStatsResponseDto> {
     return this.service.getStatistics(id);
   }
 
   @Post(':id/scan')
+  @Authenticated({ permission: Permission.LibraryUpdate, admin: true })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.LIBRARY_UPDATE, admin: true })
-  scanLibrary(@Param() { id }: UUIDParamDto) {
+  scanLibrary(@Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.queueScan(id);
   }
 }

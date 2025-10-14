@@ -6,6 +6,7 @@ class BaseActionButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.iconData,
+    this.iconColor,
     this.onPressed,
     this.onLongPressed,
     this.maxWidth = 90.0,
@@ -15,6 +16,7 @@ class BaseActionButton extends StatelessWidget {
 
   final String label;
   final IconData iconData;
+  final Color? iconColor;
   final double maxWidth;
   final double? minWidth;
   final bool menuItem;
@@ -23,11 +25,10 @@ class BaseActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final miniWidth =
-        minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
+    final miniWidth = minWidth ?? (context.isMobile ? context.width / 4.5 : 75.0);
     final iconTheme = IconTheme.of(context);
     final iconSize = iconTheme.size ?? 24.0;
-    final iconColor = iconTheme.color ?? context.themeData.iconTheme.color;
+    final iconColor = this.iconColor ?? iconTheme.color ?? context.themeData.iconTheme.color;
     final textColor = context.themeData.textTheme.labelLarge?.color;
 
     if (menuItem) {
@@ -38,14 +39,10 @@ class BaseActionButton extends StatelessWidget {
     }
 
     return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: maxWidth,
-      ),
+      constraints: BoxConstraints(maxWidth: maxWidth),
       child: MaterialButton(
         padding: const EdgeInsets.all(10),
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
         textColor: textColor,
         onPressed: onPressed,
         onLongPress: onLongPressed,
@@ -58,12 +55,10 @@ class BaseActionButton extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14.0,
-                fontWeight: FontWeight.w400,
-              ),
+              style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400),
               maxLines: 3,
               textAlign: TextAlign.center,
+              softWrap: true,
             ),
           ],
         ),

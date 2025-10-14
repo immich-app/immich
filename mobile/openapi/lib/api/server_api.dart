@@ -16,7 +16,9 @@ class ServerApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'DELETE /server/license' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `serverLicense.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> deleteServerLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/license';
@@ -42,6 +44,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `serverLicense.delete` permission.
   Future<void> deleteServerLicense() async {
     final response = await deleteServerLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -49,7 +52,9 @@ class ServerApi {
     }
   }
 
-  /// Performs an HTTP 'GET /server/about' operation and returns the [Response].
+  /// This endpoint requires the `server.about` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getAboutInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/about';
@@ -75,6 +80,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint requires the `server.about` permission.
   Future<ServerAboutResponseDto?> getAboutInfo() async {
     final response = await getAboutInfoWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -90,7 +96,9 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server/apk-links' operation and returns the [Response].
+  /// This endpoint requires the `server.apkLinks` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getApkLinksWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/apk-links';
@@ -116,6 +124,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint requires the `server.apkLinks` permission.
   Future<ServerApkLinksDto?> getApkLinks() async {
     final response = await getApkLinksWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -213,7 +222,9 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server/license' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `serverLicense.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/license';
@@ -239,6 +250,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `serverLicense.read` permission.
   Future<LicenseResponseDto?> getServerLicense() async {
     final response = await getServerLicenseWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -254,7 +266,9 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server/statistics' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `server.statistics` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getServerStatisticsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/statistics';
@@ -280,6 +294,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `server.statistics` permission.
   Future<ServerStatsResponseDto?> getServerStatistics() async {
     final response = await getServerStatisticsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -336,7 +351,9 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server/storage' operation and returns the [Response].
+  /// This endpoint requires the `server.storage` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getStorageWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/storage';
@@ -362,6 +379,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint requires the `server.storage` permission.
   Future<ServerStorageResponseDto?> getStorage() async {
     final response = await getStorageWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -459,7 +477,9 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /server/version-check' operation and returns the [Response].
+  /// This endpoint requires the `server.versionCheck` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   Future<Response> getVersionCheckWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final apiPath = r'/server/version-check';
@@ -485,6 +505,7 @@ class ServerApi {
     );
   }
 
+  /// This endpoint requires the `server.versionCheck` permission.
   Future<VersionCheckStateResponseDto?> getVersionCheck() async {
     final response = await getVersionCheckWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
@@ -585,7 +606,10 @@ class ServerApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /server/license' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `serverLicense.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):
@@ -614,6 +638,8 @@ class ServerApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `serverLicense.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [LicenseKeyDto] licenseKeyDto (required):

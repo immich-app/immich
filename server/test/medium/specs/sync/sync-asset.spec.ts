@@ -36,10 +36,10 @@ describe(SyncEntityType.AssetV1, () => {
       localDateTime: date,
       deletedAt: null,
       duration: '0:10:00.00000',
+      libraryId: null,
     });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -57,13 +57,17 @@ describe(SyncEntityType.AssetV1, () => {
           type: asset.type,
           visibility: asset.visibility,
           duration: asset.duration,
+          stackId: null,
+          livePhotoVideoId: null,
+          libraryId: asset.libraryId,
         },
         type: 'AssetV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV1]);
   });
 
   it('should detect and sync a deleted asset', async () => {
@@ -73,7 +77,6 @@ describe(SyncEntityType.AssetV1, () => {
     await assetRepo.remove(asset);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -82,10 +85,11 @@ describe(SyncEntityType.AssetV1, () => {
         },
         type: 'AssetDeleteV1',
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV1]);
   });
 
   it('should not sync an asset or asset delete for an unrelated user', async () => {
@@ -96,11 +100,17 @@ describe(SyncEntityType.AssetV1, () => {
     const { asset } = await ctx.newAsset({ ownerId: user2.id });
     const auth2 = factory.auth({ session, user: user2 });
 
-    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetsV1])).toHaveLength(1);
-    expect(await ctx.syncStream(auth, [SyncRequestType.AssetsV1])).toHaveLength(0);
+    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetsV1])).toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV1]);
 
     await assetRepo.remove(asset);
-    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetsV1])).toHaveLength(1);
-    expect(await ctx.syncStream(auth, [SyncRequestType.AssetsV1])).toHaveLength(0);
+    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetsV1])).toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetDeleteV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetsV1]);
   });
 });

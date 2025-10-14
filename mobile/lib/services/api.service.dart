@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -11,6 +10,7 @@ import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:immich_mobile/utils/user_agent.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 
 class ApiService implements Authentication {
   late ApiClient _apiClient;
@@ -127,11 +127,7 @@ class ApiService implements Authentication {
     } on SocketException catch (_) {
       return false;
     } catch (error, stackTrace) {
-      _log.severe(
-        "Error while checking server availability",
-        error,
-        stackTrace,
-      );
+      _log.severe("Error while checking server availability", error, stackTrace);
       return false;
     }
     return true;
@@ -145,10 +141,7 @@ class ApiService implements Authentication {
       headers.addAll(getRequestHeaders());
 
       final res = await client
-          .get(
-            Uri.parse("$baseUrl/.well-known/immich"),
-            headers: headers,
-          )
+          .get(Uri.parse("$baseUrl/.well-known/immich"), headers: headers)
           .timeout(const Duration(seconds: 5));
 
       if (res.statusCode == 200) {
@@ -162,7 +155,7 @@ class ApiService implements Authentication {
         return endpoint;
       }
     } catch (e) {
-      debugPrint("Could not locate /.well-known/immich at $baseUrl");
+      dPrint(() => "Could not locate /.well-known/immich at $baseUrl");
     }
 
     return "";
@@ -178,13 +171,11 @@ class ApiService implements Authentication {
 
     if (Platform.isIOS) {
       final iosInfo = await deviceInfoPlugin.iosInfo;
-      authenticationApi.apiClient
-          .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
+      authenticationApi.apiClient.addDefaultHeader('deviceModel', iosInfo.utsname.machine);
       authenticationApi.apiClient.addDefaultHeader('deviceType', 'iOS');
     } else if (Platform.isAndroid) {
       final androidInfo = await deviceInfoPlugin.androidInfo;
-      authenticationApi.apiClient
-          .addDefaultHeader('deviceModel', androidInfo.model);
+      authenticationApi.apiClient.addDefaultHeader('deviceModel', androidInfo.model);
       authenticationApi.apiClient.addDefaultHeader('deviceType', 'Android');
     } else {
       authenticationApi.apiClient.addDefaultHeader('deviceModel', 'Unknown');
@@ -213,10 +204,7 @@ class ApiService implements Authentication {
   }
 
   @override
-  Future<void> applyToParams(
-    List<QueryParam> queryParams,
-    Map<String, String> headerParams,
-  ) {
+  Future<void> applyToParams(List<QueryParam> queryParams, Map<String, String> headerParams) {
     return Future<void>(() {
       var headers = ApiService.getRequestHeaders();
       headerParams.addAll(headers);

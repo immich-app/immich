@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { ApiProperty } from '@nestjs/swagger';
-import { ArrayMaxSize, IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
+import { ArrayMaxSize, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AlbumUserRole,
+  AssetMetadataKey,
   AssetOrder,
   AssetType,
   AssetVisibility,
   MemoryType,
   SyncEntityType,
   SyncRequestType,
+  UserAvatarColor,
+  UserMetadataKey,
 } from 'src/enum';
-import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
+import { UserMetadata } from 'src/types';
+import { ValidateBoolean, ValidateDate, ValidateEnum, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
   @ValidateUUID({ optional: true })
@@ -56,7 +60,23 @@ export class SyncUserV1 {
   id!: string;
   name!: string;
   email!: string;
+  @ValidateEnum({ enum: UserAvatarColor, name: 'UserAvatarColor', nullable: true })
+  avatarColor!: UserAvatarColor | null;
   deletedAt!: Date | null;
+  hasProfileImage!: boolean;
+  profileChangedAt!: Date;
+}
+
+@ExtraModel()
+export class SyncAuthUserV1 extends SyncUserV1 {
+  isAdmin!: boolean;
+  pinCode!: string | null;
+  oauthId!: string;
+  storageLabel!: string | null;
+  @ApiProperty({ type: 'integer' })
+  quotaSizeInBytes!: number | null;
+  @ApiProperty({ type: 'integer' })
+  quotaUsageInBytes!: number;
 }
 
 @ExtraModel()
@@ -88,12 +108,15 @@ export class SyncAssetV1 {
   fileModifiedAt!: Date | null;
   localDateTime!: Date | null;
   duration!: string | null;
-  @ApiProperty({ enumName: 'AssetTypeEnum', enum: AssetType })
+  @ValidateEnum({ enum: AssetType, name: 'AssetTypeEnum' })
   type!: AssetType;
   deletedAt!: Date | null;
   isFavorite!: boolean;
-  @ApiProperty({ enumName: 'AssetVisibility', enum: AssetVisibility })
+  @ValidateEnum({ enum: AssetVisibility, name: 'AssetVisibility' })
   visibility!: AssetVisibility;
+  livePhotoVideoId!: string | null;
+  stackId!: string | null;
+  libraryId!: string | null;
 }
 
 @ExtraModel()
@@ -141,6 +164,21 @@ export class SyncAssetExifV1 {
 }
 
 @ExtraModel()
+export class SyncAssetMetadataV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+  value!: object;
+}
+
+@ExtraModel()
+export class SyncAssetMetadataDeleteV1 {
+  assetId!: string;
+  @ValidateEnum({ enum: AssetMetadataKey, name: 'AssetMetadataKey' })
+  key!: AssetMetadataKey;
+}
+
+@ExtraModel()
 export class SyncAlbumDeleteV1 {
   albumId!: string;
 }
@@ -155,7 +193,7 @@ export class SyncAlbumUserDeleteV1 {
 export class SyncAlbumUserV1 {
   albumId!: string;
   userId!: string;
-  @ApiProperty({ enumName: 'AlbumUserRole', enum: AlbumUserRole })
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
 }
 
@@ -169,7 +207,7 @@ export class SyncAlbumV1 {
   updatedAt!: Date;
   thumbnailAssetId!: string | null;
   isActivityEnabled!: boolean;
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder' })
   order!: AssetOrder;
 }
 
@@ -192,7 +230,7 @@ export class SyncMemoryV1 {
   updatedAt!: Date;
   deletedAt!: Date | null;
   ownerId!: string;
-  @ApiProperty({ enumName: 'MemoryType', enum: MemoryType })
+  @ValidateEnum({ enum: MemoryType, name: 'MemoryType' })
   type!: MemoryType;
   data!: object;
   isSaved!: boolean;
@@ -234,15 +272,83 @@ export class SyncStackDeleteV1 {
 }
 
 @ExtraModel()
+export class SyncPersonV1 {
+  id!: string;
+  createdAt!: Date;
+  updatedAt!: Date;
+  ownerId!: string;
+  name!: string;
+  birthDate!: Date | null;
+  isHidden!: boolean;
+  isFavorite!: boolean;
+  color!: string | null;
+  faceAssetId!: string | null;
+}
+
+@ExtraModel()
+export class SyncPersonDeleteV1 {
+  personId!: string;
+}
+
+@ExtraModel()
+export class SyncAssetFaceV1 {
+  id!: string;
+  assetId!: string;
+  personId!: string | null;
+  @ApiProperty({ type: 'integer' })
+  imageWidth!: number;
+  @ApiProperty({ type: 'integer' })
+  imageHeight!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY1!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxX2!: number;
+  @ApiProperty({ type: 'integer' })
+  boundingBoxY2!: number;
+  sourceType!: string;
+}
+
+@ExtraModel()
+export class SyncAssetFaceDeleteV1 {
+  assetFaceId!: string;
+}
+
+@ExtraModel()
+export class SyncUserMetadataV1 {
+  userId!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
+  value!: UserMetadata[UserMetadataKey];
+}
+
+@ExtraModel()
+export class SyncUserMetadataDeleteV1 {
+  userId!: string;
+  @ValidateEnum({ enum: UserMetadataKey, name: 'UserMetadataKey' })
+  key!: UserMetadataKey;
+}
+
+@ExtraModel()
 export class SyncAckV1 {}
 
+@ExtraModel()
+export class SyncResetV1 {}
+
+@ExtraModel()
+export class SyncCompleteV1 {}
+
 export type SyncItem = {
+  [SyncEntityType.AuthUserV1]: SyncAuthUserV1;
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
   [SyncEntityType.AssetV1]: SyncAssetV1;
   [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
+  [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
+  [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
   [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
   [SyncEntityType.PartnerAssetBackfillV1]: SyncAssetV1;
@@ -254,9 +360,11 @@ export type SyncItem = {
   [SyncEntityType.AlbumUserV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserBackfillV1]: SyncAlbumUserV1;
   [SyncEntityType.AlbumUserDeleteV1]: SyncAlbumUserDeleteV1;
-  [SyncEntityType.AlbumAssetV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetCreateV1]: SyncAssetV1;
+  [SyncEntityType.AlbumAssetUpdateV1]: SyncAssetV1;
   [SyncEntityType.AlbumAssetBackfillV1]: SyncAssetV1;
-  [SyncEntityType.AlbumAssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifCreateV1]: SyncAssetExifV1;
+  [SyncEntityType.AlbumAssetExifUpdateV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumAssetExifBackfillV1]: SyncAssetExifV1;
   [SyncEntityType.AlbumToAssetV1]: SyncAlbumToAssetV1;
   [SyncEntityType.AlbumToAssetBackfillV1]: SyncAlbumToAssetV1;
@@ -270,17 +378,27 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackBackfillV1]: SyncStackV1;
   [SyncEntityType.PartnerStackDeleteV1]: SyncStackDeleteV1;
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
+  [SyncEntityType.PersonV1]: SyncPersonV1;
+  [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
+  [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
+  [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;
+  [SyncEntityType.UserMetadataV1]: SyncUserMetadataV1;
+  [SyncEntityType.UserMetadataDeleteV1]: SyncUserMetadataDeleteV1;
   [SyncEntityType.SyncAckV1]: SyncAckV1;
+  [SyncEntityType.SyncCompleteV1]: SyncCompleteV1;
+  [SyncEntityType.SyncResetV1]: SyncResetV1;
 };
 
 export class SyncStreamDto {
-  @IsEnum(SyncRequestType, { each: true })
-  @ApiProperty({ enumName: 'SyncRequestType', enum: SyncRequestType, isArray: true })
+  @ValidateEnum({ enum: SyncRequestType, name: 'SyncRequestType', each: true })
   types!: SyncRequestType[];
+
+  @ValidateBoolean({ optional: true })
+  reset?: boolean;
 }
 
 export class SyncAckDto {
-  @ApiProperty({ enumName: 'SyncEntityType', enum: SyncEntityType })
+  @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType' })
   type!: SyncEntityType;
   ack!: string;
 }
@@ -292,8 +410,6 @@ export class SyncAckSetDto {
 }
 
 export class SyncAckDeleteDto {
-  @IsEnum(SyncEntityType, { each: true })
-  @ApiProperty({ enumName: 'SyncEntityType', enum: SyncEntityType, isArray: true })
-  @Optional()
+  @ValidateEnum({ enum: SyncEntityType, name: 'SyncEntityType', optional: true, each: true })
   types?: SyncEntityType[];
 }

@@ -1,4 +1,5 @@
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
+import { AlbumAssetTable } from 'src/schema/tables/album-asset.table';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { UserTable } from 'src/schema/tables/user.table';
@@ -7,6 +8,7 @@ import {
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
+  ForeignKeyConstraint,
   Generated,
   Index,
   PrimaryGeneratedColumn,
@@ -16,16 +18,23 @@ import {
 } from 'src/sql-tools';
 
 @Table('activity')
-@UpdatedAtTrigger('activity_updated_at')
+@UpdatedAtTrigger('activity_updatedAt')
 @Index({
-  name: 'IDX_activity_like',
+  name: 'activity_like_idx',
   columns: ['assetId', 'userId', 'albumId'],
   unique: true,
   where: '("isLiked" = true)',
 })
 @Check({
-  name: 'CHK_2ab1e70f113f450eb40c1e3ec8',
-  expression: `("comment" IS NULL AND "isLiked" = true) OR ("comment" IS NOT NULL AND "isLiked" = false)`,
+  name: 'activity_like_check',
+  expression: `(comment IS NULL AND "isLiked" = true) OR (comment IS NOT NULL AND "isLiked" = false)`,
+})
+@ForeignKeyConstraint({
+  columns: ['albumId', 'assetId'],
+  referenceTable: () => AlbumAssetTable,
+  referenceColumns: ['albumsId', 'assetsId'],
+  onUpdate: 'NO ACTION',
+  onDelete: 'CASCADE',
 })
 export class ActivityTable {
   @PrimaryGeneratedColumn()
@@ -52,6 +61,6 @@ export class ActivityTable {
   @Column({ type: 'boolean', default: false })
   isLiked!: Generated<boolean>;
 
-  @UpdateIdColumn({ indexName: 'IDX_activity_update_id' })
+  @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }

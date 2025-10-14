@@ -32,20 +32,10 @@ class CropImagePage extends HookWidget {
         leading: CloseButton(color: context.primaryColor),
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.done_rounded,
-              color: context.primaryColor,
-              size: 24,
-            ),
+            icon: Icon(Icons.done_rounded, color: context.primaryColor, size: 24),
             onPressed: () async {
               final croppedImage = await cropController.croppedImage();
-              context.pushRoute(
-                EditImageRoute(
-                  asset: asset,
-                  image: croppedImage,
-                  isEdited: true,
-                ),
-              );
+              context.pushRoute(EditImageRoute(asset: asset, image: croppedImage, isEdited: true));
             },
           ),
         ],
@@ -60,11 +50,7 @@ class CropImagePage extends HookWidget {
                   padding: const EdgeInsets.only(top: 20),
                   width: constraints.maxWidth * 0.9,
                   height: constraints.maxHeight * 0.6,
-                  child: CropImage(
-                    controller: cropController,
-                    image: image,
-                    gridColor: Colors.white,
-                  ),
+                  child: CropImage(controller: cropController, image: image, gridColor: Colors.white),
                 ),
                 Expanded(
                   child: Container(
@@ -81,28 +67,18 @@ class CropImagePage extends HookWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(
-                              left: 20,
-                              right: 20,
-                              bottom: 10,
-                            ),
+                            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 10),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
-                                  icon: Icon(
-                                    Icons.rotate_left,
-                                    color: context.themeData.iconTheme.color,
-                                  ),
+                                  icon: Icon(Icons.rotate_left, color: context.themeData.iconTheme.color),
                                   onPressed: () {
                                     cropController.rotateLeft();
                                   },
                                 ),
                                 IconButton(
-                                  icon: Icon(
-                                    Icons.rotate_right,
-                                    color: context.themeData.iconTheme.color,
-                                  ),
+                                  icon: Icon(Icons.rotate_right, color: context.themeData.iconTheme.color),
                                   onPressed: () {
                                     cropController.rotateRight();
                                   },
@@ -178,19 +154,14 @@ class _AspectRatioButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          icon: Icon(
-            switch (label) {
-              'Free' => Icons.crop_free_rounded,
-              '1:1' => Icons.crop_square_rounded,
-              '16:9' => Icons.crop_16_9_rounded,
-              '3:2' => Icons.crop_3_2_rounded,
-              '7:5' => Icons.crop_7_5_rounded,
-              _ => Icons.crop_free_rounded,
-            },
-            color: aspectRatio.value == ratio
-                ? context.primaryColor
-                : context.themeData.iconTheme.color,
-          ),
+          icon: Icon(switch (label) {
+            'Free' => Icons.crop_free_rounded,
+            '1:1' => Icons.crop_square_rounded,
+            '16:9' => Icons.crop_16_9_rounded,
+            '3:2' => Icons.crop_3_2_rounded,
+            '7:5' => Icons.crop_7_5_rounded,
+            _ => Icons.crop_free_rounded,
+          }, color: aspectRatio.value == ratio ? context.primaryColor : context.themeData.iconTheme.color),
           onPressed: () {
             cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
             aspectRatio.value = ratio;

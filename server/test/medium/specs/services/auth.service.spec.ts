@@ -11,6 +11,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
 import { AuthService } from 'src/services/auth.service';
@@ -32,7 +33,7 @@ const setup = (db?: Kysely<DB>) => {
       SystemMetadataRepository,
       UserRepository,
     ],
-    mock: [LoggingRepository, StorageRepository, EventRepository],
+    mock: [LoggingRepository, StorageRepository, EventRepository, TelemetryRepository],
   });
 };
 
@@ -102,7 +103,7 @@ describe(AuthService.name, () => {
     it('should logout', async () => {
       const { sut } = setup();
       const auth = factory.auth();
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });
@@ -118,7 +119,7 @@ describe(AuthService.name, () => {
       eventRepo.emit.mockResolvedValue();
 
       await expect(sessionRepo.get(session.id)).resolves.toEqual(expect.objectContaining({ id: session.id }));
-      await expect(sut.logout(auth, AuthType.PASSWORD)).resolves.toEqual({
+      await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
         successful: true,
         redirectUri: '/auth/login?autoLaunch=0',
       });

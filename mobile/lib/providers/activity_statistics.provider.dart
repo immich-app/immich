@@ -9,10 +9,7 @@ part 'activity_statistics.provider.g.dart';
 class ActivityStatistics extends _$ActivityStatistics {
   @override
   int build(String albumId, [String? assetId]) {
-    ref
-        .watch(activityServiceProvider)
-        .getStatistics(albumId, assetId: assetId)
-        .then((stats) => state = stats.comments);
+    ref.watch(activityServiceProvider).getStatistics(albumId, assetId: assetId).then((stats) => state = stats.comments);
     return 0;
   }
 

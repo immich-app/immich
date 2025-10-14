@@ -9,8 +9,7 @@ class Throttler {
   Throttler({required this.interval});
 
   T? run<T>(T Function() action) {
-    if (_lastActionTime == null ||
-        (DateTime.now().difference(_lastActionTime!) > interval)) {
+    if (_lastActionTime == null || (DateTime.now().difference(_lastActionTime!) > interval)) {
       final response = action();
       _lastActionTime = DateTime.now();
       return response;
@@ -26,17 +25,11 @@ class Throttler {
 
 /// Creates a [Throttler] that will be disposed automatically. If no [interval] is provided, a
 /// default interval of 300ms is used to throttle the function calls
-Throttler useThrottler({
-  Duration interval = const Duration(milliseconds: 300),
-  List<Object?>? keys,
-}) =>
+Throttler useThrottler({Duration interval = const Duration(milliseconds: 300), List<Object?>? keys}) =>
     use(_ThrottleHook(interval: interval, keys: keys));
 
 class _ThrottleHook extends Hook<Throttler> {
-  const _ThrottleHook({
-    required this.interval,
-    super.keys,
-  });
+  const _ThrottleHook({required this.interval, super.keys});
 
   final Duration interval;
 

@@ -12,8 +12,7 @@ import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class AlbumViewerAppbar extends HookConsumerWidget
-    implements PreferredSizeWidget {
+class AlbumViewerAppbar extends HookConsumerWidget implements PreferredSizeWidget {
   const AlbumViewerAppbar({
     super.key,
     required this.userId,
@@ -53,13 +52,10 @@ class AlbumViewerAppbar extends HookConsumerWidget
     final newAlbumDescription = albumViewer.editDescriptionText;
     final isEditAlbum = albumViewer.isEditAlbum;
 
-    final comments = album.shared
-        ? ref.watch(activityStatisticsProvider(album.remoteId!))
-        : 0;
+    final comments = album.shared ? ref.watch(activityStatisticsProvider(album.remoteId!)) : 0;
 
     deleteAlbum() async {
-      final bool success =
-          await ref.watch(albumProvider.notifier).deleteAlbum(album);
+      final bool success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
 
       context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
 
@@ -86,10 +82,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 onPressed: () => context.pop('Cancel'),
                 child: Text(
                   'cancel',
-                  style: TextStyle(
-                    color: context.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold),
                 ).tr(),
               ),
               TextButton(
@@ -99,10 +92,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 },
                 child: Text(
                   'confirm',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: context.colorScheme.error,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: context.colorScheme.error),
                 ).tr(),
               ),
             ],
@@ -112,8 +102,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void onLeaveAlbumPressed() async {
-      bool isSuccess =
-          await ref.watch(albumProvider.notifier).leaveAlbum(album);
+      bool isSuccess = await ref.watch(albumProvider.notifier).leaveAlbum(album);
 
       if (isSuccess) {
         context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
@@ -133,10 +122,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         album.ownerId == userId
             ? ListTile(
                 leading: const Icon(Icons.delete_forever_rounded),
-                title: const Text(
-                  'delete_album',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ).tr(),
+                title: const Text('delete_album', style: TextStyle(fontWeight: FontWeight.w500)).tr(),
                 onTap: onDeleteAlbumPressed,
               )
             : ListTile(
@@ -152,8 +138,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
     }
 
     void onSortOrderToggled() async {
-      final updatedAlbum =
-          await ref.read(albumProvider.notifier).toggleSortOrder(album);
+      final updatedAlbum = await ref.read(albumProvider.notifier).toggleSortOrder(album);
 
       if (updatedAlbum == null) {
         ImmichToast.show(
@@ -178,18 +163,12 @@ class AlbumViewerAppbar extends HookConsumerWidget
               onAddUsers();
             }
           },
-          title: const Text(
-            "album_viewer_page_share_add_users",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("album_viewer_page_share_add_users", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
         ListTile(
           leading: const Icon(Icons.swap_vert_rounded),
           onTap: onSortOrderToggled,
-          title: const Text(
-            "change_display_order",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("change_display_order", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
         ListTile(
           leading: const Icon(Icons.link_rounded),
@@ -197,18 +176,12 @@ class AlbumViewerAppbar extends HookConsumerWidget
             context.pushRoute(SharedLinkEditRoute(albumId: album.remoteId));
             context.pop();
           },
-          title: const Text(
-            "control_bottom_app_bar_share_link",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("control_bottom_app_bar_share_link", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
         ListTile(
           leading: const Icon(Icons.settings_rounded),
           onTap: () => context.navigateTo(const AlbumOptionsRoute()),
-          title: const Text(
-            "options",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("options", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
       ];
 
@@ -222,10 +195,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
               onAddPhotos();
             }
           },
-          title: const Text(
-            "add_photos",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).tr(),
+          title: const Text("add_photos", style: TextStyle(fontWeight: FontWeight.w500)).tr(),
         ),
       ];
       showModalBottomSheet(
@@ -241,8 +211,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
                 children: [
                   ...buildBottomSheetActions(),
                   if (onAddPhotos != null) ...commonActions,
-                  if (onAddPhotos != null && userId == album.ownerId)
-                    ...ownerActions,
+                  if (onAddPhotos != null && userId == album.ownerId) ...ownerActions,
                 ],
               ),
             ),
@@ -257,18 +226,13 @@ class AlbumViewerAppbar extends HookConsumerWidget
         icon: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.mode_comment_outlined,
-            ),
+            const Icon(Icons.mode_comment_outlined),
             if (comments != 0)
               Padding(
                 padding: const EdgeInsets.only(left: 5),
                 child: Text(
                   comments.toString(),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: context.primaryColor,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, color: context.primaryColor),
                 ),
               ),
           ],
@@ -281,9 +245,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         return IconButton(
           onPressed: () async {
             if (newAlbumTitle.isNotEmpty) {
-              bool isSuccess = await ref
-                  .watch(albumViewerProvider.notifier)
-                  .changeAlbumTitle(album, newAlbumTitle);
+              bool isSuccess = await ref.watch(albumViewerProvider.notifier).changeAlbumTitle(album, newAlbumTitle);
               if (!isSuccess) {
                 ImmichToast.show(
                   context: context,
@@ -330,14 +292,9 @@ class AlbumViewerAppbar extends HookConsumerWidget
       leading: buildLeadingButton(),
       centerTitle: false,
       actions: [
-        if (album.shared && (album.activityEnabled || comments != 0))
-          buildActivitiesButton(),
+        if (album.shared && (album.activityEnabled || comments != 0)) buildActivitiesButton(),
         if (album.isRemote) ...[
-          IconButton(
-            splashRadius: 25,
-            onPressed: buildBottomSheet,
-            icon: const Icon(Icons.more_horiz_rounded),
-          ),
+          IconButton(splashRadius: 25, onPressed: buildBottomSheet, icon: const Icon(Icons.more_horiz_rounded)),
         ],
       ],
     );

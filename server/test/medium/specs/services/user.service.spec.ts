@@ -6,6 +6,7 @@ import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
 import { UserService } from 'src/services/user.service';
@@ -16,12 +17,12 @@ import { getKyselyDB } from 'test/utils';
 let defaultDatabase: Kysely<DB>;
 
 const setup = (db?: Kysely<DB>) => {
-  process.env.IMMICH_ENV = ImmichEnvironment.TESTING;
+  process.env.IMMICH_ENV = ImmichEnvironment.Testing;
 
   return newMediumService(UserService, {
     database: db || defaultDatabase,
     real: [CryptoRepository, ConfigRepository, SystemMetadataRepository, UserRepository],
-    mock: [LoggingRepository, JobRepository],
+    mock: [LoggingRepository, JobRepository, TelemetryRepository],
   });
 };
 
@@ -140,7 +141,7 @@ describe(UserService.name, () => {
       const { sut, ctx } = setup();
       const jobMock = ctx.getMock(JobRepository);
       jobMock.queueAll.mockResolvedValue(void 0);
-      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.Success);
       expect(jobMock.queueAll).toHaveBeenCalledExactlyOnceWith([]);
     });
 
@@ -149,10 +150,8 @@ describe(UserService.name, () => {
       const jobMock = ctx.getMock(JobRepository);
       const { user } = await ctx.newUser({ deletedAt: DateTime.now().minus({ days: 60 }).toJSDate() });
       jobMock.queueAll.mockResolvedValue(void 0);
-      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
-      expect(jobMock.queueAll).toHaveBeenCalledExactlyOnceWith([
-        { name: JobName.USER_DELETION, data: { id: user.id } },
-      ]);
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.Success);
+      expect(jobMock.queueAll).toHaveBeenCalledExactlyOnceWith([{ name: JobName.UserDelete, data: { id: user.id } }]);
     });
 
     it('should skip a recently deleted user', async () => {
@@ -160,7 +159,7 @@ describe(UserService.name, () => {
       const jobMock = ctx.getMock(JobRepository);
       await ctx.newUser({ deletedAt: DateTime.now().minus({ days: 5 }).toJSDate() });
       jobMock.queueAll.mockResolvedValue(void 0);
-      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.Success);
       expect(jobMock.queueAll).toHaveBeenCalledExactlyOnceWith([]);
     });
 
@@ -172,7 +171,7 @@ describe(UserService.name, () => {
       const config = await sut.getConfig({ withCache: false });
       config.user.deleteDelay = 30;
       await sut.updateConfig(config);
-      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.Success);
       expect(jobMock.queueAll).toHaveBeenCalledExactlyOnceWith([]);
     });
   });

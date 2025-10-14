@@ -16,6 +16,7 @@ export enum AlbumModalRowType {
 export type AlbumModalRow = {
   type: AlbumModalRowType;
   selected?: boolean;
+  multiSelected?: boolean;
   text?: string;
   album?: AlbumResponseDto;
 };
@@ -41,6 +42,7 @@ export class AlbumModalRowConverter {
     recentAlbums: AlbumResponseDto[],
     albums: AlbumResponseDto[],
     selectedRowIndex: number,
+    multiSelectedAlbumIds: string[],
   ): AlbumModalRow[] {
     // only show recent albums if no search was entered, or we're in the normal albums (non-shared) modal.
     const recentAlbumsToShow = !this.shared && search.length === 0 ? recentAlbums : [];
@@ -64,6 +66,7 @@ export class AlbumModalRowConverter {
           rows.push({
             type: AlbumModalRowType.ALBUM_ITEM,
             selected: selectedRowIndex === i + selectedOffsetDueToNewAlbumRow,
+            multiSelected: multiSelectedAlbumIds.includes(album.id),
             album,
           });
         }
@@ -81,6 +84,7 @@ export class AlbumModalRowConverter {
         rows.push({
           type: AlbumModalRowType.ALBUM_ITEM,
           selected: selectedRowIndex === i + selectedOffsetDueToNewAndRecents,
+          multiSelected: multiSelectedAlbumIds.includes(album.id),
           album,
         });
       }

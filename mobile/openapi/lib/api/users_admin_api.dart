@@ -16,7 +16,10 @@ class UsersAdminApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'POST /admin/users' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.create` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [UserAdminCreateDto] userAdminCreateDto (required):
@@ -45,6 +48,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.create` permission.
+  ///
   /// Parameters:
   ///
   /// * [UserAdminCreateDto] userAdminCreateDto (required):
@@ -63,7 +68,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'DELETE /admin/users/{id}' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -95,6 +103,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -115,7 +125,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /admin/users/{id}' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -145,6 +158,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -163,7 +178,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /admin/users/{id}/preferences' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -193,6 +211,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -211,7 +231,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /admin/users/{id}/statistics' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -257,6 +280,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -281,7 +306,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'POST /admin/users/{id}/restore' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -311,6 +339,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.delete` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -329,7 +359,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'GET /admin/users' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id:
@@ -367,6 +400,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.read` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id:
@@ -390,7 +425,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /admin/users/{id}' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -422,6 +460,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -442,7 +482,10 @@ class UsersAdminApi {
     return null;
   }
 
-  /// Performs an HTTP 'PUT /admin/users/{id}/preferences' operation and returns the [Response].
+  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):
@@ -474,6 +517,8 @@ class UsersAdminApi {
     );
   }
 
+  /// This endpoint is an admin-only route, and requires the `adminUser.update` permission.
+  ///
   /// Parameters:
   ///
   /// * [String] id (required):

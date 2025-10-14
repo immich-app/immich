@@ -6,17 +6,6 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import MemoryPhotoViewer from '$lib/components/memory-page/memory-photo-viewer.svelte';
   import MemoryVideoViewer from '$lib/components/memory-page/memory-video-viewer.svelte';
-  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
-  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
-  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
-  import ChangeDescription from '$lib/components/photos-page/actions/change-description-action.svelte';
-  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
-  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
-  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
-  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
-  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -25,6 +14,17 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
+  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
+  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
+  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
@@ -69,7 +69,7 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let currentMemoryAssetFull = $derived.by(async () =>
-    current?.asset ? await getAssetInfo({ id: current.asset.id, key: authManager.key }) : undefined,
+    current?.asset ? await getAssetInfo({ ...authManager.params, id: current.asset.id }) : undefined,
   );
   let currentTimelineAssets = $derived(current?.memory.assets.map((asset) => toTimelineAsset(asset)) || []);
 
@@ -84,6 +84,7 @@
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
   const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
+
   const handleNavigate = async (asset?: { id: string }) => {
     if ($isViewing) {
       return asset;
@@ -95,6 +96,7 @@
 
     await goto(asHref(asset));
   };
+
   const setProgressDuration = (asset: TimelineAsset) => {
     if (asset.isVideo) {
       const timeParts = asset.duration!.split(':').map(Number);
@@ -108,6 +110,7 @@
       });
     }
   };
+
   const handleNextAsset = () => handleNavigate(current?.next?.asset);
   const handlePreviousAsset = () => handleNavigate(current?.previous?.asset);
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
@@ -115,6 +118,7 @@
   const handleEscape = async () => goto(AppRoute.PHOTOS);
   const handleSelectAll = () =>
     assetInteraction.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
+
   const handleAction = async (callingContext: string, action: 'reset' | 'pause' | 'play') => {
     // leaving these log statements here as comments. Very useful to figure out what's going on during dev!
     // console.log(`handleAction[${callingContext}] called with: ${action}`);
@@ -154,6 +158,7 @@
       }
     }
   };
+
   const handleProgress = async (progress: number) => {
     if (!progressBarController) {
       return;
@@ -184,6 +189,7 @@
     memoryStore.hideAssetsFromMemory(ids);
     init(page);
   };
+
   const handleDeleteMemoryAsset = async () => {
     if (!current) {
       return;
@@ -192,6 +198,7 @@
     await memoryStore.deleteAssetFromMemory(current.asset.id);
     init(page);
   };
+
   const handleDeleteMemory = async () => {
     if (!current) {
       return;
@@ -201,6 +208,7 @@
     notificationController.show({ message: $t('removed_memory'), type: NotificationType.Info });
     init(page);
   };
+
   const handleSaveMemory = async () => {
     if (!current) {
       return;
@@ -214,10 +222,12 @@
     });
     init(page);
   };
+
   const handleGalleryScrollsIntoView = () => {
     galleryInView = true;
     handlePromiseError(handleAction('galleryInView', 'pause'));
   };
+
   const handleGalleryScrollsOutOfView = () => {
     galleryInView = false;
     // only call play after the first page load. When page first loads the gallery will not be visible
@@ -246,16 +256,22 @@
     playerInitialized = false;
   };
 
+  const resetAndPlay = () => {
+    handlePromiseError(handleAction('resetAndPlay', 'reset'));
+    handlePromiseError(handleAction('resetAndPlay', 'play'));
+  };
+
   const initPlayer = () => {
-    const isVideoAssetButPlayerHasNotLoadedYet = current && current.asset.isVideo && !videoPlayer;
+    const isVideo = current && current.asset.isVideo;
+    const isVideoAssetButPlayerHasNotLoadedYet = isVideo && !videoPlayer;
     if (playerInitialized || isVideoAssetButPlayerHasNotLoadedYet) {
       return;
     }
     if ($isViewing) {
       handlePromiseError(handleAction('initPlayer[AssetViewOpen]', 'pause'));
-    } else {
-      handlePromiseError(handleAction('initPlayer[AssetViewClosed]', 'reset'));
-      handlePromiseError(handleAction('initPlayer[AssetViewClosed]', 'play'));
+    } else if (isVideo) {
+      // Image assets will start playing when the image is loaded. Only autostart video assets.
+      resetAndPlay();
     }
     playerInitialized = true;
   };
@@ -453,7 +469,7 @@
 
             {#if current.previousMemory}
               <div class="absolute bottom-4 end-4 text-start text-white">
-                <p class="text-xs font-semibold text-gray-200">{$t('previous').toUpperCase()}</p>
+                <p class="uppercase text-xs font-semibold text-gray-200">{$t('previous')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.previousMemory)}</p>
               </div>
             {/if}
@@ -474,7 +490,7 @@
                   videoViewerVolume={$videoViewerVolume}
                 />
               {:else}
-                <MemoryPhotoViewer asset={current.asset} />
+                <MemoryPhotoViewer asset={current.asset} onImageLoad={resetAndPlay} />
               {/if}
             {/key}
 
@@ -602,7 +618,7 @@
 
             {#if current.nextMemory}
               <div class="absolute bottom-4 start-4 text-start text-white">
-                <p class="text-xs font-semibold text-gray-200">{$t('up_next').toUpperCase()}</p>
+                <p class="uppercase text-xs font-semibold text-gray-200">{$t('up_next')}</p>
                 <p class="text-xl">{$memoryLaneTitle(current.nextMemory)}</p>
               </div>
             {/if}
@@ -646,6 +662,7 @@
         viewport={galleryViewport}
         {assetInteraction}
         slidingWindowOffset={viewerHeight}
+        arrowNavigation={false}
       />
     </div>
   </section>

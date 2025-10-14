@@ -2,8 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 enum RenderListStatusEnum { complete, empty, error, loading }
 
-final renderListStatusProvider =
-    StateNotifierProvider<RenderListStatus, RenderListStatusEnum>((ref) {
+final renderListStatusProvider = StateNotifierProvider<RenderListStatus, RenderListStatusEnum>((ref) {
   return RenderListStatus(ref);
 });
 

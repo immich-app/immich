@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { PassThrough } from 'node:stream';
 import { defaults, SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
@@ -38,7 +39,7 @@ describe(BackupService.name, () => {
     });
 
     it('should not initialise backup database job when running on microservices', async () => {
-      mocks.config.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
+      mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
       await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
       expect(mocks.cron.create).not.toHaveBeenCalled();
@@ -90,18 +91,23 @@ describe(BackupService.name, () => {
 
     it('should remove failed backup files', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
+      //`immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz.tmp`,
       mocks.storage.readdir.mockResolvedValue([
         'immich-db-backup-123.sql.gz.tmp',
-        'immich-db-backup-234.sql.gz',
-        'immich-db-backup-345.sql.gz.tmp',
+        `immich-db-backup-${DateTime.fromISO('2025-07-25T11:02:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz.tmp`,
+        `immich-db-backup-${DateTime.fromISO('2025-07-27T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
+        `immich-db-backup-${DateTime.fromISO('2025-07-29T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz.tmp`,
       ]);
       await sut.cleanupDatabaseBackups();
-      expect(mocks.storage.unlink).toHaveBeenCalledTimes(2);
+      expect(mocks.storage.unlink).toHaveBeenCalledTimes(3);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-123.sql.gz.tmp`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-123.sql.gz.tmp`,
       );
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-345.sql.gz.tmp`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-20250725T110216-v1.234.5-pg14.5.sql.gz.tmp`,
+      );
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-20250729T110116-v1.234.5-pg14.5.sql.gz.tmp`,
       );
     });
 
@@ -111,24 +117,28 @@ describe(BackupService.name, () => {
       await sut.cleanupDatabaseBackups();
       expect(mocks.storage.unlink).toHaveBeenCalledTimes(1);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-1.sql.gz`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-1.sql.gz`,
       );
     });
 
     it('should remove old backup files over keepLastAmount and failed backups', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.backupEnabled);
       mocks.storage.readdir.mockResolvedValue([
-        'immich-db-backup-1.sql.gz.tmp',
-        'immich-db-backup-2.sql.gz',
-        'immich-db-backup-3.sql.gz',
+        `immich-db-backup-${DateTime.fromISO('2025-07-25T11:02:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz.tmp`,
+        `immich-db-backup-${DateTime.fromISO('2025-07-27T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
+        'immich-db-backup-1753789649000.sql.gz',
+        `immich-db-backup-${DateTime.fromISO('2025-07-29T11:01:16Z').toFormat("yyyyLLdd'T'HHmmss")}-v1.234.5-pg14.5.sql.gz`,
       ]);
       await sut.cleanupDatabaseBackups();
-      expect(mocks.storage.unlink).toHaveBeenCalledTimes(2);
+      expect(mocks.storage.unlink).toHaveBeenCalledTimes(3);
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-1.sql.gz.tmp`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-1753789649000.sql.gz`,
       );
       expect(mocks.storage.unlink).toHaveBeenCalledWith(
-        `${StorageCore.getBaseFolder(StorageFolder.BACKUPS)}/immich-db-backup-2.sql.gz`,
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-20250725T110216-v1.234.5-pg14.5.sql.gz.tmp`,
+      );
+      expect(mocks.storage.unlink).toHaveBeenCalledWith(
+        `${StorageCore.getBaseFolder(StorageFolder.Backups)}/immich-db-backup-20250727T110116-v1.234.5-pg14.5.sql.gz`,
       );
     });
   });
@@ -145,13 +155,13 @@ describe(BackupService.name, () => {
 
     it('should run a database backup successfully', async () => {
       const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.SUCCESS);
+      expect(result).toBe(JobStatus.Success);
       expect(mocks.storage.createWriteStream).toHaveBeenCalled();
     });
 
     it('should rename file on success', async () => {
       const result = await sut.handleBackupDatabase();
-      expect(result).toBe(JobStatus.SUCCESS);
+      expect(result).toBe(JobStatus.Success);
       expect(mocks.storage.rename).toHaveBeenCalled();
     });
 
@@ -219,7 +229,7 @@ describe(BackupService.name, () => {
       mocks.database.getPostgresVersion.mockResolvedValue(postgresVersion);
       const result = await sut.handleBackupDatabase();
       expect(mocks.process.spawn).not.toHaveBeenCalled();
-      expect(result).toBe(JobStatus.FAILED);
+      expect(result).toBe(JobStatus.Failed);
     });
   });
 });

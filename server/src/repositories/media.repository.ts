@@ -55,30 +55,30 @@ export class MediaRepository {
   async extract(input: string): Promise<ExtractResult | null> {
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw2', input);
-      return { buffer, format: RawExtractedFormat.JPEG };
+      return { buffer, format: RawExtractedFormat.Jpeg };
     } catch (error: any) {
-      this.logger.debug('Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next', error.message);
+      this.logger.debug(`Could not extract JpgFromRaw2 buffer from image, trying JPEG from RAW next: ${error}`);
     }
 
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('JpgFromRaw', input);
-      return { buffer, format: RawExtractedFormat.JPEG };
+      return { buffer, format: RawExtractedFormat.Jpeg };
     } catch (error: any) {
-      this.logger.debug('Could not extract JPEG buffer from image, trying PreviewJXL next', error.message);
+      this.logger.debug(`Could not extract JPEG buffer from image, trying PreviewJXL next: ${error}`);
     }
 
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('PreviewJXL', input);
-      return { buffer, format: RawExtractedFormat.JXL };
+      return { buffer, format: RawExtractedFormat.Jxl };
     } catch (error: any) {
-      this.logger.debug('Could not extract PreviewJXL buffer from image, trying PreviewImage next', error.message);
+      this.logger.debug(`Could not extract PreviewJXL buffer from image, trying PreviewImage next: ${error}`);
     }
 
     try {
       const buffer = await exiftool.extractBinaryTagToBuffer('PreviewImage', input);
-      return { buffer, format: RawExtractedFormat.JPEG };
+      return { buffer, format: RawExtractedFormat.Jpeg };
     } catch (error: any) {
-      this.logger.debug('Could not extract preview buffer from image', error.message);
+      this.logger.debug(`Could not extract preview buffer from image: ${error}`);
       return null;
     }
   }
@@ -141,8 +141,9 @@ export class MediaRepository {
       failOn: options.processInvalidImages ? 'none' : 'error',
       limitInputPixels: false,
       raw: options.raw,
+      unlimited: true,
     })
-      .pipelineColorspace(options.colorspace === Colorspace.SRGB ? 'srgb' : 'rgb16')
+      .pipelineColorspace(options.colorspace === Colorspace.Srgb ? 'srgb' : 'rgb16')
       .withIccProfile(options.colorspace);
 
     if (!options.raw) {
@@ -202,6 +203,9 @@ export class MediaRepository {
           isHDR: stream.color_transfer === 'smpte2084' || stream.color_transfer === 'arib-std-b67',
           bitrate: this.parseInt(stream.bit_rate),
           pixelFormat: stream.pix_fmt || 'yuv420p',
+          colorPrimaries: stream.color_primaries,
+          colorSpace: stream.color_space,
+          colorTransfer: stream.color_transfer,
         })),
       audioStreams: results.streams
         .filter((stream) => stream.codec_type === 'audio')
@@ -267,7 +271,7 @@ export class MediaRepository {
 
     const { frameCount, percentInterval } = options.progress;
     const frameInterval = Math.ceil(frameCount / (100 / percentInterval));
-    if (this.logger.isLevelEnabled(LogLevel.DEBUG) && frameCount && frameInterval) {
+    if (this.logger.isLevelEnabled(LogLevel.Debug) && frameCount && frameInterval) {
       let lastProgressFrame: number = 0;
       ffmpegCall.on('progress', (progress: ProgressEvent) => {
         if (progress.frames - lastProgressFrame < frameInterval) {

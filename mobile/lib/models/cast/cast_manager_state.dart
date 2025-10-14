@@ -59,8 +59,7 @@ class CastManagerState {
 
   String toJson() => json.encode(toMap());
 
-  factory CastManagerState.fromJson(String source) =>
-      CastManagerState.fromMap(json.decode(source));
+  factory CastManagerState.fromJson(String source) => CastManagerState.fromMap(json.decode(source));
 
   @override
   String toString() =>
@@ -80,9 +79,5 @@ class CastManagerState {
 
   @override
   int get hashCode =>
-      isCasting.hashCode ^
-      receiverName.hashCode ^
-      castState.hashCode ^
-      currentTime.hashCode ^
-      duration.hashCode;
+      isCasting.hashCode ^ receiverName.hashCode ^ castState.hashCode ^ currentTime.hashCode ^ duration.hashCode;
 }

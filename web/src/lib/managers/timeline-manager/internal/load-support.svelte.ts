@@ -1,11 +1,9 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { toISOYearMonthUTC } from '$lib/utils/timeline-util';
 import { getTimeBucket } from '@immich/sdk';
-
 import type { MonthGroup } from '../month-group.svelte';
 import type { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineManagerOptions } from '../types';
-import { layoutMonthGroup } from './layout-support.svelte';
 
 export async function loadFromTimeBuckets(
   timelineManager: TimelineManager,
@@ -18,12 +16,11 @@ export async function loadFromTimeBuckets(
   }
 
   const timeBucket = toISOYearMonthUTC(monthGroup.yearMonth);
-  const key = authManager.key;
   const bucketResponse = await getTimeBucket(
     {
+      ...authManager.params,
       ...options,
       timeBucket,
-      key,
     },
     { signal },
   );
@@ -35,9 +32,9 @@ export async function loadFromTimeBuckets(
   if (options.timelineAlbumId) {
     const albumAssets = await getTimeBucket(
       {
+        ...authManager.params,
         albumId: options.timelineAlbumId,
         timeBucket,
-        key,
       },
       { signal },
     );
@@ -57,6 +54,4 @@ export async function loadFromTimeBuckets(
       )}`,
     );
   }
-
-  layoutMonthGroup(timelineManager, monthGroup);
 }

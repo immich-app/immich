@@ -8,86 +8,100 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
     as i3;
 import 'package:drift/internal/modular.dart' as i4;
 
-typedef $$RemoteExifEntityTableCreateCompanionBuilder
-    = i1.RemoteExifEntityCompanion Function({
-  required String assetId,
-  i0.Value<String?> city,
-  i0.Value<String?> state,
-  i0.Value<String?> country,
-  i0.Value<DateTime?> dateTimeOriginal,
-  i0.Value<String?> description,
-  i0.Value<int?> height,
-  i0.Value<int?> width,
-  i0.Value<String?> exposureTime,
-  i0.Value<double?> fNumber,
-  i0.Value<int?> fileSize,
-  i0.Value<double?> focalLength,
-  i0.Value<double?> latitude,
-  i0.Value<double?> longitude,
-  i0.Value<int?> iso,
-  i0.Value<String?> make,
-  i0.Value<String?> model,
-  i0.Value<String?> lens,
-  i0.Value<String?> orientation,
-  i0.Value<String?> timeZone,
-  i0.Value<int?> rating,
-  i0.Value<String?> projectionType,
-});
-typedef $$RemoteExifEntityTableUpdateCompanionBuilder
-    = i1.RemoteExifEntityCompanion Function({
-  i0.Value<String> assetId,
-  i0.Value<String?> city,
-  i0.Value<String?> state,
-  i0.Value<String?> country,
-  i0.Value<DateTime?> dateTimeOriginal,
-  i0.Value<String?> description,
-  i0.Value<int?> height,
-  i0.Value<int?> width,
-  i0.Value<String?> exposureTime,
-  i0.Value<double?> fNumber,
-  i0.Value<int?> fileSize,
-  i0.Value<double?> focalLength,
-  i0.Value<double?> latitude,
-  i0.Value<double?> longitude,
-  i0.Value<int?> iso,
-  i0.Value<String?> make,
-  i0.Value<String?> model,
-  i0.Value<String?> lens,
-  i0.Value<String?> orientation,
-  i0.Value<String?> timeZone,
-  i0.Value<int?> rating,
-  i0.Value<String?> projectionType,
-});
+typedef $$RemoteExifEntityTableCreateCompanionBuilder =
+    i1.RemoteExifEntityCompanion Function({
+      required String assetId,
+      i0.Value<String?> city,
+      i0.Value<String?> state,
+      i0.Value<String?> country,
+      i0.Value<DateTime?> dateTimeOriginal,
+      i0.Value<String?> description,
+      i0.Value<int?> height,
+      i0.Value<int?> width,
+      i0.Value<String?> exposureTime,
+      i0.Value<double?> fNumber,
+      i0.Value<int?> fileSize,
+      i0.Value<double?> focalLength,
+      i0.Value<double?> latitude,
+      i0.Value<double?> longitude,
+      i0.Value<int?> iso,
+      i0.Value<String?> make,
+      i0.Value<String?> model,
+      i0.Value<String?> lens,
+      i0.Value<String?> orientation,
+      i0.Value<String?> timeZone,
+      i0.Value<int?> rating,
+      i0.Value<String?> projectionType,
+    });
+typedef $$RemoteExifEntityTableUpdateCompanionBuilder =
+    i1.RemoteExifEntityCompanion Function({
+      i0.Value<String> assetId,
+      i0.Value<String?> city,
+      i0.Value<String?> state,
+      i0.Value<String?> country,
+      i0.Value<DateTime?> dateTimeOriginal,
+      i0.Value<String?> description,
+      i0.Value<int?> height,
+      i0.Value<int?> width,
+      i0.Value<String?> exposureTime,
+      i0.Value<double?> fNumber,
+      i0.Value<int?> fileSize,
+      i0.Value<double?> focalLength,
+      i0.Value<double?> latitude,
+      i0.Value<double?> longitude,
+      i0.Value<int?> iso,
+      i0.Value<String?> make,
+      i0.Value<String?> model,
+      i0.Value<String?> lens,
+      i0.Value<String?> orientation,
+      i0.Value<String?> timeZone,
+      i0.Value<int?> rating,
+      i0.Value<String?> projectionType,
+    });
 
-final class $$RemoteExifEntityTableReferences extends i0.BaseReferences<
-    i0.GeneratedDatabase, i1.$RemoteExifEntityTable, i1.RemoteExifEntityData> {
+final class $$RemoteExifEntityTableReferences
+    extends
+        i0.BaseReferences<
+          i0.GeneratedDatabase,
+          i1.$RemoteExifEntityTable,
+          i1.RemoteExifEntityData
+        > {
   $$RemoteExifEntityTableReferences(
-      super.$_db, super.$_table, super.$_typedResult);
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
 
   static i3.$RemoteAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
       i4.ReadDatabaseContainer(db)
           .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
-          .createAlias(i0.$_aliasNameGenerator(
+          .createAlias(
+            i0.$_aliasNameGenerator(
               i4.ReadDatabaseContainer(db)
                   .resultSet<i1.$RemoteExifEntityTable>('remote_exif_entity')
                   .assetId,
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
-                  .id));
+              i4.ReadDatabaseContainer(
+                db,
+              ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity').id,
+            ),
+          );
 
   i3.$$RemoteAssetEntityTableProcessedTableManager get assetId {
     final $_column = $_itemColumn<String>('asset_id')!;
 
     final manager = i3
         .$$RemoteAssetEntityTableTableManager(
+          $_db,
+          i4.ReadDatabaseContainer(
             $_db,
-            i4.ReadDatabaseContainer($_db)
-                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'))
+          ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+        )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
     if (item == null) return manager;
     return i0.ProcessedTableManager(
-        manager.$state.copyWith(prefetchedData: [item]));
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
   }
 }
 
@@ -101,93 +115,134 @@ class $$RemoteExifEntityTableFilterComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnFilters<String> get city => $composableBuilder(
-      column: $table.city, builder: (column) => i0.ColumnFilters(column));
+    column: $table.city,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get state => $composableBuilder(
-      column: $table.state, builder: (column) => i0.ColumnFilters(column));
+    column: $table.state,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get country => $composableBuilder(
-      column: $table.country, builder: (column) => i0.ColumnFilters(column));
+    column: $table.country,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<DateTime> get dateTimeOriginal => $composableBuilder(
-      column: $table.dateTimeOriginal,
-      builder: (column) => i0.ColumnFilters(column));
+    column: $table.dateTimeOriginal,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get description => $composableBuilder(
-      column: $table.description,
-      builder: (column) => i0.ColumnFilters(column));
+    column: $table.description,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<int> get height => $composableBuilder(
-      column: $table.height, builder: (column) => i0.ColumnFilters(column));
+    column: $table.height,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<int> get width => $composableBuilder(
-      column: $table.width, builder: (column) => i0.ColumnFilters(column));
+    column: $table.width,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get exposureTime => $composableBuilder(
-      column: $table.exposureTime,
-      builder: (column) => i0.ColumnFilters(column));
+    column: $table.exposureTime,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<double> get fNumber => $composableBuilder(
-      column: $table.fNumber, builder: (column) => i0.ColumnFilters(column));
+    column: $table.fNumber,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<int> get fileSize => $composableBuilder(
-      column: $table.fileSize, builder: (column) => i0.ColumnFilters(column));
+    column: $table.fileSize,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<double> get focalLength => $composableBuilder(
-      column: $table.focalLength,
-      builder: (column) => i0.ColumnFilters(column));
+    column: $table.focalLength,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<double> get latitude => $composableBuilder(
-      column: $table.latitude, builder: (column) => i0.ColumnFilters(column));
+    column: $table.latitude,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<double> get longitude => $composableBuilder(
-      column: $table.longitude, builder: (column) => i0.ColumnFilters(column));
+    column: $table.longitude,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<int> get iso => $composableBuilder(
-      column: $table.iso, builder: (column) => i0.ColumnFilters(column));
+    column: $table.iso,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get make => $composableBuilder(
-      column: $table.make, builder: (column) => i0.ColumnFilters(column));
+    column: $table.make,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get model => $composableBuilder(
-      column: $table.model, builder: (column) => i0.ColumnFilters(column));
+    column: $table.model,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get lens => $composableBuilder(
-      column: $table.lens, builder: (column) => i0.ColumnFilters(column));
+    column: $table.lens,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get orientation => $composableBuilder(
-      column: $table.orientation,
-      builder: (column) => i0.ColumnFilters(column));
+    column: $table.orientation,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get timeZone => $composableBuilder(
-      column: $table.timeZone, builder: (column) => i0.ColumnFilters(column));
+    column: $table.timeZone,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<int> get rating => $composableBuilder(
-      column: $table.rating, builder: (column) => i0.ColumnFilters(column));
+    column: $table.rating,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i0.ColumnFilters<String> get projectionType => $composableBuilder(
-      column: $table.projectionType,
-      builder: (column) => i0.ColumnFilters(column));
+    column: $table.projectionType,
+    builder: (column) => i0.ColumnFilters(column),
+  );
 
   i3.$$RemoteAssetEntityTableFilterComposer get assetId {
     final i3.$$RemoteAssetEntityTableFilterComposer composer = $composerBuilder(
-        composer: this,
-        getCurrentColumn: (t) => t.assetId,
-        referencedTable: i4.ReadDatabaseContainer($db)
-            .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
-        getReferencedColumn: (t) => t.id,
-        builder: (joinBuilder,
-                {$addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer}) =>
-            i3.$$RemoteAssetEntityTableFilterComposer(
-              $db: $db,
-              $table: i4.ReadDatabaseContainer($db)
-                  .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
-              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-              joinBuilder: joinBuilder,
-              $removeJoinBuilderFromRootComposer:
-                  $removeJoinBuilderFromRootComposer,
-            ));
+      composer: this,
+      getCurrentColumn: (t) => t.assetId,
+      referencedTable: i4.ReadDatabaseContainer(
+        $db,
+      ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => i3.$$RemoteAssetEntityTableFilterComposer(
+            $db: $db,
+            $table: i4.ReadDatabaseContainer(
+              $db,
+            ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
     return composer;
   }
 }
@@ -202,96 +257,135 @@ class $$RemoteExifEntityTableOrderingComposer
     super.$removeJoinBuilderFromRootComposer,
   });
   i0.ColumnOrderings<String> get city => $composableBuilder(
-      column: $table.city, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.city,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get state => $composableBuilder(
-      column: $table.state, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.state,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get country => $composableBuilder(
-      column: $table.country, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.country,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<DateTime> get dateTimeOriginal => $composableBuilder(
-      column: $table.dateTimeOriginal,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.dateTimeOriginal,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get description => $composableBuilder(
-      column: $table.description,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.description,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<int> get height => $composableBuilder(
-      column: $table.height, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.height,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<int> get width => $composableBuilder(
-      column: $table.width, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.width,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get exposureTime => $composableBuilder(
-      column: $table.exposureTime,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.exposureTime,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<double> get fNumber => $composableBuilder(
-      column: $table.fNumber, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.fNumber,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<int> get fileSize => $composableBuilder(
-      column: $table.fileSize, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.fileSize,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<double> get focalLength => $composableBuilder(
-      column: $table.focalLength,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.focalLength,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<double> get latitude => $composableBuilder(
-      column: $table.latitude, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.latitude,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<double> get longitude => $composableBuilder(
-      column: $table.longitude,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.longitude,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<int> get iso => $composableBuilder(
-      column: $table.iso, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.iso,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get make => $composableBuilder(
-      column: $table.make, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.make,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get model => $composableBuilder(
-      column: $table.model, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.model,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get lens => $composableBuilder(
-      column: $table.lens, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.lens,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get orientation => $composableBuilder(
-      column: $table.orientation,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.orientation,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get timeZone => $composableBuilder(
-      column: $table.timeZone, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.timeZone,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<int> get rating => $composableBuilder(
-      column: $table.rating, builder: (column) => i0.ColumnOrderings(column));
+    column: $table.rating,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i0.ColumnOrderings<String> get projectionType => $composableBuilder(
-      column: $table.projectionType,
-      builder: (column) => i0.ColumnOrderings(column));
+    column: $table.projectionType,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 
   i3.$$RemoteAssetEntityTableOrderingComposer get assetId {
     final i3.$$RemoteAssetEntityTableOrderingComposer composer =
         $composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.assetId,
-            referencedTable: i4.ReadDatabaseContainer($db)
-                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
-            getReferencedColumn: (t) => t.id,
-            builder: (joinBuilder,
-                    {$addJoinBuilderToRootComposer,
-                    $removeJoinBuilderFromRootComposer}) =>
-                i3.$$RemoteAssetEntityTableOrderingComposer(
-                  $db: $db,
-                  $table: i4.ReadDatabaseContainer($db)
-                      .resultSet<i3.$RemoteAssetEntityTable>(
-                          'remote_asset_entity'),
-                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                  joinBuilder: joinBuilder,
-                  $removeJoinBuilderFromRootComposer:
-                      $removeJoinBuilderFromRootComposer,
-                ));
+          composer: this,
+          getCurrentColumn: (t) => t.assetId,
+          referencedTable: i4.ReadDatabaseContainer(
+            $db,
+          ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => i3.$$RemoteAssetEntityTableOrderingComposer(
+                $db: $db,
+                $table: i4.ReadDatabaseContainer(
+                  $db,
+                ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return composer;
   }
 }
@@ -315,10 +409,14 @@ class $$RemoteExifEntityTableAnnotationComposer
       $composableBuilder(column: $table.country, builder: (column) => column);
 
   i0.GeneratedColumn<DateTime> get dateTimeOriginal => $composableBuilder(
-      column: $table.dateTimeOriginal, builder: (column) => column);
+    column: $table.dateTimeOriginal,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<String> get description => $composableBuilder(
-      column: $table.description, builder: (column) => column);
+    column: $table.description,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<int> get height =>
       $composableBuilder(column: $table.height, builder: (column) => column);
@@ -327,7 +425,9 @@ class $$RemoteExifEntityTableAnnotationComposer
       $composableBuilder(column: $table.width, builder: (column) => column);
 
   i0.GeneratedColumn<String> get exposureTime => $composableBuilder(
-      column: $table.exposureTime, builder: (column) => column);
+    column: $table.exposureTime,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<double> get fNumber =>
       $composableBuilder(column: $table.fNumber, builder: (column) => column);
@@ -336,7 +436,9 @@ class $$RemoteExifEntityTableAnnotationComposer
       $composableBuilder(column: $table.fileSize, builder: (column) => column);
 
   i0.GeneratedColumn<double> get focalLength => $composableBuilder(
-      column: $table.focalLength, builder: (column) => column);
+    column: $table.focalLength,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<double> get latitude =>
       $composableBuilder(column: $table.latitude, builder: (column) => column);
@@ -357,7 +459,9 @@ class $$RemoteExifEntityTableAnnotationComposer
       $composableBuilder(column: $table.lens, builder: (column) => column);
 
   i0.GeneratedColumn<String> get orientation => $composableBuilder(
-      column: $table.orientation, builder: (column) => column);
+    column: $table.orientation,
+    builder: (column) => column,
+  );
 
   i0.GeneratedColumn<String> get timeZone =>
       $composableBuilder(column: $table.timeZone, builder: (column) => column);
@@ -366,48 +470,59 @@ class $$RemoteExifEntityTableAnnotationComposer
       $composableBuilder(column: $table.rating, builder: (column) => column);
 
   i0.GeneratedColumn<String> get projectionType => $composableBuilder(
-      column: $table.projectionType, builder: (column) => column);
+    column: $table.projectionType,
+    builder: (column) => column,
+  );
 
   i3.$$RemoteAssetEntityTableAnnotationComposer get assetId {
     final i3.$$RemoteAssetEntityTableAnnotationComposer composer =
         $composerBuilder(
-            composer: this,
-            getCurrentColumn: (t) => t.assetId,
-            referencedTable: i4.ReadDatabaseContainer($db)
-                .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
-            getReferencedColumn: (t) => t.id,
-            builder: (joinBuilder,
-                    {$addJoinBuilderToRootComposer,
-                    $removeJoinBuilderFromRootComposer}) =>
-                i3.$$RemoteAssetEntityTableAnnotationComposer(
-                  $db: $db,
-                  $table: i4.ReadDatabaseContainer($db)
-                      .resultSet<i3.$RemoteAssetEntityTable>(
-                          'remote_asset_entity'),
-                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                  joinBuilder: joinBuilder,
-                  $removeJoinBuilderFromRootComposer:
-                      $removeJoinBuilderFromRootComposer,
-                ));
+          composer: this,
+          getCurrentColumn: (t) => t.assetId,
+          referencedTable: i4.ReadDatabaseContainer(
+            $db,
+          ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => i3.$$RemoteAssetEntityTableAnnotationComposer(
+                $db: $db,
+                $table: i4.ReadDatabaseContainer(
+                  $db,
+                ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity'),
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return composer;
   }
 }
 
-class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
-    i0.GeneratedDatabase,
-    i1.$RemoteExifEntityTable,
-    i1.RemoteExifEntityData,
-    i1.$$RemoteExifEntityTableFilterComposer,
-    i1.$$RemoteExifEntityTableOrderingComposer,
-    i1.$$RemoteExifEntityTableAnnotationComposer,
-    $$RemoteExifEntityTableCreateCompanionBuilder,
-    $$RemoteExifEntityTableUpdateCompanionBuilder,
-    (i1.RemoteExifEntityData, i1.$$RemoteExifEntityTableReferences),
-    i1.RemoteExifEntityData,
-    i0.PrefetchHooks Function({bool assetId})> {
+class $$RemoteExifEntityTableTableManager
+    extends
+        i0.RootTableManager<
+          i0.GeneratedDatabase,
+          i1.$RemoteExifEntityTable,
+          i1.RemoteExifEntityData,
+          i1.$$RemoteExifEntityTableFilterComposer,
+          i1.$$RemoteExifEntityTableOrderingComposer,
+          i1.$$RemoteExifEntityTableAnnotationComposer,
+          $$RemoteExifEntityTableCreateCompanionBuilder,
+          $$RemoteExifEntityTableUpdateCompanionBuilder,
+          (i1.RemoteExifEntityData, i1.$$RemoteExifEntityTableReferences),
+          i1.RemoteExifEntityData,
+          i0.PrefetchHooks Function({bool assetId})
+        > {
   $$RemoteExifEntityTableTableManager(
-      i0.GeneratedDatabase db, i1.$RemoteExifEntityTable table)
-      : super(i0.TableManagerState(
+    i0.GeneratedDatabase db,
+    i1.$RemoteExifEntityTable table,
+  ) : super(
+        i0.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
@@ -416,115 +531,120 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
               .$$RemoteExifEntityTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               i1.$$RemoteExifEntityTableAnnotationComposer(
-                  $db: db, $table: table),
-          updateCompanionCallback: ({
-            i0.Value<String> assetId = const i0.Value.absent(),
-            i0.Value<String?> city = const i0.Value.absent(),
-            i0.Value<String?> state = const i0.Value.absent(),
-            i0.Value<String?> country = const i0.Value.absent(),
-            i0.Value<DateTime?> dateTimeOriginal = const i0.Value.absent(),
-            i0.Value<String?> description = const i0.Value.absent(),
-            i0.Value<int?> height = const i0.Value.absent(),
-            i0.Value<int?> width = const i0.Value.absent(),
-            i0.Value<String?> exposureTime = const i0.Value.absent(),
-            i0.Value<double?> fNumber = const i0.Value.absent(),
-            i0.Value<int?> fileSize = const i0.Value.absent(),
-            i0.Value<double?> focalLength = const i0.Value.absent(),
-            i0.Value<double?> latitude = const i0.Value.absent(),
-            i0.Value<double?> longitude = const i0.Value.absent(),
-            i0.Value<int?> iso = const i0.Value.absent(),
-            i0.Value<String?> make = const i0.Value.absent(),
-            i0.Value<String?> model = const i0.Value.absent(),
-            i0.Value<String?> lens = const i0.Value.absent(),
-            i0.Value<String?> orientation = const i0.Value.absent(),
-            i0.Value<String?> timeZone = const i0.Value.absent(),
-            i0.Value<int?> rating = const i0.Value.absent(),
-            i0.Value<String?> projectionType = const i0.Value.absent(),
-          }) =>
-              i1.RemoteExifEntityCompanion(
-            assetId: assetId,
-            city: city,
-            state: state,
-            country: country,
-            dateTimeOriginal: dateTimeOriginal,
-            description: description,
-            height: height,
-            width: width,
-            exposureTime: exposureTime,
-            fNumber: fNumber,
-            fileSize: fileSize,
-            focalLength: focalLength,
-            latitude: latitude,
-            longitude: longitude,
-            iso: iso,
-            make: make,
-            model: model,
-            lens: lens,
-            orientation: orientation,
-            timeZone: timeZone,
-            rating: rating,
-            projectionType: projectionType,
-          ),
-          createCompanionCallback: ({
-            required String assetId,
-            i0.Value<String?> city = const i0.Value.absent(),
-            i0.Value<String?> state = const i0.Value.absent(),
-            i0.Value<String?> country = const i0.Value.absent(),
-            i0.Value<DateTime?> dateTimeOriginal = const i0.Value.absent(),
-            i0.Value<String?> description = const i0.Value.absent(),
-            i0.Value<int?> height = const i0.Value.absent(),
-            i0.Value<int?> width = const i0.Value.absent(),
-            i0.Value<String?> exposureTime = const i0.Value.absent(),
-            i0.Value<double?> fNumber = const i0.Value.absent(),
-            i0.Value<int?> fileSize = const i0.Value.absent(),
-            i0.Value<double?> focalLength = const i0.Value.absent(),
-            i0.Value<double?> latitude = const i0.Value.absent(),
-            i0.Value<double?> longitude = const i0.Value.absent(),
-            i0.Value<int?> iso = const i0.Value.absent(),
-            i0.Value<String?> make = const i0.Value.absent(),
-            i0.Value<String?> model = const i0.Value.absent(),
-            i0.Value<String?> lens = const i0.Value.absent(),
-            i0.Value<String?> orientation = const i0.Value.absent(),
-            i0.Value<String?> timeZone = const i0.Value.absent(),
-            i0.Value<int?> rating = const i0.Value.absent(),
-            i0.Value<String?> projectionType = const i0.Value.absent(),
-          }) =>
-              i1.RemoteExifEntityCompanion.insert(
-            assetId: assetId,
-            city: city,
-            state: state,
-            country: country,
-            dateTimeOriginal: dateTimeOriginal,
-            description: description,
-            height: height,
-            width: width,
-            exposureTime: exposureTime,
-            fNumber: fNumber,
-            fileSize: fileSize,
-            focalLength: focalLength,
-            latitude: latitude,
-            longitude: longitude,
-            iso: iso,
-            make: make,
-            model: model,
-            lens: lens,
-            orientation: orientation,
-            timeZone: timeZone,
-            rating: rating,
-            projectionType: projectionType,
-          ),
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                i0.Value<String> assetId = const i0.Value.absent(),
+                i0.Value<String?> city = const i0.Value.absent(),
+                i0.Value<String?> state = const i0.Value.absent(),
+                i0.Value<String?> country = const i0.Value.absent(),
+                i0.Value<DateTime?> dateTimeOriginal = const i0.Value.absent(),
+                i0.Value<String?> description = const i0.Value.absent(),
+                i0.Value<int?> height = const i0.Value.absent(),
+                i0.Value<int?> width = const i0.Value.absent(),
+                i0.Value<String?> exposureTime = const i0.Value.absent(),
+                i0.Value<double?> fNumber = const i0.Value.absent(),
+                i0.Value<int?> fileSize = const i0.Value.absent(),
+                i0.Value<double?> focalLength = const i0.Value.absent(),
+                i0.Value<double?> latitude = const i0.Value.absent(),
+                i0.Value<double?> longitude = const i0.Value.absent(),
+                i0.Value<int?> iso = const i0.Value.absent(),
+                i0.Value<String?> make = const i0.Value.absent(),
+                i0.Value<String?> model = const i0.Value.absent(),
+                i0.Value<String?> lens = const i0.Value.absent(),
+                i0.Value<String?> orientation = const i0.Value.absent(),
+                i0.Value<String?> timeZone = const i0.Value.absent(),
+                i0.Value<int?> rating = const i0.Value.absent(),
+                i0.Value<String?> projectionType = const i0.Value.absent(),
+              }) => i1.RemoteExifEntityCompanion(
+                assetId: assetId,
+                city: city,
+                state: state,
+                country: country,
+                dateTimeOriginal: dateTimeOriginal,
+                description: description,
+                height: height,
+                width: width,
+                exposureTime: exposureTime,
+                fNumber: fNumber,
+                fileSize: fileSize,
+                focalLength: focalLength,
+                latitude: latitude,
+                longitude: longitude,
+                iso: iso,
+                make: make,
+                model: model,
+                lens: lens,
+                orientation: orientation,
+                timeZone: timeZone,
+                rating: rating,
+                projectionType: projectionType,
+              ),
+          createCompanionCallback:
+              ({
+                required String assetId,
+                i0.Value<String?> city = const i0.Value.absent(),
+                i0.Value<String?> state = const i0.Value.absent(),
+                i0.Value<String?> country = const i0.Value.absent(),
+                i0.Value<DateTime?> dateTimeOriginal = const i0.Value.absent(),
+                i0.Value<String?> description = const i0.Value.absent(),
+                i0.Value<int?> height = const i0.Value.absent(),
+                i0.Value<int?> width = const i0.Value.absent(),
+                i0.Value<String?> exposureTime = const i0.Value.absent(),
+                i0.Value<double?> fNumber = const i0.Value.absent(),
+                i0.Value<int?> fileSize = const i0.Value.absent(),
+                i0.Value<double?> focalLength = const i0.Value.absent(),
+                i0.Value<double?> latitude = const i0.Value.absent(),
+                i0.Value<double?> longitude = const i0.Value.absent(),
+                i0.Value<int?> iso = const i0.Value.absent(),
+                i0.Value<String?> make = const i0.Value.absent(),
+                i0.Value<String?> model = const i0.Value.absent(),
+                i0.Value<String?> lens = const i0.Value.absent(),
+                i0.Value<String?> orientation = const i0.Value.absent(),
+                i0.Value<String?> timeZone = const i0.Value.absent(),
+                i0.Value<int?> rating = const i0.Value.absent(),
+                i0.Value<String?> projectionType = const i0.Value.absent(),
+              }) => i1.RemoteExifEntityCompanion.insert(
+                assetId: assetId,
+                city: city,
+                state: state,
+                country: country,
+                dateTimeOriginal: dateTimeOriginal,
+                description: description,
+                height: height,
+                width: width,
+                exposureTime: exposureTime,
+                fNumber: fNumber,
+                fileSize: fileSize,
+                focalLength: focalLength,
+                latitude: latitude,
+                longitude: longitude,
+                iso: iso,
+                make: make,
+                model: model,
+                lens: lens,
+                orientation: orientation,
+                timeZone: timeZone,
+                rating: rating,
+                projectionType: projectionType,
+              ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (
-                    e.readTable(table),
-                    i1.$$RemoteExifEntityTableReferences(db, table, e)
-                  ))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  i1.$$RemoteExifEntityTableReferences(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: ({assetId = false}) {
             return i0.PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
-              addJoins: <
-                  T extends i0.TableManagerState<
+              addJoins:
+                  <
+                    T extends i0.TableManagerState<
                       dynamic,
                       dynamic,
                       dynamic,
@@ -535,41 +655,54 @@ class $$RemoteExifEntityTableTableManager extends i0.RootTableManager<
                       dynamic,
                       dynamic,
                       dynamic,
-                      dynamic>>(state) {
-                if (assetId) {
-                  state = state.withJoin(
-                    currentTable: table,
-                    currentColumn: table.assetId,
-                    referencedTable:
-                        i1.$$RemoteExifEntityTableReferences._assetIdTable(db),
-                    referencedColumn: i1.$$RemoteExifEntityTableReferences
-                        ._assetIdTable(db)
-                        .id,
-                  ) as T;
-                }
+                      dynamic
+                    >
+                  >(state) {
+                    if (assetId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.assetId,
+                                referencedTable: i1
+                                    .$$RemoteExifEntityTableReferences
+                                    ._assetIdTable(db),
+                                referencedColumn: i1
+                                    .$$RemoteExifEntityTableReferences
+                                    ._assetIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
 
-                return state;
-              },
+                    return state;
+                  },
               getPrefetchedDataCallback: (items) async {
                 return [];
               },
             );
           },
-        ));
+        ),
+      );
 }
 
-typedef $$RemoteExifEntityTableProcessedTableManager = i0.ProcessedTableManager<
-    i0.GeneratedDatabase,
-    i1.$RemoteExifEntityTable,
-    i1.RemoteExifEntityData,
-    i1.$$RemoteExifEntityTableFilterComposer,
-    i1.$$RemoteExifEntityTableOrderingComposer,
-    i1.$$RemoteExifEntityTableAnnotationComposer,
-    $$RemoteExifEntityTableCreateCompanionBuilder,
-    $$RemoteExifEntityTableUpdateCompanionBuilder,
-    (i1.RemoteExifEntityData, i1.$$RemoteExifEntityTableReferences),
-    i1.RemoteExifEntityData,
-    i0.PrefetchHooks Function({bool assetId})>;
+typedef $$RemoteExifEntityTableProcessedTableManager =
+    i0.ProcessedTableManager<
+      i0.GeneratedDatabase,
+      i1.$RemoteExifEntityTable,
+      i1.RemoteExifEntityData,
+      i1.$$RemoteExifEntityTableFilterComposer,
+      i1.$$RemoteExifEntityTableOrderingComposer,
+      i1.$$RemoteExifEntityTableAnnotationComposer,
+      $$RemoteExifEntityTableCreateCompanionBuilder,
+      $$RemoteExifEntityTableUpdateCompanionBuilder,
+      (i1.RemoteExifEntityData, i1.$$RemoteExifEntityTableReferences),
+      i1.RemoteExifEntityData,
+      i0.PrefetchHooks Function({bool assetId})
+    >;
+i0.Index get idxLatLng => i0.Index(
+  'idx_lat_lng',
+  'CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)',
+);
 
 class $RemoteExifEntityTable extends i2.RemoteExifEntity
     with i0.TableInfo<$RemoteExifEntityTable, i1.RemoteExifEntityData> {
@@ -577,165 +710,277 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   final i0.GeneratedDatabase attachedDatabase;
   final String? _alias;
   $RemoteExifEntityTable(this.attachedDatabase, [this._alias]);
-  static const i0.VerificationMeta _assetIdMeta =
-      const i0.VerificationMeta('assetId');
+  static const i0.VerificationMeta _assetIdMeta = const i0.VerificationMeta(
+    'assetId',
+  );
   @override
   late final i0.GeneratedColumn<String> assetId = i0.GeneratedColumn<String>(
-      'asset_id', aliasedName, false,
-      type: i0.DriftSqlType.string,
-      requiredDuringInsert: true,
-      defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-          'REFERENCES remote_asset_entity (id) ON DELETE CASCADE'));
-  static const i0.VerificationMeta _cityMeta =
-      const i0.VerificationMeta('city');
+    'asset_id',
+    aliasedName,
+    false,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'REFERENCES remote_asset_entity (id) ON DELETE CASCADE',
+    ),
+  );
+  static const i0.VerificationMeta _cityMeta = const i0.VerificationMeta(
+    'city',
+  );
   @override
   late final i0.GeneratedColumn<String> city = i0.GeneratedColumn<String>(
-      'city', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _stateMeta =
-      const i0.VerificationMeta('state');
+    'city',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _stateMeta = const i0.VerificationMeta(
+    'state',
+  );
   @override
   late final i0.GeneratedColumn<String> state = i0.GeneratedColumn<String>(
-      'state', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _countryMeta =
-      const i0.VerificationMeta('country');
+    'state',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _countryMeta = const i0.VerificationMeta(
+    'country',
+  );
   @override
   late final i0.GeneratedColumn<String> country = i0.GeneratedColumn<String>(
-      'country', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
+    'country',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _dateTimeOriginalMeta =
       const i0.VerificationMeta('dateTimeOriginal');
   @override
   late final i0.GeneratedColumn<DateTime> dateTimeOriginal =
-      i0.GeneratedColumn<DateTime>('date_time_original', aliasedName, true,
-          type: i0.DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const i0.VerificationMeta _descriptionMeta =
-      const i0.VerificationMeta('description');
+      i0.GeneratedColumn<DateTime>(
+        'date_time_original',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _descriptionMeta = const i0.VerificationMeta(
+    'description',
+  );
   @override
   late final i0.GeneratedColumn<String> description =
-      i0.GeneratedColumn<String>('description', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _heightMeta =
-      const i0.VerificationMeta('height');
+      i0.GeneratedColumn<String>(
+        'description',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _heightMeta = const i0.VerificationMeta(
+    'height',
+  );
   @override
   late final i0.GeneratedColumn<int> height = i0.GeneratedColumn<int>(
-      'height', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _widthMeta =
-      const i0.VerificationMeta('width');
+    'height',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _widthMeta = const i0.VerificationMeta(
+    'width',
+  );
   @override
   late final i0.GeneratedColumn<int> width = i0.GeneratedColumn<int>(
-      'width', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+    'width',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _exposureTimeMeta =
       const i0.VerificationMeta('exposureTime');
   @override
   late final i0.GeneratedColumn<String> exposureTime =
-      i0.GeneratedColumn<String>('exposure_time', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _fNumberMeta =
-      const i0.VerificationMeta('fNumber');
+      i0.GeneratedColumn<String>(
+        'exposure_time',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _fNumberMeta = const i0.VerificationMeta(
+    'fNumber',
+  );
   @override
   late final i0.GeneratedColumn<double> fNumber = i0.GeneratedColumn<double>(
-      'f_number', aliasedName, true,
-      type: i0.DriftSqlType.double, requiredDuringInsert: false);
-  static const i0.VerificationMeta _fileSizeMeta =
-      const i0.VerificationMeta('fileSize');
+    'f_number',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _fileSizeMeta = const i0.VerificationMeta(
+    'fileSize',
+  );
   @override
   late final i0.GeneratedColumn<int> fileSize = i0.GeneratedColumn<int>(
-      'file_size', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _focalLengthMeta =
-      const i0.VerificationMeta('focalLength');
+    'file_size',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _focalLengthMeta = const i0.VerificationMeta(
+    'focalLength',
+  );
   @override
   late final i0.GeneratedColumn<double> focalLength =
-      i0.GeneratedColumn<double>('focal_length', aliasedName, true,
-          type: i0.DriftSqlType.double, requiredDuringInsert: false);
-  static const i0.VerificationMeta _latitudeMeta =
-      const i0.VerificationMeta('latitude');
+      i0.GeneratedColumn<double>(
+        'focal_length',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _latitudeMeta = const i0.VerificationMeta(
+    'latitude',
+  );
   @override
   late final i0.GeneratedColumn<double> latitude = i0.GeneratedColumn<double>(
-      'latitude', aliasedName, true,
-      type: i0.DriftSqlType.double, requiredDuringInsert: false);
-  static const i0.VerificationMeta _longitudeMeta =
-      const i0.VerificationMeta('longitude');
+    'latitude',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _longitudeMeta = const i0.VerificationMeta(
+    'longitude',
+  );
   @override
   late final i0.GeneratedColumn<double> longitude = i0.GeneratedColumn<double>(
-      'longitude', aliasedName, true,
-      type: i0.DriftSqlType.double, requiredDuringInsert: false);
+    'longitude',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _isoMeta = const i0.VerificationMeta('iso');
   @override
   late final i0.GeneratedColumn<int> iso = i0.GeneratedColumn<int>(
-      'iso', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
-  static const i0.VerificationMeta _makeMeta =
-      const i0.VerificationMeta('make');
+    'iso',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _makeMeta = const i0.VerificationMeta(
+    'make',
+  );
   @override
   late final i0.GeneratedColumn<String> make = i0.GeneratedColumn<String>(
-      'make', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _modelMeta =
-      const i0.VerificationMeta('model');
+    'make',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _modelMeta = const i0.VerificationMeta(
+    'model',
+  );
   @override
   late final i0.GeneratedColumn<String> model = i0.GeneratedColumn<String>(
-      'model', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _lensMeta =
-      const i0.VerificationMeta('lens');
+    'model',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _lensMeta = const i0.VerificationMeta(
+    'lens',
+  );
   @override
   late final i0.GeneratedColumn<String> lens = i0.GeneratedColumn<String>(
-      'lens', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _orientationMeta =
-      const i0.VerificationMeta('orientation');
+    'lens',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _orientationMeta = const i0.VerificationMeta(
+    'orientation',
+  );
   @override
   late final i0.GeneratedColumn<String> orientation =
-      i0.GeneratedColumn<String>('orientation', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _timeZoneMeta =
-      const i0.VerificationMeta('timeZone');
+      i0.GeneratedColumn<String>(
+        'orientation',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const i0.VerificationMeta _timeZoneMeta = const i0.VerificationMeta(
+    'timeZone',
+  );
   @override
   late final i0.GeneratedColumn<String> timeZone = i0.GeneratedColumn<String>(
-      'time_zone', aliasedName, true,
-      type: i0.DriftSqlType.string, requiredDuringInsert: false);
-  static const i0.VerificationMeta _ratingMeta =
-      const i0.VerificationMeta('rating');
+    'time_zone',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const i0.VerificationMeta _ratingMeta = const i0.VerificationMeta(
+    'rating',
+  );
   @override
   late final i0.GeneratedColumn<int> rating = i0.GeneratedColumn<int>(
-      'rating', aliasedName, true,
-      type: i0.DriftSqlType.int, requiredDuringInsert: false);
+    'rating',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const i0.VerificationMeta _projectionTypeMeta =
       const i0.VerificationMeta('projectionType');
   @override
   late final i0.GeneratedColumn<String> projectionType =
-      i0.GeneratedColumn<String>('projection_type', aliasedName, true,
-          type: i0.DriftSqlType.string, requiredDuringInsert: false);
+      i0.GeneratedColumn<String>(
+        'projection_type',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
-        assetId,
-        city,
-        state,
-        country,
-        dateTimeOriginal,
-        description,
-        height,
-        width,
-        exposureTime,
-        fNumber,
-        fileSize,
-        focalLength,
-        latitude,
-        longitude,
-        iso,
-        make,
-        model,
-        lens,
-        orientation,
-        timeZone,
-        rating,
-        projectionType
-      ];
+    assetId,
+    city,
+    state,
+    country,
+    dateTimeOriginal,
+    description,
+    height,
+    width,
+    exposureTime,
+    fNumber,
+    fileSize,
+    focalLength,
+    latitude,
+    longitude,
+    iso,
+    make,
+    model,
+    lens,
+    orientation,
+    timeZone,
+    rating,
+    projectionType,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -743,111 +988,162 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   static const String $name = 'remote_exif_entity';
   @override
   i0.VerificationContext validateIntegrity(
-      i0.Insertable<i1.RemoteExifEntityData> instance,
-      {bool isInserting = false}) {
+    i0.Insertable<i1.RemoteExifEntityData> instance, {
+    bool isInserting = false,
+  }) {
     final context = i0.VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('asset_id')) {
-      context.handle(_assetIdMeta,
-          assetId.isAcceptableOrUnknown(data['asset_id']!, _assetIdMeta));
+      context.handle(
+        _assetIdMeta,
+        assetId.isAcceptableOrUnknown(data['asset_id']!, _assetIdMeta),
+      );
     } else if (isInserting) {
       context.missing(_assetIdMeta);
     }
     if (data.containsKey('city')) {
       context.handle(
-          _cityMeta, city.isAcceptableOrUnknown(data['city']!, _cityMeta));
+        _cityMeta,
+        city.isAcceptableOrUnknown(data['city']!, _cityMeta),
+      );
     }
     if (data.containsKey('state')) {
       context.handle(
-          _stateMeta, state.isAcceptableOrUnknown(data['state']!, _stateMeta));
+        _stateMeta,
+        state.isAcceptableOrUnknown(data['state']!, _stateMeta),
+      );
     }
     if (data.containsKey('country')) {
-      context.handle(_countryMeta,
-          country.isAcceptableOrUnknown(data['country']!, _countryMeta));
+      context.handle(
+        _countryMeta,
+        country.isAcceptableOrUnknown(data['country']!, _countryMeta),
+      );
     }
     if (data.containsKey('date_time_original')) {
       context.handle(
+        _dateTimeOriginalMeta,
+        dateTimeOriginal.isAcceptableOrUnknown(
+          data['date_time_original']!,
           _dateTimeOriginalMeta,
-          dateTimeOriginal.isAcceptableOrUnknown(
-              data['date_time_original']!, _dateTimeOriginalMeta));
+        ),
+      );
     }
     if (data.containsKey('description')) {
       context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
           _descriptionMeta,
-          description.isAcceptableOrUnknown(
-              data['description']!, _descriptionMeta));
+        ),
+      );
     }
     if (data.containsKey('height')) {
-      context.handle(_heightMeta,
-          height.isAcceptableOrUnknown(data['height']!, _heightMeta));
+      context.handle(
+        _heightMeta,
+        height.isAcceptableOrUnknown(data['height']!, _heightMeta),
+      );
     }
     if (data.containsKey('width')) {
       context.handle(
-          _widthMeta, width.isAcceptableOrUnknown(data['width']!, _widthMeta));
+        _widthMeta,
+        width.isAcceptableOrUnknown(data['width']!, _widthMeta),
+      );
     }
     if (data.containsKey('exposure_time')) {
       context.handle(
+        _exposureTimeMeta,
+        exposureTime.isAcceptableOrUnknown(
+          data['exposure_time']!,
           _exposureTimeMeta,
-          exposureTime.isAcceptableOrUnknown(
-              data['exposure_time']!, _exposureTimeMeta));
+        ),
+      );
     }
     if (data.containsKey('f_number')) {
-      context.handle(_fNumberMeta,
-          fNumber.isAcceptableOrUnknown(data['f_number']!, _fNumberMeta));
+      context.handle(
+        _fNumberMeta,
+        fNumber.isAcceptableOrUnknown(data['f_number']!, _fNumberMeta),
+      );
     }
     if (data.containsKey('file_size')) {
-      context.handle(_fileSizeMeta,
-          fileSize.isAcceptableOrUnknown(data['file_size']!, _fileSizeMeta));
+      context.handle(
+        _fileSizeMeta,
+        fileSize.isAcceptableOrUnknown(data['file_size']!, _fileSizeMeta),
+      );
     }
     if (data.containsKey('focal_length')) {
       context.handle(
+        _focalLengthMeta,
+        focalLength.isAcceptableOrUnknown(
+          data['focal_length']!,
           _focalLengthMeta,
-          focalLength.isAcceptableOrUnknown(
-              data['focal_length']!, _focalLengthMeta));
+        ),
+      );
     }
     if (data.containsKey('latitude')) {
-      context.handle(_latitudeMeta,
-          latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta));
+      context.handle(
+        _latitudeMeta,
+        latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta),
+      );
     }
     if (data.containsKey('longitude')) {
-      context.handle(_longitudeMeta,
-          longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta));
+      context.handle(
+        _longitudeMeta,
+        longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
+      );
     }
     if (data.containsKey('iso')) {
       context.handle(
-          _isoMeta, iso.isAcceptableOrUnknown(data['iso']!, _isoMeta));
+        _isoMeta,
+        iso.isAcceptableOrUnknown(data['iso']!, _isoMeta),
+      );
     }
     if (data.containsKey('make')) {
       context.handle(
-          _makeMeta, make.isAcceptableOrUnknown(data['make']!, _makeMeta));
+        _makeMeta,
+        make.isAcceptableOrUnknown(data['make']!, _makeMeta),
+      );
     }
     if (data.containsKey('model')) {
       context.handle(
-          _modelMeta, model.isAcceptableOrUnknown(data['model']!, _modelMeta));
+        _modelMeta,
+        model.isAcceptableOrUnknown(data['model']!, _modelMeta),
+      );
     }
     if (data.containsKey('lens')) {
       context.handle(
-          _lensMeta, lens.isAcceptableOrUnknown(data['lens']!, _lensMeta));
+        _lensMeta,
+        lens.isAcceptableOrUnknown(data['lens']!, _lensMeta),
+      );
     }
     if (data.containsKey('orientation')) {
       context.handle(
+        _orientationMeta,
+        orientation.isAcceptableOrUnknown(
+          data['orientation']!,
           _orientationMeta,
-          orientation.isAcceptableOrUnknown(
-              data['orientation']!, _orientationMeta));
+        ),
+      );
     }
     if (data.containsKey('time_zone')) {
-      context.handle(_timeZoneMeta,
-          timeZone.isAcceptableOrUnknown(data['time_zone']!, _timeZoneMeta));
+      context.handle(
+        _timeZoneMeta,
+        timeZone.isAcceptableOrUnknown(data['time_zone']!, _timeZoneMeta),
+      );
     }
     if (data.containsKey('rating')) {
-      context.handle(_ratingMeta,
-          rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta));
+      context.handle(
+        _ratingMeta,
+        rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta),
+      );
     }
     if (data.containsKey('projection_type')) {
       context.handle(
+        _projectionTypeMeta,
+        projectionType.isAcceptableOrUnknown(
+          data['projection_type']!,
           _projectionTypeMeta,
-          projectionType.isAcceptableOrUnknown(
-              data['projection_type']!, _projectionTypeMeta));
+        ),
+      );
     }
     return context;
   }
@@ -855,55 +1151,100 @@ class $RemoteExifEntityTable extends i2.RemoteExifEntity
   @override
   Set<i0.GeneratedColumn> get $primaryKey => {assetId};
   @override
-  i1.RemoteExifEntityData map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  i1.RemoteExifEntityData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return i1.RemoteExifEntityData(
-      assetId: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}asset_id'])!,
-      city: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}city']),
-      state: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}state']),
-      country: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}country']),
+      assetId: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}asset_id'],
+      )!,
+      city: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}city'],
+      ),
+      state: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}state'],
+      ),
+      country: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}country'],
+      ),
       dateTimeOriginal: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.dateTime,
-          data['${effectivePrefix}date_time_original']),
-      description: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}description']),
-      height: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}height']),
-      width: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}width']),
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}date_time_original'],
+      ),
+      description: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      height: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}height'],
+      ),
+      width: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}width'],
+      ),
       exposureTime: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string, data['${effectivePrefix}exposure_time']),
-      fNumber: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.double, data['${effectivePrefix}f_number']),
-      fileSize: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}file_size']),
-      focalLength: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.double, data['${effectivePrefix}focal_length']),
-      latitude: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.double, data['${effectivePrefix}latitude']),
-      longitude: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.double, data['${effectivePrefix}longitude']),
-      iso: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}iso']),
-      make: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}make']),
-      model: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}model']),
-      lens: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}lens']),
-      orientation: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}orientation']),
-      timeZone: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.string, data['${effectivePrefix}time_zone']),
-      rating: attachedDatabase.typeMapping
-          .read(i0.DriftSqlType.int, data['${effectivePrefix}rating']),
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}exposure_time'],
+      ),
+      fNumber: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.double,
+        data['${effectivePrefix}f_number'],
+      ),
+      fileSize: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}file_size'],
+      ),
+      focalLength: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.double,
+        data['${effectivePrefix}focal_length'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      ),
+      longitude: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
+      ),
+      iso: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}iso'],
+      ),
+      make: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}make'],
+      ),
+      model: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}model'],
+      ),
+      lens: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}lens'],
+      ),
+      orientation: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}orientation'],
+      ),
+      timeZone: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}time_zone'],
+      ),
+      rating: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.int,
+        data['${effectivePrefix}rating'],
+      ),
       projectionType: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string, data['${effectivePrefix}projection_type']),
+        i0.DriftSqlType.string,
+        data['${effectivePrefix}projection_type'],
+      ),
     );
   }
 
@@ -942,29 +1283,30 @@ class RemoteExifEntityData extends i0.DataClass
   final String? timeZone;
   final int? rating;
   final String? projectionType;
-  const RemoteExifEntityData(
-      {required this.assetId,
-      this.city,
-      this.state,
-      this.country,
-      this.dateTimeOriginal,
-      this.description,
-      this.height,
-      this.width,
-      this.exposureTime,
-      this.fNumber,
-      this.fileSize,
-      this.focalLength,
-      this.latitude,
-      this.longitude,
-      this.iso,
-      this.make,
-      this.model,
-      this.lens,
-      this.orientation,
-      this.timeZone,
-      this.rating,
-      this.projectionType});
+  const RemoteExifEntityData({
+    required this.assetId,
+    this.city,
+    this.state,
+    this.country,
+    this.dateTimeOriginal,
+    this.description,
+    this.height,
+    this.width,
+    this.exposureTime,
+    this.fNumber,
+    this.fileSize,
+    this.focalLength,
+    this.latitude,
+    this.longitude,
+    this.iso,
+    this.make,
+    this.model,
+    this.lens,
+    this.orientation,
+    this.timeZone,
+    this.rating,
+    this.projectionType,
+  });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
@@ -1035,16 +1377,19 @@ class RemoteExifEntityData extends i0.DataClass
     return map;
   }
 
-  factory RemoteExifEntityData.fromJson(Map<String, dynamic> json,
-      {i0.ValueSerializer? serializer}) {
+  factory RemoteExifEntityData.fromJson(
+    Map<String, dynamic> json, {
+    i0.ValueSerializer? serializer,
+  }) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return RemoteExifEntityData(
       assetId: serializer.fromJson<String>(json['assetId']),
       city: serializer.fromJson<String?>(json['city']),
       state: serializer.fromJson<String?>(json['state']),
       country: serializer.fromJson<String?>(json['country']),
-      dateTimeOriginal:
-          serializer.fromJson<DateTime?>(json['dateTimeOriginal']),
+      dateTimeOriginal: serializer.fromJson<DateTime?>(
+        json['dateTimeOriginal'],
+      ),
       description: serializer.fromJson<String?>(json['description']),
       height: serializer.fromJson<int?>(json['height']),
       width: serializer.fromJson<int?>(json['width']),
@@ -1093,57 +1438,57 @@ class RemoteExifEntityData extends i0.DataClass
     };
   }
 
-  i1.RemoteExifEntityData copyWith(
-          {String? assetId,
-          i0.Value<String?> city = const i0.Value.absent(),
-          i0.Value<String?> state = const i0.Value.absent(),
-          i0.Value<String?> country = const i0.Value.absent(),
-          i0.Value<DateTime?> dateTimeOriginal = const i0.Value.absent(),
-          i0.Value<String?> description = const i0.Value.absent(),
-          i0.Value<int?> height = const i0.Value.absent(),
-          i0.Value<int?> width = const i0.Value.absent(),
-          i0.Value<String?> exposureTime = const i0.Value.absent(),
-          i0.Value<double?> fNumber = const i0.Value.absent(),
-          i0.Value<int?> fileSize = const i0.Value.absent(),
-          i0.Value<double?> focalLength = const i0.Value.absent(),
-          i0.Value<double?> latitude = const i0.Value.absent(),
-          i0.Value<double?> longitude = const i0.Value.absent(),
-          i0.Value<int?> iso = const i0.Value.absent(),
-          i0.Value<String?> make = const i0.Value.absent(),
-          i0.Value<String?> model = const i0.Value.absent(),
-          i0.Value<String?> lens = const i0.Value.absent(),
-          i0.Value<String?> orientation = const i0.Value.absent(),
-          i0.Value<String?> timeZone = const i0.Value.absent(),
-          i0.Value<int?> rating = const i0.Value.absent(),
-          i0.Value<String?> projectionType = const i0.Value.absent()}) =>
-      i1.RemoteExifEntityData(
-        assetId: assetId ?? this.assetId,
-        city: city.present ? city.value : this.city,
-        state: state.present ? state.value : this.state,
-        country: country.present ? country.value : this.country,
-        dateTimeOriginal: dateTimeOriginal.present
-            ? dateTimeOriginal.value
-            : this.dateTimeOriginal,
-        description: description.present ? description.value : this.description,
-        height: height.present ? height.value : this.height,
-        width: width.present ? width.value : this.width,
-        exposureTime:
-            exposureTime.present ? exposureTime.value : this.exposureTime,
-        fNumber: fNumber.present ? fNumber.value : this.fNumber,
-        fileSize: fileSize.present ? fileSize.value : this.fileSize,
-        focalLength: focalLength.present ? focalLength.value : this.focalLength,
-        latitude: latitude.present ? latitude.value : this.latitude,
-        longitude: longitude.present ? longitude.value : this.longitude,
-        iso: iso.present ? iso.value : this.iso,
-        make: make.present ? make.value : this.make,
-        model: model.present ? model.value : this.model,
-        lens: lens.present ? lens.value : this.lens,
-        orientation: orientation.present ? orientation.value : this.orientation,
-        timeZone: timeZone.present ? timeZone.value : this.timeZone,
-        rating: rating.present ? rating.value : this.rating,
-        projectionType:
-            projectionType.present ? projectionType.value : this.projectionType,
-      );
+  i1.RemoteExifEntityData copyWith({
+    String? assetId,
+    i0.Value<String?> city = const i0.Value.absent(),
+    i0.Value<String?> state = const i0.Value.absent(),
+    i0.Value<String?> country = const i0.Value.absent(),
+    i0.Value<DateTime?> dateTimeOriginal = const i0.Value.absent(),
+    i0.Value<String?> description = const i0.Value.absent(),
+    i0.Value<int?> height = const i0.Value.absent(),
+    i0.Value<int?> width = const i0.Value.absent(),
+    i0.Value<String?> exposureTime = const i0.Value.absent(),
+    i0.Value<double?> fNumber = const i0.Value.absent(),
+    i0.Value<int?> fileSize = const i0.Value.absent(),
+    i0.Value<double?> focalLength = const i0.Value.absent(),
+    i0.Value<double?> latitude = const i0.Value.absent(),
+    i0.Value<double?> longitude = const i0.Value.absent(),
+    i0.Value<int?> iso = const i0.Value.absent(),
+    i0.Value<String?> make = const i0.Value.absent(),
+    i0.Value<String?> model = const i0.Value.absent(),
+    i0.Value<String?> lens = const i0.Value.absent(),
+    i0.Value<String?> orientation = const i0.Value.absent(),
+    i0.Value<String?> timeZone = const i0.Value.absent(),
+    i0.Value<int?> rating = const i0.Value.absent(),
+    i0.Value<String?> projectionType = const i0.Value.absent(),
+  }) => i1.RemoteExifEntityData(
+    assetId: assetId ?? this.assetId,
+    city: city.present ? city.value : this.city,
+    state: state.present ? state.value : this.state,
+    country: country.present ? country.value : this.country,
+    dateTimeOriginal: dateTimeOriginal.present
+        ? dateTimeOriginal.value
+        : this.dateTimeOriginal,
+    description: description.present ? description.value : this.description,
+    height: height.present ? height.value : this.height,
+    width: width.present ? width.value : this.width,
+    exposureTime: exposureTime.present ? exposureTime.value : this.exposureTime,
+    fNumber: fNumber.present ? fNumber.value : this.fNumber,
+    fileSize: fileSize.present ? fileSize.value : this.fileSize,
+    focalLength: focalLength.present ? focalLength.value : this.focalLength,
+    latitude: latitude.present ? latitude.value : this.latitude,
+    longitude: longitude.present ? longitude.value : this.longitude,
+    iso: iso.present ? iso.value : this.iso,
+    make: make.present ? make.value : this.make,
+    model: model.present ? model.value : this.model,
+    lens: lens.present ? lens.value : this.lens,
+    orientation: orientation.present ? orientation.value : this.orientation,
+    timeZone: timeZone.present ? timeZone.value : this.timeZone,
+    rating: rating.present ? rating.value : this.rating,
+    projectionType: projectionType.present
+        ? projectionType.value
+        : this.projectionType,
+  );
   RemoteExifEntityData copyWithCompanion(i1.RemoteExifEntityCompanion data) {
     return RemoteExifEntityData(
       assetId: data.assetId.present ? data.assetId.value : this.assetId,
@@ -1153,8 +1498,9 @@ class RemoteExifEntityData extends i0.DataClass
       dateTimeOriginal: data.dateTimeOriginal.present
           ? data.dateTimeOriginal.value
           : this.dateTimeOriginal,
-      description:
-          data.description.present ? data.description.value : this.description,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
       height: data.height.present ? data.height.value : this.height,
       width: data.width.present ? data.width.value : this.width,
       exposureTime: data.exposureTime.present
@@ -1162,16 +1508,18 @@ class RemoteExifEntityData extends i0.DataClass
           : this.exposureTime,
       fNumber: data.fNumber.present ? data.fNumber.value : this.fNumber,
       fileSize: data.fileSize.present ? data.fileSize.value : this.fileSize,
-      focalLength:
-          data.focalLength.present ? data.focalLength.value : this.focalLength,
+      focalLength: data.focalLength.present
+          ? data.focalLength.value
+          : this.focalLength,
       latitude: data.latitude.present ? data.latitude.value : this.latitude,
       longitude: data.longitude.present ? data.longitude.value : this.longitude,
       iso: data.iso.present ? data.iso.value : this.iso,
       make: data.make.present ? data.make.value : this.make,
       model: data.model.present ? data.model.value : this.model,
       lens: data.lens.present ? data.lens.value : this.lens,
-      orientation:
-          data.orientation.present ? data.orientation.value : this.orientation,
+      orientation: data.orientation.present
+          ? data.orientation.value
+          : this.orientation,
       timeZone: data.timeZone.present ? data.timeZone.value : this.timeZone,
       rating: data.rating.present ? data.rating.value : this.rating,
       projectionType: data.projectionType.present
@@ -1211,29 +1559,29 @@ class RemoteExifEntityData extends i0.DataClass
 
   @override
   int get hashCode => Object.hashAll([
-        assetId,
-        city,
-        state,
-        country,
-        dateTimeOriginal,
-        description,
-        height,
-        width,
-        exposureTime,
-        fNumber,
-        fileSize,
-        focalLength,
-        latitude,
-        longitude,
-        iso,
-        make,
-        model,
-        lens,
-        orientation,
-        timeZone,
-        rating,
-        projectionType
-      ]);
+    assetId,
+    city,
+    state,
+    country,
+    dateTimeOriginal,
+    description,
+    height,
+    width,
+    exposureTime,
+    fNumber,
+    fileSize,
+    focalLength,
+    latitude,
+    longitude,
+    iso,
+    make,
+    model,
+    lens,
+    orientation,
+    timeZone,
+    rating,
+    projectionType,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1384,29 +1732,30 @@ class RemoteExifEntityCompanion
     });
   }
 
-  i1.RemoteExifEntityCompanion copyWith(
-      {i0.Value<String>? assetId,
-      i0.Value<String?>? city,
-      i0.Value<String?>? state,
-      i0.Value<String?>? country,
-      i0.Value<DateTime?>? dateTimeOriginal,
-      i0.Value<String?>? description,
-      i0.Value<int?>? height,
-      i0.Value<int?>? width,
-      i0.Value<String?>? exposureTime,
-      i0.Value<double?>? fNumber,
-      i0.Value<int?>? fileSize,
-      i0.Value<double?>? focalLength,
-      i0.Value<double?>? latitude,
-      i0.Value<double?>? longitude,
-      i0.Value<int?>? iso,
-      i0.Value<String?>? make,
-      i0.Value<String?>? model,
-      i0.Value<String?>? lens,
-      i0.Value<String?>? orientation,
-      i0.Value<String?>? timeZone,
-      i0.Value<int?>? rating,
-      i0.Value<String?>? projectionType}) {
+  i1.RemoteExifEntityCompanion copyWith({
+    i0.Value<String>? assetId,
+    i0.Value<String?>? city,
+    i0.Value<String?>? state,
+    i0.Value<String?>? country,
+    i0.Value<DateTime?>? dateTimeOriginal,
+    i0.Value<String?>? description,
+    i0.Value<int?>? height,
+    i0.Value<int?>? width,
+    i0.Value<String?>? exposureTime,
+    i0.Value<double?>? fNumber,
+    i0.Value<int?>? fileSize,
+    i0.Value<double?>? focalLength,
+    i0.Value<double?>? latitude,
+    i0.Value<double?>? longitude,
+    i0.Value<int?>? iso,
+    i0.Value<String?>? make,
+    i0.Value<String?>? model,
+    i0.Value<String?>? lens,
+    i0.Value<String?>? orientation,
+    i0.Value<String?>? timeZone,
+    i0.Value<int?>? rating,
+    i0.Value<String?>? projectionType,
+  }) {
     return i1.RemoteExifEntityCompanion(
       assetId: assetId ?? this.assetId,
       city: city ?? this.city,

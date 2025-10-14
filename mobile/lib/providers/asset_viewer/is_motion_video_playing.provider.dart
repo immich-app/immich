@@ -1,8 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 /// Whether to display the video part of a motion photo
-final isPlayingMotionVideoProvider =
-    StateNotifierProvider<IsPlayingMotionVideo, bool>((ref) {
+final isPlayingMotionVideoProvider = StateNotifierProvider<IsPlayingMotionVideo, bool>((ref) {
   return IsPlayingMotionVideo(ref);
 });
 

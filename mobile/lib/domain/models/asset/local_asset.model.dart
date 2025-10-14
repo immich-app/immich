@@ -2,12 +2,12 @@ part of 'base_asset.model.dart';
 
 class LocalAsset extends BaseAsset {
   final String id;
-  final String? remoteId;
+  final String? remoteAssetId;
   final int orientation;
 
   const LocalAsset({
     required this.id,
-    this.remoteId,
+    String? remoteId,
     required super.name,
     super.checksum,
     required super.type,
@@ -19,11 +19,16 @@ class LocalAsset extends BaseAsset {
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
-  });
+  }) : remoteAssetId = remoteId;
 
   @override
-  AssetState get storage =>
-      remoteId == null ? AssetState.local : AssetState.merged;
+  String? get localId => id;
+
+  @override
+  String? get remoteId => remoteAssetId;
+
+  @override
+  AssetState get storage => remoteId == null ? AssetState.local : AssetState.merged;
 
   @override
   String get heroTag => '${id}_${remoteId ?? checksum}';
@@ -45,6 +50,7 @@ class LocalAsset extends BaseAsset {
  }''';
   }
 
+  // Not checking for remoteId here
   @override
   bool operator ==(Object other) {
     if (other is! LocalAsset) return false;
@@ -53,8 +59,7 @@ class LocalAsset extends BaseAsset {
   }
 
   @override
-  int get hashCode =>
-      super.hashCode ^ id.hashCode ^ remoteId.hashCode ^ orientation.hashCode;
+  int get hashCode => super.hashCode ^ id.hashCode ^ remoteId.hashCode ^ orientation.hashCode;
 
   LocalAsset copyWith({
     String? id,

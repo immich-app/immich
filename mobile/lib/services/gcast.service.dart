@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cast/session.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
@@ -41,11 +41,7 @@ class GCastService {
 
   void Function(CastState)? onCastState;
 
-  GCastService(
-    this._gCastRepository,
-    this._sessionsApiService,
-    this._assetApiRepository,
-  ) {
+  GCastService(this._gCastRepository, this._sessionsApiService, this._assetApiRepository) {
     _gCastRepository.onCastStatus = _onCastStatusCallback;
     _gCastRepository.onCastMessage = _onCastMessageCallback;
   }
@@ -71,8 +67,7 @@ class GCastService {
   }
 
   void _handleMediaStatus(Map<String, dynamic> message) {
-    final statusList =
-        (message['status'] as List).whereType<Map<String, dynamic>>().toList();
+    final statusList = (message['status'] as List).whereType<Map<String, dynamic>>().toList();
 
     if (statusList.isEmpty) {
       return;
@@ -101,9 +96,7 @@ class GCastService {
     }
 
     if (status["media"] != null && status["media"]["duration"] != null) {
-      final duration = Duration(
-        milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt(),
-      );
+      final duration = Duration(milliseconds: (status["media"]["duration"] * 1000 ?? 0).toInt());
       onDuration?.call(duration);
     }
 
@@ -112,8 +105,7 @@ class GCastService {
     }
 
     if (status["currentTime"] != null) {
-      final currentTime =
-          Duration(milliseconds: (status["currentTime"] * 1000 ?? 0).toInt());
+      final currentTime = Duration(milliseconds: (status["currentTime"] * 1000 ?? 0).toInt());
       onCurrentTime?.call(currentTime);
     }
   }
@@ -150,18 +142,15 @@ class GCastService {
 
     // we want to make sure we have at least 10 seconds remaining in the session
     // this is to account for network latency and other delays when sending the request
-    final bufferedExpiration =
-        tokenExpiration.subtract(const Duration(seconds: 10));
+    final bufferedExpiration = tokenExpiration.subtract(const Duration(seconds: 10));
 
     return bufferedExpiration.isAfter(DateTime.now());
   }
 
-  void loadMedia(Asset asset, bool reload) async {
+  void loadMedia(RemoteAsset asset, bool reload) async {
     if (!isConnected) {
       return;
-    } else if (asset.remoteId == null) {
-      return;
-    } else if (asset.remoteId == currentAssetId && !reload) {
+    } else if (asset.id == currentAssetId && !reload) {
       return;
     }
 
@@ -175,20 +164,13 @@ class GCastService {
     }
 
     final unauthenticatedUrl = asset.isVideo
-        ? getPlaybackUrlForRemoteId(
-            asset.remoteId!,
-          )
-        : getThumbnailUrlForRemoteId(
-            asset.remoteId!,
-            type: AssetMediaSize.fullsize,
-          );
+        ? getPlaybackUrlForRemoteId(asset.id)
+        : getThumbnailUrlForRemoteId(asset.id, type: AssetMediaSize.fullsize);
 
-    final authenticatedURL =
-        "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
+    final authenticatedURL = "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
 
     // get image mime type
-    final mimeType =
-        await _assetApiRepository.getAssetMIMEType(asset.remoteId!);
+    final mimeType = await _assetApiRepository.getAssetMIMEType(asset.id);
 
     if (mimeType == null) {
       return;
@@ -205,7 +187,7 @@ class GCastService {
       "autoplay": true,
     });
 
-    currentAssetId = asset.remoteId;
+    currentAssetId = asset.id;
 
     // we need to poll for media status since the cast device does not
     // send a message when the media is loaded for whatever reason
@@ -213,8 +195,7 @@ class GCastService {
     _mediaStatusPollingTimer?.cancel();
 
     if (asset.isVideo) {
-      _mediaStatusPollingTimer =
-          Timer.periodic(const Duration(milliseconds: 500), (timer) {
+      _mediaStatusPollingTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
         if (isConnected) {
           _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
             "type": "GET_STATUS",
@@ -228,17 +209,11 @@ class GCastService {
   }
 
   void play() {
-    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-      "type": "PLAY",
-      "mediaSessionId": _sessionId,
-    });
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "PLAY", "mediaSessionId": _sessionId});
   }
 
   void pause() {
-    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-      "type": "PAUSE",
-      "mediaSessionId": _sessionId,
-    });
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "PAUSE", "mediaSessionId": _sessionId});
   }
 
   void seekTo(Duration position) {
@@ -250,10 +225,7 @@ class GCastService {
   }
 
   void stop() {
-    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {
-      "type": "STOP",
-      "mediaSessionId": _sessionId,
-    });
+    _gCastRepository.sendMessage(CastSession.kNamespaceMedia, {"type": "STOP", "mediaSessionId": _sessionId});
     _mediaStatusPollingTimer?.cancel();
 
     currentAssetId = null;
@@ -266,18 +238,13 @@ class GCastService {
     final dests = await _gCastRepository.listDestinations();
 
     return dests
-        .map(
-      (device) => (
-        device.extras["fn"] ?? "Google Cast",
-        CastDestinationType.googleCast,
-        device
-      ),
-    )
+        .map((device) => (device.extras["fn"] ?? "Google Cast", CastDestinationType.googleCast, device))
         .where((device) {
-      final caString = device.$3.extras["ca"];
-      final caNumber = int.tryParse(caString ?? "0") ?? 0;
+          final caString = device.$3.extras["ca"];
+          final caNumber = int.tryParse(caString ?? "0") ?? 0;
 
-      return isDisplay(caNumber);
-    }).toList(growable: false);
+          return isDisplay(caNumber);
+        })
+        .toList(growable: false);
   }
 }

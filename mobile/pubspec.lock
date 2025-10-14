@@ -53,10 +53,10 @@ packages:
     dependency: "direct main"
     description:
       name: async
-      sha256: d2872f9c19731c2e5f10444b14686eb7cc85c76274bd6c16e1816bff9a3bab63
+      sha256: "758e6d74e971c3e5aceb4110bfd6698efc7f501675bcfe0c775459a8140750eb"
       url: "https://pub.dev"
     source: hosted
-    version: "2.12.0"
+    version: "2.13.0"
   auto_route:
     dependency: "direct main"
     description:
@@ -77,10 +77,10 @@ packages:
     dependency: "direct main"
     description:
       name: background_downloader
-      sha256: "2d4c2b7438e7643585880f9cc00ace16a52d778088751f1bfbf714627b315462"
+      sha256: "9ed74c55750932178f6989ba8a659687c2a102e05b70f561a1b3f047a5dda790"
       url: "https://pub.dev"
     source: hosted
-    version: "9.2.0"
+    version: "9.2.5"
   bonsoir:
     dependency: transitive
     description:
@@ -317,10 +317,10 @@ packages:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: "04bf81bb0b77de31557b58d052b24b3eee33f09a6e7a8c68a3e247c7df19ec27"
+      sha256: b5e72753cf63becce2c61fd04dfe0f1c430cc5278b53a1342dc5ad839eab29ec
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.3"
+    version: "6.1.5"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
@@ -437,18 +437,18 @@ packages:
     dependency: "direct main"
     description:
       name: device_info_plus
-      sha256: "306b78788d1bb569edb7c55d622953c2414ca12445b41c9117963e03afc5c513"
+      sha256: "49413c8ca514dea7633e8def233b25efdf83ec8522955cc2c0e3ad802927e7c6"
       url: "https://pub.dev"
     source: hosted
-    version: "11.3.3"
+    version: "12.1.0"
   device_info_plus_platform_interface:
     dependency: transitive
     description:
       name: device_info_plus_platform_interface
-      sha256: "0b04e02b30791224b31969eb1b50d723498f402971bff3630bca2ba839bd1ed2"
+      sha256: e1ea89119e34903dca74b883d0dd78eb762814f97fb6c76f35e9ff74d261a18f
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.2"
+    version: "7.0.3"
   drift:
     dependency: "direct main"
     description:
@@ -509,12 +509,12 @@ packages:
     dependency: "direct dev"
     description:
       name: fake_async
-      sha256: "6a95e56b2449df2273fd8c45a662d6947ce1ebb7aafe80e550a3f68297f3cacc"
+      sha256: "5368f224a74523e8d2e7399ea1638b37aecfca824a3cc4dfdf77bf1fa905ac44"
       url: "https://pub.dev"
     source: hosted
-    version: "1.3.2"
+    version: "1.3.3"
   ffi:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: ffi
       sha256: "289279317b4b16eb2bb7e271abccd4bf84ec9bdcbe999e278a94b804f5630418"
@@ -1007,10 +1007,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl
-      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
       url: "https://pub.dev"
     source: hosted
-    version: "0.19.0"
+    version: "0.20.2"
   io:
     dependency: transitive
     description:
@@ -1022,25 +1022,34 @@ packages:
   isar:
     dependency: "direct main"
     description:
-      name: isar
-      sha256: e17a9555bc7f22ff26568b8c64d019b4ffa2dc6bd4cb1c8d9b269aefd32e53ad
-      url: "https://pub.isar-community.dev"
-    source: hosted
+      path: "packages/isar"
+      ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
+      resolved-ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
+      url: "https://github.com/immich-app/isar"
+    source: git
     version: "3.1.8"
-  isar_flutter_libs:
+  isar_community:
+    dependency: transitive
+    description:
+      name: isar_community
+      sha256: "28f59e54636c45ba0bb1b3b7f2656f1c50325f740cea6efcd101900be3fba546"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.0-dev.3"
+  isar_community_flutter_libs:
     dependency: "direct main"
     description:
-      name: isar_flutter_libs
-      sha256: "78710781e658ce4bff59b3f38c5b2735e899e627f4e926e1221934e77b95231a"
-      url: "https://pub.isar-community.dev"
+      name: isar_community_flutter_libs
+      sha256: c2934fe755bb3181cb67602fd5df0d080b3d3eb52799f98623aa4fc5acbea010
+      url: "https://pub.dev"
     source: hosted
-    version: "3.1.8"
+    version: "3.3.0-dev.3"
   isar_generator:
     dependency: "direct dev"
     description:
       path: "packages/isar_generator"
-      ref: v3
-      resolved-ref: ad574f60ed6f39d2995cd16fc7dc3de9a646ef30
+      ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
+      resolved-ref: bb1dca40fe87a001122e5d43bc6254718cb49f3a
       url: "https://github.com/immich-app/isar"
     source: git
     version: "3.1.8"
@@ -1064,26 +1073,26 @@ packages:
     dependency: transitive
     description:
       name: leak_tracker
-      sha256: c35baad643ba394b40aac41080300150a4f08fd0fd6a10378f8f7c6bc161acec
+      sha256: "33e2e26bdd85a0112ec15400c8cbffea70d0f9c3407491f672a2fad47915e2de"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.8"
+    version: "11.0.2"
   leak_tracker_flutter_testing:
     dependency: transitive
     description:
       name: leak_tracker_flutter_testing
-      sha256: f8b613e7e6a13ec79cfdc0e97638fddb3ab848452eff057653abd3edba760573
+      sha256: "1dbc140bb5a23c75ea9c4811222756104fbcd1a27173f0c34ca01e16bea473c1"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.9"
+    version: "3.0.10"
   leak_tracker_testing:
     dependency: transitive
     description:
       name: leak_tracker_testing
-      sha256: "6ba465d5d76e67ddf503e1161d1f4a6bc42306f9d66ca1e8f079a47290fb06d3"
+      sha256: "8d5a2d49f4a66b49744b23b018848400d23e54caf9463f4eb20df3eb8acb2eb1"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
+    version: "3.0.2"
   lints:
     dependency: transitive
     description:
@@ -1208,8 +1217,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "5459d54"
-      resolved-ref: "5459d54cdc1cf4d99e2193b310052f1ebb5dcf43"
+      ref: "893894b"
+      resolved-ref: "893894b98b832be8a995a8d5d4c2289d0ad2d246"
       url: "https://github.com/immich-app/native_video_player"
     source: git
     version: "1.3.1"
@@ -1416,10 +1425,10 @@ packages:
     dependency: "direct dev"
     description:
       name: pigeon
-      sha256: a093af76026160bb5ff6eb98e3e678a301ffd1001ac0d90be558bc133a0c73f5
+      sha256: b65acb352dc5a5f8615d074a83419388cbcc249f07c6d8c78b5bc16680a55dda
       url: "https://pub.dev"
     source: hosted
-    version: "25.3.2"
+    version: "26.0.0"
   pinput:
     dependency: "direct main"
     description:
@@ -1429,7 +1438,7 @@ packages:
     source: hosted
     version: "5.0.1"
   platform:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: platform
       sha256: "5d6b1b0036a5f331ebc77c850ebc8506cbc1e9416c27e59b439f917a902a4984"
@@ -1556,6 +1565,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  scroll_date_picker:
+    dependency: "direct main"
+    description:
+      name: scroll_date_picker
+      sha256: "1b00a3e24d92c77aa84d5856cfe6a57fd5df5f645ce1a6af0feb3ec84bdffb34"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.8.0"
   scrollable_positioned_list:
     dependency: "direct main"
     description:
@@ -1689,6 +1706,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  sliver_tools:
+    dependency: "direct main"
+    description:
+      name: sliver_tools
+      sha256: eae28220badfb9d0559207badcbbc9ad5331aac829a88cb0964d330d2a4636a6
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.12"
   socket_io_client:
     dependency: "direct main"
     description:
@@ -1861,10 +1886,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: fb31f383e2ee25fbbfe06b40fe21e1e458d14080e3c67e7ba0acfde4df4e0bbd
+      sha256: "522f00f556e73044315fa4585ec3270f1808a4b186c936e612cab0b565ff1e00"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.4"
+    version: "0.7.6"
   thumbhash:
     dependency: "direct main"
     description:
@@ -2021,18 +2046,18 @@ packages:
     dependency: transitive
     description:
       name: vector_math
-      sha256: "80b3257d1492ce4d091729e3a67a60407d227c27241d6927be0130c98e741803"
+      sha256: d530bd74fea330e6e364cda7a85019c434070188383e1cd8d9777ee586914c5b
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.4"
+    version: "2.2.0"
   vm_service:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "0968250880a6c5fe7edc067ed0a13d4bae1577fe2771dcf3010d52c4a9d3ca14"
+      sha256: ddfa8d30d89985b96407efce8acbdd124701f96741f2d981ca860662f1c0dc02
       url: "https://pub.dev"
     source: hosted
-    version: "14.3.1"
+    version: "15.0.0"
   wakelock_plus:
     dependency: "direct main"
     description:
@@ -2085,10 +2110,10 @@ packages:
     dependency: transitive
     description:
       name: webdriver
-      sha256: "3d773670966f02a646319410766d3b5e1037efb7f07cc68f844d5e06cd4d61c8"
+      sha256: "2f3a14ca026957870cfd9c635b83507e0e51d8091568e90129fbf805aba7cade"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.4"
+    version: "3.1.0"
   win32:
     dependency: transitive
     description:
@@ -2154,5 +2179,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.7.0 <4.0.0"
-  flutter: ">=3.29.3"
+  dart: ">=3.8.0 <4.0.0"
+  flutter: ">=3.35.4"

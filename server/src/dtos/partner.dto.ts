@@ -1,16 +1,20 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { UserResponseDto } from 'src/dtos/user.dto';
 import { PartnerDirection } from 'src/repositories/partner.repository';
+import { ValidateEnum, ValidateUUID } from 'src/validation';
 
-export class UpdatePartnerDto {
+export class PartnerCreateDto {
+  @ValidateUUID()
+  sharedWithId!: string;
+}
+
+export class PartnerUpdateDto {
   @IsNotEmpty()
   inTimeline!: boolean;
 }
 
 export class PartnerSearchDto {
-  @IsEnum(PartnerDirection)
-  @ApiProperty({ enum: PartnerDirection, enumName: 'PartnerDirection' })
+  @ValidateEnum({ enum: PartnerDirection, name: 'PartnerDirection' })
   direction!: PartnerDirection;
 }
 

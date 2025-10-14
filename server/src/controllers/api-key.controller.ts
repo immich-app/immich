@@ -9,29 +9,35 @@ import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('API Keys')
 @Controller('api-keys')
-export class APIKeyController {
+export class ApiKeyController {
   constructor(private service: ApiKeyService) {}
 
   @Post()
-  @Authenticated({ permission: Permission.API_KEY_CREATE })
+  @Authenticated({ permission: Permission.ApiKeyCreate })
   createApiKey(@Auth() auth: AuthDto, @Body() dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     return this.service.create(auth, dto);
   }
 
   @Get()
-  @Authenticated({ permission: Permission.API_KEY_READ })
+  @Authenticated({ permission: Permission.ApiKeyRead })
   getApiKeys(@Auth() auth: AuthDto): Promise<APIKeyResponseDto[]> {
     return this.service.getAll(auth);
   }
 
+  @Get('me')
+  @Authenticated({ permission: false })
+  async getMyApiKey(@Auth() auth: AuthDto): Promise<APIKeyResponseDto> {
+    return this.service.getMine(auth);
+  }
+
   @Get(':id')
-  @Authenticated({ permission: Permission.API_KEY_READ })
+  @Authenticated({ permission: Permission.ApiKeyRead })
   getApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<APIKeyResponseDto> {
     return this.service.getById(auth, id);
   }
 
   @Put(':id')
-  @Authenticated({ permission: Permission.API_KEY_UPDATE })
+  @Authenticated({ permission: Permission.ApiKeyUpdate })
   updateApiKey(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -41,8 +47,8 @@ export class APIKeyController {
   }
 
   @Delete(':id')
+  @Authenticated({ permission: Permission.ApiKeyDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Authenticated({ permission: Permission.API_KEY_DELETE })
   deleteApiKey(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.delete(auth, id);
   }

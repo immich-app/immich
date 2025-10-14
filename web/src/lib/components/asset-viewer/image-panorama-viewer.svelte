@@ -1,11 +1,11 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { getAssetOriginalUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { isWebCompatibleImage } from '$lib/utils/asset-utils';
   import { AssetMediaSize, viewAsset, type AssetResponseDto } from '@immich/sdk';
+  import { LoadingSpinner } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -14,7 +14,7 @@
   const { asset }: Props = $props();
 
   const loadAssetData = async (id: string) => {
-    const data = await viewAsset({ id, size: AssetMediaSize.Preview, key: authManager.key });
+    const data = await viewAsset({ ...authManager.params, id, size: AssetMediaSize.Preview });
     return URL.createObjectURL(data);
   };
 </script>
@@ -25,7 +25,9 @@
   {:then [data, { default: PhotoSphereViewer }]}
     <PhotoSphereViewer
       panorama={data}
-      originalPanorama={isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : undefined}
+      originalPanorama={isWebCompatibleImage(asset)
+        ? getAssetOriginalUrl(asset.id)
+        : getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Fullsize, cacheKey: asset.thumbhash })}
     />
   {:catch}
     {$t('errors.failed_to_load_asset')}

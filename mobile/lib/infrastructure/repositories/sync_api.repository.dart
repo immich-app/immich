@@ -3,8 +3,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
-import 'package:immich_mobile/presentation/pages/dev/dev_logger.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -19,7 +20,8 @@ class SyncApiRepository {
   }
 
   Future<void> streamChanges(
-    Function(List<SyncEvent>, Function() abort) onData, {
+    Future<void> Function(List<SyncEvent>, Function() abort, Function() reset) onData, {
+    Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
   }) async {
@@ -27,20 +29,19 @@ class SyncApiRepository {
     final client = httpClient ?? http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
-    final headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/jsonlines+json',
-    };
+    final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
     final headerParams = <String, String>{};
     await _api.applyToParams([], headerParams);
     headers.addAll(headerParams);
 
+    final shouldReset = Store.get(StoreKey.shouldResetSync, false);
     final request = http.Request('POST', Uri.parse(endpoint));
     request.headers.addAll(headers);
     request.body = jsonEncode(
       SyncStreamDto(
         types: [
+          SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
           SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
@@ -56,7 +57,11 @@ class SyncApiRepository {
           SyncRequestType.memoryToAssetsV1,
           SyncRequestType.stacksV1,
           SyncRequestType.partnerStacksV1,
+          SyncRequestType.userMetadataV1,
+          SyncRequestType.peopleV1,
+          SyncRequestType.assetFacesV1,
         ],
+        reset: shouldReset,
       ).toJson(),
     );
 
@@ -70,16 +75,18 @@ class SyncApiRepository {
       shouldAbort = true;
     }
 
+    final reset = onReset ?? () {};
+
     try {
       final response = await client.send(request);
 
       if (response.statusCode != 200) {
         final errorBody = await response.stream.bytesToString();
-        throw ApiException(
-          response.statusCode,
-          'Failed to get sync stream: $errorBody',
-        );
+        throw ApiException(response.statusCode, 'Failed to get sync stream: $errorBody');
       }
+
+      // Reset after successful stream start
+      await Store.put(StoreKey.shouldResetSync, false);
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
         if (shouldAbort) {
@@ -95,23 +102,20 @@ class SyncApiRepository {
           continue;
         }
 
-        await onData(_parseLines(lines), abort);
+        await onData(_parseLines(lines), abort, reset);
         lines.clear();
       }
 
       if (lines.isNotEmpty && !shouldAbort) {
-        await onData(_parseLines(lines), abort);
+        await onData(_parseLines(lines), abort, reset);
       }
     } catch (error, stack) {
-      _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
       client.close();
     }
     stopwatch.stop();
-    _logger
-        .info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
-    DLog.log("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
+    _logger.info("Remote Sync completed in ${stopwatch.elapsed.inMilliseconds}ms");
   }
 
   List<SyncEvent> _parseLines(List<String> lines) {
@@ -136,6 +140,7 @@ class SyncApiRepository {
 }
 
 const _kResponseMap = <SyncEntityType, Function(Object)>{
+  SyncEntityType.authUserV1: SyncAuthUserV1.fromJson,
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
@@ -153,14 +158,17 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.albumUserV1: SyncAlbumUserV1.fromJson,
   SyncEntityType.albumUserBackfillV1: SyncAlbumUserV1.fromJson,
   SyncEntityType.albumUserDeleteV1: SyncAlbumUserDeleteV1.fromJson,
-  SyncEntityType.albumAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetCreateV1: SyncAssetV1.fromJson,
+  SyncEntityType.albumAssetUpdateV1: SyncAssetV1.fromJson,
   SyncEntityType.albumAssetBackfillV1: SyncAssetV1.fromJson,
-  SyncEntityType.albumAssetExifV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumAssetExifCreateV1: SyncAssetExifV1.fromJson,
+  SyncEntityType.albumAssetExifUpdateV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumAssetExifBackfillV1: SyncAssetExifV1.fromJson,
   SyncEntityType.albumToAssetV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetBackfillV1: SyncAlbumToAssetV1.fromJson,
   SyncEntityType.albumToAssetDeleteV1: SyncAlbumToAssetDeleteV1.fromJson,
-  SyncEntityType.syncAckV1: _SyncAckV1.fromJson,
+  SyncEntityType.syncAckV1: _SyncEmptyDto.fromJson,
+  SyncEntityType.syncResetV1: _SyncEmptyDto.fromJson,
   SyncEntityType.memoryV1: SyncMemoryV1.fromJson,
   SyncEntityType.memoryDeleteV1: SyncMemoryDeleteV1.fromJson,
   SyncEntityType.memoryToAssetV1: SyncMemoryAssetV1.fromJson,
@@ -170,8 +178,15 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.partnerStackV1: SyncStackV1.fromJson,
   SyncEntityType.partnerStackBackfillV1: SyncStackV1.fromJson,
   SyncEntityType.partnerStackDeleteV1: SyncStackDeleteV1.fromJson,
+  SyncEntityType.userMetadataV1: SyncUserMetadataV1.fromJson,
+  SyncEntityType.userMetadataDeleteV1: SyncUserMetadataDeleteV1.fromJson,
+  SyncEntityType.personV1: SyncPersonV1.fromJson,
+  SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
+  SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
+  SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
+  SyncEntityType.syncCompleteV1: _SyncEmptyDto.fromJson,
 };
 
-class _SyncAckV1 {
-  static _SyncAckV1? fromJson(dynamic _) => _SyncAckV1();
+class _SyncEmptyDto {
+  static _SyncEmptyDto? fromJson(dynamic _) => _SyncEmptyDto();
 }

@@ -24,11 +24,6 @@ const projects: CommunityProjectProps[] = [
     url: 'https://git.orenit.solutions/open/immichalbumpull',
   },
   {
-    title: 'Remove offline files',
-    description: 'A simple way to remove orphaned offline assets from the Immich database',
-    url: 'https://github.com/Thoroslives/immich_remove_offline_files',
-  },
-  {
     title: 'Immich-Tools',
     description: 'Provides scripts for handling problems on the repair page.',
     url: 'https://github.com/clumsyCoder00/Immich-Tools',
@@ -99,6 +94,31 @@ const projects: CommunityProjectProps[] = [
     title: 'Immich Upload Optimizer',
     description: 'Automatically optimize files uploaded to Immich in order to save storage space',
     url: 'https://github.com/miguelangel-nubla/immich-upload-optimizer',
+  },
+  {
+    title: 'Immich Machine Learning Load Balancer',
+    description: 'Speed up your machine learning by load balancing your requests to multiple computers',
+    url: 'https://github.com/apetersson/immich_ml_balancer',
+  },
+  {
+    title: 'Immich Drop Uploader',
+    description: 'A tiny, zero-login web app for collecting photos/videos from anyone into your Immich server.',
+    url: 'https://github.com/Nasogaa/immich-drop',
+  },
+  {
+    title: 'Immich Birthday Sync',
+    description: 'Bulk-upload and -download birthdays, with CardDAV sync support',
+    url: 'https://github.com/sid3windr/immich-birthday',
+  },
+  {
+    title: 'Immich Stack',
+    description: 'Auto-stack photos with identical filenames and differing extensions (i.e. JPG+RAW)',
+    url: 'https://github.com/sid3windr/immich-stack',
+  },
+  {
+    title: 'Immich Stack',
+    description: 'Automatically groups similar photos into stacks within the Immich photo management system.',
+    url: 'https://github.com/Majorfi/immich-stack/',
   },
 ];
 
