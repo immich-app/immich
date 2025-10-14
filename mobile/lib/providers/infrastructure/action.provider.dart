@@ -15,6 +15,7 @@ import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -260,10 +261,23 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> deleteLocal(ActionSource source, bool backedUpOnly) async {
+  Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
+    // Always perform the operation if there is only one merged asset
+    final assets = _getAssets(source);
+    bool? backedUpOnly = assets.length == 1 && assets.first.storage == AssetState.merged
+        ? true
+        : await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) => DeleteLocalOnlyDialog(onDeleteLocal: (_) {}),
+          );
+
+    if (backedUpOnly == null) {
+      // User cancelled the dialog
+      return null;
+    }
+
     final List<String> ids;
     if (backedUpOnly) {
-      final assets = _getAssets(source);
       ids = assets.where((asset) => asset.storage == AssetState.merged).map((asset) => asset.localId!).toList();
     } else {
       ids = _getLocalIdsForSource(source);

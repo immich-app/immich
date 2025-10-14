@@ -8,7 +8,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 /// This delete action has the following behavior:
@@ -23,17 +22,11 @@ class DeleteLocalActionButton extends ConsumerWidget {
       return;
     }
 
-    bool? backedUpOnly = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => DeleteLocalOnlyDialog(onDeleteLocal: (_) {}),
-    );
-
-    if (backedUpOnly == null) {
-      // User cancelled the dialog
+    final result = await ref.read(actionProvider.notifier).deleteLocal(source, context);
+    if (result == null) {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).deleteLocal(source, backedUpOnly);
     ref.read(multiSelectProvider.notifier).reset();
 
     if (source == ActionSource.viewer) {
