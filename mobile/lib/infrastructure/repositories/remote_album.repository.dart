@@ -221,6 +221,15 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         .get();
   }
 
+  Future<AlbumUserRole?> getUserRole(String albumId, String userId) async {
+    final query = _db.remoteAlbumUserEntity.select()
+      ..where((row) => row.albumId.equals(albumId) & row.userId.equals(userId))
+      ..limit(1);
+
+    final result = await query.getSingleOrNull();
+    return result?.role;
+  }
+
   Future<List<RemoteAsset>> getAssets(String albumId) {
     final query = _db.remoteAlbumAssetEntity.select().join([
       innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
