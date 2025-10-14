@@ -19,6 +19,7 @@
   import { user } from '$lib/stores/user.store';
   import { Button, IconButton } from '@immich/ui';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
@@ -37,6 +38,14 @@
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
   const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
+
+  onMount(async () => {
+    try {
+      await notificationManager.refresh();
+    } catch (error) {
+      console.error('Failed to load notifications on mount', error);
+    }
+  });
 </script>
 
 <svelte:window bind:innerWidth />
@@ -125,15 +134,25 @@
             onEscape: () => (shouldShowNotificationPanel = false),
           }}
         >
-          <IconButton
-            shape="round"
-            color={hasUnreadNotifications ? 'primary' : 'secondary'}
-            variant="ghost"
-            size="medium"
-            icon={hasUnreadNotifications ? mdiBellBadge : mdiBellOutline}
-            onclick={() => (shouldShowNotificationPanel = !shouldShowNotificationPanel)}
-            aria-label={$t('notifications')}
-          />
+          <div class="relative">
+            <IconButton
+              shape="round"
+              color={hasUnreadNotifications ? 'primary' : 'secondary'}
+              variant="ghost"
+              size="medium"
+              icon={hasUnreadNotifications ? mdiBellBadge : mdiBellOutline}
+              onclick={() => (shouldShowNotificationPanel = !shouldShowNotificationPanel)}
+              aria-label={$t('notifications')}
+            />
+
+            {#if hasUnreadNotifications}
+              <div
+                class="pointer-events-none absolute border top-0 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-light"
+              >
+                {notificationManager.notifications.length}
+              </div>
+            {/if}
+          </div>
 
           {#if shouldShowNotificationPanel}
             <NotificationPanel />
