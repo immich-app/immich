@@ -394,7 +394,6 @@ export class AlbumRepository {
       .select('asset.ownerId as userId')
       .select((eb) => eb.fn.countAll<number>().as('assetCount'))
       .groupBy('asset.ownerId')
-      .having((eb) => eb(eb.fn.countAll<number>(), '>', sql.lit(0)))
       .orderBy('assetCount', 'desc')
       .execute();
   }

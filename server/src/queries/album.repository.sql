@@ -420,7 +420,5 @@ where
   and "album_asset"."albumsId" = $1
 group by
   "asset"."ownerId"
-having
-  count(*) > 0
 order by
   "assetCount" desc
