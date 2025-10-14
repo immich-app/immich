@@ -113,7 +113,7 @@ abstract class NativeSyncApi {
   void cancelHashing();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  Map<String, List<PlatformAsset>> getTrashedAssets({
-    required bool sinceLastCheckpoint,
-  });
+  Map<String, List<PlatformAsset>> getTrashedAssets(
+    bool sinceLastCheckpoint,
+  );
 }
