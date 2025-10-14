@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { Insertable, Kysely, OrderByDirection, sql, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { MemorySearchDto } from 'src/dtos/memory.dto';
-import { AssetVisibility } from 'src/enum';
+import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { IBulkAsset } from 'src/types';
@@ -72,7 +72,12 @@ export class MemoryRepository implements IBulkAsset {
         ).as('assets'),
       )
       .selectAll('memory')
-      .orderBy('memoryAt', 'desc')
+      .$call((qb) =>
+        dto.order === AssetOrderWithRandom.Random
+          ? qb.orderBy(sql`RANDOM()`)
+          : qb.orderBy('memoryAt', (dto.order?.toLowerCase() || 'desc') as OrderByDirection),
+      )
+      .$if(dto.size !== undefined, (qb) => qb.limit(dto.size!))
       .execute();
   }
 
