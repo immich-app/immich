@@ -7,7 +7,7 @@
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import DateSelectionModal from '$lib/modals/DateSelectionModal.svelte';
+  import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
@@ -16,11 +16,10 @@
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
-  import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
+  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import { AssetMediaSize, getAssetInfo, updateAsset, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
@@ -56,7 +55,7 @@
   let people = $derived(asset.people || []);
   let unassignedFaces = $derived(asset.unassignedFaces || []);
   let showingHiddenPeople = $state(false);
-  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
   let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
@@ -109,24 +108,11 @@
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
-  const showChangeDate = async () => {
-    const result = await modalManager.show(DateSelectionModal, {
+  const showChangeDate = async () =>
+    await modalManager.show(AssetChangeDateModal, {
+      asset: toTimelineAsset(asset),
       initialDate: dateTime,
-      initialTimeZone: timeZone ?? '',
-      withDuration: false,
-      timezoneInput: false,
     });
-    if (!result) {
-      return;
-    }
-    try {
-      if (result.mode === 'absolute') {
-        await updateAsset({ id: asset.id, updateAssetDto: { dateTimeOriginal: result.date } });
-      }
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_date'));
-    }
-  };
 </script>
 
 <section class="relative p-2">

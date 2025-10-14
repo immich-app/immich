@@ -9,7 +9,8 @@
   import { AppRoute } from '$lib/constants';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import DateSelectionModal from '$lib/modals/DateSelectionModal.svelte';
+  import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
+
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -21,8 +22,6 @@
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
-  import { DateTime } from 'luxon';
-  import { t } from 'svelte-i18n';
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   interface Props {
@@ -143,27 +142,14 @@
     }
   });
 
-  const handleOpenDateModal = async () => {
-    const result = await modalManager.show(DateSelectionModal, {
-      withDuration: false,
-      title: $t('navigate_to_time'),
-      initialDate: DateTime.now(),
-      timezoneInput: false,
-    });
-    if (!result) {
-      return;
-    }
-    if (result.mode !== 'absolute') {
-      return;
-    }
-    const asset = await timelineManager.getClosestAssetToDate(result.dateTime.toObject());
-    if (asset) {
-      setFocusAsset(asset);
-    }
-  };
-
   const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
   const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
+
+  const handleOpenDateModal = async () =>
+    await modalManager.show(NavigateToDateModal, {
+      timelineManager,
+      onFocusOnAsset: setFocusAsset,
+    });
 
   let shortcutList = $derived(
     (() => {
@@ -183,6 +169,7 @@
         { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
         { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
         { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
+        { shortcut: { key: 'G' }, onShortcut: handleOpenDateModal },
         { shortcut: { key: 'G' }, onShortcut: handleOpenDateModal },
       ];
       if (onEscape) {

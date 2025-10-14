@@ -1,11 +1,9 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
-  import DateSelectionModal from '$lib/modals/DateSelectionModal.svelte';
+  import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
   import { user } from '$lib/stores/user.store';
   import { getSelectedAssets } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
   import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util.js';
-  import { updateAssets } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
@@ -42,34 +40,13 @@
     return { start: minTimestamp, end: maxTimestamp };
   };
 
-  const showChangeDate = async () => {
-    const result = await modalManager.show(DateSelectionModal, {
+  const showChangeDate = async () =>
+    await modalManager.show(AssetSelectionChangeDateModal, {
       initialDate: DateTime.now(),
+      assets: getOwnedAssets(),
       currentInterval: getCurrentInterval(),
+      clearSelect,
     });
-    if (!result) {
-      return;
-    }
-
-    const ids = getSelectedAssets(getOwnedAssets(), $user);
-
-    try {
-      if (result.mode === 'absolute') {
-        await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal: result.date } });
-      } else if (result.mode === 'relative') {
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids,
-            dateTimeRelative: result.duration,
-            timeZone: result.timeZone,
-          },
-        });
-      }
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_change_date'));
-    }
-    clearSelect();
-  };
 </script>
 
 {#if menuItem}
