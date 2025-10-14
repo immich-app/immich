@@ -391,14 +391,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.ocr, (qb) =>
       qb
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
-        .where(({ eb, val }) =>
-          eb.or([
-            eb('ocr_search.text', 'ilike', val(`%${options.ocr}%`)),
-            eb(sql`unaccent(ocr_search.text)`, 'ilike', sql`'%' || unaccent(${options.ocr}) || '%'`),
-          ])
-        )
+        .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${options.ocr!})`),
     )
-    
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('asset.isOffline', '=', options.isOffline!))
