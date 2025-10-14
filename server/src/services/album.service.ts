@@ -84,21 +84,14 @@ export class AlbumService extends BaseService {
     const hasSharedLink = (album.sharedLinks?.length ?? 0) > 0;
     const isShared = hasSharedUsers || hasSharedLink;
 
-    // Fetch contributor counts only for shared albums
-    let contributorCounts: { userId: string; assetCount: number }[] | undefined;
-    if (isShared) {
-      const rows = await this.albumRepository.getContributorCountsForId(album.id);
-      // Hide zeros as per requirements
-      contributorCounts = rows.filter(({ assetCount }) => assetCount > 0);
-    }
-
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
-      ...(contributorCounts && contributorCounts.length > 0 ? { contributorCounts } : {}),
+      // Fetch contributor counts only for shared albums
+      contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
 
