@@ -1,4 +1,4 @@
-import { LoginResponseDto, createPartner } from '@immich/sdk';
+import { LoginResponseDto, createPartner, getAssetInfo } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
@@ -100,6 +100,105 @@ describe('/partners', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual(expect.objectContaining({ id: user2.userId, inTimeline: false }));
+    });
+
+    it('should update partner with startDate', async () => {
+      const startDate = '2024-01-01T00:00:00.000Z';
+      const { status, body } = await request(app)
+        .put(`/partners/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ inTimeline: true, startDate });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: user2.userId, inTimeline: true, startDate }));
+    });
+
+    it('should clear partner startDate when set to null', async () => {
+      const { status, body } = await request(app)
+        .put(`/partners/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ inTimeline: true, startDate: null });
+
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ id: user2.userId, inTimeline: true }));
+      expect(body.startDate).toBeUndefined();
+    });
+  });
+
+  describe('POST /partners with startDate', () => {
+    it('should create partner with startDate', async () => {
+      const startDate = '2024-06-01T00:00:00.000Z';
+      const { status, body } = await request(app)
+        .post('/partners')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharedWithId: user3.userId, startDate });
+
+      expect(status).toBe(201);
+      expect(body).toEqual(expect.objectContaining({ id: user3.userId, startDate }));
+
+      // Clean up
+      await request(app).delete(`/partners/${user3.userId}`).set('Authorization', `Bearer ${user1.accessToken}`);
+    });
+  });
+
+  describe('GET /partners with startDate', () => {
+    it('should return partner with startDate in response', async () => {
+      const startDate = '2023-12-01T00:00:00.000Z';
+
+      // Create partner with startDate
+      await request(app)
+        .post('/partners')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ sharedWithId: user3.userId, startDate });
+
+      const { status, body } = await request(app)
+        .get('/partners')
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .query({ direction: 'shared-by' });
+
+      expect(status).toBe(200);
+      const partner = body.find((p: any) => p.id === user3.userId);
+      expect(partner).toBeDefined();
+      expect(partner.startDate).toBe(startDate);
+
+      // Clean up
+      await request(app).delete(`/partners/${user3.userId}`).set('Authorization', `Bearer ${user1.accessToken}`);
+    });
+  });
+
+  describe('Partner asset access with startDate', () => {
+    it('should filter partner assets by startDate', async () => {
+      // Create assets with different dates for user2
+      const oldAsset = await utils.createAsset(user2.accessToken, {
+        fileCreatedAt: new Date('2023-01-01T00:00:00.000Z').toISOString(),
+      });
+      const newAsset = await utils.createAsset(user2.accessToken, {
+        fileCreatedAt: new Date('2024-06-01T00:00:00.000Z').toISOString(),
+      });
+
+      // Set partner startDate to 2024-01-01
+      const startDate = '2024-01-01T00:00:00.000Z';
+      await request(app)
+        .put(`/partners/${user2.userId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ inTimeline: true, startDate });
+
+      // User1 should be able to access the new asset
+      const newAssetInfo = await getAssetInfo(
+        { id: newAsset.id },
+        { headers: asBearerAuth(user1.accessToken) },
+      );
+      expect(newAssetInfo.id).toBe(newAsset.id);
+
+      // User1 should NOT be able to access the old asset (before startDate)
+      // Note: Access check happens at permission level, not returning the asset
+      // We verify by checking if it appears in timeline/search results
+      const { status: oldStatus } = await request(app)
+        .get(`/assets/${oldAsset.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      // The old asset should be denied access (403) or not found (404) due to startDate filter
+      expect([403, 404]).toContain(oldStatus);
     });
   });
 

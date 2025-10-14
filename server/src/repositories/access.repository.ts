@@ -207,7 +207,14 @@ class AssetAccess {
           eb('asset.visibility', '=', sql.lit(AssetVisibility.Hidden)),
         ]),
       )
-
+      .$if(true, (qb) =>
+        qb.where((eb) =>
+          eb.or([
+            eb('partner.startDate', 'is', null),
+            eb('asset.localDateTime', '>=', eb.ref('partner.startDate')),
+          ]),
+        ),
+      )
       .where('asset.id', 'in', [...assetIds])
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
