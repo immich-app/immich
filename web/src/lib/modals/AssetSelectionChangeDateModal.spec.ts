@@ -12,10 +12,6 @@ describe('DateSelectionModal component', () => {
   const initialDate = DateTime.fromISO('2024-01-01');
   const initialTimeZone = 'Europe/Berlin';
 
-  const currentInterval = {
-    start: DateTime.fromISO('2000-02-01T14:00:00+01:00'),
-    end: DateTime.fromISO('2001-02-01T14:00:00+01:00'),
-  };
   const onClose = vi.fn();
 
   const getRelativeInputToggle = () => screen.getByTestId('edit-by-offset-switch');
@@ -43,7 +39,7 @@ describe('DateSelectionModal component', () => {
       initialDate,
       initialTimeZone,
       assets: [],
-      clearSelect: vitest.fn(),
+
       onClose,
     });
     expect(getDateInput().value).toBe('2024-01-01T00:00');
@@ -52,7 +48,7 @@ describe('DateSelectionModal component', () => {
 
   test('calls onConfirm with correct date on confirm', async () => {
     render(AssetSelectionChangeDateModal, {
-      props: { initialDate, initialTimeZone, assets: [], clearSelect: vitest.fn(), onClose },
+      props: { initialDate, initialTimeZone, assets: [], onClose },
     });
 
     await fireEvent.click(getConfirmButton());
@@ -67,7 +63,7 @@ describe('DateSelectionModal component', () => {
 
   test('calls onCancel on cancel', async () => {
     render(AssetSelectionChangeDateModal, {
-      props: { initialDate, initialTimeZone, assets: [], clearSelect: vitest.fn(), onClose },
+      props: { initialDate, initialTimeZone, assets: [], onClose },
     });
 
     await fireEvent.click(getCancelButton());
@@ -83,7 +79,6 @@ describe('DateSelectionModal component', () => {
         initialDate: dstDate,
         initialTimeZone,
         assets: [],
-        clearSelect: vitest.fn(),
         onClose,
       });
 
@@ -92,7 +87,7 @@ describe('DateSelectionModal component', () => {
 
     test('calls onConfirm with correct date on confirm', async () => {
       render(AssetSelectionChangeDateModal, {
-        props: { initialDate: dstDate, initialTimeZone, assets: [], clearSelect: vitest.fn(), onClose },
+        props: { initialDate: dstDate, initialTimeZone, assets: [], onClose },
       });
 
       await fireEvent.click(getConfirmButton());
@@ -108,7 +103,7 @@ describe('DateSelectionModal component', () => {
 
   test('calls onConfirm with correct offset in relative mode', async () => {
     render(AssetSelectionChangeDateModal, {
-      props: { initialDate, initialTimeZone, currentInterval, assets: [], clearSelect: vitest.fn(), onClose },
+      props: { initialDate, initialTimeZone, assets: [], onClose },
     });
 
     await fireEvent.click(getRelativeInputToggle());
@@ -139,7 +134,7 @@ describe('DateSelectionModal component', () => {
   test('calls onConfirm with correct timeZone in relative mode', async () => {
     const user = userEvent.setup();
     render(AssetSelectionChangeDateModal, {
-      props: { initialDate, initialTimeZone, currentInterval, assets: [], clearSelect: vitest.fn(), onClose },
+      props: { initialDate, initialTimeZone, assets: [], onClose },
     });
 
     await user.click(getRelativeInputToggle());

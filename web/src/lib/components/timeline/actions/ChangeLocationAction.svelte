@@ -2,7 +2,7 @@
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { user } from '$lib/stores/user.store';
-  import { getSelectedAssets } from '$lib/utils/asset-utils';
+  import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
@@ -25,7 +25,7 @@
       return;
     }
 
-    const ids = getSelectedAssets(getOwnedAssets(), $user);
+    const ids = getOwnedAssetsWithWarning(getOwnedAssets(), $user);
 
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, latitude: point.lat, longitude: point.lng } });

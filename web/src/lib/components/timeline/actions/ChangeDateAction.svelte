@@ -1,12 +1,9 @@
 <script lang="ts">
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
-  import { user } from '$lib/stores/user.store';
-  import { getSelectedAssets } from '$lib/utils/asset-utils';
-  import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util.js';
   import { modalManager } from '@immich/ui';
   import { mdiCalendarEditOutline } from '@mdi/js';
-  import { DateTime, Duration } from 'luxon';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   interface Props {
@@ -16,37 +13,15 @@
   let { menuItem = false }: Props = $props();
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  const getCurrentInterval = () => {
-    const ids = getSelectedAssets(getOwnedAssets(), $user);
-    const assets = getOwnedAssets().filter((asset) => ids.includes(asset.id));
-    const imageTimestamps = assets.map((asset) => {
-      let localDateTime = fromTimelinePlainDateTime(asset.localDateTime);
-      let fileCreatedAt = fromTimelinePlainDateTime(asset.fileCreatedAt);
-      let offsetMinutes = localDateTime.diff(fileCreatedAt, 'minutes').shiftTo('minutes').minutes;
-      const timeZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: offsetMinutes }).toFormat('hh:mm')}`;
-      return fileCreatedAt.setZone('utc', { keepLocalTime: true }).setZone(timeZone);
-    });
-    let minTimestamp = imageTimestamps[0];
-    let maxTimestamp = imageTimestamps[0];
-    for (let current of imageTimestamps) {
-      if (current < minTimestamp) {
-        minTimestamp = current;
-      }
-
-      if (current > maxTimestamp) {
-        maxTimestamp = current;
-      }
-    }
-    return { start: minTimestamp, end: maxTimestamp };
-  };
-
-  const showChangeDate = async () =>
-    await modalManager.show(AssetSelectionChangeDateModal, {
+  const showChangeDate = async () => {
+    const success = await modalManager.show(AssetSelectionChangeDateModal, {
       initialDate: DateTime.now(),
       assets: getOwnedAssets(),
-      currentInterval: getCurrentInterval(),
-      clearSelect,
     });
+    if (success) {
+      clearSelect();
+    }
+  };
 </script>
 
 {#if menuItem}

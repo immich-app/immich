@@ -9,11 +9,10 @@
   import { t } from 'svelte-i18n';
   interface Props {
     timelineManager: TimelineManager;
-    onFocusOnAsset: (asset: TimelineAsset) => void;
-    onClose: (success: boolean) => void;
+    onClose: (asset?: TimelineAsset) => void;
   }
 
-  let { timelineManager, onFocusOnAsset, onClose }: Props = $props();
+  let { timelineManager, onClose }: Props = $props();
 
   const initialDate = DateTime.now();
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
@@ -23,27 +22,21 @@
 
   const handleClose = async () => {
     if (!date.isValid || !selectedOption) {
-      onClose(false);
+      onClose();
       return;
     }
 
     // Get the local date/time components from the selected string using neutral timezone
-    const dateTime = toDatetime(selectedDate, selectedOption);
-    const asset = await timelineManager.getClosestAssetToDate(dateTime);
-    if (asset) {
-      onFocusOnAsset(asset);
-      onClose(true);
-      return;
-    }
-
-    onClose(false);
+    const dateTime = toDatetime(selectedDate, selectedOption) as DateTime<true>;
+    const asset = await timelineManager.getClosestAssetToDate(dateTime.toObject());
+    onClose(asset);
   };
 
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
-<Modal title={$t('navigate_to_time')} icon={mdiNavigationVariantOutline} onClose={() => onClose(false)}>
+<Modal title={$t('navigate_to_time')} icon={mdiNavigationVariantOutline} onClose={() => onClose()}>
   <ModalBody>
     <VStack fullWidth>
       <HStack fullWidth>
@@ -61,7 +54,7 @@
   </ModalBody>
   <ModalFooter>
     <HStack fullWidth>
-      <Button shape="round" color="secondary" fullWidth onclick={() => onClose(false)}>{$t('cancel')}</Button>
+      <Button shape="round" color="secondary" fullWidth onclick={() => onClose()}>{$t('cancel')}</Button>
       <Button shape="round" type="submit" fullWidth onclick={handleClose}>{$t('confirm')}</Button>
     </HStack>
   </ModalFooter>

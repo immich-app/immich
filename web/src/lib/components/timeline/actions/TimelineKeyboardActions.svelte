@@ -10,7 +10,6 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
-
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -22,7 +21,6 @@
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
-  let { isViewing: showAssetViewer } = assetViewingStore;
 
   interface Props {
     timelineManager: TimelineManager;
@@ -39,6 +37,8 @@
     onEscape,
     scrollToAsset,
   }: Props = $props();
+
+  const { isViewing: showAssetViewer } = assetViewingStore;
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
@@ -145,11 +145,14 @@
   const setFocusTo = setFocusToInit.bind(undefined, scrollToAsset, timelineManager);
   const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
 
-  const handleOpenDateModal = async () =>
-    await modalManager.show(NavigateToDateModal, {
+  const handleOpenDateModal = async () => {
+    const asset = await modalManager.show(NavigateToDateModal, {
       timelineManager,
-      onFocusOnAsset: setFocusAsset,
     });
+    if (asset) {
+      setFocusAsset(asset);
+    }
+  };
 
   let shortcutList = $derived(
     (() => {

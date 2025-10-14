@@ -40,8 +40,8 @@
       onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_date'));
+      onClose(false);
     }
-    onClose(false);
   };
 
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
