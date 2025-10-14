@@ -106,7 +106,7 @@ class SyncStreamService {
           await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
           await _applyRemoteRestoreToLocal();
         }
-        return Future.value();
+        return;
       case SyncEntityType.assetDeleteV1:
         return _syncStreamRepository.deleteAssetsV1(data.cast());
       case SyncEntityType.assetExifV1:

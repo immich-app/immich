@@ -292,16 +292,7 @@ class LocalSyncService {
   }
 
   Future<void> _syncTrashedAssets({required bool sinceLastCheckpoint}) async {
-    final backupAlbums = await _localAlbumRepository.getBackupAlbums();
-    if (backupAlbums.isEmpty) {
-      _log.info("syncTrashedAssets, No local backup albums found");
-      return;
-    }
-    final albumIds = backupAlbums.map((e) => e.id).toList();
-    final trashedAssetMap = await _nativeSyncApi.getTrashedAssets(
-      albumIds: albumIds,
-      sinceLastCheckpoint: sinceLastCheckpoint,
-    );
+    final trashedAssetMap = await _nativeSyncApi.getTrashedAssets(sinceLastCheckpoint);
     if (trashedAssetMap.isEmpty) {
       _log.info("syncTrashedAssets, No trashed assets found ${sinceLastCheckpoint ? "since Last Checkpoint" : ""}");
     }

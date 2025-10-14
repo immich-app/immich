@@ -90,27 +90,20 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
   }
 
   override fun getTrashedAssets(
-    albumIds: List<String>,
     sinceLastCheckpoint: Boolean
   ): Map<String, List<PlatformAsset>> {
-    if (albumIds.isEmpty()) return emptyMap()
 
-    val result = LinkedHashMap<String, MutableList<PlatformAsset>>(albumIds.size)
+    val result = LinkedHashMap<String, MutableList<PlatformAsset>>()
     val volumes = MediaStore.getExternalVolumeNames(ctx)
 
-    val placeholders = albumIds.joinToString(",") { "?" }
-    val bucketIn = "(${MediaStore.Files.FileColumns.BUCKET_ID} IN ($placeholders))"
-    val baseSelection = "$bucketIn AND $MEDIA_SELECTION"
-
-    val baseSelectionArgs = ArrayList<String>(albumIds.size + MEDIA_SELECTION_ARGS.size).apply {
-      addAll(albumIds)
+    val baseSelectionArgs = ArrayList<String>(MEDIA_SELECTION_ARGS.size).apply {
       addAll(MEDIA_SELECTION_ARGS)
     }
 
     val genMap = if (sinceLastCheckpoint) getSavedGenerationMap() else emptyMap()
 
     for (volume in volumes) {
-      var selection = baseSelection
+      var selection = MEDIA_SELECTION
       val selectionArgs = ArrayList<String>(baseSelectionArgs.size + if (sinceLastCheckpoint) 2 else 0).apply {
         addAll(baseSelectionArgs)
       }

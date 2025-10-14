@@ -82,7 +82,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
           final companion = TrashedLocalAssetEntityCompanion.insert(
             id: item.asset.id,
             albumId: item.albumId,
-            checksum: effectiveChecksum == null ? const Value.absent() : Value(effectiveChecksum),
+            checksum: Value(effectiveChecksum),
             name: item.asset.name,
             type: item.asset.type,
             createdAt: Value(item.asset.createdAt),
@@ -179,7 +179,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
           TrashedLocalAssetEntityCompanion(
             id: Value(asset.id),
             name: Value(asset.name),
-            // albumId: Value(entry.key),
+            albumId: Value(entry.key),
             checksum: asset.checksum == null ? const Value.absent() : Value(asset.checksum),
             type: Value(asset.type),
             width: Value(asset.width),
@@ -195,15 +195,13 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     }
 
     await _db.transaction(() async {
-      await _db.batch((batch) {
-        for (final slice in companions.slices(32000)) {
-          batch.insertAllOnConflictUpdate(_db.trashedLocalAssetEntity, slice);
-        }
+      for (final companion in companions) {
+        await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
+      }
 
-        for (final id in idToDelete) {
-          batch.deleteWhere(_db.localAssetEntity, (row) => row.id.equals(id));
-        }
-      });
+      for (final id in idToDelete) {
+        await (_db.delete(_db.localAssetEntity)..where((row) => row.id.equals(id))).go();
+      }
     });
   }
 

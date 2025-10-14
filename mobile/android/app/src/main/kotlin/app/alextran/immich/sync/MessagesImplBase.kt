@@ -282,15 +282,12 @@ open class NativeSyncApiImplBase(context: Context) {
   }
 
   private suspend fun hashAsset(assetId: String): HashResult {
-    val assetUri = ContentUris.withAppendedId(
-      MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-      assetId.toLong()
-    )
-    return hashAssetFromUri(assetId, assetUri)
-  }
-
-  protected suspend fun hashAssetFromUri(assetId: String, assetUri: Uri): HashResult {
     return try {
+      val assetUri = ContentUris.withAppendedId(
+        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
+        assetId.toLong()
+      )
+
       val digest = MessageDigest.getInstance("SHA-1")
       ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
         var bytesRead: Int

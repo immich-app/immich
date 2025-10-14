@@ -364,7 +364,7 @@ protocol NativeSyncApi {
   func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
-  func getTrashedAssets(albumIds: [String], sinceLastCheckpoint: Bool) throws -> [String: [PlatformAsset]]
+  func getTrashedAssets(sinceLastCheckpoint: Bool) throws -> [String: [PlatformAsset]]
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -539,10 +539,9 @@ class NativeSyncApiSetup {
     if let api = api {
       getTrashedAssetsChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
-        let albumIdsArg = args[0] as! [String]
-        let sinceLastCheckpointArg = args[1] as! Bool
+        let sinceLastCheckpointArg = args[0] as! Bool
         do {
-          let result = try api.getTrashedAssets(albumIds: albumIdsArg, sinceLastCheckpoint: sinceLastCheckpointArg)
+          let result = try api.getTrashedAssets(sinceLastCheckpoint: sinceLastCheckpointArg)
           reply(wrapResult(result))
         } catch {
           reply(wrapError(error))
