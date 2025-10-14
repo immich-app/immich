@@ -455,8 +455,8 @@ importers:
         specifier: ^5.0.0
         version: 5.4.3(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
-        specifier: 3.1.1
-        version: 3.1.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(kysely@0.28.2)(reflect-metadata@0.2.2)
+        specifier: 3.0.0
+        version: 3.0.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(kysely@0.28.2)(reflect-metadata@0.2.2)
       nestjs-otel:
         specifier: ^7.0.0
         version: 7.0.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
@@ -8435,8 +8435,8 @@ packages:
       reflect-metadata: '*'
       rxjs: '>= 7'
 
-  nestjs-kysely@3.1.1:
-    resolution: {integrity: sha512-TVpmBMY49X+qcszFN0PN0wTlbbdlksMPvYH1p2pG2KrMkBR4hQHf9WGTlZEKSglZSzdTLz0Ev1RNCY1CVFAfKg==}
+  nestjs-kysely@3.0.0:
+    resolution: {integrity: sha512-YA6tHBgXQYPNpMBPII2OvUOiaWjCCoh5pP5dUHirQcMUHxNFzInBL6MDk8y74rk2z/5IvAK9AUlsdPyJtToO6g==}
     peerDependencies:
       '@nestjs/common': ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
       '@nestjs/core': ^8.0.0 || ^9.0.0 || ^10.0.0 || ^11.0.0
@@ -21033,7 +21033,7 @@ snapshots:
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
 
-  nestjs-kysely@3.1.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(kysely@0.28.2)(reflect-metadata@0.2.2):
+  nestjs-kysely@3.0.0(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(kysely@0.28.2)(reflect-metadata@0.2.2):
     dependencies:
       '@nestjs/common': 11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.6)(@nestjs/websockets@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
