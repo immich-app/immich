@@ -2954,10 +2954,12 @@ export function reverseGeocode({ lat, lon }: {
 /**
  * This endpoint requires the `memory.read` permission.
  */
-export function searchMemories({ $for, isSaved, isTrashed, $type }: {
+export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
+    order?: MemorySearchOrder;
+    size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2967,6 +2969,8 @@ export function searchMemories({ $for, isSaved, isTrashed, $type }: {
         "for": $for,
         isSaved,
         isTrashed,
+        order,
+        size,
         "type": $type
     }))}`, {
         ...opts
@@ -2990,10 +2994,12 @@ export function createMemory({ memoryCreateDto }: {
 /**
  * This endpoint requires the `memory.statistics` permission.
  */
-export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
+export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
+    order?: MemorySearchOrder;
+    size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -3003,6 +3009,8 @@ export function memoriesStatistics({ $for, isSaved, isTrashed, $type }: {
         "for": $for,
         isSaved,
         isTrashed,
+        order,
+        size,
         "type": $type
     }))}`, {
         ...opts
@@ -4988,6 +4996,11 @@ export enum JobCommand {
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
+}
+export enum MemorySearchOrder {
+    Asc = "asc",
+    Desc = "desc",
+    Random = "random"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
