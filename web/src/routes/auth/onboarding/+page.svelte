@@ -16,7 +16,7 @@
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
   import {
-    mdiCellphone,
+    mdiCellphoneArrowDownVariant,
     mdiCloudCheckOutline,
     mdiHarddisk,
     mdiIncognito,
@@ -90,7 +90,7 @@
       component: OnboardingMobileApp,
       role: OnboardingRole.USER,
       title: $t('mobile_app'),
-      icon: mdiCellphone, // or you can use mdiCellphoneArrowDownVariant
+      icon: mdiCellphoneArrowDownVariant, // or you can use mdiCellphone
     },
   ]);
 
