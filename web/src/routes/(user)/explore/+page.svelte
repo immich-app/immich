@@ -6,13 +6,15 @@
   import { AppRoute } from '$lib/constants';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl } from '$lib/utils';
-  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
-  import { mdiHeart } from '@mdi/js';
-  import { onMount } from 'svelte';
-  import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { encodeSearchQuery } from '$lib/utils/metadata-search';
+  import { t } from 'svelte-i18n';
+  import { onMount } from 'svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { Icon as UiIcon } from '@immich/ui';
+  import { mdiHeart } from '@mdi/js';
 
   interface Props {
     data: PageData;
@@ -89,11 +91,7 @@
       <SingleGridRow class="grid grid-flow-col md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4">
         {#snippet children({ itemCount })}
           {#each places.slice(0, itemCount) as item (item.data.id)}
-            <a
-              class="relative"
-              href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}"
-              draggable="false"
-            >
+            <a class="relative" href="{AppRoute.SEARCH}?{encodeSearchQuery({ city: item.value })}" draggable="false">
               <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
                 <img
                   src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}

@@ -8,6 +8,8 @@
   import { Icon } from '@immich/ui';
   import { mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { getAssetThumbnailUrl } from '$lib/utils';
+  import { encodeSearchQuery } from '$lib/utils/metadata-search';
 
   interface Props {
     places: AssetResponseDto[];
@@ -41,7 +43,7 @@
     <div class="flex flex-row flex-wrap gap-4">
       {#each places as item (item.id)}
         {@const city = item.exifInfo?.city}
-        <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city })}" draggable="false">
+        <a class="relative" href="{AppRoute.SEARCH}?{encodeSearchQuery({ city })}" draggable="false">
           <div
             class="flex w-[calc((100vw-(72px+5rem))/2)] max-w-[156px] justify-center overflow-hidden rounded-xl brightness-75 filter"
           >

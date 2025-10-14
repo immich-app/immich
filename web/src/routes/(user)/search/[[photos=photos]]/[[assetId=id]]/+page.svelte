@@ -32,10 +32,12 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
+  import { decodeSearchQuery, isSmartSearchDto } from '$lib/utils/metadata-search';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
+    AssetOrder,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -66,14 +68,12 @@
 
   const assetInteraction = new AssetInteraction();
 
-  type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query' | 'queryAssetId'>;
-  let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
+  let searchQuery = $derived(decodeSearchQuery(page.url.searchParams));
   let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
-  let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
 
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    terms;
+    searchQuery;
     setTimeout(() => {
       handlePromiseError(onSearchQueryUpdate());
     });
@@ -152,19 +152,25 @@
     }
     isLoading = true;
 
-    const searchDto: SearchTerms = {
+    const searchDto = {
       page: nextPage,
       withExif: true,
       isVisible: true,
       language: $lang,
-      ...terms,
+      ...searchQuery,
     };
 
+    const isSmartSearch = isSmartSearchDto(searchDto, smartSearchEnabled);
+
+    if (!isSmartSearch) {
+      searchDto.order =
+        'order' in searchQuery ? (searchQuery.order === 'asc' ? AssetOrder.Asc : AssetOrder.Desc) : undefined;
+    }
+
     try {
-      const { albums, assets } =
-        ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
-          ? await searchSmart({ smartSearchDto: searchDto })
-          : await searchAssets({ metadataSearchDto: searchDto });
+      const { albums, assets } = isSmartSearch
+        ? await searchSmart({ smartSearchDto: searchDto as SmartSearchDto })
+        : await searchAssets({ metadataSearchDto: searchDto as MetadataSearchDto });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items.map((asset) => toTimelineAsset(asset)));
@@ -189,8 +195,12 @@
     );
   }
 
-  function getHumanReadableSearchKey(key: keyof SearchTerms): string {
-    const keyMap: Partial<Record<keyof SearchTerms, string>> = {
+  function getHumanReadableSortOrder(order: string): string {
+    return order === 'asc' ? $t('oldest_first') : order === 'desc' ? $t('newest_first') : order;
+  }
+
+  function getHumanReadableSearchKey(key: keyof (SmartSearchDto & MetadataSearchDto)): string {
+    const keyMap: Partial<Record<keyof (SmartSearchDto & MetadataSearchDto), string>> = {
       takenAfter: $t('start_date'),
       takenBefore: $t('end_date'),
       visibility: $t('in_archive'),
@@ -209,8 +219,10 @@
       originalFileName: $t('file_name'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      rating: $t('rating'),
+      order: $t('search_order'),
     };
-    return keyMap[key] || key;
+    return keyMap[key] || String(key);
   }
 
   async function getPersonName(personIds: string[]) {
@@ -247,14 +259,15 @@
   const onAddToAlbum = (assetIds: string[]) => {
     cancelMultiselect(assetInteraction);
 
-    if (terms.isNotInAlbum.toString() == 'true') {
+    // Type-safe check for isNotInAlbum
+    if ('isNotInAlbum' in searchQuery && searchQuery.isNotInAlbum === true) {
       const assetIdSet = new Set(assetIds);
       searchResultAssets = searchResultAssets.filter((asset) => !assetIdSet.has(asset.id));
     }
   };
 
-  function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
-    return Object.keys(obj) as (keyof T)[];
+  function getObjectKeys<T extends object>(obj: T): (T extends T ? keyof T : never)[] {
+    return Object.keys(obj) as (T extends T ? keyof T : never)[];
   }
 </script>
 
@@ -312,26 +325,26 @@
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="absolute bg-light"></div>
         <div class="w-full flex-1 ps-4">
-          <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
+          <SearchBar grayTheme={false} {searchQuery} />
         </div>
       </ControlAppBar>
     </div>
   {/if}
 </section>
 
-{#if terms}
+{#if searchQuery}
   <section
     id="search-chips"
     class="mt-24 text-center w-full flex gap-5 place-content-center place-items-center flex-wrap px-24"
   >
-    {#each getObjectKeys(terms) as searchKey (searchKey)}
-      {@const value = terms[searchKey]}
+    {#each getObjectKeys(searchQuery) as searchKey (searchKey)}
+      {@const value = searchQuery[searchKey as keyof typeof searchQuery]}
       <div class="flex place-content-center place-items-center items-stretch text-xs">
         <div
           class="flex items-center justify-center bg-immich-primary py-2 px-4 text-white dark:text-black dark:bg-immich-dark-primary
           {value === true ? 'rounded-full' : 'rounded-s-full'}"
         >
-          {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
+          {getHumanReadableSearchKey(searchKey)}
         </div>
 
         {#if value !== true}
@@ -346,6 +359,8 @@
               {#await getTagNames(value) then tagNames}
                 {tagNames}
               {/await}
+            {:else if searchKey === 'order' && typeof value === 'string'}
+              {getHumanReadableSortOrder(value)}
             {:else if value === null || value === ''}
               {$t('unknown')}
             {:else}
@@ -457,7 +472,7 @@
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
           <div class="absolute bg-light"></div>
           <div class="w-full flex-1 ps-4">
-            <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
+            <SearchBar grayTheme={false} {searchQuery} />
           </div>
         </ControlAppBar>
       </div>
