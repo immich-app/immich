@@ -37,7 +37,7 @@ dependencies:
   flutter_web_auth_2: ^5.0.0-alpha.0
   fluttertoast: ^8.2.12
   geolocator: ^14.0.0
-  hooks_riverpod: ^2.6.1
+  hooks_riverpod: ^3.0.0
   home_widget: ^0.8.0
   http: ^1.3.0
   image_picker: ^1.1.2
