@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.pag
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
@@ -21,11 +22,17 @@ class ActivityTile extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetProvider);
     final isLike = activity.type == ActivityType.like;
     // Asset thumbnail is displayed when we are accessing activities from the album page
     // currentAssetProvider will not be set until we open the gallery viewer
-    final showAssetThumbnail = asset == null && activity.assetId != null && !isBottomSheet;
+    bool showAssetThumbnail = false;
+    if (Store.isBetaTimelineEnabled) {
+      final asset = ref.watch(currentAssetNotifier);
+      showAssetThumbnail = asset == null && activity.assetId != null;
+    } else {
+      final asset = ref.watch(currentAssetProvider);
+      showAssetThumbnail = asset == null && activity.assetId != null;
+    }
 
     return ListTile(
       minVerticalPadding: 15,
