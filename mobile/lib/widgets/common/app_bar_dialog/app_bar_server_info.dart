@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -7,8 +9,10 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AppBarServerInfo extends HookConsumerWidget {
   const AppBarServerInfo({super.key});
@@ -18,14 +22,33 @@ class AppBarServerInfo extends HookConsumerWidget {
     ref.watch(localeProvider);
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
 
+    final user = ref.watch(currentUserProvider);
+
     final appInfo = useState({});
     const titleFontSize = 12.0;
     const contentFontSize = 11.0;
+
+    final showWarning =
+        serverInfoState.isClientOutOfDate ||
+        ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable) && false;
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
       appInfo.value = {"version": packageInfo.version, "buildNumber": packageInfo.buildNumber};
+    }
+
+    void openUpdateLink() {
+      if (Platform.isIOS) {
+        launchUrl(Uri.parse("https://apps.apple.com/app/id1613945652"), mode: LaunchMode.externalApplication);
+      } else if (Platform.isAndroid) {
+        launchUrl(
+          Uri.parse("https://play.google.com/store/apps/details?id=app.alextran.immich"),
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        launchUrl(Uri.parse("https://immich.app/download"), mode: LaunchMode.externalApplication);
+      }
     }
 
     useEffect(() {
@@ -45,17 +68,38 @@ class AppBarServerInfo extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  serverInfoState.isVersionMismatch
-                      ? serverInfoState.versionMismatchErrorMessage
-                      : "profile_drawer_client_server_up_to_date".tr(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11, color: context.primaryColor, fontWeight: FontWeight.w500),
+              if (showWarning) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(80, 243, 188, 106),
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 8,
+                      children: [
+                        Text(
+                          serverInfoState.versionMismatchErrorMessage,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                        ),
+                        if (serverInfoState.isClientOutOfDate)
+                          IconButton(
+                            onPressed: openUpdateLink,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                            icon: const Icon(Icons.open_in_new, size: 16),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+                const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+              ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

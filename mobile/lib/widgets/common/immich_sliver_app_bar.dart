@@ -149,7 +149,7 @@ class _ProfileIndicator extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
         isLabelVisible:
-            serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
+            serverInfoState.isClientOutOfDate || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)

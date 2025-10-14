@@ -9,7 +9,8 @@ class ServerInfo {
   final ServerFeatures serverFeatures;
   final ServerConfig serverConfig;
   final ServerDiskInfo serverDiskInfo;
-  final bool isVersionMismatch;
+  final bool isClientOutOfDate;
+  final bool isServerOutOfDate;
   final bool isNewReleaseAvailable;
   final String versionMismatchErrorMessage;
 
@@ -19,7 +20,8 @@ class ServerInfo {
     required this.serverFeatures,
     required this.serverConfig,
     required this.serverDiskInfo,
-    required this.isVersionMismatch,
+    required this.isClientOutOfDate,
+    required this.isServerOutOfDate,
     required this.isNewReleaseAvailable,
     required this.versionMismatchErrorMessage,
   });
@@ -30,7 +32,8 @@ class ServerInfo {
     ServerFeatures? serverFeatures,
     ServerConfig? serverConfig,
     ServerDiskInfo? serverDiskInfo,
-    bool? isVersionMismatch,
+    bool? isClientOutOfDate,
+    bool? isServerOutOfDate,
     bool? isNewReleaseAvailable,
     String? versionMismatchErrorMessage,
   }) {
@@ -40,7 +43,8 @@ class ServerInfo {
       serverFeatures: serverFeatures ?? this.serverFeatures,
       serverConfig: serverConfig ?? this.serverConfig,
       serverDiskInfo: serverDiskInfo ?? this.serverDiskInfo,
-      isVersionMismatch: isVersionMismatch ?? this.isVersionMismatch,
+      isClientOutOfDate: isClientOutOfDate ?? this.isClientOutOfDate,
+      isServerOutOfDate: isServerOutOfDate ?? this.isServerOutOfDate,
       isNewReleaseAvailable: isNewReleaseAvailable ?? this.isNewReleaseAvailable,
       versionMismatchErrorMessage: versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
     );
@@ -48,7 +52,7 @@ class ServerInfo {
 
   @override
   String toString() {
-    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, isVersionMismatch: $isVersionMismatch, isNewReleaseAvailable: $isNewReleaseAvailable, versionMismatchErrorMessage: $versionMismatchErrorMessage)';
+    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, isClientOutOfDate: $isClientOutOfDate, isServerOutOfDate: $isServerOutOfDate, isNewReleaseAvailable: $isNewReleaseAvailable, versionMismatchErrorMessage: $versionMismatchErrorMessage)';
   }
 
   @override
@@ -61,7 +65,8 @@ class ServerInfo {
         other.serverFeatures == serverFeatures &&
         other.serverConfig == serverConfig &&
         other.serverDiskInfo == serverDiskInfo &&
-        other.isVersionMismatch == isVersionMismatch &&
+        other.isClientOutOfDate == isClientOutOfDate &&
+        other.isServerOutOfDate == isServerOutOfDate &&
         other.isNewReleaseAvailable == isNewReleaseAvailable &&
         other.versionMismatchErrorMessage == versionMismatchErrorMessage;
   }
@@ -73,7 +78,8 @@ class ServerInfo {
         serverFeatures.hashCode ^
         serverConfig.hashCode ^
         serverDiskInfo.hashCode ^
-        isVersionMismatch.hashCode ^
+        isClientOutOfDate.hashCode ^
+        isServerOutOfDate.hashCode ^
         isNewReleaseAvailable.hashCode ^
         versionMismatchErrorMessage.hashCode;
   }
