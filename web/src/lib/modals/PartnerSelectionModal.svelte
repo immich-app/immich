@@ -1,19 +1,21 @@
 <script lang="ts">
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import DateInput from '$lib/elements/DateInput.svelte';
   import { getPartners, PartnerDirection, searchUsers, type UserResponseDto } from '@immich/sdk';
-  import { Button, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import { Button, Modal, ModalBody, ModalFooter, Field } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
     user: UserResponseDto;
-    onClose: (users?: UserResponseDto[]) => void;
+    onClose: (users?: UserResponseDto[], startDate?: string | null) => void;
   }
 
   let { user, onClose }: Props = $props();
 
   let availableUsers: UserResponseDto[] = $state([]);
   let selectedUsers: UserResponseDto[] = $state([]);
+  let startDate: string | undefined = $state(undefined);
 
   onMount(async () => {
     let users = await searchUsers();
@@ -69,9 +71,21 @@
         </p>
       {/if}
 
+      <div class="mt-4 px-5">
+        <Field label={$t('partner_sharing_start_date_optional')} description={$t('partner_sharing_start_date_description')}>
+          <DateInput
+            class="immich-form-input mt-2"
+            id="partner-start-date"
+            type="date"
+            bind:value={startDate}
+            placeholder={$t('partner_sharing_start_date')}
+          />
+        </Field>
+      </div>
+
       <ModalFooter>
         {#if selectedUsers.length > 0}
-          <Button shape="round" fullWidth onclick={() => onClose(selectedUsers)}>{$t('add')}</Button>
+          <Button shape="round" fullWidth onclick={() => onClose(selectedUsers, startDate || null)}>{$t('add')}</Button>
         {/if}
       </ModalFooter>
     </div>

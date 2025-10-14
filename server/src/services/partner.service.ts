@@ -9,14 +9,14 @@ import { BaseService } from 'src/services/base.service';
 
 @Injectable()
 export class PartnerService extends BaseService {
-  async create(auth: AuthDto, { sharedWithId }: PartnerCreateDto): Promise<PartnerResponseDto> {
+  async create(auth: AuthDto, { sharedWithId, startDate }: PartnerCreateDto): Promise<PartnerResponseDto> {
     const partnerId: PartnerIds = { sharedById: auth.user.id, sharedWithId };
     const exists = await this.partnerRepository.get(partnerId);
     if (exists) {
       throw new BadRequestException(`Partner already exists`);
     }
 
-    const partner = await this.partnerRepository.create(partnerId);
+    const partner = await this.partnerRepository.create({ ...partnerId, startDate: startDate || null });
     return this.mapPartner(partner, PartnerDirection.SharedBy);
   }
 
@@ -43,7 +43,12 @@ export class PartnerService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.PartnerUpdate, ids: [sharedById] });
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
-    const entity = await this.partnerRepository.update(partnerId, { inTimeline: dto.inTimeline });
+    const updateData: { inTimeline: boolean; startDate?: Date | null } = { inTimeline: dto.inTimeline };
+    if (dto.startDate !== undefined) {
+      updateData.startDate = dto.startDate;
+    }
+
+    const entity = await this.partnerRepository.update(partnerId, updateData);
     return this.mapPartner(entity, PartnerDirection.SharedWith);
   }
 
@@ -53,6 +58,6 @@ export class PartnerService extends BaseService {
       direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,
     ) as PartnerResponseDto;
 
-    return { ...user, inTimeline: partner.inTimeline };
+    return { ...user, inTimeline: partner.inTimeline, startDate: partner.startDate };
   }
 }
