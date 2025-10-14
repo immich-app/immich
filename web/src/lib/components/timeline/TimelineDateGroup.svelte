@@ -14,7 +14,7 @@
 
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
-  import type { Snippet } from 'svelte';
+  import { type Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { scale } from 'svelte/transition';
 

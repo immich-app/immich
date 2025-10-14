@@ -13,7 +13,7 @@
 
   interface Props {
     timelineManager: TimelineManager;
-    showSkeleton: boolean;
+    invisible: boolean;
     withStacked?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto | null;
@@ -30,7 +30,7 @@
 
   let {
     timelineManager,
-    showSkeleton = $bindable(false),
+    invisible = $bindable(false),
     removeAction,
     withStacked = false,
     isShared = false,
@@ -81,7 +81,7 @@
 
   const handleClose = async (asset: { id: string }) => {
     assetViewingStore.showAssetViewer(false);
-    showSkeleton = true;
+    invisible = true;
     $gridScrollTarget = { at: asset.id };
     await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
   };
