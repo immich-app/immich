@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import NotificationItem from '$lib/components/shared-components/navigation-bar/notification-item.svelte';
   import {
@@ -8,6 +9,7 @@
 
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { NotificationType, type NotificationDto } from '@immich/sdk';
   import { Button, Icon, Scrollable, Stack, Text } from '@immich/ui';
   import { mdiBellOutline, mdiCheckAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -31,6 +33,37 @@
     } catch (error) {
       handleError(error, $t('errors.failed_to_update_notification_status'));
     }
+  };
+
+  const handleNotificationAction = async (notification: NotificationDto) => {
+    switch (notification.type) {
+      case NotificationType.AlbumInvite:
+      case NotificationType.AlbumUpdate: {
+        if (!notification.data) {
+          return;
+        }
+
+        if (typeof notification.data !== 'string') {
+          return;
+        }
+
+        const data = JSON.parse(notification.data);
+        if (data?.albumId) {
+          await goto(`/albums/${data.albumId}`);
+        }
+
+        break;
+      }
+
+      default: {
+        break;
+      }
+    }
+  };
+
+  const onclick = async (notification: NotificationDto) => {
+    await markAsRead(notification.id);
+    await handleNotificationAction(notification);
   };
 </script>
 
@@ -71,7 +104,7 @@
         <Stack gap={0}>
           {#each notificationManager.notifications as notification (notification.id)}
             <div animate:flip={{ duration: 400 }}>
-              <NotificationItem {notification} onclick={(id) => markAsRead(id)} />
+              <NotificationItem {notification} {onclick} />
             </div>
           {/each}
         </Stack>

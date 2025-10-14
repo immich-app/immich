@@ -15,7 +15,7 @@ import { BaseService } from 'src/services/base.service';
 import { JobOf, SystemFlags } from 'src/types';
 import { ImmichStartupError } from 'src/utils/misc';
 
-const docsMessage = `Please see https://immich.app/docs/administration/system-integrity#folder-checks for more information.`;
+const docsMessage = `Please see https://docs.immich.app/administration/system-integrity#folder-checks for more information.`;
 
 @Injectable()
 export class StorageService extends BaseService {

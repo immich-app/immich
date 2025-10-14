@@ -29,7 +29,8 @@
 <a href="README_de_DE.md">Deutsch</a>
 <a href="README_nl_NL.md">Nederlands</a>
 <a href="README_tr_TR.md">Türkçe</a>
-<a href="README_zh_CN.md">中文</a>
+<a href="README_zh_CN.md">简体中文</a>
+<a href="README_zh_TW.md">正體中文</a>
 <a href="README_uk_UA.md">Українська</a>
 <a href="README_ru_RU.md">Русский</a>
 <a href="README_sv_SE.md">Svenska</a>
@@ -55,14 +56,14 @@
 
 ## Links
 
-- [Documentação](https://immich.app/docs)
-- [Sobre](https://immich.app/docs/overview/introduction)
-- [Instalação](https://immich.app/docs/install/requirements)
+- [Documentação](https://docs.immich.app)
+- [Sobre](https://docs.immich.app/overview/introduction)
+- [Instalação](https://docs.immich.app/install/requirements)
 - [Roadmap](https://github.com/orgs/immich-app/projects/1)
 - [Demonstração](#demonstração)
 - [Funcionalidades](#funcionalidades)
-- [Traduções](https://immich.app/docs/developer/translations)
-- [Diretrizes de Contribuição](https://immich.app/docs/overview/support-the-project)
+- [Traduções](https://docs.immich.app/developer/translations)
+- [Diretrizes de Contribuição](https://docs.immich.app/overview/support-the-project)
 
 ## Demonstração
 
@@ -115,7 +116,7 @@ Acesse a demonstração [aqui](https://demo.immich.app). No aplicativo para disp
 ## Traduções
 
 Leia mais sobre as traduções
-[aqui](https://immich.app/docs/developer/translations).
+[aqui](https://docs.immich.app/developer/translations).
 
 <a href="https://hosted.weblate.org/engage/immich/">
 <img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Status da tradução" />

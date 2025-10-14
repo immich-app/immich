@@ -70,7 +70,7 @@ Navigating to Administration > Settings > Machine Learning Settings > Facial Rec
 :::tip
 It's better to only tweak the parameters here than to set them to something very different unless you're ready to test a variety of options. If you do need to set a parameter to a strict setting, relaxing other settings can be a good option to compensate, and vice versa.
 
-You can learn how the tune the result in this [Guide](/docs/guides/better-facial-clusters)
+You can learn how the tune the result in this [Guide](/guides/better-facial-clusters)
 :::
 
 ### Facial recognition model

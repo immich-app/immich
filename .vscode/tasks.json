@@ -5,6 +5,7 @@
       "label": "Fix Permissions, Install Dependencies",
       "type": "shell",
       "command": "[ -f /immich-devcontainer/container-start.sh ] && /immich-devcontainer/container-start.sh || exit 0",
+      "isBackground": true,
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -25,6 +26,7 @@
       "dependsOn": ["Fix Permissions, Install Dependencies"],
       "type": "shell",
       "command": "[ -f /immich-devcontainer/container-start-backend.sh ] && /immich-devcontainer/container-start-backend.sh || exit 0",
+      "isBackground": true,
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -45,6 +47,7 @@
       "dependsOn": ["Fix Permissions, Install Dependencies"],
       "type": "shell",
       "command": "[ -f /immich-devcontainer/container-start-frontend.sh ] && /immich-devcontainer/container-start-frontend.sh || exit 0",
+      "isBackground": true,
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -67,6 +70,11 @@
         "runOn": "folderOpen"
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Build Immich CLI",
+      "type": "shell",
+      "command": "pnpm --filter cli build:dev"
     }
   ]
 }

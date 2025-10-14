@@ -1,5 +1,9 @@
 # External Libraries
 
+:::info
+Currently an external library can only belong to a single user which is selected when the library is initially created.
+:::
+
 External libraries track assets stored in the filesystem outside of Immich. When the external library is scanned, Immich will load videos and photos from disk and create the corresponding assets. These assets will then be shown in the main timeline, and they will look and behave like any other asset, including viewing on the map, adding to albums, etc. Later, if a file is modified outside of Immich, you need to scan the library for the changes to show up.
 
 If an external asset is deleted from disk, Immich will move it to trash on rescan. To restore the asset, you need to restore the original file. After 30 days the file will be removed from trash, and any changes to metadata within Immich will be lost.
@@ -103,7 +107,7 @@ The `immich-server` container will need access to the gallery. Modify your docke
 
 :::tip
 The `ro` flag at the end only gives read-only access to the volumes.
-This will disallow the images from being deleted in the web UI, or adding metadata to the library ([XMP sidecars](/docs/features/xmp-sidecars)).
+This will disallow the images from being deleted in the web UI, or adding metadata to the library ([XMP sidecars](/features/xmp-sidecars)).
 :::
 
 :::info

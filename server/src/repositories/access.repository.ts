@@ -136,6 +136,7 @@ class AssetAccess {
     }
 
     return this.db
+      .with('target', (qb) => qb.selectNoFrom(sql`array[${sql.join([...assetIds])}]::uuid[]`.as('ids')))
       .selectFrom('album')
       .innerJoin('album_asset as albumAssets', 'album.id', 'albumAssets.albumsId')
       .innerJoin('asset', (join) =>
@@ -143,11 +144,13 @@ class AssetAccess {
       )
       .leftJoin('album_user as albumUsers', 'albumUsers.albumsId', 'album.id')
       .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.usersId').on('user.deletedAt', 'is', null))
+      .crossJoin('target')
       .select(['asset.id', 'asset.livePhotoVideoId'])
-      .where(
-        sql`array["asset"."id", "asset"."livePhotoVideoId"]`,
-        '&&',
-        sql`array[${sql.join([...assetIds])}]::uuid[] `,
+      .where((eb) =>
+        eb.or([
+          eb('asset.id', '=', sql<string>`any(target.ids)`),
+          eb('asset.livePhotoVideoId', '=', sql<string>`any(target.ids)`),
+        ]),
       )
       .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
       .where('album.deletedAt', 'is', null)

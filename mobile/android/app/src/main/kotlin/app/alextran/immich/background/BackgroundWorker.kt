@@ -73,12 +73,12 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       NotificationManager.IMPORTANCE_LOW
     )
     notificationManager.createNotificationChannel(notificationChannel)
+    val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
+    showNotification(notificationConfig.first, notificationConfig.second)
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
-      FlutterEngineCache.getInstance().remove(BackgroundEngineLock.ENGINE_CACHE_KEY);
-      FlutterEngineCache.getInstance()
-        .put(BackgroundEngineLock.ENGINE_CACHE_KEY, engine!!)
+      FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
 
       // Register custom plugins
       MainActivity.registerPlugins(ctx, engine!!)
@@ -111,7 +111,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   }
 
   // TODO: Move this to a separate NotificationManager class
-  override fun showNotification(title: String, content: String) {
+  private fun showNotification(title: String, content: String) {
     val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
       .setSmallIcon(R.drawable.notification_icon)
       .setOnlyAlertOnce(true)
@@ -192,9 +192,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     isComplete = true
     engine?.destroy()
     engine = null
-    FlutterEngineCache.getInstance().remove(BackgroundEngineLock.ENGINE_CACHE_KEY);
     flutterApi = null
     notificationManager.cancel(NOTIFICATION_ID)
+    FlutterEngineCache.getInstance().remove(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY)
     waitForForegroundPromotion()
     completionHandler.set(success)
   }

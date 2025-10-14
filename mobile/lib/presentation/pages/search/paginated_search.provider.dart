@@ -24,12 +24,20 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
       return false;
     }
 
-    state = SearchResult(assets: [...state.assets, ...result.assets], nextPage: result.nextPage);
+    state = SearchResult(
+      assets: [...state.assets, ...result.assets],
+      nextPage: result.nextPage,
+      scrollOffset: state.scrollOffset,
+    );
 
     return true;
   }
 
+  void setScrollOffset(double offset) {
+    state = state.copyWith(scrollOffset: offset);
+  }
+
   clear() {
-    state = const SearchResult(assets: [], nextPage: 1);
+    state = const SearchResult(assets: [], nextPage: 1, scrollOffset: 0.0);
   }
 }

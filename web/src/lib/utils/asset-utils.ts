@@ -620,12 +620,7 @@ const imgToBlob = async (imageElement: HTMLImageElement) => {
   throw new Error('Canvas context is null');
 };
 
-const urlToBlob = async (imageSource: string) => {
-  const response = await fetch(imageSource);
-  return await response.blob();
-};
-
-export const copyImageToClipboard = async (source: HTMLImageElement | string) => {
-  const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
-  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+export const copyImageToClipboard = async (source: HTMLImageElement) => {
+  // do not await, so the Safari clipboard write happens in the context of the user gesture
+  await navigator.clipboard.write([new ClipboardItem({ ['image/png']: imgToBlob(source) })]);
 };

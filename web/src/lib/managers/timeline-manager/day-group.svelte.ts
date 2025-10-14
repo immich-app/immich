@@ -82,11 +82,6 @@ export class DayGroup {
     return this.viewerAssets[0]?.asset;
   }
 
-  getRandomAsset() {
-    const random = Math.floor(Math.random() * this.viewerAssets.length);
-    return this.viewerAssets[random];
-  }
-
   *assetsIterator(options: { startAsset?: TimelineAsset; direction?: Direction } = {}) {
     const isEarlier = (options?.direction ?? 'earlier') === 'earlier';
     let assetIndex = options?.startAsset

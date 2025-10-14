@@ -16,7 +16,7 @@
   <Label size="small" color="primary" for={id}>{title}</Label>
   <Text size="small" color="muted" {id}>
     {#if versionHref}
-      <Link external href={versionHref}>{version}</Link>
+      <Link href={versionHref}>{version}</Link>
     {:else}
       {version}
     {/if}

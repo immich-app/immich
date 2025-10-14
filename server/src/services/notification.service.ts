@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
+import { MapAlbumDto } from 'src/dtos/album.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -295,6 +296,8 @@ export class NotificationService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, album.owner.name);
+
     const { emailNotifications } = getPreferences(recipient.metadata);
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
@@ -343,6 +346,8 @@ export class NotificationService extends BaseService {
     if (!owner) {
       return JobStatus.Skipped;
     }
+
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumUpdate);
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
@@ -430,5 +435,26 @@ export class NotificationService extends BaseService {
       path: albumThumbnailFiles[0].path,
       cid: 'album-thumbnail',
     };
+  }
+
+  private async sendAlbumLocalNotification(
+    album: MapAlbumDto,
+    userId: string,
+    type: NotificationType.AlbumInvite | NotificationType.AlbumUpdate,
+    senderName?: string,
+  ) {
+    const isInvite = type === NotificationType.AlbumInvite;
+    const item = await this.notificationRepository.create({
+      userId,
+      type,
+      level: isInvite ? NotificationLevel.Success : NotificationLevel.Info,
+      title: isInvite ? 'Shared Album Invitation' : 'Shared Album Update',
+      description: isInvite
+        ? `${senderName} shared an album (${album.albumName}) with you`
+        : `New media has been added to the album (${album.albumName})`,
+      data: JSON.stringify({ albumId: album.id }),
+    });
+
+    this.eventRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 }

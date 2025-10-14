@@ -53,7 +53,7 @@
         <FormatMessage key="admin.backup_onboarding_footer">
           {#snippet children({ message })}
             <a
-              href="https://immich.app/docs/administration/backup-and-restore/"
+              href="https://docs.immich.app/administration/backup-and-restore/"
               class="underline"
               target="_blank"
               rel="noreferrer"

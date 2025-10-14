@@ -11,7 +11,7 @@ export default function VersionSwitcher(): JSX.Element {
   useEffect(() => {
     async function getVersions() {
       try {
-        let baseUrl = 'https://immich.app';
+        let baseUrl = 'https://docs.immich.app';
         if (window.location.origin === 'http://localhost:3005') {
           baseUrl = window.location.origin;
         }
@@ -21,12 +21,13 @@ export default function VersionSwitcher(): JSX.Element {
         const archiveVersions = await response.json();
 
         const allVersions = [
-          { label: 'Next', url: 'https://main.preview.immich.app' },
-          { label: 'Latest', url: 'https://immich.app' },
+          { label: 'Next', url: 'https://docs.main.preview.immich.app' },
+          { label: 'Latest', url: 'https://docs.immich.app' },
           ...archiveVersions,
-        ].map(({ label, url }) => ({
+        ].map(({ label, url, rootPath }) => ({
           label,
           url: new URL(url),
+          rootPath,
         }));
         setVersions(allVersions);
 
@@ -50,12 +51,18 @@ export default function VersionSwitcher(): JSX.Element {
         className="version-switcher-34ab39"
         label={activeLabel}
         mobile={windowSize === 'mobile'}
-        items={versions.map(({ label, url }) => ({
-          label,
-          to: new URL(location.pathname + location.search + location.hash, url).href,
-          target: '_self',
-          className: label === activeLabel ? 'dropdown__link--active menu__link--active' : '', // workaround because React Router `<NavLink>` only supports using URL path for checking if active: https://v5.reactrouter.com/web/api/NavLink/isactive-func
-        }))}
+        items={versions.map(({ label, url, rootPath }) => {
+          let path = location.pathname + location.search + location.hash;
+          if (rootPath && !path.startsWith(rootPath)) {
+            path = rootPath + path;
+          }
+          return {
+            label,
+            to: new URL(path, url).href,
+            target: '_self',
+            className: label === activeLabel ? 'dropdown__link--active menu__link--active' : '', // workaround because React Router `<NavLink>` only supports using URL path for checking if active: https://v5.reactrouter.com/web/api/NavLink/isactive-func
+          };
+        })}
       />
     )
   );

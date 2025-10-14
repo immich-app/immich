@@ -68,7 +68,7 @@ const ExifInfoSchema = CollectionSchema(
   getId: _exifInfoGetId,
   getLinks: _exifInfoGetLinks,
   attach: _exifInfoAttach,
-  version: '3.1.8',
+  version: '3.3.0-dev.3',
 );
 
 int _exifInfoEstimateSize(

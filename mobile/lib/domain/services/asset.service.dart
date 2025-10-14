@@ -84,8 +84,8 @@ class AssetService {
     return 1.0;
   }
 
-  Future<List<(String, String)>> getPlaces() {
-    return _remoteAssetRepository.getPlaces();
+  Future<List<(String, String)>> getPlaces(String userId) {
+    return _remoteAssetRepository.getPlaces(userId);
   }
 
   Future<(int local, int remote)> getAssetCounts() async {

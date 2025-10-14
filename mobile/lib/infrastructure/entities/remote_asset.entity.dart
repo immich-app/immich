@@ -49,7 +49,7 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 }
 
 extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
-  RemoteAsset toDto() => RemoteAsset(
+  RemoteAsset toDto({String? localId}) => RemoteAsset(
     id: id,
     name: name,
     ownerId: ownerId,
@@ -64,7 +64,7 @@ extension RemoteAssetEntityDataDomainEx on RemoteAssetEntityData {
     thumbHash: thumbHash,
     visibility: visibility,
     livePhotoVideoId: livePhotoVideoId,
-    localId: null,
+    localId: localId,
     stackId: stackId,
   );
 }

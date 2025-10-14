@@ -17,13 +17,25 @@ struct AssetWrapper: Hashable, Equatable {
   }
 }
 
-class NativeSyncApiImpl: NativeSyncApi {
+class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
+  static let name = "NativeSyncApi"
+  
+  static func register(with registrar: any FlutterPluginRegistrar) {
+    let instance = NativeSyncApiImpl()
+    NativeSyncApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
+    registrar.publish(instance)
+  }
+  
+  func detachFromEngine(for registrar: any FlutterPluginRegistrar) {
+    super.detachFromEngine()
+  }
+  
   private let defaults: UserDefaults
   private let changeTokenKey = "immich:changeToken"
   private let albumTypes: [PHAssetCollectionType] = [.album, .smartAlbum]
   private let recoveredAlbumSubType = 1000000219
   
-  private var hashTask: Task<Void, Error>?
+  private var hashTask: Task<Void?, Error>?
   private static let hashCancelledCode = "HASH_CANCELLED"
   private static let hashCancelled = Result<[HashResult], Error>.failure(PigeonError(code: hashCancelledCode, message: "Hashing cancelled", details: nil))
   
@@ -272,7 +284,7 @@ class NativeSyncApiImpl: NativeSyncApi {
       }
       
       if Task.isCancelled {
-        return completion(Self.hashCancelled)
+        return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
       }
       
       await withTaskGroup(of: HashResult?.self) { taskGroup in
@@ -280,7 +292,7 @@ class NativeSyncApiImpl: NativeSyncApi {
         results.reserveCapacity(assets.count)
         for asset in assets {
           if Task.isCancelled {
-            return completion(Self.hashCancelled)
+            return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
           }
           taskGroup.addTask {
             guard let self = self else { return nil }
@@ -290,7 +302,7 @@ class NativeSyncApiImpl: NativeSyncApi {
         
         for await result in taskGroup {
           guard let result = result else {
-            return completion(Self.hashCancelled)
+            return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
           }
           results.append(result)
         }
@@ -299,7 +311,7 @@ class NativeSyncApiImpl: NativeSyncApi {
           results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
         }
         
-        completion(.success(results))
+        return self?.completeWhenActive(for: completion, with: .success(results))
       }
     }
   }

@@ -29,8 +29,8 @@ export const AlbumUpdateEmail = ({
       </Text>
 
       <Text>
-        New media has been added to <strong>{albumName}</strong>,
-        <br /> check it out!
+        New media has been added to <strong>{albumName}</strong>.
+        <br /> Check it out!
       </Text>
     </>
   );

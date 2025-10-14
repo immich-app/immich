@@ -17,12 +17,14 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/stack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class RemoteAlbumBottomSheet extends ConsumerStatefulWidget {
@@ -52,6 +54,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
   Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
+    final ownsAlbum = ref.watch(currentUserProvider)?.id == widget.album.ownerId;
 
     Future<void> addAssetsToAlbum(RemoteAlbum album) async {
       final selectedAssets = multiselect.selectedAssets;
@@ -92,27 +95,35 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
         const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
-          const ArchiveActionButton(source: ActionSource.timeline),
-          const FavoriteActionButton(source: ActionSource.timeline),
+
+          if (ownsAlbum) ...[
+            const ArchiveActionButton(source: ActionSource.timeline),
+            const FavoriteActionButton(source: ActionSource.timeline),
+          ],
           const DownloadActionButton(source: ActionSource.timeline),
-          isTrashEnable
-              ? const TrashActionButton(source: ActionSource.timeline)
-              : const DeletePermanentActionButton(source: ActionSource.timeline),
-          const EditDateTimeActionButton(source: ActionSource.timeline),
-          const EditLocationActionButton(source: ActionSource.timeline),
-          const MoveToLockFolderActionButton(source: ActionSource.timeline),
-          if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
+          if (ownsAlbum) ...[
+            isTrashEnable
+                ? const TrashActionButton(source: ActionSource.timeline)
+                : const DeletePermanentActionButton(source: ActionSource.timeline),
+            const EditDateTimeActionButton(source: ActionSource.timeline),
+            const EditLocationActionButton(source: ActionSource.timeline),
+            const MoveToLockFolderActionButton(source: ActionSource.timeline),
+            if (multiselect.selectedAssets.length > 1) const StackActionButton(source: ActionSource.timeline),
+            if (multiselect.hasStacked) const UnStackActionButton(source: ActionSource.timeline),
+          ],
         ],
         if (multiselect.hasLocal) ...[
           const DeleteLocalActionButton(source: ActionSource.timeline),
           const UploadActionButton(source: ActionSource.timeline),
         ],
-        RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
+        if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
       ],
-      slivers: [
-        const AddToAlbumHeader(),
-        AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
-      ],
+      slivers: ownsAlbum
+          ? [
+              const AddToAlbumHeader(),
+              AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
+            ]
+          : null,
     );
   }
 }

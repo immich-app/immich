@@ -281,7 +281,7 @@ extension on Iterable<PlatformAlbum> {
       (e) => LocalAlbum(
         id: e.id,
         name: e.name,
-        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt) ?? DateTime.now(),
+        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt, isUtc: true) ?? DateTime.timestamp(),
         assetCount: e.assetCount,
       ),
     ).toList();
@@ -296,8 +296,8 @@ extension on Iterable<PlatformAsset> {
         name: e.name,
         checksum: null,
         type: AssetType.values.elementAtOrNull(e.type) ?? AssetType.other,
-        createdAt: tryFromSecondsSinceEpoch(e.createdAt) ?? DateTime.now(),
-        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt) ?? DateTime.now(),
+        createdAt: tryFromSecondsSinceEpoch(e.createdAt, isUtc: true) ?? DateTime.timestamp(),
+        updatedAt: tryFromSecondsSinceEpoch(e.updatedAt, isUtc: true) ?? DateTime.timestamp(),
         width: e.width,
         height: e.height,
         durationInSeconds: e.durationInSeconds,

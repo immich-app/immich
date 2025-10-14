@@ -14,7 +14,7 @@
 
   import { fromTimelinePlainDate, getDateLocaleString } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
-  import type { Snippet } from 'svelte';
+  import { type Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { scale } from 'svelte/transition';
 
@@ -33,7 +33,6 @@
     onSelect: ({ title, assets }: { title: string; assets: TimelineAsset[] }) => void;
     onSelectAssets: (asset: TimelineAsset) => void;
     onSelectAssetCandidates: (asset: TimelineAsset | null) => void;
-    onScrollCompensation: (compensation: { heightDelta?: number; scrollTop?: number }) => void;
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
@@ -59,7 +58,7 @@
     onSelect,
     onSelectAssets,
     onSelectAssetCandidates,
-    onScrollCompensation,
+
     onThumbnailClick,
   }: Props = $props();
 
@@ -134,13 +133,6 @@
     });
     return getDateLocaleString(date);
   };
-
-  $effect.root(() => {
-    if (timelineManager.scrollCompensation.monthGroup === monthGroup) {
-      onScrollCompensation(timelineManager.scrollCompensation);
-      timelineManager.clearScrollCompensation();
-    }
-  });
 </script>
 
 {#each filterIntersecting(monthGroup.dayGroups) as dayGroup, groupIndex (dayGroup.day)}

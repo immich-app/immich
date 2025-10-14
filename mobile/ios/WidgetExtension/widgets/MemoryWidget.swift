@@ -114,7 +114,7 @@ struct ImmichMemoryProvider: TimelineProvider {
         }
       }
 
-      // If we didnt add any memory images (some failure occured or no images in memory),
+      // If we didn't add any memory images (some failure occurred or no images in memory),
       // default to 12 hours of random photos
       if entries.count == 0 {
         // this must be a do/catch since we need to

@@ -2,12 +2,12 @@ part of 'base_asset.model.dart';
 
 class LocalAsset extends BaseAsset {
   final String id;
-  final String? remoteId;
+  final String? remoteAssetId;
   final int orientation;
 
   const LocalAsset({
     required this.id,
-    this.remoteId,
+    String? remoteId,
     required super.name,
     super.checksum,
     required super.type,
@@ -19,7 +19,13 @@ class LocalAsset extends BaseAsset {
     super.isFavorite = false,
     super.livePhotoVideoId,
     this.orientation = 0,
-  });
+  }) : remoteAssetId = remoteId;
+
+  @override
+  String? get localId => id;
+
+  @override
+  String? get remoteId => remoteAssetId;
 
   @override
   AssetState get storage => remoteId == null ? AssetState.local : AssetState.merged;

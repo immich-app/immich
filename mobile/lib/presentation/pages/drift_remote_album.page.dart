@@ -169,9 +169,11 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     context.pushRoute(const DriftActivitiesRoute());
   }
 
-  void showOptionSheet(BuildContext context) {
+  Future<void> showOptionSheet(BuildContext context) async {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
+    final canAddPhotos =
+        await ref.read(remoteAlbumServiceProvider).getUserRole(_album.id, user?.id ?? '') == AlbumUserRole.editor;
 
     showModalBottomSheet(
       context: context,
@@ -193,22 +195,30 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
                   context.pop();
                 }
               : null,
-          onAddPhotos: () async {
-            await addAssets(context);
-            context.pop();
-          },
-          onToggleAlbumOrder: () async {
-            await toggleAlbumOrder();
-            context.pop();
-          },
-          onEditAlbum: () async {
-            context.pop();
-            await showEditTitleAndDescription(context);
-          },
-          onCreateSharedLink: () async {
-            context.pop();
-            context.pushRoute(SharedLinkEditRoute(albumId: _album.id));
-          },
+          onAddPhotos: isOwner || canAddPhotos
+              ? () async {
+                  await addAssets(context);
+                  context.pop();
+                }
+              : null,
+          onToggleAlbumOrder: isOwner
+              ? () async {
+                  await toggleAlbumOrder();
+                  context.pop();
+                }
+              : null,
+          onEditAlbum: isOwner
+              ? () async {
+                  context.pop();
+                  await showEditTitleAndDescription(context);
+                }
+              : null,
+          onCreateSharedLink: isOwner
+              ? () async {
+                  context.pop();
+                  context.pushRoute(SharedLinkEditRoute(albumId: _album.id));
+                }
+              : null,
           onShowOptions: () {
             context.pop();
             context.pushRoute(const DriftAlbumOptionsRoute());
@@ -220,6 +230,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
+    final isOwner = user != null ? user.id == _album.ownerId : false;
+
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) {
@@ -243,8 +256,8 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           appBar: RemoteAlbumSliverAppBar(
             icon: Icons.photo_album_outlined,
             onShowOptions: () => showOptionSheet(context),
-            onToggleAlbumOrder: () => toggleAlbumOrder(),
-            onEditTitle: () => showEditTitleAndDescription(context),
+            onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
+            onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
             onActivity: () => showActivity(context),
           ),
           bottomSheet: RemoteAlbumBottomSheet(album: _album),
@@ -300,7 +313,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
 
       await ref
           .read(remoteAlbumProvider.notifier)
-          .updateAlbum(widget.album.id, name: newTitle, description: newDescription.isEmpty ? null : newDescription);
+          .updateAlbum(widget.album.id, name: newTitle, description: newDescription);
 
       if (mounted) {
         Navigator.of(
