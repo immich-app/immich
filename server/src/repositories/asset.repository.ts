@@ -542,25 +542,6 @@ export class AssetRepository {
       .$call(withExif)
       .$call(withDefaultVisibility)
       .where('ownerId', '=', anyUuid(userIds))
-      .$if(userIds.length > 1, (qb) =>
-        qb
-          .leftJoin('partner', (join) =>
-            join
-              .onRef('partner.sharedById', '=', 'asset.ownerId')
-              .on((eb) =>
-                eb.or(
-                  userIds.map((uid) => eb('partner.sharedWithId', '=', uid))
-                )
-              )
-          )
-          .where((eb) =>
-            eb.or([
-              eb('partner.startDate', 'is', null),
-              eb('partner.sharedById', 'is', null),
-              eb('asset.localDateTime', '>=', eb.ref('partner.startDate')),
-            ])
-          )
-      )
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -591,29 +572,7 @@ export class AssetRepository {
               )
               .where((eb) => eb.or([eb('asset.stackId', 'is', null), eb(eb.table('stack'), 'is not', null)])),
           )
-          .$if(!!options.userIds, (qb) =>
-            qb
-              .where('asset.ownerId', '=', anyUuid(options.userIds!))
-              .$if(options.userIds!.length > 1, (qb2) =>
-                qb2
-                  .leftJoin('partner', (join) =>
-                    join
-                      .onRef('partner.sharedById', '=', 'asset.ownerId')
-                      .on((eb) =>
-                        eb.or(
-                          options.userIds!.map((uid) => eb('partner.sharedWithId', '=', uid))
-                        )
-                      )
-                  )
-                  .where((eb) =>
-                    eb.or([
-                      eb('partner.startDate', 'is', null),
-                      eb('partner.sharedById', 'is', null),
-                      eb('asset.localDateTime', '>=', eb.ref('partner.startDate')),
-                    ])
-                  )
-              )
-          )
+          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
@@ -686,29 +645,7 @@ export class AssetRepository {
             ),
           )
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-          .$if(!!options.userIds, (qb) =>
-            qb
-              .where('asset.ownerId', '=', anyUuid(options.userIds!))
-              .$if(options.userIds!.length > 1, (qb2) =>
-                qb2
-                  .leftJoin('partner', (join) =>
-                    join
-                      .onRef('partner.sharedById', '=', 'asset.ownerId')
-                      .on((eb) =>
-                        eb.or(
-                          options.userIds!.map((uid) => eb('partner.sharedWithId', '=', uid))
-                        )
-                      )
-                  )
-                  .where((eb) =>
-                    eb.or([
-                      eb('partner.startDate', 'is', null),
-                      eb('partner.sharedById', 'is', null),
-                      eb('asset.localDateTime', '>=', eb.ref('partner.startDate')),
-                    ])
-                  )
-              )
-          )
+          .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
           .$if(!!options.withStacked, (qb) =>
             qb
@@ -867,25 +804,6 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets').$castTo<Stack | null>()).as('stack'))
       .where('asset.ownerId', '=', anyUuid(options.userIds))
-      .$if(options.userIds.length > 1, (qb) =>
-        qb
-          .leftJoin('partner', (join) =>
-            join
-              .onRef('partner.sharedById', '=', 'asset.ownerId')
-              .on((eb) =>
-                eb.or(
-                  options.userIds.map((uid) => eb('partner.sharedWithId', '=', uid))
-                )
-              )
-          )
-          .where((eb) =>
-            eb.or([
-              eb('partner.startDate', 'is', null),
-              eb('partner.sharedById', 'is', null),
-              eb('asset.localDateTime', '>=', eb.ref('partner.startDate')),
-            ])
-          )
-      )
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .where('asset.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
