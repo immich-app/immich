@@ -78,7 +78,7 @@
     "ioredis": "^5.3.2",
     "js-yaml": "^4.1.0",
     "kysely": "0.28.2",
-    "kysely-postgres-js": "^2.0.0",
+    "kysely-postgres-js": "^3.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "mnemonist": "^0.40.3",
