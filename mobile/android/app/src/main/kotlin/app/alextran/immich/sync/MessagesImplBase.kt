@@ -32,12 +32,12 @@ sealed class AssetResult {
 open class NativeSyncApiImplBase(context: Context) {
   private val ctx: Context = context.applicationContext
 
-  internal var hashTask: Job? = null
+  private var hashTask: Job? = null
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
-    internal val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
-    internal const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
+    private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
+    private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
 
     const val MEDIA_SELECTION =
       "(${MediaStore.Files.FileColumns.MEDIA_TYPE} = ? OR ${MediaStore.Files.FileColumns.MEDIA_TYPE} = ?)"
@@ -59,7 +59,7 @@ open class NativeSyncApiImplBase(context: Context) {
       add(MediaStore.MediaColumns.HEIGHT)
       add(MediaStore.MediaColumns.DURATION)
       add(MediaStore.MediaColumns.ORIENTATION)
-      // only available on Android 11 and above
+      // IS_FAVORITE is only available on Android 11 and above
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
       }
@@ -138,6 +138,7 @@ open class NativeSyncApiImplBase(context: Context) {
           val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
+
           val asset = PlatformAsset(
             id,
             name,

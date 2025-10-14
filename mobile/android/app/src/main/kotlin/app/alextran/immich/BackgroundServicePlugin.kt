@@ -243,15 +243,13 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
       return
     }
 
-    val primary = ContentUris.withAppendedId(contentUriForType(type), id)
-    val fallback = ContentUris.withAppendedId(MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL), id)
+    val uri = ContentUris.withAppendedId(contentUriForType(type), id)
 
     try {
-      Log.i(TAG, "restoreFromTrashById: primary=$primary (type=$type,id=$id)")
-      restoreUris(listOf(primary), result)
+      Log.i(TAG, "restoreFromTrashById: uri=$uri (type=$type,id=$id)")
+      restoreUris(listOf(uri), result)
     } catch (e: Exception) {
-      Log.w(TAG, "restoreFromTrashById: primary failed, try fallback=$fallback", e)
-      restoreUris(listOf(fallback), result)
+      Log.w(TAG, "restoreFromTrashById failed", e)
     }
   }
 
