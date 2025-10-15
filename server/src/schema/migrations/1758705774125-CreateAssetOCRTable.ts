@@ -12,8 +12,5 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await sql`DROP INDEX "asset_ocr_assetId_idx";`.execute(db);
-  await sql`ALTER TABLE "asset_ocr" DROP CONSTRAINT "asset_ocr_pkey";`.execute(db);
-  await sql`ALTER TABLE "asset_ocr" DROP CONSTRAINT "asset_ocr_assetId_fkey";`.execute(db);
   await sql`DROP TABLE "asset_ocr";`.execute(db);
 }

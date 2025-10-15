@@ -6,7 +6,7 @@
 
   export type SearchFilter = {
     query: string;
-    ocr: string;
+    ocr?: string;
     queryType: 'smart' | 'metadata' | 'description' | 'ocr';
     personIds: SvelteSet<string>;
     tagIds: SvelteSet<string> | null;
@@ -75,7 +75,7 @@
 
   let filter: SearchFilter = $state({
     query,
-    ocr: 'ocr' in searchQuery ? searchQuery.ocr : '',
+    ocr: searchQuery.ocr,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds:
@@ -114,7 +114,7 @@
   const resetForm = () => {
     filter = {
       query: '',
-      ocr: '',
+      ocr: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
