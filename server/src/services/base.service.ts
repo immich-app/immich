@@ -83,6 +83,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   MoveRepository,
   NotificationRepository,
   OAuthRepository,
+  OcrRepository,
   PartnerRepository,
   PersonRepository,
   ProcessRepository,
