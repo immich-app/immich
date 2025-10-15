@@ -1424,8 +1424,6 @@ export type SystemConfigMachineLearningDto = {
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
     ocr: OcrConfig;
-    /** This property was deprecated in v1.122.0 */
-    url?: string;
     urls: string[];
 };
 export type SystemConfigMapDto = {

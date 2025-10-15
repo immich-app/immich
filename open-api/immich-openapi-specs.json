@@ -16499,11 +16499,6 @@
           "ocr": {
             "$ref": "#/components/schemas/OcrConfig"
           },
-          "url": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.122.0",
-            "type": "string"
-          },
           "urls": {
             "format": "uri",
             "items": {
