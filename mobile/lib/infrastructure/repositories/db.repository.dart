@@ -183,6 +183,7 @@ class Drift extends $Drift implements IDatabaseRepository {
           from12To13: (m, v13) async {
             await m.create(v13.trashedLocalAssetEntity);
             await m.createIndex(v13.idxTrashedLocalAssetChecksum);
+            await m.createIndex(v13.idxTrashedLocalAssetAlbum);
           },
         ),
       );
