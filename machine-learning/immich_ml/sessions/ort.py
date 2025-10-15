@@ -158,10 +158,4 @@ class OrtSession:
         if sess_options.inter_op_num_threads > 1:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
-        log.debug(
-            f"_sess_options_default returning: "
-            f"inter_op_num_threads={getattr(sess_options, 'inter_op_num_threads', None)}, "
-            f"intra_op_num_threads={getattr(sess_options, 'intra_op_num_threads', None)}, "
-            f"execution_mode={getattr(sess_options, 'execution_mode', None)}"
-        )
         return sess_options
