@@ -26,6 +26,27 @@ export class OcrRepository {
     });
   }
 
+  @GenerateSql({
+    params: [
+      DummyValue.UUID,
+      [
+        {
+          assetId: DummyValue.UUID,
+          x1: DummyValue.NUMBER,
+          y1: DummyValue.NUMBER,
+          x2: DummyValue.NUMBER,
+          y2: DummyValue.NUMBER,
+          x3: DummyValue.NUMBER,
+          y3: DummyValue.NUMBER,
+          x4: DummyValue.NUMBER,
+          y4: DummyValue.NUMBER,
+          text: DummyValue.STRING,
+          boxScore: DummyValue.NUMBER,
+          textScore: DummyValue.NUMBER,
+        },
+      ],
+    ],
+  })
   upsert(assetId: string, ocrDataList: Insertable<AssetOcrTable>[]) {
     let query = this.db.with('deleted_ocr', (db) => db.deleteFrom('asset_ocr').where('assetId', '=', assetId));
     if (ocrDataList.length > 0) {
@@ -39,9 +60,7 @@ export class OcrRepository {
             .onConflict((oc) => oc.column('assetId').doUpdateSet((eb) => ({ text: eb.ref('excluded.text') }))),
         );
     } else {
-      (query as any) = query.with('deleted_search', (db) =>
-        db.deleteFrom('ocr_search').where('assetId', '=', assetId),
-      );
+      (query as any) = query.with('deleted_search', (db) => db.deleteFrom('ocr_search').where('assetId', '=', assetId));
     }
 
     return query.selectNoFrom(sql`1`.as('dummy')).execute();
