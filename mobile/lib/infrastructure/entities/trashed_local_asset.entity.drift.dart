@@ -1073,3 +1073,8 @@ class TrashedLocalAssetEntityCompanion
         .toString();
   }
 }
+
+i0.Index get idxTrashedLocalAssetAlbum => i0.Index(
+  'idx_trashed_local_asset_album',
+  'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
+);

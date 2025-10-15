@@ -7720,6 +7720,10 @@ class DatabaseAtV13 extends GeneratedDatabase {
     'idx_trashed_local_asset_checksum',
     'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)',
   );
+  late final Index idxTrashedLocalAssetAlbum = Index(
+    'idx_trashed_local_asset_album',
+    'CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -7751,6 +7755,7 @@ class DatabaseAtV13 extends GeneratedDatabase {
     trashedLocalAssetEntity,
     idxLatLng,
     idxTrashedLocalAssetChecksum,
+    idxTrashedLocalAssetAlbum,
   ];
   @override
   int get schemaVersion => 13;

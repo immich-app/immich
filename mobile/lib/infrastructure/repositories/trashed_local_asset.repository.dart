@@ -14,17 +14,17 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
 
   const DriftTrashedLocalAssetRepository(this._db) : super(_db);
+  static const _chunk = 32000;
 
   Future<void> updateHashes(Map<String, String> hashes) {
     if (hashes.isEmpty) {
       return Future.value();
     }
-    final now = DateTime.now();
     return _db.batch((batch) async {
       for (final entry in hashes.entries) {
         batch.update(
           _db.trashedLocalAssetEntity,
-          TrashedLocalAssetEntityCompanion(checksum: Value(entry.value), updatedAt: Value(now)),
+          TrashedLocalAssetEntityCompanion(checksum: Value(entry.value)),
           where: (e) => e.id.equals(entry.key),
         );
       }
@@ -102,18 +102,16 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         }
       });
 
-      if (assetIds.length <= 32000) {
+      if (assetIds.length <= _chunk) {
         await (_db.delete(_db.trashedLocalAssetEntity)..where((row) => row.id.isNotIn(assetIds))).go();
       } else {
         final existingIds = await (_db.selectOnly(
           _db.trashedLocalAssetEntity,
         )..addColumns([_db.trashedLocalAssetEntity.id])).map((r) => r.read(_db.trashedLocalAssetEntity.id)!).get();
         final idToDelete = existingIds.where((id) => !assetIds.contains(id));
-        await _db.batch((batch) {
-          for (final id in idToDelete) {
-            batch.deleteWhere(_db.trashedLocalAssetEntity, (row) => row.id.equals(id));
-          }
-        });
+        for (final slice in idToDelete.slices(_chunk)) {
+          await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
+        }
       }
     });
   }
@@ -181,7 +179,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
             id: Value(asset.id),
             name: Value(asset.name),
             albumId: Value(entry.key),
-            checksum: asset.checksum == null ? const Value.absent() : Value(asset.checksum),
+            checksum: Value(asset.checksum),
             type: Value(asset.type),
             width: Value(asset.width),
             height: Value(asset.height),
@@ -200,24 +198,29 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
       }
 
-      for (final id in idToDelete) {
-        await (_db.delete(_db.localAssetEntity)..where((row) => row.id.equals(id))).go();
+      for (final slice in idToDelete.slices(_chunk)) {
+        await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
   }
 
-  Future<void> applyRestoredAssets(Iterable<String> ids) async {
-    if (ids.isEmpty) {
+  Future<void> applyRestoredAssets(List<String> idList) async {
+    if (idList.isEmpty) {
       return;
     }
 
-    final trashedAssets = await (_db.select(_db.trashedLocalAssetEntity)..where((tbl) => tbl.id.isIn(ids))).get();
+    final trashedAssets = <TrashedLocalAssetEntityData>[];
+
+    for (final slice in idList.slices(_chunk)) {
+      final q = _db.select(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice));
+      trashedAssets.addAll(await q.get());
+    }
 
     if (trashedAssets.isEmpty) {
       return;
     }
 
-    final localAssets = trashedAssets.map((e) {
+    final companions = trashedAssets.map((e) {
       return LocalAssetEntityCompanion.insert(
         id: e.id,
         name: e.name,
@@ -231,15 +234,15 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         isFavorite: Value(e.isFavorite),
         orientation: Value(e.orientation),
       );
-    }).toList();
+    });
 
     await _db.transaction(() async {
-      await _db.batch((batch) {
-        batch.insertAllOnConflictUpdate(_db.localAssetEntity, localAssets);
-        for (final id in ids) {
-          batch.deleteWhere(_db.trashedLocalAssetEntity, (row) => row.id.equals(id));
-        }
-      });
+      for (final companion in companions) {
+        await _db.into(_db.localAssetEntity).insertOnConflictUpdate(companion);
+      }
+      for (final slice in idList.slices(_chunk)) {
+        await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
+      }
     });
   }
 
@@ -247,7 +250,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   Future<Map<String, String>> _getCachedChecksums(Set<String> assetIds) async {
     final localChecksumById = <String, String>{};
 
-    for (final slice in assetIds.slices(32000)) {
+    for (final slice in assetIds.slices(_chunk)) {
       final rows =
           await (_db.selectOnly(_db.localAssetEntity)
                 ..where(_db.localAssetEntity.id.isIn(slice) & _db.localAssetEntity.checksum.isNotNull())
