@@ -100,8 +100,6 @@ export class TimelineManager {
   #updatingIntersections = false;
   #scrollableElement: HTMLElement | undefined = $state();
 
-  constructor() {}
-
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
     let changed = false;
     changed ||= this.#setHeaderHeight(headerHeight);

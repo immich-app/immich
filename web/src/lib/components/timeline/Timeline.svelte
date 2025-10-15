@@ -12,7 +12,7 @@
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
+  import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -22,7 +22,7 @@
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
-  import { onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import TimelineDateGroup from './TimelineDateGroup.svelte';
 
@@ -33,7 +33,8 @@
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the timeline is scrolled */
     enableRouting: boolean;
-    timelineManager: TimelineManager;
+    timelineManager?: TimelineManager;
+    options?: TimelineManagerOptions;
     assetInteraction: AssetInteraction;
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -71,6 +72,7 @@
     singleSelect = false,
     enableRouting,
     timelineManager = $bindable(),
+    options,
     assetInteraction,
     removeAction = null,
     withStacked = false,
@@ -86,6 +88,10 @@
     customLayout,
     onThumbnailClick,
   }: Props = $props();
+
+  timelineManager = new TimelineManager();
+  onDestroy(() => timelineManager.destroy());
+  $effect(() => options && void timelineManager.updateOptions(options));
 
   let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
@@ -204,13 +210,6 @@
         }
         invisible = false;
       }, 500);
-    }
-  };
-
-  const handleBeforeUpdate = (payload: UpdatePayload) => {
-    const timelineUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));
-    if (timelineUpdate) {
-      timelineManager.destroy();
     }
   };
 
@@ -498,7 +497,7 @@
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
-<HotModuleReload onAfterUpdate={handleAfterUpdate} onBeforeUpdate={handleBeforeUpdate} />
+<HotModuleReload onAfterUpdate={handleAfterUpdate} onBeforeUpdate={() => timelineManager.destroy()} />
 
 <TimelineKeyboardActions
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
