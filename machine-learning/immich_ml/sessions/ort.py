@@ -62,13 +62,6 @@ class OrtSession:
     def _providers_default(self) -> list[str]:
         available_providers = set(ort.get_available_providers())
         log.debug(f"Available ORT providers: {available_providers}")
-        if (openvino := "OpenVINOExecutionProvider") in available_providers:
-            device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
-            log.debug(f"Available OpenVINO devices: {device_ids}")
-
-            if not device_ids:
-                log.warning("No device found in OpenVINO. Falling back to CPU.")
-                available_providers.remove(openvino)
         return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
     @property
