@@ -48,7 +48,9 @@ export class TimelineManager {
   isInitialized = $state(false);
   months: MonthGroup[] = $state([]);
   topSectionHeight = $state(0);
-  timelineHeight = $derived(this.months.reduce((accumulator, b) => accumulator + b.height, 0) + this.topSectionHeight);
+  bottomSectionHeight = $state(60);
+  assetsHeight = $derived(this.months.reduce((accumulator, b) => accumulator + b.height, 0));
+  totalViewerHeight = $derived(this.topSectionHeight + this.assetsHeight + this.bottomSectionHeight);
   assetCount = $derived(this.months.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
 
   albumAssets: Set<string> = new SvelteSet();
@@ -62,6 +64,7 @@ export class TimelineManager {
     top: this.#scrollTop,
     bottom: this.#scrollTop + this.viewportHeight,
   }));
+  limitedScroll = $derived(this.maxScrollPercent < 0.5);
 
   initTask = new CancellableTask(
     () => {
@@ -96,8 +99,6 @@ export class TimelineManager {
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
   #updatingIntersections = false;
   #scrollableElement: HTMLElement | undefined = $state();
-
-  constructor() {}
 
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
     let changed = false;
@@ -383,7 +384,9 @@ export class TimelineManager {
       updateGeometry(this, month, { invalidateHeight: changedWidth });
     }
     this.updateIntersections();
-    this.#createScrubberMonths();
+    if (changedWidth) {
+      this.#createScrubberMonths();
+    }
   }
 
   #createScrubberMonths() {
@@ -394,7 +397,7 @@ export class TimelineManager {
       title: month.monthGroupTitle,
       height: month.height,
     }));
-    this.scrubberTimelineHeight = this.timelineHeight;
+    this.scrubberTimelineHeight = this.totalViewerHeight;
   }
 
   createLayoutOptions() {
@@ -406,6 +409,16 @@ export class TimelineManager {
       rowHeight: this.#rowHeight,
       rowWidth: Math.floor(viewportWidth),
     };
+  }
+
+  get maxScrollPercent() {
+    const totalHeight = this.totalViewerHeight;
+    const max = (totalHeight - this.viewportHeight) / totalHeight;
+    return max;
+  }
+
+  get maxScroll() {
+    return this.totalViewerHeight - this.viewportHeight;
   }
 
   async loadMonthGroup(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
