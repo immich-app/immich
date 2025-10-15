@@ -233,7 +233,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.ThumbnailGeneration]: { concurrency: 3 },
     [QueueName.VideoConversion]: { concurrency: 1 },
     [QueueName.Notification]: { concurrency: 5 },
-    [QueueName.OCR]: { concurrency: 1 },
+    [QueueName.Ocr]: { concurrency: 1 },
   },
   logging: {
     enabled: true,
@@ -264,9 +264,9 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     ocr: {
       enabled: true,
-      modelName: 'PP-OCRv5_server',
+      modelName: 'PP-OCRv5_mobile',
       minDetectionScore: 0.5,
-      minRecognitionScore: 0.9,
+      minRecognitionScore: 0.8,
       maxResolution: 736,
     },
   },

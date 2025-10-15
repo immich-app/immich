@@ -237,12 +237,8 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.DatabaseBackup, data: { force } });
       }
 
-      case QueueName.OCR: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_OCR, data: { force } });
-      }
-
-      case QueueName.OCR: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_OCR, data: { force } });
+      case QueueName.Ocr: {
+        return this.jobRepository.queue({ name: JobName.OcrQueueAll, data: { force } });
       }
 
       default: {
@@ -361,7 +357,7 @@ export class JobService extends BaseService {
         const jobs: JobItem[] = [
           { name: JobName.SmartSearch, data: item.data },
           { name: JobName.AssetDetectFaces, data: item.data },
-          { name: JobName.OCR, data: item.data },
+          { name: JobName.Ocr, data: item.data },
         ];
 
         if (asset.type === AssetType.Video) {

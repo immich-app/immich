@@ -9,8 +9,8 @@ import { isOcrEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class OcrService extends BaseService {
-  @OnJob({ name: JobName.QUEUE_OCR, queue: QueueName.OCR })
-  async handleQueueOcr({ force, nightly }: JobOf<JobName.QUEUE_OCR>): Promise<JobStatus> {
+  @OnJob({ name: JobName.OcrQueueAll, queue: QueueName.Ocr })
+  async handleQueueOcr({ force }: JobOf<JobName.OcrQueueAll>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isOcrEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -24,7 +24,7 @@ export class OcrService extends BaseService {
     const assets = this.assetJobRepository.streamForOcrJob(force);
 
     for await (const asset of assets) {
-      jobs.push({ name: JobName.OCR, data: { id: asset.id } });
+      jobs.push({ name: JobName.Ocr, data: { id: asset.id } });
 
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(jobs);
@@ -36,8 +36,8 @@ export class OcrService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.OCR, queue: QueueName.OCR })
-  async handleOcr({ id }: JobOf<JobName.OCR>): Promise<JobStatus> {
+  @OnJob({ name: JobName.Ocr, queue: QueueName.Ocr })
+  async handleOcr({ id }: JobOf<JobName.Ocr>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isOcrEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -52,11 +52,7 @@ export class OcrService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const ocrResults = await this.machineLearningRepository.ocr(
-      machineLearning.urls,
-      asset.previewFile,
-      machineLearning.ocr,
-    );
+    const ocrResults = await this.machineLearningRepository.ocr(asset.previewFile, machineLearning.ocr);
 
     await this.ocrRepository.upsert(id, this.parseOcrResults(id, ocrResults));
 
@@ -66,7 +62,7 @@ export class OcrService extends BaseService {
     return JobStatus.Success;
   }
 
-  parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
+  private parseOcrResults(id: string, { box, boxScore, text, textScore }: OCR) {
     const ocrDataList = [];
     for (let i = 0; i < text.length; i++) {
       const boxOffset = i * 8;

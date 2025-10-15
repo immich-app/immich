@@ -41,6 +41,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
@@ -228,6 +229,7 @@ export type ServiceOverrides = {
   metadata: MetadataRepository;
   move: MoveRepository;
   notification: NotificationRepository;
+  ocr: OcrRepository;
   oauth: OAuthRepository;
   partner: PartnerRepository;
   person: PersonRepository;
@@ -298,6 +300,7 @@ export const newTestService = <T extends BaseService>(
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
     notification: automock(NotificationRepository),
+    ocr: automock(OcrRepository, { strict: false }),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
     person: automock(PersonRepository, { strict: false }),
@@ -350,6 +353,7 @@ export const newTestService = <T extends BaseService>(
     overrides.move || (mocks.move as As<MoveRepository>),
     overrides.notification || (mocks.notification as As<NotificationRepository>),
     overrides.oauth || (mocks.oauth as As<OAuthRepository>),
+    overrides.ocr || (mocks.ocr as As<OcrRepository>),
     overrides.partner || (mocks.partner as As<PartnerRepository>),
     overrides.person || (mocks.person as As<PersonRepository>),
     overrides.process || (mocks.process as As<ProcessRepository>),

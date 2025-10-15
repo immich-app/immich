@@ -218,6 +218,17 @@ export class MachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
+  async ocr(imagePath: string, { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions) {
+    const request = {
+      [ModelTask.OCR]: {
+        [ModelType.DETECTION]: { modelName, options: { minScore: minDetectionScore, maxResolution } },
+        [ModelType.RECOGNITION]: { modelName, options: { minScore: minRecognitionScore } },
+      },
+    };
+    const response = await this.predict<OcrResponse>({ imagePath }, request);
+    return response[ModelTask.OCR];
+  }
+
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {
     const formData = new FormData();
     formData.append('entries', JSON.stringify(config));
@@ -232,20 +243,5 @@ export class MachineLearningRepository {
     }
 
     return formData;
-  }
-
-  async ocr(
-    urls: string[],
-    imagePath: string,
-    { modelName, minDetectionScore, minRecognitionScore, maxResolution }: OcrOptions,
-  ) {
-    const request = {
-      [ModelTask.OCR]: {
-        [ModelType.DETECTION]: { modelName, options: { minScore: minDetectionScore, maxResolution } },
-        [ModelType.RECOGNITION]: { modelName, options: { minScore: minRecognitionScore } },
-      },
-    };
-    const response = await this.predict<OcrResponse>({ imagePath }, request);
-    return response[ModelTask.OCR];
   }
 }
