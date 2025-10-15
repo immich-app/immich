@@ -244,12 +244,6 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     };
   }
 
-  async newTag(dto: Partial<Insertable<TagTable>>) {
-    const tag = mediumFactory.tagInsert(dto);
-    const result = await this.get(TagRepository).create(tag);
-    return { tag, result };
-  }
-
   async newTagAsset(tagBulkAssets: { tagIds: string[]; assetIds: string[] }) {
     const tagsAssets: Insertable<TagAssetTable>[] = [];
     for (const tagsId of tagBulkAssets.tagIds) {
