@@ -165,18 +165,14 @@ export class TagRepository {
   async deleteEmptyTags() {
     const result = await this.db
       .deleteFrom('tag')
-      .where('id', 'not in', (eb) => eb.selectFrom('tag_asset').select('tagsId'))
-      .where('id', 'not in', (eb) =>
-        eb
-          .selectFrom('tag as child')
-          .select('child.parentId')
-          .where('child.parentId', 'is not', null)
-          .where((eb2) =>
-            eb2.or([
-              eb2('child.id', 'in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
-              eb2('child.id', 'not in', (eb3) => eb3.selectFrom('tag_asset').select('tagsId')),
-            ]),
+      .where(({ not, exists, selectFrom }) =>
+        not(
+          exists(
+            selectFrom('tag_closure')
+              .whereRef('tag.id', '=', 'tag_closure.id_ancestor')
+              .innerJoin('tag_asset', 'tag_closure.id_descendant', 'tag_asset.tagsId'),
           ),
+        ),
       )
       .executeTakeFirst();
 
