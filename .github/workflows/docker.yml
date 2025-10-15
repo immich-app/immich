@@ -140,6 +140,7 @@ jobs:
       runner-mapping: ${{ matrix.runner-mapping }}
       tag-suffix: ${{ matrix.tag-suffix }}
       dockerhub-push: ${{ github.event_name == 'release' }}
+      release-tag-type: semver
       build-args: |
         DEVICE=${{ matrix.device }}
 
@@ -160,6 +161,7 @@ jobs:
       context: .
       dockerfile: server/Dockerfile
       dockerhub-push: ${{ github.event_name == 'release' }}
+      release-tag-type: semver
       build-args: |
         DEVICE=cpu
 
