@@ -411,7 +411,7 @@ class SearchPage extends HookConsumerWidget {
       TextSearchType.context => Icons.image_search_rounded,
       TextSearchType.filename => Icons.abc_rounded,
       TextSearchType.description => Icons.text_snippet_outlined,
-      TextSearchType.ocr => Icons.document_scanner_outlined
+      TextSearchType.ocr => Icons.document_scanner_outlined,
     };
 
     return Scaffold(
@@ -504,9 +504,7 @@ class SearchPage extends HookConsumerWidget {
                       'search_filter_ocr'.tr(),
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.ocr
-                            ? context.colorScheme.primary
-                            : null,
+                        color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
                       ),
                     ),
                     selectedColor: context.colorScheme.primary,
