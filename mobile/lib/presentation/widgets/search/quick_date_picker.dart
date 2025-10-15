@@ -183,27 +183,16 @@ class QuickDatePicker extends HookWidget {
         child: SingleChildScrollView(
           child: RadioGroup(
             onChanged: (value) {
-              switch (value) {
-                case _QuickPickerType.custom:
-                  onRequestPicker();
-                  break;
-                case _QuickPickerType.last1Month:
-                  onSelect(RecentMonthRangeFilter(1));
-                  break;
-                case _QuickPickerType.last3Months:
-                  onSelect(RecentMonthRangeFilter(3));
-                  break;
-                case _QuickPickerType.last9Months:
-                  onSelect(RecentMonthRangeFilter(9));
-                  break;
-                case _QuickPickerType.year:
-                  // The combobox triggers the onSelect event on its own so if this is ever selected it can only be on
-                  // the default value set by the constructor
-                  onSelect(YearFilter(_initialYear));
-                  break;
-                default:
-                  break;
-              }
+              if (value == null) return;
+              final _ = switch (value) {
+                _QuickPickerType.custom => onRequestPicker(),
+                _QuickPickerType.last1Month => onSelect(RecentMonthRangeFilter(1)),
+                _QuickPickerType.last3Months => onSelect(RecentMonthRangeFilter(3)),
+                _QuickPickerType.last9Months => onSelect(RecentMonthRangeFilter(9)),
+                // When a year is selected the combobox triggers onSelect() on its own.
+                // Here we handle the radio button being selected which can only ever be the initial year
+                _QuickPickerType.year => onSelect(YearFilter(_initialYear)),
+              };
             },
             groupValue: _selection,
             child: Column(
