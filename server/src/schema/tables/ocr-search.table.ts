@@ -17,4 +17,4 @@ export class OcrSearchTable {
 
   @Column({ type: 'text' })
   text!: string;
-} 
+}
