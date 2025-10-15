@@ -66,9 +66,8 @@ class OrtSession:
             device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
             log.debug(f"Available OpenVINO devices: {device_ids}")
 
-            gpu_devices = [device_id for device_id in device_ids if device_id.startswith("GPU")]
-            if not gpu_devices:
-                log.warning("No GPU device found in OpenVINO. Falling back to CPU.")
+            if not device_ids:
+                log.warning("No device found in OpenVINO. Falling back to CPU.")
                 available_providers.remove(openvino)
         return [provider for provider in SUPPORTED_PROVIDERS if provider in available_providers]
 
@@ -91,8 +90,17 @@ class OrtSession:
                 case "CUDAExecutionProvider" | "ROCMExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "OpenVINOExecutionProvider":
+                    device_ids: list[str] = ort.capi._pybind_state.get_available_openvino_device_ids()
+                    # Check for available devices, preferring GPU over CPU
+                    gpu_devices = [d for d in device_ids if d.startswith("GPU")]
+                    if gpu_devices:
+                        device_type = f"GPU.{settings.device_id}"
+                        log.debug(f"OpenVINO: Using GPU device {device_type}")
+                    else:
+                        device_type = "CPU"
+                        log.debug("OpenVINO: No GPU found, using CPU")
                     options = {
-                        "device_type": f"GPU.{settings.device_id}",
+                        "device_type": device_type,
                         "precision": "FP32",
                         "cache_dir": (self.model_path.parent / "openvino").as_posix(),
                     }
@@ -126,18 +134,34 @@ class OrtSession:
         sess_options.enable_cpu_mem_arena = settings.model_arena
 
         # avoid thread contention between models
+        # Set inter_op threads
         if settings.model_inter_op_threads > 0:
             sess_options.inter_op_num_threads = settings.model_inter_op_threads
         # these defaults work well for CPU, but bottleneck GPU
         elif settings.model_inter_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.inter_op_num_threads = 1
+        elif settings.model_inter_op_threads == 0 and (
+            "OpenVINOExecutionProvider" in self.providers and self._provider_options[0].get("device_type") == "CPU"
+        ):
+            sess_options.inter_op_num_threads = 1
 
+        # Set intra_op threads
         if settings.model_intra_op_threads > 0:
             sess_options.intra_op_num_threads = settings.model_intra_op_threads
         elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.intra_op_num_threads = 2
+        elif settings.model_intra_op_threads == 0 and (
+            "OpenVINOExecutionProvider" in self.providers and self._provider_options[0].get("device_type") == "CPU"
+        ):
+            sess_options.intra_op_num_threads = 1
 
         if sess_options.inter_op_num_threads > 1:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
+        log.debug(
+            f"_sess_options_default returning: "
+            f"inter_op_num_threads={getattr(sess_options, 'inter_op_num_threads', None)}, "
+            f"intra_op_num_threads={getattr(sess_options, 'intra_op_num_threads', None)}, "
+            f"execution_mode={getattr(sess_options, 'execution_mode', None)}"
+        )
         return sess_options
