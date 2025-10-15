@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -24,7 +24,7 @@ export type TimelineDateTime = TimelineDate & {
 };
 
 export type ScrubberListener = (scrubberData: {
-  scrubberMonth: { year: number; month: number };
+  scrubberMonth: ViewportTopMonth;
   overallScrollPercent: number;
   scrubberMonthScrollPercent: number;
 }) => void | Promise<void>;
