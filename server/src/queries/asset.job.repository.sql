@@ -287,22 +287,20 @@ where
 
 -- AssetJobRepository.getForOcr
 select
-  "assets"."visibility",
+  "asset"."visibility",
   (
     select
-      "asset_files"."id",
-      "asset_files"."path",
-      "asset_files"."type"
+      "asset_file"."path"
     from
-      "asset_files"
+      "asset_file"
     where
-      "asset_files"."assetId" = "assets"."id"
-      and "asset_files"."type" = $1
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = $1
   ) as "previewFile"
 from
-  "assets"
+  "asset"
 where
-  "assets"."id" = $2
+  "asset"."id" = $2
 
 -- AssetJobRepository.getForSyncAssets
 select
@@ -504,14 +502,14 @@ order by
 
 -- AssetJobRepository.streamForOcrJob
 select
-  "assets"."id"
+  "asset"."id"
 from
-  "assets"
-  inner join "asset_job_status" on "asset_job_status"."assetId" = "assets"."id"
+  "asset"
+  inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
   "asset_job_status"."ocrAt" is null
-  and "assets"."deletedAt" is null
-  and "assets"."visibility" != $1
+  and "asset"."deletedAt" is null
+  and "asset"."visibility" != $1
 
 -- AssetJobRepository.streamForMigrationJob
 select

@@ -36,16 +36,30 @@ with
         "x4",
         "y4",
         "text",
-        "confidence"
+        "boxScore",
+        "textScore"
       )
     values
-      ($2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      (
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13
+      )
   ),
   "inserted_search" as (
     insert into
       "ocr_search" ("assetId", "text")
     values
-      ($13, $14)
+      ($14, $15)
     on conflict ("assetId") do update
     set
       "text" = "excluded"."text"
