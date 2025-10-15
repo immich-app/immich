@@ -27,8 +27,10 @@ import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
@@ -291,6 +293,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case AssetJobRepository:
     case MemoryRepository:
     case NotificationRepository:
+    case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
     case SearchRepository:
@@ -336,8 +339,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case AssetJobRepository:
     case ConfigRepository:
     case CryptoRepository:
+    case MachineLearningRepository:
     case MemoryRepository:
     case NotificationRepository:
+    case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
     case SessionRepository:
