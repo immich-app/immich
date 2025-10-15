@@ -2,6 +2,7 @@ from typing import Any
 
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 from PIL.Image import Image
 from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.ch_ppocr_rec import TextRecognizer as RapidTextRecognizer
@@ -84,7 +85,7 @@ class TextRecognizer(InferenceModel):
             "textScore": text_scores[valid_text_score_idx],
         }
 
-    def get_crop_img_list(self, img: np.ndarray, boxes: np.ndarray) -> list[np.ndarray]:
+    def get_crop_img_list(self, img: NDArray[np.float32], boxes: NDArray[np.float32]) -> list[NDArray[np.float32]]:
         img_crop_width = np.maximum(
             np.linalg.norm(boxes[:, 1] - boxes[:, 0], axis=1), np.linalg.norm(boxes[:, 2] - boxes[:, 3], axis=1)
         ).astype(np.int32)
@@ -96,16 +97,16 @@ class TextRecognizer(InferenceModel):
         pts_std[:, 2:4, 1] = img_crop_height[:, None]
 
         img_crop_sizes = np.stack([img_crop_width, img_crop_height], axis=1).tolist()
-        imgs = []
+        imgs: list[NDArray[np.float32]] = []
         for box, pts_std, dst_size in zip(list(boxes), list(pts_std), img_crop_sizes):
             M = cv2.getPerspectiveTransform(box, pts_std)
-            dst_img = cv2.warpPerspective(
+            dst_img: NDArray[np.float32] = cv2.warpPerspective(
                 img,
                 M,
                 dst_size,
                 borderMode=cv2.BORDER_REPLICATE,
                 flags=cv2.INTER_CUBIC,
-            )
+            )  # type: ignore
             dst_height, dst_width = dst_img.shape[0:2]
             if dst_height * 1.0 / dst_width >= 1.5:
                 dst_img = np.rot90(dst_img)

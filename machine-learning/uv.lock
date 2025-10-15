@@ -1082,7 +1082,7 @@ wheels = [
 
 [[package]]
 name = "immich-ml"
-version = "1.129.0"
+version = "2.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "aiocache" },
