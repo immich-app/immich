@@ -41,7 +41,7 @@
     type MetadataSearchDto,
     searchAssets,
     searchSmart,
-    type SmartSearchDto
+    type SmartSearchDto,
   } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';

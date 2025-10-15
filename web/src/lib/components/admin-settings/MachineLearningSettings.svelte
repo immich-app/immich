@@ -291,7 +291,8 @@
             min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
-            isEdited={config.machineLearning.ocr.minDetectionScore !== savedConfig.machineLearning.ocr.minDetectionScore}
+            isEdited={config.machineLearning.ocr.minDetectionScore !==
+              savedConfig.machineLearning.ocr.minDetectionScore}
           />
 
           <SettingInputField
@@ -303,7 +304,8 @@
             min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.ocr.enabled}
-            isEdited={config.machineLearning.ocr.minRecognitionScore !== savedConfig.machineLearning.ocr.minRecognitionScore}
+            isEdited={config.machineLearning.ocr.minRecognitionScore !==
+              savedConfig.machineLearning.ocr.minRecognitionScore}
           />
 
           <SettingInputField
