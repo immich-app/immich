@@ -90,7 +90,7 @@ describe('TimelineManager', () => {
     });
 
     it('calculates timeline height', () => {
-      expect(timelineManager.timelineHeight).toBe(12_447.5);
+      expect(timelineManager.totalViewerHeight).toBe(12_507.5);
     });
   });
 

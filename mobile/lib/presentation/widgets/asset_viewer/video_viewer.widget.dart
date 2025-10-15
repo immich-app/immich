@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -218,7 +219,10 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
 
       try {
-        await videoController.play();
+        final autoPlayVideo = AppSetting.get(Setting.autoPlayVideo);
+        if (autoPlayVideo) {
+          await videoController.play();
+        }
         await videoController.setVolume(0.9);
       } catch (error) {
         log.severe('Error playing video: $error');
