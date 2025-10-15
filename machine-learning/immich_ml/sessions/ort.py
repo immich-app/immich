@@ -146,7 +146,8 @@ class OrtSession:
         elif settings.model_inter_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.inter_op_num_threads = 1
         elif settings.model_inter_op_threads == 0 and (
-            "OpenVINOExecutionProvider" in self.providers and self._provider_options[0].get("device_type") == "CPU"
+            "OpenVINOExecutionProvider" in self.providers
+            and self._provider_options[self.providers.index("OpenVINOExecutionProvider")].get("device_type") == "CPU"
         ):
             sess_options.inter_op_num_threads = 1
 
@@ -156,7 +157,8 @@ class OrtSession:
         elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.intra_op_num_threads = 2
         elif settings.model_intra_op_threads == 0 and (
-            "OpenVINOExecutionProvider" in self.providers and self._provider_options[0].get("device_type") == "CPU"
+            "OpenVINOExecutionProvider" in self.providers
+            and self._provider_options[self.providers.index("OpenVINOExecutionProvider")].get("device_type") == "CPU"
         ):
             sess_options.intra_op_num_threads = 1
 
