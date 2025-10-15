@@ -1,10 +1,13 @@
 import { Kysely } from 'kysely';
+import { AssetFileType, JobStatus } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { DB } from 'src/schema';
 import { OcrService } from 'src/services/ocr.service';
 import { newMediumService } from 'test/medium.factory';
@@ -15,8 +18,8 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(OcrService, {
     database: db || defaultDatabase,
-    real: [AssetRepository, AssetJobRepository, JobRepository, OcrRepository],
-    mock: [LoggingRepository, MachineLearningRepository],
+    real: [AssetRepository, AssetJobRepository, ConfigRepository, OcrRepository, SystemMetadataRepository],
+    mock: [JobRepository, LoggingRepository, MachineLearningRepository],
   });
 };
 
@@ -34,6 +37,7 @@ describe(OcrService.name, () => {
     const { sut, ctx } = setup();
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
 
     const machineLearningMock = ctx.getMock(MachineLearningRepository);
     machineLearningMock.ocr.mockResolvedValue({
@@ -43,7 +47,7 @@ describe(OcrService.name, () => {
       textScore: [0.95],
     });
 
-    await expect(sut.handleOcr({ id: asset.id })).resolves.toBe('Success');
+    await expect(sut.handleOcr({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
     const ocrRepository = ctx.get(OcrRepository);
     await expect(ocrRepository.getByAssetId(asset.id)).resolves.toEqual([
@@ -69,22 +73,30 @@ describe(OcrService.name, () => {
       assetId: asset.id,
       text: 'Test OCR',
     });
+    await expect(
+      ctx.database
+        .selectFrom('asset_job_status')
+        .select('asset_job_status.ocrAt')
+        .where('assetId', '=', asset.id)
+        .executeTakeFirst(),
+    ).resolves.toEqual({ ocrAt: expect.any(Date) });
   });
 
   it('should handle multiple boxes', async () => {
     const { sut, ctx } = setup();
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
 
     const machineLearningMock = ctx.getMock(MachineLearningRepository);
     machineLearningMock.ocr.mockResolvedValue({
-      box: Array.from({ length: 8 * 10 }, (_, i) => i),
+      box: Array.from({ length: 8 * 5 }, (_, i) => i),
       boxScore: [0.7, 0.67, 0.65, 0.62, 0.6],
       text: ['One', 'Two', 'Three', 'Four', 'Five'],
       textScore: [0.9, 0.89, 0.88, 0.87, 0.86],
     });
 
-    await expect(sut.handleOcr({ id: asset.id })).resolves.toBe('Success');
+    await expect(sut.handleOcr({ id: asset.id })).resolves.toBe(JobStatus.Success);
 
     const ocrRepository = ctx.get(OcrRepository);
     await expect(ocrRepository.getByAssetId(asset.id)).resolves.toEqual([
@@ -168,7 +180,64 @@ describe(OcrService.name, () => {
       ctx.database.selectFrom('ocr_search').selectAll().where('assetId', '=', asset.id).executeTakeFirst(),
     ).resolves.toEqual({
       assetId: asset.id,
-      text: 'One Two Three Four Fivee',
+      text: 'One Two Three Four Five',
     });
+    await expect(
+      ctx.database
+        .selectFrom('asset_job_status')
+        .select('asset_job_status.ocrAt')
+        .where('assetId', '=', asset.id)
+        .executeTakeFirst(),
+    ).resolves.toEqual({ ocrAt: expect.any(Date) });
+  });
+
+  it('should handle no boxes', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
+
+    const machineLearningMock = ctx.getMock(MachineLearningRepository);
+    machineLearningMock.ocr.mockResolvedValue({ box: [], boxScore: [], text: [], textScore: [] });
+
+    await expect(sut.handleOcr({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+    const ocrRepository = ctx.get(OcrRepository);
+    await expect(ocrRepository.getByAssetId(asset.id)).resolves.toEqual([]);
+    await expect(
+      ctx.database.selectFrom('ocr_search').selectAll().where('assetId', '=', asset.id).executeTakeFirst(),
+    ).resolves.toBeUndefined();
+    await expect(
+      ctx.database
+        .selectFrom('asset_job_status')
+        .select('asset_job_status.ocrAt')
+        .where('assetId', '=', asset.id)
+        .executeTakeFirst(),
+    ).resolves.toEqual({ ocrAt: expect.any(Date) });
+  });
+
+  it('should update existing results', async () => {
+    const { sut, ctx } = setup();
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: 'preview.jpg' });
+
+    const machineLearningMock = ctx.getMock(MachineLearningRepository);
+    machineLearningMock.ocr.mockResolvedValue({
+      box: [10, 10, 50, 10, 50, 50, 10, 50],
+      boxScore: [0.99],
+      text: ['Test OCR'],
+      textScore: [0.95],
+    });
+    await expect(sut.handleOcr({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+    machineLearningMock.ocr.mockResolvedValue({ box: [], boxScore: [], text: [], textScore: [] });
+    await expect(sut.handleOcr({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+    const ocrRepository = ctx.get(OcrRepository);
+    await expect(ocrRepository.getByAssetId(asset.id)).resolves.toEqual([]);
+    await expect(
+      ctx.database.selectFrom('ocr_search').selectAll().where('assetId', '=', asset.id).executeTakeFirst(),
+    ).resolves.toBeUndefined();
   });
 });

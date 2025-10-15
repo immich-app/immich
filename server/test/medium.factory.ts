@@ -47,6 +47,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -165,6 +166,11 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const asset = mediumFactory.assetInsert(dto);
     const result = await this.get(AssetRepository).create(asset);
     return { asset, result };
+  }
+
+  async newAssetFile(dto: Insertable<AssetFileTable>) {
+    const result = await this.get(AssetRepository).upsertFile(dto);
+    return { result };
   }
 
   async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
@@ -339,7 +345,6 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case AssetJobRepository:
     case ConfigRepository:
     case CryptoRepository:
-    case MachineLearningRepository:
     case MemoryRepository:
     case NotificationRepository:
     case OcrRepository:
@@ -388,6 +393,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case LoggingRepository as unknown as ClassConstructor<T>: {
       const configMock = { getEnv: () => ({ noColor: false }) };
       return automock(LoggingRepository, { args: [undefined, configMock], strict: false });
+    }
+
+    case MachineLearningRepository: {
+      return automock(MachineLearningRepository, { args: [{ setContext: () => {} }] });
     }
 
     case StorageRepository: {
