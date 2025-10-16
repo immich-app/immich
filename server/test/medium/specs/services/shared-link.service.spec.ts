@@ -2,7 +2,6 @@ import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
-import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
@@ -65,6 +64,37 @@ describe(SharedLinkService.name, () => {
     });
   });
 
+  it('should share individually assets', async () => {
+    const { sut, ctx } = setup();
+
+    const { user } = await ctx.newUser();
+
+    const assets = await Promise.all([
+      ctx.newAsset({ ownerId: user.id }),
+      ctx.newAsset({ ownerId: user.id }),
+      ctx.newAsset({ ownerId: user.id }),
+    ]);
+
+    for (const { asset } of assets) {
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+    }
+
+    const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+    const sharedLink = await sharedLinkRepo.create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      allowUpload: false,
+      type: SharedLinkType.Individual,
+      assetIds: assets.map(({ asset }) => asset.id),
+    });
+
+    await expect(sut.getMine({ user, sharedLink }, {})).resolves.toMatchObject({
+      assets: assets.map(({ asset }) => expect.objectContaining({ id: asset.id })),
+    });
+  });
+
   it('should remove individually shared asset', async () => {
     const { sut, ctx } = setup();
 
@@ -92,6 +122,6 @@ describe(SharedLinkService.name, () => {
       assetIds: [asset.id],
     });
 
-    expect((await sut.getMine({ user, sharedLink }, {})).assets).toHaveLength(0);
+    await expect(sut.getMine({ user, sharedLink }, {})).resolves.toHaveProperty('assets', []);
   });
 });
