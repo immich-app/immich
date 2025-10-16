@@ -9,6 +9,7 @@
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+
   interface Props {
     initialDate?: DateTime;
     initialTimeZone?: string;
@@ -48,7 +49,7 @@
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
 
-<Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(false)}>
+<Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(false)} size="small">
   <ModalBody>
     <VStack fullWidth>
       <HStack fullWidth>

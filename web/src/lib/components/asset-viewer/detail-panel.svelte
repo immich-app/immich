@@ -108,11 +108,13 @@
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
-  const showChangeDate = async () =>
-    await modalManager.show(AssetChangeDateModal, {
-      asset: toTimelineAsset(asset),
-      initialDate: dateTime,
-    });
+  const handleChangeDate = async () => {
+    if (!isOwner) {
+      return;
+    }
+
+    await modalManager.show(AssetChangeDateModal, { asset: toTimelineAsset(asset), initialDate: dateTime });
+  };
 </script>
 
 <section class="relative p-2">
@@ -269,7 +271,7 @@
       <button
         type="button"
         class="flex w-full text-start justify-between place-items-start gap-4 py-4"
-        onclick={() => (isOwner ? showChangeDate() : null)}
+        onclick={handleChangeDate}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:text-primary={isOwner}
       >

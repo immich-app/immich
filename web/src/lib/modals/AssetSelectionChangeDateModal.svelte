@@ -67,7 +67,7 @@
   <ModalBody>
     <VStack fullWidth>
       <HStack fullWidth>
-        <Field color="muted" label="Adjust selection by fixed duration (time zone adjust)">
+        <Field label={$t('edit_date_and_time_by_offset')}>
           <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} />
         </Field>
       </HStack>

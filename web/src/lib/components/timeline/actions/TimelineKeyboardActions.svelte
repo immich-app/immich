@@ -146,9 +146,7 @@
   const setFocusAsset = setFocusAssetInit.bind(undefined, scrollToAsset);
 
   const handleOpenDateModal = async () => {
-    const asset = await modalManager.show(NavigateToDateModal, {
-      timelineManager,
-    });
+    const asset = await modalManager.show(NavigateToDateModal, { timelineManager });
     if (asset) {
       setFocusAsset(asset);
     }
@@ -172,7 +170,6 @@
         { shortcut: { key: 'M', shift: true }, onShortcut: () => setFocusTo('later', 'month') },
         { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
         { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
-        { shortcut: { key: 'G' }, onShortcut: handleOpenDateModal },
         { shortcut: { key: 'G' }, onShortcut: handleOpenDateModal },
       ];
       if (onEscape) {
