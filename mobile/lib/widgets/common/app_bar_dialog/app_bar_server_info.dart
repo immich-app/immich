@@ -29,7 +29,9 @@ class AppBarServerInfo extends HookConsumerWidget {
     const contentFontSize = 11.0;
 
     final showWarning =
-        serverInfoState.isClientOutOfDate || ((user?.isAdmin ?? false) && serverInfoState.isServerOutOfDate);
+        serverInfoState.isClientOutOfDate ||
+        serverInfoState.errorGettingVersions ||
+        ((user?.isAdmin ?? false) && serverInfoState.isServerOutOfDate);
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -81,10 +83,14 @@ class AppBarServerInfo extends HookConsumerWidget {
                           ? MainAxisAlignment.spaceBetween
                           : MainAxisAlignment.center,
                       children: [
-                        Text(
-                          serverInfoState.versionMismatchErrorMessage,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        Expanded(
+                          child: Text(
+                            serverInfoState.versionMismatchErrorMessage,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         if (serverInfoState.isClientOutOfDate)
                           TextButton(

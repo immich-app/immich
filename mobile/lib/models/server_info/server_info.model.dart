@@ -13,6 +13,7 @@ class ServerInfo {
   final bool isServerOutOfDate;
   final bool isNewReleaseAvailable;
   final String versionMismatchErrorMessage;
+  final bool errorGettingVersions;
 
   const ServerInfo({
     required this.serverVersion,
@@ -24,6 +25,7 @@ class ServerInfo {
     required this.isServerOutOfDate,
     required this.isNewReleaseAvailable,
     required this.versionMismatchErrorMessage,
+    required this.errorGettingVersions,
   });
 
   ServerInfo copyWith({
@@ -36,6 +38,7 @@ class ServerInfo {
     bool? isServerOutOfDate,
     bool? isNewReleaseAvailable,
     String? versionMismatchErrorMessage,
+    bool? errorGettingVersions,
   }) {
     return ServerInfo(
       serverVersion: serverVersion ?? this.serverVersion,
@@ -47,12 +50,13 @@ class ServerInfo {
       isServerOutOfDate: isServerOutOfDate ?? this.isServerOutOfDate,
       isNewReleaseAvailable: isNewReleaseAvailable ?? this.isNewReleaseAvailable,
       versionMismatchErrorMessage: versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
+      errorGettingVersions: errorGettingVersions ?? this.errorGettingVersions,
     );
   }
 
   @override
   String toString() {
-    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, isClientOutOfDate: $isClientOutOfDate, isServerOutOfDate: $isServerOutOfDate, isNewReleaseAvailable: $isNewReleaseAvailable, versionMismatchErrorMessage: $versionMismatchErrorMessage)';
+    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, isClientOutOfDate: $isClientOutOfDate, isServerOutOfDate: $isServerOutOfDate, isNewReleaseAvailable: $isNewReleaseAvailable, versionMismatchErrorMessage: $versionMismatchErrorMessage, errorGettingVersions: $errorGettingVersions)';
   }
 
   @override
@@ -68,7 +72,8 @@ class ServerInfo {
         other.isClientOutOfDate == isClientOutOfDate &&
         other.isServerOutOfDate == isServerOutOfDate &&
         other.isNewReleaseAvailable == isNewReleaseAvailable &&
-        other.versionMismatchErrorMessage == versionMismatchErrorMessage;
+        other.versionMismatchErrorMessage == versionMismatchErrorMessage &&
+        other.errorGettingVersions == errorGettingVersions;
   }
 
   @override
@@ -81,6 +86,7 @@ class ServerInfo {
         isClientOutOfDate.hashCode ^
         isServerOutOfDate.hashCode ^
         isNewReleaseAvailable.hashCode ^
-        versionMismatchErrorMessage.hashCode;
+        versionMismatchErrorMessage.hashCode ^
+        errorGettingVersions.hashCode;
   }
 }

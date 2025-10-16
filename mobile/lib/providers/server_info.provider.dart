@@ -28,6 +28,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
           isServerOutOfDate: false,
           isNewReleaseAvailable: false,
           versionMismatchErrorMessage: "",
+          errorGettingVersions: false,
         ),
       );
 
@@ -46,14 +47,20 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
       // using isClientOutOfDate since that will show to users reguardless of if they are an admin
       if (serverVersion == null) {
-        state = state.copyWith(isClientOutOfDate: true, versionMismatchErrorMessage: "common_server_error".tr());
+        state = state.copyWith(
+          errorGettingVersions: true,
+          versionMismatchErrorMessage: "profile_drawer_unable_to_check_version".tr(),
+        );
         return;
       }
 
       await _checkServerVersionMismatch(serverVersion);
     } catch (e, stackTrace) {
       _log.severe("Failed to get server version", e, stackTrace);
-      state = state.copyWith(isClientOutOfDate: true);
+      state = state.copyWith(
+        errorGettingVersions: true,
+        versionMismatchErrorMessage: "profile_drawer_unable_to_check_version".tr(),
+      );
       return;
     }
   }
