@@ -126,6 +126,7 @@ jobs:
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: release-apk-signed
+          github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
         uses: softprops/action-gh-release@aec2ec56f94eb8180ceec724245f64ef008b89f5 # v2.4.0
