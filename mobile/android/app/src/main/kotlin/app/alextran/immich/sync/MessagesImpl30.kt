@@ -89,39 +89,16 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     return SyncDelta(hasChanges, changed, deleted, assetAlbums)
   }
 
-  override fun getTrashedAssets(
-    sinceLastCheckpoint: Boolean
-  ): Map<String, List<PlatformAsset>> {
+  override fun getTrashedAssets(): Map<String, List<PlatformAsset>> {
 
     val result = LinkedHashMap<String, MutableList<PlatformAsset>>()
     val volumes = MediaStore.getExternalVolumeNames(ctx)
 
-    val baseSelectionArgs = ArrayList<String>(MEDIA_SELECTION_ARGS.size).apply {
-      addAll(MEDIA_SELECTION_ARGS)
-    }
-
-    val genMap = if (sinceLastCheckpoint) getSavedGenerationMap() else emptyMap()
-
     for (volume in volumes) {
-      var selection = MEDIA_SELECTION
-      val selectionArgs = ArrayList<String>(baseSelectionArgs.size + if (sinceLastCheckpoint) 2 else 0).apply {
-        addAll(baseSelectionArgs)
-      }
-
-      if (sinceLastCheckpoint) {
-        val currentGen = MediaStore.getGeneration(ctx, volume)
-        val storedGen = genMap[volume] ?: 0L
-        if (currentGen <= storedGen) {
-          continue
-        }
-        selection += " AND (${MediaStore.MediaColumns.GENERATION_MODIFIED} > ? OR ${MediaStore.MediaColumns.GENERATION_ADDED} > ?)"
-        selectionArgs += storedGen.toString()
-        selectionArgs += storedGen.toString()
-      }
 
       val queryArgs = Bundle().apply {
-        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection)
-        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs.toTypedArray())
+        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, MEDIA_SELECTION)
+        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, MEDIA_SELECTION_ARGS)
         putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
       }
 

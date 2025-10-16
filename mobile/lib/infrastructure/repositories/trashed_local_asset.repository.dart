@@ -56,18 +56,10 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     return rows.map((result) => result.readTable(_db.trashedLocalAssetEntity).toLocalAsset());
   }
 
-  Future<void> applyTrashedAssets(Iterable<TrashedAsset> trashedAssets, bool asDelta) async {
-    if (asDelta) {
-      return _applyDelta(trashedAssets);
-    } else {
-      return _applySnapshot(trashedAssets);
-    }
-  }
-
   /// Applies resulted snapshot of trashed assets:
   /// - upserts incoming rows
   /// - deletes rows that are not present in the snapshot
-  Future<void> _applySnapshot(Iterable<TrashedAsset> trashedAssets) async {
+  Future<void> applyTrashedAssets(Iterable<TrashedAsset> trashedAssets) async {
     if (trashedAssets.isEmpty) {
       await _db.delete(_db.trashedLocalAssetEntity).go();
       return;
@@ -112,39 +104,6 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         for (final slice in idToDelete.slices(_chunk)) {
           await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
         }
-      }
-    });
-  }
-
-  Future<void> _applyDelta(Iterable<TrashedAsset> trashedAssets) async {
-    if (trashedAssets.isEmpty) {
-      return;
-    }
-    final assetIds = trashedAssets.map((e) => e.asset.id).toSet();
-    Map<String, String> localChecksumById = await _getCachedChecksums(assetIds);
-
-    await _db.batch((batch) {
-      for (final item in trashedAssets) {
-        final effectiveChecksum = localChecksumById[item.asset.id] ?? item.asset.checksum;
-        final companion = TrashedLocalAssetEntityCompanion.insert(
-          id: item.asset.id,
-          albumId: item.albumId,
-          name: item.asset.name,
-          type: item.asset.type,
-          checksum: Value(effectiveChecksum),
-          createdAt: Value(item.asset.createdAt),
-          updatedAt: Value(item.asset.updatedAt),
-          width: Value(item.asset.width),
-          height: Value(item.asset.height),
-          durationInSeconds: Value(item.asset.durationInSeconds),
-          isFavorite: Value(item.asset.isFavorite),
-          orientation: Value(item.asset.orientation),
-        );
-        batch.insert<$TrashedLocalAssetEntityTable, TrashedLocalAssetEntityData>(
-          _db.trashedLocalAssetEntity,
-          companion,
-          onConflict: DoUpdate((_) => companion, where: (old) => old.updatedAt.isNotValue(item.asset.updatedAt)),
-        );
       }
     });
   }

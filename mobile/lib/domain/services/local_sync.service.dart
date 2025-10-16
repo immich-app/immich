@@ -33,13 +33,12 @@ class LocalSyncService {
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
+      if (CurrentPlatform.isAndroid) {
+        await _syncTrashedAssets();
+      }
       if (full || await _nativeSyncApi.shouldFullSync()) {
         _log.fine("Full sync request from ${full ? "user" : "native"}");
         return await fullSync();
-      }
-
-      if (CurrentPlatform.isAndroid) {
-        await _syncTrashedAssets(sinceLastCheckpoint: true);
       }
 
       final delta = await _nativeSyncApi.getMediaChanges();
@@ -95,10 +94,6 @@ class LocalSyncService {
   Future<void> fullSync() async {
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
-
-      if (CurrentPlatform.isAndroid) {
-        await _syncTrashedAssets(sinceLastCheckpoint: false);
-      }
 
       final deviceAlbums = await _nativeSyncApi.getAlbums();
       final dbAlbums = await _localAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id});
@@ -291,17 +286,17 @@ class LocalSyncService {
     return a.name == b.name && a.assetCount == b.assetCount && a.updatedAt.isAtSameMomentAs(b.updatedAt);
   }
 
-  Future<void> _syncTrashedAssets({required bool sinceLastCheckpoint}) async {
-    final trashedAssetMap = await _nativeSyncApi.getTrashedAssets(sinceLastCheckpoint);
+  Future<void> _syncTrashedAssets() async {
+    final trashedAssetMap = await _nativeSyncApi.getTrashedAssets();
     if (trashedAssetMap.isEmpty) {
-      _log.info("syncTrashedAssets, No trashed assets found ${sinceLastCheckpoint ? "since Last Checkpoint" : ""}");
+      _log.info("syncTrashedAssets, No trashed assets found");
     }
     final trashedAssets = trashedAssetMap.cast<String, List<Object?>>().entries.expand(
       (entry) => entry.value.cast<PlatformAsset>().toTrashedAssets(entry.key),
     );
 
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
-    await _trashedLocalAssetRepository.applyTrashedAssets(trashedAssets, sinceLastCheckpoint);
+    await _trashedLocalAssetRepository.applyTrashedAssets(trashedAssets);
 
     final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (remoteAssetsToRestore.isNotEmpty) {

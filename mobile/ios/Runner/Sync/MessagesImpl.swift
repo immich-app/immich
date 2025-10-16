@@ -376,7 +376,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     })
   }
 
-  func getTrashedAssets(sinceLastCheckpoint: Bool) throws -> [String: [PlatformAsset]] {
+  func getTrashedAssets() throws -> [String: [PlatformAsset]] {
     throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
   }
 

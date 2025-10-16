@@ -563,7 +563,7 @@ class NativeSyncApi {
     }
   }
 
-  Future<Map<String, List<PlatformAsset>>> getTrashedAssets(bool sinceLastCheckpoint) async {
+  Future<Map<String, List<PlatformAsset>>> getTrashedAssets() async {
     final String pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets$pigeonVar_messageChannelSuffix';
     final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -571,7 +571,7 @@ class NativeSyncApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[sinceLastCheckpoint]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final List<Object?>? pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
     if (pigeonVar_replyList == null) {
       throw _createConnectionError(pigeonVar_channelName);
