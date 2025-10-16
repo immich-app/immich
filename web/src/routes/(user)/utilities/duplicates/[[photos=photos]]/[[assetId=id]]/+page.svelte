@@ -135,10 +135,10 @@
   const handleDeduplicateAll = async () => {
     const keepCandidates = duplicates.map((group) => suggestDuplicateWithPrefs(group.assets, $duplicateTiePreference));
 
-    const idsToKeep: (string | undefined)[] = keepCandidates.map((a) => a?.id);
+    const idsToKeep: (string | undefined)[] = keepCandidates.map((assets) => assets?.id);
 
     const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((a) => a.id).filter((id) => id !== idsToKeep[i]),
+      group.assets.map((assets) => assets.id).filter((id) => id !== idsToKeep[i]),
     );
 
     const keptIds = idsToKeep.filter((id): id is string => id !== undefined);
@@ -237,7 +237,7 @@
       <Button
         size="small"
         variant="ghost"
-        color={$duplicateTiePreference !== 'default' ? 'primary' : 'secondary'}
+        color={$duplicateTiePreference === 'default' ? 'secondary' : 'primary'}
         leadingIcon={mdiCogOutline}
         onclick={() => modalManager.show(DuplicatesSettingsModal)}
         title={$t('settings')}

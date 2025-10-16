@@ -34,10 +34,8 @@
 
   onMount(() => {
     autoSelect();
-  });
-
-  $effect(() => {
-    autoSelect();
+    const unsub = duplicateTiePreference.subscribe(autoSelect);
+    onDestroy(unsub);
   });
 
   onDestroy(() => {
@@ -73,7 +71,11 @@
   };
 
   const onSelectAsset = (asset: AssetResponseDto) => {
-    selectedAssetIds = new SvelteSet([asset.id]);
+    if (selectedAssetIds.has(asset.id)) {
+      selectedAssetIds.delete(asset.id);
+    } else {
+      selectedAssetIds.add(asset.id);
+    }
   };
 
   const onSelectNone = () => {

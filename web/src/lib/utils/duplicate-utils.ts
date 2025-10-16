@@ -15,9 +15,9 @@ import { sortBy } from 'lodash-es';
  * @returns The best asset to keep
  */
 export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  let duplicateAssets = sortBy(assets, (a) => a.exifInfo?.fileSizeInByte ?? 0);
+  let duplicateAssets = sortBy(assets, (assets) => assets.exifInfo?.fileSizeInByte ?? 0);
   duplicateAssets = duplicateAssets.filter(
-    (a) => a.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
+    (assets) => assets.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
   );
 
   // If there are multiple assets with the same file size, sort the list by the count of exif data
@@ -42,12 +42,12 @@ export const buildKeepSelectionForGroup = (
   preference: TiePreference,
 ): { id: string; action: 'keep' | 'trash' }[] => {
   const keep = suggestDuplicateWithPrefs(group, preference) ?? group[0];
-  return group.map((a) => ({ id: a.id, action: a.id === keep.id ? 'keep' : 'trash' }));
+  return group.map((assets) => ({ id: assets.id, action: assets.id === keep.id ? 'keep' : 'trash' }));
 };
 
 export const buildKeepSelectionForAll = (
   groups: AssetResponseDto[][],
   preference: TiePreference,
 ): { id: string; action: 'keep' | 'trash' }[] => {
-  return groups.flatMap((g) => buildKeepSelectionForGroup(g, preference));
+  return groups.flatMap((groups) => buildKeepSelectionForGroup(groups, preference));
 };

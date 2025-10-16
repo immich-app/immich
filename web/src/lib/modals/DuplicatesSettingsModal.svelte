@@ -33,7 +33,7 @@
         <div
           class="inline-flex rounded-full overflow-hidden border border-gray-700"
           role="group"
-          aria-label={$t('deduplicate_tie_preference')}
+          aria-label={$t('duplicates_settings')}
         >
           <Button
             size="small"

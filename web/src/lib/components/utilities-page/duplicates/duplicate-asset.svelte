@@ -17,8 +17,8 @@
 
   let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
 
-  const isFromExternalLibrary = $derived(!!asset.libraryId);
-  const assetData = $derived(JSON.stringify(asset, null, 2));
+  let isFromExternalLibrary = $derived(!!asset.libraryId);
+  let assetData = $derived(JSON.stringify(asset, null, 2));
 </script>
 
 <div
@@ -29,7 +29,7 @@
   <div class="relative w-full">
     <button
       type="button"
-      on:click={() => onSelectAsset(asset)}
+      onclick={() => onSelectAsset(asset)}
       class="block relative w-full"
       aria-pressed={isSelected}
       aria-label={$t('keep')}
@@ -79,7 +79,7 @@
 
     <button
       type="button"
-      on:click={() => onViewAsset(asset)}
+      onclick={() => onViewAsset(asset)}
       class="absolute rounded-full top-1 start-1 text-gray-200 p-2 hover:text-white bg-black/35 hover:bg-black/50"
       title={$t('view')}
     >
