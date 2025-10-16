@@ -5,7 +5,7 @@
   import { getPreferredTimeZone, getTimezones, toIsoDate } from '$lib/modals/timezone-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset } from '@immich/sdk';
-  import { Button, HStack, Modal, ModalBody, ModalFooter, VStack } from '@immich/ui';
+  import { Button, HStack, Label, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -51,29 +51,18 @@
 
 <Modal title={$t('edit_date_and_time')} icon={mdiCalendarEdit} onClose={() => onClose(false)} size="small">
   <ModalBody>
-    <VStack fullWidth>
-      <HStack fullWidth>
-        <label class="immich-form-label" for="datetime">{$t('date_and_time')}</label>
-      </HStack>
-      <HStack fullWidth>
-        <DateInput
-          class="immich-form-input text-gray-700 w-full"
-          id="datetime"
-          type="datetime-local"
-          bind:value={selectedDate}
-        />
-      </HStack>
-      {#if timezoneInput}
-        <div class="w-full">
-          <Combobox
-            bind:selectedOption
-            label={$t('timezone')}
-            options={timezones}
-            placeholder={$t('search_timezone')}
-          />
-        </div>
-      {/if}
-    </VStack>
+    <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
+    <DateInput
+      class="immich-form-input text-gray-700 w-full mb-2"
+      id="datetime"
+      type="datetime-local"
+      bind:value={selectedDate}
+    />
+    {#if timezoneInput}
+      <div class="w-full">
+        <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
+      </div>
+    {/if}
   </ModalBody>
   <ModalFooter>
     <HStack fullWidth>
