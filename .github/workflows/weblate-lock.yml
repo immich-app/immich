@@ -22,7 +22,6 @@ jobs:
       contents: read
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
-      token: ${{ steps.token.outputs.token }}
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
@@ -48,10 +47,16 @@ jobs:
     permissions: {}
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).i18n == true }}
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Bot review status
         env:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.pull_request_review.pull_request.number }}
-          GH_TOKEN: ${{ needs.pre-job.outputs.token }}
+          GH_TOKEN: ${{ steps.token.outputs.token }}
         run: |
           # Then check for APPROVED by the bot, if absent fail
           gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json reviews | jq -e '.reviews | map(select(.author.login == env.BOT_NAME and .state == "APPROVED")) | length > 0' \

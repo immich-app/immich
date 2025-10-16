@@ -18,7 +18,6 @@ jobs:
       contents: read
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
-      token: ${{ steps.token.outputs.token }}
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
@@ -49,11 +48,17 @@ jobs:
       run:
         working-directory: ./mobile
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Checkout code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
-          token: ${{ needs.pre-job.outputs.token }}
+          token: ${{ steps.token.outputs.token }}
 
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@fd55f4c5af5b953cc57a2be44cb082c8f6635e8e # v2.21.0
@@ -67,7 +72,7 @@ jobs:
       - name: Install DCM
         uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
         with:
-          github-token: ${{ needs.pre-job.outputs.token }}
+          github-token: ${{ steps.token.outputs.token }}
           version: auto
           working-directory: ./mobile
 

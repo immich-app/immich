@@ -21,7 +21,6 @@ jobs:
       contents: read
     outputs:
       should_run: ${{ steps.check.outputs.should_run }}
-      token: ${{ steps.token.outputs.token }}
     steps:
       - id: token
         uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
@@ -44,6 +43,8 @@ jobs:
               - 'machine-learning/**'
           force-filters: |
             - '.github/workflows/docker.yml'
+            - '.github/workflows/multi-runner-build.yml'
+            - '.github/actions/image-build'
           force-events: 'workflow_dispatch,release'
 
   retag_ml:
@@ -58,12 +59,18 @@ jobs:
       matrix:
         suffix: ['', '-cuda', '-rocm', '-openvino', '-armnn', '-rknn']
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ needs.pre-job.outputs.token }}
+          password: ${{ steps.token.outputs.token }}
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
@@ -87,13 +94,18 @@ jobs:
       matrix:
         suffix: ['']
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ needs.pre-job.outputs.token }}
-
+          password: ${{ steps.token.outputs.token }}
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
@@ -131,7 +143,7 @@ jobs:
             tag-suffix: '-rocm'
             platforms: linux/amd64
             runner-mapping: '{"linux/amd64": "mich"}'
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@94429dca83901d5df2515d33427cc8d7c4a34f5e # multi-runner-build-workflow-v1.0.0
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@946acac326940f8badf09ccf591d9cb345d6a689 # multi-runner-build-workflow-v0.2.1
     permissions:
       contents: read
       actions: read
@@ -139,7 +151,6 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      GITHUB_APP_TOKEN: ${{ needs.pre-job.outputs.token }}
     with:
       image: immich-machine-learning
       context: machine-learning
@@ -155,7 +166,7 @@ jobs:
     name: Build and Push Server
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@94429dca83901d5df2515d33427cc8d7c4a34f5e # multi-runner-build-workflow-v1.0.0
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@946acac326940f8badf09ccf591d9cb345d6a689 # multi-runner-build-workflow-v0.2.1
     permissions:
       contents: read
       actions: read
@@ -163,7 +174,6 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      GITHUB_APP_TOKEN: ${{ needs.pre-job.outputs.token }}
     with:
       image: immich-server
       context: .
