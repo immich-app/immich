@@ -40,6 +40,14 @@ class AppBarServerInfo extends HookConsumerWidget {
     }
 
     void openUpdateLink() {
+      if (serverInfoState.isServerOutOfDate) {
+        launchUrl(
+          Uri.parse("https://github.com/immich-app/immich/releases/latest"),
+          mode: LaunchMode.externalApplication,
+        );
+        return;
+      }
+
       if (Platform.isIOS) {
         launchUrl(Uri.parse("https://apps.apple.com/app/id1613945652"), mode: LaunchMode.externalApplication);
       } else if (Platform.isAndroid) {
@@ -92,7 +100,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (serverInfoState.isClientOutOfDate)
+                        if (serverInfoState.isClientOutOfDate || serverInfoState.isServerOutOfDate)
                           TextButton(
                             onPressed: openUpdateLink,
                             style: TextButton.styleFrom(
