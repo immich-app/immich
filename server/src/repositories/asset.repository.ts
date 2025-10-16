@@ -592,7 +592,7 @@ export class AssetRepository {
   @GenerateSql({
     params: [DummyValue.TIME_BUCKET, { withStacked: true }],
   })
-  getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth?: AuthDto) {
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -602,7 +602,7 @@ export class AssetRepository {
             'asset.duration',
             'asset.id',
             'asset.visibility',
-            'asset.isFavorite',
+            sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
             'asset.livePhotoVideoId',
@@ -691,19 +691,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['duration']), sql.lit('{}')).as('duration'),
             eb.fn.coalesce(eb.fn('array_agg', ['id']), sql.lit('{}')).as('id'),
             eb.fn.coalesce(eb.fn('array_agg', ['visibility']), sql.lit('{}')).as('visibility'),
-            eb.fn
-              .coalesce(
-                eb.fn('array_agg', [
-                  eb
-                    .case()
-                    .when(eb.ref('ownerId'), '=', auth?.user.id || '')
-                    .then(eb.ref('isFavorite'))
-                    .else(sql.lit(false))
-                    .end(),
-                ]),
-                sql.lit('{}'),
-              )
-              .as('isFavorite'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isFavorite']), sql.lit('{}')).as('isFavorite'),
             eb.fn.coalesce(eb.fn('array_agg', ['isImage']), sql.lit('{}')).as('isImage'),
             // TODO: isTrashed is redundant as it will always be all true or false depending on the options
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
