@@ -329,6 +329,7 @@ export type AssetResponseDto = {
     /** The UTC timestamp when the file was last modified on the filesystem. This reflects the last time the physical file was changed, which may be different from when the photo was originally taken. */
     fileModifiedAt: string;
     hasMetadata: boolean;
+    hasUserLocation?: boolean;
     id: string;
     isArchived: boolean;
     isFavorite: boolean;
@@ -481,8 +482,8 @@ export type AssetBulkUpdateDto = {
     duplicateId?: string | null;
     ids: string[];
     isFavorite?: boolean;
-    latitude?: number;
-    longitude?: number;
+    latitude?: number | null;
+    longitude?: number | null;
     rating?: number;
     timeZone?: string;
     visibility?: AssetVisibility;
@@ -520,9 +521,9 @@ export type UpdateAssetDto = {
     dateTimeOriginal?: string;
     description?: string;
     isFavorite?: boolean;
-    latitude?: number;
+    latitude?: number | null;
     livePhotoVideoId?: string | null;
-    longitude?: number;
+    longitude?: number | null;
     rating?: number;
     visibility?: AssetVisibility;
 };

@@ -3,8 +3,8 @@
   import Portal from '$lib/elements/Portal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
-  import { mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
+  import { ConfirmModal, Icon } from '@immich/ui';
+  import { mdiMapMarkerOff, mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -15,6 +15,7 @@
   let { isOwner, asset = $bindable() }: Props = $props();
 
   let isShowChangeLocation = $state(false);
+  let isConfirmClearLocation = $state(false);
 
   const onClose = async (point?: { lng: number; lat: number }) => {
     isShowChangeLocation = false;
@@ -32,17 +33,39 @@
       handleError(error, $t('errors.unable_to_change_location'));
     }
   };
+
+  async function handleConfirmModalClose(confirmed: boolean) {
+    isConfirmClearLocation = false;
+    if (confirmed) {
+      try {
+        asset = await updateAsset({ id: asset.id, updateAssetDto: { latitude: null, longitude: null } });
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_change_location'));
+      }
+    }
+  }
+
+  function openChangeLocation(e?: Event) {
+    e?.stopPropagation();
+    isShowChangeLocation = true;
+  }
+
+  function confirmClearLocation(e?: Event) {
+    e?.stopPropagation();
+    isConfirmClearLocation = true;
+  }
 </script>
 
 {#if asset.exifInfo?.country}
-  <button
-    type="button"
-    class="flex w-full text-start justify-between place-items-start gap-4 py-4"
-    onclick={() => (isOwner ? (isShowChangeLocation = true) : null)}
-    title={isOwner ? $t('edit_location') : ''}
-    class:hover:text-primary={isOwner}
-  >
-    <div class="flex gap-4">
+  <div class="flex w-full text-start justify-between place-items-start gap-4 py-4">
+    <button
+      type="button"
+      class="flex gap-4 flex-1"
+      onclick={() => (isOwner ? (isShowChangeLocation = true) : null)}
+      title={isOwner ? $t('edit_location') : ''}
+      class:hover:dark:text-immich-dark-primary={isOwner}
+      class:hover:text-immich-primary={isOwner}
+    >
       <div><Icon icon={mdiMapMarkerOutline} size="24" /></div>
 
       <div>
@@ -60,19 +83,26 @@
           </div>
         {/if}
       </div>
-    </div>
+    </button>
 
     {#if isOwner}
-      <div>
-        <Icon icon={mdiPencil} size="20" />
+      <div class="flex items-center gap-2">
+        <button type="button" class="p-1" onclick={openChangeLocation} title={$t('edit_location')}>
+          <Icon icon={mdiPencil} size="20" />
+        </button>
+        {#if asset.hasUserLocation}
+          <button type="button" class="p-1 text-red-600" onclick={confirmClearLocation} title={$t('clear_location')}>
+            <Icon icon={mdiMapMarkerOff} size="20" />
+          </button>
+        {/if}
       </div>
     {/if}
-  </button>
+  </div>
 {:else if !asset.exifInfo?.city && isOwner}
   <button
     type="button"
-    class="flex w-full text-start justify-between place-items-start gap-4 py-4 rounded-lg hover:text-primary"
-    onclick={() => (isShowChangeLocation = true)}
+    class="flex w-full text-start justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
+    onclick={openChangeLocation}
     title={$t('add_location')}
   >
     <div class="flex gap-4">
@@ -90,4 +120,15 @@
   <Portal>
     <ChangeLocation {asset} {onClose} />
   </Portal>
+{/if}
+
+{#if isConfirmClearLocation}
+  <ConfirmModal
+    confirmColor="danger"
+    title={$t('clear_location')}
+    prompt={$t('confirm_clear_location_prompt', { values: { count: 1 } })}
+    icon={mdiMapMarkerOff}
+    size="small"
+    onClose={handleConfirmModalClose}
+  />
 {/if}

@@ -10,7 +10,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { searchPlaces, type AssetResponseDto, type PlacesResponseDto } from '@immich/sdk';
   import { ConfirmModal, LoadingSpinner } from '@immich/ui';
-  import { mdiMapMarkerMultipleOutline } from '@mdi/js';
+  import { mdiMapMarkerMultipleOutline, mdiMapMarkerOff } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
   interface Point {
@@ -22,9 +22,10 @@
     asset?: AssetResponseDto | undefined;
     point?: Point;
     onClose: (point?: Point) => void;
+    count?: number;
   }
 
-  let { asset = undefined, point: initialPoint, onClose }: Props = $props();
+  let { asset = undefined, point: initialPoint, onClose, count = 1 }: Props = $props();
 
   let places: PlacesResponseDto[] = $state([]);
   let suggestedPlaces: PlacesResponseDto[] = $state([]);
@@ -61,6 +62,7 @@
   });
 
   let point: Point | null = $state(initialPoint ?? null);
+  let isConfirmClear = $state(false);
 
   const handleConfirm = (confirmed?: boolean) => {
     if (point && confirmed) {
@@ -209,6 +211,33 @@
       <div class="grid sm:grid-cols-2 gap-4 text-sm text-start mt-4">
         <CoordinatesInput lat={point ? point.lat : assetLat} lng={point ? point.lng : assetLng} {onUpdate} />
       </div>
+      <div class="flex items-center justify-start gap-2 mt-4">
+        <button
+          type="button"
+          class="text-sm text-red-700 bg-red-50 dark:bg-red-900/60 rounded-md px-3 py-2 transition"
+          onclick={() => {
+            isConfirmClear = true;
+          }}
+        >
+          {$t('clear_location')}
+        </button>
+      </div>
     </div>
   {/snippet}
 </ConfirmModal>
+
+{#if isConfirmClear}
+  <ConfirmModal
+    confirmColor="danger"
+    title={$t('clear_location')}
+    prompt={$t('confirm_clear_location_prompt', { values: { count } })}
+    icon={mdiMapMarkerOff}
+    size="small"
+    onClose={(confirmed) => {
+      isConfirmClear = false;
+      if (confirmed) {
+        handleConfirm(true);
+      }
+    }}
+  />
+{/if}

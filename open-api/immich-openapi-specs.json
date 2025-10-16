@@ -10434,9 +10434,11 @@
             "type": "boolean"
           },
           "latitude": {
+            "nullable": true,
             "type": "number"
           },
           "longitude": {
+            "nullable": true,
             "type": "number"
           },
           "rating": {
@@ -11097,6 +11099,9 @@
             "type": "string"
           },
           "hasMetadata": {
+            "type": "boolean"
+          },
+          "hasUserLocation": {
             "type": "boolean"
           },
           "id": {
@@ -17340,6 +17345,7 @@
             "type": "boolean"
           },
           "latitude": {
+            "nullable": true,
             "type": "number"
           },
           "livePhotoVideoId": {
@@ -17348,6 +17354,7 @@
             "type": "string"
           },
           "longitude": {
+            "nullable": true,
             "type": "number"
           },
           "rating": {

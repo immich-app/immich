@@ -47,22 +47,10 @@ class UpdateAssetDto {
   ///
   bool? isFavorite;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   num? latitude;
 
   String? livePhotoVideoId;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   num? longitude;
 
   /// Minimum value: -1
@@ -166,9 +154,13 @@ class UpdateAssetDto {
         dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
         description: mapValueOfType<String>(json, r'description'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: num.parse('${json[r'latitude']}'),
+        latitude: json[r'latitude'] == null
+            ? null
+            : num.parse('${json[r'latitude']}'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
-        longitude: num.parse('${json[r'longitude']}'),
+        longitude: json[r'longitude'] == null
+            ? null
+            : num.parse('${json[r'longitude']}'),
         rating: num.parse('${json[r'rating']}'),
         visibility: AssetVisibility.fromJson(json[r'visibility']),
       );

@@ -18,14 +18,20 @@
 
   let isShowChangeLocation = $state(false);
 
+  let ids = $derived(getSelectedAssets(getOwnedAssets(), $user));
+
   async function handleConfirm(point?: { lng: number; lat: number }) {
     isShowChangeLocation = false;
 
     if (!point) {
+      try {
+        await updateAssets({ assetBulkUpdateDto: { ids, latitude: null, longitude: null } });
+        clearSelect();
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_update_location'));
+      }
       return;
     }
-
-    const ids = getSelectedAssets(getOwnedAssets(), $user);
 
     try {
       await updateAssets({ assetBulkUpdateDto: { ids, latitude: point.lat, longitude: point.lng } });
@@ -44,5 +50,5 @@
   />
 {/if}
 {#if isShowChangeLocation}
-  <ChangeLocation onClose={handleConfirm} />
+  <ChangeLocation onClose={handleConfirm} count={ids.length} />
 {/if}
