@@ -6,25 +6,33 @@ Please see the [Immich CLI documentation](https://docs.immich.app/features/comma
 
 Before building the CLI, you must build the immich server and the open-api client. To build the server run the following in the server folder:
 
-    $ npm install
-    $ npm run build
+    $ pnpm install
+    $ pnpm run build
 
 Then, to build the open-api client run the following in the open-api folder:
 
     $ ./bin/generate-open-api.sh
 
-To run the Immich CLI from source, run the following in the cli folder:
+## Run from build
 
-    $ npm install
-    $ npm run build
-    $ ts-node .
+Go to the cli folder and build it:
 
-You'll need ts-node, the easiest way to install it is to use npm:
+    $ pnpm install
+    $ pnpm run build
+    $ node dist/index.js
 
-    $ npm i -g ts-node
+## Run and Debug from source (VSCode)
+
+With VScode you can run and debug the Immich CLI. Go to the launch.json file, find the Immich CLI config and change this with the command you need to debug
+
+`"args": ["upload", "--help"],`
+
+replace that for the command of your choice.
+
+## Install from build
 
 You can also build and install the CLI using
 
-    $ npm run build
-    $ npm install -g .
+    $ pnpm run build
+    $ pnpm install -g .
 ****

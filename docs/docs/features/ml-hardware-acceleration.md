@@ -54,7 +54,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 #### OpenVINO
 
 - Integrated GPUs are more likely to experience issues than discrete GPUs, especially for older processors or servers with low RAM.
-- Ensure the server's kernel version is new enough to use the device for hardware accceleration.
+- Ensure the server's kernel version is new enough to use the device for hardware acceleration.
 - Expect higher RAM usage when using OpenVINO compared to CPU processing.
 
 #### RKNN

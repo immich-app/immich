@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "2.2.96",
+  "version": "2.2.97",
   "description": "Command Line Interface (CLI) for Immich",
   "type": "module",
   "exports": "./dist/index.js",
@@ -20,7 +20,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/micromatch": "^4.0.9",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^22.18.1",
+    "@types/node": "^22.18.8",
     "@vitest/coverage-v8": "^3.0.0",
     "byte-size": "^9.0.0",
     "cli-progress": "^3.12.0",
@@ -43,6 +43,7 @@
   },
   "scripts": {
     "build": "vite build",
+    "build:dev": "vite build --sourcemap true",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "prepack": "npm run build",
