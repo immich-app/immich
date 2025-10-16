@@ -158,7 +158,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
       }
 
       for (final slice in idToDelete.slices(_chunk)) {
-        await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
+        await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
   }
