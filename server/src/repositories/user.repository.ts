@@ -40,6 +40,25 @@ const withMetadata = (eb: ExpressionBuilder<DB, 'user'>) => {
   ).as('metadata');
 };
 
+const withSessions = (eb: ExpressionBuilder<DB, 'user'>) => {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('session')
+      .select([
+        'session.id',
+        'session.createdAt',
+        'session.updatedAt',
+        'session.expiresAt',
+        'session.deviceOS',
+        'session.deviceType',
+        'session.appVersion',
+        'session.pinExpiresAt',
+        'session.isPendingSyncReset',
+      ])
+      .whereRef('session.userId', '=', 'user.id'),
+  ).as('sessions');
+};
+
 @Injectable()
 export class UserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -52,6 +71,7 @@ export class UserRepository {
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
+      .select(withSessions)
       .where('user.id', '=', userId)
       .$if(!options.withDeleted, (eb) => eb.where('user.deletedAt', 'is', null))
       .executeTakeFirst();
@@ -66,11 +86,12 @@ export class UserRepository {
   }
 
   @GenerateSql()
-  getAdmin() {
+  async getAdmin() {
     return this.db
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
+      .select(withSessions)
       .where('user.isAdmin', '=', true)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -124,6 +145,7 @@ export class UserRepository {
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
+      .select(withSessions)
       .$if(!!options?.withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
       .where('user.deletedAt', 'is', null)
@@ -135,6 +157,8 @@ export class UserRepository {
     return this.db
       .selectFrom('user')
       .select(columns.userAdmin)
+      .select(withMetadata)
+      .select(withSessions)
       .where('user.storageLabel', '=', storageLabel)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -146,6 +170,7 @@ export class UserRepository {
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
+      .select(withSessions)
       .where('user.oauthId', '=', oauthId)
       .where('user.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -160,11 +185,12 @@ export class UserRepository {
     { name: 'with deleted', params: [{ withDeleted: true }] },
     { name: 'without deleted', params: [{ withDeleted: false }] },
   )
-  getList({ id, withDeleted }: UserListFilter = {}) {
+  async getList({ id, withDeleted }: UserListFilter = {}) {
     return this.db
       .selectFrom('user')
       .select(columns.userAdmin)
       .select(withMetadata)
+      .select(withSessions)
       .$if(!withDeleted, (eb) => eb.where('user.deletedAt', 'is', null))
       .$if(!!id, (eb) => eb.where('user.id', '=', id!))
       .orderBy('createdAt', 'desc')
@@ -177,6 +203,7 @@ export class UserRepository {
       .values(dto)
       .returning(columns.userAdmin)
       .returning(withMetadata)
+      .returning(withSessions)
       .executeTakeFirstOrThrow();
   }
 
@@ -188,6 +215,7 @@ export class UserRepository {
       .where('user.deletedAt', 'is', null)
       .returning(columns.userAdmin)
       .returning(withMetadata)
+      .returning(withSessions)
       .executeTakeFirstOrThrow();
   }
 
@@ -202,6 +230,7 @@ export class UserRepository {
       .where('user.id', '=', asUuid(id))
       .returning(columns.userAdmin)
       .returning(withMetadata)
+      .returning(withSessions)
       .executeTakeFirstOrThrow();
   }
 

@@ -407,6 +407,7 @@ Class | Method | HTTP request | Description
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)
  - [MergePersonDto](doc//MergePersonDto.md)
  - [MetadataSearchDto](doc//MetadataSearchDto.md)
+ - [MobileDeviceDto](doc//MobileDeviceDto.md)
  - [NotificationCreateDto](doc//NotificationCreateDto.md)
  - [NotificationDeleteAllDto](doc//NotificationDeleteAllDto.md)
  - [NotificationDto](doc//NotificationDto.md)
