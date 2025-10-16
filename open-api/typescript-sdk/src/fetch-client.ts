@@ -1110,6 +1110,8 @@ export type ServerConfigDto = {
     mapLightStyleUrl: string;
     oauthButtonText: string;
     publicUsers: boolean;
+    sessionDeleteDelayBrowser: number;
+    sessionDeleteDelayMobile: number;
     trashDays: number;
     userDeleteDelay: number;
 };
@@ -1494,6 +1496,8 @@ export type SystemConfigTrashDto = {
 };
 export type SystemConfigUserDto = {
     deleteDelay: number;
+    sessionDeleteDelayBrowser: number;
+    sessionDeleteDelayMobile: number;
 };
 export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
