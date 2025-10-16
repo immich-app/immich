@@ -29,8 +29,7 @@ class AppBarServerInfo extends HookConsumerWidget {
     const contentFontSize = 11.0;
 
     final showWarning =
-        serverInfoState.isClientOutOfDate ||
-        ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable) && false;
+        serverInfoState.isClientOutOfDate || ((user?.isAdmin ?? false) && serverInfoState.isServerOutOfDate);
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -76,23 +75,26 @@ class AppBarServerInfo extends HookConsumerWidget {
                       color: Color.fromARGB(80, 243, 188, 106),
                       borderRadius: BorderRadius.all(Radius.circular(8)),
                     ),
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 8,
+                      mainAxisAlignment: serverInfoState.isClientOutOfDate
+                          ? MainAxisAlignment.spaceBetween
+                          : MainAxisAlignment.center,
                       children: [
                         Text(
                           serverInfoState.versionMismatchErrorMessage,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                         ),
                         if (serverInfoState.isClientOutOfDate)
-                          IconButton(
+                          TextButton(
                             onPressed: openUpdateLink,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                            icon: const Icon(Icons.open_in_new, size: 16),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.all(4),
+                              minimumSize: const Size(0, 0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text("action_common_update".tr(context: context)),
                           ),
                       ],
                     ),
