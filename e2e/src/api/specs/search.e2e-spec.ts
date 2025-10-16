@@ -157,6 +157,20 @@ describe('/search', () => {
         deferred: () => ({ dto: { order: 'asc', size: 2 }, assets: [assetCyclamen, assetNotocactus] }),
       },
       {
+        should: 'should sort by date added',
+        deferred: () => ({
+          dto: { order: 'desc', orderBy: 'DATE_ADDED', size: 1 },
+          assets: [assetLast],
+        }),
+      },
+      {
+        should: 'should sort by date added in reverse',
+        deferred: () => ({
+          dto: { order: 'asc', orderBy: 'DATE_ADDED', size: 2 },
+          assets: [assetFalcon, assetDenali],
+        }),
+      },
+      {
         should: 'should support pagination',
         deferred: () => ({ dto: { order: 'asc', size: 1, page: 2 }, assets: [assetNotocactus] }),
       },

@@ -5,7 +5,7 @@ import { Place } from 'src/database';
 import { PropertyLifecycle } from 'src/decorators';
 import { AlbumResponseDto } from 'src/dtos/album.dto';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AssetOrder, AssetType, AssetVisibility } from 'src/enum';
+import { AssetOrder, AssetOrderBy, AssetType, AssetVisibility } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateEnum, ValidateString, ValidateUUID } from 'src/validation';
 
 class BaseSearchDto {
@@ -177,6 +177,9 @@ export class MetadataSearchDto extends RandomSearchDto {
 
   @ValidateEnum({ enum: AssetOrder, name: 'AssetOrder', optional: true, default: AssetOrder.Desc })
   order?: AssetOrder;
+
+  @ValidateEnum({ enum: AssetOrderBy, name: 'AssetOrderBy', optional: true, default: AssetOrderBy.DateTaken })
+  orderBy?: AssetOrderBy;
 
   @IsInt()
   @Min(1)

@@ -914,6 +914,7 @@ export type MetadataSearchDto = {
     make?: string;
     model?: string | null;
     order?: AssetOrder;
+    orderBy?: AssetOrderBy;
     originalFileName?: string;
     originalPath?: string;
     page?: number;
@@ -4896,6 +4897,10 @@ export enum MemoryType {
 export enum PartnerDirection {
     SharedBy = "shared-by",
     SharedWith = "shared-with"
+}
+export enum AssetOrderBy {
+    DateAdded = "DATE_ADDED",
+    DateTaken = "DATE_TAKEN"
 }
 export enum SearchSuggestionType {
     Country = "country",
