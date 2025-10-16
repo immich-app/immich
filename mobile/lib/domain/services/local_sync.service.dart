@@ -346,13 +346,3 @@ extension on PlatformAsset {
     orientation: orientation,
   );
 }
-
-extension SyncDeltaExtension on SyncDelta {
-  Iterable<TrashedAsset> toTrashedAssets() {
-    return updates.map((e) {
-      final albums = assetAlbums.cast<String, List<Object?>>();
-      final albumId = albums[e.id]!.cast<String>().first;
-      return (albumId: albumId, asset: e.toLocalAsset());
-    });
-  }
-}
