@@ -90,6 +90,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   ServerInfoRepository,
   SessionRepository,
   SharedLinkRepository,
+  SharedLinkAssetRepository,
   StackRepository,
   StorageRepository,
   SyncRepository,
