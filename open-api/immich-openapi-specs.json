@@ -9858,7 +9858,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "contact": {}
   },
   "tags": [],
@@ -10093,6 +10093,12 @@
           "assets": {
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "contributorCounts": {
+            "items": {
+              "$ref": "#/components/schemas/ContributorCountResponseDto"
             },
             "type": "array"
           },
@@ -11471,6 +11477,21 @@
         ],
         "type": "string"
       },
+      "ContributorCountResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "userId"
+        ],
+        "type": "object"
+      },
       "CreateAlbumDto": {
         "properties": {
           "albumName": {
@@ -12820,6 +12841,8 @@
           "JobFailed",
           "BackupFailed",
           "SystemMessage",
+          "AlbumInvite",
+          "AlbumUpdate",
           "Custom"
         ],
         "type": "string"

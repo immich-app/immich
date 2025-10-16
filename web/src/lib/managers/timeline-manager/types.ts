@@ -1,5 +1,7 @@
-import type { TimelineDate, TimelineDateTime } from '$lib/utils/timeline-util';
+import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
+
+export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead-out';
 
 export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sdk').getTimeBuckets>[0];
 
