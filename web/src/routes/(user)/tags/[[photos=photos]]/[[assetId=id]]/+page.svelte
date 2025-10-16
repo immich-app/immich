@@ -164,7 +164,7 @@
     >
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} {assetInteraction} />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')} offset={{ x:0, y:50 }}>
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')} offset={{ x: 0, y: 50 }}>
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
@@ -178,7 +178,7 @@
             })}
         ></FavoriteAction>
       {/if}
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x:0, y:50 }}>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 0, y: 50 }}>
         {#if assetInteraction.isAllUserOwned}
           <ChangeDate menuItem />
           <ChangeDescription menuItem />
