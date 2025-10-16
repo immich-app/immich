@@ -4,6 +4,7 @@ import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
+import { tick } from 'svelte';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -64,11 +65,12 @@ describe('TimelineManager', () => {
 
       sdkMock.getTimeBucket.mockImplementation(({ timeBucket }) => Promise.resolve(bucketAssetsResponse[timeBucket]));
       await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      await tick();
     });
 
     it('should load months in viewport', () => {
       expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
-      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(3);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
     it('calculates month height', () => {
@@ -82,13 +84,13 @@ describe('TimelineManager', () => {
         expect.arrayContaining([
           expect.objectContaining({ year: 2024, month: 3, height: 165.5 }),
           expect.objectContaining({ year: 2024, month: 2, height: 11_996 }),
-          expect.objectContaining({ year: 2024, month: 1, height: 48 }),
+          expect.objectContaining({ year: 2024, month: 1, height: 286 }),
         ]),
       );
     });
 
     it('calculates timeline height', () => {
-      expect(timelineManager.timelineHeight).toBe(12_209.5);
+      expect(timelineManager.totalViewerHeight).toBe(12_507.5);
     });
   });
 
