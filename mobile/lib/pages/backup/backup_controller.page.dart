@@ -205,9 +205,9 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     buildBackgroundBackupInfo() {
-      return const ListTile(
-        leading: Icon(Icons.info_outline_rounded),
-        title: Text("Background backup is currently running, cannot start manual backup"),
+      return ListTile(
+        leading: const Icon(Icons.info_outline_rounded),
+        title: Text('background_backup_running_error'.tr()),
       );
     }
 

@@ -1,7 +1,21 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/material.dart';
+import 'package:cancellation_token_http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:logging/logging.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
+
+class UploadTaskWithFile {
+  final File file;
+  final UploadTask task;
+
+  const UploadTaskWithFile({required this.file, required this.task});
+}
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
@@ -31,7 +45,7 @@ class UploadRepository {
     return FileDownloader().enqueue(task);
   }
 
-  Future<void> enqueueBackgroundAll(List<UploadTask> tasks) {
+  Future<List<bool>> enqueueBackgroundAll(List<UploadTask> tasks) {
     return FileDownloader().enqueueAll(tasks);
   }
 
@@ -65,13 +79,65 @@ class UploadRepository {
       FileDownloader().database.allRecordsWithStatus(TaskStatus.paused, group: kBackupGroup),
     ]);
 
-    debugPrint("""
+    dPrint(
+      () =>
+          """
       Upload Info:
       Enqueued: ${enqueuedTasks.length}
       Running: ${runningTasks.length}
       Canceled: ${canceledTasks.length}
       Waiting: ${waitingTasks.length}
       Paused: ${pausedTasks.length}
-    """);
+    """,
+    );
+  }
+
+  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {
+    final httpClient = Client();
+    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+
+    Logger logger = Logger('UploadRepository');
+    for (final candidate in tasks) {
+      if (cancelToken.isCancelled) {
+        logger.warning("Backup was cancelled by the user");
+        break;
+      }
+
+      try {
+        final fileStream = candidate.file.openRead();
+        final assetRawUploadData = MultipartFile(
+          "assetData",
+          fileStream,
+          candidate.file.lengthSync(),
+          filename: candidate.task.filename,
+        );
+
+        final baseRequest = MultipartRequest('POST', Uri.parse('$savedEndpoint/assets'));
+
+        baseRequest.headers.addAll(candidate.task.headers);
+        baseRequest.fields.addAll(candidate.task.fields);
+        baseRequest.files.add(assetRawUploadData);
+
+        final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+
+        final responseBody = jsonDecode(await response.stream.bytesToString());
+
+        if (![200, 201].contains(response.statusCode)) {
+          final error = responseBody;
+
+          logger.warning(
+            "Error(${error['statusCode']}) uploading ${candidate.task.filename} | Created on ${candidate.task.fields["fileCreatedAt"]} | ${error['error']}",
+          );
+
+          continue;
+        }
+      } on CancelledException {
+        logger.warning("Backup was cancelled by the user");
+        break;
+      } catch (error, stackTrace) {
+        logger.warning("Error backup asset: ${error.toString()}: $stackTrace");
+        continue;
+      }
+    }
   }
 }

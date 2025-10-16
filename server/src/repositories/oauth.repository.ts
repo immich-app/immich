@@ -29,6 +29,7 @@ export class OAuthRepository {
     );
     const client = await this.getClient(config);
     state ??= randomState();
+
     let codeVerifier: string | null;
     if (codeChallenge) {
       codeVerifier = null;
@@ -36,13 +37,20 @@ export class OAuthRepository {
       codeVerifier = randomPKCECodeVerifier();
       codeChallenge = await calculatePKCECodeChallenge(codeVerifier);
     }
-    const url = buildAuthorizationUrl(client, {
+
+    const params: Record<string, string> = {
       redirect_uri: redirectUrl,
       scope: config.scope,
       state,
-      code_challenge: client.serverMetadata().supportsPKCE() ? codeChallenge : '',
-      code_challenge_method: client.serverMetadata().supportsPKCE() ? 'S256' : '',
-    }).toString();
+    };
+
+    if (client.serverMetadata().supportsPKCE()) {
+      params.code_challenge = codeChallenge;
+      params.code_challenge_method = 'S256';
+    }
+
+    const url = buildAuthorizationUrl(client, params).toString();
+
     return { url, state, codeVerifier };
   }
 

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.141.1
+ * 2.1.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -356,12 +356,17 @@ export type AssetResponseDto = {
     updatedAt: string;
     visibility: AssetVisibility;
 };
+export type ContributorCountResponseDto = {
+    assetCount: number;
+    userId: string;
+};
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
     albumUsers: AlbumUserResponseDto[];
     assetCount: number;
     assets: AssetResponseDto[];
+    contributorCounts?: ContributorCountResponseDto[];
     createdAt: string;
     description: string;
     endDate?: string;
@@ -1383,6 +1388,11 @@ export type SystemConfigLoggingDto = {
     enabled: boolean;
     level: LogLevel;
 };
+export type MachineLearningAvailabilityChecksDto = {
+    enabled: boolean;
+    interval: number;
+    timeout: number;
+};
 export type ClipConfig = {
     enabled: boolean;
     modelName: string;
@@ -1399,12 +1409,11 @@ export type FacialRecognitionConfig = {
     modelName: string;
 };
 export type SystemConfigMachineLearningDto = {
+    availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
-    /** This property was deprecated in v1.122.0 */
-    url?: string;
     urls: string[];
 };
 export type SystemConfigMapDto = {
@@ -1561,10 +1570,14 @@ export type TimeBucketAssetResponseDto = {
     isImage: boolean[];
     /** Array indicating whether each asset is in the trash */
     isTrashed: boolean[];
+    /** Array of latitude coordinates extracted from EXIF GPS data */
+    latitude?: (number | null)[];
     /** Array of live photo video asset IDs (null for non-live photos) */
     livePhotoVideoId: (string | null)[];
     /** Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective. */
     localOffsetHours: number[];
+    /** Array of longitude coordinates extracted from EXIF GPS data */
+    longitude?: (number | null)[];
     /** Array of owner IDs for each asset */
     ownerId: string[];
     /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
@@ -2364,7 +2377,7 @@ export function downloadAsset({ id, key, slug }: {
     }));
 }
 /**
- * replaceAsset
+ * Replace the asset with new file, without changing its id
  */
 export function replaceAsset({ id, key, slug, assetMediaReplaceDto }: {
     id: string;
@@ -4295,7 +4308,7 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -4307,6 +4320,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
     timeBucket: string;
     userId?: string;
     visibility?: AssetVisibility;
+    withCoordinates?: boolean;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4325,6 +4339,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
         timeBucket,
         userId,
         visibility,
+        withCoordinates,
         withPartners,
         withStacked
     }))}`, {
@@ -4334,7 +4349,7 @@ export function getTimeBucket({ albumId, isFavorite, isTrashed, key, order, pers
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     isFavorite?: boolean;
     isTrashed?: boolean;
@@ -4345,6 +4360,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
     tagId?: string;
     userId?: string;
     visibility?: AssetVisibility;
+    withCoordinates?: boolean;
     withPartners?: boolean;
     withStacked?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
@@ -4362,6 +4378,7 @@ export function getTimeBuckets({ albumId, isFavorite, isTrashed, key, order, per
         tagId,
         userId,
         visibility,
+        withCoordinates,
         withPartners,
         withStacked
     }))}`, {
@@ -4640,6 +4657,8 @@ export enum NotificationType {
     JobFailed = "JobFailed",
     BackupFailed = "BackupFailed",
     SystemMessage = "SystemMessage",
+    AlbumInvite = "AlbumInvite",
+    AlbumUpdate = "AlbumUpdate",
     Custom = "Custom"
 }
 export enum UserStatus {

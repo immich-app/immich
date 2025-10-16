@@ -45,5 +45,5 @@ alt="Dot Env Example"
 11. Click on "**Deploy the stack**".
 
 :::tip
-For more information on how to use the application, please refer to the [Post Installation](/docs/install/post-install.mdx) guide.
+For more information on how to use the application, please refer to the [Post Installation](/install/post-install.mdx) guide.
 :::

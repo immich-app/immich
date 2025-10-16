@@ -79,12 +79,17 @@ export class AlbumService extends BaseService {
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
 
+    const hasSharedUsers = album.albumUsers && album.albumUsers.length > 0;
+    const hasSharedLink = album.sharedLinks && album.sharedLinks.length > 0;
+    const isShared = hasSharedUsers || hasSharedLink;
+
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
+      contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
 

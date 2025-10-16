@@ -88,6 +88,9 @@ export interface VideoStreamInfo {
   isHDR: boolean;
   bitrate: number;
   pixelFormat: string;
+  colorPrimaries?: string;
+  colorSpace?: string;
+  colorTransfer?: string;
 }
 
 export interface AudioStreamInfo {
@@ -249,7 +252,7 @@ export interface IEmailJob {
 }
 
 export interface INotifySignupJob extends IEntityJob {
-  tempPassword?: string;
+  password?: string;
 }
 
 export interface INotifyAlbumInviteJob extends IEntityJob {

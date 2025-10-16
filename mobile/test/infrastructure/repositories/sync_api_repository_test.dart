@@ -4,12 +4,15 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
 import '../../api.mocks.dart';
 import '../../service.mocks.dart';
+import '../../test_utils.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
 
@@ -32,6 +35,10 @@ void main() {
   late MockStreamedResponse mockStreamedResponse;
   late StreamController<List<int>> responseStreamController;
   late int testBatchSize = 3;
+
+  setUpAll(() async {
+    await StoreService.init(storeRepository: IsarStoreRepository(await TestUtils.initIsar()));
+  });
 
   setUp(() {
     mockApiService = MockApiService();

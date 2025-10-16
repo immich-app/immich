@@ -1,11 +1,14 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
@@ -48,6 +51,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           await _db.remoteAssetEntity.deleteAll();
           await _db.remoteExifEntity.deleteAll();
           await _db.stackEntity.deleteAll();
+          await _db.authUserEntity.deleteAll();
           await _db.userEntity.deleteAll();
           await _db.userMetadataEntity.deleteAll();
         });
@@ -59,9 +63,42 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  Future<void> updateAuthUsersV1(Iterable<SyncAuthUserV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final user in data) {
+          final companion = AuthUserEntityCompanion(
+            name: Value(user.name),
+            email: Value(user.email),
+            hasProfileImage: Value(user.hasProfileImage),
+            profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
+            isAdmin: Value(user.isAdmin),
+            pinCode: Value(user.pinCode),
+            quotaSizeInBytes: Value(user.quotaSizeInBytes ?? 0),
+            quotaUsageInBytes: Value(user.quotaUsageInBytes),
+          );
+
+          batch.insert(
+            _db.authUserEntity,
+            companion.copyWith(id: Value(user.id)),
+            onConflict: DoUpdate((_) => companion),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: SyncAuthUserV1', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> deleteUsersV1(Iterable<SyncUserDeleteV1> data) async {
     try {
-      await _db.userEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.userId)));
+      await _db.batch((batch) {
+        for (final user in data) {
+          batch.deleteWhere(_db.userEntity, (row) => row.id.equals(user.userId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: SyncUserDeleteV1', error, stack);
       rethrow;
@@ -77,6 +114,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             email: Value(user.email),
             hasProfileImage: Value(user.hasProfileImage),
             profileChangedAt: Value(user.profileChangedAt),
+            avatarColor: Value(user.avatarColor?.toAvatarColor() ?? AvatarColor.primary),
           );
 
           batch.insert(_db.userEntity, companion.copyWith(id: Value(user.id)), onConflict: DoUpdate((_) => companion));
@@ -125,7 +163,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteAssetsV1(Iterable<SyncAssetDeleteV1> data, {String debugLabel = 'user'}) async {
     try {
-      await _db.remoteAssetEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.assetId)));
+      await _db.batch((batch) {
+        for (final asset in data) {
+          batch.deleteWhere(_db.remoteAssetEntity, (row) => row.id.equals(asset.assetId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteAssetsV1 - $debugLabel', error, stack);
       rethrow;
@@ -210,7 +252,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteAlbumsV1(Iterable<SyncAlbumDeleteV1> data) async {
     try {
-      await _db.remoteAlbumEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.albumId)));
+      await _db.batch((batch) {
+        for (final album in data) {
+          batch.deleteWhere(_db.remoteAlbumEntity, (row) => row.id.equals(album.albumId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteAlbumsV1', error, stack);
       rethrow;
@@ -346,7 +392,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteMemoriesV1(Iterable<SyncMemoryDeleteV1> data) async {
     try {
-      await _db.memoryEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.memoryId)));
+      await _db.batch((batch) {
+        for (final memory in data) {
+          batch.deleteWhere(_db.memoryEntity, (row) => row.id.equals(memory.memoryId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteMemoriesV1', error, stack);
       rethrow;
@@ -410,7 +460,11 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> deleteStacksV1(Iterable<SyncStackDeleteV1> data, {String debugLabel = 'user'}) async {
     try {
-      await _db.stackEntity.deleteWhere((row) => row.id.isIn(data.map((e) => e.stackId)));
+      await _db.batch((batch) {
+        for (final stack in data) {
+          batch.deleteWhere(_db.stackEntity, (row) => row.id.equals(stack.stackId));
+        }
+      });
     } catch (error, stack) {
       _logger.severe('Error: deleteStacksV1 - $debugLabel', error, stack);
       rethrow;
@@ -602,4 +656,8 @@ extension on String {
       return null;
     }
   }
+}
+
+extension on UserAvatarColor {
+  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == value);
 }

@@ -231,7 +231,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ modelName: expect.any(String) }),
       );
@@ -245,7 +244,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test', page: 2, size: 50 });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ modelName: expect.any(String) }),
       );
@@ -263,7 +261,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ modelName: 'ViT-B-16-SigLIP__webli' }),
       );
@@ -273,7 +270,6 @@ describe(SearchService.name, () => {
       await sut.searchSmart(authStub.user1, { query: 'test', language: 'de' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
         'test',
         expect.objectContaining({ language: 'de' }),
       );

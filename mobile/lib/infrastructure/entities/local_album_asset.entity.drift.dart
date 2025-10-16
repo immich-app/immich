@@ -15,11 +15,13 @@ typedef $$LocalAlbumAssetEntityTableCreateCompanionBuilder =
     i1.LocalAlbumAssetEntityCompanion Function({
       required String assetId,
       required String albumId,
+      i0.Value<bool?> marker_,
     });
 typedef $$LocalAlbumAssetEntityTableUpdateCompanionBuilder =
     i1.LocalAlbumAssetEntityCompanion Function({
       i0.Value<String> assetId,
       i0.Value<String> albumId,
+      i0.Value<bool?> marker_,
     });
 
 final class $$LocalAlbumAssetEntityTableReferences
@@ -113,6 +115,11 @@ class $$LocalAlbumAssetEntityTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i0.ColumnFilters<bool> get marker_ => $composableBuilder(
+    column: $table.marker_,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
   i3.$$LocalAssetEntityTableFilterComposer get assetId {
     final i3.$$LocalAssetEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -177,6 +184,11 @@ class $$LocalAlbumAssetEntityTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i0.ColumnOrderings<bool> get marker_ => $composableBuilder(
+    column: $table.marker_,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i3.$$LocalAssetEntityTableOrderingComposer get assetId {
     final i3.$$LocalAssetEntityTableOrderingComposer composer =
         $composerBuilder(
@@ -243,6 +255,9 @@ class $$LocalAlbumAssetEntityTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i0.GeneratedColumn<bool> get marker_ =>
+      $composableBuilder(column: $table.marker_, builder: (column) => column);
+
   i3.$$LocalAssetEntityTableAnnotationComposer get assetId {
     final i3.$$LocalAssetEntityTableAnnotationComposer composer =
         $composerBuilder(
@@ -344,16 +359,22 @@ class $$LocalAlbumAssetEntityTableTableManager
               ({
                 i0.Value<String> assetId = const i0.Value.absent(),
                 i0.Value<String> albumId = const i0.Value.absent(),
+                i0.Value<bool?> marker_ = const i0.Value.absent(),
               }) => i1.LocalAlbumAssetEntityCompanion(
                 assetId: assetId,
                 albumId: albumId,
+                marker_: marker_,
               ),
           createCompanionCallback:
-              ({required String assetId, required String albumId}) =>
-                  i1.LocalAlbumAssetEntityCompanion.insert(
-                    assetId: assetId,
-                    albumId: albumId,
-                  ),
+              ({
+                required String assetId,
+                required String albumId,
+                i0.Value<bool?> marker_ = const i0.Value.absent(),
+              }) => i1.LocalAlbumAssetEntityCompanion.insert(
+                assetId: assetId,
+                albumId: albumId,
+                marker_: marker_,
+              ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
@@ -477,8 +498,22 @@ class $LocalAlbumAssetEntityTable extends i2.LocalAlbumAssetEntity
       'REFERENCES local_album_entity (id) ON DELETE CASCADE',
     ),
   );
+  static const i0.VerificationMeta _marker_Meta = const i0.VerificationMeta(
+    'marker_',
+  );
   @override
-  List<i0.GeneratedColumn> get $columns => [assetId, albumId];
+  late final i0.GeneratedColumn<bool> marker_ = i0.GeneratedColumn<bool>(
+    'marker',
+    aliasedName,
+    true,
+    type: i0.DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
+      'CHECK ("marker" IN (0, 1))',
+    ),
+  );
+  @override
+  List<i0.GeneratedColumn> get $columns => [assetId, albumId, marker_];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -507,6 +542,12 @@ class $LocalAlbumAssetEntityTable extends i2.LocalAlbumAssetEntity
     } else if (isInserting) {
       context.missing(_albumIdMeta);
     }
+    if (data.containsKey('marker')) {
+      context.handle(
+        _marker_Meta,
+        marker_.isAcceptableOrUnknown(data['marker']!, _marker_Meta),
+      );
+    }
     return context;
   }
 
@@ -527,6 +568,10 @@ class $LocalAlbumAssetEntityTable extends i2.LocalAlbumAssetEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}album_id'],
       )!,
+      marker_: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.bool,
+        data['${effectivePrefix}marker'],
+      ),
     );
   }
 
@@ -545,15 +590,20 @@ class LocalAlbumAssetEntityData extends i0.DataClass
     implements i0.Insertable<i1.LocalAlbumAssetEntityData> {
   final String assetId;
   final String albumId;
+  final bool? marker_;
   const LocalAlbumAssetEntityData({
     required this.assetId,
     required this.albumId,
+    this.marker_,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['asset_id'] = i0.Variable<String>(assetId);
     map['album_id'] = i0.Variable<String>(albumId);
+    if (!nullToAbsent || marker_ != null) {
+      map['marker'] = i0.Variable<bool>(marker_);
+    }
     return map;
   }
 
@@ -565,6 +615,7 @@ class LocalAlbumAssetEntityData extends i0.DataClass
     return LocalAlbumAssetEntityData(
       assetId: serializer.fromJson<String>(json['assetId']),
       albumId: serializer.fromJson<String>(json['albumId']),
+      marker_: serializer.fromJson<bool?>(json['marker_']),
     );
   }
   @override
@@ -573,20 +624,26 @@ class LocalAlbumAssetEntityData extends i0.DataClass
     return <String, dynamic>{
       'assetId': serializer.toJson<String>(assetId),
       'albumId': serializer.toJson<String>(albumId),
+      'marker_': serializer.toJson<bool?>(marker_),
     };
   }
 
-  i1.LocalAlbumAssetEntityData copyWith({String? assetId, String? albumId}) =>
-      i1.LocalAlbumAssetEntityData(
-        assetId: assetId ?? this.assetId,
-        albumId: albumId ?? this.albumId,
-      );
+  i1.LocalAlbumAssetEntityData copyWith({
+    String? assetId,
+    String? albumId,
+    i0.Value<bool?> marker_ = const i0.Value.absent(),
+  }) => i1.LocalAlbumAssetEntityData(
+    assetId: assetId ?? this.assetId,
+    albumId: albumId ?? this.albumId,
+    marker_: marker_.present ? marker_.value : this.marker_,
+  );
   LocalAlbumAssetEntityData copyWithCompanion(
     i1.LocalAlbumAssetEntityCompanion data,
   ) {
     return LocalAlbumAssetEntityData(
       assetId: data.assetId.present ? data.assetId.value : this.assetId,
       albumId: data.albumId.present ? data.albumId.value : this.albumId,
+      marker_: data.marker_.present ? data.marker_.value : this.marker_,
     );
   }
 
@@ -594,51 +651,60 @@ class LocalAlbumAssetEntityData extends i0.DataClass
   String toString() {
     return (StringBuffer('LocalAlbumAssetEntityData(')
           ..write('assetId: $assetId, ')
-          ..write('albumId: $albumId')
+          ..write('albumId: $albumId, ')
+          ..write('marker_: $marker_')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(assetId, albumId);
+  int get hashCode => Object.hash(assetId, albumId, marker_);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.LocalAlbumAssetEntityData &&
           other.assetId == this.assetId &&
-          other.albumId == this.albumId);
+          other.albumId == this.albumId &&
+          other.marker_ == this.marker_);
 }
 
 class LocalAlbumAssetEntityCompanion
     extends i0.UpdateCompanion<i1.LocalAlbumAssetEntityData> {
   final i0.Value<String> assetId;
   final i0.Value<String> albumId;
+  final i0.Value<bool?> marker_;
   const LocalAlbumAssetEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.albumId = const i0.Value.absent(),
+    this.marker_ = const i0.Value.absent(),
   });
   LocalAlbumAssetEntityCompanion.insert({
     required String assetId,
     required String albumId,
+    this.marker_ = const i0.Value.absent(),
   }) : assetId = i0.Value(assetId),
        albumId = i0.Value(albumId);
   static i0.Insertable<i1.LocalAlbumAssetEntityData> custom({
     i0.Expression<String>? assetId,
     i0.Expression<String>? albumId,
+    i0.Expression<bool>? marker_,
   }) {
     return i0.RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (albumId != null) 'album_id': albumId,
+      if (marker_ != null) 'marker': marker_,
     });
   }
 
   i1.LocalAlbumAssetEntityCompanion copyWith({
     i0.Value<String>? assetId,
     i0.Value<String>? albumId,
+    i0.Value<bool?>? marker_,
   }) {
     return i1.LocalAlbumAssetEntityCompanion(
       assetId: assetId ?? this.assetId,
       albumId: albumId ?? this.albumId,
+      marker_: marker_ ?? this.marker_,
     );
   }
 
@@ -651,6 +717,9 @@ class LocalAlbumAssetEntityCompanion
     if (albumId.present) {
       map['album_id'] = i0.Variable<String>(albumId.value);
     }
+    if (marker_.present) {
+      map['marker'] = i0.Variable<bool>(marker_.value);
+    }
     return map;
   }
 
@@ -658,7 +727,8 @@ class LocalAlbumAssetEntityCompanion
   String toString() {
     return (StringBuffer('LocalAlbumAssetEntityCompanion(')
           ..write('assetId: $assetId, ')
-          ..write('albumId: $albumId')
+          ..write('albumId: $albumId, ')
+          ..write('marker_: $marker_')
           ..write(')'))
         .toString();
   }

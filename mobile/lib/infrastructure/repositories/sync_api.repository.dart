@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -33,11 +35,13 @@ class SyncApiRepository {
     await _api.applyToParams([], headerParams);
     headers.addAll(headerParams);
 
+    final shouldReset = Store.get(StoreKey.shouldResetSync, false);
     final request = http.Request('POST', Uri.parse(endpoint));
     request.headers.addAll(headers);
     request.body = jsonEncode(
       SyncStreamDto(
         types: [
+          SyncRequestType.authUsersV1,
           SyncRequestType.usersV1,
           SyncRequestType.assetsV1,
           SyncRequestType.assetExifsV1,
@@ -57,6 +61,7 @@ class SyncApiRepository {
           SyncRequestType.peopleV1,
           SyncRequestType.assetFacesV1,
         ],
+        reset: shouldReset,
       ).toJson(),
     );
 
@@ -80,6 +85,9 @@ class SyncApiRepository {
         throw ApiException(response.statusCode, 'Failed to get sync stream: $errorBody');
       }
 
+      // Reset after successful stream start
+      await Store.put(StoreKey.shouldResetSync, false);
+
       await for (final chunk in response.stream.transform(utf8.decoder)) {
         if (shouldAbort) {
           break;
@@ -102,7 +110,6 @@ class SyncApiRepository {
         await onData(_parseLines(lines), abort, reset);
       }
     } catch (error, stack) {
-      _logger.severe("Error processing stream", error, stack);
       return Future.error(error, stack);
     } finally {
       client.close();
@@ -133,6 +140,7 @@ class SyncApiRepository {
 }
 
 const _kResponseMap = <SyncEntityType, Function(Object)>{
+  SyncEntityType.authUserV1: SyncAuthUserV1.fromJson,
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
   SyncEntityType.partnerV1: SyncPartnerV1.fromJson,

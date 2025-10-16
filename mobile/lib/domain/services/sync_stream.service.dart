@@ -23,14 +23,16 @@ class SyncStreamService {
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
-  Future<void> sync() async {
+  Future<bool> sync() async {
     _logger.info("Remote sync request for user");
     // Start the sync stream and handle events
     bool shouldReset = false;
     await _syncApiRepository.streamChanges(_handleEvents, onReset: () => shouldReset = true);
     if (shouldReset) {
+      _logger.info("Resetting sync state as requested by server");
       await _syncApiRepository.streamChanges(_handleEvents);
     }
+    return true;
   }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {
@@ -70,6 +72,8 @@ class SyncStreamService {
   Future<void> _handleSyncData(SyncEntityType type, Iterable<Object> data) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
     switch (type) {
+      case SyncEntityType.authUserV1:
+        return _syncStreamRepository.updateAuthUsersV1(data.cast());
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
       case SyncEntityType.userDeleteV1:
