@@ -87,14 +87,14 @@ class AppBarServerInfo extends HookConsumerWidget {
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: Row(
-                      mainAxisAlignment: serverInfoState.isClientOutOfDate
-                          ? MainAxisAlignment.spaceBetween
-                          : MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
                             serverInfoState.versionMismatchErrorMessage,
-                            textAlign: TextAlign.center,
+                            textAlign: (serverInfoState.isClientOutOfDate || serverInfoState.isServerOutOfDate)
+                                ? TextAlign.start
+                                : TextAlign.center,
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
