@@ -36,15 +36,19 @@
     type="button"
     onclick={() => modalManager.show(ObtainiumConfigModal, {})}
     class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
-    ><span><Icon icon={mdiLinkEdit} class="text-immich-primary dark:text-immich-dark-primary" size="24" /> </span>
+  >
+    <span>
+      <Icon icon={mdiLinkEdit} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
+    </span>
     {$t('obtainium_configurator')}
   </button>
   <button
     type="button"
     onclick={() => modalManager.show(AppDownloadModal, {})}
     class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
-    ><span
-      ><Icon icon={mdiCellphoneArrowDownVariant} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
+  >
+    <span>
+      <Icon icon={mdiCellphoneArrowDownVariant} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
     </span>
     {$t('app_download_links')}
   </button>

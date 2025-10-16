@@ -32,13 +32,15 @@
 </script>
 
 <Modal title={$t('obtainium_configurator')} size="large" {onClose}>
-  <ModalBody
-    ><div class="flex flex-col sm:grid sm:grid-cols-2 gap-5 text-immich-primary dark:text-immich-dark-primary">
+  <ModalBody>
+    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-5 text-immich-primary dark:text-immich-dark-primary">
       <div>
         <label
           class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm"
-          for="obtainium-configurator">Obtainium</label
+          for="obtainium-configurator"
         >
+          Obtainium
+        </label>
         <div id="obtainium-configurator">
           <form>
             <div class="mt-2">
@@ -78,7 +80,8 @@
             target="_blank"
             rel="noreferrer"
             id="obtainium-link"
-            ><img class="pt-2 pr-5" alt="Get it on Obtainium" src={obtainiumBadge} />
+          >
+            <img class="pt-2 pr-5" alt="Get it on Obtainium" src={obtainiumBadge} />
           </a>
         {:else}
           <p class="immich-form-label pb-2 text-sm" id="obtainium-link">

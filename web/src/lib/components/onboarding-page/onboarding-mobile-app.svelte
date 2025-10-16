@@ -13,15 +13,15 @@
     onclick={() => modalManager.show(ObtainiumConfigModal, {})}
     leadingIcon={mdiLinkEdit}
   >
-    {$t('obtainium_configurator')}</Button
-  >
+    {$t('obtainium_configurator')}
+  </Button>
   <Button
     size="large"
     shape="semi-round"
     onclick={() => modalManager.show(AppDownloadModal, {})}
     leadingIcon={mdiCellphoneArrowDownVariant}
   >
-    {$t('app_download_links')}</Button
-  >
+    {$t('app_download_links')}
+  </Button>
 </HStack>
 <p>{$t('mobile_app_download_onboarding_note')}</p>
