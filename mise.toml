@@ -1,7 +1,7 @@
 [tools]
 node = "22.20.0"
-flutter = "3.35.4"
-pnpm = "10.15.1"
+flutter = "3.35.5"
+pnpm = "10.18.1"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.30.0"
@@ -278,12 +278,7 @@ run = "prettier --write ."
 [tasks."web:lint"]
 env._.path = "web/node_modules/.bin"
 dir = "web"
-run = "eslint . --max-warnings 0"
-
-[tasks."web:lint-p"]
-env._.path = "web/node_modules/.bin"
-dir = "web"
-run = "eslint-p . --max-warnings 0 --concurrency=4"
+run = "eslint . --max-warnings 0 --concurrency 4"
 
 [tasks."web:lint-fix"]
 run = "mise run web:lint --fix"

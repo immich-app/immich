@@ -22,8 +22,8 @@
   import {
     AssetJobName,
     AssetTypeEnum,
-    getAssetInfo,
     getAllAlbums,
+    getAssetInfo,
     getStack,
     runAssetJobs,
     type AlbumResponseDto,
@@ -303,10 +303,8 @@
 
   const handleStopSlideshow = async () => {
     try {
-      // eslint-disable-next-line tscompat/tscompat
       if (document.fullscreenElement) {
         document.body.style.cursor = '';
-        // eslint-disable-next-line tscompat/tscompat
         await document.exitFullscreen();
       }
     } catch (error) {
@@ -336,6 +334,7 @@
         }
         break;
       }
+      case AssetAction.STACK:
       case AssetAction.SET_STACK_PRIMARY_ASSET: {
         stack = action.stack;
         break;

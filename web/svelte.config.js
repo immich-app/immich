@@ -11,7 +11,8 @@ process.env.PUBLIC_API_URL = process.env.PUBLIC_API_URL || 'https://api.prd.tech
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   compilerOptions: {
-    runes: true,
+    // TODO pending `@immich/ui` to enable it
+    // runes: true,
   },
   preprocess: vitePreprocess(),
   kit: {

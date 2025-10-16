@@ -37,6 +37,13 @@ import type {
   Viewport,
 } from './types';
 
+type ViewportTopMonthIntersection = {
+  month: MonthGroup | undefined;
+  // Where viewport top intersects month (0 = month top, 1 = month bottom)
+  viewportTopRatioInMonth: number;
+  // Where month bottom is in viewport (0 = viewport top, 1 = viewport bottom)
+  monthBottomViewportRatio: number;
+};
 export class TimelineManager {
   isInitialized = $state(false);
   months: MonthGroup[] = $state([]);
@@ -49,7 +56,7 @@ export class TimelineManager {
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
 
-  topIntersectingMonthGroup: MonthGroup | undefined = $state();
+  viewportTopMonthIntersection: ViewportTopMonthIntersection | undefined;
 
   visibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
@@ -87,15 +94,8 @@ export class TimelineManager {
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
-  scrollCompensation: {
-    heightDelta: number | undefined;
-    scrollTop: number | undefined;
-    monthGroup: MonthGroup | undefined;
-  } = $state({
-    heightDelta: 0,
-    scrollTop: 0,
-    monthGroup: undefined,
-  });
+  #updatingIntersections = false;
+  #scrollableElement: HTMLElement | undefined = $state();
 
   constructor() {}
 
@@ -107,6 +107,20 @@ export class TimelineManager {
     if (changed) {
       this.refreshLayout();
     }
+  }
+
+  set scrollableElement(element: HTMLElement | undefined) {
+    this.#scrollableElement = element;
+  }
+
+  scrollTo(top: number) {
+    this.#scrollableElement?.scrollTo({ top });
+    this.updateSlidingWindow();
+  }
+
+  scrollBy(y: number) {
+    this.#scrollableElement?.scrollBy(0, y);
+    this.updateSlidingWindow();
   }
 
   #setHeaderHeight(value: number) {
@@ -172,7 +186,8 @@ export class TimelineManager {
     const changed = value !== this.#viewportWidth;
     this.#viewportWidth = value;
     this.suspendTransitions = true;
-    void this.#updateViewportGeometry(changed);
+    this.#updateViewportGeometry(changed);
+    this.updateSlidingWindow();
   }
 
   get viewportWidth() {
@@ -234,46 +249,52 @@ export class TimelineManager {
     this.#websocketSupport = undefined;
   }
 
-  updateSlidingWindow(scrollTop: number) {
+  updateSlidingWindow() {
+    const scrollTop = this.#scrollableElement?.scrollTop ?? 0;
     if (this.#scrollTop !== scrollTop) {
       this.#scrollTop = scrollTop;
       this.updateIntersections();
     }
   }
 
-  clearScrollCompensation() {
-    this.scrollCompensation = {
-      heightDelta: undefined,
-      scrollTop: undefined,
-      monthGroup: undefined,
-    };
+  #calculateMonthBottomViewportRatio(month: MonthGroup | undefined) {
+    if (!month) {
+      return 0;
+    }
+    const windowHeight = this.visibleWindow.bottom - this.visibleWindow.top;
+    const bottomOfMonth = month.top + month.height;
+    const bottomOfMonthInViewport = bottomOfMonth - this.visibleWindow.top;
+    return clamp(bottomOfMonthInViewport / windowHeight, 0, 1);
+  }
+
+  #calculateVewportTopRatioInMonth(month: MonthGroup | undefined) {
+    if (!month) {
+      return 0;
+    }
+    return clamp((this.visibleWindow.top - month.top) / month.height, 0, 1);
   }
 
   updateIntersections() {
-    if (!this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
+    if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
       return;
     }
-    let topIntersectingMonthGroup = undefined;
+    this.#updatingIntersections = true;
+
     for (const month of this.months) {
       updateIntersectionMonthGroup(this, month);
-      if (!topIntersectingMonthGroup && month.actuallyIntersecting) {
-        topIntersectingMonthGroup = month;
-      }
     }
-    if (topIntersectingMonthGroup !== undefined && this.topIntersectingMonthGroup !== topIntersectingMonthGroup) {
-      this.topIntersectingMonthGroup = topIntersectingMonthGroup;
-    }
-    for (const month of this.months) {
-      if (month === this.topIntersectingMonthGroup) {
-        this.topIntersectingMonthGroup.percent = clamp(
-          (this.visibleWindow.top - this.topIntersectingMonthGroup.top) / this.topIntersectingMonthGroup.height,
-          0,
-          1,
-        );
-      } else {
-        month.percent = 0;
-      }
-    }
+
+    const month = this.months.find((month) => month.actuallyIntersecting);
+    const viewportTopRatioInMonth = this.#calculateVewportTopRatioInMonth(month);
+    const monthBottomViewportRatio = this.#calculateMonthBottomViewportRatio(month);
+
+    this.viewportTopMonthIntersection = {
+      month,
+      monthBottomViewportRatio,
+      viewportTopRatioInMonth,
+    };
+
+    this.#updatingIntersections = false;
   }
 
   clearDeferredLayout(month: MonthGroup) {
@@ -401,11 +422,12 @@ export class TimelineManager {
       return;
     }
 
-    const result = await monthGroup.loader?.execute(async (signal: AbortSignal) => {
+    const executionStatus = await monthGroup.loader?.execute(async (signal: AbortSignal) => {
       await loadFromTimeBuckets(this, monthGroup, this.#options, signal);
     }, cancelable);
-    if (result === 'LOADED') {
-      updateIntersectionMonthGroup(this, monthGroup);
+    if (executionStatus === 'LOADED') {
+      updateGeometry(this, monthGroup, { invalidateHeight: false });
+      this.updateIntersections();
     }
   }
 
@@ -451,16 +473,42 @@ export class TimelineManager {
     return monthGroupInfo?.monthGroup;
   }
 
-  async getRandomMonthGroup() {
-    const random = Math.floor(Math.random() * this.months.length);
-    const month = this.months[random];
-    await this.loadMonthGroup(month.yearMonth, { cancelable: false });
-    return month;
-  }
+  // note: the `index` input is expected to be in the range [0, assetCount). This
+  // value can be passed to make the method deterministic, which is mainly useful
+  // for testing.
+  async getRandomAsset(index?: number): Promise<TimelineAsset | undefined> {
+    const randomAssetIndex = index ?? Math.floor(Math.random() * this.assetCount);
 
-  async getRandomAsset() {
-    const month = await this.getRandomMonthGroup();
-    return month?.getRandomAsset();
+    let accumulatedCount = 0;
+
+    let randomMonth: MonthGroup | undefined = undefined;
+    for (const month of this.months) {
+      if (randomAssetIndex < accumulatedCount + month.assetsCount) {
+        randomMonth = month;
+        break;
+      }
+
+      accumulatedCount += month.assetsCount;
+    }
+    if (!randomMonth) {
+      return;
+    }
+    await this.loadMonthGroup(randomMonth.yearMonth, { cancelable: false });
+
+    let randomDay: DayGroup | undefined = undefined;
+    for (const day of randomMonth.dayGroups) {
+      if (randomAssetIndex < accumulatedCount + day.viewerAssets.length) {
+        randomDay = day;
+        break;
+      }
+
+      accumulatedCount += day.viewerAssets.length;
+    }
+    if (!randomDay) {
+      return;
+    }
+
+    return randomDay.viewerAssets[randomAssetIndex - accumulatedCount].asset;
   }
 
   updateAssetOperation(ids: string[], operation: AssetOperation) {

@@ -11,8 +11,6 @@ import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/generated/intl_keys.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
@@ -43,6 +41,9 @@ class BackgroundWorkerFgService {
 
   // TODO: Move this call to native side once old timeline is removed
   Future<void> enable() => _foregroundHostApi.enable();
+
+  Future<void> saveNotificationMessage(String title, String body) =>
+      _foregroundHostApi.saveNotificationMessage(title, body);
 
   Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
     BackgroundWorkerSettings(
@@ -111,13 +112,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       );
 
       configureFileDownloaderNotifications();
-
-      if (Platform.isAndroid) {
-        await _backgroundHostApi.showNotification(
-          IntlKeys.uploading_media.t(),
-          IntlKeys.backup_background_service_default_notification.t(),
-        );
-      }
 
       // Notify the host that the background worker service has been initialized and is ready to use
       _backgroundHostApi.onInitialized();
@@ -198,6 +192,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _cancellationToken.cancel();
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
+        nativeSyncApi?.cancelHashing(),
         workerManager.dispose().catchError((_) async {
           // Discard any errors on the dispose call
           return;
@@ -207,7 +202,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         _drift.close(),
         _driftLogger.close(),
         backgroundSyncManager?.cancel(),
-        nativeSyncApi?.cancelHashing(),
       ];
 
       if (_isar.isOpen) {

@@ -95,7 +95,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     // Register plugins in the new engine
     GeneratedPluginRegistrant.register(with: engine)
     // Register custom plugins
-    AppDelegate.registerPlugins(binaryMessenger: engine.binaryMessenger)
+    AppDelegate.registerPlugins(with: engine)
     flutterApi = BackgroundWorkerFlutterApi(binaryMessenger: engine.binaryMessenger)
     BackgroundWorkerBgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: self)
     
@@ -117,10 +117,6 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     flutterApi?.onIosUpload(isRefresh: self.taskType == .refresh, maxSeconds: maxSeconds.map { Int64($0) }, completion: { result in
       self.handleHostResult(result: result)
     })
-  }
-  
-  func showNotification(title: String, content: String) throws {
-    // No-op on iOS for the time being
   }
   
   /**
@@ -172,6 +168,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     }
     
     isComplete = true
+    AppDelegate.cancelPlugins(with: engine)
     engine.destroyContext()
     flutterApi = nil
     completionHandler(success)

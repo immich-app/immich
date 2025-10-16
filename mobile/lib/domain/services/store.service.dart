@@ -86,7 +86,7 @@ class StoreService {
     _cache.remove(key.id);
   }
 
-  /// Clears all values from thw store (cache and DB)
+  /// Clears all values from the store (cache and DB)
   Future<void> clear() async {
     await _storeRepository.deleteAll();
     _cache.clear();

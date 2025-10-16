@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.0.1
+ * 2.1.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -4650,6 +4650,8 @@ export enum NotificationType {
     JobFailed = "JobFailed",
     BackupFailed = "BackupFailed",
     SystemMessage = "SystemMessage",
+    AlbumInvite = "AlbumInvite",
+    AlbumUpdate = "AlbumUpdate",
     Custom = "Custom"
 }
 export enum UserStatus {
