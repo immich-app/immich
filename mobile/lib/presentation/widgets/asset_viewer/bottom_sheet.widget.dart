@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -140,6 +141,47 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
 
+    // Build file info tile based on asset type
+    Widget buildFileInfoTile() {
+      if (asset is LocalAsset) {
+        final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
+        return FutureBuilder<String?>(
+          future: assetMediaRepository.getOriginalFilename(asset.id),
+          builder: (context, snapshot) {
+            final displayName = snapshot.data ?? asset.name;
+            return _SheetTile(
+              title: displayName,
+              titleStyle: context.textTheme.labelLarge,
+              leading: Icon(
+                asset.isImage ? Icons.image_outlined : Icons.videocam_outlined,
+                size: 24,
+                color: context.textTheme.labelLarge?.color,
+              ),
+              subtitle: _getFileInfo(asset, exifInfo),
+              subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+                color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+              ),
+            );
+          },
+        );
+      } else {
+        // For remote assets, use the name directly
+        return _SheetTile(
+          title: asset.name,
+          titleStyle: context.textTheme.labelLarge,
+          leading: Icon(
+            asset.isImage ? Icons.image_outlined : Icons.videocam_outlined,
+            size: 24,
+            color: context.textTheme.labelLarge?.color,
+          ),
+          subtitle: _getFileInfo(asset, exifInfo),
+          subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+            color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+          ),
+        );
+      }
+    }
+
     return SliverList.list(
       children: [
         // Asset Date and Time
@@ -161,19 +203,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           ),
         ),
         // File info
-        _SheetTile(
-          title: asset.name,
-          titleStyle: context.textTheme.labelLarge,
-          leading: Icon(
-            asset.isImage ? Icons.image_outlined : Icons.videocam_outlined,
-            size: 24,
-            color: context.textTheme.labelLarge?.color,
-          ),
-          subtitle: _getFileInfo(asset, exifInfo),
-          subtitleStyle: context.textTheme.bodyMedium?.copyWith(
-            color: context.textTheme.bodyMedium?.color?.withAlpha(155),
-          ),
-        ),
+        buildFileInfoTile(),
         // Camera info
         if (cameraTitle != null)
           _SheetTile(
