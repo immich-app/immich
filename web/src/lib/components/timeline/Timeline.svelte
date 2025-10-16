@@ -10,6 +10,7 @@
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
+  import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
@@ -129,16 +130,57 @@
     timelineManager.scrollableElement = scrollableElement;
   });
 
-  const getAssetHeight = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
+  const getAssetPosition = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
 
-  const scrollToAssetId = async (assetId: string) => {
+  const scrollToAssetPosition = (assetId: string, monthGroup: MonthGroup) => {
+    const position = getAssetPosition(assetId, monthGroup);
+
+    if (!position) {
+      return;
+    }
+
+    const assetTop = position.top;
+    const assetBottom = position.top + position.height;
+    const visibleTop = timelineManager.visibleWindow.top;
+    const visibleBottom = timelineManager.visibleWindow.bottom;
+
+    // Check if the asset is already at least partially visible in the viewport
+    if (isIntersecting(assetTop, assetBottom, visibleTop, visibleBottom)) {
+      // Asset is already visible, no scroll needed but need to update window
+      // positions/intersections because since the <Portal> went from invisible
+      // to visible
+      timelineManager.updateSlidingWindow();
+      return;
+    }
+
+    const currentTop = scrollableElement?.scrollTop || 0;
+    const viewportHeight = visibleBottom - visibleTop;
+
+    // Calculate the minimum scroll needed to bring the asset into view.
+    // Compare two alignment strategies and choose whichever requires less scroll distance:
+    // 1. Align asset top with viewport top
+    // 2. Align asset bottom with viewport bottom
+
+    // Option 1: Scroll so the top of the asset is at the top of the viewport
+    const scrollToAlignTop = assetTop;
+    const distanceToAlignTop = Math.abs(scrollToAlignTop - currentTop);
+
+    // Option 2: Scroll so the bottom of the asset is at the bottom of the viewport
+    const scrollToAlignBottom = assetBottom - viewportHeight;
+    const distanceToAlignBottom = Math.abs(scrollToAlignBottom - currentTop);
+
+    // Choose whichever option requires the minimum scroll distance
+    const scrollTarget = distanceToAlignTop < distanceToAlignBottom ? scrollToAlignTop : scrollToAlignBottom;
+
+    timelineManager.scrollTo(scrollTarget);
+  };
+
+  const scrollAndLoadAsset = async (assetId: string) => {
     const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
     if (!monthGroup) {
       return false;
     }
-
-    const height = getAssetHeight(assetId, monthGroup);
-    timelineManager.scrollTo(height);
+    scrollToAssetPosition(assetId, monthGroup);
     return true;
   };
 
@@ -147,8 +189,7 @@
     if (!monthGroup) {
       return false;
     }
-    const height = getAssetHeight(asset.id, monthGroup);
-    timelineManager.scrollTo(height);
+    scrollToAssetPosition(asset.id, monthGroup);
     return true;
   };
 
@@ -166,63 +207,52 @@
       const scrollTarget = $gridScrollTarget?.at;
       let scrolled = false;
       if (scrollTarget) {
-        scrolled = await scrollToAssetId(scrollTarget);
+        scrolled = await scrollAndLoadAsset(scrollTarget);
       }
       if (!scrolled) {
         // if the asset is not found, scroll to the top
-        timelineManager.scrollToTop(0);
+        timelineManager.scrollTo(0);
       }
     }
     invisible = false;
   };
 
+  // note: only modified once in afterNavigate()
+  let initialLoadWasAssetViewer: boolean | null = null;
+  // only modified in beforeNavigate()
+  let hasNavigatedToOrFromAssetViewer: boolean = false;
+
+  // beforeNavigate is only called AFTER a svelte route has already been loaded
+  // and a new route is being navigated to. It will never be called on direct
+  // navigations by the browser.
   beforeNavigate(({ from, to }) => {
     timelineManager.suspendTransitions = true;
-    const toViewer = isAssetViewerRoute(to);
-    const fromViewer = isAssetViewerRoute(from);
-    hasNavigatedToOrFromAssetViewer = (toViewer && !fromViewer) || (fromViewer && !toViewer);
+    const isNavigatingToAssetViewer = isAssetViewerRoute(to);
+    const isNavigatingFromAssetViewer = isAssetViewerRoute(from);
+    hasNavigatedToOrFromAssetViewer = isNavigatingToAssetViewer !== isNavigatingFromAssetViewer;
   });
 
-  // tri-state boolean
-  let initialLoadWasAssetViewer: boolean | null = null;
-  let hasNavigatedToOrFromAssetViewer: boolean = false;
-  let timelineScrollPositionInitialized = false;
+  // afterNavigate is only called after navigation to a new URL, {complete} will resolve
+  // after successful navigation.
+  afterNavigate(({ complete }) => {
+    void complete.finally(() => {
+      const isAssetViewerPage = isAssetViewerRoute(page);
 
-  const completeAfterNavigate = () => {
-    const assetViewerPage = !!(page.route.id?.endsWith('/[[assetId=id]]') && page.params.assetId);
-    let isInitial = false;
-    // Set initial load state only once
-    if (initialLoadWasAssetViewer === null) {
-      initialLoadWasAssetViewer = assetViewerPage && !hasNavigatedToOrFromAssetViewer;
-      isInitial = true;
-    }
-    let scrollToAssetQueryParam = false;
-    if (
-      !timelineScrollPositionInitialized &&
-      ((isInitial && !assetViewerPage) || // Direct timeline load
-        (!isInitial && hasNavigatedToOrFromAssetViewer)) // Navigated from asset viewer
-    ) {
-      scrollToAssetQueryParam = true;
-      timelineScrollPositionInitialized = true;
-    }
-    return scrollAfterNavigate({ scrollToAssetQueryParam });
-  };
+      // Set initial load state only once - if initialLoadWasAssetViewer is null, then
+      // this is a direct browser navigation.
+      const isDirectNavigation = initialLoadWasAssetViewer === null;
+      if (isDirectNavigation) {
+        initialLoadWasAssetViewer = isAssetViewerPage && !hasNavigatedToOrFromAssetViewer;
+      }
 
-  afterNavigate(({ complete }) => void complete.then(completeAfterNavigate, completeAfterNavigate));
+      const isDirectTimelineLoad = isDirectNavigation && !isAssetViewerPage;
+      const isNavigatingFromAssetViewer = !isDirectNavigation && hasNavigatedToOrFromAssetViewer;
+      const scrollToAssetQueryParam = isDirectTimelineLoad || isNavigatingFromAssetViewer;
 
-  const handleAfterUpdate = () => {
-    const asset = page.url.searchParams.get('at');
-    if (asset) {
-      $gridScrollTarget = { at: asset };
-    }
-    void scrollAfterNavigate({ scrollToAssetQueryParam: true });
-  };
-  const handleBeforeUpdate = (payload: UpdatePayload) => {
-    const timelineUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));
-    if (timelineUpdate) {
-      timelineManager.destroy();
-    }
-  };
+      void scrollAfterNavigate({ scrollToAssetQueryParam });
+    });
+  });
+
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
 
@@ -234,30 +264,15 @@
     }
   });
 
-  const getMaxScrollPercent = () => {
-    const totalHeight = timelineManager.timelineHeight + bottomSectionHeight + timelineManager.topSectionHeight;
-    return (totalHeight - timelineManager.viewportHeight) / totalHeight;
-  };
-
-  const getMaxScroll = () => {
-    if (!scrollableElement || !timelineElement) {
-      return 0;
-    }
-    return (
-      timelineManager.topSectionHeight +
-      bottomSectionHeight +
-      (timelineElement.clientHeight - scrollableElement.clientHeight)
-    );
-  };
-
-  const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
-    const topOffset = monthGroup.top;
-    const maxScrollPercent = getMaxScrollPercent();
-    const delta = monthGroup.height * monthGroupScrollPercent;
+  const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, monthGroupScrollPercent: number) => {
+    const topOffset = segmentTop;
+    const maxScrollPercent = timelineManager.maxScrollPercent;
+    const delta = segmentHeight * monthGroupScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
-    timelineManager.scrollTo(offset);
+    timelineManager.scrollTo(scrollToTop);
   };
+
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   // this function scrolls the timeline to the specified month group and offset, based on scrubber interaction
   const onScrub: ScrubberListener = (scrubberData) => {
@@ -523,7 +538,21 @@
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
-<HotModuleReload onAfterUpdate={handleAfterUpdate} onBeforeUpdate={handleBeforeUpdate} />
+<HotModuleReload
+  onAfterUpdate={() => {
+    const asset = page.url.searchParams.get('at');
+    if (asset) {
+      $gridScrollTarget = { at: asset };
+    }
+    void scrollAfterNavigate({ scrollToAssetQueryParam: true });
+  }}
+  onBeforeUpdate={(payload: UpdatePayload) => {
+    const timelineUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));
+    if (timelineUpdate) {
+      timelineManager.destroy();
+    }
+  }}
+/>
 
 <TimelineKeyboardActions
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
