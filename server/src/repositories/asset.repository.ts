@@ -590,7 +590,7 @@ export class AssetRepository {
   }
 
   @GenerateSql({
-    params: [DummyValue.TIME_BUCKET, { withStacked: true }],
+    params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const query = this.db
