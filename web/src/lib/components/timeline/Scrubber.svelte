@@ -164,7 +164,7 @@
       top += segment.height;
       if (i === 0) {
         segment.hasDot = true;
-        segment.hasLabel = true;
+        segment.hasLabel = false;
         previousLabeledSegment = segment;
       } else {
         if (previousLabeledSegment?.year !== segment.year && height > MIN_YEAR_LABEL_DISTANCE) {
@@ -577,7 +577,7 @@
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
           <div class="absolute end-5 top-[-16px] text-[12px] dark:text-immich-dark-fg font-immich-mono">
-            {segment.year}
+            {segment.year + 1}
           </div>
         {/if}
         {#if segment.hasDot}
