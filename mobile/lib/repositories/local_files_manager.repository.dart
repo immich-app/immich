@@ -21,10 +21,6 @@ class LocalFilesManagerRepository {
     return await _service.restoreFromTrash(fileName, type);
   }
 
-  Future<bool> restoreFromTrashById(String mediaId, int type) async {
-    return await _service.restoreFromTrashById(mediaId, type);
-  }
-
   Future<bool> requestManageMediaPermission() async {
     return await _service.requestManageMediaPermission();
   }
