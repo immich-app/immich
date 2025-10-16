@@ -17,6 +17,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -31,6 +32,7 @@ final uploadServiceProvider = Provider((ref) {
     ref.watch(storageRepositoryProvider),
     ref.watch(localAssetRepository),
     ref.watch(appSettingsServiceProvider),
+    ref.watch(assetMediaRepositoryProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -44,6 +46,7 @@ class UploadService {
     this._storageRepository,
     this._localAssetRepository,
     this._appSettingsService,
+    this._assetMediaRepository,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -54,6 +57,7 @@ class UploadService {
   final StorageRepository _storageRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final AppSettingsService _appSettingsService;
+  final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('UploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -324,7 +328,8 @@ class UploadService {
       return null;
     }
 
-    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
@@ -362,12 +367,13 @@ class UploadService {
     final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     final requiresWiFi = _shouldRequireWiFi(asset);
+    final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
 
     return buildUploadTask(
       file,
       createdAt: asset.createdAt,
       modifiedAt: asset.updatedAt,
-      originalFileName: asset.name,
+      originalFileName: originalFileName,
       deviceAssetId: asset.id,
       fields: fields,
       group: kBackupLivePhotoGroup,
