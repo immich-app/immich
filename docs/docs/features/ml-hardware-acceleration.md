@@ -69,7 +69,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
       - /dev/bus/usb:/dev/bus/usb
       - /usr/lib/wsl:/usr/lib/wsl
     group_add:
-      - 44  # Replace this number with the number you found with getent group video
+      - 44 # Replace this number with the number you found with getent group video
       - 992 # Replace this number with the number you found with getent group render
   ```
 
