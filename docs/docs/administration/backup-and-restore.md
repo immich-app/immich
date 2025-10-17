@@ -77,12 +77,11 @@ gunzip --stdout "/path/to/backup/dump.sql.gz" \
 docker compose up -d            # Start remainder of Immich apps
 ```
 
-</TabItem>
+  </TabItem>
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
-    Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
-
 ```powershell title='Backup'
+# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
 [System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME>))
 ```
 
@@ -104,7 +103,7 @@ exit                                              # Exit the Docker shell
 docker compose up -d                              # Start remainder of Immich apps
 ```
 
-</TabItem>
+  </TabItem>
 </Tabs>
 
 Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.), in which case you need to delete the `DB_DATA_LOCATION` folder to reset the database.
