@@ -47,20 +47,14 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
       // using isClientOutOfDate since that will show to users reguardless of if they are an admin
       if (serverVersion == null) {
-        state = state.copyWith(
-          errorGettingVersions: true,
-          versionMismatchErrorMessage: "profile_drawer_unable_to_check_version".tr(),
-        );
+        state = state.copyWith(errorGettingVersions: true, versionMismatchErrorMessage: "unable_to_check_version".tr());
         return;
       }
 
       await _checkServerVersionMismatch(serverVersion);
     } catch (e, stackTrace) {
       _log.severe("Failed to get server version", e, stackTrace);
-      state = state.copyWith(
-        errorGettingVersions: true,
-        versionMismatchErrorMessage: "profile_drawer_unable_to_check_version".tr(),
-      );
+      state = state.copyWith(errorGettingVersions: true, versionMismatchErrorMessage: "unable_to_check_version".tr());
       return;
     }
   }
@@ -73,18 +67,12 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     Map<String, int> appVersion = _getDetailVersion(packageInfo.version);
 
     if (appVersion["major"]! > serverVersion.major || appVersion["minor"]! > serverVersion.minor) {
-      state = state.copyWith(
-        isServerOutOfDate: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date".tr(),
-      );
+      state = state.copyWith(isServerOutOfDate: true, versionMismatchErrorMessage: "server_update_available".tr());
       return;
     }
 
     if (appVersion["major"]! < serverVersion.major || appVersion["minor"]! < serverVersion.minor) {
-      state = state.copyWith(
-        isClientOutOfDate: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date".tr(),
-      );
+      state = state.copyWith(isClientOutOfDate: true, versionMismatchErrorMessage: "app_update_available".tr());
       return;
     }
 

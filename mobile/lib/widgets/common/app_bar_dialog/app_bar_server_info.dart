@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
@@ -48,16 +49,16 @@ class AppBarServerInfo extends HookConsumerWidget {
         return;
       }
 
+      String url;
       if (Platform.isIOS) {
-        launchUrl(Uri.parse("https://apps.apple.com/app/id1613945652"), mode: LaunchMode.externalApplication);
+        url = kImmichAppStoreLink;
       } else if (Platform.isAndroid) {
-        launchUrl(
-          Uri.parse("https://play.google.com/store/apps/details?id=app.alextran.immich"),
-          mode: LaunchMode.externalApplication,
-        );
+        url = kImmichPlayStoreLink;
       } else {
-        launchUrl(Uri.parse("https://immich.app/download"), mode: LaunchMode.externalApplication);
+        url = kImmichLatestRelease;
       }
+
+      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
 
     useEffect(() {
