@@ -63,7 +63,7 @@
   let isMouseOverGroup = $state(false);
   let hoveredDay = $state();
 
-  const transitionDuration = $derived.by(() => (month.timelineManager.suspendTransitions && !$isUploading ? 0 : 150));
+  const transitionDuration = $derived.by(() => (month.scrollManager.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
   const _onClick = (
     timelineManager: TimelineManager,
@@ -135,8 +135,8 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
     class={[
-      { 'transition-all': !month.timelineManager.suspendTransitions },
-      !month.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
+      { 'transition-all': !month.scrollManager.suspendTransitions },
+      !month.scrollManager.suspendTransitions && `delay-${transitionDuration}`,
     ]}
     data-group
     style:position="absolute"
@@ -178,49 +178,56 @@
 
     <!-- Image grid -->
     <div data-image-grid class="relative overflow-clip" style:height={day.height + 'px'} style:width={day.width + 'px'}>
-      {#each filterIntersecting(day.viewerAssets) as viewerAsset (viewerAsset.id)}
-        {@const position = viewerAsset.position!}
-        {@const asset = viewerAsset.asset!}
+      <div
+        data-image-grid
+        class="relative overflow-clip"
+        style:height={day.height + 'px'}
+        style:width={day.width + 'px'}
+      >
+        {#each filterIntersecting(day.viewerAssets) as viewerAsset (viewerAsset.id)}
+          {@const position = viewerAsset.position!}
+          {@const asset = viewerAsset.asset!}
 
-        <!-- {#if viewerAsset.intersecting} -->
-        <!-- note: don't remove data-asset-id - its used by web e2e tests -->
-        <div
-          data-asset-id={asset.id}
-          class="absolute"
-          style:top={position.top + 'px'}
-          style:left={position.left + 'px'}
-          style:width={position.width + 'px'}
-          style:height={position.height + 'px'}
-          out:scale|global={{ start: 0.1, duration: scaleDuration }}
-          animate:flip={{ duration: transitionDuration }}
-        >
-          <Thumbnail
-            showStackedIcon={withStacked}
-            {showArchiveIcon}
-            {asset}
-            {groupIndex}
-            onClick={(asset) => {
-              if (typeof onThumbnailClick === 'function') {
-                onThumbnailClick(asset, timelineManager, day, _onClick);
-              } else {
-                _onClick(timelineManager, day.getAssets(), day.dayTitle, asset);
-              }
-            }}
-            onSelect={(asset) => assetSelectHandler(timelineManager, asset, day.getAssets(), day.dayTitle)}
-            onMouseEvent={() => assetMouseEventHandler(day.dayTitle, assetSnapshot(asset))}
-            selected={assetInteraction.hasSelectedAsset(asset.id) ||
-              day.month.timelineManager.albumAssets.has(asset.id)}
-            selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            disabled={day.month.timelineManager.albumAssets.has(asset.id)}
-            thumbnailWidth={position.width}
-            thumbnailHeight={position.height}
-          />
-          {#if customLayout}
-            {@render customLayout(asset)}
-          {/if}
-        </div>
-        <!-- {/if} -->
-      {/each}
+          <!-- {#if viewerAsset.intersecting} -->
+          <!-- note: don't remove data-asset-id - its used by web e2e tests -->
+          <div
+            data-asset-id={asset.id}
+            class="absolute"
+            style:top={position.top + 'px'}
+            style:left={position.left + 'px'}
+            style:width={position.width + 'px'}
+            style:height={position.height + 'px'}
+            out:scale|global={{ start: 0.1, duration: scaleDuration }}
+            animate:flip={{ duration: transitionDuration }}
+          >
+            <Thumbnail
+              showStackedIcon={withStacked}
+              {showArchiveIcon}
+              {asset}
+              {groupIndex}
+              onClick={(asset) => {
+                if (typeof onThumbnailClick === 'function') {
+                  onThumbnailClick(asset, timelineManager, day, _onClick);
+                } else {
+                  _onClick(timelineManager, day.getAssets(), day.dayTitle, asset);
+                }
+              }}
+              onSelect={(asset) => assetSelectHandler(timelineManager, asset, day.getAssets(), day.dayTitle)}
+              onMouseEvent={() => assetMouseEventHandler(day.dayTitle, assetSnapshot(asset))}
+              selected={assetInteraction.hasSelectedAsset(asset.id) ||
+                day.month.scrollManager.albumAssets.has(asset.id)}
+              selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
+              disabled={day.month.scrollManager.albumAssets.has(asset.id)}
+              thumbnailWidth={position.width}
+              thumbnailHeight={position.height}
+            />
+            {#if customLayout}
+              {@render customLayout(asset)}
+            {/if}
+          </div>
+          <!-- {/if} -->
+        {/each}
+      </div>
     </div>
   </section>
 {/each}

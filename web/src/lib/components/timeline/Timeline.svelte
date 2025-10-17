@@ -2,14 +2,14 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
-  import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
+  import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
-  import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+  import { isIntersecting } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
   import { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
   import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
@@ -20,7 +20,7 @@
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
-  import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
+  import { getSegmentIdentifier, getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, type Snippet } from 'svelte';
@@ -109,7 +109,7 @@
   let timelineScrollPercent: number = $state(0);
   let scrubberWidth = $state(0);
 
-  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
+  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.segments.length === 0);
   const maxMd = $derived(mobileDevice.maxMd);
   const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
@@ -141,7 +141,7 @@
 
     // Need to update window positions/intersections because <Portal> may have
     // gone from invisible to visible.
-    timelineManager.updateSlidingWindow();
+    timelineManager.updateVisibleWindow();
 
     const assetTop = position.top;
     const assetBottom = position.top + position.height;
@@ -296,7 +296,7 @@
         scrubberMonthScrollPercent,
       );
     } else {
-      const month = timelineManager.months.find(
+      const month = timelineManager.segments.find(
         ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
       );
       if (!month) {
@@ -325,7 +325,7 @@
       let top = scrollableElement.scrollTop;
       let maxScrollPercent = timelineManager.maxScrollPercent;
 
-      const monthsLength = timelineManager.months.length;
+      const monthsLength = timelineManager.segments.length;
       for (let i = -1; i < monthsLength + 1; i++) {
         let month: ViewportTopMonth;
         let monthHeight = 0;
@@ -338,8 +338,8 @@
           month = 'lead-out';
           monthHeight = timelineManager.bottomSectionHeight;
         } else {
-          month = timelineManager.months[i].yearMonth;
-          monthHeight = timelineManager.months[i].height;
+          month = timelineManager.segments[i].yearMonth;
+          monthHeight = timelineManager.segments[i].height;
         }
 
         let next = top - monthHeight * maxScrollPercent;
@@ -352,7 +352,7 @@
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (viewportTopMonthScrollPercent > 0.9999 && i + 1 < monthsLength - 1) {
-            viewportTopMonth = timelineManager.months[i + 1].yearMonth;
+            viewportTopMonth = timelineManager.segments[i + 1].yearMonth;
             viewportTopMonthScrollPercent = 0;
           }
           break;
@@ -442,21 +442,23 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getMonthByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getMonthByAssetId(asset.id);
+      let startBucket = timelineManager.getSegmentForAssetId(assetInteraction.assetSelectionStart.id) as
+        | TimelineMonth
+        | undefined;
+      let endBucket = timelineManager.getSegmentForAssetId(asset.id) as TimelineMonth | undefined;
 
-      if (startBucket === null || endBucket === null) {
+      if (!startBucket || !endBucket) {
         return;
       }
 
       // Select/deselect assets in range (start,end)
       let started = false;
-      for (const month of timelineManager.months) {
+      for (const month of timelineManager.segments) {
         if (month === endBucket) {
           break;
         }
         if (started) {
-          await timelineManager.loadMonth(month.yearMonth);
+          await timelineManager.loadSegment(getSegmentIdentifier(month.yearMonth));
           for (const asset of month.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
@@ -472,7 +474,7 @@
 
       // Update date group selection in range [start,end]
       started = false;
-      for (const month of timelineManager.months) {
+      for (const month of timelineManager.segments) {
         if (month === startBucket) {
           started = true;
         }
@@ -531,7 +533,7 @@
   $effect(() => {
     if ($showAssetViewer) {
       const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
-      void timelineManager.loadMonth({ year: localDateTime.year, month: localDateTime.month });
+      void timelineManager.loadSegment(getSegmentIdentifier({ year: localDateTime.year, month: localDateTime.month }));
     }
   });
 </script>
@@ -562,7 +564,7 @@
   {onEscape}
 />
 
-{#if timelineManager.months.length > 0}
+{#if timelineManager.segments.length > 0}
   <Scrubber
     {timelineManager}
     height={timelineManager.viewportHeight}
@@ -600,7 +602,7 @@
   bind:clientHeight={timelineManager.viewportHeight}
   bind:clientWidth={timelineManager.viewportWidth}
   bind:this={scrollableElement}
-  onscroll={() => (handleTimelineScroll(), timelineManager.updateSlidingWindow(), updateIsScrolling())}
+  onscroll={() => (handleTimelineScroll(), timelineManager.updateVisibleWindow(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}
@@ -622,11 +624,11 @@
       {/if}
     </section>
 
-    {#each timelineManager.months as month (month.viewId)}
+    {#each timelineManager.segments as month (month.identifier.id)}
       {@const display = month.intersecting}
       {@const absoluteHeight = month.top}
 
-      {#if !month.isLoaded}
+      {#if !month.loaded}
         <div
           style:height={month.height + 'px'}
           style:position="absolute"

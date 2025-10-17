@@ -14,6 +14,7 @@ import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
+import { getSegmentIdentifier } from '$lib/utils/timeline-util';
 import {
   addAssetsToAlbum as addAssets,
   addAssetsToAlbums as addToAlbums,
@@ -490,8 +491,8 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
   isSelectingAllAssets.set(true);
 
   try {
-    for (const month of timelineManager.months) {
-      await timelineManager.loadMonth(month.yearMonth);
+    for (const month of timelineManager.segments) {
+      await timelineManager.loadSegment(getSegmentIdentifier(month.yearMonth));
 
       if (!get(isSelectingAllAssets)) {
         assetInteraction.clearMultiselect();
@@ -499,8 +500,8 @@ export const selectAllAssets = async (timelineManager: TimelineManager, assetInt
       }
       assetInteraction.selectAssets(assetsSnapshot([...month.assetsIterator()]));
 
-      for (const dateGroup of month.days) {
-        assetInteraction.addGroupToMultiselectGroup(dateGroup.dayTitle);
+      for (const day of month.days) {
+        assetInteraction.addGroupToMultiselectGroup(day.dayTitle);
       }
     }
   } catch (error) {

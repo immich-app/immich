@@ -1,3 +1,10 @@
+export enum TaskStatus {
+  DONE,
+  WAITED,
+  CANCELED,
+  LOADED,
+  ERRORED,
+}
 export class CancellableTask {
   cancelToken: AbortController | null = null;
   cancellable: boolean = true;
@@ -32,18 +39,18 @@ export class CancellableTask {
 
   async waitUntilCompletion() {
     if (this.executed) {
-      return 'DONE';
+      return TaskStatus.DONE;
     }
     // if there is a cancel token, task is currently executing, so wait on the promise. If it
     // isn't, then  the task is in new state, it hasn't been loaded, nor has it been executed.
     // in either case, we wait on the promise.
     await this.complete;
-    return 'WAITED';
+    return TaskStatus.WAITED;
   }
 
   async execute<F extends (abortSignal: AbortSignal) => Promise<void>>(f: F, cancellable: boolean) {
     if (this.executed) {
-      return 'DONE';
+      return TaskStatus.DONE;
     }
 
     // if promise is pending, wait on previous request instead.
@@ -54,7 +61,7 @@ export class CancellableTask {
         this.cancellable = cancellable;
       }
       await this.complete;
-      return 'WAITED';
+      return TaskStatus.WAITED;
     }
     this.cancellable = cancellable;
     const cancelToken = (this.cancelToken = new AbortController());
@@ -62,18 +69,18 @@ export class CancellableTask {
     try {
       await f(cancelToken.signal);
       if (cancelToken.signal.aborted) {
-        return 'CANCELED';
+        return TaskStatus.CANCELED;
       }
       this.#transitionToExecuted();
-      return 'LOADED';
+      return TaskStatus.LOADED;
     } catch (error) {
       // eslint-disable-next-line  @typescript-eslint/no-explicit-any
       if ((error as any).name === 'AbortError') {
         // abort error is not treated as an error, but as a cancellation.
-        return 'CANCELED';
+        return TaskStatus.CANCELED;
       }
       this.#transitionToErrored(error);
-      return 'ERRORED';
+      return TaskStatus.ERRORED;
     } finally {
       this.cancelToken = null;
     }

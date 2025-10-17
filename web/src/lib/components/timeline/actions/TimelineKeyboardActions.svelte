@@ -122,7 +122,7 @@
   };
 
   const isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
+  const isEmpty = $derived(timelineManager.isInitialized && timelineManager.segments.length === 0);
   const idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
   let isShortcutModalOpen = false;
 

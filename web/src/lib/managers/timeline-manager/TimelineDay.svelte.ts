@@ -11,6 +11,8 @@ export class TimelineDay {
   readonly month: TimelineMonth;
   readonly index: number;
   readonly dayTitle: string;
+  readonly dayTitleFull: string;
+
   readonly day: number;
   viewerAssets: ViewerAsset[] = $state([]);
 
@@ -24,11 +26,13 @@ export class TimelineDay {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(month: TimelineMonth, index: number, day: number, dayTitle: string) {
+  constructor(month: TimelineMonth, index: number, day: number, groupTitle: string, groupTitleFull: string) {
     this.index = index;
     this.month = month;
     this.day = day;
-    this.dayTitle = dayTitle;
+    this.dayTitle = groupTitle;
+    this.dayTitleFull = groupTitleFull;
+
     if (import.meta.env.DEV) {
       onCreateDay(this);
     }
@@ -142,7 +146,7 @@ export class TimelineDay {
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
-      if (remove || this.month.timelineManager.isExcluded(asset)) {
+      if (remove || this.month.scrollManager.isExcluded(asset)) {
         this.viewerAssets.splice(index, 1);
         changedGeometry = true;
       }
@@ -165,7 +169,7 @@ export class TimelineDay {
     }
   }
 
-  get absoluteTop() {
+  get topAbsolute() {
     return this.month.top + this.#top;
   }
 }

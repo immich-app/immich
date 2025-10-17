@@ -1,49 +1,36 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
 import { onCreateMonth } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
 import { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
 import type { AssetDescriptor, AssetOperation, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
-import { ScrollSegment } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
-import { CancellableTask } from '$lib/utils/cancellable-task';
-import { handleError } from '$lib/utils/handle-error';
+import { ScrollSegment, type SegmentIdentifier } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
 import {
   formatDayTitle,
+  formatDayTitleFull,
   formatMonthTitle,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
+  getSegmentIdentifier,
   getTimes,
   setDifferenceInPlace,
+  toISOYearMonthUTC,
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
-import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
+import { AssetOrder, getTimeBucket, type TimeBucketAssetResponseDto } from '@immich/sdk';
 
 export class TimelineMonth extends ScrollSegment {
-  #intersecting: boolean = $state(false);
-  actuallyIntersecting: boolean = $state(false);
-  isLoaded: boolean = $state(false);
   days: TimelineDay[] = $state([]);
-  readonly timelineManager: TimelineManager;
 
-  #height: number = $state(0);
-  #top: number = $state(0);
-
-  #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
-  percent: number = $state(0);
-
-  assetsCount: number = $derived(
-    this.isLoaded ? this.days.reduce((accumulator, g) => accumulator + g.viewerAssets.length, 0) : this.#initialCount,
-  );
-  loader: CancellableTask | undefined;
-  isHeightActual: boolean = $state(false);
+  #yearMonth: TimelineYearMonth;
+  #identifier: SegmentIdentifier;
+  #timelineManager: TimelineManager;
 
   readonly monthTitle: string;
-  readonly yearMonth: TimelineYearMonth;
 
   constructor(
     timelineManager: TimelineManager,
@@ -53,46 +40,162 @@ export class TimelineMonth extends ScrollSegment {
     order: AssetOrder = AssetOrder.Desc,
   ) {
     super();
-    this.timelineManager = timelineManager;
-    this.#initialCount = initialCount;
+    this.initialCount = initialCount;
+    this.#yearMonth = yearMonth;
+    this.#identifier = getSegmentIdentifier(yearMonth);
+    this.#timelineManager = timelineManager;
     this.#sortOrder = order;
-
-    this.yearMonth = yearMonth;
     this.monthTitle = formatMonthTitle(fromTimelinePlainYearMonth(yearMonth));
-
-    this.loader = new CancellableTask(
-      () => {
-        this.isLoaded = true;
-      },
-      () => {
-        this.days = [];
-        this.isLoaded = false;
-      },
-      this.#handleLoadError,
-    );
-    if (loaded) {
-      this.isLoaded = true;
-    }
+    this.loaded = loaded;
     if (import.meta.env.DEV) {
       onCreateMonth(this);
     }
   }
 
-  set intersecting(newValue: boolean) {
-    const old = this.#intersecting;
-    if (old === newValue) {
-      return;
+  get identifier() {
+    return this.#identifier;
+  }
+
+  get scrollManager(): TimelineManager {
+    return this.#timelineManager;
+  }
+
+  get viewerAssets() {
+    const assets: ViewerAsset[] = [];
+    for (const day of this.days) {
+      assets.push(...day.viewerAssets);
     }
-    this.#intersecting = newValue;
-    if (newValue) {
-      void this.timelineManager.loadMonth(this.yearMonth);
-    } else {
-      this.cancel();
+    return assets;
+  }
+
+  override findAssetAbsolutePosition(assetId: string) {
+    this.#clearDeferredLayout();
+    for (const group of this.days) {
+      const viewerAsset = group.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
+      if (viewerAsset) {
+        if (!viewerAsset.position) {
+          console.warn('No position for asset');
+          return;
+        }
+        return {
+          top: this.top + group.top + viewerAsset.position.top + this.scrollManager.headerHeight,
+          height: viewerAsset.position.height,
+        };
+      }
     }
   }
 
-  get intersecting() {
-    return this.#intersecting;
+  protected async fetch(signal: AbortSignal): Promise<unknown> {
+    if (this.getFirstAsset()) {
+      return;
+    }
+    const timelineManager = this.#timelineManager;
+    const options = timelineManager.options;
+    const timeBucket = toISOYearMonthUTC(this.yearMonth);
+    const bucketResponse = await getTimeBucket(
+      {
+        ...authManager.params,
+        ...options,
+        timeBucket,
+      },
+      { signal },
+    );
+
+    if (!bucketResponse) {
+      return;
+    }
+
+    if (options.timelineAlbumId) {
+      const albumAssets = await getTimeBucket(
+        {
+          ...authManager.params,
+          albumId: options.timelineAlbumId,
+          timeBucket,
+        },
+        { signal },
+      );
+      for (const id of albumAssets.id) {
+        timelineManager.albumAssets.add(id);
+      }
+    }
+
+    const unprocessedAssets = this.addAssets(bucketResponse, true);
+    if (unprocessedAssets.length > 0) {
+      console.error(
+        `Warning: getTimeBucket API returning assets not in requested month: ${this.yearMonth.month}, ${JSON.stringify(
+          unprocessedAssets.map((unprocessed) => ({
+            id: unprocessed.id,
+            localDateTime: unprocessed.localDateTime,
+          })),
+        )}`,
+      );
+    }
+  }
+
+  override layout(noDefer: boolean) {
+    let cumulativeHeight = 0;
+    let cumulativeWidth = 0;
+    let currentRowHeight = 0;
+
+    let dayRow = 0;
+    let dayCol = 0;
+
+    const options = this.scrollManager.justifiedLayoutOptions;
+    for (const day of this.days) {
+      day.layout(options, noDefer);
+
+      // Calculate space needed for this item (including gap if not first in row)
+      const spaceNeeded = day.width + (dayCol > 0 ? this.scrollManager.gap : 0);
+      const fitsInCurrentRow = cumulativeWidth + spaceNeeded <= this.scrollManager.viewportWidth;
+
+      if (fitsInCurrentRow) {
+        day.row = dayRow;
+        day.col = dayCol++;
+        day.left = cumulativeWidth;
+        day.top = cumulativeHeight;
+
+        cumulativeWidth += day.width + this.scrollManager.gap;
+      } else {
+        // Move to next row
+        cumulativeHeight += currentRowHeight;
+        cumulativeWidth = 0;
+        dayRow++;
+        dayCol = 0;
+
+        // Position at start of new row
+        day.row = dayRow;
+        day.col = dayCol;
+        day.left = 0;
+        day.top = cumulativeHeight;
+
+        dayCol++;
+        cumulativeWidth += day.width + this.scrollManager.gap;
+      }
+      currentRowHeight = day.height + this.scrollManager.headerHeight;
+    }
+
+    // Add the height of the final row
+    cumulativeHeight += currentRowHeight;
+
+    this.height = cumulativeHeight;
+    this.isHeightActual = true;
+  }
+
+  override updateIntersection({
+    intersecting,
+    actuallyIntersecting,
+  }: {
+    intersecting: boolean;
+    actuallyIntersecting: boolean;
+  }) {
+    super.updateIntersection({ intersecting, actuallyIntersecting });
+    if (intersecting) {
+      this.#clearDeferredLayout();
+    }
+  }
+
+  get yearMonth() {
+    return this.#yearMonth;
   }
 
   get lastDay() {
@@ -101,19 +204,6 @@ export class TimelineMonth extends ScrollSegment {
 
   getFirstAsset() {
     return this.days[0]?.getFirstAsset();
-  }
-
-  getAssets() {
-    // eslint-disable-next-line unicorn/no-array-reduce
-    return this.days.reduce((accumulator: TimelineAsset[], g: TimelineDay) => accumulator.concat(g.getAssets()), []);
-  }
-
-  sortDays() {
-    if (this.#sortOrder === AssetOrder.Asc) {
-      return this.days.sort((a, b) => a.day - b.day);
-    }
-
-    return this.days.sort((a, b) => b.day - a.day);
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
@@ -215,6 +305,14 @@ export class TimelineMonth extends ScrollSegment {
     return addContext.unprocessedAssets;
   }
 
+  sortDays() {
+    if (this.#sortOrder === AssetOrder.Asc) {
+      return this.days.sort((a, b) => a.day - b.day);
+    }
+
+    return this.days.sort((a, b) => b.day - a.day);
+  }
+
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
     const { localDateTime } = timelineAsset;
 
@@ -229,7 +327,8 @@ export class TimelineMonth extends ScrollSegment {
       addContext.setDay(day, localDateTime);
     } else {
       const dayTitle = formatDayTitle(fromTimelinePlainDate(localDateTime));
-      day = new TimelineDay(this, this.days.length, localDateTime.day, dayTitle);
+      const dayTitleFull = formatDayTitleFull(fromTimelinePlainDate(localDateTime));
+      day = new TimelineDay(this, this.days.length, localDateTime.day, dayTitle, dayTitleFull);
       this.days.push(day);
       addContext.setDay(day, localDateTime);
       addContext.newDays.add(day);
@@ -238,94 +337,6 @@ export class TimelineMonth extends ScrollSegment {
     const viewerAsset = new ViewerAsset(day, timelineAsset);
     day.viewerAssets.push(viewerAsset);
     addContext.changedDays.add(day);
-  }
-
-  get viewId() {
-    const { year, month } = this.yearMonth;
-    return year + '-' + month;
-  }
-
-  set height(height: number) {
-    if (this.#height === height) {
-      return;
-    }
-    const timelineManager = this.timelineManager;
-    const index = timelineManager.months.indexOf(this);
-    const heightDelta = height - this.#height;
-    this.#height = height;
-    const prevMonth = timelineManager.months[index - 1];
-    if (prevMonth) {
-      const newTop = prevMonth.#top + prevMonth.#height;
-      if (this.#top !== newTop) {
-        this.#top = newTop;
-      }
-    }
-    if (heightDelta === 0) {
-      return;
-    }
-    for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
-      const month = this.timelineManager.months[cursor];
-      const newTop = month.#top + heightDelta;
-      if (month.#top !== newTop) {
-        month.#top = newTop;
-      }
-    }
-    if (!timelineManager.viewportTopMonthIntersection) {
-      return;
-    }
-    const { month, monthBottomViewportRatio, viewportTopRatioInMonth } = timelineManager.viewportTopMonthIntersection;
-    const currentIndex = month ? timelineManager.months.indexOf(month) : -1;
-    if (!month || currentIndex <= 0 || index > currentIndex) {
-      return;
-    }
-    if (index < currentIndex || monthBottomViewportRatio < 1) {
-      timelineManager.scrollBy(heightDelta);
-    } else if (index === currentIndex) {
-      const scrollTo = this.top + height * viewportTopRatioInMonth;
-      timelineManager.scrollTo(scrollTo);
-    }
-  }
-
-  get height() {
-    return this.#height;
-  }
-
-  get top(): number {
-    return this.#top + this.timelineManager.topSectionHeight;
-  }
-
-  #handleLoadError(error: unknown) {
-    const _$t = get(t);
-    handleError(error, _$t('errors.failed_to_load_assets'));
-  }
-
-  findDayForAsset(asset: TimelineAsset) {
-    for (const group of this.days) {
-      if (group.viewerAssets.some((viewerAsset) => viewerAsset.id === asset.id)) {
-        return group;
-      }
-    }
-  }
-
-  findDayByDay(day: number) {
-    return this.days.find((group) => group.day === day);
-  }
-
-  findAssetAbsolutePosition(assetId: string) {
-    this.timelineManager.clearDeferredLayout(this);
-    for (const group of this.days) {
-      const viewerAsset = group.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
-      if (viewerAsset) {
-        if (!viewerAsset.position) {
-          console.warn('No position for asset');
-          return;
-        }
-        return {
-          top: this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight,
-          height: viewerAsset.position.height,
-        };
-      }
-    }
   }
 
   *assetsIterator(options?: { startDay?: TimelineDay; startAsset?: TimelineAsset; direction?: Direction }) {
@@ -340,6 +351,18 @@ export class TimelineMonth extends ScrollSegment {
       startAsset = undefined;
       groupIndex += isEarlier ? 1 : -1;
     }
+  }
+
+  findDayForAsset(asset: TimelineAsset) {
+    for (const group of this.days) {
+      if (group.viewerAssets.some((viewerAsset) => viewerAsset.id === asset.id)) {
+        return group;
+      }
+    }
+  }
+
+  findDayByDay(day: number) {
+    return this.days.find((group) => group.day === day);
   }
 
   findAssetById(assetDescriptor: AssetDescriptor) {
@@ -365,7 +388,13 @@ export class TimelineMonth extends ScrollSegment {
     return closest;
   }
 
-  cancel() {
-    this.loader?.cancel();
+  #clearDeferredLayout() {
+    const hasDeferred = this.days.some((group) => group.deferredLayout);
+    if (hasDeferred) {
+      this.updateGeometry({ invalidateHeight: true, noDefer: true });
+      for (const group of this.days) {
+        group.deferredLayout = false;
+      }
+    }
   }
 }
