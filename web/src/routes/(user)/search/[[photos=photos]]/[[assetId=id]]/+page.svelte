@@ -205,6 +205,7 @@
       originalFileName: $t('file_name'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      ocr: $t('ocr'),
     };
     return keyMap[key] || key;
   }

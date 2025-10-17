@@ -237,6 +237,10 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.DatabaseBackup, data: { force } });
       }
 
+      case QueueName.Ocr: {
+        return this.jobRepository.queue({ name: JobName.OcrQueueAll, data: { force } });
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }
@@ -353,6 +357,7 @@ export class JobService extends BaseService {
         const jobs: JobItem[] = [
           { name: JobName.SmartSearch, data: item.data },
           { name: JobName.AssetDetectFaces, data: item.data },
+          { name: JobName.Ocr, data: item.data },
         ];
 
         if (asset.type === AssetType.Video) {

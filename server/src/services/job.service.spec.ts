@@ -24,7 +24,7 @@ describe(JobService.name, () => {
     it('should update concurrency', () => {
       sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
-      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(15);
+      expect(mocks.job.setConcurrency).toHaveBeenCalledTimes(16);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FacialRecognition, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(7, QueueName.DuplicateDetection, 1);
       expect(mocks.job.setConcurrency).toHaveBeenNthCalledWith(8, QueueName.BackgroundTask, 5);
@@ -98,6 +98,7 @@ describe(JobService.name, () => {
         [QueueName.Library]: expectedJobStatus,
         [QueueName.Notification]: expectedJobStatus,
         [QueueName.BackupDatabase]: expectedJobStatus,
+        [QueueName.Ocr]: expectedJobStatus,
       });
     });
   });
@@ -270,12 +271,12 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.SmartSearch, JobName.AssetDetectFaces],
+        jobs: [JobName.SmartSearch, JobName.AssetDetectFaces, JobName.Ocr],
         stub: [assetStub.livePhotoStillAsset],
       },
       {
         item: { name: JobName.AssetGenerateThumbnails, data: { id: 'asset-1', source: 'upload' } },
-        jobs: [JobName.SmartSearch, JobName.AssetDetectFaces, JobName.AssetEncodeVideo],
+        jobs: [JobName.SmartSearch, JobName.AssetDetectFaces, JobName.Ocr, JobName.AssetEncodeVideo],
         stub: [assetStub.video],
       },
       {

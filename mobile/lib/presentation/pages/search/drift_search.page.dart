@@ -395,15 +395,18 @@ class DriftSearchPage extends HookConsumerWidget {
     handleTextSubmitted(String value) {
       switch (textSearchType.value) {
         case TextSearchType.context:
-          filter.value = filter.value.copyWith(filename: '', context: value, description: '');
+          filter.value = filter.value.copyWith(filename: '', context: value, description: '', ocr: '');
 
           break;
         case TextSearchType.filename:
-          filter.value = filter.value.copyWith(filename: value, context: '', description: '');
+          filter.value = filter.value.copyWith(filename: value, context: '', description: '', ocr: '');
 
           break;
         case TextSearchType.description:
-          filter.value = filter.value.copyWith(filename: '', context: '', description: value);
+          filter.value = filter.value.copyWith(filename: '', context: '', description: value, ocr: '');
+          break;
+        case TextSearchType.ocr:
+          filter.value = filter.value.copyWith(filename: '', context: '', description: '', ocr: value);
           break;
       }
 
@@ -414,6 +417,7 @@ class DriftSearchPage extends HookConsumerWidget {
       TextSearchType.context => Icons.image_search_rounded,
       TextSearchType.filename => Icons.abc_rounded,
       TextSearchType.description => Icons.text_snippet_outlined,
+      TextSearchType.ocr => Icons.document_scanner_outlined,
     };
 
     return Scaffold(
@@ -497,6 +501,24 @@ class DriftSearchPage extends HookConsumerWidget {
                   onPressed: () {
                     textSearchType.value = TextSearchType.description;
                     searchHintText.value = 'search_by_description_example'.t(context: context);
+                  },
+                ),
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.document_scanner_outlined),
+                    title: Text(
+                      'search_by_ocr'.t(context: context),
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                      ),
+                    ),
+                    selectedColor: context.colorScheme.primary,
+                    selected: textSearchType.value == TextSearchType.ocr,
+                  ),
+                  onPressed: () {
+                    textSearchType.value = TextSearchType.ocr;
+                    searchHintText.value = 'search_by_ocr_example'.t(context: context);
                   },
                 ),
               ],
