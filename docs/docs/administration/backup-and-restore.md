@@ -57,6 +57,7 @@ Then please follow the steps in the following section for restoring the database
   <TabItem value="Linux system" label="Linux system" default>
 
 ```bash title='Backup'
+# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
 docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME> | gzip > "/path/to/backup/dump.sql.gz"
 ```
 
@@ -69,16 +70,18 @@ docker compose create           # Create Docker containers for Immich apps witho
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
 # Check the database user if you deviated from the default
+# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
 gunzip --stdout "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
 | docker exec -i immich_postgres psql --dbname=postgres --username=<DB_USERNAME>  # Restore Backup
 docker compose up -d            # Start remainder of Immich apps
 ```
 
-</TabItem>
+  </TabItem>
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
+# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
 [System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=<DB_USERNAME>))
 ```
 
@@ -92,13 +95,15 @@ docker compose create                             # Create Docker containers for
 docker start immich_postgres                      # Start Postgres server
 sleep 10                                          # Wait for Postgres server to start up
 docker exec -it immich_postgres bash              # Enter the Docker shell and run the following command
-# Check the database user if you deviated from the default. If your backup ends in `.gz`, replace `cat` with `gunzip --stdout`
+# If your backup ends in `.gz`, replace `cat` with `gunzip --stdout`
+# Replace <DB_USERNAME> with the database username - usually postgres unless you have changed it.
+
 cat "/dump.sql" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | psql --dbname=postgres --username=<DB_USERNAME>
 exit                                              # Exit the Docker shell
 docker compose up -d                              # Start remainder of Immich apps
 ```
 
-</TabItem>
+  </TabItem>
 </Tabs>
 
 Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.), in which case you need to delete the `DB_DATA_LOCATION` folder to reset the database.
