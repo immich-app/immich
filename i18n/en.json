@@ -2077,6 +2077,7 @@
   "upload_status_uploaded": "Uploaded",
   "upload_success": "Upload success, refresh the page to see new upload assets.",
   "upload_to_immich": "Upload to Immich ({count})",
+  "uploaded": "Uploaded",
   "uploading": "Uploading",
   "uploading_media": "Uploading media",
   "url": "URL",
