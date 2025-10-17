@@ -193,7 +193,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
-        workerManager.dispose().catchError((_) async {
+        workerManagerPatch.dispose().catchError((_) async {
           // Discard any errors on the dispose call
           return;
         }),
