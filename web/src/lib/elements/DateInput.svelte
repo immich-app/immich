@@ -1,5 +1,7 @@
 <script lang="ts">
-  interface Props {
+  import type { HTMLInputAttributes } from 'svelte/elements';
+
+  interface Props extends HTMLInputAttributes {
     type: 'date' | 'datetime-local';
     value?: string;
     min?: string;
@@ -34,4 +36,5 @@
     }
     onkeydown?.(e);
   }}
+  step=".001"
 />

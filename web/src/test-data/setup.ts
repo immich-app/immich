@@ -3,6 +3,7 @@ import { init } from 'svelte-i18n';
 
 beforeAll(async () => {
   await init({ fallbackLocale: 'dev' });
+  Element.prototype.animate = vi.fn().mockImplementation(() => ({ cancel: () => {}, finished: Promise.resolve() }));
 });
 
 Object.defineProperty(globalThis, 'matchMedia', {
@@ -15,4 +16,12 @@ Object.defineProperty(globalThis, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
+});
+
+vi.mock('$env/dynamic/public', () => {
+  return {
+    env: {
+      PUBLIC_IMMICH_HOSTNAME: '',
+    },
+  };
 });

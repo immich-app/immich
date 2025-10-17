@@ -121,6 +121,7 @@ export default typescriptEslint.config(
       'unicorn/filename-case': 'off',
       'unicorn/prefer-top-level-await': 'off',
       'unicorn/import-style': 'off',
+      'unicorn/no-array-sort': 'off',
       'svelte/button-has-type': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-floating-promises': 'error',

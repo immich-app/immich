@@ -38,6 +38,7 @@ test.describe('Registration', () => {
     await page.getByRole('button', { name: 'User Privacy' }).click();
     await page.getByRole('button', { name: 'Storage Template' }).click();
     await page.getByRole('button', { name: 'Backups' }).click();
+    await page.getByRole('button', { name: 'Mobile App' }).click();
     await page.getByRole('button', { name: 'Done' }).click();
 
     // success
@@ -85,6 +86,7 @@ test.describe('Registration', () => {
     await page.getByRole('button', { name: 'Theme' }).click();
     await page.getByRole('button', { name: 'Language' }).click();
     await page.getByRole('button', { name: 'User Privacy' }).click();
+    await page.getByRole('button', { name: 'Mobile App' }).click();
     await page.getByRole('button', { name: 'Done' }).click();
 
     // success

@@ -180,6 +180,7 @@ class TestOrtSession:
     CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
     ROCM_EP = ["ROCMExecutionProvider", "CPUExecutionProvider"]
+    COREML_EP = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
     def test_sets_cpu_provider(self, providers: list[str]) -> None:
@@ -224,6 +225,12 @@ class TestOrtSession:
         session = OrtSession("ViT-B-32__openai")
 
         assert session.providers == self.ROCM_EP
+
+    @pytest.mark.providers(COREML_EP)
+    def test_uses_coreml(self, providers: list[str]) -> None:
+        session = OrtSession("ViT-B-32__openai")
+
+        assert session.providers == self.COREML_EP
 
     def test_sets_provider_kwarg(self) -> None:
         providers = ["CUDAExecutionProvider"]
@@ -284,7 +291,6 @@ class TestOrtSession:
         assert session.sess_options.execution_mode == ort.ExecutionMode.ORT_SEQUENTIAL
         assert session.sess_options.inter_op_num_threads == 1
         assert session.sess_options.intra_op_num_threads == 2
-        assert session.sess_options.enable_cpu_mem_arena is False
 
     def test_sets_default_sess_options_does_not_set_threads_if_non_cpu_and_default_threads(self) -> None:
         session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
@@ -301,6 +307,26 @@ class TestOrtSession:
 
         assert session.sess_options.inter_op_num_threads == 2
         assert session.sess_options.intra_op_num_threads == 4
+
+    def test_uses_arena_if_enabled(self, mocker: MockerFixture) -> None:
+        mock_settings = mocker.patch("immich_ml.sessions.ort.settings", autospec=True)
+        mock_settings.model_inter_op_threads = 0
+        mock_settings.model_intra_op_threads = 0
+        mock_settings.model_arena = True
+
+        session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
+
+        assert session.sess_options.enable_cpu_mem_arena
+
+    def test_does_not_use_arena_if_disabled(self, mocker: MockerFixture) -> None:
+        mock_settings = mocker.patch("immich_ml.sessions.ort.settings", autospec=True)
+        mock_settings.model_inter_op_threads = 0
+        mock_settings.model_intra_op_threads = 0
+        mock_settings.model_arena = False
+
+        session = OrtSession("ViT-B-32__openai", providers=["CPUExecutionProvider"])
+
+        assert not session.sess_options.enable_cpu_mem_arena
 
     def test_sets_sess_options_kwarg(self) -> None:
         sess_options = ort.SessionOptions()

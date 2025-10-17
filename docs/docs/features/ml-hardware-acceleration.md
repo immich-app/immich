@@ -54,8 +54,24 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 #### OpenVINO
 
 - Integrated GPUs are more likely to experience issues than discrete GPUs, especially for older processors or servers with low RAM.
-- Ensure the server's kernel version is new enough to use the device for hardware accceleration.
+- Ensure the server's kernel version is new enough to use the device for hardware acceleration.
 - Expect higher RAM usage when using OpenVINO compared to CPU processing.
+
+#### OpenVINO-WSL
+
+- Ensure your container can access the /dev/dri directory, you can verify this by doing `docker exec -t immich_machine_learning ls -la /dev/dri`. If this is not the case execute `getent group render` and `getent group video` on the WSL host, then add those groups to hwaccel.ml.yaml
+  ```yaml
+  openvino-wsl:
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/dxg:/dev/dxg
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - /usr/lib/wsl:/usr/lib/wsl
+    group_add:
+      - 44 # Replace this number with the number you found with getent group video
+      - 992 # Replace this number with the number you found with getent group render
+  ```
 
 #### RKNN
 

@@ -100,9 +100,7 @@
   };
 
   const onShowSettings = async () => {
-    // eslint-disable-next-line tscompat/tscompat
     if (document.fullscreenElement) {
-      // eslint-disable-next-line tscompat/tscompat
       await document.exitFullscreen();
     }
     await modalManager.show(SlideshowSettingsModal);
@@ -114,11 +112,7 @@
         webkitIsFullScreen?: boolean;
       };
 
-      if (
-        // eslint-disable-next-line tscompat/tscompat
-        !document.fullscreenElement &&
-        !doc.webkitIsFullScreen
-      ) {
+      if (!document.fullscreenElement && !doc.webkitIsFullScreen) {
         onClose();
       }
     }

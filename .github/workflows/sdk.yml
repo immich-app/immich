@@ -16,7 +16,7 @@ jobs:
       run:
         working-directory: ./open-api/typescript-sdk
     steps:
-      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
 
@@ -24,7 +24,7 @@ jobs:
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
 
       # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version-file: './open-api/typescript-sdk/.nvmrc'
           registry-url: 'https://registry.npmjs.org'
@@ -35,6 +35,6 @@ jobs:
       - name: Build
         run: pnpm build
       - name: Publish
-        run: pnpm publish
+        run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
