@@ -1,20 +1,58 @@
-import { debounce } from 'lodash-es';
+import type { Viewport } from '$lib/managers/timeline-manager/types';
+import type { ScrollSegment, SegmentIdentifier } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
+
+import { clamp, debounce } from 'lodash-es';
 
 type LayoutOptions = {
   headerHeight: number;
   rowHeight: number;
   gap: number;
 };
+
+export type VisibleWindow = {
+  top: number;
+  bottom: number;
+};
+
+type ViewportTopSegmentIntersection = {
+  segment: ScrollSegment | null;
+  // Where viewport top intersects segment (0 = segment top, 1 = segment bottom)
+  viewportTopSegmentRatio: number;
+  // Where first segment bottom is in viewport (0 = viewport top, 1 = viewport bottom)
+  segmentBottomViewportRatio: number;
+};
+
 export abstract class VirtualScrollManager {
   topSectionHeight = $state(0);
-  bodySectionHeight = $state(0);
+  bodySectionHeight = $derived.by(() => {
+    let height = 0;
+    for (const segment of this.segments) {
+      height += segment.height;
+    }
+    return height;
+  });
   bottomSectionHeight = $state(0);
   totalViewerHeight = $derived.by(() => this.topSectionHeight + this.bodySectionHeight + this.bottomSectionHeight);
-
-  visibleWindow = $derived.by(() => ({
+  isInitialized = $state(false);
+  streamViewerHeight = $derived.by(() => {
+    let height = this.topSectionHeight;
+    for (const segment of this.segments) {
+      height += segment.height;
+    }
+    return height;
+  });
+  assetCount = $derived.by(() => {
+    let count = 0;
+    for (const segment of this.segments) {
+      count += segment.assetsCount;
+    }
+    return count;
+  });
+  visibleWindow: VisibleWindow = $derived.by(() => ({
     top: this.#scrollTop,
     bottom: this.#scrollTop + this.viewportHeight,
   }));
+  viewportTopSegmentIntersection: ViewportTopSegmentIntersection | undefined;
 
   #viewportHeight = $state(0);
   #viewportWidth = $state(0);
@@ -24,14 +62,15 @@ export abstract class VirtualScrollManager {
   #gap = $state(12);
   #scrolling = $state(false);
   #suspendTransitions = $state(false);
-  #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
-  #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
+  #resumeTransitionsAfterDelay = debounce(() => (this.suspendTransitions = false), 1000);
+  #resumeScrollingStatusAfterDelay = debounce(() => (this.#scrolling = false), 1000);
   #justifiedLayoutOptions = $derived({
     spacing: 2,
     heightTolerance: 0.5,
     rowHeight: this.#rowHeight,
     rowWidth: Math.floor(this.viewportWidth),
   });
+  #updatingIntersections = false;
 
   constructor() {
     this.setLayoutOptions();
@@ -44,6 +83,8 @@ export abstract class VirtualScrollManager {
   get justifiedLayoutOptions() {
     return this.#justifiedLayoutOptions;
   }
+
+  abstract get segments(): ScrollSegment[];
 
   get maxScrollPercent() {
     const totalHeight = this.totalViewerHeight;
@@ -94,7 +135,7 @@ export abstract class VirtualScrollManager {
     this.#scrolling = value;
     if (value) {
       this.suspendTransitions = true;
-      this.#resetScrolling();
+      this.#resumeScrollingStatusAfterDelay();
     }
   }
 
@@ -105,7 +146,7 @@ export abstract class VirtualScrollManager {
   set suspendTransitions(value: boolean) {
     this.#suspendTransitions = value;
     if (value) {
-      this.#resetSuspendTransitions();
+      this.#resumeTransitionsAfterDelay();
     }
   }
 
@@ -114,10 +155,11 @@ export abstract class VirtualScrollManager {
   }
 
   set viewportWidth(value: number) {
-    const changed = value !== this.#viewportWidth;
+    const oldViewport = this.viewportSnapshot;
     this.#viewportWidth = value;
     this.suspendTransitions = true;
-    void this.updateViewportGeometry(changed);
+    const newViewport = this.viewportSnapshot;
+    void this.onUpdateViewport(oldViewport, newViewport);
   }
 
   get viewportWidth() {
@@ -125,22 +167,78 @@ export abstract class VirtualScrollManager {
   }
 
   set viewportHeight(value: number) {
+    const oldViewport = this.viewportSnapshot;
     this.#viewportHeight = value;
     this.#suspendTransitions = true;
-    void this.updateViewportGeometry(false);
+    const newViewport = this.viewportSnapshot;
+    void this.onUpdateViewport(oldViewport, newViewport);
   }
 
   get viewportHeight() {
     return this.#viewportHeight;
   }
 
-  get hasEmptyViewport() {
-    return this.viewportWidth === 0 || this.viewportHeight === 0;
+  get viewportSnapshot(): Viewport {
+    return {
+      width: $state.snapshot(this.#viewportWidth),
+      height: $state.snapshot(this.#viewportHeight),
+    };
   }
 
-  protected updateIntersections(): void {}
+  scrollTo(_: number) {}
 
-  protected updateViewportGeometry(_: boolean) {}
+  scrollBy(_: number) {}
+
+  #calculateSegmentBottomViewportRatio(segment: ScrollSegment | null) {
+    if (!segment) {
+      return 0;
+    }
+    const windowHeight = this.visibleWindow.bottom - this.visibleWindow.top;
+    const bottomOfSegment = segment.top + segment.height;
+    const bottomOfSegmentInViewport = bottomOfSegment - this.visibleWindow.top;
+    return clamp(bottomOfSegmentInViewport / windowHeight, 0, 1);
+  }
+
+  #calculateViewportTopRatioInMonth(month: ScrollSegment | null) {
+    if (!month) {
+      return 0;
+    }
+    return clamp((this.visibleWindow.top - month.top) / month.height, 0, 1);
+  }
+
+  protected updateIntersections() {
+    if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
+      return;
+    }
+
+    this.#updatingIntersections = true;
+    let topSegment: ScrollSegment | null = null;
+    for (const segment of this.segments) {
+      segment.calculateAndUpdateIntersection(this.visibleWindow);
+      if (segment.actuallyIntersecting && topSegment === null) {
+        topSegment = segment;
+      }
+    }
+
+    const viewportTopSegmentRatio = this.#calculateViewportTopRatioInMonth(topSegment);
+    const segmentBottomViewportRatio = this.#calculateSegmentBottomViewportRatio(topSegment);
+
+    this.viewportTopSegmentIntersection = {
+      segment: topSegment,
+      viewportTopSegmentRatio,
+      segmentBottomViewportRatio,
+    };
+
+    this.#updatingIntersections = false;
+  }
+
+  protected onUpdateViewport(oldViewport: Viewport, newViewport: Viewport) {
+    if (!this.isInitialized || isEmptyViewport(newViewport)) {
+      return;
+    }
+    const changedWidth = oldViewport.width !== newViewport.width || isEmptyViewport(oldViewport);
+    this.refreshLayout({ invalidateHeight: changedWidth });
+  }
 
   setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: Partial<LayoutOptions> = {}) {
     let changed = false;
@@ -152,7 +250,7 @@ export abstract class VirtualScrollManager {
     }
   }
 
-  updateSlidingWindow() {
+  updateVisibleWindow() {
     const scrollTop = this.scrollTop;
     if (this.#scrollTop !== scrollTop) {
       this.#scrollTop = scrollTop;
@@ -160,9 +258,35 @@ export abstract class VirtualScrollManager {
     }
   }
 
-  refreshLayout() {
+  protected refreshLayout({ invalidateHeight = true }: { invalidateHeight?: boolean } = {}) {
+    for (const segment of this.segments) {
+      segment.updateGeometry({ invalidateHeight });
+    }
     this.updateIntersections();
   }
 
-  destroy(): void {}
+  destroy() {
+    this.isInitialized = false;
+  }
+
+  async loadSegment(identifier: SegmentIdentifier, options?: { cancelable: boolean }): Promise<void> {
+    const { cancelable = true } = options ?? {};
+    const segment = this.segments.find((segment) => identifier.matches(segment));
+    if (!segment || segment.loader?.executed) {
+      return;
+    }
+
+    await segment.load(cancelable);
+  }
+
+  getSegmentForAssetId(assetId: string) {
+    for (const segment of this.segments) {
+      const asset = segment.assets.find((asset) => asset.id === assetId);
+      if (asset) {
+        return segment;
+      }
+    }
+  }
 }
+
+export const isEmptyViewport = (viewport: Viewport) => viewport.width === 0 || viewport.height === 0;

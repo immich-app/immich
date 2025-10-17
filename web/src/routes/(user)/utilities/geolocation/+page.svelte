@@ -5,8 +5,8 @@
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import type { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -113,7 +113,7 @@
   const handleThumbnailClick = (
     asset: TimelineAsset,
     timelineManager: TimelineManager,
-    dayGroup: DayGroup,
+    day: TimelineDay,
     onClick: (
       timelineManager: TimelineManager,
       assets: TimelineAsset[],
@@ -129,7 +129,7 @@
       location = { latitude: asset.latitude!, longitude: asset.longitude! };
       void setQueryValue('at', asset.id);
     } else {
-      onClick(timelineManager, dayGroup.getAssets(), dayGroup.groupTitle, asset);
+      onClick(timelineManager, day.getAssets(), day.dayTitle, asset);
     }
   };
 </script>

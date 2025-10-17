@@ -1,64 +1,64 @@
+import type { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
+import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
-import type { DayGroup } from './day-group.svelte';
-import type { MonthGroup } from './month-group.svelte';
-import type { TimelineAsset } from './types';
 
 export class GroupInsertionCache {
   #lookupCache: {
-    [year: number]: { [month: number]: { [day: number]: DayGroup } };
+    [year: number]: { [month: number]: { [day: number]: TimelineDay } };
   } = {};
   unprocessedAssets: TimelineAsset[] = [];
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  changedDayGroups = new Set<DayGroup>();
+  changedDays = new Set<TimelineDay>();
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  newDayGroups = new Set<DayGroup>();
+  newDays = new Set<TimelineDay>();
 
-  getDayGroup({ year, month, day }: TimelineDate): DayGroup | undefined {
+  getDay({ year, month, day }: TimelineDate): TimelineDay | undefined {
     return this.#lookupCache[year]?.[month]?.[day];
   }
 
-  setDayGroup(dayGroup: DayGroup, { year, month, day }: TimelineDate) {
+  setDay(day: TimelineDay, { year, month, day: dayNum }: TimelineDate) {
     if (!this.#lookupCache[year]) {
       this.#lookupCache[year] = {};
     }
     if (!this.#lookupCache[year][month]) {
       this.#lookupCache[year][month] = {};
     }
-    this.#lookupCache[year][month][day] = dayGroup;
+    this.#lookupCache[year][month][dayNum] = day;
   }
 
-  get existingDayGroups() {
-    return setDifference(this.changedDayGroups, this.newDayGroups);
+  get existingDays() {
+    return setDifference(this.changedDays, this.newDays);
   }
 
-  get updatedBuckets() {
+  get updatedMonths() {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const updated = new Set<MonthGroup>();
-    for (const group of this.changedDayGroups) {
-      updated.add(group.monthGroup);
+    const months = new Set<TimelineMonth>();
+    for (const day of this.changedDays) {
+      months.add(day.month);
     }
-    return updated;
+    return months;
   }
 
-  get bucketsWithNewDayGroups() {
+  get monthsWithNewDays() {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const updated = new Set<MonthGroup>();
-    for (const group of this.newDayGroups) {
-      updated.add(group.monthGroup);
+    const months = new Set<TimelineMonth>();
+    for (const day of this.newDays) {
+      months.add(day.month);
     }
-    return updated;
+    return months;
   }
 
-  sort(monthGroup: MonthGroup, sortOrder: AssetOrder = AssetOrder.Desc) {
-    for (const group of this.changedDayGroups) {
-      group.sortAssets(sortOrder);
+  sort(month: TimelineMonth, sortOrder: AssetOrder = AssetOrder.Desc) {
+    for (const day of this.changedDays) {
+      day.sortAssets(sortOrder);
     }
-    for (const group of this.newDayGroups) {
-      group.sortAssets(sortOrder);
+    for (const day of this.newDays) {
+      day.sortAssets(sortOrder);
     }
-    if (this.newDayGroups.size > 0) {
-      monthGroup.sortDayGroups();
+    if (this.newDays.size > 0) {
+      month.sortDays();
     }
   }
 }

@@ -1,9 +1,9 @@
+import type { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
+import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
+import type { AssetDescriptor, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import type { MonthGroup } from '../month-group.svelte';
-import type { TimelineManager } from '../timeline-manager.svelte';
-import type { AssetDescriptor, Direction, TimelineAsset } from '../types';
 
 export async function getAssetWithOffset(
   timelineManager: TimelineManager,
@@ -11,41 +11,41 @@ export async function getAssetWithOffset(
   interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   direction: Direction,
 ): Promise<TimelineAsset | undefined> {
-  const { asset, monthGroup } = findMonthGroupForAsset(timelineManager, assetDescriptor.id) ?? {};
-  if (!monthGroup || !asset) {
+  const { asset, month } = findMonthForAsset(timelineManager, assetDescriptor.id) ?? {};
+  if (!month || !asset) {
     return;
   }
 
   switch (interval) {
     case 'asset': {
-      return getAssetByAssetOffset(timelineManager, asset, monthGroup, direction);
+      return getAssetByAssetOffset(timelineManager, asset, month, direction);
     }
     case 'day': {
-      return getAssetByDayOffset(timelineManager, asset, monthGroup, direction);
+      return getAssetByDayOffset(timelineManager, asset, month, direction);
     }
     case 'month': {
-      return getAssetByMonthOffset(timelineManager, monthGroup, direction);
+      return getAssetByMonthOffset(timelineManager, month, direction);
     }
     case 'year': {
-      return getAssetByYearOffset(timelineManager, monthGroup, direction);
+      return getAssetByYearOffset(timelineManager, month, direction);
     }
   }
 }
 
-export function findMonthGroupForAsset(timelineManager: TimelineManager, id: string) {
-  for (const month of timelineManager.months) {
+export function findMonthForAsset(timelineManager: TimelineManager, id: string) {
+  for (const month of timelineManager.segments) {
     const asset = month.findAssetById({ id });
     if (asset) {
-      return { monthGroup: month, asset };
+      return { month, asset };
     }
   }
 }
 
-export function getMonthGroupByDate(
+export function getMonthByDate(
   timelineManager: TimelineManager,
   targetYearMonth: TimelineYearMonth,
-): MonthGroup | undefined {
-  return timelineManager.months.find(
+): TimelineMonth | undefined {
+  return timelineManager.segments.find(
     (month) => month.yearMonth.year === targetYearMonth.year && month.yearMonth.month === targetYearMonth.month,
   );
 }
@@ -53,13 +53,13 @@ export function getMonthGroupByDate(
 async function getAssetByAssetOffset(
   timelineManager: TimelineManager,
   asset: TimelineAsset,
-  monthGroup: MonthGroup,
+  month: TimelineMonth,
   direction: Direction,
 ) {
-  const dayGroup = monthGroup.findDayGroupForAsset(asset);
+  const day = month.findDayForAsset(asset);
   for await (const targetAsset of timelineManager.assetsIterator({
-    startMonthGroup: monthGroup,
-    startDayGroup: dayGroup,
+    startMonth: month,
+    startDay: day,
     startAsset: asset,
     direction,
   })) {
@@ -72,13 +72,13 @@ async function getAssetByAssetOffset(
 async function getAssetByDayOffset(
   timelineManager: TimelineManager,
   asset: TimelineAsset,
-  monthGroup: MonthGroup,
+  month: TimelineMonth,
   direction: Direction,
 ) {
-  const dayGroup = monthGroup.findDayGroupForAsset(asset);
+  const day = month.findDayForAsset(asset);
   for await (const targetAsset of timelineManager.assetsIterator({
-    startMonthGroup: monthGroup,
-    startDayGroup: dayGroup,
+    startMonth: month,
+    startDay: day,
     startAsset: asset,
     direction,
   })) {
@@ -88,44 +88,44 @@ async function getAssetByDayOffset(
   }
 }
 
-async function getAssetByMonthOffset(timelineManager: TimelineManager, month: MonthGroup, direction: Direction) {
-  for (const targetMonth of timelineManager.monthGroupIterator({ startMonthGroup: month, direction })) {
+async function getAssetByMonthOffset(timelineManager: TimelineManager, month: TimelineMonth, direction: Direction) {
+  for (const targetMonth of timelineManager.monthIterator({ startMonth: month, direction })) {
     if (targetMonth.yearMonth.month !== month.yearMonth.month) {
-      const { value, done } = await timelineManager.assetsIterator({ startMonthGroup: targetMonth, direction }).next();
+      const { value, done } = await timelineManager.assetsIterator({ startMonth: targetMonth, direction }).next();
       return done ? undefined : value;
     }
   }
 }
 
-async function getAssetByYearOffset(timelineManager: TimelineManager, month: MonthGroup, direction: Direction) {
-  for (const targetMonth of timelineManager.monthGroupIterator({ startMonthGroup: month, direction })) {
+async function getAssetByYearOffset(timelineManager: TimelineManager, month: TimelineMonth, direction: Direction) {
+  for (const targetMonth of timelineManager.monthIterator({ startMonth: month, direction })) {
     if (targetMonth.yearMonth.year !== month.yearMonth.year) {
-      const { value, done } = await timelineManager.assetsIterator({ startMonthGroup: targetMonth, direction }).next();
+      const { value, done } = await timelineManager.assetsIterator({ startMonth: targetMonth, direction }).next();
       return done ? undefined : value;
     }
   }
 }
 
 export async function retrieveRange(timelineManager: TimelineManager, start: AssetDescriptor, end: AssetDescriptor) {
-  let { asset: startAsset, monthGroup: startMonthGroup } = findMonthGroupForAsset(timelineManager, start.id) ?? {};
-  if (!startMonthGroup || !startAsset) {
+  let { asset: startAsset, month: startMonth } = findMonthForAsset(timelineManager, start.id) ?? {};
+  if (!startMonth || !startAsset) {
     return [];
   }
-  let { asset: endAsset, monthGroup: endMonthGroup } = findMonthGroupForAsset(timelineManager, end.id) ?? {};
-  if (!endMonthGroup || !endAsset) {
+  let { asset: endAsset, month: endMonth } = findMonthForAsset(timelineManager, end.id) ?? {};
+  if (!endMonth || !endAsset) {
     return [];
   }
   const assetOrder: AssetOrder = timelineManager.getAssetOrder();
   if (plainDateTimeCompare(assetOrder === AssetOrder.Desc, startAsset.localDateTime, endAsset.localDateTime) < 0) {
     [startAsset, endAsset] = [endAsset, startAsset];
-    [startMonthGroup, endMonthGroup] = [endMonthGroup, startMonthGroup];
+    [startMonth, endMonth] = [endMonth, startMonth];
   }
 
   const range: TimelineAsset[] = [];
-  const startDayGroup = startMonthGroup.findDayGroupForAsset(startAsset);
+  const startDay = startMonth.findDayForAsset(startAsset);
   for await (const targetAsset of timelineManager.assetsIterator({
-    startMonthGroup,
-    startDayGroup,
+    startMonth,
+    startDay,
     startAsset,
   })) {
     range.push(targetAsset);
@@ -136,8 +136,8 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
   return range;
 }
 
-export function findMonthGroupForDate(timelineManager: TimelineManager, targetYearMonth: TimelineYearMonth) {
-  for (const month of timelineManager.months) {
+export function findMonthForDate(timelineManager: TimelineManager, targetYearMonth: TimelineYearMonth) {
+  for (const month of timelineManager.segments) {
     const { year, month: monthNum } = month.yearMonth;
     if (monthNum === targetYearMonth.month && year === targetYearMonth.year) {
       return month;
@@ -145,10 +145,10 @@ export function findMonthGroupForDate(timelineManager: TimelineManager, targetYe
   }
 }
 
-export function findClosestGroupForDate(months: MonthGroup[], targetYearMonth: TimelineYearMonth) {
+export function findClosestGroupForDate(months: TimelineMonth[], targetYearMonth: TimelineYearMonth) {
   const targetDate = DateTime.fromObject({ year: targetYearMonth.year, month: targetYearMonth.month });
 
-  let closestMonth: MonthGroup | undefined;
+  let closestMonth: TimelineMonth | undefined;
   let minDifference = Number.MAX_SAFE_INTEGER;
 
   for (const month of months) {

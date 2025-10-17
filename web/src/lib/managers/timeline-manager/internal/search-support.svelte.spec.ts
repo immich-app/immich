@@ -1,11 +1,11 @@
+import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
+import { findClosestGroupForDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { describe, expect, it } from 'vitest';
-import type { MonthGroup } from '../month-group.svelte';
-import { findClosestGroupForDate } from './search-support.svelte';
 
-function createMockMonthGroup(year: number, month: number): MonthGroup {
+function createMockMonthGroup(year: number, month: number): TimelineMonth {
   return {
     yearMonth: { year, month },
-  } as MonthGroup;
+  } as TimelineMonth;
 }
 
 describe('findClosestGroupForDate', () => {
