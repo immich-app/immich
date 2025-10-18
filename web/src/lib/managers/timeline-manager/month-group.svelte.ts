@@ -313,10 +313,13 @@ export class MonthGroup {
           console.warn('No position for asset');
           break;
         }
-        return this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight;
+        return {
+          top: this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight,
+          height: viewerAsset.position.height,
+        };
       }
     }
-    return -1;
+    return undefined;
   }
 
   *assetsIterator(options?: { startDayGroup?: DayGroup; startAsset?: TimelineAsset; direction?: Direction }) {
