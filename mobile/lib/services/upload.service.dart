@@ -303,6 +303,7 @@ class UploadService {
     }
 
     File? file;
+    bool uploadAsLive = entity.isLivePhoto;
 
     /// iOS LivePhoto has two files: a photo and a video.
     /// They are uploaded separately, with video file being upload first, then returned with the assetId
@@ -314,8 +315,14 @@ class UploadService {
     /// The cancel operation will only cancel the video group (normal group), the photo group will not
     /// be touched, as the video file is already uploaded.
 
-    if (entity.isLivePhoto) {
+    if (uploadAsLive) {
       file = await _storageRepository.getMotionFileForAsset(asset);
+      // Fallback: if motion video is unavailable (e.g., shared album or old format), upload still photo only
+      if (file == null) {
+        _logger.warning('Live Photo motion file missing for ${asset.id} (${asset.name}); uploading still image only');
+        file = await _storageRepository.getFileForAsset(asset.id);
+        uploadAsLive = false;
+      }
     } else {
       file = await _storageRepository.getFileForAsset(asset.id);
     }
@@ -324,11 +331,11 @@ class UploadService {
       return null;
     }
 
-    final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+    final originalFileName = uploadAsLive ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
-      isLivePhotos: entity.isLivePhoto,
+      isLivePhotos: uploadAsLive,
       livePhotoVideoId: '',
     ).toJson();
 
