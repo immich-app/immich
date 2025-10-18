@@ -317,10 +317,10 @@ packages:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: b5e72753cf63becce2c61fd04dfe0f1c430cc5278b53a1342dc5ad839eab29ec
+      sha256: "33bae12a398f841c6cda09d1064212957265869104c478e5ad51e2fb26c3973c"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.5"
+    version: "7.0.0"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
