@@ -1807,6 +1807,8 @@
   "setting_notifications_subtitle": "Cambia le impostazioni di notifica",
   "setting_notifications_total_progress_subtitle": "Avanzamento complessivo del caricamento (completati/risorse totali)",
   "setting_notifications_total_progress_title": "Mostra avanzamento del backup in background",
+  "setting_video_viewer_auto_play_subtitle": "Avvia automaticamente la riproduzione dei video quando vengono aperti",
+  "setting_video_viewer_auto_play_title": "Riproduci video automaticamente",
   "setting_video_viewer_looping_title": "Looping",
   "setting_video_viewer_original_video_subtitle": "Quando riproduci un video dal server, riproduci l'originale anche se è disponibile una versione transcodificata. Questo potrebbe portare a buffering. I video disponibili localmente sono sempre riprodotti a qualità originale indipendentemente da questa impostazione.",
   "setting_video_viewer_original_video_title": "Forza video originale",
