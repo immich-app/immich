@@ -18,8 +18,8 @@ import { chunk } from 'lodash-es';
 import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
+import process from 'node:process';
 import picomatch from 'picomatch';
-import process from 'process';
 import { Queue } from 'src/queue';
 import { BaseOptions, Batcher, FileHashCache, authenticate, crawl } from 'src/utils';
 
@@ -182,7 +182,7 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
     }
     console.log(`Found ${files.length} assets (${byteSize(totalSize)})`);
   } catch (error) {
-    console.warn('Failed to calculate total size');
+    console.warn('Failed to calculate total size', error);
   }
 
   return files;
@@ -218,7 +218,9 @@ export const checkForDuplicates = async (
         format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
         formatValue: (v: number, options, type) => {
           // Don't format percentage
-          if (type === 'percentage') return v.toString();
+          if (type === 'percentage') {
+            return v.toString();
+          }
           return byteSize(v).toString();
         },
         etaBuffer: 100, // Increase samples for ETA calculation
@@ -263,10 +265,11 @@ export const checkForDuplicates = async (
       }
 
       // Update progress based on total size of processed files
-      const processedSize = assets.reduce((sum, asset) => {
+      let processedSize = 0;
+      for (const asset of assets) {
         const stats = statsMap.get(asset.id);
-        return sum + (stats?.size || 0);
-      }, 0);
+        processedSize += stats?.size || 0;
+      }
       processedBytes += processedSize;
       // hashProgressBar?.increment(processedSize);
       checkedBytes += processedSize;
@@ -285,7 +288,7 @@ export const checkForDuplicates = async (
   // Setup auto-save interval for hash cache
   const saveInterval = setInterval(async () => {
     await hashCache.save();
-  }, 30000); // Save every 30 seconds to minimize I/O
+  }, 30_000); // Save every 30 seconds to minimize I/O
 
   // Setup cleanup for the interval
   const cleanup = async () => {
@@ -524,7 +527,7 @@ const resolveServerDuplicates = async (albumTuples: AlbumPathTuple[]): Promise<M
   const sortedTuples = [...albumTuples].sort(([a], [b]) => b.split(path.sep).length - a.split(path.sep).length);
 
   for (const [dir, albumName] of sortedTuples) {
-    let finalName = albumName;
+    const finalName = albumName;
     let uniqueName = finalName;
     let counter = 1;
 
@@ -545,7 +548,7 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
     return;
   }
 
-  const { dryRun = false, jsonOutput = false } = options;
+  const { dryRun = false } = options;
   const concurrency = options.concurrency ?? 5;
 
   // Get existing albums from server
@@ -645,25 +648,6 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   }
 };
 
-const findUniqueAlbumName = (baseName: string, existingAlbums: Map<string, string>, parentDirs: string[]) => {
-  // First try the base name
-  if (!existingAlbums.has(baseName)) {
-    return baseName;
-  }
-
-  // Try adding parent directories until we find a unique name
-  for (let i = 0; i < parentDirs.length; i++) {
-    const prefix = parentDirs.slice(i).join(' ');
-    const newName = `${prefix} ${baseName}`.trim();
-    if (!existingAlbums.has(newName)) {
-      return newName;
-    }
-  }
-
-  // If all else fails, return as is
-  return baseName;
-};
-
 type AlbumPathTuple = [string, string]; // [directoryPath, albumName]
 
 /**
@@ -697,7 +681,7 @@ const generateAlbumNames = (filepaths: string[]): AlbumPathTuple[] => {
   const usedNames = new Set<string>();
 
   // Sort directories by depth (deepest first) to handle nesting properly
-  const sortedDirs = Array.from(directories).sort((a, b) => b.split(path.sep).length - a.split(path.sep).length);
+  const sortedDirs = [...directories].sort((a, b) => b.split(path.sep).length - a.split(path.sep).length);
 
   for (const dir of sortedDirs) {
     const candidates = dirCandidates.get(dir) || [];
@@ -710,7 +694,9 @@ const generateAlbumNames = (filepaths: string[]): AlbumPathTuple[] => {
       // Check if this name is already used
       let isUnique = true;
       for (const [otherDir, otherCandidates] of dirCandidates) {
-        if (otherDir === dir) continue;
+        if (otherDir === dir) {
+          continue;
+        }
 
         if (otherCandidates.includes(candidate)) {
           isUnique = false;
@@ -733,13 +719,9 @@ const generateAlbumNames = (filepaths: string[]): AlbumPathTuple[] => {
   return result;
 };
 
-export const getAlbumName = (filepath: string, options: UploadOptionsDto, existingAlbums?: Map<string, string>) => {
-  if (options.albumName) {
-    return options.albumName;
-  }
-
-  // For the initial pass, just return the directory name
-  // The actual resolution will happen in updateAlbums
-  return path.basename(path.dirname(filepath));
+// `filepath` valid format:
+// - Windows: `D:\\test\\Filename.txt` or `D:/test/Filename.txt`
+// - Unix: `/test/Filename.txt`
+export const getAlbumName = (filepath: string, options: UploadOptionsDto) => {
+  return options.albumName ?? path.basename(path.dirname(filepath));
 };
-// `
