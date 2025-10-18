@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import { randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { GenerateSql } from 'src/decorators';
+import { SystemMetadataKey } from 'src/enum';
 import { DB } from 'src/schema';
 import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
 import { SystemMetadata } from 'src/types';
@@ -42,5 +44,15 @@ export class SystemMetadataRepository {
 
   readFile(filename: string): Promise<string> {
     return readFile(filename, { encoding: 'utf8' });
+  }
+
+  async getSecretKey(): Promise<string> {
+    const value = await this.get(SystemMetadataKey.SecretKey);
+    if (!value || !value.secret) {
+      const secret = randomBytes(16).toString('base64');
+      await this.set(SystemMetadataKey.SecretKey, {secret});
+      return secret;
+    }
+    return value.secret;
   }
 }

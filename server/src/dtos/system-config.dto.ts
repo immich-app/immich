@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
+  IsBoolean,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -143,6 +144,25 @@ export class SystemConfigFFmpegDto {
 
   @ValidateEnum({ enum: ToneMapping, name: 'ToneMapping' })
   tonemap!: ToneMapping;
+}
+
+export class SystemConfigLiveFFmpegDto extends SystemConfigFFmpegDto {
+  @IsBoolean()
+  @Type(() => Boolean)
+  @ApiProperty({ type: 'boolean' })
+  enabled!: boolean;
+}
+
+export class SystemConfigFFmpegsDto {
+  @Type(() => SystemConfigLiveFFmpegDto)
+  @ValidateNested()
+  @IsObject()
+  live!: SystemConfigLiveFFmpegDto;
+
+  @Type(() => SystemConfigFFmpegDto)
+  @ValidateNested()
+  @IsObject()
+  offline!: SystemConfigFFmpegDto;
 }
 
 class JobSettingsDto {
@@ -627,10 +647,10 @@ export class SystemConfigDto implements SystemConfig {
   @IsObject()
   backup!: SystemConfigBackupsDto;
 
-  @Type(() => SystemConfigFFmpegDto)
+  @Type(() => SystemConfigFFmpegsDto)
   @ValidateNested()
   @IsObject()
-  ffmpeg!: SystemConfigFFmpegDto;
+  ffmpeg!: SystemConfigFFmpegsDto;
 
   @Type(() => SystemConfigLoggingDto)
   @ValidateNested()

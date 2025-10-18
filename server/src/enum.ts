@@ -268,6 +268,7 @@ export enum SystemMetadataKey {
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
   License = 'license',
+  SecretKey = 'secret-key',
 }
 
 export enum UserMetadataKey {
@@ -368,6 +369,8 @@ export enum AudioCodec {
   PcmS16le = 'pcm_s16le',
 }
 
+export const Codec = { ...VideoCodec, ...AudioCodec };
+
 export enum VideoContainer {
   Mov = 'mov',
   Mp4 = 'mp4',
@@ -438,6 +441,7 @@ export enum MetadataKey {
 export enum RouteKey {
   Asset = 'assets',
   User = 'users',
+  Playback = 'playback',
 }
 
 export enum CacheControl {

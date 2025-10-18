@@ -24,27 +24,53 @@ export interface SystemConfig {
     };
   };
   ffmpeg: {
-    crf: number;
-    threads: number;
-    preset: string;
-    targetVideoCodec: VideoCodec;
-    acceptedVideoCodecs: VideoCodec[];
-    targetAudioCodec: AudioCodec;
-    acceptedAudioCodecs: AudioCodec[];
-    acceptedContainers: VideoContainer[];
-    targetResolution: string;
-    maxBitrate: string;
-    bframes: number;
-    refs: number;
-    gopSize: number;
-    temporalAQ: boolean;
-    cqMode: CQMode;
-    twoPass: boolean;
-    preferredHwDevice: string;
-    transcode: TranscodePolicy;
-    accel: TranscodeHardwareAcceleration;
-    accelDecode: boolean;
-    tonemap: ToneMapping;
+    offline: {
+      crf: number;
+      threads: number;
+      preset: string;
+      targetVideoCodec: VideoCodec;
+      acceptedVideoCodecs: VideoCodec[];
+      targetAudioCodec: AudioCodec;
+      acceptedAudioCodecs: AudioCodec[];
+      acceptedContainers: VideoContainer[];
+      targetResolution: string;
+      maxBitrate: string;
+      bframes: number;
+      refs: number;
+      gopSize: number;
+      temporalAQ: boolean;
+      cqMode: CQMode;
+      twoPass: boolean;
+      preferredHwDevice: string;
+      transcode: TranscodePolicy;
+      accel: TranscodeHardwareAcceleration;
+      accelDecode: boolean;
+      tonemap: ToneMapping;
+    };
+    live: {
+      enabled: boolean;
+      crf: number;
+      threads: number;
+      preset: string;
+      targetVideoCodec: VideoCodec;
+      acceptedVideoCodecs: VideoCodec[];
+      targetAudioCodec: AudioCodec;
+      acceptedAudioCodecs: AudioCodec[];
+      acceptedContainers: VideoContainer[];
+      targetResolution: string;
+      maxBitrate: string;
+      bframes: number;
+      refs: number;
+      gopSize: number;
+      temporalAQ: boolean;
+      cqMode: CQMode;
+      twoPass: boolean;
+      preferredHwDevice: string;
+      transcode: TranscodePolicy;
+      accel: TranscodeHardwareAcceleration;
+      accelDecode: boolean;
+      tonemap: ToneMapping;
+    };
   };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
@@ -193,27 +219,53 @@ export const defaults = Object.freeze<SystemConfig>({
     },
   },
   ffmpeg: {
-    crf: 23,
-    threads: 0,
-    preset: 'ultrafast',
-    targetVideoCodec: VideoCodec.H264,
-    acceptedVideoCodecs: [VideoCodec.H264],
-    targetAudioCodec: AudioCodec.Aac,
-    acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
-    acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
-    targetResolution: '720',
-    maxBitrate: '0',
-    bframes: -1,
-    refs: 0,
-    gopSize: 0,
-    temporalAQ: false,
-    cqMode: CQMode.Auto,
-    twoPass: false,
-    preferredHwDevice: 'auto',
-    transcode: TranscodePolicy.Required,
-    tonemap: ToneMapping.Hable,
-    accel: TranscodeHardwareAcceleration.Disabled,
-    accelDecode: false,
+    offline: {
+      crf: 23,
+      threads: 0,
+      preset: 'ultrafast',
+      targetVideoCodec: VideoCodec.H264,
+      acceptedVideoCodecs: [VideoCodec.H264],
+      targetAudioCodec: AudioCodec.Aac,
+      acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
+      acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
+      targetResolution: '720',
+      maxBitrate: '0',
+      bframes: -1,
+      refs: 0,
+      gopSize: 0,
+      temporalAQ: false,
+      cqMode: CQMode.Auto,
+      twoPass: false,
+      preferredHwDevice: 'auto',
+      transcode: TranscodePolicy.Required,
+      tonemap: ToneMapping.Hable,
+      accel: TranscodeHardwareAcceleration.Disabled,
+      accelDecode: false,
+    },
+    live: {
+      enabled: true,
+      crf: 23,
+      threads: 0,
+      preset: 'ultrafast',
+      targetVideoCodec: VideoCodec.H264,
+      acceptedVideoCodecs: [VideoCodec.H264],
+      targetAudioCodec: AudioCodec.Aac,
+      acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.LibOpus],
+      acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
+      targetResolution: '720',
+      maxBitrate: '0',
+      bframes: -1,
+      refs: 0,
+      gopSize: 2,
+      temporalAQ: false,
+      cqMode: CQMode.Auto,
+      twoPass: false,
+      preferredHwDevice: 'auto',
+      transcode: TranscodePolicy.Required,
+      tonemap: ToneMapping.Hable,
+      accel: TranscodeHardwareAcceleration.Disabled,
+      accelDecode: false,
+    },
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },

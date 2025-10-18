@@ -15,7 +15,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
         const ServerInfo(
           serverVersion: ServerVersion(major: 0, minor: 0, patch: 0),
           latestVersion: ServerVersion(major: 0, minor: 0, patch: 0),
-          serverFeatures: ServerFeatures(map: true, trash: true, oauthEnabled: false, passwordLogin: true),
+          serverFeatures: ServerFeatures(map: true, trash: true, oauthEnabled: false, passwordLogin: true, streamingType: ""),
           serverConfig: ServerConfig(
             trashDays: 30,
             oauthButtonText: '',
