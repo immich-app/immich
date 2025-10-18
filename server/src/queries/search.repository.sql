@@ -290,3 +290,15 @@ where
   and "visibility" = $2
   and "deletedAt" is null
   and "model" is not null
+
+-- SearchRepository.getCameraLensModels
+select distinct
+  on ("lensModel") "lensModel"
+from
+  "asset_exif"
+  inner join "asset" on "asset"."id" = "asset_exif"."assetId"
+where
+  "ownerId" = any ($1::uuid[])
+  and "visibility" = $2
+  and "deletedAt" is null
+  and "lensModel" is not null
