@@ -2,7 +2,6 @@ import { Controller, Get, Header, Next, Param, Res, UnauthorizedException } from
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { JsonWebTokenError, JwtPayload, verify } from 'jsonwebtoken';
-import fs from 'node:fs';
 import sanitize from 'sanitize-filename';
 import { AudioPlaylistParamDto, MasterPlaylistParamDto, PartParamDto, VideoPlaylistParamDto } from 'src/dtos/video.dto';
 import { CacheControl, RouteKey } from 'src/enum';
@@ -80,39 +79,20 @@ export class TranscodingController {
     } catch (error: any) {
       throw error instanceof JsonWebTokenError ? new UnauthorizedException() : error;
     }
-
-    const arr = name.split('.');
-
-    if (arr.length == 1) {
-      // It's necessary to provide promisified result into sendFile
-      await sendFile(
-        res,
-        next,
-        // eslint-disable-next-line @typescript-eslint/require-await
-        async () => {
-          return {
-            path: `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(codec.toString())}/${sanitize(quality)}/${sanitize(arr[0])}.mp4`,
-            cacheControl: CacheControl.PrivateWithCache,
-            contentType: 'video/mp4',
-          };
-        },
-        this.logger,
-      );
-      return;
-    }
-
-    // Make full segment by joining parts
-    for (const name of arr) {
-      await new Promise<void>((resolve) => {
-        const buf = fs.createReadStream(
-          `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(codec.toString())}/${sanitize(quality)}/${sanitize(name)}.mp4`,
-        );
-        buf.pipe(res, { end: false });
-        buf.on('end', () => {
-          resolve();
-        });
-      });
-    }
-    res.end();
+    await this.service.seek(data.id, data.sessionId, codec.toString(), quality, parseInt(name));
+    await sendFile(
+      res,
+      next,
+      // eslint-disable-next-line @typescript-eslint/require-await
+      async () => {
+        return {
+          path: `/tmp/video/${sanitize(data['sessionId'])}/${sanitize(codec.toString())}/${sanitize(quality)}/${sanitize(name)}.mp4`,
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'video/mp4',
+        };
+      },
+      this.logger,
+    );
+    return;
   }
 }

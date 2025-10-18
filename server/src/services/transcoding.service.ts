@@ -13,25 +13,51 @@ import { BaseService } from 'src/services/base.service';
 import { AudioStreamInfo, VideoInfo, VideoInterfaces, VideoStreamInfo } from 'src/types';
 import { BaseConfig } from 'src/utils/media';
 
+const ROOT_DIR = `/tmp/video`;
 class FFmpegInstance {
+  private readonly SEGMENT_TROTTLING_COUNT = 24;
+  private readonly SEGMENT_TROTTLING_RESUME = 12;
   private firstSegmentDone?: PromiseWithResolvers<void>;
   private ffmpegTerminated?: PromiseWithResolvers<void>;
   private ffmpegCommand?: ChildProcessWithoutNullStreams;
+  private offset: number;
+  private segment_: number = 0;
+  private current: number;
   args: string[];
   logger: LoggingRepository;
   sessionId: string;
   inputPath: string;
   logPath: string;
 
-  constructor(args: string[], logger: LoggingRepository, sessionId: string, inputPath: string, logPath: string) {
+  constructor(
+    args: string[],
+    logger: LoggingRepository,
+    sessionId: string,
+    inputPath: string,
+    logPath: string,
+    offset: number,
+  ) {
     this.args = args;
     this.logger = logger;
     this.sessionId = sessionId;
     this.inputPath = inputPath;
     this.logPath = logPath;
+    this.offset = offset;
+    this.current = offset;
   }
 
-  waitForFirstSegment() {
+  seek(current: number) {
+    this.current = current;
+    if (this.current - this.segment_ > this.SEGMENT_TROTTLING_RESUME) {
+      this.resume();
+    }
+  }
+
+  get segment(): number {
+    return this.segment_;
+  }
+
+  waitForSegment() {
     return this.firstSegmentDone?.promise;
   }
 
@@ -46,11 +72,15 @@ class FFmpegInstance {
       for (const line of data.split('\n')) {
         if (line) {
           const name = line.split(',')[0];
-          const idx = name.split('.')[0];
+          const idx = parseInt(name.split('.')[0]);
 
-          if (idx == '0') {
+          if (idx == this.offset) {
             this.firstSegmentDone?.resolve();
           }
+          if (idx - this.current > this.SEGMENT_TROTTLING_COUNT) {
+            this.pause();
+          }
+          this.segment_ = idx + 1;
           this.logger.debug(`Segment ${idx} ready, session: ${this.sessionId}`);
         }
       }
@@ -70,13 +100,46 @@ class FFmpegInstance {
       this.ffmpegTerminated?.resolve();
     });
   }
+
+  pause() {
+    this.ffmpegCommand?.kill('SIGSTOP');
+  }
+
+  resume() {
+    this.ffmpegCommand?.kill('SIGCONT');
+  }
 }
 
-class PartManager {}
+class PartManager {
+  private ready: Set<number> = new Set();
+
+  clean(current: number, id: string, quality: string) {
+    const last = current - HLSConnection.segmentGapRequiringTranscodingChange;
+    const set = this.ready;
+    this.ready = new Set(
+      (function* () {
+        for (const element of set) {
+          if (element >= last) {
+            yield element;
+          } else {
+            fs.unlink(`${ROOT_DIR}/${id}/${quality}/${element}.mp4`);
+          }
+        }
+      })(),
+    );
+  }
+
+  async delete(id: string, quality: string) {
+    fs.rmdir(`${ROOT_DIR}/${id}/${quality}/`);
+    this.ready.clear();
+  }
+}
 
 // There is actually no persistent "connection"
 class HLSConnection {
-  private readonly SEGMENT_TARGET_TIME = 2;
+  public static readonly SEGMENT_TARGET_TIME = 2;
+  // 24s taken from Jellyfin
+  public static readonly segmentGapRequiringTranscodingChange = 24 / this.SEGMENT_TARGET_TIME;
 
   ffmpegCommands: { video?: FFmpegInstance; audio?: FFmpegInstance } = {};
 
@@ -88,7 +151,7 @@ class HLSConnection {
 
   private vQuality?: string;
   private aQuality?: string;
-  private _lastSegmentIdx = 0;
+  private requestedSegment = 0;
 
   private inputPath: string;
   private id: string;
@@ -124,7 +187,24 @@ class HLSConnection {
     this.videoInterfaces = videoInterfaces;
 
     this.parts = new PartManager();
-    this.gopSize = Math.ceil(this.stats.videoStreams[0]!.fps * this.SEGMENT_TARGET_TIME);
+    this.gopSize = Math.ceil(this.stats.videoStreams[0]!.fps * HLSConnection.SEGMENT_TARGET_TIME);
+  }
+
+  async seek(idx: number) {
+    this.requestedSegment = idx;
+    try {
+      await fs.access(
+        `${ROOT_DIR}/${this.sessionId}/${this.videoCodec}/${this.vQuality}}/${idx}.mp4`,
+        fs.constants.F_OK,
+      );
+      return;
+    } catch {
+      if (idx - (this.ffmpegCommands.video?.segment ?? 0) > HLSConnection.segmentGapRequiringTranscodingChange) {
+        this.ffmpegCommands.video?.kill();
+        this.startTranscodingVideo();
+        await this.ffmpegCommands.video?.waitForSegment();
+      }
+    }
   }
 
   async probe() {
@@ -223,7 +303,7 @@ class HLSConnection {
     this.logger.debug(
       `Started transcoding video ${this.inputPath}, requested video ${this.videoCodec}:${this.vQuality}, session ${this.sessionId}`,
     );
-    await fs.mkdir(`/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}`, {
+    await fs.mkdir(`${ROOT_DIR}/${this.sessionId}/${this.videoCodec}/${this.videoQuality}`, {
       mode: 0o700,
       recursive: true,
     });
@@ -287,12 +367,12 @@ class HLSConnection {
 
     // prettier-ignore
     args.push(
-      '-segment_header_filename', `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/init.mp4`,
+      '-segment_header_filename', `${ROOT_DIR}/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/init.mp4`,
       '-segment_format_options', 'movflags=dash+skip_sidx',
       '-segment_list', 'pipe:1',
 
       '-strict', '-2',
-      `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/%d.mp4`,
+      `${ROOT_DIR}/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/%d.mp4`,
     );
 
     const instance = new FFmpegInstance(
@@ -300,7 +380,8 @@ class HLSConnection {
       this.logger,
       this.sessionId,
       this.inputPath,
-      `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/transcoding.log`,
+      `${ROOT_DIR}/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/transcoding.log`,
+      this.requestedSegment,
     );
     instance.run();
     this.ffmpegCommands.video = instance;
@@ -313,9 +394,9 @@ class HLSConnection {
     }
 
     this.logger.debug(
-      `Started transcoding video ${this.inputPath}, requested video ${this.videoCodec}:${this.vQuality}, session ${this.sessionId}`,
+      `Started transcoding audio ${this.inputPath}, requested ${this.audioCodec}:${this.aQuality}, session ${this.sessionId}`,
     );
-    await fs.mkdir(`/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}`, {
+    await fs.mkdir(`${ROOT_DIR}/${this.sessionId}/${this.audioCodec}/${this.audioQuality}`, {
       mode: 0o700,
       recursive: true,
     });
@@ -343,12 +424,12 @@ class HLSConnection {
       '-segment_times', this.keyTimes!.join(','),
 
       '-segment_header_filename',
-      `/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/init.mp4`,
+      `${ROOT_DIR}/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/init.mp4`,
 
       '-segment_format_options', 'movflags=dash+skip_sidx',
       '-segment_list', 'pipe:1',
 
-      `/tmp/video/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/%d.mp4`,
+      `${ROOT_DIR}/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/%d.mp4`,
     );
 
     const instance = new FFmpegInstance(
@@ -356,7 +437,8 @@ class HLSConnection {
       this.logger,
       this.sessionId,
       this.inputPath,
-      `/tmp/video/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/transcoding.log`,
+      `${ROOT_DIR}/${this.sessionId}/${this.videoCodec}/${this.videoQuality}/transcoding.log`,
+      this.requestedSegment,
     );
     instance.run();
     this.ffmpegCommands.audio = instance;
@@ -466,6 +548,26 @@ export class TranscodingService extends BaseService {
     return res;
   }
 
+  async seek(id: string, sessionId: string, codec: string, quality: string, segment: number) {
+    const connection = this.connections.get(sessionId);
+    if (!connection) {
+      throw new BadRequestException('Not connected');
+    }
+    if ((<any>Object).values(VideoCodec).includes(codec)) {
+      if (connection.videoCodec !== codec) {
+        throw new BadRequestException(`Client ${sessionId} hasn\'t yet switched to ${quality} quality`);
+      }
+    } else if ((<any>Object).values(AudioCodec).includes(codec)) {
+      if (connection.audioCodec !== codec) {
+        throw new BadRequestException(`Client ${sessionId} hasn\'t yet switched to ${quality} quality`);
+      }
+    } else {
+      throw new Error('Invalid codec');
+    }
+
+    await connection.seek(segment);
+  }
+
   private audioStreamToMime(stream: AudioStreamInfo) {
     // TODO: opus and ac3
     if (stream.codecName === 'aac') {
@@ -530,7 +632,7 @@ export class TranscodingService extends BaseService {
     const playlist = await connection.getVideoPlaylist();
     await connection.updateVideoStream(codec, quality);
 
-    await connection.ffmpegCommands.video!.waitForFirstSegment();
+    await connection.ffmpegCommands.video!.waitForSegment();
     return playlist;
   }
 
@@ -541,7 +643,7 @@ export class TranscodingService extends BaseService {
     }
     await connection.updateAudioStream(codec, quality);
 
-    await connection.ffmpegCommands.audio!.waitForFirstSegment();
+    await connection.ffmpegCommands.audio!.waitForSegment();
     return connection.getAudioPlaylist();
   }
 

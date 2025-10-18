@@ -268,7 +268,7 @@ export enum SystemMetadataKey {
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',
   License = 'license',
-  SecretKey = 'secret-key'
+  SecretKey = 'secret-key',
 }
 
 export enum UserMetadataKey {
