@@ -1,5 +1,6 @@
 <script lang="ts">
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { newShortcutScope, registerShortcutVariant, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
@@ -381,9 +382,15 @@
       handlePromiseError(handleGetAllAlbums());
     }
   });
+
+  const endScope = newShortcutScope();
+  onMount(() => endScope);
 </script>
 
-<svelte:document bind:fullscreenElement />
+<svelte:document
+  bind:fullscreenElement
+  {@attach registerShortcutVariant(ShortcutVariant.PrevAsset, ShortcutVariant.NextAsset)}
+/>
 
 <section
   id="immich-asset-viewer"

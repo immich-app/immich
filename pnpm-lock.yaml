@@ -681,8 +681,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.34.0
-        version: 0.34.2(@internationalized/date@3.8.2)(svelte@5.39.11)
+        specifier: ^0.35
+        version: 0.35.0(@internationalized/date@3.8.2)(svelte@5.39.11)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2726,8 +2726,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@immich/ui@0.34.2':
-    resolution: {integrity: sha512-tWjEV1prSZ9VLes69Ha9jnnZj6tbv/9+PdQjsK+5zK7sQok/l7kyzAobj5z4XRD11XtGk/cAqi/ZOlqRWvZilA==}
+  '@immich/ui@0.35.0':
+    resolution: {integrity: sha512-dyjYLzJUNzR1aIQZEqPwfHutjuvK5t3wy3pp19Vm5bcQ4ira4Gk75flCgd9oEON5mlaxtlaUJVMeNor66bK9pg==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -14180,7 +14180,7 @@ snapshots:
   '@img/sharp-win32-x64@0.34.4':
     optional: true
 
-  '@immich/ui@0.34.2(@internationalized/date@3.8.2)(svelte@5.39.11)':
+  '@immich/ui@0.35.0(@internationalized/date@3.8.2)(svelte@5.39.11)':
     dependencies:
       '@mdi/js': 7.4.47
       bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.39.11)

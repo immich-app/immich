@@ -1,4 +1,4 @@
-import { shortcuts } from '$lib/actions/shortcut';
+import { onKeydown, shiftKey } from '$lib/actions/input';
 import { getTabbable } from '$lib/utils/focus-util';
 import { tick } from 'svelte';
 
@@ -39,33 +39,35 @@ export function focusTrap(container: HTMLElement, options?: Options) {
     ];
   };
 
-  const { destroy: destroyShortcuts } = shortcuts(container, [
-    {
-      ignoreInputFields: false,
-      preventDefault: false,
-      shortcut: { key: 'Tab' },
-      onShortcut: (event) => {
-        const [firstElement, lastElement] = getFocusableElements();
-        if (document.activeElement === lastElement && withDefaults(options).active) {
-          event.preventDefault();
-          firstElement?.focus();
-        }
-      },
+  const unregisterTab = onKeydown(
+    'Tab',
+    (event) => {
+      const [firstElement, lastElement] = getFocusableElements();
+      if (document.activeElement === lastElement && withDefaults(options).active) {
+        event.preventDefault();
+        firstElement?.focus();
+      }
     },
-    {
-      ignoreInputFields: false,
-      preventDefault: false,
-      shortcut: { key: 'Tab', shift: true },
-      onShortcut: (event) => {
-        const [firstElement, lastElement] = getFocusableElements();
-        if (document.activeElement === firstElement && withDefaults(options).active) {
-          event.preventDefault();
-          lastElement?.focus();
-        }
-      },
-    },
-  ]);
+    { ignoreInputFields: false },
+  )(container);
 
+  const unregisterShiftTab = onKeydown(
+    shiftKey('Tab'),
+    (event) => {
+      const [firstElement, lastElement] = getFocusableElements();
+      if (document.activeElement === firstElement && withDefaults(options).active) {
+        event.preventDefault();
+        lastElement?.focus();
+      }
+    },
+    { ignoreInputFields: false },
+  )(container);
+
+  let destroyShortcuts = () => {
+    unregisterTab();
+    unregisterShiftTab();
+    destroyShortcuts = () => void 0;
+  };
   return {
     update(newOptions?: Options) {
       options = newOptions;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { onKeydown } from '$lib/actions/input';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import { generateId } from '$lib/utils/generate-id';
@@ -80,16 +80,7 @@
         selectedId: $selectedIdStore,
         selectionChanged: (id) => ($selectedIdStore = id),
       }}
-      use:shortcuts={[
-        {
-          shortcut: { key: 'Tab' },
-          onShortcut: closeContextMenu,
-        },
-        {
-          shortcut: { key: 'Tab', shift: true },
-          onShortcut: closeContextMenu,
-        },
-      ]}
+      {@attach onKeydown([{ key: 'Tab' }, { key: 'Tab', shift: true }], closeContextMenu)}
     >
       <section class="fixed start-0 top-0 flex h-dvh w-dvw" {oncontextmenu} role="presentation">
         <ContextMenu

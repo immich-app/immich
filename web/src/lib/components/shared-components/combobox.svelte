@@ -21,7 +21,7 @@
 
 <script lang="ts">
   import { focusOutside } from '$lib/actions/focus-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { onKeydown } from '$lib/actions/input';
   import { generateId } from '$lib/utils/generate-id';
   import { Icon, IconButton, Label } from '@immich/ui';
   import { mdiClose, mdiMagnify, mdiUnfoldMoreHorizontal } from '@mdi/js';
@@ -255,15 +255,10 @@
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
   use:focusOutside={{ onFocusOut: deactivate }}
-  use:shortcuts={[
-    {
-      shortcut: { key: 'Escape' },
-      onShortcut: (event) => {
-        event.stopPropagation();
-        closeDropdown();
-      },
-    },
-  ]}
+  {@attach onKeydown({ key: 'Escape' }, (event) => {
+    event.stopPropagation();
+    closeDropdown();
+  })}
 >
   <div>
     {#if isActive}
@@ -295,44 +290,27 @@
       type="text"
       value={searchQuery}
       use:forceFocusInput
-      use:shortcuts={[
-        {
-          shortcut: { key: 'ArrowUp' },
-          onShortcut: () => {
-            openDropdown();
-            void incrementSelectedIndex(-1);
-          },
-        },
-        {
-          shortcut: { key: 'ArrowDown' },
-          onShortcut: () => {
-            openDropdown();
-            void incrementSelectedIndex(1);
-          },
-        },
-        {
-          shortcut: { key: 'ArrowDown', alt: true },
-          onShortcut: () => {
-            openDropdown();
-          },
-        },
-        {
-          shortcut: { key: 'Enter' },
-          onShortcut: () => {
-            if (selectedIndex !== undefined && filteredOptions.length > 0) {
-              handleSelect(filteredOptions[selectedIndex]);
-            }
-            closeDropdown();
-          },
-        },
-        {
-          shortcut: { key: 'Escape' },
-          onShortcut: (event) => {
-            event.stopPropagation();
-            closeDropdown();
-          },
-        },
-      ]}
+      {@attach onKeydown({ key: 'ArrowUp' }, () => {
+        openDropdown();
+        void incrementSelectedIndex(-1);
+      })}
+      {@attach onKeydown({ key: 'ArrowDown' }, () => {
+        openDropdown();
+        void incrementSelectedIndex(1);
+      })}
+      {@attach onKeydown({ key: 'ArrowDown', alt: true }, () => {
+        openDropdown();
+      })}
+      {@attach onKeydown({ key: 'Enter' }, () => {
+        if (selectedIndex !== undefined && filteredOptions.length > 0) {
+          handleSelect(filteredOptions[selectedIndex]);
+        }
+        closeDropdown();
+      })}
+      {@attach onKeydown({ key: 'Escape' }, (event) => {
+        event.stopPropagation();
+        closeDropdown();
+      })}
     />
 
     <div

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
@@ -255,7 +255,7 @@
 </script>
 
 <svelte:window bind:scrollY />
-<svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} />
+<svelte:document {@attach shortcut('Escape', category(Category.Navigation, $t('go_back')), onEscape)} />
 
 <section>
   {#if assetInteraction.selectionActive}

@@ -1,10 +1,20 @@
-import { matchesShortcut } from '$lib/actions/shortcut';
 import type { ActionReturn } from 'svelte/action';
+import type { KeyCombo } from './input';
 
 interface Options {
   onOutclick?: () => void;
   onEscape?: () => void;
 }
+
+export const matchesShortcut = (event: KeyboardEvent, shortcut: KeyCombo) => {
+  return (
+    shortcut.key.toLowerCase() === event.key.toLowerCase() &&
+    Boolean(shortcut.alt) === event.altKey &&
+    Boolean(shortcut.ctrl) === event.ctrlKey &&
+    Boolean(shortcut.shift) === event.shiftKey &&
+    Boolean(shortcut.meta) === event.metaKey
+  );
+};
 
 /**
  * Calls a function when a click occurs outside of the element, or when the escape key is pressed.
