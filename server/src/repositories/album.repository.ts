@@ -321,6 +321,14 @@ export class AlbumRepository {
       .execute();
   }
 
+  @Chunked({ chunkSize: 30_000 })
+  async addAssetIdsToAlbums(values: { albumsId: string; assetsId: string }[]): Promise<void> {
+    if (values.length === 0) {
+      return;
+    }
+    await this.db.insertInto('album_asset').values(values).execute();
+  }
+
   /**
    * Makes sure all thumbnails for albums are updated by:
    * - Removing thumbnails from albums without assets
@@ -370,5 +378,23 @@ export class AlbumRepository {
         join.onRef('album_asset.assetsId', '=', 'asset.id').on('asset.deletedAt', 'is', null),
       )
       .whereRef('album_asset.albumsId', '=', 'album.id');
+  }
+
+  /**
+   * Get per-user asset contribution counts for a single album.
+   * Excludes deleted assets, orders by count desc.
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getContributorCounts(id: string) {
+    return this.db
+      .selectFrom('album_asset')
+      .innerJoin('asset', 'asset.id', 'assetsId')
+      .where('asset.deletedAt', 'is', sql.lit(null))
+      .where('album_asset.albumsId', '=', id)
+      .select('asset.ownerId as userId')
+      .select((eb) => eb.fn.countAll<number>().as('assetCount'))
+      .groupBy('asset.ownerId')
+      .orderBy('assetCount', 'desc')
+      .execute();
   }
 }

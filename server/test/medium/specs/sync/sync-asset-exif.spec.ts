@@ -24,7 +24,6 @@ describe(SyncRequestType.AssetExifsV1, () => {
     await ctx.newExif({ assetId: asset.id, make: 'Canon' });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetExifsV1]);
-    expect(response).toHaveLength(1);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -57,10 +56,11 @@ describe(SyncRequestType.AssetExifsV1, () => {
         },
         type: SyncEntityType.AssetExifV1,
       },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetExifsV1])).resolves.toEqual([]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetExifsV1]);
   });
 
   it('should only sync asset exif for own user', async () => {
@@ -72,7 +72,10 @@ describe(SyncRequestType.AssetExifsV1, () => {
     const { session } = await ctx.newSession({ userId: user2.id });
     const auth2 = factory.auth({ session, user: user2 });
 
-    await expect(ctx.syncStream(auth2, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
-    await expect(ctx.syncStream(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(0);
+    await expect(ctx.syncStream(auth2, [SyncRequestType.AssetExifsV1])).resolves.toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetExifV1 }),
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetExifsV1]);
   });
 });

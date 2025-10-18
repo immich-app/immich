@@ -35,6 +35,7 @@
   let name = $state('');
   let shouldChangePassword = $state(true);
   let notify = $state(true);
+  let isAdmin = $state(false);
 
   let quotaSize: string | undefined = $state();
   let isCreatingUser = $state(false);
@@ -67,6 +68,7 @@
           name,
           quotaSizeInBytes,
           notify,
+          isAdmin,
         },
       });
 
@@ -122,10 +124,14 @@
         </Field>
 
         <Field label={$t('admin.quota_size_gib')}>
-          <Input bind:value={quotaSize} type="number" placeholder={$t('unlimited')} min="0" />
+          <Input bind:value={quotaSize} type="number" placeholder={$t('unlimited')} min="0" step="1" />
           {#if quotaSizeWarning}
             <HelperText color="danger">{$t('errors.quota_higher_than_disk_size')}</HelperText>
           {/if}
+        </Field>
+
+        <Field label={$t('admin.admin_user')}>
+          <Switch bind:checked={isAdmin} />
         </Field>
       </Stack>
     </form>

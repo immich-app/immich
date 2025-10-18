@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import { type AlbumResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
   import { mdiCheckCircle } from '@mdi/js';
   import type { Action } from 'svelte/action';
   import AlbumListItemDetails from './album-list-item-details.svelte';
@@ -128,7 +128,7 @@
     type="button"
     onclick={onAlbumClick}
     use:scrollIntoViewIfSelected
-    class="flex gap-4 px-2 py-2 text-start"
+    class="flex w-full gap-4 px-2 py-2 text-start"
     class:bg-gray-200={selected}
     class:dark:bg-gray-700={selected}
     use:longPress={{ onLongPress: () => handleMultiSelectClicked() }}
@@ -158,17 +158,17 @@
     <button
       type="button"
       onclick={handleMultiSelectClicked}
-      class="p-3 focus:outline-none hover:cursor-pointer"
+      class="absolute right-0 top-4 p-3 focus:outline-none hover:cursor-pointer"
       role="checkbox"
       tabindex={-1}
       aria-checked={selected}
     >
       {#if multiSelected}
         <div class="rounded-full">
-          <Icon path={mdiCheckCircle} size="24" class="text-primary" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
         </div>
       {:else}
-        <Icon path={mdiCheckCircle} size="24" class="text-gray-300 hover:text-primary/75" />
+        <Icon icon={mdiCheckCircle} size="24" class="text-gray-300 hover:text-primary/75" />
       {/if}
     </button>
   {/if}

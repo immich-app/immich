@@ -4,6 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
+  import Portal from '$lib/elements/Portal.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -24,7 +25,6 @@
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
-  import Portal from '../portal/portal.svelte';
 
   interface Props {
     initialAssetId?: string;
@@ -42,6 +42,7 @@
     onReload?: (() => void) | undefined;
     pageHeaderOffset?: number;
     slidingWindowOffset?: number;
+    arrowNavigation?: boolean;
   }
 
   let {
@@ -60,6 +61,7 @@
     onReload = undefined,
     slidingWindowOffset = 0,
     pageHeaderOffset = 0,
+    arrowNavigation = true,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
@@ -145,14 +147,10 @@
 
   let lastIntersectedHeight = 0;
   $effect(() => {
-    const scrollRatio = slidingWindow.bottom / assetLayouts.containerHeight;
-
-    // TODO: We may want to limit to an absolute value as the ratio scaling will
-    // get weird with lots of assets. The page may be nowhere near the bottom in
-    // absolute terms, and yet the intersection will still be triggered.
-    if (scrollRatio > 0.9) {
+    // Intersect if there's only one viewport worth of assets left to scroll.
+    if (assetLayouts.containerHeight - slidingWindow.bottom <= viewport.height) {
       // Notify we got to (near) the end of scroll.
-      const intersectedHeight = geometry?.containerHeight || 0;
+      const intersectedHeight = assetLayouts.containerHeight;
       if (lastIntersectedHeight !== intersectedHeight) {
         debouncedOnIntersected();
         lastIntersectedHeight = intersectedHeight;
@@ -310,8 +308,12 @@
         { shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
-        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
-        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+        ...(arrowNavigation
+          ? [
+              { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
+              { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+            ]
+          : []),
       ];
 
       if (assetInteraction.selectionActive) {

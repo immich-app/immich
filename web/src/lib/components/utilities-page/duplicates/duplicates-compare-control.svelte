@@ -1,12 +1,13 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
+  import Portal from '$lib/elements/Portal.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { type AssetResponseDto } from '@immich/sdk';
+  import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
@@ -42,32 +43,32 @@
     assetViewingStore.showAssetViewer(false);
   });
 
-  const onNext = () => {
+  const onNext = async () => {
     const index = getAssetIndex($viewingAsset.id) + 1;
     if (index >= assets.length) {
-      return Promise.resolve(false);
+      return false;
     }
-    setAsset(assets[index]);
-    return Promise.resolve(true);
+    await onViewAsset(assets[index]);
+    return true;
   };
 
-  const onPrevious = () => {
+  const onPrevious = async () => {
     const index = getAssetIndex($viewingAsset.id) - 1;
     if (index < 0) {
-      return Promise.resolve(false);
+      return false;
     }
-    setAsset(assets[index]);
-    return Promise.resolve(true);
+    await onViewAsset(assets[index]);
+    return true;
   };
 
-  const onRandom = () => {
+  const onRandom = async () => {
     if (assets.length <= 0) {
-      return Promise.resolve(undefined);
+      return;
     }
     const index = Math.floor(Math.random() * assets.length);
     const asset = assets[index];
-    setAsset(asset);
-    return Promise.resolve(asset);
+    await onViewAsset(asset);
+    return { id: asset.id };
   };
 
   const onSelectAsset = (asset: AssetResponseDto) => {
@@ -86,6 +87,12 @@
     selectedAssetIds = new SvelteSet(assets.map((asset) => asset.id));
   };
 
+  const onViewAsset = async ({ id }: AssetResponseDto) => {
+    const asset = await getAssetInfo({ ...authManager.params, id });
+    setAsset(asset);
+    await navigate({ targetRoute: 'current', assetId: asset.id });
+  };
+
   const handleResolve = () => {
     const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
     const duplicateAssetIds = assets.map((asset) => asset.id);
@@ -102,9 +109,7 @@
     { shortcut: { key: 'a' }, onShortcut: onSelectAll },
     {
       shortcut: { key: 's' },
-      onShortcut: () => {
-        setAsset(assets[0]);
-      },
+      onShortcut: () => onViewAsset(assets[0]),
     },
     { shortcut: { key: 'd' }, onShortcut: onSelectNone },
     { shortcut: { key: 'c', shift: true }, onShortcut: handleResolve },
@@ -166,12 +171,7 @@
 
   <div class="flex flex-wrap gap-1 mb-4 place-items-center place-content-center px-4 pt-4">
     {#each assets as asset (asset.id)}
-      <DuplicateAsset
-        {asset}
-        {onSelectAsset}
-        isSelected={selectedAssetIds.has(asset.id)}
-        onViewAsset={(asset) => setAsset(asset)}
-      />
+      <DuplicateAsset {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
     {/each}
   </div>
 </div>

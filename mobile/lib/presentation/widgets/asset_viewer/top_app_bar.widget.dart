@@ -4,9 +4,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
@@ -14,6 +17,8 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.sta
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -33,12 +38,16 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final user = ref.watch(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
-    final previousRouteName = ref.watch(previousRouteNameProvider);
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final showViewInTimelineButton =
-        previousRouteName != TabShellRoute.name &&
-        previousRouteName != AssetViewerRoute.name &&
-        previousRouteName != null;
+        timelineOrigin != TimelineOrigin.main &&
+        timelineOrigin != TimelineOrigin.deepLink &&
+        timelineOrigin != TimelineOrigin.trash &&
+        timelineOrigin != TimelineOrigin.archive &&
+        timelineOrigin != TimelineOrigin.localAlbum &&
+        isOwner;
 
     final isShowingSheet = ref.watch(assetViewerProvider.select((state) => state.showingBottomSheet));
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
@@ -51,6 +60,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
 
     final actions = <Widget>[
+      if (asset.isRemoteOnly) const DownloadActionButton(source: ActionSource.viewer, menuItem: true),
       if (isCasting || (asset.hasRemote)) const CastActionButton(menuItem: true),
       if (album != null && album.isActivityEnabled && album.isShared)
         IconButton(
@@ -67,7 +77,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
             EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
           },
           icon: const Icon(Icons.image_search),
-          tooltip: 'view_in_timeline',
+          tooltip: 'view_in_timeline'.t(context: context),
         ),
       if (asset.hasRemote && isOwner && !asset.isFavorite)
         const FavoriteActionButton(source: ActionSource.viewer, menuItem: true),
@@ -93,7 +103,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           iconTheme: const IconThemeData(size: 22, color: Colors.white),
           actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
           shape: const Border(),
-          actions: isShowingSheet
+          actions: isShowingSheet || isReadonlyModeEnabled
               ? null
               : isInLockedView
               ? lockedViewActions

@@ -5,7 +5,7 @@
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, Field, HStack, Modal, ModalBody, ModalFooter, Switch } from '@immich/ui';
+  import { Button, Field, HStack, Input, Label, Link, Modal, ModalBody, ModalFooter, Switch, Text } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -60,55 +60,45 @@
 <Modal title={$t('edit_user')} size="small" icon={mdiAccountEditOutline} {onClose}>
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
-      <div class="mb-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="email">{$t('email')}</label>
-        <input class="immich-form-input" id="email" name="email" type="email" bind:value={email} />
-      </div>
+      <Field label={$t('email')} required>
+        <Input type="email" bind:value={email} />
+      </Field>
 
-      <div class="my-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="name">{$t('name')}</label>
-        <input class="immich-form-input" id="name" name="name" type="text" required bind:value={name} />
-      </div>
+      <Field label={$t('name')} required class="mt-4">
+        <Input bind:value={name} />
+      </Field>
 
-      <div class="my-4 flex flex-col gap-2">
-        <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
-          {$t('admin.quota_size_gib')}
-          {#if quotaSizeWarning}
-            <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
-          {/if}</label
-        >
+      <div class="flex flex-col gap-1 mt-4">
+        <Label class="flex items-center gap-2" for="quotaSize">{$t('admin.quota_size_gib')}</Label>
         <input
           class="immich-form-input"
           id="quotaSize"
           name="quotaSize"
           placeholder={$t('unlimited')}
           type="number"
+          step="1"
           min="0"
           bind:value={quotaSize}
         />
+        {#if quotaSizeWarning}
+          <Text size="small" color="danger">{$t('errors.quota_higher_than_disk_size')}</Text>
+        {/if}
       </div>
 
-      <div class="my-4 flex flex-col gap-2">
-        <label class="immich-form-label" for="storage-label">{$t('storage_label')}</label>
-        <input
-          class="immich-form-input"
-          id="storage-label"
-          name="storage-label"
-          type="text"
-          bind:value={storageLabel}
-        />
+      <Field label={$t('storage_label')} class="mt-4">
+        <Input bind:value={storageLabel} />
+      </Field>
 
-        <p>
-          {$t('admin.note_apply_storage_label_previous_assets')}
-          <a href={AppRoute.ADMIN_JOBS} class="text-immich-primary dark:text-immich-dark-primary">
-            {$t('admin.storage_template_migration_job')}
-          </a>
-        </p>
-      </div>
+      <Text size="small" class="mt-2" color="muted">
+        {$t('admin.note_apply_storage_label_previous_assets')}
+        <Link href={AppRoute.ADMIN_JOBS}>
+          {$t('admin.storage_template_migration_job')}
+        </Link>
+      </Text>
 
       {#if user.id !== $authUser.id}
         <Field label={$t('admin.admin_user')}>
-          <Switch bind:checked={isAdmin} />
+          <Switch bind:checked={isAdmin} class="mt-4" />
         </Field>
       {/if}
     </form>

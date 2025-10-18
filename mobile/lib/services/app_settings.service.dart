@@ -34,6 +34,7 @@ enum AppSettingsEnum<T> {
   preferRemoteImage<bool>(StoreKey.preferRemoteImage, null, false),
   loopVideo<bool>(StoreKey.loopVideo, "loopVideo", true),
   loadOriginalVideo<bool>(StoreKey.loadOriginalVideo, "loadOriginalVideo", false),
+  autoPlayVideo<bool>(StoreKey.autoPlayVideo, "autoPlayVideo", true),
   mapThemeMode<int>(StoreKey.mapThemeMode, null, 0),
   mapShowFavoriteOnly<bool>(StoreKey.mapShowFavoriteOnly, null, false),
   mapIncludeArchived<bool>(StoreKey.mapIncludeArchived, null, false),
@@ -46,10 +47,13 @@ enum AppSettingsEnum<T> {
   syncAlbums<bool>(StoreKey.syncAlbums, null, false),
   autoEndpointSwitching<bool>(StoreKey.autoEndpointSwitching, null, false),
   photoManagerCustomFilter<bool>(StoreKey.photoManagerCustomFilter, null, true),
-  betaTimeline<bool>(StoreKey.betaTimeline, null, false),
+  betaTimeline<bool>(StoreKey.betaTimeline, null, true),
   enableBackup<bool>(StoreKey.enableBackup, null, false),
   useCellularForUploadVideos<bool>(StoreKey.useWifiForUploadVideos, null, false),
-  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false);
+  useCellularForUploadPhotos<bool>(StoreKey.useWifiForUploadPhotos, null, false),
+  backupRequireCharging<bool>(StoreKey.backupRequireCharging, null, false),
+  backupTriggerDelay<int>(StoreKey.backupTriggerDelay, null, 30),
+  readonlyModeEnabled<bool>(StoreKey.readonlyModeEnabled, "readonlyModeEnabled", false);
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);
 

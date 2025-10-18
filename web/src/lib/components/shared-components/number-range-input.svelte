@@ -1,6 +1,6 @@
 <script lang="ts">
   import { clamp } from 'lodash-es';
-  import type { ClipboardEventHandler } from 'svelte/elements';
+  import type { ClipboardEventHandler, KeyboardEventHandler } from 'svelte/elements';
 
   interface Props {
     id: string;
@@ -11,6 +11,7 @@
     value?: number;
     onInput: (value: number | null) => void;
     onPaste?: ClipboardEventHandler<HTMLInputElement>;
+    onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
   }
 
   let {
@@ -22,10 +23,12 @@
     value = $bindable(),
     onInput,
     onPaste = undefined,
+    onKeyDown = undefined,
   }: Props = $props();
 
   const oninput = () => {
-    if (!value) {
+    // value can be 0
+    if (value === undefined) {
       return;
     }
 
@@ -47,4 +50,5 @@
   bind:value
   {oninput}
   onpaste={onPaste}
+  onkeydown={onKeyDown}
 />

@@ -6,6 +6,10 @@ Users can deploy a custom reverse proxy that forwards requests to Immich. This w
 Immich does not support being served on a sub-path such as `location /immich {`. It has to be served on the root path of a (sub)domain.
 :::
 
+:::info
+If your reverse proxy uses the [Let's Encrypt](https://letsencrypt.org/) [http-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), you may want to verify that the Immich well-known endpoint (`/.well-known/immich`) gets correctly routed to Immich, otherwise it will likely be routed elsewhere and the mobile app may run into connection issues.
+:::
+
 ### Nginx example config
 
 Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
@@ -37,28 +41,13 @@ server {
     location / {
         proxy_pass http://<backend_url>:2283;
     }
+
+    # useful when using Let's Encrypt http-01 challenge
+    # location = /.well-known/immich {
+    #     proxy_pass http://<backend_url>:2283;
+    # }
 }
 ```
-
-#### Compatibility with Let's Encrypt
-
-In the event that your nginx configuration includes a section for Let's Encrypt, it's likely that you have a segment similar to the following:
-
-```nginx
-location ~ /.well-known {
-    ...
-}
-```
-
-This particular `location` directive can inadvertently prevent mobile clients from reaching the `/.well-known/immich` path, which is crucial for discovery. Usual error message for this case is: "Your app major version is not compatible with the server". To remedy this, you should introduce an additional location block specifically for this path, ensuring that requests are correctly proxied to the Immich server:
-
-```nginx
-location = /.well-known/immich {
-    proxy_pass http://<backend_url>:2283;
-}
-```
-
-By doing so, you'll maintain the functionality of Let's Encrypt while allowing mobile clients to access the necessary Immich path without obstruction.
 
 ### Caddy example config
 

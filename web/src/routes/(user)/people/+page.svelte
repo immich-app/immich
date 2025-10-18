@@ -4,7 +4,6 @@
   import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
   import { shortcut } from '$lib/actions/shortcut';
-  import Icon from '$lib/components/elements/icon.svelte';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import PeopleCard from '$lib/components/faces-page/people-card.svelte';
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
@@ -23,7 +22,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, modalManager } from '@immich/ui';
+  import { Button, Icon, modalManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -375,7 +374,7 @@
 
           <input
             type="text"
-            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-immich-primary dark:text-immich-dark-primary"
+            class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-primary"
             value={person.name}
             placeholder={$t('add_a_name')}
             use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
@@ -389,7 +388,7 @@
   {:else}
     <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
       <div class="flex flex-col content-center items-center text-center">
-        <Icon path={mdiAccountOff} size="3.5em" />
+        <Icon icon={mdiAccountOff} size="3.5em" />
         <p class="mt-5 text-3xl font-medium max-w-lg line-clamp-2 overflow-hidden">
           {$t(searchName ? 'search_no_people_named' : 'search_no_people', { values: { name: searchName } })}
         </p>
