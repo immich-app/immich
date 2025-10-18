@@ -24,11 +24,11 @@ After creating an album, you can access the sharing options by clicking on the s
 
 Partner sharing allows you to share your _entire_ library with other users of your choice. They can then view your library and download the assets.
 
-You can read this guide to learn more about [partner sharing](/docs/features/partner-sharing).
+You can read this guide to learn more about [partner sharing](/features/partner-sharing).
 
 ## Public sharing
 
-You can create a public link to share a group of photos or videos, or an album, with anyone. The public link can be shared via email, social media, or any other method. There are a varierity of options to customize the public link, such as setting an expiration date, password protection, and more. Public shared link is handy when you want to share a group of photos or videos with someone who doesn't have an Immich account and allow the shared user to upload their photos or videos to your account.
+You can create a public link to share a group of photos or videos, or an album, with anyone. The public link can be shared via email, social media, or any other method. There are a variety of options to customize the public link, such as setting an expiration date, password protection, and more. Public shared link is handy when you want to share a group of photos or videos with someone who doesn't have an Immich account and allow the shared user to upload their photos or videos to your account.
 
 The public shared link is generated with a random URL, which acts as as a secret to avoid the link being guessed by unwanted parties, for instance.
 

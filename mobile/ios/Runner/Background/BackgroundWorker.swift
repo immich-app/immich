@@ -95,7 +95,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     // Register plugins in the new engine
     GeneratedPluginRegistrant.register(with: engine)
     // Register custom plugins
-    AppDelegate.registerPlugins(binaryMessenger: engine.binaryMessenger)
+    AppDelegate.registerPlugins(with: engine)
     flutterApi = BackgroundWorkerFlutterApi(binaryMessenger: engine.binaryMessenger)
     BackgroundWorkerBgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: self)
     
@@ -129,7 +129,6 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
       return
     }
 
-    isComplete = true
     flutterApi?.cancel { result in
       self.complete(success: false)
     }
@@ -169,7 +168,9 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     }
     
     isComplete = true
+    AppDelegate.cancelPlugins(with: engine)
     engine.destroyContext()
+    flutterApi = nil
     completionHandler(success)
   }
 }

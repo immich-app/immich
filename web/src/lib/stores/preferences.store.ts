@@ -146,4 +146,6 @@ export const playVideoThumbnailOnHover = persisted<boolean>('play-video-thumbnai
 
 export const loopVideo = persisted<boolean>('loop-video', true, {});
 
+export const autoPlayVideo = persisted<boolean>('auto-play-video', true, {});
+
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});

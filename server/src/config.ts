@@ -80,6 +80,11 @@ export interface SystemConfig {
   machineLearning: {
     enabled: boolean;
     urls: string[];
+    availabilityChecks: {
+      enabled: boolean;
+      timeout: number;
+      interval: number;
+    };
     clip: {
       enabled: boolean;
       modelName: string;
@@ -180,6 +185,7 @@ export interface SystemConfig {
         ignoreCert: boolean;
         host: string;
         port: number;
+        secure: boolean;
         username: string;
         password: string;
       };
@@ -201,6 +207,8 @@ export interface SystemConfig {
     deleteDelay: number;
   };
 }
+
+export type MachineLearningConfig = SystemConfig['machineLearning'];
 
 export const defaults = Object.freeze<SystemConfig>({
   backup: {
@@ -279,6 +287,11 @@ export const defaults = Object.freeze<SystemConfig>({
   machineLearning: {
     enabled: process.env.IMMICH_MACHINE_LEARNING_ENABLED !== 'false',
     urls: [process.env.IMMICH_MACHINE_LEARNING_URL || 'http://immich-machine-learning:3003'],
+    availabilityChecks: {
+      enabled: true,
+      timeout: Number(process.env.IMMICH_MACHINE_LEARNING_PING_TIMEOUT) || 2000,
+      interval: 30_000,
+    },
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -396,6 +409,7 @@ export const defaults = Object.freeze<SystemConfig>({
         ignoreCert: false,
         host: '',
         port: 587,
+        secure: false,
         username: '',
         password: '',
       },

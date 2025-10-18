@@ -92,6 +92,9 @@ export interface VideoStreamInfo {
   profile?: string;
   fps: number;
   level: number;
+  colorPrimaries?: string;
+  colorSpace?: string;
+  colorTransfer?: string;
 }
 
 export interface AudioStreamInfo {

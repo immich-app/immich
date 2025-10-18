@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -88,10 +89,18 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
 
       final videoAsset = await ref.read(assetServiceProvider).getAsset(asset) ?? asset;
+      if (!context.mounted) {
+        return null;
+      }
+
       try {
         if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
           final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
           final file = await const StorageRepository().getFileForAsset(id);
+          if (!context.mounted) {
+            return null;
+          }
+
           if (file == null) {
             throw Exception('No file found for the video');
           }
@@ -210,7 +219,10 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
 
       try {
-        await videoController.play();
+        final autoPlayVideo = AppSetting.get(Setting.autoPlayVideo);
+        if (autoPlayVideo) {
+          await videoController.play();
+        }
         await videoController.setVolume(0.9);
       } catch (error) {
         log.severe('Error playing video: $error');
@@ -289,7 +301,7 @@ class NativeVideoViewer extends HookConsumerWidget {
       ref.read(videoPlaybackValueProvider.notifier).reset();
 
       final source = await videoSource;
-      if (source == null) {
+      if (source == null || !context.mounted) {
         return;
       }
 
@@ -314,6 +326,9 @@ class NativeVideoViewer extends HookConsumerWidget {
         removeListeners(playerController);
       }
 
+      if (value != null) {
+        isVisible.value = _isCurrentAsset(value, asset);
+      }
       final curAsset = currentAsset.value;
       if (curAsset == asset) {
         return;

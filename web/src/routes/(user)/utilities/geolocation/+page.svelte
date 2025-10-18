@@ -1,8 +1,8 @@
 <script lang="ts">
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import ChangeLocation from '$lib/components/shared-components/change-location.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import Timeline from '$lib/components/timeline/Timeline.svelte';
   import { AssetAction } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
@@ -30,13 +30,13 @@
   let location = $state<{ latitude: number; longitude: number }>({ latitude: 0, longitude: 0 });
   let locationUpdated = $state(false);
 
-  const timelineManager = new TimelineManager();
-  void timelineManager.updateOptions({
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = {
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
     withCoordinates: true,
-  });
+  };
 
   const handleUpdate = async () => {
     const confirmed = await modalManager.show(GeolocationUpdateConfirmModal, {
@@ -185,10 +185,11 @@
     </div>
   {/if}
 
-  <AssetGrid
+  <Timeline
     isSelectionMode={true}
     enableRouting={true}
-    {timelineManager}
+    bind:timelineManager
+    {options}
     {assetInteraction}
     removeAction={AssetAction.ARCHIVE}
     onEscape={handleEscape}
@@ -209,5 +210,5 @@
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => {}} />
     {/snippet}
-  </AssetGrid>
+  </Timeline>
 </UserPageLayout>
