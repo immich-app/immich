@@ -4137,6 +4137,24 @@
             }
           },
           {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of memories to return",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
             "name": "type",
             "required": false,
             "in": "query",
@@ -4247,6 +4265,24 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "description": "Number of memories to return",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
             }
           },
           {
@@ -12441,14 +12477,6 @@
           "data": {
             "$ref": "#/components/schemas/OnThisDayDto"
           },
-          "deletedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "hideAt": {
-            "format": "date-time",
-            "type": "string"
-          },
           "id": {
             "type": "string"
           },
@@ -12460,14 +12488,6 @@
             "type": "string"
           },
           "ownerId": {
-            "type": "string"
-          },
-          "seenAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "showAt": {
-            "format": "date-time",
             "type": "string"
           },
           "type": {
@@ -12494,6 +12514,14 @@
           "updatedAt"
         ],
         "type": "object"
+      },
+      "MemorySearchOrder": {
+        "enum": [
+          "asc",
+          "desc",
+          "random"
+        ],
+        "type": "string"
       },
       "MemoryStatisticsResponseDto": {
         "properties": {

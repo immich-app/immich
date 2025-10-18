@@ -106,6 +106,9 @@ String parameterToString(dynamic value) {
   if (value is ManualJobName) {
     return ManualJobNameTypeTransformer().encode(value).toString();
   }
+  if (value is MemorySearchOrder) {
+    return MemorySearchOrderTypeTransformer().encode(value).toString();
+  }
   if (value is MemoryType) {
     return MemoryTypeTypeTransformer().encode(value).toString();
   }
