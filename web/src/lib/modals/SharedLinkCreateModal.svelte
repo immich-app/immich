@@ -69,6 +69,23 @@
 
     albumId = editingLink.album?.id;
     assetIds = editingLink.assets.map(({ id }) => id);
+
+    const expiresAt = editingLink.expiresAt ? DateTime.fromISO(editingLink.expiresAt) : DateTime.fromMillis(0);
+    const createdAt = DateTime.fromISO(editingLink.createdAt);
+
+    if (expiresAt) {
+      const remainingMs = expiresAt.toMillis() - createdAt.toMillis();
+
+      const bestOption = expiredDateOptions.reduce((best, option) => {
+        const diff = Math.abs(option.value - remainingMs);
+        const bestDiff = Math.abs(best.value - remainingMs);
+        return diff < bestDiff ? option : best;
+      });
+
+      expirationOption = bestOption.value;
+    } else {
+      expirationOption = 0;
+    }
   }
 
   const handleCreateSharedLink = async () => {
