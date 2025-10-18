@@ -17,6 +17,7 @@ class LoginResponseDto {
     required this.isAdmin,
     required this.isOnboarded,
     required this.name,
+    this.permissions = const [],
     required this.profileImagePath,
     required this.shouldChangePassword,
     required this.userEmail,
@@ -30,6 +31,8 @@ class LoginResponseDto {
   bool isOnboarded;
 
   String name;
+
+  List<Permission> permissions;
 
   String profileImagePath;
 
@@ -45,6 +48,7 @@ class LoginResponseDto {
     other.isAdmin == isAdmin &&
     other.isOnboarded == isOnboarded &&
     other.name == name &&
+    _deepEquality.equals(other.permissions, permissions) &&
     other.profileImagePath == profileImagePath &&
     other.shouldChangePassword == shouldChangePassword &&
     other.userEmail == userEmail &&
@@ -57,13 +61,14 @@ class LoginResponseDto {
     (isAdmin.hashCode) +
     (isOnboarded.hashCode) +
     (name.hashCode) +
+    (permissions.hashCode) +
     (profileImagePath.hashCode) +
     (shouldChangePassword.hashCode) +
     (userEmail.hashCode) +
     (userId.hashCode);
 
   @override
-  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, isOnboarded=$isOnboarded, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
+  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, isOnboarded=$isOnboarded, name=$name, permissions=$permissions, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -71,6 +76,7 @@ class LoginResponseDto {
       json[r'isAdmin'] = this.isAdmin;
       json[r'isOnboarded'] = this.isOnboarded;
       json[r'name'] = this.name;
+      json[r'permissions'] = this.permissions;
       json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'userEmail'] = this.userEmail;
@@ -91,6 +97,7 @@ class LoginResponseDto {
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
         name: mapValueOfType<String>(json, r'name')!,
+        permissions: Permission.listFromJson(json[r'permissions']),
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         userEmail: mapValueOfType<String>(json, r'userEmail')!,
@@ -146,6 +153,7 @@ class LoginResponseDto {
     'isAdmin',
     'isOnboarded',
     'name',
+    'permissions',
     'profileImagePath',
     'shouldChangePassword',
     'userEmail',

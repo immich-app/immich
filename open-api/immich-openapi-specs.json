@@ -12240,6 +12240,12 @@
           "name": {
             "type": "string"
           },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
+          },
           "profileImagePath": {
             "type": "string"
           },
@@ -12258,6 +12264,7 @@
           "isAdmin",
           "isOnboarded",
           "name",
+          "permissions",
           "profileImagePath",
           "shouldChangePassword",
           "userEmail",
@@ -14324,6 +14331,12 @@
           "isPendingSyncReset": {
             "type": "boolean"
           },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
+          },
           "token": {
             "type": "string"
           },
@@ -14338,6 +14351,7 @@
           "deviceType",
           "id",
           "isPendingSyncReset",
+          "permissions",
           "token",
           "updatedAt"
         ],
@@ -14366,6 +14380,12 @@
           "isPendingSyncReset": {
             "type": "boolean"
           },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
+          },
           "updatedAt": {
             "type": "string"
           }
@@ -14377,6 +14397,7 @@
           "deviceType",
           "id",
           "isPendingSyncReset",
+          "permissions",
           "updatedAt"
         ],
         "type": "object"

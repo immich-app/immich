@@ -562,6 +562,7 @@ export type LoginResponseDto = {
     isAdmin: boolean;
     isOnboarded: boolean;
     name: string;
+    permissions: Permission[];
     profileImagePath: string;
     shouldChangePassword: boolean;
     userEmail: string;
@@ -1200,6 +1201,7 @@ export type SessionResponseDto = {
     expiresAt?: string;
     id: string;
     isPendingSyncReset: boolean;
+    permissions: Permission[];
     updatedAt: string;
 };
 export type SessionCreateDto = {
@@ -1216,6 +1218,7 @@ export type SessionCreateResponseDto = {
     expiresAt?: string;
     id: string;
     isPendingSyncReset: boolean;
+    permissions: Permission[];
     token: string;
     updatedAt: string;
 };
