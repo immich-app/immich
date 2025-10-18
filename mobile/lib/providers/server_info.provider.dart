@@ -24,9 +24,11 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
             mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
           ),
           serverDiskInfo: ServerDiskInfo(diskAvailable: "0", diskSize: "0", diskUse: "0", diskUsagePercentage: 0),
-          isVersionMismatch: false,
+          isClientOutOfDate: false,
+          isServerOutOfDate: false,
           isNewReleaseAvailable: false,
           versionMismatchErrorMessage: "",
+          errorGettingVersions: false,
         ),
       );
 
@@ -43,15 +45,16 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     try {
       final serverVersion = await _serverInfoService.getServerVersion();
 
+      // using isClientOutOfDate since that will show to users reguardless of if they are an admin
       if (serverVersion == null) {
-        state = state.copyWith(isVersionMismatch: true, versionMismatchErrorMessage: "common_server_error".tr());
+        state = state.copyWith(errorGettingVersions: true, versionMismatchErrorMessage: "unable_to_check_version".tr());
         return;
       }
 
       await _checkServerVersionMismatch(serverVersion);
     } catch (e, stackTrace) {
       _log.severe("Failed to get server version", e, stackTrace);
-      state = state.copyWith(isVersionMismatch: true);
+      state = state.copyWith(errorGettingVersions: true, versionMismatchErrorMessage: "unable_to_check_version".tr());
       return;
     }
   }
@@ -63,39 +66,17 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
     Map<String, int> appVersion = _getDetailVersion(packageInfo.version);
 
-    if (appVersion["major"]! > serverVersion.major) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_major".tr(),
-      );
+    if (appVersion["major"]! > serverVersion.major || appVersion["minor"]! > serverVersion.minor) {
+      state = state.copyWith(isServerOutOfDate: true, versionMismatchErrorMessage: "server_update_available".tr());
       return;
     }
 
-    if (appVersion["major"]! < serverVersion.major) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_major".tr(),
-      );
+    if (appVersion["major"]! < serverVersion.major || appVersion["minor"]! < serverVersion.minor) {
+      state = state.copyWith(isClientOutOfDate: true, versionMismatchErrorMessage: "app_update_available".tr());
       return;
     }
 
-    if (appVersion["minor"]! > serverVersion.minor) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_server_out_of_date_minor".tr(),
-      );
-      return;
-    }
-
-    if (appVersion["minor"]! < serverVersion.minor) {
-      state = state.copyWith(
-        isVersionMismatch: true,
-        versionMismatchErrorMessage: "profile_drawer_client_out_of_date_minor".tr(),
-      );
-      return;
-    }
-
-    state = state.copyWith(isVersionMismatch: false, versionMismatchErrorMessage: "");
+    state = state.copyWith(isClientOutOfDate: false, isServerOutOfDate: false, versionMismatchErrorMessage: "");
   }
 
   handleNewRelease(ServerVersion serverVersion, ServerVersion latestVersion) {

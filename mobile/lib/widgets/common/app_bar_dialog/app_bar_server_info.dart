@@ -1,14 +1,19 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AppBarServerInfo extends HookConsumerWidget {
   const AppBarServerInfo({super.key});
@@ -18,14 +23,42 @@ class AppBarServerInfo extends HookConsumerWidget {
     ref.watch(localeProvider);
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
 
+    final user = ref.watch(currentUserProvider);
+
     final appInfo = useState({});
     const titleFontSize = 12.0;
     const contentFontSize = 11.0;
+
+    final showWarning =
+        serverInfoState.isClientOutOfDate ||
+        serverInfoState.errorGettingVersions ||
+        ((user?.isAdmin ?? false) && serverInfoState.isServerOutOfDate);
 
     getPackageInfo() async {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
       appInfo.value = {"version": packageInfo.version, "buildNumber": packageInfo.buildNumber};
+    }
+
+    void openUpdateLink() {
+      if (serverInfoState.isServerOutOfDate) {
+        launchUrl(
+          Uri.parse("https://github.com/immich-app/immich/releases/latest"),
+          mode: LaunchMode.externalApplication,
+        );
+        return;
+      }
+
+      String url;
+      if (Platform.isIOS) {
+        url = kImmichAppStoreLink;
+      } else if (Platform.isAndroid) {
+        url = kImmichPlayStoreLink;
+      } else {
+        url = kImmichLatestRelease;
+      }
+
+      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
 
     useEffect(() {
@@ -45,17 +78,45 @@ class AppBarServerInfo extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  serverInfoState.isVersionMismatch
-                      ? serverInfoState.versionMismatchErrorMessage
-                      : "profile_drawer_client_server_up_to_date".tr(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11, color: context.primaryColor, fontWeight: FontWeight.w500),
+              if (showWarning) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(80, 243, 188, 106),
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            serverInfoState.versionMismatchErrorMessage,
+                            textAlign: (serverInfoState.isClientOutOfDate || serverInfoState.isServerOutOfDate)
+                                ? TextAlign.start
+                                : TextAlign.center,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (serverInfoState.isClientOutOfDate || serverInfoState.isServerOutOfDate)
+                          TextButton(
+                            onPressed: openUpdateLink,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.all(4),
+                              minimumSize: const Size(0, 0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text("action_common_update".tr(context: context)),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+                const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+              ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
