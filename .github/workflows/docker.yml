@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@5f91b52dfbb92b8d96ca411ab59c896cd59714ca # pre-job-action-v1.1.0
+        uses: immich-app/devtools/actions/pre-job@08bac802a312fc89808e0dd589271ca0974087b5 # pre-job-action-v2.0.0
         with:
           filters: |
             server:
@@ -124,7 +124,7 @@ jobs:
             tag-suffix: '-rocm'
             platforms: linux/amd64
             runner-mapping: '{"linux/amd64": "mich"}'
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@946acac326940f8badf09ccf591d9cb345d6a689 # multi-runner-build-workflow-v0.2.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@94429dca83901d5df2515d33427cc8d7c4a34f5e # multi-runner-build-workflow-v1.0.0
     permissions:
       contents: read
       actions: read
@@ -147,7 +147,7 @@ jobs:
     name: Build and Push Server
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@946acac326940f8badf09ccf591d9cb345d6a689 # multi-runner-build-workflow-v0.2.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@94429dca83901d5df2515d33427cc8d7c4a34f5e # multi-runner-build-workflow-v1.0.0
     permissions:
       contents: read
       actions: read
