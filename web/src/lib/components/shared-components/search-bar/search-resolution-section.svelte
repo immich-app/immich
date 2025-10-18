@@ -27,7 +27,7 @@
         id="minWidth"
         name="minWidth"
         bind:value={filters.minWidth}
-        placeholder="720"
+        placeholder="1280"
       />
     </label>
     <label class="immich-form-label" for="maxWidth">
@@ -38,7 +38,7 @@
         id="maxWidth"
         name="maxWidth"
         bind:value={filters.maxWidth}
-        placeholder="1080"
+        placeholder="1920"
       />
     </label>
 
@@ -50,7 +50,7 @@
         id="minHeight"
         name="minHeight"
         bind:value={filters.minHeight}
-        placeholder="1280"
+        placeholder="720"
       />
     </label>
     <label class="immich-form-label" for="maxHeight">
@@ -61,7 +61,7 @@
         id="maxHeight"
         name="maxHeight"
         bind:value={filters.maxHeight}
-        placeholder="1920"
+        placeholder="1080"
       />
     </label>
   </div>
