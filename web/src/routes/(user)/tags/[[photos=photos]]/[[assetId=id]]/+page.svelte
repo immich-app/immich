@@ -15,9 +15,24 @@
   import { joinPaths, TreeNode } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, modalManager, Text } from '@immich/ui';
-  import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiDotsVertical, mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { preferences } from '$lib/stores/user.store';
   import type { PageData } from './$types';
+  import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
+  import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
+  import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
+  import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
+  import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
+  import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
+  import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
+  import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
+  import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
   interface Props {
     data: PageData;
@@ -79,6 +94,17 @@
     // navigate to parent
     await navigateToView(tag.parent ? tag.parent.path : '');
   };
+
+  const handleSetVisibility = (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+    assetInteraction.clearMultiselect();
+  };
+  const handleRemoveAssets = (assetIds: string[]) => {
+    timelineManager.removeAssets(assetIds);
+  };
+  const handleUndoRemoveAssets = (assets: TimelineAsset[]) => {
+    timelineManager.addAssets(assets);
+  };
 </script>
 
 <UserPageLayout title={data.meta.title}>
@@ -130,4 +156,45 @@
       <TreeItemThumbnails items={tag.children} icon={mdiTag} onClick={handleNavigation} />
     {/if}
   </section>
+
+  {#if assetInteraction.selectionActive}
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
+    >
+      <CreateSharedLink />
+      <SelectAllAssets {timelineManager} {assetInteraction} />
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')} offset={{ x: 0, y: 50 }}>
+        <AddToAlbum />
+        <AddToAlbum shared />
+      </ButtonContextMenu>
+      {#if assetInteraction.isAllUserOwned}
+        <FavoriteAction
+          removeFavorite={assetInteraction.isAllFavorite}
+          onFavorite={(ids, isFavorite) =>
+            timelineManager.updateAssetOperation(ids, (asset) => {
+              asset.isFavorite = isFavorite;
+              return { remove: false };
+            })}
+        ></FavoriteAction>
+      {/if}
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 0, y: 50 }}>
+        {#if assetInteraction.isAllUserOwned}
+          <ChangeDate menuItem />
+          <ChangeDescription menuItem />
+          <ChangeLocation menuItem />
+          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
+          <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+        {/if}
+
+        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
+
+        {#if assetInteraction.isAllUserOwned}
+          <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
+        {/if}
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
+  {/if}
 </UserPageLayout>
