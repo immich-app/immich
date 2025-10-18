@@ -259,7 +259,8 @@ export class FileHashCache {
         const content = await readFile(this.cacheFile, 'utf-8');
         this.cache = JSON.parse(content);
       } catch (error) {
-        console.warn('Failed to load hash cache, starting fresh');
+        console.warn('Failed to load hash cache:', error);
+        console.warn('Starting with an empty cache.');
         this.cache = {};
       }
     }
@@ -268,7 +269,7 @@ export class FileHashCache {
   async save() {
     if (this.isDirty) {
       try {
-        await writeFile(this.cacheFile, JSON.stringify(this.cache, null, 2));
+        await writeFile(this.cacheFile, JSON.stringify(this.cache));
         this.isDirty = false;
       } catch (error) {
         console.warn('Failed to save hash cache');
@@ -278,22 +279,20 @@ export class FileHashCache {
 
   async getHash(filepath: string, stats: { mtime: Date; size: number }): Promise<string> {
     const entry = this.cache[filepath];
-    
+
     // Check if we have a valid cached hash
-    if (entry && 
-        entry.mtime === stats.mtime.getTime() && 
-        entry.size === stats.size) {
+    if (entry && entry.mtime === stats.mtime.getTime() && entry.size === stats.size) {
       return entry.hash;
     }
 
     // Calculate new hash
     const hash = await sha1(filepath);
-    
+
     // Cache the new hash
     this.cache[filepath] = {
       hash,
       mtime: stats.mtime.getTime(),
-      size: stats.size
+      size: stats.size,
     };
     this.isDirty = true;
 

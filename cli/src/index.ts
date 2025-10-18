@@ -82,10 +82,6 @@ program
       .implies({ progress: false }),
   )
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
-  .action((paths, options) => {
-    // Merge program options with command options
-    const mergedOptions = { ...program.opts(), ...options };
-    upload(paths, program.opts(), mergedOptions);
-  });
+  .action((paths, options) => upload(paths, program.opts(), options));
 
 program.parse(process.argv);
