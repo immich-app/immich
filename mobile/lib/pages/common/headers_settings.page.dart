@@ -60,7 +60,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('advanced_settings_proxy_headers_title').tr(),
+        title: const Text('headers_settings_tile_title').tr(),
         centerTitle: false,
         actions: [
           IconButton(
