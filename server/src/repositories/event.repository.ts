@@ -80,6 +80,9 @@ type EventMap = {
   // stack bulk events
   StackDeleteAll: [{ stackIds: string[]; userId: string }];
 
+  // upload events
+  UploadAbort: [{ assetId: string; abortTime: Date }];
+
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];
 
@@ -87,7 +90,7 @@ type EventMap = {
   WebsocketConnect: [{ userId: string }];
 };
 
-export const serverEvents = ['ConfigUpdate'] as const;
+export const serverEvents = ['ConfigUpdate', 'UploadAbort'] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export type EmitEvent = keyof EventMap;

@@ -45,5 +45,9 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     upsertMetadata: vitest.fn(),
     getMetadataByKey: vitest.fn(),
     deleteMetadataByKey: vitest.fn(),
+    getCompletionMetadata: vitest.fn(),
+    createWithMetadata: vitest.fn(),
+    removeAndDecrementQuota: vitest.fn(),
+    setComplete: vitest.fn(),
   };
 };

@@ -53,5 +53,8 @@
   },
   "volta": {
     "node": "22.20.0"
+  },
+  "dependencies": {
+    "structured-headers": "^2.0.2"
   }
 }
