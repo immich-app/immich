@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/services/trash.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/services/trash.service.dart';
 import 'package:logging/logging.dart';
 
 class TrashNotifier extends StateNotifier<bool> {
