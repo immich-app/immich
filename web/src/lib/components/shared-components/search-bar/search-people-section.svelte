@@ -61,20 +61,20 @@
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
+    <div id="people-selection" class="max-h-60 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
-        <p class="uppercase immich-form-label py-3">{$t('people')}</p>
+        <p class="uppercase immich-form-label">{$t('people')}</p>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
       <SingleGridRow
-        class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar"
+        class="grid grid-auto-fill-20 gap-1 overflow-y-auto immich-scrollbar"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class="flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
+            class="flex flex-col gap-2 items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
               person.id,
             )
               ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'
@@ -82,13 +82,13 @@
             onclick={() => togglePersonSelection(person.id)}
           >
             <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
-            <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
+            <p class="line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
           </button>
         {/each}
       </SingleGridRow>
 
       {#if showAllPeople || people.length > peopleList.length}
-        <div class="flex justify-center mt-2">
+        <div class="flex justify-center">
           <Button
             color="primary"
             variant="ghost"

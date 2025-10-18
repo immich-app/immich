@@ -101,6 +101,30 @@ class BaseSearchDto {
   @Max(5)
   @Min(-1)
   rating?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  minWidth?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  maxWidth?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  minHeight?: number;
+
+  @Optional()
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  maxHeight?: number;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {

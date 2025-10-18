@@ -205,6 +205,10 @@
       originalFileName: $t('file_name'),
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
+      minWidth: $t('min_width'),
+      maxWidth: $t('max_width'),
+      minHeight: $t('min_height'),
+      maxHeight: $t('max_height'),
     };
     return keyMap[key] || key;
   }

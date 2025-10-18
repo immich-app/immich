@@ -394,7 +394,27 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
+    .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null))
+    .$if(options.minWidth !== undefined, (qb) =>
+      qb
+        .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+        .where('asset_exif.exifImageWidth', '>=', options.minWidth!),
+    )
+    .$if(options.maxWidth !== undefined, (qb) =>
+      qb
+        .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+        .where('asset_exif.exifImageWidth', '<=', options.maxWidth!),
+    )
+    .$if(options.minHeight !== undefined, (qb) =>
+      qb
+        .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+        .where('asset_exif.exifImageHeight', '>=', options.minHeight!),
+    )
+    .$if(options.maxHeight !== undefined, (qb) =>
+      qb
+        .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+        .where('asset_exif.exifImageHeight', '<=', options.maxHeight!),
+    );
 }
 
 export type ReindexVectorIndexOptions = { indexName: string; lists?: number };
