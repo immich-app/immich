@@ -1,3 +1,5 @@
+import type { TiePreference } from '$lib/stores/duplicate-preferences';
+import { applyLibraryTieBreaker, selectDefaultByCurrentHeuristic } from '$lib/utils/duplicate-selection';
 import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 import { sortBy } from 'lodash-es';
@@ -13,11 +15,9 @@ import { sortBy } from 'lodash-es';
  * @returns The best asset to keep
  */
 export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  let duplicateAssets = sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte ?? 0);
-
-  // Update the list to only include assets with the largest file size
+  let duplicateAssets = sortBy(assets, (assets) => assets.exifInfo?.fileSizeInByte ?? 0);
   duplicateAssets = duplicateAssets.filter(
-    (asset) => asset.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
+    (assets) => assets.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
   );
 
   // If there are multiple assets with the same file size, sort the list by the count of exif data
@@ -27,4 +27,27 @@ export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto |
 
   // Return the last asset in the list
   return duplicateAssets.pop();
+};
+
+export const suggestDuplicateWithPrefs = (
+  assets: AssetResponseDto[],
+  preference: TiePreference,
+): AssetResponseDto | undefined => {
+  const base = suggestDuplicate(assets) ?? selectDefaultByCurrentHeuristic(assets);
+  return applyLibraryTieBreaker(assets, base, preference);
+};
+
+export const buildKeepSelectionForGroup = (
+  group: AssetResponseDto[],
+  preference: TiePreference,
+): { id: string; action: 'keep' | 'trash' }[] => {
+  const keep = suggestDuplicateWithPrefs(group, preference) ?? group[0];
+  return group.map((assets) => ({ id: assets.id, action: assets.id === keep.id ? 'keep' : 'trash' }));
+};
+
+export const buildKeepSelectionForAll = (
+  groups: AssetResponseDto[][],
+  preference: TiePreference,
+): { id: string; action: 'keep' | 'trash' }[] => {
+  return groups.flatMap((groups) => buildKeepSelectionForGroup(groups, preference));
 };
