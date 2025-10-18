@@ -14,6 +14,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
@@ -53,6 +54,10 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     int opacity = ref.watch(assetViewerProvider.select((state) => state.backgroundOpacity));
     final showControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
 
+    if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
+      ref.watch(albumActivityProvider(album.id, asset.id));
+    }
+
     if (!showControls) {
       opacity = 0;
     }
@@ -66,7 +71,44 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            context.navigateTo(const DriftActivitiesRoute());
+            EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
+            // showModalBottomSheet(
+            //   // backgroundColor: context.colorScheme.surface,
+            //   context: context,
+            //   useSafeArea: true,
+            //   isScrollControlled: true,
+
+            //   builder: (context) => Padding(
+            //     padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            //     child: const ActivitiesBottomSheet(),
+            //   ),
+            // );
+
+            // showModalBottomSheet(
+            //   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
+            //   barrierColor: Colors.transparent,
+            //   isScrollControlled: true,
+            //   showDragHandle: true,
+            //   enableDrag: true,
+            //   context: context,
+            //   useSafeArea: true,
+            //   builder: (context) {
+            //     return DraggableScrollableSheet(
+            //       minChildSize: 0.2,
+            //       maxChildSize: 0.8,
+            //       initialChildSize: 0.2,
+            //       expand: false,
+            //       snap: true,
+            //       snapSizes: const [0.2, 0.4, 0.6],
+            //       builder: (context, scrollController) {
+            //         return Padding(
+            //           padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
+            //           child: ActivitiesBottomSheet(scrollController: scrollController),
+            //         );
+            //       },
+            //     );
+            //   },
+            // );
           },
         ),
       if (showViewInTimelineButton)
