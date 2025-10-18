@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 import { User, UserAdmin } from 'src/database';
+import { SessionResponseDto } from 'src/dtos/session.dto';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
 import { Optional, PinCode, ValidateBoolean, ValidateEnum, ValidateUUID, toEmail, toSanitized } from 'src/validation';
@@ -166,6 +167,7 @@ export class UserAdminResponseDto extends UserResponseDto {
   @ValidateEnum({ enum: UserStatus, name: 'UserStatus' })
   status!: string;
   license!: UserLicense | null;
+  latestSession?: SessionResponseDto;
 }
 
 export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {

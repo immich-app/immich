@@ -3,6 +3,7 @@ import {
   createStack,
   deleteUserAdmin,
   getMyUser,
+  getSessions,
   getUserAdmin,
   getUserPreferencesAdmin,
   login,
@@ -59,6 +60,7 @@ describe('/admin/users', () => {
     });
 
     it('should hide deleted users by default', async () => {
+      const expectedSessions = await getSessions({ headers: asBearerAuth(admin.accessToken) });
       const { status, body } = await request(app)
         .get(`/admin/users`)
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -70,6 +72,11 @@ describe('/admin/users', () => {
           expect.objectContaining({ email: nonAdmin.userEmail }),
           expect.objectContaining({ email: userToDelete.userEmail }),
         ]),
+      );
+
+      expect(body.find((u: any) => u.id === admin.userId)?.latestSession).toBeDefined();
+      expect(body.find((u: any) => u.id === admin.userId)?.latestSession.updatedAt).toEqual(
+        expectedSessions[0].updatedAt,
       );
     });
 
