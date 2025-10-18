@@ -15,6 +15,7 @@ class ActivityCreateDto {
   ActivityCreateDto({
     required this.albumId,
     this.assetId,
+    this.assetIds = const [],
     this.comment,
     required this.type,
   });
@@ -28,6 +29,8 @@ class ActivityCreateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? assetId;
+
+  List<String> assetIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -43,6 +46,7 @@ class ActivityCreateDto {
   bool operator ==(Object other) => identical(this, other) || other is ActivityCreateDto &&
     other.albumId == albumId &&
     other.assetId == assetId &&
+    _deepEquality.equals(other.assetIds, assetIds) &&
     other.comment == comment &&
     other.type == type;
 
@@ -51,11 +55,12 @@ class ActivityCreateDto {
     // ignore: unnecessary_parenthesis
     (albumId.hashCode) +
     (assetId == null ? 0 : assetId!.hashCode) +
+    (assetIds.hashCode) +
     (comment == null ? 0 : comment!.hashCode) +
     (type.hashCode);
 
   @override
-  String toString() => 'ActivityCreateDto[albumId=$albumId, assetId=$assetId, comment=$comment, type=$type]';
+  String toString() => 'ActivityCreateDto[albumId=$albumId, assetId=$assetId, assetIds=$assetIds, comment=$comment, type=$type]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -65,6 +70,7 @@ class ActivityCreateDto {
     } else {
     //  json[r'assetId'] = null;
     }
+      json[r'assetIds'] = this.assetIds;
     if (this.comment != null) {
       json[r'comment'] = this.comment;
     } else {
@@ -85,6 +91,9 @@ class ActivityCreateDto {
       return ActivityCreateDto(
         albumId: mapValueOfType<String>(json, r'albumId')!,
         assetId: mapValueOfType<String>(json, r'assetId'),
+        assetIds: json[r'assetIds'] is Iterable
+            ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         comment: mapValueOfType<String>(json, r'comment'),
         type: ReactionType.fromJson(json[r'type'])!,
       );
