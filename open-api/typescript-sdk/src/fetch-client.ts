@@ -921,6 +921,7 @@ export type MetadataSearchDto = {
     personIds?: string[];
     previewPath?: string;
     rating?: number;
+    searchOnlyThem?: boolean;
     size?: number;
     state?: string | null;
     tagIds?: string[] | null;
@@ -988,6 +989,7 @@ export type RandomSearchDto = {
     model?: string | null;
     personIds?: string[];
     rating?: number;
+    searchOnlyThem?: boolean;
     size?: number;
     state?: string | null;
     tagIds?: string[] | null;
@@ -1026,6 +1028,7 @@ export type SmartSearchDto = {
     query?: string;
     queryAssetId?: string;
     rating?: number;
+    searchOnlyThem?: boolean;
     size?: number;
     state?: string | null;
     tagIds?: string[] | null;
@@ -1059,6 +1062,7 @@ export type StatisticsSearchDto = {
     model?: string | null;
     personIds?: string[];
     rating?: number;
+    searchOnlyThem?: boolean;
     state?: string | null;
     tagIds?: string[] | null;
     takenAfter?: string;
@@ -3383,7 +3387,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, personIds, rating, searchOnlyThem, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
@@ -3402,6 +3406,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     model?: string | null;
     personIds?: string[];
     rating?: number;
+    searchOnlyThem?: boolean;
     size?: number;
     state?: string | null;
     tagIds?: string[] | null;
@@ -3438,6 +3443,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         model,
         personIds,
         rating,
+        searchOnlyThem,
         size,
         state,
         tagIds,
