@@ -256,7 +256,7 @@ export class FileHashCache {
   async load() {
     if (existsSync(this.cacheFile)) {
       try {
-        const content = await readFile(this.cacheFile, 'utf-8');
+        const content = await readFile(this.cacheFile, 'utf8');
         this.cache = JSON.parse(content);
       } catch (error) {
         console.warn('Failed to load hash cache:', error);
@@ -272,7 +272,7 @@ export class FileHashCache {
         await writeFile(this.cacheFile, JSON.stringify(this.cache));
         this.isDirty = false;
       } catch (error) {
-        console.warn('Failed to save hash cache');
+        console.warn('Failed to save hash cache', error);
       }
     }
   }
