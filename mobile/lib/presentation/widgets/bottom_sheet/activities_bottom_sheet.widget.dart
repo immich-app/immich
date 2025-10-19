@@ -4,13 +4,13 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/activities/activity_tile.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
+import 'base_bottom_sheet.widget.dart';
 
 class ActivitiesBottomSheet extends HookConsumerWidget {
   final DraggableScrollableController controller;
@@ -44,15 +44,16 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
           return SliverList(
             delegate: SliverChildBuilderDelegate((context, index) {
               if (index == data.length) {
+                // return const SizedBox(height: 5);
                 return const SizedBox.shrink();
               }
-              final activity = data[data.length - 1 - index];
+              final activity = data[index];
               final canDelete = activity.user.id == user?.id || album.ownerId == user?.id;
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 1),
                 child: DismissibleActivity(
                   activity.id,
-                  ActivityTile(activity, isBottomSheet: true),
+                  ActivityTile(activity),
                   onDismiss: canDelete
                       ? (activityId) async => await activityNotifier.removeActivity(activity.id)
                       : null,
@@ -67,20 +68,16 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
     return BaseBottomSheet(
       actions: [],
       slivers: [buildActivitiesSliver()],
-      footer: Padding(
-        // TODO: avoid fixed padding, use context.padding.bottom
-        padding: const EdgeInsets.only(bottom: 32),
-        child: Column(
-          children: [
-            const Divider(indent: 16, endIndent: 16),
-            DriftActivityTextField(
-              isEnabled: album.isActivityEnabled,
-              isBottomSheet: true,
-              // likeId: likedId,
-              onSubmit: onAddComment,
-            ),
-          ],
-        ),
+      footer: Column(
+        children: [
+          const Divider(indent: 16, endIndent: 16),
+          DriftActivityTextField(
+            isEnabled: album.isActivityEnabled,
+            isBottomSheet: true,
+            // likeId: likedId,
+            onSubmit: onAddComment,
+          ),
+        ],
       ),
       controller: controller,
       initialChildSize: initialChildSize,

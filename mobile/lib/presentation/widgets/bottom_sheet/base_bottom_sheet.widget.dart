@@ -38,7 +38,6 @@ class BaseBottomSheet extends ConsumerStatefulWidget {
 
 class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> {
   late DraggableScrollableController _controller;
-  ScrollController? _innerScrollController;
 
   @override
   void initState() {
@@ -71,7 +70,6 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
       expand: widget.expand,
       shouldCloseOnMinExtent: widget.shouldCloseOnMinExtent,
       builder: (BuildContext context, ScrollController scrollController) {
-        _innerScrollController ??= scrollController;
         return Card(
           color: widget.backgroundColor ?? context.colorScheme.surfaceContainer,
           elevation: 3.0,
