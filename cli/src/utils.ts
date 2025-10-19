@@ -1,10 +1,11 @@
 import { getMyUser, init, isHttpError } from '@immich/sdk';
+import Database from 'better-sqlite3';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
-import { createReadStream, existsSync } from 'node:fs';
+import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { platform } from 'node:os';
-import { join, resolve } from 'node:path';
+import path, { join, resolve } from 'node:path';
 import yaml from 'yaml';
 
 export interface BaseOptions {
@@ -165,11 +166,11 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
 
 export const sha1 = (filepath: string) => {
   const hash = createHash('sha1');
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<Buffer>((resolve, reject) => {
     const rs = createReadStream(filepath);
     rs.on('error', reject);
     rs.on('data', (chunk) => hash.update(chunk));
-    rs.on('end', () => resolve(hash.digest('hex')));
+    rs.on('end', () => resolve(hash.digest()));
   });
 };
 
@@ -234,73 +235,84 @@ export class Batcher<T = unknown> {
   }
 }
 
-interface HashCacheEntry {
-  hash: string;
-  mtime: number;
-  size: number;
-}
-
-interface HashCache {
-  [filepath: string]: HashCacheEntry;
-}
-
 export class FileHashCache {
-  private cache: HashCache = {};
+  private db: Database.Database;
   private cacheFile: string;
-  private isDirty = false;
+
+  private stmtGet: Database.Statement;
+  private stmtInsertFolder: Database.Statement;
+  private stmtUpsertFile: Database.Statement;
 
   constructor(configDir: string) {
-    this.cacheFile = join(configDir, 'hash-cache.json');
+    this.cacheFile = join(configDir, 'cli.db');
+
+    this.db = new Database(this.cacheFile);
+    this.db.pragma('journal_mode = WAL');
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS folder (
+        id INTEGER PRIMARY KEY,
+        path TEXT UNIQUE NOT NULL
+      ) STRICT
+    `);
+
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS file (
+        name TEXT NOT NULL,
+        folder_id INTEGER NOT NULL,
+        hash BLOB NOT NULL,
+        mtime INTEGER NOT NULL,
+        size INTEGER NOT NULL,
+        FOREIGN KEY(folder_id) REFERENCES folder(id) ON DELETE CASCADE,
+        PRIMARY KEY(name, folder_id)
+      ) STRICT, WITHOUT ROWID
+    `);
+
+    this.stmtGet = this.db.prepare(
+      'SELECT hash, mtime, size FROM file WHERE name = ? AND folder_id = (SELECT id FROM folder WHERE path = ?)',
+    );
+
+    this.stmtInsertFolder = this.db.prepare(`
+      INSERT INTO folder (path)
+      VALUES (?)
+      ON CONFLICT(path) DO NOTHING
+    `);
+
+    this.stmtUpsertFile = this.db.prepare(`
+      INSERT INTO file (name, folder_id, hash, mtime, size)
+      VALUES (?, (SELECT id FROM folder WHERE path = ?), ?, ?, ?)
+      ON CONFLICT(name, folder_id) DO UPDATE SET
+        hash = excluded.hash,
+        mtime = excluded.mtime,
+        size = excluded.size
+    `);
   }
 
-  async load() {
-    if (existsSync(this.cacheFile)) {
-      try {
-        const content = await readFile(this.cacheFile, 'utf8');
-        this.cache = JSON.parse(content);
-      } catch (error) {
-        console.warn('Failed to load hash cache:', error);
-        console.warn('Starting with an empty cache.');
-        this.cache = {};
-      }
+  get(filepath: string, mtimeMs: number, size: number) {
+    const parsed = path.parse(filepath);
+    const entry = this.stmtGet.get(parsed.base, parsed.dir) as
+      | { hash: Buffer; mtime: number; size: number }
+      | undefined;
+    if (entry && entry.mtime === mtimeMs && entry.size === size) {
+      return entry.hash.toString('hex');
     }
   }
 
-  async save() {
-    if (this.isDirty) {
-      try {
-        await writeFile(this.cacheFile, JSON.stringify(this.cache));
-        this.isDirty = false;
-      } catch (error) {
-        console.warn('Failed to save hash cache', error);
-      }
-    }
-  }
-
-  async getHash(filepath: string, stats: { mtime: Date; size: number }): Promise<string> {
-    const entry = this.cache[filepath];
-
-    // Check if we have a valid cached hash
-    if (entry && entry.mtime === stats.mtime.getTime() && entry.size === stats.size) {
-      return entry.hash;
-    }
-
-    // Calculate new hash
+  async compute(filepath: string, mtimeMs: number, size: number) {
     const hash = await sha1(filepath);
-
-    // Cache the new hash
-    this.cache[filepath] = {
-      hash,
-      mtime: stats.mtime.getTime(),
-      size: stats.size,
-    };
-    this.isDirty = true;
-
-    return hash;
+    const parsed = path.parse(filepath);
+    try {
+      this.stmtUpsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
+    } catch (error: any) {
+      if (error.message.endsWith('file.folder_id')) {
+        this.stmtInsertFolder.run(parsed.dir);
+        this.stmtUpsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
+      }
+    }
+    return hash.toString('hex');
   }
 
-  clear() {
-    this.cache = {};
-    this.isDirty = true;
+  close() {
+    this.db.close();
   }
 }

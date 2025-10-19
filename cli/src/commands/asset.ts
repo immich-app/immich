@@ -131,10 +131,6 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
   // Clear the album names cache at the start of each upload command
   processedAlbumNames.clear();
 
-  // Initialize hash cache
-  const hashCache = new FileHashCache(baseOptions.configDirectory);
-  await hashCache.load();
-
   await authenticate(baseOptions);
 
   const scanFiles = await scan(paths, options);
@@ -156,9 +152,6 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
   }
 
   await uploadBatch(scanFiles, options, baseOptions);
-
-  // Save updated hashes
-  await hashCache.save();
 };
 
 const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
@@ -280,21 +273,7 @@ export const checkForDuplicates = async (
 
   const results: { id: string; checksum: string }[] = [];
   let checkBulkUploadRequests: AssetBulkUploadCheckItem[] = [];
-
-  // Initialize hash cache
   const hashCache = new FileHashCache(configDirectory);
-  await hashCache.load();
-
-  // Setup auto-save interval for hash cache
-  const saveInterval = setInterval(async () => {
-    await hashCache.save();
-  }, 30_000); // Save every 30 seconds to minimize I/O
-
-  // Setup cleanup for the interval
-  const cleanup = async () => {
-    clearInterval(saveInterval);
-    await hashCache.save();
-  };
 
   try {
     const queue = new Queue<string, AssetBulkUploadCheckItem[]>(
@@ -304,7 +283,10 @@ export const checkForDuplicates = async (
           throw new Error(`Stats not found for ${filepath}`);
         }
 
-        const dto = { id: filepath, checksum: await hashCache.getHash(filepath, stats) };
+        const mtimeMs = stats.mtime.getTime();
+        const cachedChecksum = hashCache.get(filepath, mtimeMs, stats.size);
+        const checksum = cachedChecksum ? cachedChecksum : await hashCache.compute(filepath, mtimeMs, stats.size);
+        const dto = { id: filepath, checksum };
 
         results.push(dto);
         checkBulkUploadRequests.push(dto);
@@ -341,8 +323,7 @@ export const checkForDuplicates = async (
       }
     }
   } finally {
-    // Always clean up and save cache, even if there's an error
-    await cleanup();
+    hashCache.close();
     multiBar?.stop();
   }
 

@@ -15,6 +15,7 @@
   "devDependencies": {
     "@eslint/js": "^9.8.0",
     "@immich/sdk": "file:../open-api/typescript-sdk",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/byte-size": "^8.1.0",
     "@types/cli-progress": "^3.11.0",
     "@types/lodash-es": "^4.17.12",
@@ -63,11 +64,12 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "better-sqlite3": "^12.4.1",
     "chokidar": "^4.0.3",
     "fast-glob": "^3.3.2",
     "fastq": "^1.17.1",
     "lodash-es": "^4.17.21",
-    "micromatch": "^4.0.8"
+    "picomatch": "^4.0.3"
   },
   "volta": {
     "node": "22.20.0"
