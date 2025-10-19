@@ -64,14 +64,8 @@
               </p>
             </div>
           </button>
-        {/each}
-      {:else}
-        <p class="py-5 text-sm">
-          {$t('photo_shared_all_users')}
-        </p>
-      {/if}
 
-      <div class="mt-4 px-5">
+        <div class="mt-4 px-5">
         <Field label={$t('partner_sharing_start_date_optional')} description={$t('partner_sharing_start_date_description')}>
           <DateInput
             class="immich-form-input mt-2"
@@ -82,6 +76,12 @@
           />
         </Field>
       </div>
+        {/each}
+      {:else}
+        <p class="py-5 text-sm">
+          {$t('photo_shared_all_users')}
+        </p>
+      {/if}
 
       <ModalFooter>
         {#if selectedUsers.length > 0}
