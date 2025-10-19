@@ -49,7 +49,7 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
                 // return const SizedBox(height: 5);
                 return const SizedBox.shrink();
               }
-              final activity = data[index];
+              final activity = data[data.length - 1 - index];
               final canDelete = activity.user.id == user?.id || album.ownerId == user?.id;
               return Padding(
                 padding: const EdgeInsets.symmetric(vertical: 1),
@@ -70,16 +70,20 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
     return BaseBottomSheet(
       actions: [],
       slivers: [buildActivitiesSliver()],
-      footer: Column(
-        children: [
-          const Divider(indent: 16, endIndent: 16),
-          DriftActivityTextField(
-            isEnabled: album.isActivityEnabled,
-            isBottomSheet: true,
-            // likeId: likedId,
-            onSubmit: onAddComment,
-          ),
-        ],
+      footer: Padding(
+        // TODO: avoid fixed padding, use context.padding.bottom
+        padding: const EdgeInsets.only(bottom: 32),
+        child: Column(
+          children: [
+            const Divider(indent: 16, endIndent: 16),
+            DriftActivityTextField(
+              isEnabled: album.isActivityEnabled,
+              isBottomSheet: true,
+              // likeId: likedId,
+              onSubmit: onAddComment,
+            ),
+          ],
+        ),
       ),
       controller: controller,
       initialChildSize: initialChildSize,
@@ -88,7 +92,7 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
       expand: false,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
-      listenScrollToBottomEvents: true,
+      listenScrollToBottomEvents: false,
       backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
     );
   }
