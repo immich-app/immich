@@ -21,7 +21,7 @@ export class TimelineService extends BaseService {
     const timeBucketOptions = await this.buildTimeBucketOptions(auth, { ...dto });
 
     // TODO: use id cursor for pagination
-    const bucket = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions);
+    const bucket = await this.assetRepository.getTimeBucket(dto.timeBucket, timeBucketOptions, auth);
     return bucket.assets;
   }
 

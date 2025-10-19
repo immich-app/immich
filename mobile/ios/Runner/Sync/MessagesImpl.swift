@@ -103,7 +103,9 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         let options = PHFetchOptions()
         options.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: false)]
         options.includeHiddenAssets = false
-        let assets = PHAsset.fetchAssets(in: album, options: options)
+        
+        let assets = getAssetsFromAlbum(in: album, options: options)
+        
         let isCloud = album.assetCollectionSubtype == .albumCloudShared || album.assetCollectionSubtype == .albumMyPhotoStream
         
         var domainAlbum = PlatformAlbum(
@@ -201,7 +203,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         let options = PHFetchOptions()
         options.predicate = NSPredicate(format: "localIdentifier IN %@", assets.map(\.id))
         options.includeHiddenAssets = false
-        let result = PHAsset.fetchAssets(in: album, options: options)
+        let result = self.getAssetsFromAlbum(in: album, options: options)
         result.enumerateObjects { (asset, _, _) in
           albumAssets[asset.localIdentifier, default: []].append(album.localIdentifier)
         }
@@ -219,7 +221,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     var ids: [String] = []
     let options = PHFetchOptions()
     options.includeHiddenAssets = false
-    let assets = PHAsset.fetchAssets(in: album, options: options)
+    let assets = getAssetsFromAlbum(in: album, options: options)
     assets.enumerateObjects { (asset, _, _) in
       ids.append(asset.localIdentifier)
     }
@@ -236,7 +238,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     let options = PHFetchOptions()
     options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
     options.includeHiddenAssets = false
-    let assets = PHAsset.fetchAssets(in: album, options: options)
+    let assets = getAssetsFromAlbum(in: album, options: options)
     return Int64(assets.count)
   }
   
@@ -253,7 +255,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       options.predicate = NSPredicate(format: "creationDate > %@ OR modificationDate > %@", date, date)
     }
     
-    let result = PHAsset.fetchAssets(in: album, options: options)
+    let result = getAssetsFromAlbum(in: album, options: options)
     if(result.count == 0) {
       return []
     }
@@ -374,5 +376,14 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
       guard let requestId = requestRef.id else { return }
       PHAssetResourceManager.default().cancelDataRequest(requestId)
     })
+  }
+  
+  private func getAssetsFromAlbum(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {
+    // Ensure to actually getting all assets for the Recents album
+    if (album.assetCollectionSubtype == .smartAlbumUserLibrary) {
+      return PHAsset.fetchAssets(with: options)
+    } else {
+      return PHAsset.fetchAssets(in: album, options: options)
+    }
   }
 }
