@@ -328,18 +328,19 @@
     }
   });
 
-  let timelineManager = new TimelineManager();
-
-  $effect(() => {
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.VIEW) {
-      void timelineManager.updateOptions({ albumId, order: albumOrder });
-    } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
-      void timelineManager.updateOptions({
+      return { albumId, order: albumOrder };
+    }
+    if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
+      return {
         visibility: AssetVisibility.Timeline,
         withPartners: true,
         timelineAlbumId: albumId,
-      });
+      };
     }
+    return {};
   });
 
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
@@ -352,10 +353,7 @@
     handlePromiseError(activityManager.init(album.id));
   });
 
-  onDestroy(() => {
-    activityManager.reset();
-    timelineManager.destroy();
-  });
+  onDestroy(() => activityManager.reset());
 
   let isOwned = $derived($user.id == album.ownerId);
 
@@ -446,7 +444,8 @@
       <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
-        {timelineManager}
+        bind:timelineManager
+        {options}
         assetInteraction={currentAssetIntersection}
         {isShared}
         {isSelectionMode}

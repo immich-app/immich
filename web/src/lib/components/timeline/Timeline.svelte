@@ -12,17 +12,17 @@
   import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { getTimes, type ScrubberListener, type TimelineYearMonth } from '$lib/utils/timeline-util';
+  import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
-  import { onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import type { UpdatePayload } from 'vite';
   import TimelineDateGroup from './TimelineDateGroup.svelte';
 
@@ -33,7 +33,8 @@
      `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
      additionally, update the page location/url with the asset as the timeline is scrolled */
     enableRouting: boolean;
-    timelineManager: TimelineManager;
+    timelineManager?: TimelineManager;
+    options?: TimelineManagerOptions;
     assetInteraction: AssetInteraction;
     removeAction?:
       | AssetAction.UNARCHIVE
@@ -71,6 +72,7 @@
     singleSelect = false,
     enableRouting,
     timelineManager = $bindable(),
+    options,
     assetInteraction,
     removeAction = null,
     withStacked = false,
@@ -87,6 +89,10 @@
     onThumbnailClick,
   }: Props = $props();
 
+  timelineManager = new TimelineManager();
+  onDestroy(() => timelineManager.destroy());
+  $effect(() => options && void timelineManager.updateOptions(options));
+
   let { isViewing: showAssetViewer, asset: viewingAsset, gridScrollTarget } = assetViewingStore;
 
   let scrollableElement: HTMLElement | undefined = $state();
@@ -97,15 +103,10 @@
   // Note: There may be multiple months visible within the viewport at any given time.
   let viewportTopMonthScrollPercent = $state(0);
   // The timeline month intersecting the top position of the viewport
-  let viewportTopMonth: { year: number; month: number } | undefined = $state(undefined);
+  let viewportTopMonth: ViewportTopMonth = $state(undefined);
   // Overall scroll percentage through the entire timeline (0-1)
   let timelineScrollPercent: number = $state(0);
   let scrubberWidth = $state(0);
-
-  // 60 is the bottom spacer element at 60px
-  let bottomSectionHeight = 60;
-  // Indicates whether the viewport is currently in the lead-out section (after all months)
-  let isInLeadOutSection = $state(false);
 
   const isEmpty = $derived(timelineManager.isInitialized && timelineManager.months.length === 0);
   const maxMd = $derived(mobileDevice.maxMd);
@@ -153,6 +154,9 @@
 
     // If the asset is already visible, then don't scroll.
     if (assetIsVisible(height)) {
+      // need to update window positions/intersections because since the <Portal>
+      // went from invisible to visible
+      timelineManager.updateSlidingWindow();
       return true;
     }
 
@@ -212,13 +216,6 @@
     }
   };
 
-  const handleBeforeUpdate = (payload: UpdatePayload) => {
-    const timelineUpdate = payload.updates.some((update) => update.path.endsWith('Timeline.svelte'));
-    if (timelineUpdate) {
-      timelineManager.destroy();
-    }
-  };
-
   const updateIsScrolling = () => (timelineManager.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
 
@@ -230,41 +227,36 @@
     }
   });
 
-  const getMaxScrollPercent = () => {
-    const totalHeight = timelineManager.timelineHeight + bottomSectionHeight + timelineManager.topSectionHeight;
-    return (totalHeight - timelineManager.viewportHeight) / totalHeight;
-  };
-
-  const getMaxScroll = () => {
-    if (!scrollableElement || !timelineElement) {
-      return 0;
-    }
-    return (
-      timelineManager.topSectionHeight +
-      bottomSectionHeight +
-      (timelineElement.clientHeight - scrollableElement.clientHeight)
-    );
-  };
-
-  const scrollToMonthGroupAndOffset = (monthGroup: MonthGroup, monthGroupScrollPercent: number) => {
-    const topOffset = monthGroup.top;
-    const maxScrollPercent = getMaxScrollPercent();
-    const delta = monthGroup.height * monthGroupScrollPercent;
+  const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, monthGroupScrollPercent: number) => {
+    const topOffset = segmentTop;
+    const maxScrollPercent = timelineManager.maxScrollPercent;
+    const delta = segmentHeight * monthGroupScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
     timelineManager.scrollTo(scrollToTop);
   };
-
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   // this function scrolls the timeline to the specified month group and offset, based on scrubber interaction
   const onScrub: ScrubberListener = (scrubberData) => {
     const { scrubberMonth, overallScrollPercent, scrubberMonthScrollPercent } = scrubberData;
 
-    if (!scrubberMonth || timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
+    const leadIn = scrubberMonth === 'lead-in';
+    const leadOut = scrubberMonth === 'lead-out';
+    const noMonth = !scrubberMonth;
+
+    if (noMonth || timelineManager.limitedScroll) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
-      const maxScroll = getMaxScroll();
-      const offset = maxScroll * overallScrollPercent;
+      const maxScroll = timelineManager.maxScrollPercent;
+      const offset = maxScroll * overallScrollPercent * timelineManager.totalViewerHeight;
       timelineManager.scrollTo(offset);
+    } else if (leadIn) {
+      scrollToSegmentPercentage(0, timelineManager.topSectionHeight, scrubberMonthScrollPercent);
+    } else if (leadOut) {
+      scrollToSegmentPercentage(
+        timelineManager.topSectionHeight + timelineManager.bodySectionHeight,
+        timelineManager.bottomSectionHeight,
+        scrubberMonthScrollPercent,
+      );
     } else {
       const monthGroup = timelineManager.months.find(
         ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
@@ -272,50 +264,41 @@
       if (!monthGroup) {
         return;
       }
-      scrollToMonthGroupAndOffset(monthGroup, scrubberMonthScrollPercent);
+      scrollToSegmentPercentage(monthGroup.top, monthGroup.height, scrubberMonthScrollPercent);
     }
   };
 
   // note: don't throttle, debounch, or otherwise make this function async - it causes flicker
   const handleTimelineScroll = () => {
-    isInLeadOutSection = false;
-
     if (!scrollableElement) {
       return;
     }
 
-    if (timelineManager.timelineHeight < timelineManager.viewportHeight * 2) {
+    if (timelineManager.limitedScroll) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
-      const maxScroll = getMaxScroll();
-      timelineScrollPercent = Math.min(1, scrollableElement.scrollTop / maxScroll);
+      const maxScroll = timelineManager.maxScroll;
 
+      timelineScrollPercent = Math.min(1, scrollableElement.scrollTop / maxScroll);
       viewportTopMonth = undefined;
       viewportTopMonthScrollPercent = 0;
     } else {
+      timelineScrollPercent = 0;
+
       let top = scrollableElement.scrollTop;
-      if (top < timelineManager.topSectionHeight) {
-        // in the lead-in area
-        viewportTopMonth = undefined;
-        viewportTopMonthScrollPercent = 0;
-        const maxScroll = getMaxScroll();
-
-        timelineScrollPercent = Math.min(1, scrollableElement.scrollTop / maxScroll);
-        return;
-      }
-
-      let maxScrollPercent = getMaxScrollPercent();
-      let found = false;
+      let maxScrollPercent = timelineManager.maxScrollPercent;
 
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
-        let monthGroup: TimelineYearMonth | undefined;
+        let monthGroup: ViewportTopMonth;
         let monthGroupHeight = 0;
         if (i === -1) {
           // lead-in
+          monthGroup = 'lead-in';
           monthGroupHeight = timelineManager.topSectionHeight;
         } else if (i === monthsLength) {
           // lead-out
-          monthGroupHeight = bottomSectionHeight;
+          monthGroup = 'lead-out';
+          monthGroupHeight = timelineManager.bottomSectionHeight;
         } else {
           monthGroup = timelineManager.months[i].yearMonth;
           monthGroupHeight = timelineManager.months[i].height;
@@ -334,17 +317,9 @@
             viewportTopMonth = timelineManager.months[i + 1].yearMonth;
             viewportTopMonthScrollPercent = 0;
           }
-
-          found = true;
           break;
         }
         top = next;
-      }
-      if (!found) {
-        isInLeadOutSection = true;
-        viewportTopMonth = undefined;
-        viewportTopMonthScrollPercent = 0;
-        timelineScrollPercent = 1;
       }
     }
   };
@@ -525,7 +500,7 @@
 
 <svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} />
 
-<HotModuleReload onAfterUpdate={handleAfterUpdate} onBeforeUpdate={handleBeforeUpdate} />
+<HotModuleReload onAfterUpdate={handleAfterUpdate} onBeforeUpdate={() => timelineManager.destroy()} />
 
 <TimelineKeyboardActions
   scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
@@ -540,8 +515,7 @@
     {timelineManager}
     height={timelineManager.viewportHeight}
     timelineTopOffset={timelineManager.topSectionHeight}
-    timelineBottomOffset={bottomSectionHeight}
-    {isInLeadOutSection}
+    timelineBottomOffset={timelineManager.bottomSectionHeight}
     {timelineScrollPercent}
     {viewportTopMonthScrollPercent}
     {viewportTopMonth}
@@ -580,7 +554,7 @@
     bind:this={timelineElement}
     id="virtual-timeline"
     class:invisible
-    style:height={timelineManager.timelineHeight + 'px'}
+    style:height={timelineManager.totalViewerHeight + 'px'}
   >
     <section
       use:resizeObserver={topSectionResizeObserver}
@@ -636,11 +610,11 @@
     {/each}
     <!-- spacer for leadout -->
     <div
-      class="h-[60px]"
+      style:height={timelineManager.bottomSectionHeight + 'px'}
       style:position="absolute"
       style:left="0"
       style:right="0"
-      style:transform={`translate3d(0,${timelineManager.timelineHeight}px,0)`}
+      style:transform={`translate3d(0,${timelineManager.topSectionHeight + timelineManager.bodySectionHeight}px,0)`}
     ></div>
   </section>
 </section>
