@@ -72,43 +72,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
             EventStream.shared.emit(const ViewerOpenBottomSheetEvent(activitiesMode: true));
-            // showModalBottomSheet(
-            //   // backgroundColor: context.colorScheme.surface,
-            //   context: context,
-            //   useSafeArea: true,
-            //   isScrollControlled: true,
-
-            //   builder: (context) => Padding(
-            //     padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            //     child: const ActivitiesBottomSheet(),
-            //   ),
-            // );
-
-            // showModalBottomSheet(
-            //   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
-            //   barrierColor: Colors.transparent,
-            //   isScrollControlled: true,
-            //   showDragHandle: true,
-            //   enableDrag: true,
-            //   context: context,
-            //   useSafeArea: true,
-            //   builder: (context) {
-            //     return DraggableScrollableSheet(
-            //       minChildSize: 0.2,
-            //       maxChildSize: 0.8,
-            //       initialChildSize: 0.2,
-            //       expand: false,
-            //       snap: true,
-            //       snapSizes: const [0.2, 0.4, 0.6],
-            //       builder: (context, scrollController) {
-            //         return Padding(
-            //           padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
-            //           child: ActivitiesBottomSheet(scrollController: scrollController),
-            //         );
-            //       },
-            //     );
-            //   },
-            // );
           },
         ),
       if (showViewInTimelineButton)
