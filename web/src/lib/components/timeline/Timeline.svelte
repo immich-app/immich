@@ -154,6 +154,9 @@
 
     // If the asset is already visible, then don't scroll.
     if (assetIsVisible(height)) {
+      // need to update window positions/intersections because since the <Portal>
+      // went from invisible to visible
+      timelineManager.updateSlidingWindow();
       return true;
     }
 
