@@ -7,6 +7,7 @@ import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class DriftActivityTextField extends ConsumerStatefulWidget {
   final bool isEnabled;
+  final bool isBottomSheet;
   final String? likeId;
   final Function(String) onSubmit;
   final Function()? onKeyboardFocus;
@@ -16,6 +17,7 @@ class DriftActivityTextField extends ConsumerStatefulWidget {
     this.isEnabled = true,
     this.likeId,
     this.onKeyboardFocus,
+    this.isBottomSheet = false,
     super.key,
   });
 
@@ -34,7 +36,9 @@ class _DriftActivityTextFieldState extends ConsumerState<DriftActivityTextField>
     inputController = TextEditingController();
     inputFocusNode = FocusNode();
 
-    inputFocusNode.requestFocus();
+    if (!widget.isBottomSheet) {
+      inputFocusNode.requestFocus();
+    }
 
     inputFocusNode.addListener(() {
       if (inputFocusNode.hasFocus) {
@@ -72,7 +76,7 @@ class _DriftActivityTextFieldState extends ConsumerState<DriftActivityTextField>
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: EdgeInsets.symmetric(vertical: widget.isBottomSheet ? 0 : 10),
       child: TextField(
         controller: inputController,
         enabled: widget.isEnabled,

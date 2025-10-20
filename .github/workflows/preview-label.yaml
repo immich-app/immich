@@ -23,7 +23,7 @@ jobs:
         with:
           github-token: ${{ steps.token.outputs.token }}
           message-id: 'preview-status'
-          message: 'Deploying preview environment to https://pr-${{ github.event.pull_request.number }}.preview.internal.immich.cloud/'
+          message: 'Deploying preview environment to https://pr-${{ github.event.pull_request.number }}.preview.internal.immich.build/'
 
   remove-label:
     runs-on: ubuntu-latest
