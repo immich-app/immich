@@ -8,15 +8,15 @@ import { writable } from 'svelte/store';
  */
 export type SourcePreference = { variant: 'source'; priority: 'internal' | 'external' };
 
-export type PreferenceItem = SourcePreference;
+export type PreferenceDuplicateTieItem = SourcePreference;
 
-export type DuplicateTiePreferences = PreferenceItem[];
+export type DuplicateTiePreferences = PreferenceDuplicateTieItem[];
 export const duplicateTiePreference = writable<DuplicateTiePreferences | undefined>(undefined);
 
-export const findDuplicateTiePreference = <T extends PreferenceItem['variant']>(
+export const findDuplicateTiePreference = <T extends PreferenceDuplicateTieItem['variant']>(
   preference: DuplicateTiePreferences | undefined,
   variant: T,
-): Extract<PreferenceItem, { variant: T }> | undefined =>
+): Extract<PreferenceDuplicateTieItem, { variant: T }> | undefined =>
   preference?.find(
-    (preference): preference is Extract<PreferenceItem, { variant: T }> => preference.variant === variant,
+    (preference): preference is Extract<PreferenceDuplicateTieItem, { variant: T }> => preference.variant === variant,
   );
