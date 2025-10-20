@@ -65,7 +65,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
@@ -95,7 +95,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
