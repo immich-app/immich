@@ -19,9 +19,8 @@ class AppBarServerInfo extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
-    ServerInfoNotifier serverInfoNotifier = ref.watch(serverInfoProvider.notifier);
-
     final user = ref.watch(currentUserProvider);
+    final bool versionWarningPresent = ref.watch(versionWarningPresentProvider(user));
 
     final appInfo = useState({});
     const titleFontSize = 12.0;
@@ -50,7 +49,7 @@ class AppBarServerInfo extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (serverInfoNotifier.showVersionCheckWarning(user)) ...[
+              if (versionWarningPresent) ...[
                 const ServerUpdateNotification(),
                 const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
               ],

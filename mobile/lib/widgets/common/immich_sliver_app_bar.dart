@@ -117,8 +117,8 @@ class _ProfileIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ServerInfoNotifier serverInfo = ref.watch(serverInfoProvider.notifier);
     final user = ref.watch(currentUserProvider);
+    final bool versionWarningPresent = ref.watch(versionWarningPresentProvider(user));
     const widgetSize = 30.0;
 
     void toggleReadonlyMode() {
@@ -147,7 +147,7 @@ class _ProfileIndicator extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible: serverInfo.showVersionCheckWarning(user),
+        isLabelVisible: versionWarningPresent,
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)

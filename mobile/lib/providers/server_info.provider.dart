@@ -75,12 +75,6 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     state = state.copyWith(versionStatus: VersionStatus.upToDate);
   }
 
-  bool showVersionCheckWarning(UserDto? user) {
-    return state.versionStatus == VersionStatus.clientOutOfDate ||
-        state.versionStatus == VersionStatus.error ||
-        ((user?.isAdmin ?? false) && state.versionStatus == VersionStatus.serverOutOfDate);
-  }
-
   handleReleaseInfo(ServerVersion serverVersion, ServerVersion latestVersion) {
     // Update local server version
     _checkServerVersionMismatch(serverVersion, latestVersion: latestVersion);
@@ -105,4 +99,11 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
 final serverInfoProvider = StateNotifierProvider<ServerInfoNotifier, ServerInfo>((ref) {
   return ServerInfoNotifier(ref.read(serverInfoServiceProvider));
+});
+
+final versionWarningPresentProvider = Provider.family<bool, UserDto?>((ref, user) {
+  final serverInfo = ref.watch(serverInfoProvider);
+  return serverInfo.versionStatus == VersionStatus.clientOutOfDate ||
+      serverInfo.versionStatus == VersionStatus.error ||
+      ((user?.isAdmin ?? false) && serverInfo.versionStatus == VersionStatus.serverOutOfDate);
 });
