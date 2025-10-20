@@ -667,9 +667,15 @@ export type DownloadResponseDto = {
     archives: DownloadArchiveInfo[];
     totalSize: number;
 };
-export type DuplicateResponseDto = {
+export type DuplicateItem = {
     assets: AssetResponseDto[];
     duplicateId: string;
+};
+export type DuplicateResponseDto = {
+    hasNextPage: boolean;
+    items: DuplicateItem[];
+    totalItems: number;
+    totalPages: number;
 };
 export type PersonResponseDto = {
     birthDate: string | null;
@@ -2862,11 +2868,17 @@ export function deleteDuplicates({ bulkIdsDto }: {
 /**
  * Retrieve duplicates
  */
-export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
+export function getAssetDuplicates({ page, size }: {
+    page?: number;
+    size?: number;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: DuplicateResponseDto[];
-    }>("/duplicates", {
+        data: DuplicateResponseDto;
+    }>(`/duplicates${QS.query(QS.explode({
+        page,
+        size
+    }))}`, {
         ...opts
     }));
 }

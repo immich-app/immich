@@ -7,6 +7,7 @@ import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
+import { paginationHelper } from 'src/utils/pagination';
 
 interface DuplicateSearch {
   assetId: string;
@@ -27,55 +28,69 @@ export class DuplicateRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(userId: string) {
-    return (
-      this.db
-        .with('duplicates', (qb) =>
-          qb
-            .selectFrom('asset')
-            .$call(withDefaultVisibility)
-            .innerJoinLateral(
-              (qb) =>
-                qb
-                  .selectFrom('asset_exif')
-                  .selectAll('asset')
-                  .select((eb) => eb.table('asset_exif').as('exifInfo'))
-                  .whereRef('asset_exif.assetId', '=', 'asset.id')
-                  .as('asset2'),
-              (join) => join.onTrue(),
-            )
-            .select('asset.duplicateId')
-            .select((eb) =>
-              eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
-            )
-            .where('asset.ownerId', '=', asUuid(userId))
-            .where('asset.duplicateId', 'is not', null)
-            .$narrowType<{ duplicateId: NotNull }>()
-            .where('asset.deletedAt', 'is', null)
-            .where('asset.stackId', 'is', null)
-            .groupBy('asset.duplicateId'),
-        )
-        .with('unique', (qb) =>
-          qb
-            .selectFrom('duplicates')
-            .select('duplicateId')
-            .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
-        )
-        .with('removed_unique', (qb) =>
-          qb
-            .updateTable('asset')
-            .set({ duplicateId: null })
-            .from('unique')
-            .whereRef('asset.duplicateId', '=', 'unique.duplicateId'),
-        )
-        .selectFrom('duplicates')
-        .selectAll()
-        // TODO: compare with filtering by json_array_length > 1
-        .where(({ not, exists }) =>
-          not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
-        )
-        .execute()
-    );
+  async getAll(userId: string, page: number, size: number) {
+    const query = this.db
+      .with('duplicates', (qb) =>
+        qb
+          .selectFrom('asset')
+          .$call(withDefaultVisibility)
+          .innerJoinLateral(
+            (qb) =>
+              qb
+                .selectFrom('asset_exif')
+                .selectAll('asset')
+                .select((eb) => eb.table('asset_exif').as('exifInfo'))
+                .whereRef('asset_exif.assetId', '=', 'asset.id')
+                .as('asset2'),
+            (join) => join.onTrue(),
+          )
+          .select('asset.duplicateId')
+          .select((eb) =>
+            eb.fn.jsonAgg('asset2').orderBy('asset.localDateTime', 'asc').$castTo<MapAsset[]>().as('assets'),
+          )
+          .where('asset.ownerId', '=', asUuid(userId))
+          .where('asset.duplicateId', 'is not', null)
+          .$narrowType<{ duplicateId: NotNull }>()
+          .where('asset.deletedAt', 'is', null)
+          .where('asset.stackId', 'is', null)
+          .groupBy('asset.duplicateId'),
+      )
+      .with('unique', (qb) =>
+        qb
+          .selectFrom('duplicates')
+          .select('duplicateId')
+          .where((eb) => eb(eb.fn('json_array_length', ['assets']), '=', 1)),
+      )
+      .with('removed_unique', (qb) =>
+        qb
+          .updateTable('asset')
+          .set({ duplicateId: null })
+          .from('unique')
+          .whereRef('asset.duplicateId', '=', 'unique.duplicateId'),
+      )
+      .selectFrom('duplicates')
+      .selectAll()
+      // TODO: compare with filtering by json_array_length > 1
+      .where(({ not, exists }) =>
+        not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
+      );
+
+    const [items, totalItems] = await Promise.all([
+      query
+      .offset((page - 1) * size)
+        .limit(size)
+        .execute(),
+      query
+        .clearSelect()
+        .select((eb) => eb.fn.countAll<number>().as('count'))
+        .executeTakeFirstOrThrow()
+        .then((r) => r.count),
+    ]);
+
+    return {
+      items,
+      totalItems,
+    }
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })

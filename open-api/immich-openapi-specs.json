@@ -4580,16 +4580,32 @@
       "get": {
         "description": "Retrieve a list of duplicate assets available to the authenticated user.",
         "operationId": "getAssetDuplicates",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "size",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/DuplicateResponseDto"
-                  },
-                  "type": "array"
+                  "$ref": "#/components/schemas/DuplicateResponseDto"
                 }
               }
             },
@@ -16339,7 +16355,7 @@
         ],
         "type": "object"
       },
-      "DuplicateResponseDto": {
+      "DuplicateItem": {
         "properties": {
           "assets": {
             "items": {
@@ -16354,6 +16370,32 @@
         "required": [
           "assets",
           "duplicateId"
+        ],
+        "type": "object"
+      },
+      "DuplicateResponseDto": {
+        "properties": {
+          "hasNextPage": {
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DuplicateItem"
+            },
+            "type": "array"
+          },
+          "totalItems": {
+            "type": "number"
+          },
+          "totalPages": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "hasNextPage",
+          "items",
+          "totalItems",
+          "totalPages"
         ],
         "type": "object"
       },
