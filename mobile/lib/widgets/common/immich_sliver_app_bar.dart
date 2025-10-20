@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -119,6 +120,8 @@ class _ProfileIndicator extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final bool versionWarningPresent = ref.watch(versionWarningPresentProvider(user));
+    final serverInfoState = ref.watch(serverInfoProvider);
+
     const widgetSize = 30.0;
 
     void toggleReadonlyMode() {
@@ -142,8 +145,17 @@ class _ProfileIndicator extends ConsumerWidget {
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
-          decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(widgetSize / 2)),
-          child: const Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: widgetSize / 2),
+          decoration: BoxDecoration(
+            color: context.isDarkTheme ? Colors.black : Colors.white,
+            borderRadius: BorderRadius.circular(widgetSize / 2),
+          ),
+          child: Icon(
+            Icons.info,
+            color: serverInfoState.versionStatus == VersionStatus.error
+                ? context.colorScheme.error
+                : context.primaryColor,
+            size: widgetSize / 2,
+          ),
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,

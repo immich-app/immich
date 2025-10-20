@@ -16,11 +16,8 @@ class ServerUpdateNotification extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final serverInfoState = ref.watch(serverInfoProvider);
 
-    Color warningColor = context.isDarkTheme
-        ? const Color.fromARGB(49, 255, 196, 0)
-        : const Color.fromARGB(82, 255, 170, 0);
     Color errorColor = const Color.fromARGB(85, 253, 97, 83);
-
+    Color infoColor = context.isDarkTheme ? context.primaryColor.withAlpha(55) : context.primaryColor.withAlpha(25);
     void openUpdateLink() {
       String url;
       if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate) {
@@ -43,19 +40,25 @@ class ServerUpdateNotification extends HookConsumerWidget {
       width: double.infinity,
       child: Container(
         decoration: BoxDecoration(
-          color: serverInfoState.versionStatus == VersionStatus.error ? errorColor : warningColor,
+          color: serverInfoState.versionStatus == VersionStatus.error ? errorColor : infoColor,
           borderRadius: const BorderRadius.all(Radius.circular(8)),
+          border: Border.all(
+            color: serverInfoState.versionStatus == VersionStatus.error
+                ? errorColor
+                : context.primaryColor.withAlpha(50),
+            width: 0.75,
+          ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               serverInfoState.versionStatus.message,
               textAlign: TextAlign.start,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
+              style: context.textTheme.labelLarge,
             ),
             if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate ||
                 serverInfoState.versionStatus == VersionStatus.clientOutOfDate) ...[
