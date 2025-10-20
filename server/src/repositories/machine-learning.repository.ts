@@ -106,7 +106,7 @@ export class MachineLearningRepository {
       }
     }
 
-    if (!config.availabilityChecks.enabled) {
+    if (!config.enabled || !config.availabilityChecks.enabled) {
       return;
     }
 

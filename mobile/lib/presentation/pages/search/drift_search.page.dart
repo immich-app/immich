@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -646,7 +647,7 @@ class _SearchResultGrid extends ConsumerWidget {
         child: ProviderScope(
           overrides: [
             timelineServiceProvider.overrideWith((ref) {
-              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets);
+              final timelineService = ref.watch(timelineFactoryProvider).fromAssets(assets, TimelineOrigin.search);
               ref.onDispose(timelineService.dispose);
               return timelineService;
             }),

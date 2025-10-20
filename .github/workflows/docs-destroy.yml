@@ -14,9 +14,12 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@697a75e2c3186d3c037c2c159855cf2d566542ba # use-mise-action-0.0.1
 
       - name: Destroy Docs Subdomain
         env:
@@ -25,12 +28,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
-        uses: gruntwork-io/terragrunt-action@aee21a7df999be8b471c2a8564c6cd853cb674e1 # v2.1.8
-        with:
-          tg_version: '0.58.12'
-          tofu_version: '1.7.1'
-          tg_dir: 'deployment/modules/cloudflare/docs'
-          tg_command: 'destroy -refresh=false'
+        working-directory: 'deployment/modules/cloudflare/docs'
+        run: 'mise run tf destroy -refresh=false'
 
       - name: Comment
         uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3.2.0

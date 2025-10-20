@@ -84,6 +84,7 @@ SUPPORTED_PROVIDERS = [
     "CUDAExecutionProvider",
     "ROCMExecutionProvider",
     "OpenVINOExecutionProvider",
+    "CoreMLExecutionProvider",
     "CPUExecutionProvider",
 ]
 

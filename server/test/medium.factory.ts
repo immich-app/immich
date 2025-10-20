@@ -35,12 +35,14 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncCheckpointRepository } from 'src/repositories/sync-checkpoint.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -55,6 +57,8 @@ import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { StackTable } from 'src/schema/tables/stack.table';
+import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
+import { TagTable } from 'src/schema/tables/tag.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { SyncService } from 'src/services/sync.service';
@@ -248,6 +252,18 @@ export class MediumTestContext<S extends BaseService = BaseService> {
       user,
     };
   }
+
+  async newTagAsset(tagBulkAssets: { tagIds: string[]; assetIds: string[] }) {
+    const tagsAssets: Insertable<TagAssetTable>[] = [];
+    for (const tagsId of tagBulkAssets.tagIds) {
+      for (const assetsId of tagBulkAssets.assetIds) {
+        tagsAssets.push({ tagsId, assetsId });
+      }
+    }
+
+    const result = await this.get(TagRepository).upsertAssetIds(tagsAssets);
+    return { tagsAssets, result };
+  }
 }
 
 export class SyncTestContext extends MediumTestContext<SyncService> {
@@ -305,6 +321,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
+    case SharedLinkAssetRepository:
     case StackRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
@@ -325,6 +342,10 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
 
     case EmailRepository: {
       return new key(LoggingRepository.create());
+    }
+
+    case TagRepository: {
+      return new key(db, LoggingRepository.create());
     }
 
     case LoggingRepository as unknown as ClassConstructor<LoggingRepository>: {
@@ -355,7 +376,8 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
     case UserRepository:
-    case VersionHistoryRepository: {
+    case VersionHistoryRepository:
+    case TagRepository: {
       return automock(key);
     }
 
@@ -581,6 +603,23 @@ const memoryInsert = (memory: Partial<Insertable<MemoryTable>> = {}) => {
   return { ...defaults, ...memory, id };
 };
 
+const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
+  const id = tag.id || newUuid();
+
+  const defaults: Insertable<TagTable> = {
+    id,
+    userId: '',
+    value: '',
+    createdAt: newDate(),
+    updatedAt: newDate(),
+    color: '',
+    parentId: null,
+    updateId: newUuid(),
+  };
+
+  return { ...defaults, ...tag, id };
+};
+
 class CustomWritable extends Writable {
   private data = '';
 
@@ -633,4 +672,5 @@ export const mediumFactory = {
   memoryInsert,
   loginDetails,
   loginResponse,
+  tagInsert,
 };

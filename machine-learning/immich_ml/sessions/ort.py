@@ -98,6 +98,14 @@ class OrtSession:
                         "precision": "FP32",
                         "cache_dir": (self.model_path.parent / "openvino").as_posix(),
                     }
+                case "CoreMLExecutionProvider":
+                    options = {
+                        "ModelFormat": "MLProgram",
+                        "MLComputeUnits": "ALL",
+                        "SpecializationStrategy": "FastPrediction",
+                        "AllowLowPrecisionAccumulationOnGPU": "1",
+                        "ModelCacheDirectory": (self.model_path.parent / "coreml").as_posix(),
+                    }
                 case _:
                     options = {}
             provider_options.append(options)
@@ -117,7 +125,7 @@ class OrtSession:
     @property
     def _sess_options_default(self) -> ort.SessionOptions:
         sess_options = ort.SessionOptions()
-        sess_options.enable_cpu_mem_arena = False
+        sess_options.enable_cpu_mem_arena = settings.model_arena
 
         # avoid thread contention between models
         if settings.model_inter_op_threads > 0:

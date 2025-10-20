@@ -39,6 +39,7 @@ import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -91,6 +92,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   ServerInfoRepository,
   SessionRepository,
   SharedLinkRepository,
+  SharedLinkAssetRepository,
   StackRepository,
   StorageRepository,
   SyncRepository,
@@ -144,6 +146,7 @@ export class BaseService {
     protected serverInfoRepository: ServerInfoRepository,
     protected sessionRepository: SessionRepository,
     protected sharedLinkRepository: SharedLinkRepository,
+    protected sharedLinkAssetRepository: SharedLinkAssetRepository,
     protected stackRepository: StackRepository,
     protected storageRepository: StorageRepository,
     protected syncRepository: SyncRepository,

@@ -166,6 +166,7 @@ export interface SystemConfig {
         ignoreCert: boolean;
         host: string;
         port: number;
+        secure: boolean;
         username: string;
         password: string;
       };
@@ -371,6 +372,7 @@ export const defaults = Object.freeze<SystemConfig>({
         ignoreCert: false,
         host: '',
         port: 587,
+        secure: false,
         username: '',
         password: '',
       },

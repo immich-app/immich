@@ -45,6 +45,7 @@
           transport: {
             host: config.notifications.smtp.transport.host,
             port: config.notifications.smtp.transport.port,
+            secure: config.notifications.smtp.transport.secure,
             username: config.notifications.smtp.transport.username,
             password: config.notifications.smtp.transport.password,
             ignoreCert: config.notifications.smtp.transport.ignoreCert,
@@ -126,6 +127,13 @@
               bind:value={config.notifications.smtp.transport.password}
               isEdited={config.notifications.smtp.transport.password !==
                 savedConfig.notifications.smtp.transport.password}
+            />
+
+            <SettingSwitch
+              title={$t('admin.notification_email_secure')}
+              subtitle={$t('admin.notification_email_secure_description')}
+              disabled={disabled || !config.notifications.smtp.enabled}
+              bind:checked={config.notifications.smtp.transport.secure}
             />
 
             <SettingSwitch

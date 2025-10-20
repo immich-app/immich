@@ -474,6 +474,9 @@ class SystemConfigSmtpTransportDto {
   @Max(65_535)
   port!: number;
 
+  @ValidateBoolean()
+  secure!: boolean;
+
   @IsString()
   username!: string;
 
