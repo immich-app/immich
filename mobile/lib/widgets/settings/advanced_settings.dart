@@ -100,7 +100,7 @@ class AdvancedSettings extends HookConsumerWidget {
         subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
         onChanged: HttpSSLOptions.applyFromSettings,
       ),
-      const CustomeProxyHeaderSettings(),
+      const CustomProxyHeaderSettings(),
       SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
       if (!Store.isBetaTimelineEnabled)
         SettingsSwitchListTile(
