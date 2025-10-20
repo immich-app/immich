@@ -6,6 +6,9 @@ packages:
   - server
   - web
   - .github
+
+dedupePeerDependents: false
+
 ignoredBuiltDependencies:
   - '@nestjs/core'
   - '@scarf/scarf'
@@ -22,37 +25,44 @@ ignoredBuiltDependencies:
   - protobufjs
   - ssh2
   - utimes
+
+injectWorkspacePackages: true
+
 onlyBuiltDependencies:
-  - sharp
   - '@tailwindcss/oxide'
+  - better-sqlite3
+  - sharp
+
 overrides:
   canvas: 2.11.2
   sharp: ^0.34.4
+
 packageExtensions:
-  nestjs-kysely:
+  '@immich/ui':
     dependencies:
-      tslib: '*'
-  nestjs-otel:
-    dependencies:
-      tslib: '*'
+      tailwindcss: '>=4.1'
   '@photo-sphere-viewer/equirectangular-video-adapter':
     dependencies:
       three: '*'
   '@photo-sphere-viewer/video-plugin':
     dependencies:
       three: '*'
+  nestjs-kysely:
+    dependencies:
+      tslib: '*'
+  nestjs-otel:
+    dependencies:
+      tslib: '*'
   sharp:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
-  '@immich/ui':
-    dependencies:
-      tailwindcss: '>=4.1'
   tailwind-variants:
     dependencies:
       tailwindcss: '>=4.1'
-dedupePeerDependents: false
+
 preferWorkspacePackages: true
-injectWorkspacePackages: true
+
 shamefullyHoist: false
+
 verifyDepsBeforeRun: install

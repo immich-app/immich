@@ -9,6 +9,7 @@ export default defineConfig({
       output: {
         dir: 'dist',
       },
+      external: ['better-sqlite3'],
     },
     ssr: true,
   },

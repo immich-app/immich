@@ -1,10 +1,11 @@
 import { getMyUser, init, isHttpError } from '@immich/sdk';
+import SQLite from 'better-sqlite3';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { platform } from 'node:os';
-import { join, resolve } from 'node:path';
+import path, { join, resolve } from 'node:path';
 import yaml from 'yaml';
 
 export interface BaseOptions {
@@ -165,11 +166,11 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
 
 export const sha1 = (filepath: string) => {
   const hash = createHash('sha1');
-  return new Promise<string>((resolve, reject) => {
+  return new Promise<Buffer>((resolve, reject) => {
     const rs = createReadStream(filepath);
     rs.on('error', reject);
     rs.on('data', (chunk) => hash.update(chunk));
-    rs.on('end', () => resolve(hash.digest('hex')));
+    rs.on('end', () => resolve(hash.digest()));
   });
 };
 
@@ -233,3 +234,100 @@ export class Batcher<T = unknown> {
     this.items = [];
   }
 }
+
+export class FileHashCache {
+  private db: SQLite.Database;
+  private getFile: SQLite.Statement<[string, string], { hash: Buffer; mtime: number; size: number }>;
+  private insertFolder: SQLite.Statement<[string], void>;
+  private upsertFile: SQLite.Statement<[string, string, Buffer, number, number], void>;
+
+  constructor(configDir: string) {
+    this.db = this.startDatabase(join(configDir, 'cli.db'));
+    this.getFile = this.db.prepare(
+      'SELECT hash, mtime, size FROM file WHERE name = ? AND folder_id = (SELECT id FROM folder WHERE path = ?)',
+    );
+    this.insertFolder = this.db.prepare('INSERT INTO folder (path) VALUES (?) ON CONFLICT (path) DO NOTHING');
+    this.upsertFile = this.db.prepare(`
+      INSERT INTO file (name, folder_id, hash, mtime, size)
+      VALUES (?, (SELECT id FROM folder WHERE path = ?), ?, ?, ?)
+      ON CONFLICT (name, folder_id) DO UPDATE SET hash = excluded.hash, mtime = excluded.mtime, size = excluded.size`);
+  }
+
+  get(filepath: string, mtimeMs: number, size: number) {
+    const parsed = path.parse(filepath);
+    const entry = this.getFile.get(parsed.base, parsed.dir);
+    if (entry && entry.mtime === mtimeMs && entry.size === size) {
+      return entry.hash.toString('hex');
+    }
+  }
+
+  async compute(filepath: string, mtimeMs: number, size: number) {
+    const hash = await sha1(filepath);
+    const parsed = path.parse(filepath);
+    try {
+      this.upsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
+    } catch (error: any) {
+      if (error.message.endsWith('file.folder_id')) {
+        this.insertFolder.run(parsed.dir);
+        this.upsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
+      }
+    }
+    return hash.toString('hex');
+  }
+
+  close() {
+    this.db.close();
+  }
+
+  private startDatabase(path: string) {
+    const db = new SQLite(path);
+    const cliVersion = migrations.length;
+    const dbVersion = this.getVersion(db);
+    if (dbVersion === 0) {
+      db.exec(
+        `PRAGMA journal_mode = WAL; CREATE TABLE IF NOT EXISTS schema_version (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL DEFAULT (unixepoch())) STRICT`,
+      );
+    } else if (dbVersion > cliVersion) {
+      throw new Error(`DB schema is too new (expected ${cliVersion}, got ${dbVersion}). Please update the CLI.`);
+    }
+
+    if (dbVersion < cliVersion) {
+      const insertVersion = db.prepare('INSERT INTO schema_version (id) VALUES (?)');
+      for (let i = dbVersion; i < cliVersion; i++) {
+        const migrate = migrations[i];
+        db.exec('BEGIN');
+        migrate(db);
+        insertVersion.run(i + 1);
+        db.exec('COMMIT');
+      }
+    }
+    return db;
+  }
+
+  private getVersion(db: SQLite.Database) {
+    try {
+      return db.prepare<[], { id: number }>('SELECT max(id) id FROM schema_version').get()?.id ?? 0;
+    } catch (error: any) {
+      if (error.message !== 'no such table: schema_version') {
+        throw error;
+      }
+      return 0;
+    }
+  }
+}
+
+// this database is just a simple cache, but it's versioned to have more options for schema changes if it comes up,
+// as well as to avoid potential issues when downgrading the CLI
+const migrations = [
+  (db: SQLite.Database) =>
+    db.exec(`CREATE TABLE IF NOT EXISTS folder (id INTEGER PRIMARY KEY, path TEXT UNIQUE NOT NULL) STRICT;
+CREATE TABLE IF NOT EXISTS file (
+  name TEXT NOT NULL,
+  folder_id INTEGER NOT NULL,
+  hash BLOB NOT NULL,
+  mtime INTEGER NOT NULL,
+  size INTEGER NOT NULL,
+  FOREIGN KEY (folder_id) REFERENCES folder (id) ON DELETE CASCADE,
+  PRIMARY KEY (name, folder_id)
+) STRICT, WITHOUT ROWID;`),
+];

@@ -12,15 +12,16 @@ import {
   getSupportedMediaTypes,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
-import { Matcher, watch as watchFs } from 'chokidar';
+import chokidar from 'chokidar';
 import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
-import micromatch from 'micromatch';
 import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
+import process from 'node:process';
+import picomatch from 'picomatch';
 import { Queue } from 'src/queue';
-import { BaseOptions, Batcher, authenticate, crawl, sha1 } from 'src/utils';
+import { BaseOptions, Batcher, FileHashCache, authenticate, crawl } from 'src/utils';
 
 const UPLOAD_WATCH_BATCH_SIZE = 100;
 const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
@@ -44,6 +45,7 @@ export interface UploadOptionsDto {
   progress?: boolean;
   watch?: boolean;
   jsonOutput?: boolean;
+  formatAlbumNames?: boolean;
 }
 
 class UploadFile extends File {
@@ -63,79 +65,72 @@ class UploadFile extends File {
   }
 }
 
-const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
-  const { newFiles, duplicates } = await checkForDuplicates(files, options);
+const uploadBatch = async (files: string[], options: UploadOptionsDto, baseOptions: BaseOptions) => {
+  const { newFiles, duplicates } = await checkForDuplicates(files, options, baseOptions);
   const newAssets = await uploadFiles(newFiles, options);
+
   if (options.jsonOutput) {
     console.log(JSON.stringify({ newFiles, duplicates, newAssets }, undefined, 4));
   }
-  await updateAlbums([...newAssets, ...duplicates], options);
+
+  // Only update albums if album option is enabled
+  if (options.album) {
+    await updateAlbums([...newAssets, ...duplicates], options);
+  }
+
   await deleteFiles(
     newAssets.map(({ filepath }) => filepath),
     options,
   );
 };
 
+interface WatchOptions {
+  batchSize?: number;
+  debounceTimeMs?: number;
+}
+
 export const startWatch = async (
   paths: string[],
   options: UploadOptionsDto,
-  {
-    batchSize = UPLOAD_WATCH_BATCH_SIZE,
-    debounceTimeMs = UPLOAD_WATCH_DEBOUNCE_TIME_MS,
-  }: { batchSize?: number; debounceTimeMs?: number } = {},
+  baseOptions: BaseOptions,
+  watchOptions: WatchOptions = {},
 ) => {
-  const watcherIgnored: Matcher[] = [];
+  const { batchSize = UPLOAD_WATCH_BATCH_SIZE, debounceTimeMs = 1000 } = watchOptions;
+
   const { image, video } = await getSupportedMediaTypes();
-  const extensions = new Set([...image, ...video]);
+  const supportedTypes = [...image, ...video];
+  const matcher = picomatch(`**/*{${supportedTypes.join(',')}}`, {
+    nocase: true,
+    ignore: options.ignore,
+  });
 
-  if (options.ignore) {
-    watcherIgnored.push((path) => micromatch.contains(path, `**/${options.ignore}`));
-  }
-
-  const pathsBatcher = new Batcher<string>({
+  const batcher = new Batcher({
     batchSize,
     debounceTimeMs,
     onBatch: async (paths: string[]) => {
       const uniquePaths = [...new Set(paths)];
-      await uploadBatch(uniquePaths, options);
+      await uploadBatch(uniquePaths, options, baseOptions);
     },
   });
 
-  const onFile = async (path: string, stats?: Stats) => {
-    if (stats?.isDirectory()) {
-      return;
-    }
-    const ext = '.' + path.split('.').pop()?.toLowerCase();
-    if (!ext || !extensions.has(ext)) {
-      return;
-    }
-
-    if (!options.progress) {
-      // logging when progress is disabled as it can cause issues with the progress bar rendering
-      console.log(`Change detected: ${path}`);
-    }
-    pathsBatcher.add(path);
-  };
-  const fsWatcher = watchFs(paths, {
+  const watcher = chokidar.watch(paths, {
     ignoreInitial: true,
-    ignored: watcherIgnored,
-    alwaysStat: true,
-    awaitWriteFinish: true,
-    depth: options.recursive ? undefined : 1,
-    persistent: true,
-  })
-    .on('add', onFile)
-    .on('change', onFile)
-    .on('error', (error) => console.error(`Watcher error: ${error}`));
-
-  process.on('SIGINT', async () => {
-    console.log('Exiting...');
-    await fsWatcher.close();
-    process.exit();
+    ignored: (path: string) => !matcher(path),
   });
+
+  watcher.on('add', (path) => batcher.add(path));
+  watcher.on('change', (path) => batcher.add(path));
+
+  return () => watcher.close();
 };
 
+// Cache for processed album names to avoid duplicate messages
+const processedAlbumNames = new Set<string>();
+
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
+  // Clear the album names cache at the start of each upload command
+  processedAlbumNames.clear();
+
   await authenticate(baseOptions);
 
   const scanFiles = await scan(paths, options);
@@ -151,12 +146,12 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
 
   if (options.watch) {
     console.log('Watching for changes...');
-    await startWatch(paths, options);
+    await startWatch(paths, options, baseOptions, {});
     // watcher does not handle the initial scan
     // as the scan() is a more efficient quick start with batched results
   }
 
-  await uploadBatch(scanFiles, options);
+  await uploadBatch(scanFiles, options, baseOptions);
 };
 
 const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
@@ -171,28 +166,78 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
     extensions: [...image, ...video],
   });
 
+  // Calculate total size
+  let totalSize = 0;
+  try {
+    for (const file of files) {
+      const stats = await stat(file);
+      totalSize += stats.size;
+    }
+    console.log(`Found ${files.length} assets (${byteSize(totalSize)})`);
+  } catch (error) {
+    console.warn('Failed to calculate total size', error);
+  }
+
   return files;
 };
 
-export const checkForDuplicates = async (files: string[], { concurrency, skipHash, progress }: UploadOptionsDto) => {
+export const checkForDuplicates = async (
+  files: string[],
+  { concurrency, skipHash, progress }: UploadOptionsDto,
+  { configDirectory }: BaseOptions,
+) => {
   if (skipHash) {
     console.log('Skipping hash check, assuming all files are new');
     return { newFiles: files, duplicates: [] };
   }
 
   let multiBar: MultiBar | undefined;
+  let totalSize = 0;
+  const statsMap = new Map<string, Stats>();
+
+  // Calculate total size first
+  for (const filepath of files) {
+    const stats = await stat(filepath);
+    statsMap.set(filepath, stats);
+    totalSize += stats.size;
+  }
+
+  let processedBytes = 0;
+  let checkedBytes = 0;
 
   if (progress) {
     multiBar = new MultiBar(
-      { format: '{message} | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
+      {
+        format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
+        formatValue: (v: number, options, type) => {
+          // Don't format percentage
+          if (type === 'percentage') {
+            return v.toString();
+          }
+          return byteSize(v).toString();
+        },
+        etaBuffer: 100, // Increase samples for ETA calculation
+      },
       Presets.shades_classic,
     );
+
+    // Ensure we restore cursor on interrupt
+    process.on('SIGINT', () => {
+      if (multiBar) {
+        multiBar.stop();
+      }
+      process.exit(0);
+    });
   } else {
-    console.log(`Received ${files.length} files, hashing...`);
+    console.log(`Received ${files.length} files (${byteSize(totalSize)}), hashing...`);
   }
 
-  const hashProgressBar = multiBar?.create(files.length, 0, { message: 'Hashing files          ' });
-  const checkProgressBar = multiBar?.create(files.length, 0, { message: 'Checking for duplicates' });
+  const hashProgressBar = multiBar?.create(totalSize, 0, {
+    message: 'Hashing files          ',
+  });
+  const checkProgressBar = multiBar?.create(totalSize, 0, {
+    message: 'Checking for duplicates',
+  });
 
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
@@ -212,56 +257,77 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         }
       }
 
-      checkProgressBar?.increment(assets.length);
+      // Update progress based on total size of processed files
+      let processedSize = 0;
+      for (const asset of assets) {
+        const stats = statsMap.get(asset.id);
+        processedSize += stats?.size || 0;
+      }
+      processedBytes += processedSize;
+      // hashProgressBar?.increment(processedSize);
+      checkedBytes += processedSize;
+      checkProgressBar?.increment(processedSize);
     },
     { concurrency, retry: 3 },
   );
 
   const results: { id: string; checksum: string }[] = [];
   let checkBulkUploadRequests: AssetBulkUploadCheckItem[] = [];
+  const hashCache = new FileHashCache(configDirectory);
 
-  const queue = new Queue<string, AssetBulkUploadCheckItem[]>(
-    async (filepath: string): Promise<AssetBulkUploadCheckItem[]> => {
-      const dto = { id: filepath, checksum: await sha1(filepath) };
+  try {
+    const queue = new Queue<string, AssetBulkUploadCheckItem[]>(
+      async (filepath: string): Promise<AssetBulkUploadCheckItem[]> => {
+        const stats = statsMap.get(filepath);
+        if (!stats) {
+          throw new Error(`Stats not found for ${filepath}`);
+        }
 
-      results.push(dto);
-      checkBulkUploadRequests.push(dto);
-      if (checkBulkUploadRequests.length === 5000) {
-        const batch = checkBulkUploadRequests;
-        checkBulkUploadRequests = [];
-        void checkBulkUploadQueue.push(batch);
+        const mtimeMs = stats.mtime.getTime();
+        const cachedChecksum = hashCache.get(filepath, mtimeMs, stats.size);
+        const checksum = cachedChecksum ? cachedChecksum : await hashCache.compute(filepath, mtimeMs, stats.size);
+        const dto = { id: filepath, checksum };
+
+        results.push(dto);
+        checkBulkUploadRequests.push(dto);
+        if (checkBulkUploadRequests.length === 5000) {
+          const batch = checkBulkUploadRequests;
+          checkBulkUploadRequests = [];
+          void checkBulkUploadQueue.push(batch);
+        }
+
+        hashProgressBar?.increment(stats.size);
+        return results;
+      },
+      { concurrency, retry: 3 },
+    );
+
+    for (const item of files) {
+      void queue.push(item);
+    }
+
+    await queue.drained();
+
+    if (checkBulkUploadRequests.length > 0) {
+      void checkBulkUploadQueue.push(checkBulkUploadRequests);
+    }
+
+    await checkBulkUploadQueue.drained();
+
+    // Report failures
+    const failedTasks = queue.tasks.filter((task) => task.status === 'failed');
+    if (failedTasks.length > 0) {
+      console.log(`Failed to verify ${failedTasks.length} file${s(failedTasks.length)}:`);
+      for (const task of failedTasks) {
+        console.log(`- ${task.data} - ${task.error}`);
       }
-
-      hashProgressBar?.increment();
-      return results;
-    },
-    { concurrency, retry: 3 },
-  );
-
-  for (const item of files) {
-    void queue.push(item);
+    }
+  } finally {
+    hashCache.close();
+    multiBar?.stop();
   }
-
-  await queue.drained();
-
-  if (checkBulkUploadRequests.length > 0) {
-    void checkBulkUploadQueue.push(checkBulkUploadRequests);
-  }
-
-  await checkBulkUploadQueue.drained();
-
-  multiBar?.stop();
 
   console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(duplicates.length)}`);
-
-  // Report failures
-  const failedTasks = queue.tasks.filter((task) => task.status === 'failed');
-  if (failedTasks.length > 0) {
-    console.log(`Failed to verify ${failedTasks.length} file${s(failedTasks.length)}:`);
-    for (const task of failedTasks) {
-      console.log(`- ${task.data} - ${task.error}`);
-    }
-  }
 
   return { newFiles, duplicates };
 };
@@ -434,25 +500,70 @@ const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<
   }
 };
 
+const resolveServerDuplicates = async (albumTuples: AlbumPathTuple[]): Promise<Map<string, string>> => {
+  const dirToAlbumName = new Map<string, string>();
+  const usedNames = new Set<string>();
+
+  // Sort by path depth (deepest first) to handle nesting properly
+  const sortedTuples = [...albumTuples].sort(([a], [b]) => b.split(path.sep).length - a.split(path.sep).length);
+
+  for (const [dir, albumName] of sortedTuples) {
+    const finalName = albumName;
+    let uniqueName = finalName;
+    let counter = 1;
+
+    // Only check against already used names in this batch
+    while (usedNames.has(uniqueName)) {
+      uniqueName = `${finalName} ${counter++}`;
+    }
+
+    usedNames.add(uniqueName);
+    dirToAlbumName.set(dir, uniqueName);
+  }
+
+  return dirToAlbumName;
+};
+
 const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   if (!options.album && !options.albumName) {
     return;
   }
-  const { dryRun, concurrency } = options;
 
+  const { dryRun = false } = options;
+  const concurrency = options.concurrency ?? 5;
+
+  // Get existing albums from server
   const albums = await getAllAlbums({});
   const existingAlbums = new Map(albums.map((album) => [album.albumName, album.id]));
   const newAlbums: Set<string> = new Set();
+
+  // Generate album names for all directories
+  const albumTuples = generateAlbumNames(assets.map((a) => a.filepath));
+
+  // Resolve any duplicates within this batch
+  const dirToAlbumName = await resolveServerDuplicates(albumTuples);
+
+  // Create mapping from filepath to album name
+  const uploadAlbumNames = new Map<string, string>(); // filepath -> albumName
+
   for (const { filepath } of assets) {
-    const albumName = getAlbumName(filepath, options);
-    if (albumName && !existingAlbums.has(albumName)) {
-      newAlbums.add(albumName);
+    const dir = path.dirname(filepath);
+    const albumName = dirToAlbumName.get(dir);
+    if (albumName) {
+      uploadAlbumNames.set(filepath, albumName);
+      if (!existingAlbums.has(albumName)) {
+        newAlbums.add(albumName);
+      }
     }
   }
 
   if (dryRun) {
-    // TODO print asset counts for new albums
-    console.log(`Would have created ${newAlbums.size} new album${s(newAlbums.size)}`);
+    if (newAlbums.size > 0) {
+      console.log(`Would have created ${newAlbums.size} new album${s(newAlbums.size)}:`);
+      for (const albumName of newAlbums) {
+        console.log(`- ${albumName}`);
+      }
+    }
     console.log(`Would have updated albums of ${assets.length} asset${s(assets.length)}`);
     return;
   }
@@ -477,12 +588,14 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
     progressBar.stop();
   }
 
-  console.log(`Successfully created ${newAlbums.size} new album${s(newAlbums.size)}`);
+  if (newAlbums.size > 0) {
+    console.log(`Created ${newAlbums.size} new album${s(newAlbums.size)}`);
+  }
   console.log(`Successfully updated ${assets.length} asset${s(assets.length)}`);
 
   const albumToAssets = new Map<string, string[]>();
   for (const asset of assets) {
-    const albumName = getAlbumName(asset.filepath, options);
+    const albumName = uploadAlbumNames.get(asset.filepath);
     if (!albumName) {
       continue;
     }
@@ -511,6 +624,77 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   } finally {
     albumUpdateProgress.stop();
   }
+};
+
+type AlbumPathTuple = [string, string]; // [directoryPath, albumName]
+
+/**
+ * Generate album names for all directories, resolving duplicates by adding parent directories
+ */
+const generateAlbumNames = (filepaths: string[]): AlbumPathTuple[] => {
+  // First pass: collect all unique directories
+  const directories = new Set<string>();
+  for (const filepath of filepaths) {
+    directories.add(path.dirname(filepath));
+  }
+
+  // Second pass: for each directory, collect all possible album name candidates
+  // with increasing levels of context
+  const dirCandidates = new Map<string, string[]>();
+
+  for (const dir of directories) {
+    const parts = dir.split(path.sep).filter(Boolean);
+    const candidates: string[] = [];
+
+    // Generate candidates with increasing context
+    for (let i = 1; i <= parts.length; i++) {
+      candidates.push(parts.slice(-i).join(' '));
+    }
+
+    dirCandidates.set(dir, candidates);
+  }
+
+  // Third pass: find the minimal unique name for each directory
+  const result: AlbumPathTuple[] = [];
+  const usedNames = new Set<string>();
+
+  // Sort directories by depth (deepest first) to handle nesting properly
+  const sortedDirs = [...directories].sort((a, b) => b.split(path.sep).length - a.split(path.sep).length);
+
+  for (const dir of sortedDirs) {
+    const candidates = dirCandidates.get(dir) || [];
+    let selectedName = candidates[0] || '';
+
+    // Find the shortest unique name
+    for (const candidate of candidates) {
+      selectedName = candidate;
+
+      // Check if this name is already used
+      let isUnique = true;
+      for (const [otherDir, otherCandidates] of dirCandidates) {
+        if (otherDir === dir) {
+          continue;
+        }
+
+        if (otherCandidates.includes(candidate)) {
+          isUnique = false;
+          break;
+        }
+      }
+
+      if (isUnique) {
+        break;
+      }
+    }
+
+    // Add to used names and result
+    if (selectedName) {
+      usedNames.add(selectedName);
+      result.push([dir, selectedName]);
+    }
+  }
+
+  return result;
 };
 
 // `filepath` valid format:
