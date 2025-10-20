@@ -1,5 +1,5 @@
 import { getMyUser, init, isHttpError } from '@immich/sdk';
-import Database from 'better-sqlite3';
+import SQLite from 'better-sqlite3';
 import { convertPathToPattern, glob } from 'fast-glob';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
@@ -236,63 +236,37 @@ export class Batcher<T = unknown> {
 }
 
 export class FileHashCache {
-  private db: Database.Database;
-  private cacheFile: string;
-
-  private stmtGet: Database.Statement;
-  private stmtInsertFolder: Database.Statement;
-  private stmtUpsertFile: Database.Statement;
+  // this database is just a simple cache, but it's versioned to have more options for schema changes if it comes up,
+  // as well as to avoid potential issues when downgrading the CLI
+  private version = 1;
+  private db: SQLite.Database;
+  private getFile: SQLite.Statement<[string, string], { hash: Buffer; mtime: number; size: number }>;
+  private insertFolder: SQLite.Statement<[string], void>;
+  private upsertFile: SQLite.Statement<[string, string, Buffer, number, number], void>;
 
   constructor(configDir: string) {
-    this.cacheFile = join(configDir, 'cli.db');
-
-    this.db = new Database(this.cacheFile);
-    this.db.pragma('journal_mode = WAL');
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS folder (
-        id INTEGER PRIMARY KEY,
-        path TEXT UNIQUE NOT NULL
-      ) STRICT
-    `);
-
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS file (
-        name TEXT NOT NULL,
-        folder_id INTEGER NOT NULL,
-        hash BLOB NOT NULL,
-        mtime INTEGER NOT NULL,
-        size INTEGER NOT NULL,
-        FOREIGN KEY(folder_id) REFERENCES folder(id) ON DELETE CASCADE,
-        PRIMARY KEY(name, folder_id)
-      ) STRICT, WITHOUT ROWID
-    `);
-
-    this.stmtGet = this.db.prepare(
+    const path = join(configDir, 'cli.db');
+    try {
+      this.db = this.startDatabase(path, this.version);
+    } catch (error: any) {
+      if (error.message !== 'unable to open database file') {
+        throw error;
+      }
+      this.db = this.createDatabase(path, this.version);
+    }
+    this.getFile = this.db.prepare(
       'SELECT hash, mtime, size FROM file WHERE name = ? AND folder_id = (SELECT id FROM folder WHERE path = ?)',
     );
-
-    this.stmtInsertFolder = this.db.prepare(`
-      INSERT INTO folder (path)
-      VALUES (?)
-      ON CONFLICT(path) DO NOTHING
-    `);
-
-    this.stmtUpsertFile = this.db.prepare(`
+    this.insertFolder = this.db.prepare('INSERT INTO folder (path) VALUES (?) ON CONFLICT (path) DO NOTHING');
+    this.upsertFile = this.db.prepare(`
       INSERT INTO file (name, folder_id, hash, mtime, size)
       VALUES (?, (SELECT id FROM folder WHERE path = ?), ?, ?, ?)
-      ON CONFLICT(name, folder_id) DO UPDATE SET
-        hash = excluded.hash,
-        mtime = excluded.mtime,
-        size = excluded.size
-    `);
+      ON CONFLICT (name, folder_id) DO UPDATE SET hash = excluded.hash, mtime = excluded.mtime, size = excluded.size`);
   }
 
   get(filepath: string, mtimeMs: number, size: number) {
     const parsed = path.parse(filepath);
-    const entry = this.stmtGet.get(parsed.base, parsed.dir) as
-      | { hash: Buffer; mtime: number; size: number }
-      | undefined;
+    const entry = this.getFile.get(parsed.base, parsed.dir);
     if (entry && entry.mtime === mtimeMs && entry.size === size) {
       return entry.hash.toString('hex');
     }
@@ -302,11 +276,11 @@ export class FileHashCache {
     const hash = await sha1(filepath);
     const parsed = path.parse(filepath);
     try {
-      this.stmtUpsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
+      this.upsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
     } catch (error: any) {
       if (error.message.endsWith('file.folder_id')) {
-        this.stmtInsertFolder.run(parsed.dir);
-        this.stmtUpsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
+        this.insertFolder.run(parsed.dir);
+        this.upsertFile.run(parsed.base, parsed.dir, hash, mtimeMs, size);
       }
     }
     return hash.toString('hex');
@@ -314,5 +288,35 @@ export class FileHashCache {
 
   close() {
     this.db.close();
+  }
+
+  private startDatabase(path: string, version: number) {
+    const db = new SQLite(path, { fileMustExist: true });
+    const curVersion = this.db.prepare<[], number>('SELECT max(id) FROM version').get();
+    if (curVersion && curVersion > version) {
+      throw new Error(`DB schema is too new (expected ${version}, got ${curVersion}). Please update the CLI.`);
+    }
+    return db;
+  }
+
+  private createDatabase(path: string, version: number) {
+    console.log('Creating new hash cache database.');
+    const db = new SQLite(path);
+    db.pragma('journal_mode = WAL');
+    db.exec('CREATE TABLE IF NOT EXISTS folder (id INTEGER PRIMARY KEY, path TEXT UNIQUE NOT NULL) STRICT');
+    db.exec(`CREATE TABLE IF NOT EXISTS file (
+        name TEXT NOT NULL,
+        folder_id INTEGER NOT NULL,
+        hash BLOB NOT NULL,
+        mtime INTEGER NOT NULL,
+        size INTEGER NOT NULL,
+        FOREIGN KEY (folder_id) REFERENCES folder (id) ON DELETE CASCADE,
+        PRIMARY KEY (name, folder_id)
+      ) STRICT, WITHOUT ROWID`);
+    db.exec(
+      'CREATE TABLE IF NOT EXISTS schema_version (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL DEFAULT (unixepoch())) STRICT',
+    );
+    db.prepare('INSERT INTO schema_version (id) VALUES (?) ON CONFLICT (id) DO NOTHING').run(version);
+    return db;
   }
 }
