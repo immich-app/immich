@@ -16726,6 +16726,9 @@
             "minimum": 0,
             "type": "number"
           },
+          "secure": {
+            "type": "boolean"
+          },
           "username": {
             "type": "string"
           }
@@ -16735,6 +16738,7 @@
           "ignoreCert",
           "password",
           "port",
+          "secure",
           "username"
         ],
         "type": "object"

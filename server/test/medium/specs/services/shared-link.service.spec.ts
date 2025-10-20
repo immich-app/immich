@@ -4,6 +4,7 @@ import { SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { DB } from 'src/schema';
@@ -17,7 +18,7 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SharedLinkService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, SharedLinkRepository],
+    real: [AccessRepository, DatabaseRepository, SharedLinkRepository, SharedLinkAssetRepository],
     mock: [LoggingRepository, StorageRepository],
   });
 };
@@ -61,5 +62,66 @@ describe(SharedLinkService.name, () => {
         }),
       });
     });
+  });
+
+  it('should share individually assets', async () => {
+    const { sut, ctx } = setup();
+
+    const { user } = await ctx.newUser();
+
+    const assets = await Promise.all([
+      ctx.newAsset({ ownerId: user.id }),
+      ctx.newAsset({ ownerId: user.id }),
+      ctx.newAsset({ ownerId: user.id }),
+    ]);
+
+    for (const { asset } of assets) {
+      await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+    }
+
+    const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+    const sharedLink = await sharedLinkRepo.create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      allowUpload: false,
+      type: SharedLinkType.Individual,
+      assetIds: assets.map(({ asset }) => asset.id),
+    });
+
+    await expect(sut.getMine({ user, sharedLink }, {})).resolves.toMatchObject({
+      assets: assets.map(({ asset }) => expect.objectContaining({ id: asset.id })),
+    });
+  });
+
+  it('should remove individually shared asset', async () => {
+    const { sut, ctx } = setup();
+
+    const { user } = await ctx.newUser();
+    const auth = factory.auth({ user });
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ctx.newExif({ assetId: asset.id, make: 'Canon' });
+
+    const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+    const sharedLink = await sharedLinkRepo.create({
+      key: randomBytes(16),
+      id: factory.uuid(),
+      userId: user.id,
+      allowUpload: false,
+      type: SharedLinkType.Individual,
+      assetIds: [asset.id],
+    });
+
+    await expect(sut.getMine({ user, sharedLink }, {})).resolves.toMatchObject({
+      assets: [expect.objectContaining({ id: asset.id })],
+    });
+
+    await sut.removeAssets(auth, sharedLink.id, {
+      assetIds: [asset.id],
+    });
+
+    await expect(sut.getMine({ user, sharedLink }, {})).resolves.toHaveProperty('assets', []);
   });
 });
