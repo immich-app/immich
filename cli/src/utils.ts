@@ -283,13 +283,22 @@ export class FileHashCache {
     const db = new SQLite(path);
     const cliVersion = migrations.length;
     const dbVersion = this.getVersion(db);
-    if (dbVersion > cliVersion) {
+    if (dbVersion === 0) {
+      db.exec(
+        `PRAGMA journal_mode = WAL; CREATE TABLE IF NOT EXISTS schema_version (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL DEFAULT (unixepoch())) STRICT`,
+      );
+    } else if (dbVersion > cliVersion) {
       throw new Error(`DB schema is too new (expected ${cliVersion}, got ${dbVersion}). Please update the CLI.`);
     }
 
     if (dbVersion < cliVersion) {
-      for (const migrate of migrations.slice(dbVersion)) {
+      const insertVersion = db.prepare('INSERT INTO schema_version (id) VALUES (?)');
+      for (let i = dbVersion; i < cliVersion; i++) {
+        const migrate = migrations[i];
+        db.exec('BEGIN');
         migrate(db);
+        db.exec('COMMIT');
+        insertVersion.run(i + 1);
       }
     }
     return db;
@@ -311,8 +320,7 @@ export class FileHashCache {
 // as well as to avoid potential issues when downgrading the CLI
 const migrations = [
   (db: SQLite.Database) =>
-    db.exec(`PRAGMA journal_mode = WAL;
-CREATE TABLE IF NOT EXISTS folder (id INTEGER PRIMARY KEY, path TEXT UNIQUE NOT NULL) STRICT;
+    db.exec(`CREATE TABLE IF NOT EXISTS folder (id INTEGER PRIMARY KEY, path TEXT UNIQUE NOT NULL) STRICT;
 CREATE TABLE IF NOT EXISTS file (
   name TEXT NOT NULL,
   folder_id INTEGER NOT NULL,
@@ -321,7 +329,5 @@ CREATE TABLE IF NOT EXISTS file (
   size INTEGER NOT NULL,
   FOREIGN KEY (folder_id) REFERENCES folder (id) ON DELETE CASCADE,
   PRIMARY KEY (name, folder_id)
-) STRICT, WITHOUT ROWID;
-CREATE TABLE IF NOT EXISTS schema_version (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL DEFAULT (unixepoch())) STRICT;
-INSERT INTO schema_version (id) VALUES (1) ON CONFLICT (id) DO NOTHING;`),
+) STRICT, WITHOUT ROWID;`),
 ];
