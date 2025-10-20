@@ -19,8 +19,6 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
-  import { suggestDuplicateWithPrefs } from '$lib/utils/duplicate-utils';
-  import { duplicateTiePreference } from '$lib/stores/duplicate-preferences';
   import DuplicatesSettingsModal from '$lib/modals/DuplicatesSettingsModal.svelte';
   import {
     mdiCheckOutline,
@@ -35,6 +33,10 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { DuplicateSelection } from '$lib/utils/duplicate-utils';
+  import { duplicateTiePreference } from '$lib/stores/duplicate-tie-preferences';
+
+  const duplicateSelector = new DuplicateSelection();
 
   interface Props {
     data: PageData;
@@ -133,7 +135,9 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const keepCandidates = duplicates.map((group) => suggestDuplicateWithPrefs(group.assets, $duplicateTiePreference));
+    const keepCandidates = duplicates.map((group) =>
+      duplicateSelector.suggestDuplicate(group.assets, $duplicateTiePreference),
+    );
 
     const idsToKeep: (string | undefined)[] = keepCandidates.map((assets) => assets?.id);
 
@@ -237,7 +241,7 @@
       <Button
         size="small"
         variant="ghost"
-        color={$duplicateTiePreference === 'default' ? 'secondary' : 'primary'}
+        color={($duplicateTiePreference ?? []).length > 0 ? 'primary' : 'secondary'}
         leadingIcon={mdiCogOutline}
         onclick={() => modalManager.show(DuplicatesSettingsModal)}
         title={$t('settings')}
@@ -245,7 +249,7 @@
         class="relative"
       >
         <Text class="hidden md:block">{$t('settings')}</Text>
-        {#if $duplicateTiePreference !== 'default'}
+        {#if ($duplicateTiePreference ?? []).length > 0}
           <span class="ml-2 inline-block h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
         {/if}
       </Button>

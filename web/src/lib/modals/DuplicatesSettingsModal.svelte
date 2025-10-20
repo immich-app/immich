@@ -1,12 +1,17 @@
 <script lang="ts">
   import { Modal, ModalBody, Button, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { duplicateTiePreference, type TiePreference } from '$lib/stores/duplicate-preferences';
+  import {
+    duplicateTiePreference,
+    type DuplicateTiePreferences,
+    findDuplicateTiePreference,
+    type SourcePreference,
+  } from '$lib/stores/duplicate-tie-preferences';
   import { get } from 'svelte/store';
   import { mdiCogOutline } from '@mdi/js';
 
-  const initialTie = get(duplicateTiePreference) as TiePreference;
-  let tiePreferenceLocal = $state<TiePreference>(initialTie);
+  const initialPref = get(duplicateTiePreference);
+  let tiePreferenceLocal = $state<DuplicateTiePreferences | undefined>(initialPref);
 
   interface Props {
     onClose: () => void;
@@ -20,8 +25,12 @@
     onClose();
   };
   const resetToDefault = () => {
-    tiePreferenceLocal = 'default';
+    tiePreferenceLocal = undefined;
   };
+
+  function makeSourcePref(priority: 'internal' | 'external'): SourcePreference {
+    return { variant: 'source', priority };
+  }
 </script>
 
 <Modal title={$t('duplicates_settings')} {onClose} icon={mdiCogOutline}>
@@ -39,10 +48,12 @@
             size="small"
             variant="ghost"
             class="rounded-none"
-            color={tiePreferenceLocal === 'external' ? 'primary' : 'secondary'}
-            aria-pressed={tiePreferenceLocal === 'external'}
+            color={findDuplicateTiePreference(tiePreferenceLocal, 'source')?.priority === 'external'
+              ? 'primary'
+              : 'secondary'}
+            aria-pressed={findDuplicateTiePreference(tiePreferenceLocal, 'source')?.priority === 'external'}
             title={$t('deduplicate_prefer_external')}
-            onclick={() => (tiePreferenceLocal = 'external')}
+            onclick={() => (tiePreferenceLocal = [makeSourcePref('external')])}
           >
             <Text class="hidden md:block">{$t('deduplicate_prefer_external')}</Text>
           </Button>
@@ -50,10 +61,10 @@
             size="small"
             variant="ghost"
             class="rounded-none"
-            color={tiePreferenceLocal === 'default' ? 'primary' : 'secondary'}
-            aria-pressed={tiePreferenceLocal === 'default'}
+            color={tiePreferenceLocal === undefined ? 'primary' : 'secondary'}
+            aria-pressed={tiePreferenceLocal === undefined}
             title={$t('deduplicate_prefer_default')}
-            onclick={() => (tiePreferenceLocal = 'default')}
+            onclick={() => (tiePreferenceLocal = undefined)}
           >
             <Text class="hidden md:block">{$t('deduplicate_prefer_default')}</Text>
           </Button>
@@ -61,10 +72,12 @@
             size="small"
             variant="ghost"
             class="rounded-none"
-            color={tiePreferenceLocal === 'internal' ? 'primary' : 'secondary'}
-            aria-pressed={tiePreferenceLocal === 'internal'}
+            color={findDuplicateTiePreference(tiePreferenceLocal, 'source')?.priority === 'internal'
+              ? 'primary'
+              : 'secondary'}
+            aria-pressed={findDuplicateTiePreference(tiePreferenceLocal, 'source')?.priority === 'internal'}
             title={$t('deduplicate_prefer_internal')}
-            onclick={() => (tiePreferenceLocal = 'internal')}
+            onclick={() => (tiePreferenceLocal = [makeSourcePref('internal')])}
           >
             <Text class="hidden md:block">{$t('deduplicate_prefer_internal')}</Text>
           </Button>

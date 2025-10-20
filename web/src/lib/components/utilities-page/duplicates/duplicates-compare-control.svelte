@@ -5,7 +5,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
-  import { suggestDuplicateWithPrefs } from '$lib/utils/duplicate-utils';
+  import { DuplicateSelection } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -13,7 +13,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-  import { duplicateTiePreference } from '$lib/stores/duplicate-preferences';
+  import { duplicateTiePreference, type DuplicateTiePreferences } from '$lib/stores/duplicate-tie-preferences';
+  import { get } from 'svelte/store';
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -24,17 +25,23 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
+  const duplicateSelector = new DuplicateSelection();
+  let tiePreferenceLocal: DuplicateTiePreferences | undefined = get(duplicateTiePreference);
+
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   const autoSelect = () => {
-    const suggested = suggestDuplicateWithPrefs(assets, $duplicateTiePreference) ?? assets[0];
+    const suggested = duplicateSelector.suggestDuplicate(assets, tiePreferenceLocal) ?? assets[0];
     selectedAssetIds = new SvelteSet([suggested.id]);
   };
 
   onMount(() => {
     autoSelect();
-    const unsub = duplicateTiePreference.subscribe(autoSelect);
+    const unsub = duplicateTiePreference.subscribe((newPref) => {
+      tiePreferenceLocal = newPref;
+      autoSelect();
+    });
     onDestroy(unsub);
   });
 

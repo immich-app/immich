@@ -1,5 +1,13 @@
-import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+import { DuplicateSelection } from '$lib/utils/duplicate-utils';
 import type { AssetResponseDto } from '@immich/sdk';
+
+const duplicateSelector = new DuplicateSelection();
+
+
+const suggestDuplicate = (
+  assets: AssetResponseDto[],
+  pref = undefined,
+) => duplicateSelector.suggestDuplicate(assets, pref);
 
 describe('choosing a duplicate', () => {
   it('picks the asset with the largest file size', () => {
