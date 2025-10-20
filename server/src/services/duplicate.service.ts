@@ -13,12 +13,23 @@ import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class DuplicateService extends BaseService {
-  async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
-    const duplicates = await this.duplicateRepository.getAll(auth.user.id);
-    return duplicates.map(({ duplicateId, assets }) => ({
+  async getDuplicates(auth: AuthDto, page = 1, size = 20): Promise<DuplicateResponseDto> {
+    const { items, totalItems } = await this.duplicateRepository.getAll(auth.user.id, page, size);
+
+    const duplicates = items.map(({ duplicateId, assets }) => ({
       duplicateId,
       assets: assets.map((asset) => mapAsset(asset, { auth })),
     }));
+
+    const totalPages = Math.ceil(totalItems / size);
+    const hasNextPage = page < totalPages;
+    
+    return {
+      items: duplicates,
+      totalItems,
+      totalPages,
+      hasNextPage
+    };
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {

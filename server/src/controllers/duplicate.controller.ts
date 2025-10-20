@@ -1,5 +1,5 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
@@ -14,9 +14,15 @@ export class DuplicateController {
   constructor(private service: DuplicateService) {}
 
   @Get()
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'size', required: false, type: Number, example: 20 })
   @Authenticated({ permission: Permission.DuplicateRead })
-  getAssetDuplicates(@Auth() auth: AuthDto): Promise<DuplicateResponseDto[]> {
-    return this.service.getDuplicates(auth);
+  getAssetDuplicates(
+    @Auth() auth: AuthDto,
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 20,
+  ): Promise<DuplicateResponseDto> {
+    return this.service.getDuplicates(auth, page, size);
   }
 
   @Delete()
