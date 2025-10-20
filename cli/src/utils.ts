@@ -236,24 +236,13 @@ export class Batcher<T = unknown> {
 }
 
 export class FileHashCache {
-  // this database is just a simple cache, but it's versioned to have more options for schema changes if it comes up,
-  // as well as to avoid potential issues when downgrading the CLI
-  private version = 1;
   private db: SQLite.Database;
   private getFile: SQLite.Statement<[string, string], { hash: Buffer; mtime: number; size: number }>;
   private insertFolder: SQLite.Statement<[string], void>;
   private upsertFile: SQLite.Statement<[string, string, Buffer, number, number], void>;
 
   constructor(configDir: string) {
-    const path = join(configDir, 'cli.db');
-    try {
-      this.db = this.startDatabase(path, this.version);
-    } catch (error: any) {
-      if (error.message !== 'unable to open database file') {
-        throw error;
-      }
-      this.db = this.createDatabase(path, this.version);
-    }
+    this.db = this.startDatabase(join(configDir, 'cli.db'));
     this.getFile = this.db.prepare(
       'SELECT hash, mtime, size FROM file WHERE name = ? AND folder_id = (SELECT id FROM folder WHERE path = ?)',
     );
@@ -290,33 +279,49 @@ export class FileHashCache {
     this.db.close();
   }
 
-  private startDatabase(path: string, version: number) {
-    const db = new SQLite(path, { fileMustExist: true });
-    const curVersion = this.db.prepare<[], number>('SELECT max(id) FROM version').get();
-    if (curVersion && curVersion > version) {
-      throw new Error(`DB schema is too new (expected ${version}, got ${curVersion}). Please update the CLI.`);
+  private startDatabase(path: string) {
+    const db = new SQLite(path);
+    const cliVersion = migrations.length;
+    const dbVersion = this.getVersion(db);
+    if (dbVersion > cliVersion) {
+      throw new Error(`DB schema is too new (expected ${cliVersion}, got ${dbVersion}). Please update the CLI.`);
+    }
+
+    if (dbVersion < cliVersion) {
+      for (const migrate of migrations.slice(dbVersion)) {
+        migrate(db);
+      }
     }
     return db;
   }
 
-  private createDatabase(path: string, version: number) {
-    console.log('Creating new hash cache database.');
-    const db = new SQLite(path);
-    db.pragma('journal_mode = WAL');
-    db.exec('CREATE TABLE IF NOT EXISTS folder (id INTEGER PRIMARY KEY, path TEXT UNIQUE NOT NULL) STRICT');
-    db.exec(`CREATE TABLE IF NOT EXISTS file (
-        name TEXT NOT NULL,
-        folder_id INTEGER NOT NULL,
-        hash BLOB NOT NULL,
-        mtime INTEGER NOT NULL,
-        size INTEGER NOT NULL,
-        FOREIGN KEY (folder_id) REFERENCES folder (id) ON DELETE CASCADE,
-        PRIMARY KEY (name, folder_id)
-      ) STRICT, WITHOUT ROWID`);
-    db.exec(
-      'CREATE TABLE IF NOT EXISTS schema_version (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL DEFAULT (unixepoch())) STRICT',
-    );
-    db.prepare('INSERT INTO schema_version (id) VALUES (?) ON CONFLICT (id) DO NOTHING').run(version);
-    return db;
+  private getVersion(db: SQLite.Database) {
+    try {
+      return db.prepare<[], { id: number }>('SELECT max(id) id FROM schema_version').get()?.id ?? 0;
+    } catch (error: any) {
+      if (error.message !== 'no such table: schema_version') {
+        throw error;
+      }
+      return 0;
+    }
   }
 }
+
+// this database is just a simple cache, but it's versioned to have more options for schema changes if it comes up,
+// as well as to avoid potential issues when downgrading the CLI
+const migrations = [
+  (db: SQLite.Database) =>
+    db.exec(`PRAGMA journal_mode = WAL;
+CREATE TABLE IF NOT EXISTS folder (id INTEGER PRIMARY KEY, path TEXT UNIQUE NOT NULL) STRICT;
+CREATE TABLE IF NOT EXISTS file (
+  name TEXT NOT NULL,
+  folder_id INTEGER NOT NULL,
+  hash BLOB NOT NULL,
+  mtime INTEGER NOT NULL,
+  size INTEGER NOT NULL,
+  FOREIGN KEY (folder_id) REFERENCES folder (id) ON DELETE CASCADE,
+  PRIMARY KEY (name, folder_id)
+) STRICT, WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS schema_version (id INTEGER PRIMARY KEY, created_at INTEGER NOT NULL DEFAULT (unixepoch())) STRICT;
+INSERT INTO schema_version (id) VALUES (1) ON CONFLICT (id) DO NOTHING;`),
+];
