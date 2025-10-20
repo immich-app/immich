@@ -1,7 +1,22 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_features.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
+
+enum VersionStatus {
+  upToDate,
+  clientOutOfDate,
+  serverOutOfDate,
+  error;
+
+  String get message => switch (this) {
+    VersionStatus.upToDate => "",
+    VersionStatus.clientOutOfDate => "app_update_available".tr(),
+    VersionStatus.serverOutOfDate => "server_update_available".tr(),
+    VersionStatus.error => "unable_to_check_version".tr(),
+  };
+}
 
 class ServerInfo {
   final ServerVersion serverVersion;
@@ -9,11 +24,7 @@ class ServerInfo {
   final ServerFeatures serverFeatures;
   final ServerConfig serverConfig;
   final ServerDiskInfo serverDiskInfo;
-  final bool isClientOutOfDate;
-  final bool isServerOutOfDate;
-  final bool isNewReleaseAvailable;
-  final String versionMismatchErrorMessage;
-  final bool errorGettingVersions;
+  final VersionStatus versionStatus;
 
   const ServerInfo({
     required this.serverVersion,
@@ -21,11 +32,7 @@ class ServerInfo {
     required this.serverFeatures,
     required this.serverConfig,
     required this.serverDiskInfo,
-    required this.isClientOutOfDate,
-    required this.isServerOutOfDate,
-    required this.isNewReleaseAvailable,
-    required this.versionMismatchErrorMessage,
-    required this.errorGettingVersions,
+    required this.versionStatus,
   });
 
   ServerInfo copyWith({
@@ -34,11 +41,7 @@ class ServerInfo {
     ServerFeatures? serverFeatures,
     ServerConfig? serverConfig,
     ServerDiskInfo? serverDiskInfo,
-    bool? isClientOutOfDate,
-    bool? isServerOutOfDate,
-    bool? isNewReleaseAvailable,
-    String? versionMismatchErrorMessage,
-    bool? errorGettingVersions,
+    VersionStatus? versionStatus,
   }) {
     return ServerInfo(
       serverVersion: serverVersion ?? this.serverVersion,
@@ -46,17 +49,13 @@ class ServerInfo {
       serverFeatures: serverFeatures ?? this.serverFeatures,
       serverConfig: serverConfig ?? this.serverConfig,
       serverDiskInfo: serverDiskInfo ?? this.serverDiskInfo,
-      isClientOutOfDate: isClientOutOfDate ?? this.isClientOutOfDate,
-      isServerOutOfDate: isServerOutOfDate ?? this.isServerOutOfDate,
-      isNewReleaseAvailable: isNewReleaseAvailable ?? this.isNewReleaseAvailable,
-      versionMismatchErrorMessage: versionMismatchErrorMessage ?? this.versionMismatchErrorMessage,
-      errorGettingVersions: errorGettingVersions ?? this.errorGettingVersions,
+      versionStatus: versionStatus ?? this.versionStatus,
     );
   }
 
   @override
   String toString() {
-    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, isClientOutOfDate: $isClientOutOfDate, isServerOutOfDate: $isServerOutOfDate, isNewReleaseAvailable: $isNewReleaseAvailable, versionMismatchErrorMessage: $versionMismatchErrorMessage, errorGettingVersions: $errorGettingVersions)';
+    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, versionStatus: $versionStatus)';
   }
 
   @override
@@ -69,11 +68,7 @@ class ServerInfo {
         other.serverFeatures == serverFeatures &&
         other.serverConfig == serverConfig &&
         other.serverDiskInfo == serverDiskInfo &&
-        other.isClientOutOfDate == isClientOutOfDate &&
-        other.isServerOutOfDate == isServerOutOfDate &&
-        other.isNewReleaseAvailable == isNewReleaseAvailable &&
-        other.versionMismatchErrorMessage == versionMismatchErrorMessage &&
-        other.errorGettingVersions == errorGettingVersions;
+        other.versionStatus == versionStatus;
   }
 
   @override
@@ -83,10 +78,6 @@ class ServerInfo {
         serverFeatures.hashCode ^
         serverConfig.hashCode ^
         serverDiskInfo.hashCode ^
-        isClientOutOfDate.hashCode ^
-        isServerOutOfDate.hashCode ^
-        isNewReleaseAvailable.hashCode ^
-        versionMismatchErrorMessage.hashCode ^
-        errorGettingVersions.hashCode;
+        versionStatus.hashCode;
   }
 }

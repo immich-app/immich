@@ -6,7 +6,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -118,7 +117,7 @@ class _ProfileIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
+    final ServerInfoNotifier serverInfo = ref.watch(serverInfoProvider.notifier);
     final user = ref.watch(currentUserProvider);
     const widgetSize = 30.0;
 
@@ -148,8 +147,7 @@ class _ProfileIndicator extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible:
-            serverInfoState.isClientOutOfDate || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
+        isLabelVisible: serverInfo.showVersionCheckWarning(user),
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)
