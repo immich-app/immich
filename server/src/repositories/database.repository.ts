@@ -231,7 +231,7 @@ export class DatabaseRepository {
   }
 
   private async reindexVectors(indexName: VectorIndex, { lists }: { lists?: number } = {}): Promise<void> {
-    this.logger.log(`Reindexing ${indexName}`);
+    this.logger.log(`Reindexing ${indexName} (This may take a while, do not restart)`);
     const table = VECTOR_INDEX_TABLES[indexName];
     const vectorExtension = await getVectorExtension(this.db);
 

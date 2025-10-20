@@ -1,11 +1,20 @@
 <script lang="ts">
+  import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
   import { Icon } from '@immich/ui';
-  import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
+  import {
+    mdiBookmarkOutline,
+    mdiCalendar,
+    mdiHeart,
+    mdiImageMultipleOutline,
+    mdiImageOutline,
+    mdiMagnifyPlus,
+    mdiMapMarkerOutline,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -19,6 +28,15 @@
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
+
+  let locationParts = $derived([asset.exifInfo?.city, asset.exifInfo?.state, asset.exifInfo?.country].filter(Boolean));
+
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromISODateTimeUTC(asset.localDateTime),
+  );
 </script>
 
 <div
@@ -88,13 +106,53 @@
   </div>
 
   <div
-    class="grid place-items-center gap-y-2 py-2 text-xs transition-colors {isSelected
+    class="grid place-items-start gap-y-2 py-2 text-xs transition-colors {isSelected
       ? 'text-white dark:text-black'
       : 'dark:text-white'}"
   >
-    <span class="break-all text-center">{asset.originalFileName}</span>
-    <span>{getAssetResolution(asset)} - {getFileSize(asset)}</span>
-    <span>
+    <div class="flex items-start gap-x-1">
+      <Icon icon={mdiImageOutline} size="16" />
+      <div>
+        <span class="break-all text-center">{asset.originalFileName}</span><br />
+        {getAssetResolution(asset)} - {getFileSize(asset)}
+      </div>
+    </div>
+    <div class="flex items-start gap-x-1">
+      <Icon icon={mdiCalendar} size="16" />
+      {#if dateTime}
+        {dateTime.toLocaleString(
+          {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          },
+          { locale: $locale },
+        )}
+
+        {dateTime.toLocaleString(
+          {
+            // weekday: 'short',
+            hour: 'numeric',
+            minute: '2-digit',
+            timeZoneName: timeZone ? 'shortOffset' : undefined,
+          },
+          { locale: $locale },
+        )}
+      {:else}
+        {$t('unknown')}
+      {/if}
+    </div>
+
+    <div class="flex items-start gap-x-1">
+      <Icon icon={mdiMapMarkerOutline} size="16" />
+      {#if locationParts.length > 0}
+        {locationParts.join(', ')}
+      {:else}
+        {$t('unknown')}
+      {/if}
+    </div>
+    <div class="flex items-start gap-x-1">
+      <Icon icon={mdiBookmarkOutline} size="16" />
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}
       {:then albums}
@@ -104,6 +162,6 @@
           {$t('in_albums', { values: { count: albums.length } })}
         {/if}
       {/await}
-    </span>
+    </div>
   </div>
 </div>
