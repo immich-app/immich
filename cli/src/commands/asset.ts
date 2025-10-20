@@ -590,9 +590,6 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
 
   if (newAlbums.size > 0) {
     console.log(`Created ${newAlbums.size} new album${s(newAlbums.size)}`);
-    for (const albumName of newAlbums) {
-      console.log(`- ${albumName}`);
-    }
   }
   console.log(`Successfully updated ${assets.length} asset${s(assets.length)}`);
 
