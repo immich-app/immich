@@ -49,3 +49,6 @@ const double kUploadStatusFailed = -1.0;
 const double kUploadStatusCanceled = -2.0;
 
 const int kMinMonthsToEnableScrubberSnap = 12;
+
+// Workaround for SQLite's variable limit (SQLITE_MAX_VARIABLE_NUMBER = 32766)
+const int kDriftMaxChunk  = 32000;

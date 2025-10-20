@@ -1,13 +1,12 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-
-typedef AlbumId = String;
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -100,14 +99,14 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return query.map((localAlbum) => localAlbum.toDto()).get();
   }
 
-  Future<Map<AlbumId, List<LocalAsset>>> getAssetsFromBackupAlbums(Iterable<String> checksums) async {
+  Future<Map<String, List<LocalAsset>>> getAssetsFromBackupAlbums(Iterable<String> checksums) async {
     if (checksums.isEmpty) {
       return {};
     }
 
     final result = <String, List<LocalAsset>>{};
 
-    for (final slice in checksums.toSet().slices(32000)) {
+    for (final slice in checksums.toSet().slices(kDriftMaxChunk)) {
       final rows =
           await (_db.select(_db.localAlbumAssetEntity).join([
                 innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),

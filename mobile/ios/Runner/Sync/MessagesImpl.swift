@@ -382,7 +382,6 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
   }
 
-
   private func getAssetsFromAlbum(in album: PHAssetCollection, options: PHFetchOptions) -> PHFetchResult<PHAsset> {
     // Ensure to actually getting all assets for the Recents album
     if (album.assetCollectionSubtype == .smartAlbumUserLibrary) {

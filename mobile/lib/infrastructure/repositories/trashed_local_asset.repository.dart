@@ -1,12 +1,12 @@
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
@@ -14,7 +14,6 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
 
   const DriftTrashedLocalAssetRepository(this._db) : super(_db);
-  static const _chunk = 32000;
 
   Future<void> updateHashes(Map<String, String> hashes) {
     if (hashes.isEmpty) {
@@ -59,7 +58,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   /// Applies resulted snapshot of trashed assets:
   /// - upserts incoming rows
   /// - deletes rows that are not present in the snapshot
-  Future<void> applyTrashedAssets(Iterable<TrashedAsset> trashedAssets) async {
+  Future<void> processTrashSnapshot(Iterable<TrashedAsset> trashedAssets) async {
     if (trashedAssets.isEmpty) {
       await _db.delete(_db.trashedLocalAssetEntity).go();
       return;
@@ -94,14 +93,14 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         }
       });
 
-      if (assetIds.length <= _chunk) {
+      if (assetIds.length <= kDriftMaxChunk) {
         await (_db.delete(_db.trashedLocalAssetEntity)..where((row) => row.id.isNotIn(assetIds))).go();
       } else {
         final existingIds = await (_db.selectOnly(
           _db.trashedLocalAssetEntity,
         )..addColumns([_db.trashedLocalAssetEntity.id])).map((r) => r.read(_db.trashedLocalAssetEntity.id)!).get();
         final idToDelete = existingIds.where((id) => !assetIds.contains(id));
-        for (final slice in idToDelete.slices(_chunk)) {
+        for (final slice in idToDelete.slices(kDriftMaxChunk)) {
           await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
         }
       }
@@ -122,7 +121,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         .map((row) => row.read<int>(_db.trashedLocalAssetEntity.id.count()) ?? 0);
   }
 
-  Future<void> trashLocalAsset(Map<AlbumId, List<LocalAsset>> assetsByAlbums) async {
+  Future<void> trashLocalAsset(Map<String, List<LocalAsset>> assetsByAlbums) async {
     if (assetsByAlbums.isEmpty) {
       return;
     }
@@ -157,7 +156,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
       }
 
-      for (final slice in idToDelete.slices(_chunk)) {
+      for (final slice in idToDelete.slices(kDriftMaxChunk)) {
         await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
@@ -170,7 +169,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
 
     final trashedAssets = <TrashedLocalAssetEntityData>[];
 
-    for (final slice in idList.slices(_chunk)) {
+    for (final slice in idList.slices(kDriftMaxChunk)) {
       final q = _db.select(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice));
       trashedAssets.addAll(await q.get());
     }
@@ -199,7 +198,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
       for (final companion in companions) {
         await _db.into(_db.localAssetEntity).insertOnConflictUpdate(companion);
       }
-      for (final slice in idList.slices(_chunk)) {
+      for (final slice in idList.slices(kDriftMaxChunk)) {
         await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
@@ -209,7 +208,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
   Future<Map<String, String>> _getCachedChecksums(Set<String> assetIds) async {
     final localChecksumById = <String, String>{};
 
-    for (final slice in assetIds.slices(_chunk)) {
+    for (final slice in assetIds.slices(kDriftMaxChunk)) {
       final rows =
           await (_db.selectOnly(_db.localAssetEntity)
                 ..where(_db.localAssetEntity.id.isIn(slice) & _db.localAssetEntity.checksum.isNotNull())

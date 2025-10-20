@@ -296,7 +296,7 @@ class LocalSyncService {
     );
 
     _log.fine("syncTrashedAssets, trashedAssets: ${trashedAssets.map((e) => e.asset.id)}");
-    await _trashedLocalAssetRepository.applyTrashedAssets(trashedAssets);
+    await _trashedLocalAssetRepository.processTrashSnapshot(trashedAssets);
 
     final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (remoteAssetsToRestore.isNotEmpty) {

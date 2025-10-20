@@ -23,6 +23,7 @@ class NativeSyncApiImpl26(context: Context) : NativeSyncApiImplBase(context), Na
   }
 
   override fun getTrashedAssets(): Map<String, List<PlatformAsset>> {
-    throw IllegalStateException("Method not supported on this Android version.")
+    //Method not supported on this Android version.
+    return emptyMap()
   }
 }
