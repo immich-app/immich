@@ -297,8 +297,8 @@ export class FileHashCache {
         const migrate = migrations[i];
         db.exec('BEGIN');
         migrate(db);
-        db.exec('COMMIT');
         insertVersion.run(i + 1);
+        db.exec('COMMIT');
       }
     }
     return db;
