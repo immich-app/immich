@@ -62,9 +62,6 @@ importers:
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
-      '@types/micromatch':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@types/mock-fs':
         specifier: ^4.13.1
         version: 4.13.4
@@ -4401,9 +4398,6 @@ packages:
   '@types/bonjour@3.5.13':
     resolution: {integrity: sha512-z9fJ5Im06zvUL548KvYNecEVlA7cVDkGUi6kZusb04mpyEFKCIZJvloCcmpmLaIahDpOQGHaHmG6imtPMmPXGQ==}
 
-  '@types/braces@3.0.5':
-    resolution: {integrity: sha512-SQFof9H+LXeWNz8wDe7oN5zu7ket0qwMu5vZubW4GCJ8Kkeh6nBWUz87+KTz/G3Kqsrp0j/W253XJb3KMEeg3w==}
-
   '@types/byte-size@8.1.2':
     resolution: {integrity: sha512-jGyVzYu6avI8yuqQCNTZd65tzI8HZrLjKX9sdMqZrGWVlNChu0rf6p368oVEDCYJe5BMx2Ov04tD1wqtgTwGSA==}
 
@@ -4582,9 +4576,6 @@ packages:
 
   '@types/methods@1.1.4':
     resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
-
-  '@types/micromatch@4.0.9':
-    resolution: {integrity: sha512-7V+8ncr22h4UoYRLnLXSpTxjQrNUXtWHGeMPRJt1nULXI57G9bIcpyrHlmrQ7QK24EyyuXvYcSSWAM8GA9nqCg==}
 
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
@@ -16123,8 +16114,6 @@ snapshots:
     dependencies:
       '@types/node': 22.18.10
 
-  '@types/braces@3.0.5': {}
-
   '@types/byte-size@8.1.2': {}
 
   '@types/chai@5.2.2':
@@ -16340,10 +16329,6 @@ snapshots:
   '@types/mdx@2.0.13': {}
 
   '@types/methods@1.1.4': {}
-
-  '@types/micromatch@4.0.9':
-    dependencies:
-      '@types/braces': 3.0.5
 
   '@types/mime@1.3.5': {}
 

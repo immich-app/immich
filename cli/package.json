@@ -19,7 +19,6 @@
     "@types/byte-size": "^8.1.0",
     "@types/cli-progress": "^3.11.0",
     "@types/lodash-es": "^4.17.12",
-    "@types/micromatch": "^4.0.9",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^22.18.8",
     "@types/picomatch": "^4.0.0",
