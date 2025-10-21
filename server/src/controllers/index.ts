@@ -32,6 +32,7 @@ import { TrashController } from 'src/controllers/trash.controller';
 import { UserAdminController } from 'src/controllers/user-admin.controller';
 import { UserController } from 'src/controllers/user.controller';
 import { ViewController } from 'src/controllers/view.controller';
+import { TranscodingController } from 'src/controllers/transcoding.controller';
 
 export const controllers = [
   ApiKeyController,
@@ -63,6 +64,7 @@ export const controllers = [
   SystemConfigController,
   SystemMetadataController,
   TagController,
+  TranscodingController,
   TimelineController,
   TrashController,
   UserAdminController,

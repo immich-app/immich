@@ -126,12 +126,12 @@ const buildConfig = async (repos: RepoDeps) => {
     config.server.externalDomain = externalDomain;
   }
 
-  if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
-    config.ffmpeg.acceptedVideoCodecs.push(config.ffmpeg.targetVideoCodec);
+  if (!config.ffmpeg.offline.acceptedVideoCodecs.includes(config.ffmpeg.offline.targetVideoCodec)) {
+    config.ffmpeg.offline.acceptedVideoCodecs.push(config.ffmpeg.offline.targetVideoCodec);
   }
 
-  if (!config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)) {
-    config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec);
+  if (!config.ffmpeg.offline.acceptedAudioCodecs.includes(config.ffmpeg.offline.targetAudioCodec)) {
+    config.ffmpeg.offline.acceptedAudioCodecs.push(config.ffmpeg.offline.targetAudioCodec);
   }
 
   return config;
