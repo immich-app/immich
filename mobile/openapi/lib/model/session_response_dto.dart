@@ -20,6 +20,7 @@ class SessionResponseDto {
     this.expiresAt,
     required this.id,
     required this.isPendingSyncReset,
+    this.permissions = const [],
     required this.updatedAt,
   });
 
@@ -43,6 +44,8 @@ class SessionResponseDto {
 
   bool isPendingSyncReset;
 
+  List<Permission> permissions;
+
   String updatedAt;
 
   @override
@@ -54,6 +57,7 @@ class SessionResponseDto {
     other.expiresAt == expiresAt &&
     other.id == id &&
     other.isPendingSyncReset == isPendingSyncReset &&
+    _deepEquality.equals(other.permissions, permissions) &&
     other.updatedAt == updatedAt;
 
   @override
@@ -66,10 +70,11 @@ class SessionResponseDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (isPendingSyncReset.hashCode) +
+    (permissions.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, updatedAt=$updatedAt]';
+  String toString() => 'SessionResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, permissions=$permissions, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -84,6 +89,7 @@ class SessionResponseDto {
     }
       json[r'id'] = this.id;
       json[r'isPendingSyncReset'] = this.isPendingSyncReset;
+      json[r'permissions'] = this.permissions;
       json[r'updatedAt'] = this.updatedAt;
     return json;
   }
@@ -104,6 +110,7 @@ class SessionResponseDto {
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
         isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
+        permissions: Permission.listFromJson(json[r'permissions']),
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
     }
@@ -158,6 +165,7 @@ class SessionResponseDto {
     'deviceType',
     'id',
     'isPendingSyncReset',
+    'permissions',
     'updatedAt',
   };
 }

@@ -4,7 +4,8 @@
 select
   "id",
   "expiresAt",
-  "pinExpiresAt"
+  "pinExpiresAt",
+  "permissions"
 from
   "session"
 where
@@ -23,6 +24,7 @@ select
   "session"."id",
   "session"."updatedAt",
   "session"."pinExpiresAt",
+  "session"."permissions",
   (
     select
       to_json(obj)

@@ -20,6 +20,7 @@ class SessionCreateResponseDto {
     this.expiresAt,
     required this.id,
     required this.isPendingSyncReset,
+    this.permissions = const [],
     required this.token,
     required this.updatedAt,
   });
@@ -44,6 +45,8 @@ class SessionCreateResponseDto {
 
   bool isPendingSyncReset;
 
+  List<Permission> permissions;
+
   String token;
 
   String updatedAt;
@@ -57,6 +60,7 @@ class SessionCreateResponseDto {
     other.expiresAt == expiresAt &&
     other.id == id &&
     other.isPendingSyncReset == isPendingSyncReset &&
+    _deepEquality.equals(other.permissions, permissions) &&
     other.token == token &&
     other.updatedAt == updatedAt;
 
@@ -70,11 +74,12 @@ class SessionCreateResponseDto {
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (isPendingSyncReset.hashCode) +
+    (permissions.hashCode) +
     (token.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionCreateResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, token=$token, updatedAt=$updatedAt]';
+  String toString() => 'SessionCreateResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, permissions=$permissions, token=$token, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -89,6 +94,7 @@ class SessionCreateResponseDto {
     }
       json[r'id'] = this.id;
       json[r'isPendingSyncReset'] = this.isPendingSyncReset;
+      json[r'permissions'] = this.permissions;
       json[r'token'] = this.token;
       json[r'updatedAt'] = this.updatedAt;
     return json;
@@ -110,6 +116,7 @@ class SessionCreateResponseDto {
         expiresAt: mapValueOfType<String>(json, r'expiresAt'),
         id: mapValueOfType<String>(json, r'id')!,
         isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
+        permissions: Permission.listFromJson(json[r'permissions']),
         token: mapValueOfType<String>(json, r'token')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
       );
@@ -165,6 +172,7 @@ class SessionCreateResponseDto {
     'deviceType',
     'id',
     'isPendingSyncReset',
+    'permissions',
     'token',
     'updatedAt',
   };
