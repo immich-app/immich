@@ -15,7 +15,7 @@ class SemVer {
   }
 
   factory SemVer.fromString(String version) {
-    final parts = version.split('.');
+    final parts = version.split("-")[0].split('.');
     return SemVer(major: int.parse(parts[0]), minor: int.parse(parts[1]), patch: int.parse(parts[2]));
   }
 
