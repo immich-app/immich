@@ -96,7 +96,6 @@
       <p class="absolute top-0 h-full w-full text-center text-primary text-[10px]">
         {#if uploadAsset.message}
           {uploadAsset.message}
-        {:else}
           {uploadAsset.progress}% - {getByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
         {/if}
       </p>
