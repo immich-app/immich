@@ -161,6 +161,11 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                       ),
                     ),
                   },
+                  Text(
+                    "notification_backup_reliability".t(),
+                    style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                    textAlign: TextAlign.center,
+                  ),
                   TextButton.icon(
                     icon: const Icon(Icons.info_outline_rounded),
                     onPressed: () => context.pushRoute(const DriftUploadDetailRoute()),
