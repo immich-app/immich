@@ -14,25 +14,31 @@ class SystemConfigBackupsDto {
   /// Returns a new [SystemConfigBackupsDto] instance.
   SystemConfigBackupsDto({
     required this.database,
+    required this.upload,
   });
 
   DatabaseBackupConfig database;
 
+  UploadBackupConfig upload;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigBackupsDto &&
-    other.database == database;
+    other.database == database &&
+    other.upload == upload;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (database.hashCode);
+    (database.hashCode) +
+    (upload.hashCode);
 
   @override
-  String toString() => 'SystemConfigBackupsDto[database=$database]';
+  String toString() => 'SystemConfigBackupsDto[database=$database, upload=$upload]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'database'] = this.database;
+      json[r'upload'] = this.upload;
     return json;
   }
 
@@ -46,6 +52,7 @@ class SystemConfigBackupsDto {
 
       return SystemConfigBackupsDto(
         database: DatabaseBackupConfig.fromJson(json[r'database'])!,
+        upload: UploadBackupConfig.fromJson(json[r'upload'])!,
       );
     }
     return null;
@@ -94,6 +101,7 @@ class SystemConfigBackupsDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'database',
+    'upload',
   };
 }
 
