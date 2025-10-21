@@ -122,7 +122,11 @@ export class DayGroup {
 
       const asset = this.viewerAssets[index].asset!;
       const oldTime = { ...asset.localDateTime };
-      let { remove } = operation(asset);
+      const opResult = operation(asset);
+      let remove = false;
+      if (opResult) {
+        remove = (opResult as { remove: boolean }).remove ?? false;
+      }
       const newTime = asset.localDateTime;
       if (oldTime.year !== newTime.year || oldTime.month !== newTime.month || oldTime.day !== newTime.day) {
         const { year, month, day } = newTime;
