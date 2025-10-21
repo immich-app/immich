@@ -33,6 +33,11 @@ type Item<T extends EmitEvent> = {
   label: string;
 };
 
+type AssetCreateV1 = {
+  id: string;
+  ownerId: string;
+};
+
 type EventMap = {
   // app events
   AppBootstrap: [];
@@ -53,6 +58,7 @@ type EventMap = {
   AlbumInvite: [{ id: string; userId: string }];
 
   // asset events
+  AssetCreate: [{ asset: AssetCreateV1 }];
   AssetTag: [{ assetId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];
