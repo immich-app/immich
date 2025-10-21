@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { SALT_ROUNDS } from 'src/constants';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
   UserAdminCreateDto,
@@ -117,6 +118,11 @@ export class UserAdminService extends BaseService {
     const user = await this.userRepository.restore(id);
     this.telemetryRepository.api.addToGauge('immich.users.total', 1);
     return mapUserAdmin(user);
+  }
+
+  async getSessions(auth: AuthDto, id: string): Promise<SessionResponseDto[]> {
+    const sessions = await this.sessionRepository.getByUserId(id);
+    return sessions.map((session) => mapSession(session));
   }
 
   async getStatistics(auth: AuthDto, id: string, dto: AssetStatsDto): Promise<AssetStatsResponseDto> {

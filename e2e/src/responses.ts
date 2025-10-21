@@ -119,5 +119,6 @@ export const deviceDto = {
     isPendingSyncReset: false,
     deviceOS: '',
     deviceType: '',
+    appVersion: null,
   },
 };
