@@ -101,7 +101,7 @@
     onClose,
     motionPhoto,
     playOriginalVideo = false,
-    setPlayOriginalVideo = () => {},
+    setPlayOriginalVideo,
   }: Props = $props();
 
   const sharedLink = getSharedLink();
