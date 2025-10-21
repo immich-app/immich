@@ -1,5 +1,6 @@
 <script lang="ts">
   import { beforeNavigate } from '$app/navigation';
+  import { Category } from '$lib/actions/shortcut.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
@@ -106,7 +107,7 @@
   </Timeline>
 </UserPageLayout>
 
-{#if assetInteraction.selectionActive}
+<div class={[!assetInteraction.selectionActive && 'hidden']}>
   <AssetSelectControlBar
     ownerId={$user.id}
     assets={assetInteraction.selectedAssets}
@@ -115,8 +116,8 @@
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} {assetInteraction} />
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-      <AddToAlbum />
-      <AddToAlbum shared />
+      <AddToAlbum shortcutCategory={Category.Selection} />
+      <AddToAlbum shortcutCategory={Category.Selection} shared />
     </ButtonContextMenu>
     <FavoriteAction
       removeFavorite={assetInteraction.isAllFavorite}
@@ -127,7 +128,7 @@
         })}
     ></FavoriteAction>
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-      <DownloadAction menuItem />
+      <DownloadAction shortcutCategory={Category.Selection} menuItem />
       {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
         <StackAction
           unstack={isAssetStackSelected}
@@ -148,7 +149,7 @@
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => timelineManager.removeAssets(assetIds)} />
       {#if $preferences.tags.enabled}
-        <TagAction menuItem />
+        <TagAction shortcutCategory={Category.Selection} menuItem />
       {/if}
       <DeleteAssets
         menuItem
@@ -160,4 +161,4 @@
       <AssetJobActions />
     </ButtonContextMenu>
   </AssetSelectControlBar>
-{/if}
+</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import CastButton from '$lib/cast/cast-button.svelte';
   import AlbumMap from '$lib/components/album-page/album-map.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
@@ -48,14 +48,11 @@
 </script>
 
 <svelte:document
-  use:shortcut={{
-    shortcut: { key: 'Escape' },
-    onShortcut: () => {
-      if (!$showAssetViewer && assetInteraction.selectionActive) {
-        cancelMultiselect(assetInteraction);
-      }
-    },
-  }}
+  {@attach shortcut('Escape', category(Category.Application, $t('previous_or_next_photo')), () => {
+    if (!$showAssetViewer && assetInteraction.selectionActive) {
+      cancelMultiselect(assetInteraction);
+    }
+  })}
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">

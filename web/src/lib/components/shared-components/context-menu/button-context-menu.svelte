@@ -1,6 +1,6 @@
 <script lang="ts">
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { onKeydown } from '$lib/actions/input';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
@@ -174,20 +174,7 @@
     />
   </div>
   {#if isOpen || !hideContent}
-    <div
-      use:shortcuts={[
-        {
-          shortcut: { key: 'Tab' },
-          onShortcut: closeDropdown,
-          preventDefault: false,
-        },
-        {
-          shortcut: { key: 'Tab', shift: true },
-          onShortcut: closeDropdown,
-          preventDefault: false,
-        },
-      ]}
-    >
+    <div {@attach onKeydown([{ key: 'Tab' }, { key: 'Tab', shift: true }], closeDropdown)}>
       <ContextMenu
         {direction}
         ariaActiveDescendant={$selectedIdStore}

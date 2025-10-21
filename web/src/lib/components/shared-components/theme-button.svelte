@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { ctrlKey } from '$lib/actions/input';
+  import { shortcut } from '$lib/actions/shortcut.svelte';
   import { defaultLang, langs, Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
   import { lang } from '$lib/stores/preferences.store';
   import { ThemeSwitcher } from '@immich/ui';
+  import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
 
   const handleToggleTheme = () => {
@@ -15,7 +17,7 @@
   };
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 't', alt: true }, onShortcut: () => handleToggleTheme() }} />
+<svelte:window {@attach shortcut(ctrlKey('t'), $t('dark_theme'), handleToggleTheme)} />
 
 {#if !themeManager.theme.system}
   {#await langs

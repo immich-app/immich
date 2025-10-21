@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import { AssetAction } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -39,7 +39,7 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'f' }, onShortcut: toggleFavorite }} />
+<svelte:document {@attach shortcut('f', category(Category.AssetActions, 'Toggle favorite'), toggleFavorite)} />
 
 <IconButton
   color="secondary"

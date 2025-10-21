@@ -1,104 +1,103 @@
 <script lang="ts">
-  import { Icon, Modal, ModalBody } from '@immich/ui';
-  import { mdiInformationOutline } from '@mdi/js';
+  import {
+    getCategoryString,
+    resetModal,
+    ShortcutVariant,
+    sortCategories,
+    type KeyboardHelp,
+  } from '$lib/actions/shortcut.svelte';
+  import { Kbd, Modal, ModalBody } from '@immich/ui';
+  import { type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
-
-  interface Shortcuts {
-    general: ExplainedShortcut[];
-    actions: ExplainedShortcut[];
-  }
-
-  interface ExplainedShortcut {
-    key: string[];
-    action: string;
-    info?: string;
-  }
+  import { SvelteMap } from 'svelte/reactivity';
 
   interface Props {
     onClose: () => void;
-    shortcuts?: Shortcuts;
+    shortcutVariants: Map<ShortcutVariant, ShortcutVariant>;
+    shortcuts: KeyboardHelp[];
   }
 
-  let {
-    onClose,
-    shortcuts = {
-      general: [
-        { key: ['←', '→'], action: $t('previous_or_next_photo') },
-        { key: ['D', 'd'], action: $t('previous_or_next_day') },
-        { key: ['M', 'm'], action: $t('previous_or_next_month') },
-        { key: ['Y', 'y'], action: $t('previous_or_next_year') },
-        { key: ['g'], action: $t('navigate_to_time') },
-        { key: ['x'], action: $t('select') },
-        { key: ['Esc'], action: $t('back_close_deselect') },
-        { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
-        { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },
-      ],
-      actions: [
-        { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
-        { key: ['i'], action: $t('show_or_hide_info') },
-        { key: ['s'], action: $t('stack_selected_photos') },
-        { key: ['l'], action: $t('add_to_album') },
-        { key: ['t'], action: $t('tag_assets') },
-        { key: ['⇧', 'l'], action: $t('add_to_shared_album') },
-        { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
-        { key: ['⇧', 'd'], action: $t('download') },
-        { key: ['Space'], action: $t('play_or_pause_video') },
-        { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
-      ],
-    },
-  }: Props = $props();
+  let { onClose, shortcutVariants, shortcuts }: Props = $props();
+
+  const secondaryIds = $derived(new Set(shortcutVariants.values()));
+  const isEmpty = $derived(shortcuts.length === 0);
+
+  const primaryShortcuts = $derived(
+    shortcuts.filter((shortcut) => {
+      if (shortcut.variant) {
+        if (!secondaryIds.has(shortcut.variant)) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }),
+  );
+
+  const categories = $derived.by(() =>
+    sortCategories([...new Set(primaryShortcuts.filter((s) => !!s.category).flatMap((s) => s.category!))]),
+  );
+
+  const categorizedPrimaryShortcuts = $derived.by(() => {
+    const categoryMap = new SvelteMap<string, KeyboardHelp[]>();
+    for (const c of categories) {
+      categoryMap.set(
+        c,
+        primaryShortcuts.filter((s) => s.category === c),
+      );
+    }
+    return categoryMap;
+  });
+
+  const getSecondaryShortcut = (variant: ShortcutVariant | undefined) => {
+    if (!variant) {
+      return;
+    }
+    return shortcuts.find((short) => short.variant === variant);
+  };
 </script>
 
-<Modal title={$t('keyboard_shortcuts')} size="medium" {onClose}>
+{#snippet row(col: Snippet<[KeyboardHelp]>, shortcut1: KeyboardHelp, shortcut2: KeyboardHelp | undefined)}
+  <div class="grid grid-cols-[15%_35%_15%_35%] items-start gap-4 pt-4 text-sm">
+    {@render col(shortcut1)}
+    {#if shortcut2}
+      {@render col(shortcut2)}
+    {/if}
+  </div>
+{/snippet}
+{#snippet col(shortcut: KeyboardHelp)}
+  <div>
+    {#each shortcut.key as key (key)}
+      <div class="flex justify-self-end [&:not(:first-child)]:mt-2">
+        {#each key as sequence (sequence)}
+          <Kbd>
+            {sequence}
+          </Kbd>
+        {/each}
+      </div>
+    {/each}
+  </div>
+  <p>{shortcut.text}</p>
+{/snippet}
+
+<Modal title={$t('keyboard_shortcuts')} size="large" onClose={() => (resetModal(), onClose())}>
   <ModalBody>
-    <div class="grid grid-cols-1 gap-4 px-4 pb-4 md:grid-cols-2">
-      {#if shortcuts.general.length > 0}
+    <div class="px-4 pb-4 grid grid-auto-fit-200 gap-5 mt-1">
+      {#if isEmpty}{$t('no_shortcuts')}{/if}
+      {#each categories as category (category)}
+        {@const actions = categorizedPrimaryShortcuts.get(category)!}
         <div class="p-4">
-          <h2>{$t('general')}</h2>
+          <h2>{getCategoryString(category)}</h2>
           <div class="text-sm">
-            {#each shortcuts.general as shortcut (shortcut.key.join('-'))}
-              <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
-                <div class="flex justify-self-end">
-                  {#each shortcut.key as key (key)}
-                    <p
-                      class="me-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2"
-                    >
-                      {key}
-                    </p>
-                  {/each}
-                </div>
-                <p class="mb-1 mt-1 flex">{shortcut.action}</p>
-              </div>
+            {#each actions as shortcut (shortcut)}
+              {@const paired = shortcut.variant
+                ? getSecondaryShortcut(shortcutVariants.get(shortcut.variant))
+                : undefined}
+              {@render row(col, shortcut, paired)}
             {/each}
           </div>
         </div>
-      {/if}
-      {#if shortcuts.actions.length > 0}
-        <div class="p-4">
-          <h2>{$t('actions')}</h2>
-          <div class="text-sm">
-            {#each shortcuts.actions as shortcut (shortcut.key.join('-'))}
-              <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
-                <div class="flex justify-self-end">
-                  {#each shortcut.key as key (key)}
-                    <p
-                      class="me-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2"
-                    >
-                      {key}
-                    </p>
-                  {/each}
-                </div>
-                <div class="flex items-center gap-2">
-                  <p class="mb-1 mt-1 flex">{shortcut.action}</p>
-                  {#if shortcut.info}
-                    <Icon icon={mdiInformationOutline} title={shortcut.info} />
-                  {/if}
-                </div>
-              </div>
-            {/each}
-          </div>
-        </div>
-      {/if}
+      {/each}
     </div>
   </ModalBody>
 </Modal>

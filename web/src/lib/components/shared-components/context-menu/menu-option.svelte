@@ -1,6 +1,11 @@
 <script lang="ts">
-  import type { Shortcut } from '$lib/actions/shortcut';
-  import { shortcut as bindShortcut, shortcutLabel as computeShortcutLabel } from '$lib/actions/shortcut';
+  import type { KeyCombo } from '$lib/actions/input';
+  import {
+    Category,
+    conditionalShortcut,
+    shortcut as registerShortcut,
+    ShortcutVariant,
+  } from '$lib/actions/shortcut.svelte';
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import { generateId } from '$lib/utils/generate-id';
   import { Icon } from '@immich/ui';
@@ -12,8 +17,9 @@
     activeColor?: string;
     textColor?: string;
     onClick: () => void;
-    shortcut?: Shortcut | null;
-    shortcutLabel?: string;
+    shortcut?: KeyCombo | null;
+    shortcutCategory?: Category;
+    variant?: ShortcutVariant;
   }
 
   let {
@@ -24,7 +30,8 @@
     textColor = 'text-immich-fg dark:text-immich-dark-bg',
     onClick,
     shortcut = null,
-    shortcutLabel = '',
+    shortcutCategory,
+    variant,
   }: Props = $props();
 
   let id: string = generateId();
@@ -35,16 +42,14 @@
     $optionClickCallbackStore?.();
     onClick();
   };
-
-  if (shortcut && !shortcutLabel) {
-    shortcutLabel = computeShortcutLabel(shortcut);
-  }
-  const bindShortcutIfSet = shortcut
-    ? (n: HTMLElement) => bindShortcut(n, { shortcut, onShortcut: onClick })
-    : () => {};
 </script>
 
-<svelte:document use:bindShortcutIfSet />
+<svelte:document
+  {@attach conditionalShortcut(
+    () => !!shortcut,
+    () => registerShortcut(shortcut!, { category: shortcutCategory, text, variant }, onClick),
+  )}
+/>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
@@ -64,11 +69,6 @@
   <div class="w-full">
     <div class="flex justify-between">
       {text}
-      {#if shortcutLabel}
-        <span class="text-gray-500 ps-4">
-          {shortcutLabel}
-        </span>
-      {/if}
     </div>
     {#if subtitle}
       <p class="text-xs text-gray-500">

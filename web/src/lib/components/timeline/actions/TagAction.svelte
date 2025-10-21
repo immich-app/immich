@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { Category, shortcut } from '$lib/actions/shortcut.svelte';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
   import { IconButton, modalManager } from '@immich/ui';
@@ -9,9 +9,10 @@
 
   interface Props {
     menuItem?: boolean;
+    shortcutCategory?: Category;
   }
 
-  let { menuItem = false }: Props = $props();
+  let { menuItem = false, shortcutCategory }: Props = $props();
 
   const text = $t('tag');
   const icon = mdiTagMultipleOutline;
@@ -20,15 +21,17 @@
 
   const handleTagAssets = async () => {
     const assets = [...getOwnedAssets()];
+    if (assets.length === 0) {
+      return;
+    }
     const success = await modalManager.show(AssetTagModal, { assetIds: assets.map(({ id }) => id) });
-
     if (success) {
       clearSelect();
     }
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 't' }, onShortcut: handleTagAssets }} />
+<svelte:document {@attach shortcut('t', { text, category: shortcutCategory }, handleTagAssets)} />
 
 {#if menuItem}
   <MenuOption {text} {icon} onClick={handleTagAssets} />

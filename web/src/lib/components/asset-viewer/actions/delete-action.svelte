@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { shiftKey } from '$lib/actions/input';
+  import { Category, category, registerShortcutVariant, shortcut, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
   import { AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
@@ -63,10 +64,19 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete(asset.isTrashed) },
-    { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
-  ]}
+  {@attach shortcut(
+    'Delete',
+    asset.isTrashed
+      ? category(Category.AssetActions, $t('permanently_delete'), ShortcutVariant.Delete)
+      : category(Category.AssetActions, $t('move_to_trash'), ShortcutVariant.Delete),
+    () => trashOrDelete(asset.isTrashed),
+  )}
+  {@attach shortcut(
+    shiftKey('Delete'),
+    category(Category.AssetActions, $t('permanently_delete'), ShortcutVariant.PermDelete),
+    () => trashOrDelete(true),
+  )}
+  {@attach registerShortcutVariant(ShortcutVariant.Delete, ShortcutVariant.PermDelete)}
 />
 
 <IconButton

@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { showShortcutsModal } from '$lib/actions/shortcut.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import UserSettingsList from '$lib/components/user-settings-page/user-settings-list.svelte';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
-  import { Container, IconButton, modalManager } from '@immich/ui';
+  import { Container, IconButton } from '@immich/ui';
   import { mdiKeyboard } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -22,7 +22,7 @@
       variant="ghost"
       icon={mdiKeyboard}
       aria-label={$t('show_keyboard_shortcuts')}
-      onclick={() => modalManager.show(ShortcutsModal, {})}
+      onclick={showShortcutsModal}
     />
   {/snippet}
   <Container size="medium" center>
