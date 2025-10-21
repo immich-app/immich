@@ -7,12 +7,24 @@ import type { PageLoad } from './$types';
 export const load = (async ({ params, url }) => {
   await authenticate(url);
   const asset = await getAssetInfoFromParam(params);
-  const duplicates = await getAssetDuplicates();
   const $t = await getFormatter();
+
+  const indexParam = url.searchParams.get('index') ?? '0';
+  const parsedIndex = Number.parseInt(indexParam, 10);
+  
+  const duplicates = await getAssetDuplicates({ page: parsedIndex + 1, size: 1 });
+  const duplicate = duplicates.items[0];
+
+  const loadDuplicates = async (newPage: number, newSize: number) => {
+    return await getAssetDuplicates({ page: newPage, size: newSize });
+  };
 
   return {
     asset,
-    duplicates,
+    duplicatesRes: duplicates,
+    duplicates: duplicates.items,
+    duplicate,
+    loadDuplicates,
     meta: {
       title: $t('duplicates'),
     },

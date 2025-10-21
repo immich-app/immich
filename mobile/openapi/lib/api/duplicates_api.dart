@@ -19,6 +19,42 @@ class DuplicatesApi {
   /// This endpoint requires the `duplicate.delete` permission.
   ///
   /// Note: This method returns the HTTP [Response].
+  Future<Response> deDuplicateAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/de-duplicate-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  Future<void> deDuplicateAll() async {
+    final response = await deDuplicateAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
@@ -166,5 +202,41 @@ class DuplicatesApi {
     
     }
     return null;
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> keepAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/keep-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  Future<void> keepAll() async {
+    final response = await keepAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

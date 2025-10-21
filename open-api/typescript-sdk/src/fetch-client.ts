@@ -2645,6 +2645,24 @@ export function getAssetDuplicates({ page, size }: {
 /**
  * This endpoint requires the `duplicate.delete` permission.
  */
+export function deDuplicateAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates/de-duplicate-all", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `duplicate.delete` permission.
+ */
+export function keepAll(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/duplicates/keep-all", {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * This endpoint requires the `duplicate.delete` permission.
+ */
 export function deleteDuplicate({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
