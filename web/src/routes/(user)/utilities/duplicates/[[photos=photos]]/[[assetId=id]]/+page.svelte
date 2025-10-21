@@ -60,8 +60,7 @@
   };
 
   let duplicatesRes = $state(data.duplicatesRes);
-  // let duplicates = $state(data.duplicates);
-  let duplicate = $state(data.duplicate);
+  let duplicate = $state<typeof data.duplicate | null>(data.duplicate);
 
   const { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -112,7 +111,7 @@
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
 
-        // duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
+        duplicate = null;
 
         deletedNotification(trashIds.length);
         await correctDuplicatesIndexAndGo(duplicatesIndex);
@@ -126,7 +125,6 @@
     await stackAssets(assets, false);
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-    // duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await correctDuplicatesIndexAndGo(duplicatesIndex);
   };
 
@@ -144,6 +142,9 @@
       async () => {
         await deDuplicateAll();
         deletedNotification(1);
+
+        duplicate = null;
+
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },
@@ -161,6 +162,9 @@
           message: $t('resolved_all_duplicates'),
           type: NotificationType.Info,
         });
+
+        duplicate = null;
+
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },
@@ -265,8 +269,8 @@
         <DuplicatesCompareControl
           assets={duplicate.assets}
           onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicate.duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(duplicate.duplicateId, assets)}
+            handleResolve(duplicate!.duplicateId, duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(duplicate!.duplicateId, assets)}
         />
         <div class="max-w-216 mx-auto mb-16">
           <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between items-center">
