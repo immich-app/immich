@@ -2,7 +2,7 @@
 node = "22.20.0"
 flutter = "3.35.6"
 pnpm = "10.18.1"
-terragrunt = "0.58.12"
+terragrunt = "0.91.1"
 opentofu = "1.7.1"
 
 [tools."github:CQLabs/homebrew-dcm"]
