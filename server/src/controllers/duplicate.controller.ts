@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -26,6 +26,20 @@ export class DuplicateController {
   getAssetDuplicates(@Auth() auth: AuthDto,     @Query('page') page: number = 1,
     @Query('size') size: number = 20,): Promise<DuplicateResponseDto> {
     return this.service.getDuplicates(auth, page, size);
+  }
+
+  @Delete('/de-duplicate-all')
+  @Authenticated({ permission: Permission.DuplicateDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deDuplicateAll(@Auth() auth: AuthDto) {
+    return this.service.deDuplicateAll(auth);
+  }
+
+  @Delete('/keep-all')
+  @Authenticated({ permission: Permission.DuplicateDelete })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  keepAll(@Auth() auth: AuthDto) {
+    return this.service.keepAll(auth);
   }
 
   @Delete()

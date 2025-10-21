@@ -4645,6 +4645,60 @@
         "x-immich-state": "Stable"
       }
     },
+    "/duplicates/de-duplicate-all": {
+      "delete": {
+        "operationId": "deDuplicateAll",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-permission": "duplicate.delete",
+        "description": "This endpoint requires the `duplicate.delete` permission."
+      }
+    },
+    "/duplicates/keep-all": {
+      "delete": {
+        "operationId": "keepAll",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-permission": "duplicate.delete",
+        "description": "This endpoint requires the `duplicate.delete` permission."
+      }
+    },
     "/duplicates/{id}": {
       "delete": {
         "description": "Delete a single duplicate asset specified by its ID.",
