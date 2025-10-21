@@ -27,6 +27,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
+import { PluginRepository } from 'src/repositories/plugin.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
@@ -44,7 +45,6 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
-
 export const repositories = [
   AccessRepository,
   ActivityRepository,
@@ -76,6 +76,7 @@ export const repositories = [
   PartnerRepository,
   PersonRepository,
   ProcessRepository,
+  PluginRepository,
   SearchRepository,
   SessionRepository,
   ServerInfoRepository,

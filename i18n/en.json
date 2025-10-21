@@ -1604,6 +1604,7 @@
   "read_changelog": "Read Changelog",
   "readonly_mode_disabled": "Read-only mode disabled",
   "readonly_mode_enabled": "Read-only mode enabled",
+  "plugins": "Plugins",
   "ready_for_upload": "Ready for upload",
   "reassign": "Reassign",
   "reassigned_assets_to_existing_person": "Re-assigned {count, plural, one {# asset} other {# assets}} to {name, select, null {an existing person} other {{name}}}",

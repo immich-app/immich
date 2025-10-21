@@ -144,6 +144,19 @@ export type UserAdmin = User & {
   metadata: UserMetadataItem[];
 };
 
+export type Plugin = {
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  packageId: string;
+  version: number;
+  name: string;
+  description: string;
+  isEnabled: boolean;
+  isInstalled: boolean;
+  isTrusted: boolean;
+};
+
 export type StorageAsset = {
   id: string;
   ownerId: string;

@@ -22,6 +22,7 @@ import { NotificationAdminService } from 'src/services/notification-admin.servic
 import { NotificationService } from 'src/services/notification.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
+import { PluginService } from 'src/services/plugin.service';
 import { SearchService } from 'src/services/search.service';
 import { ServerService } from 'src/services/server.service';
 import { SessionService } from 'src/services/session.service';
@@ -40,6 +41,7 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
+import { WorkflowService } from 'src/services/workflow.service';
 
 export const services = [
   ApiKeyService,
@@ -66,6 +68,7 @@ export const services = [
   NotificationAdminService,
   PartnerService,
   PersonService,
+  PluginService,
   SearchService,
   ServerService,
   SessionService,
@@ -84,4 +87,5 @@ export const services = [
   UserService,
   VersionService,
   ViewService,
+  WorkflowService,
 ];

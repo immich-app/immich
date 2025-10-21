@@ -164,6 +164,10 @@ export enum Permission {
   PersonMerge = 'person.merge',
   PersonReassign = 'person.reassign',
 
+  PluginRead = 'plugin.read',
+  PluginUpdate = 'plugin.update',
+  PluginDelete = 'plugin.delete',
+
   PinCodeCreate = 'pinCode.create',
   PinCodeUpdate = 'pinCode.update',
   PinCodeDelete = 'pinCode.delete',

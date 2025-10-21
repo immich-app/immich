@@ -5717,6 +5717,154 @@
         "description": "This endpoint requires the `person.read` permission."
       }
     },
+    "/plugins": {
+      "get": {
+        "operationId": "searchPlugins",
+        "parameters": [
+          {
+            "name": "isEnabled",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isInstalled",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrusted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "name",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "plugin.read",
+        "description": "This endpoint is an admin-only route, and requires the `plugin.read` permission."
+      }
+    },
+    "/plugins/{id}": {
+      "delete": {
+        "operationId": "deletePlugin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Plugin"
+        ]
+      },
+      "put": {
+        "operationId": "updatePlugin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PluginUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Plugin"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "plugin.update",
+        "description": "This endpoint is an admin-only route, and requires the `plugin.update` permission."
+      }
+    },
     "/search/cities": {
       "get": {
         "operationId": "getAssetsByCity",
@@ -13211,6 +13359,9 @@
           "person.statistics",
           "person.merge",
           "person.reassign",
+          "plugin.read",
+          "plugin.update",
+          "plugin.delete",
           "pinCode.create",
           "pinCode.update",
           "pinCode.delete",
@@ -13495,6 +13646,66 @@
           "latitude",
           "longitude",
           "name"
+        ],
+        "type": "object"
+      },
+      "PluginResponseDto": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isEnabled": {
+            "type": "boolean"
+          },
+          "isInstalled": {
+            "type": "boolean"
+          },
+          "isTrusted": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "packageId": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "createdAt",
+          "description",
+          "id",
+          "isEnabled",
+          "isInstalled",
+          "isTrusted",
+          "name",
+          "packageId",
+          "updatedAt",
+          "version"
+        ],
+        "type": "object"
+      },
+      "PluginUpdateDto": {
+        "properties": {
+          "isEnabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isEnabled"
         ],
         "type": "object"
       },
