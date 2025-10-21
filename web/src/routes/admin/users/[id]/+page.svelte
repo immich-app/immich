@@ -84,7 +84,7 @@
   let updatedAtDate: Date = $derived(new Date(user.updatedAt));
   let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
   let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
-  const appleTypes: string[] = ['iOS', 'Apple', 'iPhone', 'iPad', 'macOS'];
+  const appleTypes = new Set(['iOS', 'Apple', 'iPhone', 'iPad', 'macOS']);
 
   const handleEdit = async () => {
     const result = await modalManager.show(UserEditModal, { user: { ...user } });
@@ -377,7 +377,7 @@
                       <span class="flex items-center justify-center">
                         {#if device.deviceType === 'Android' || device.deviceOS === 'Android'}
                           <Icon icon={mdiAndroid} size="2rem" class="text-green-600" />
-                        {:else if appleTypes.includes(device.deviceType) || appleTypes.includes(device.deviceOS)}
+                        {:else if appleTypes.has(device.deviceType) || appleTypes.has(device.deviceOS)}
                           <Icon icon={mdiApple} size="2rem" class="text-gray-700" />
                         {:else}
                           <Icon icon={mdiHelp} size="2rem" class="text-gray-400" />
