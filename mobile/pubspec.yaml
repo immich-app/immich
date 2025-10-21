@@ -6,12 +6,9 @@ version: 2.1.0+3022
 
 environment:
   sdk: '>=3.8.0 <4.0.0'
-  flutter: 3.35.4
+  flutter: 3.35.6
 
 dependencies:
-  flutter:
-    sdk: flutter
-
   async: ^2.11.0
   auto_route: ^9.2.0
   background_downloader: ^9.2.5
@@ -23,10 +20,15 @@ dependencies:
   crop_image: ^1.0.16
   crypto: ^3.0.6
   device_info_plus: ^12.0.0
+  # DB
+  drift: ^2.23.1
+  drift_flutter: ^0.2.4
   dynamic_color: ^1.7.0
-  easy_image_viewer: ^1.5.1
   easy_localization: ^3.0.7+1
+  ffi: ^2.1.4
   file_picker: ^8.0.0+1
+  flutter:
+    sdk: flutter
   flutter_cache_manager: ^3.4.1
   flutter_displaymode: ^0.6.0
   flutter_hooks: ^0.21.2
@@ -37,26 +39,39 @@ dependencies:
   flutter_web_auth_2: ^5.0.0-alpha.0
   fluttertoast: ^8.2.12
   geolocator: ^14.0.0
-  hooks_riverpod: ^2.6.1
   home_widget: ^0.8.0
+  hooks_riverpod: ^2.6.1
   http: ^1.3.0
   image_picker: ^1.1.2
   intl: ^0.20.0
+  isar:
+    git:
+      url: https://github.com/immich-app/isar
+      ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
+      path: packages/isar/
+  isar_community_flutter_libs: 3.3.0-dev.3
   local_auth: ^2.3.0
   logging: ^1.3.0
   maplibre_gl: ^0.22.0
+
+  native_video_player:
+    git:
+      url: https://github.com/immich-app/native_video_player
+      ref: '893894b'
   network_info_plus: ^6.1.3
   octo_image: ^2.1.0
+  openapi:
+    path: openapi
   package_info_plus: ^8.3.0
   path: ^1.9.1
   path_provider: ^2.1.5
   path_provider_foundation: ^2.4.1
   permission_handler: ^11.4.0
   photo_manager: ^3.6.4
-  photo_manager_image_provider: ^2.2.0
   pinput: ^5.0.1
   punycode: ^1.0.0
   riverpod_annotation: ^2.6.1
+  scroll_date_picker: ^3.8.0
   scrollable_positioned_list: ^0.3.8
   share_handler: ^0.0.22
   share_plus: ^10.1.4
@@ -69,52 +84,34 @@ dependencies:
   uuid: ^4.5.1
   wakelock_plus: ^1.2.10
   worker_manager: ^7.2.3
-  scroll_date_picker: ^3.8.0
-  ffi: ^2.1.4
-
-  native_video_player:
-    git:
-      url: https://github.com/immich-app/native_video_player
-      ref: '893894b'
-  openapi:
-    path: openapi
-  isar:
-    git:
-      url: https://github.com/immich-app/isar
-      ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
-      path: packages/isar/
-  isar_community_flutter_libs: 3.3.0-dev.3
-  # DB
-  drift: ^2.23.1
-  drift_flutter: ^0.2.4
 
 dev_dependencies:
+  auto_route_generator: ^9.0.0
+  build_runner: ^2.4.8
+  custom_lint: ^0.7.5
+  # Drift generator
+  drift_dev: ^2.23.1
+  fake_async: ^1.3.1
+  file: ^7.0.1 # for MemoryFileSystem
+  flutter_launcher_icons: ^0.14.3
+  flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.5
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
-  build_runner: ^2.4.8
-  auto_route_generator: ^9.0.0
-  flutter_launcher_icons: ^0.14.3
-  flutter_native_splash: ^2.4.5
+  immich_mobile_immich_lint:
+    path: './immich_lint'
+  integration_test:
+    sdk: flutter
   isar_generator:
     git:
       url: https://github.com/immich-app/isar
       ref: 'bb1dca40fe87a001122e5d43bc6254718cb49f3a'
       path: packages/isar_generator/
-  integration_test:
-    sdk: flutter
-  custom_lint: ^0.7.5
-  riverpod_lint: ^2.6.1
-  riverpod_generator: ^2.6.1
   mocktail: ^1.0.4
-  immich_mobile_immich_lint:
-    path: './immich_lint'
-  fake_async: ^1.3.1
-  file: ^7.0.1 # for MemoryFileSystem
-  # Drift generator
-  drift_dev: ^2.23.1
   # Type safe platform code
   pigeon: ^26.0.0
+  riverpod_generator: ^2.6.1
+  riverpod_lint: ^2.6.1
 
 flutter:
   uses-material-design: true
