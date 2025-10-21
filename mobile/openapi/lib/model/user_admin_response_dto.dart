@@ -20,7 +20,6 @@ class UserAdminResponseDto {
     required this.id,
     required this.isAdmin,
     required this.license,
-    this.mobileDevices = const [],
     required this.name,
     required this.oauthId,
     required this.profileChangedAt,
@@ -46,8 +45,6 @@ class UserAdminResponseDto {
   bool isAdmin;
 
   UserLicense? license;
-
-  List<MobileDeviceDto> mobileDevices;
 
   String name;
 
@@ -78,7 +75,6 @@ class UserAdminResponseDto {
     other.id == id &&
     other.isAdmin == isAdmin &&
     other.license == license &&
-    _deepEquality.equals(other.mobileDevices, mobileDevices) &&
     other.name == name &&
     other.oauthId == oauthId &&
     other.profileChangedAt == profileChangedAt &&
@@ -100,7 +96,6 @@ class UserAdminResponseDto {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (license == null ? 0 : license!.hashCode) +
-    (mobileDevices.hashCode) +
     (name.hashCode) +
     (oauthId.hashCode) +
     (profileChangedAt.hashCode) +
@@ -113,7 +108,7 @@ class UserAdminResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, mobileDevices=$mobileDevices, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
+  String toString() => 'UserAdminResponseDto[avatarColor=$avatarColor, createdAt=$createdAt, deletedAt=$deletedAt, email=$email, id=$id, isAdmin=$isAdmin, license=$license, name=$name, oauthId=$oauthId, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, quotaSizeInBytes=$quotaSizeInBytes, quotaUsageInBytes=$quotaUsageInBytes, shouldChangePassword=$shouldChangePassword, status=$status, storageLabel=$storageLabel, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -132,7 +127,6 @@ class UserAdminResponseDto {
     } else {
     //  json[r'license'] = null;
     }
-      json[r'mobileDevices'] = this.mobileDevices;
       json[r'name'] = this.name;
       json[r'oauthId'] = this.oauthId;
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
@@ -174,7 +168,6 @@ class UserAdminResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         license: UserLicense.fromJson(json[r'license']),
-        mobileDevices: MobileDeviceDto.listFromJson(json[r'mobileDevices']),
         name: mapValueOfType<String>(json, r'name')!,
         oauthId: mapValueOfType<String>(json, r'oauthId')!,
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
@@ -239,7 +232,6 @@ class UserAdminResponseDto {
     'id',
     'isAdmin',
     'license',
-    'mobileDevices',
     'name',
     'oauthId',
     'profileChangedAt',

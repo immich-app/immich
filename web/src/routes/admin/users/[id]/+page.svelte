@@ -6,6 +6,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
   import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
@@ -13,7 +14,6 @@
   import UserRestoreConfirmModal from '$lib/modals/UserRestoreConfirmModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { user as authUser } from '$lib/stores/user.store';
-  import { websocketStore } from '$lib/stores/websocket';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -37,8 +37,6 @@
   } from '@immich/ui';
   import {
     mdiAccountOutline,
-    mdiAndroid,
-    mdiApple,
     mdiAppsBox,
     mdiCameraIris,
     mdiChartPie,
@@ -46,7 +44,6 @@
     mdiCheckCircle,
     mdiDeleteRestore,
     mdiFeatureSearchOutline,
-    mdiHelp,
     mdiLockSmart,
     mdiOnepassword,
     mdiPencilOutline,
@@ -65,14 +62,10 @@
   let user = $derived(data.user);
   const userPreferences = $derived(data.userPreferences);
   const userStatistics = $derived(data.userStatistics);
-
+  const userSessions = $derived(data.userSessions);
   const TiB = 1024 ** 4;
   const usage = $derived(user.quotaUsageInBytes ?? 0);
   let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usage, usage > TiB ? 2 : 0));
-  const { serverVersion } = websocketStore;
-  const formattedServerVersion = $derived(
-    $serverVersion ? `${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
-  );
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
   const availableBytes = $derived(user.quotaSizeInBytes ?? 1);
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
@@ -84,7 +77,6 @@
   let updatedAtDate: Date = $derived(new Date(user.updatedAt));
   let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
   let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
-  const appleTypes = new Set<string>(['iOS', 'Apple', 'iPhone', 'iPad', 'macOS']);
 
   const handleEdit = async () => {
     const result = await modalManager.show(UserEditModal, { user: { ...user } });
@@ -363,48 +355,17 @@
           <CardHeader>
             <div class="flex items-center gap-2 px-4 py-2 text-primary">
               <Icon icon={mdiAppsBox} size="1.5rem" />
-              <CardTitle>Mobile Devices</CardTitle>
+              <CardTitle>Sessions</CardTitle>
             </div>
           </CardHeader>
           <CardBody>
             <div class="px-4 pb-7">
               <Stack gap={3}>
-                {#if user.mobileDevices && user.mobileDevices.length > 0}
-                  {#each user.mobileDevices as device (`${device.deviceType}-${device.deviceOS}-${device.lastSeen}`)}
-                    <div
-                      class="flex items-center gap-4 p-3 rounded-lg bg-gray-50 dark:bg-immich-dark-primary/10 shadow-sm"
-                    >
-                      <span class="flex items-center justify-center">
-                        {#if device.deviceType === 'Android' || device.deviceOS === 'Android'}
-                          <Icon icon={mdiAndroid} size="2rem" class="text-green-600" />
-                        {:else if appleTypes.has(device.deviceType) || appleTypes.has(device.deviceOS)}
-                          <Icon icon={mdiApple} size="2rem" class="text-gray-700" />
-                        {:else}
-                          <Icon icon={mdiHelp} size="2rem" class="text-gray-400" />
-                        {/if}
-                      </span>
-                      <div class="flex flex-col flex-1">
-                        <span class="font-medium text-base">
-                          {device.deviceType} <span class="mx-1">•</span>
-                          {#if formattedServerVersion != null && device.appVersion < formattedServerVersion}
-                            <span style="color: red">v{device.appVersion}</span>
-                          {:else if formattedServerVersion != null && device.appVersion > formattedServerVersion}
-                            <span style="color: green">v{device.appVersion}</span>
-                            <br />
-                            <span class="text-green-600 text-xs">(App version is newer than server)</span>
-                          {:else}
-                            <span style="color: inherit">v{device.appVersion}</span>
-                          {/if}
-                        </span>
-                        <span class="text-xs text-gray-500">
-                          Last seen: {new Date(device.lastSeen).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  {/each}
+                {#each userSessions as session (session.id)}
+                  <DeviceCard {session} />
                 {:else}
-                  <span class="text-gray-400">No mobile devices</span>
-                {/if}
+                  <span class="text-subtle">No mobile devices</span>
+                {/each}
               </Stack>
             </div>
           </CardBody>

@@ -410,8 +410,6 @@ class ApiClient {
           return MergePersonDto.fromJson(value);
         case 'MetadataSearchDto':
           return MetadataSearchDto.fromJson(value);
-        case 'MobileDeviceDto':
-          return MobileDeviceDto.fromJson(value);
         case 'NotificationCreateDto':
           return NotificationCreateDto.fromJson(value);
         case 'NotificationDeleteAllDto':

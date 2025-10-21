@@ -20,7 +20,6 @@ export const userStub = {
     metadata: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-    sessions: [],
   },
   user1: <UserAdmin>{
     ...authStub.user1.user,
@@ -38,7 +37,6 @@ export const userStub = {
     metadata: [],
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-    sessions: [],
   },
   user2: <UserAdmin>{
     ...authStub.user2.user,
@@ -56,6 +54,5 @@ export const userStub = {
     updatedAt: new Date('2021-01-01'),
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
-    sessions: [],
   },
 };

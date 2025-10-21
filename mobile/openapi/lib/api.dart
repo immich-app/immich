@@ -178,7 +178,6 @@ part 'model/memory_type.dart';
 part 'model/memory_update_dto.dart';
 part 'model/merge_person_dto.dart';
 part 'model/metadata_search_dto.dart';
-part 'model/mobile_device_dto.dart';
 part 'model/notification_create_dto.dart';
 part 'model/notification_delete_all_dto.dart';
 part 'model/notification_dto.dart';

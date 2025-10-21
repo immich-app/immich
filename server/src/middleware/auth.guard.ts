@@ -13,7 +13,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ApiCustomExtension, ImmichQuery, MetadataKey, Permission } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
-import { UAParser } from 'ua-parser-js';
+import { getUserAgentDetails } from 'src/utils/request';
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };
@@ -54,21 +54,15 @@ export const FileResponse = () =>
     content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } },
   });
 
-const getAppVersionFromUA = (ua: string) =>
-  ua.match(/^Immich_(?:Android|iOS)_(?<appVersion>.+)$/)?.groups?.appVersion ?? '';
-
 export const GetLoginDetails = createParamDecorator((data, context: ExecutionContext): LoginDetails => {
   const request = context.switchToHttp().getRequest<Request>();
-  const userAgentString = request.get('user-agent') || '';
-  const userAgent = UAParser(userAgentString);
-
-  const appVersion = getAppVersionFromUA(userAgentString);
+  const { deviceType, deviceOS, appVersion } = getUserAgentDetails(request.headers);
 
   return {
     clientIp: request.ip ?? '',
     isSecure: request.secure,
-    deviceType: userAgent.browser.name || userAgent.device.type || request.get('devicemodel') || '',
-    deviceOS: userAgent.os.name || request.get('devicetype') || '',
+    deviceType,
+    deviceOS,
     appVersion,
   };
 });
@@ -110,12 +104,6 @@ export class AuthGuard implements CanActivate {
       queryParams: request.query as Record<string, string>,
       metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
     });
-
-    if (request.user?.session) {
-      const userAgent = request.get('user-agent') || '';
-      const appVersion = request.get('x-app-version') || getAppVersionFromUA(userAgent);
-      await this.authService.heartbeat(request.user, appVersion);
-    }
 
     return true;
   }

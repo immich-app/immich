@@ -135,7 +135,7 @@ const sessionFactory = (session: Partial<Session> = {}) => ({
   userId: newUuid(),
   pinExpiresAt: newDate(),
   isPendingSyncReset: false,
-  appVersion: session.appVersion ?? '',
+  appVersion: session.appVersion ?? null,
   ...session,
 });
 
@@ -180,7 +180,6 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     quotaUsageInBytes = 0,
     status = UserStatus.Active,
     metadata = [],
-    sessions = [],
   } = user;
   return {
     id,
@@ -200,7 +199,6 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
     quotaUsageInBytes,
     status,
     metadata,
-    sessions,
   };
 };
 
