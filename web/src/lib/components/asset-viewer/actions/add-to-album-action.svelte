@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shiftKey } from '$lib/actions/input';
   import { Category, category, shortcut, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -42,7 +43,7 @@
 
 <svelte:document
   {@attach shortcut(
-    { key: 'l', shift: shared },
+    shared ? shiftKey('l') : 'l',
     shared
       ? category(Category.AssetActions, $t('add_to_shared_album'), ShortcutVariant.AddSharedAlbum)
       : category(Category.AssetActions, $t('add_to_album'), ShortcutVariant.AddAlbum),

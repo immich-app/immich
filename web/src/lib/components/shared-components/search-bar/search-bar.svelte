@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
-  import { onKeydown } from '$lib/actions/input';
+  import { ctrlKey, ctrlShiftKey, onKeydown } from '$lib/actions/input';
   import { Category, category, registerShortcutVariant, shortcut, ShortcutVariant } from '$lib/actions/shortcut.svelte';
   import { AppRoute } from '$lib/constants';
   import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
@@ -208,12 +208,12 @@
 
 <svelte:document
   {@attach shortcut(
-    { key: 'k', ctrl: true },
+    ctrlKey('k'),
     category(Category.Application, $t('search_your_photos'), ShortcutVariant.Search),
     () => input?.select(),
   )}
   {@attach shortcut(
-    { key: 'k', ctrl: true, shift: true },
+    ctrlShiftKey('k'),
     category(Category.Application, $t('open_the_search_filters'), ShortcutVariant.SearchFilter),
     onFilterClick,
   )}
