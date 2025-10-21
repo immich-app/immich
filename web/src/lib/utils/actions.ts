@@ -109,5 +109,5 @@ export function updateUnstackedAssetInTimeline(timelineManager: TimelineManager,
     },
   );
 
-  timelineManager.addAssets(assets);
+  timelineManager.upsertAssets(assets);
 }
