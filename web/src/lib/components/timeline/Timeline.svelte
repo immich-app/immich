@@ -139,6 +139,10 @@
       return;
     }
 
+    // Need to update window positions/intersections because <Portal> may have
+    // gone from invisible to visible.
+    timelineManager.updateSlidingWindow();
+
     const assetTop = position.top;
     const assetBottom = position.top + position.height;
     const visibleTop = timelineManager.visibleWindow.top;
@@ -146,10 +150,6 @@
 
     // Check if the asset is already at least partially visible in the viewport
     if (isIntersecting(assetTop, assetBottom, visibleTop, visibleBottom)) {
-      // Asset is already visible, no scroll needed but need to update window
-      // positions/intersections because since the <Portal> went from invisible
-      // to visible
-      timelineManager.updateSlidingWindow();
       return;
     }
 
