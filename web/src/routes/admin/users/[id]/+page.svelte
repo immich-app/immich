@@ -84,7 +84,7 @@
   let updatedAtDate: Date = $derived(new Date(user.updatedAt));
   let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
   let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
-  const appleTypes = new Set(['iOS', 'Apple', 'iPhone', 'iPad', 'macOS']);
+  const appleTypes = new Set<string>(['iOS', 'Apple', 'iPhone', 'iPad', 'macOS']);
 
   const handleEdit = async () => {
     const result = await modalManager.show(UserEditModal, { user: { ...user } });
