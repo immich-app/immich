@@ -61,6 +61,25 @@ describe(PartnerService.name, () => {
       });
     });
 
+    it('should create a new partner with startDate', async () => {
+      const user1 = factory.user();
+      const user2 = factory.user();
+      const startDate = new Date('2024-01-01T00:00:00.000Z');
+      const partner = factory.partner({ sharedBy: user1, sharedWith: user2, startDate });
+      const auth = factory.auth({ user: { id: user1.id } });
+
+      mocks.partner.get.mockResolvedValue(void 0);
+      mocks.partner.create.mockResolvedValue(partner);
+
+      await expect(sut.create(auth, { sharedWithId: user2.id, startDate })).resolves.toBeDefined();
+
+      expect(mocks.partner.create).toHaveBeenCalledWith({
+        sharedById: partner.sharedById,
+        sharedWithId: partner.sharedWithId,
+        startDate,
+      });
+    });
+
     it('should throw an error when the partner already exists', async () => {
       const user1 = factory.user();
       const user2 = factory.user();
@@ -122,6 +141,23 @@ describe(PartnerService.name, () => {
       expect(mocks.partner.update).toHaveBeenCalledWith(
         { sharedById: user2.id, sharedWithId: user1.id },
         { inTimeline: true },
+      );
+    });
+
+    it('should update partner with startDate', async () => {
+      const user1 = factory.user();
+      const user2 = factory.user();
+      const startDate = new Date('2024-01-01T00:00:00.000Z');
+      const partner = factory.partner({ sharedBy: user1, sharedWith: user2, startDate });
+      const auth = factory.auth({ user: { id: user1.id } });
+
+      mocks.access.partner.checkUpdateAccess.mockResolvedValue(new Set([user2.id]));
+      mocks.partner.update.mockResolvedValue(partner);
+
+      await expect(sut.update(auth, user2.id, { inTimeline: true, startDate })).resolves.toBeDefined();
+      expect(mocks.partner.update).toHaveBeenCalledWith(
+        { sharedById: user2.id, sharedWithId: user1.id },
+        { inTimeline: true, startDate },
       );
     });
   });

@@ -44,6 +44,9 @@ export class PartnerTable {
   @Column({ type: 'boolean', default: false })
   inTimeline!: Generated<boolean>;
 
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  startDate!: Timestamp | null;
+
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
 }
