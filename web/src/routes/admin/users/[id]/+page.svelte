@@ -70,7 +70,7 @@
   const usage = $derived(user.quotaUsageInBytes ?? 0);
   let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usage, usage > TiB ? 2 : 0));
   const { serverVersion } = websocketStore;
-  let formattedServerVersion = $derived(
+  const formattedServerVersion = $derived(
     $serverVersion ? `${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
   );
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
@@ -84,6 +84,7 @@
   let updatedAtDate: Date = $derived(new Date(user.updatedAt));
   let userCreatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(createAtDate));
   let userUpdatedAtDateAndTime: string = $derived(createDateFormatter(editedLocale).formatDateTime(updatedAtDate));
+  const appleTypes: string[] = ['iOS', 'Apple', 'iPhone', 'iPad', 'macOS'];
 
   const handleEdit = async () => {
     const result = await modalManager.show(UserEditModal, { user: { ...user } });
@@ -376,7 +377,7 @@
                       <span class="flex items-center justify-center">
                         {#if device.deviceType === 'Android' || device.deviceOS === 'Android'}
                           <Icon icon={mdiAndroid} size="2rem" class="text-green-600" />
-                        {:else if device.deviceType === 'iOS' || device.deviceType === 'Apple' || device.deviceType === 'iPhone' || device.deviceType === 'iPad' || device.deviceOS === 'iOS' || device.deviceOS === 'Apple' || device.deviceOS === 'iPhone' || device.deviceOS === 'iPad' || device.deviceOS === 'macOS'}
+                        {:else if appleTypes.includes(device.deviceType) || appleTypes.includes(device.deviceOS)}
                           <Icon icon={mdiApple} size="2rem" class="text-gray-700" />
                         {:else}
                           <Icon icon={mdiHelp} size="2rem" class="text-gray-400" />
@@ -395,9 +396,9 @@
                             <span style="color: inherit">v{device.appVersion}</span>
                           {/if}
                         </span>
-                        <span class="text-xs text-gray-500"
-                          >Last seen: {new Date(device.lastSeen).toLocaleString()}</span
-                        >
+                        <span class="text-xs text-gray-500">
+                          Last seen: {new Date(device.lastSeen).toLocaleString()}
+                        </span>
                       </div>
                     </div>
                   {/each}
