@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart';
+import 'package:immich_mobile/common/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -50,6 +51,7 @@ class ApiService implements Authentication {
 
   setEndpoint(String endpoint) {
     _apiClient = ApiClient(basePath: endpoint, authentication: this);
+    _apiClient.client = immichHttpClient();
     _setUserAgentHeader();
     if (_accessToken != null) {
       setAccessToken(_accessToken!);
@@ -77,7 +79,7 @@ class ApiService implements Authentication {
   }
 
   Future<void> _setUserAgentHeader() async {
-    final userAgent = await getUserAgentString();
+    final userAgent = getUserAgentString();
     _apiClient.addDefaultHeader('User-Agent', userAgent);
   }
 

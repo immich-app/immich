@@ -1,8 +1,8 @@
 import 'dart:io' show Platform;
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:immich_mobile/common/package_info.dart';
 
-Future<String> getUserAgentString() async {
-  final packageInfo = await PackageInfo.fromPlatform();
+String getUserAgentString() {
+  final packageInfo = PackageInfoSingleton.instance;
   String platform;
   if (Platform.isAndroid) {
     platform = 'Android';
@@ -11,5 +11,6 @@ Future<String> getUserAgentString() async {
   } else {
     platform = 'Unknown';
   }
-  return 'Immich_${platform}_${packageInfo.version}';
+  final version = packageInfo.version ?? 'unknown';
+  return 'Immich_${platform}_$version';
 }

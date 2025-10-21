@@ -40,7 +40,7 @@ class MainActivity : FlutterFragmentActivity() {
       ConnectivityApi.setUp(messenger, ConnectivityApiImpl(ctx))
 
       flutterEngine.plugins.add(BackgroundServicePlugin())
-      flutterEngine.plugins.add(HttpSSLOptionsPlugin())
+      // flutterEngine.plugins.add(HttpSSLOptionsPlugin())
       flutterEngine.plugins.add(backgroundEngineLockImpl)
     }
   }
