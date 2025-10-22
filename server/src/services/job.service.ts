@@ -421,11 +421,6 @@ export class JobService extends BaseService {
         }
         break;
       }
-
-      case JobName.UserDelete: {
-        this.eventRepository.clientBroadcast('on_user_delete', item.data.id);
-        break;
-      }
     }
   }
 }

@@ -94,6 +94,9 @@ type EventMap = {
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];
   UserCreate: [UserEvent];
+  /** user is soft deleted */
+  UserTrash: [UserEvent];
+  /** user is permanently deleted */
   UserDelete: [UserEvent];
   UserRestore: [UserEvent];
 

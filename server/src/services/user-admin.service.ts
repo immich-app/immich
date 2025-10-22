@@ -104,7 +104,7 @@ export class UserAdminService extends BaseService {
     const status = force ? UserStatus.Removing : UserStatus.Deleted;
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
 
-    await this.eventRepository.emit('UserDelete', user);
+    await this.eventRepository.emit('UserTrash', user);
 
     if (force) {
       await this.jobRepository.queue({ name: JobName.UserDelete, data: { id: user.id, force } });

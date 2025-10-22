@@ -228,17 +228,17 @@ export class UserService extends BaseService {
   }
 
   @OnJob({ name: JobName.UserDelete, queue: QueueName.BackgroundTask })
-  async handleUserDelete({ id, force }: JobOf<JobName.UserDelete>): Promise<JobStatus> {
+  async handleUserDelete({ id, force }: JobOf<JobName.UserDelete>) {
     const config = await this.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
-      return JobStatus.Failed;
+      return;
     }
 
     // just for extra protection here
     if (!force && !this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
-      return JobStatus.Skipped;
+      return;
     }
 
     this.logger.log(`Deleting user: ${user.id}`);
@@ -260,7 +260,7 @@ export class UserService extends BaseService {
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
-    return JobStatus.Success;
+    await this.eventRepository.emit('UserDelete', user);
   }
 
   private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, deleteDelay: number): boolean {
