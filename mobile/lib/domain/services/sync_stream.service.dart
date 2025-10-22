@@ -258,9 +258,9 @@ class SyncStreamService {
   }
 
   Future<void> _applyRemoteRestoreToLocal() async {
-    final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    if (remoteAssetsToRestore.isNotEmpty) {
-      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(remoteAssetsToRestore);
+    final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
+    if (assetsToRestore.isNotEmpty) {
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
       await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
       _logger.info("No remote assets found for restoration");
