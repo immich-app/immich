@@ -162,4 +162,9 @@ export class StackRepository {
       .where('asset.id', '=', assetId)
       .executeTakeFirst();
   }
+
+  @GenerateSql({ params: [{ source: DummyValue.UUID, target: DummyValue.UUID }] })
+  merge({ source, target }: { source: string; target: string }) {
+    return this.db.updateTable('asset').set({ stackId: target }).where('asset.stackId', '=', source).execute();
+  }
 }

@@ -186,6 +186,29 @@ export class AssetMetadataResponseDto {
   updatedAt!: Date;
 }
 
+export class AssetCopyDto {
+  @ValidateUUID()
+  from!: string;
+
+  @ValidateUUID()
+  to!: string;
+
+  @ValidateBoolean({ optional: true })
+  sharedLinks?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  albums?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  sidecar?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  stack?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  favorite?: boolean;
+}
+
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.Image],
