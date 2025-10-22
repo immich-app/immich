@@ -34,7 +34,17 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
   if (configRepository.isDev()) {
-    app.enableCors();
+    const options = configRepository.getCorsOptions();
+    if (options) {
+      logger.warn(`Enabling CORS: ${JSON.stringify(configRepository.getEnv().dev.cors)}`);
+      logger.warn(
+        'NOTE: to properly support a fully statically hosted frontend you MUST configure the frontend/backend to be on the same site. i.e. frontend=https://localhost:1234 and backend=http://localhost:2283 or configure TLS',
+      );
+      app.enableCors(options);
+    } else {
+      logger.warn('Enabling CORS');
+      app.enableCors();
+    }
   }
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   useSwagger(app, { write: configRepository.isDev() });

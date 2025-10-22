@@ -1,3 +1,4 @@
+import replace from '@rollup/plugin-replace';
 import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
@@ -39,6 +40,16 @@ export default defineConfig({
     enhancedImages(),
     tailwindcss(),
     sveltekit(),
+    replace({
+      preventAssignment: true,
+      include: ['**/server.ts'],
+      sourceMap: true,
+      objectGuards: false,
+      delimiters: ['@', '@'],
+      values: {
+        IMMICH_API_SERVER: process.env.IMMICH_API_SERVER ?? '',
+      },
+    }),
     process.env.BUILD_STATS === 'true'
       ? visualizer({
           emitFile: true,

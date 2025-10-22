@@ -1,5 +1,6 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { QueueOptions } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
@@ -29,6 +30,13 @@ export interface EnvData {
   environment: ImmichEnvironment;
   configFile?: string;
   logLevel?: LogLevel;
+
+  dev: {
+    cors: {
+      allOrigins?: boolean;
+      credentials?: boolean;
+    };
+  };
 
   buildMetadata: {
     build?: string;
@@ -222,6 +230,13 @@ const getEnv = (): EnvData => {
     configFile: dto.IMMICH_CONFIG_FILE,
     logLevel: dto.IMMICH_LOG_LEVEL,
 
+    dev: {
+      cors: {
+        allOrigins: dto.IMMICH_DEV_CORS_ALL_ORIGINS,
+        credentials: dto.IMMICH_DEV_CORS_CREDENTIALS,
+      },
+    },
+
     buildMetadata: {
       build: dto.IMMICH_BUILD,
       buildUrl: dto.IMMICH_BUILD_URL,
@@ -340,6 +355,24 @@ export class ConfigRepository {
 
   isDev() {
     return this.getEnv().environment === ImmichEnvironment.Development;
+  }
+
+  getCorsOptions(): CorsOptions | undefined {
+    const options: Partial<CorsOptions> = {};
+    const env = this.getEnv();
+
+    if (env.dev.cors.allOrigins) {
+      options.origin = (requestOrigin, callback) => {
+        callback(null, requestOrigin);
+      };
+    }
+    if (env.dev.cors.credentials) {
+      options.credentials = env.dev.cors.credentials;
+    }
+    if (Object.keys(options).length > 0) {
+      return options;
+    }
+    return undefined;
   }
 
   getWorker() {

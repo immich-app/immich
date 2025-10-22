@@ -65,6 +65,7 @@
     "@eslint/js": "^9.36.0",
     "@faker-js/faker": "^10.0.0",
     "@koddsson/eslint-plugin-tscompat": "^0.2.0",
+    "@rollup/plugin-replace": "^6.0.2",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.8",
     "@sveltejs/enhanced-img": "^0.8.0",

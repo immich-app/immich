@@ -195,4 +195,10 @@ export class EnvDto {
   @IsString()
   @Optional()
   REDIS_URL?: string;
+
+  @ValidateBoolean({ optional: true })
+  IMMICH_DEV_CORS_ALL_ORIGINS?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  IMMICH_DEV_CORS_CREDENTIALS?: boolean;
 }

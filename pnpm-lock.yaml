@@ -789,6 +789,9 @@ importers:
       '@koddsson/eslint-plugin-tscompat':
         specifier: ^0.2.0
         version: 0.2.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
+      '@rollup/plugin-replace':
+        specifier: ^6.0.2
+        version: 6.0.2(rollup@4.52.5)
       '@socket.io/component-emitter':
         specifier: ^3.1.0
         version: 3.1.2
@@ -3680,6 +3683,15 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^18.0 || ^19.0 || ^19.0.0-rc
+
+  '@rollup/plugin-replace@6.0.2':
+    resolution: {integrity: sha512-7QaYCf8bqF04dOy7w/eHmJeNExxTYwvKAmlSAH/EaWWUzbT0h5sbF6bktFoX/0F/0qwng5/dWFMyf3gzaM8DsQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
+        optional: true
 
   '@rollup/pluginutils@5.3.0':
     resolution: {integrity: sha512-5EdhGZtnu3V88ces7s53hhfK5KSASnJZv8Lulpc04cWO3REESroJXg73DFsOmgbU2BhwV0E20bu2IDZb3VKW4Q==}
@@ -15289,6 +15301,13 @@ snapshots:
   '@react-email/text@0.1.5(react@19.2.0)':
     dependencies:
       react: 19.2.0
+
+  '@rollup/plugin-replace@6.0.2(rollup@4.52.5)':
+    dependencies:
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.5)
+      magic-string: 0.30.19
+    optionalDependencies:
+      rollup: 4.52.5
 
   '@rollup/pluginutils@5.3.0(rollup@4.52.5)':
     dependencies:
