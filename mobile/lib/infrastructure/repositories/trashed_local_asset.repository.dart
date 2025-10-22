@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
@@ -202,6 +203,32 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
       }
     });
+  }
+
+  Future<Map<String, List<LocalAsset>>> getToTrash() async {
+    final result = <String, List<LocalAsset>>{};
+
+    final rows =
+        await (_db.select(_db.localAlbumAssetEntity).join([
+              innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
+              innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
+              leftOuterJoin(
+                _db.remoteAssetEntity,
+                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+              ),
+            ])..where(
+              _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
+                  (_db.remoteAssetEntity.deletedAt.isNotNull() | _db.remoteAssetEntity.id.isNull()),
+            ))
+            .get();
+
+    for (final row in rows) {
+      final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
+      final asset = row.readTable(_db.localAssetEntity).toDto();
+      (result[albumId] ??= <LocalAsset>[]).add(asset);
+    }
+
+    return result;
   }
 
   //attempt to reuse existing checksums
