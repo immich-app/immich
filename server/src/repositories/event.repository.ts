@@ -17,7 +17,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { SyncAssetExifV1, SyncAssetV1 } from 'src/dtos/sync.dto';
-import { ImmichWorker, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
+import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobItem, JobSource } from 'src/types';
@@ -66,8 +66,19 @@ type EventMap = {
   AssetDeleteAll: [{ assetIds: string[]; userId: string }];
   AssetRestoreAll: [{ assetIds: string[]; userId: string }];
 
+  /** a worker receives a job and emits this event to run it */
+  JobRun: [QueueName, JobItem];
+  /** job pre-hook */
   JobStart: [QueueName, JobItem];
-  JobFailed: [{ job: JobItem; error: Error | any }];
+  /** job post-hook */
+  JobComplete: [QueueName, JobItem];
+  /** job finishes without error */
+  JobSuccess: [JobSuccessEvent];
+  /** job finishes with error */
+  JobError: [JobErrorEvent];
+
+  // queue events
+  QueueStart: [QueueStartEvent];
 
   // session events
   SessionDelete: [{ sessionId: string }];
@@ -88,6 +99,13 @@ type EventMap = {
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
+};
+
+type JobSuccessEvent = { job: JobItem; response?: JobStatus };
+type JobErrorEvent = { job: JobItem; error: Error | any };
+
+type QueueStartEvent = {
+  name: QueueName;
 };
 
 type UserEvent = {
