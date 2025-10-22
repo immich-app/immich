@@ -182,7 +182,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         working-directory: 'deployment/modules/cloudflare/docs'
-        run: 'mise run tf output -json'
+        run: 'mise run tf output -- -json'
 
       - name: Output Cleaning
         id: clean
