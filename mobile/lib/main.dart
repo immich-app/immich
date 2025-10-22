@@ -31,6 +31,7 @@ import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
+import 'package:immich_mobile/services/image_picker_provider.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
@@ -208,6 +209,9 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     super.initState();
     initApp().then((_) => dPrint(() => "App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Initialize the image picker provider service for ACTION_GET_CONTENT handling
+      ref.read(imagePickerProviderServiceProvider);
+      
       // needs to be delayed so that EasyLocalization is working
       if (Store.isBetaTimelineEnabled) {
         ref.read(backgroundServiceProvider).disableService();
