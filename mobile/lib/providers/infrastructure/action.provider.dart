@@ -15,6 +15,7 @@ import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -77,11 +78,14 @@ class ActionNotifier extends Notifier<void> {
     return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
-  List<String> _getLocalIdsForSource(ActionSource source) {
+  List<String> _getLocalIdsForSource(ActionSource source, {bool ignoreLocalOnly = false}) {
     final Set<BaseAsset> assets = _getAssets(source);
     final List<String> localIds = [];
 
     for (final asset in assets) {
+      if (ignoreLocalOnly && asset.storage != AssetState.merged) {
+        continue;
+      }
       if (asset is LocalAsset) {
         localIds.add(asset.id);
       } else if (asset is RemoteAsset && asset.localId != null) {
@@ -189,7 +193,7 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult> moveToLockFolder(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source);
+    final localIds = _getLocalIdsForSource(source, ignoreLocalOnly: true);
     try {
       await _service.moveToLockFolder(ids, localIds);
       return ActionResult(count: ids.length, success: true);
@@ -257,8 +261,28 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> deleteLocal(ActionSource source) async {
-    final ids = _getLocalIdsForSource(source);
+  Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
+    // Always perform the operation if there is only one merged asset
+    final assets = _getAssets(source);
+    bool? backedUpOnly = assets.length == 1 && assets.first.storage == AssetState.merged
+        ? true
+        : await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) => DeleteLocalOnlyDialog(onDeleteLocal: (_) {}),
+          );
+
+    if (backedUpOnly == null) {
+      // User cancelled the dialog
+      return null;
+    }
+
+    final List<String> ids;
+    if (backedUpOnly) {
+      ids = assets.where((asset) => asset.storage == AssetState.merged).map((asset) => asset.localId!).toList();
+    } else {
+      ids = _getLocalIdsForSource(source);
+    }
+
     try {
       final deletedCount = await _service.deleteLocal(ids);
       return ActionResult(count: deletedCount, success: true);

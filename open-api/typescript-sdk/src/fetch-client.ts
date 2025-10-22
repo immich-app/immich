@@ -1,6 +1,6 @@
 /**
  * Immich
- * 2.0.1
+ * 2.1.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -71,6 +71,7 @@ export type SystemConfigSmtpTransportDto = {
     ignoreCert: boolean;
     password: string;
     port: number;
+    secure: boolean;
     username: string;
 };
 export type SystemConfigSmtpDto = {
@@ -243,6 +244,17 @@ export type UserPreferencesUpdateDto = {
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
+export type SessionResponseDto = {
+    appVersion: string | null;
+    createdAt: string;
+    current: boolean;
+    deviceOS: string;
+    deviceType: string;
+    expiresAt?: string;
+    id: string;
+    isPendingSyncReset: boolean;
+    updatedAt: string;
+};
 export type AssetStatsResponseDto = {
     images: number;
     total: number;
@@ -356,12 +368,17 @@ export type AssetResponseDto = {
     updatedAt: string;
     visibility: AssetVisibility;
 };
+export type ContributorCountResponseDto = {
+    assetCount: number;
+    userId: string;
+};
 export type AlbumResponseDto = {
     albumName: string;
     albumThumbnailAssetId: string | null;
     albumUsers: AlbumUserResponseDto[];
     assetCount: number;
     assets: AssetResponseDto[];
+    contributorCounts?: ContributorCountResponseDto[];
     createdAt: string;
     description: string;
     endDate?: string;
@@ -1186,16 +1203,6 @@ export type ServerVersionHistoryResponseDto = {
     id: string;
     version: string;
 };
-export type SessionResponseDto = {
-    createdAt: string;
-    current: boolean;
-    deviceOS: string;
-    deviceType: string;
-    expiresAt?: string;
-    id: string;
-    isPendingSyncReset: boolean;
-    updatedAt: string;
-};
 export type SessionCreateDto = {
     deviceOS?: string;
     deviceType?: string;
@@ -1203,6 +1210,7 @@ export type SessionCreateDto = {
     duration?: number;
 };
 export type SessionCreateResponseDto = {
+    appVersion: string | null;
     createdAt: string;
     current: boolean;
     deviceOS: string;
@@ -1845,6 +1853,19 @@ export function restoreUserAdmin({ id }: {
     }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `adminSession.read` permission.
+ */
+export function getUserSessionsAdmin({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionResponseDto[];
+    }>(`/admin/users/${encodeURIComponent(id)}/sessions`, {
+        ...opts
     }));
 }
 /**
@@ -4650,6 +4671,8 @@ export enum NotificationType {
     JobFailed = "JobFailed",
     BackupFailed = "BackupFailed",
     SystemMessage = "SystemMessage",
+    AlbumInvite = "AlbumInvite",
+    AlbumUpdate = "AlbumUpdate",
     Custom = "Custom"
 }
 export enum UserStatus {
@@ -4822,6 +4845,7 @@ export enum Permission {
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
     AdminUserDelete = "adminUser.delete",
+    AdminSessionRead = "adminSession.read",
     AdminAuthUnlinkAll = "adminAuth.unlinkAll"
 }
 export enum AssetMetadataKey {

@@ -236,6 +236,8 @@ export enum Permission {
   AdminUserUpdate = 'adminUser.update',
   AdminUserDelete = 'adminUser.delete',
 
+  AdminSessionRead = 'adminSession.read',
+
   AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
 
@@ -722,6 +724,8 @@ export enum NotificationType {
   JobFailed = 'JobFailed',
   BackupFailed = 'BackupFailed',
   SystemMessage = 'SystemMessage',
+  AlbumInvite = 'AlbumInvite',
+  AlbumUpdate = 'AlbumUpdate',
   Custom = 'Custom',
 }
 

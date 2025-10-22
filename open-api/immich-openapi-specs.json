@@ -773,6 +773,54 @@
         "description": "This endpoint is an admin-only route, and requires the `adminUser.delete` permission."
       }
     },
+    "/admin/users/{id}/sessions": {
+      "get": {
+        "operationId": "getUserSessionsAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminSession.read",
+        "description": "This endpoint is an admin-only route, and requires the `adminSession.read` permission."
+      }
+    },
     "/admin/users/{id}/statistics": {
       "get": {
         "operationId": "getUserStatisticsAdmin",
@@ -9858,7 +9906,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "contact": {}
   },
   "tags": [],
@@ -10093,6 +10141,12 @@
           "assets": {
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "contributorCounts": {
+            "items": {
+              "$ref": "#/components/schemas/ContributorCountResponseDto"
             },
             "type": "array"
           },
@@ -11471,6 +11525,21 @@
         ],
         "type": "string"
       },
+      "ContributorCountResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "userId"
+        ],
+        "type": "object"
+      },
       "CreateAlbumDto": {
         "properties": {
           "albumName": {
@@ -12820,6 +12889,8 @@
           "JobFailed",
           "BackupFailed",
           "SystemMessage",
+          "AlbumInvite",
+          "AlbumUpdate",
           "Custom"
         ],
         "type": "string"
@@ -13244,6 +13315,7 @@
           "adminUser.read",
           "adminUser.update",
           "adminUser.delete",
+          "adminSession.read",
           "adminAuth.unlinkAll"
         ],
         "type": "string"
@@ -14280,6 +14352,10 @@
       },
       "SessionCreateResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14309,6 +14385,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
@@ -14322,6 +14399,10 @@
       },
       "SessionResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14348,6 +14429,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
@@ -16703,6 +16785,9 @@
             "minimum": 0,
             "type": "number"
           },
+          "secure": {
+            "type": "boolean"
+          },
           "username": {
             "type": "string"
           }
@@ -16712,6 +16797,7 @@
           "ignoreCert",
           "password",
           "port",
+          "secure",
           "username"
         ],
         "type": "object"

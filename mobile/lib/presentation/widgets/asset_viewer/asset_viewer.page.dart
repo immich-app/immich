@@ -20,6 +20,7 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widge
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
@@ -221,10 +222,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     context.scaffoldMessenger.hideCurrentSnackBar();
 
     // send image to casting if the server has it
-    if (asset.hasRemote) {
-      final remoteAsset = asset as RemoteAsset;
-
-      ref.read(castProvider.notifier).loadMedia(remoteAsset, false);
+    if (asset is RemoteAsset) {
+      ref.read(castProvider.notifier).loadMedia(asset, false);
     } else {
       // casting cannot show local assets
       context.scaffoldMessenger.clearSnackBars();
@@ -420,7 +419,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (event is ViewerOpenBottomSheetEvent) {
       final extent = _kBottomSheetMinimumExtent + 0.3;
-      _openBottomSheet(scaffoldContext!, extent: extent);
+      _openBottomSheet(scaffoldContext!, extent: extent, activitiesMode: event.activitiesMode);
       final offset = _getVerticalOffsetForBottomSheet(extent);
       viewController?.position = Offset(0, -offset);
       return;
@@ -462,7 +461,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     });
   }
 
-  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent}) {
+  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
     initialScale = viewController?.scale;
     // viewController?.updateMultiple(scale: (viewController?.scale ?? 1.0) + 0.01);
@@ -476,7 +475,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       builder: (_) {
         return NotificationListener<Notification>(
           onNotification: _onNotification,
-          child: AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
+          child: activitiesMode
+              ? ActivitiesBottomSheet(controller: bottomSheetController, initialChildSize: extent)
+              : AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
         );
       },
     );

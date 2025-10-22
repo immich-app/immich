@@ -51,7 +51,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       isArchived: isArchived,
       isTrashEnabled: isTrashEnable,
       isInLockedView: isInLockedView,
-      isStacked: asset.hasRemote && (asset as RemoteAsset).stackId != null,
+      isStacked: asset is RemoteAsset && asset.stackId != null,
       currentAlbum: currentAlbum,
       advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
@@ -140,6 +140,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
+    final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
 
     return SliverList.list(
       children: [
@@ -147,10 +148,10 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
         _SheetTile(
           title: _getDateTime(context, asset),
           titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          trailing: asset.hasRemote ? const Icon(Icons.edit, size: 18) : null,
-          onTap: asset.hasRemote ? () async => await _editDateTime(context, ref) : null,
+          trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
+          onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
         ),
-        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
+        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
         const SheetPeopleDetails(),
         const SheetLocationDetails(),
         // Details header
@@ -265,8 +266,9 @@ class _SheetTile extends ConsumerWidget {
 
 class _SheetAssetDescription extends ConsumerStatefulWidget {
   final ExifInfo exif;
+  final bool isEditable;
 
-  const _SheetAssetDescription({required this.exif});
+  const _SheetAssetDescription({required this.exif, this.isEditable = true});
 
   @override
   ConsumerState<_SheetAssetDescription> createState() => _SheetAssetDescriptionState();
@@ -312,27 +314,33 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
 
     // Update controller text when EXIF data changes
     final currentDescription = currentExifInfo?.description ?? '';
+    final hintText = (widget.isEditable ? 'exif_bottom_sheet_description' : 'exif_bottom_sheet_no_description').t(
+      context: context,
+    );
     if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
       _controller.text = currentDescription;
     }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-      child: TextField(
-        controller: _controller,
-        keyboardType: TextInputType.multiline,
-        focusNode: _descriptionFocus,
-        maxLines: null, // makes it grow as text is added
-        decoration: InputDecoration(
-          hintText: 'exif_bottom_sheet_description'.t(context: context),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
+      child: IgnorePointer(
+        ignoring: !widget.isEditable,
+        child: TextField(
+          controller: _controller,
+          keyboardType: TextInputType.multiline,
+          focusNode: _descriptionFocus,
+          maxLines: null, // makes it grow as text is added
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+          ),
+          onTapOutside: (_) => saveDescription(currentExifInfo?.description),
         ),
-        onTapOutside: (_) => saveDescription(currentExifInfo?.description),
       ),
     );
   }
