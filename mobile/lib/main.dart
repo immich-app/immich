@@ -12,6 +12,7 @@ import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/domain/jobs/job_manager.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -53,6 +54,8 @@ void main() async {
   await initApp();
   // Warm-up isolate pool for worker manager
   await workerManager.init(dynamicSpawning: true);
+  JobManager.I.init();
+  await JobManager.I.start();
   await migrateDatabaseIfNeeded(isar, drift);
   HttpSSLOptions.apply();
 
