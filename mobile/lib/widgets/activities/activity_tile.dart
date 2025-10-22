@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
@@ -105,7 +106,7 @@ class _ActivityAssetThumbnail extends ConsumerWidget {
       // TODO: remove this check when old timeline is removed
       if (Store.isBetaTimelineEnabled) {
         AssetViewer.setAsset(ref, asset);
-        final timelineService = ref.read(timelineFactoryProvider).fromAssets([asset]);
+        final timelineService = ref.read(timelineFactoryProvider).fromAssets([asset], TimelineOrigin.activity);
         context.pushRoute(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
       }
     }
