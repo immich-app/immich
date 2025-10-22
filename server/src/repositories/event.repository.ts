@@ -17,7 +17,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { SyncAssetExifV1, SyncAssetV1 } from 'src/dtos/sync.dto';
-import { ImmichWorker, MetadataKey, QueueName } from 'src/enum';
+import { ImmichWorker, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { JobItem, JobSource } from 'src/types';
@@ -82,9 +82,31 @@ type EventMap = {
 
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];
+  UserCreate: [UserEvent];
+  UserDelete: [UserEvent];
+  UserRestore: [UserEvent];
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
+};
+
+type UserEvent = {
+  name: string;
+  id: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  status: UserStatus;
+  email: string;
+  profileImagePath: string;
+  isAdmin: boolean;
+  shouldChangePassword: boolean;
+  avatarColor: UserAvatarColor | null;
+  oauthId: string;
+  storageLabel: string | null;
+  quotaSizeInBytes: number | null;
+  quotaUsageInBytes: number;
+  profileChangedAt: Date;
 };
 
 export const serverEvents = ['ConfigUpdate'] as const;
