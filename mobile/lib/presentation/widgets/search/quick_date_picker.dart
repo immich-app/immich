@@ -107,16 +107,12 @@ class QuickDatePicker extends HookWidget {
 
   static _QuickPickerType? _selectionFromModel(DateFilterInputModel? model) {
     if (model is RecentMonthRangeFilter) {
-      switch (model.monthDelta) {
-        case 1:
-          return _QuickPickerType.last1Month;
-        case 3:
-          return _QuickPickerType.last3Months;
-        case 9:
-          return _QuickPickerType.last9Months;
-        default:
-          return _QuickPickerType.custom;
-      }
+      return switch (model.monthDelta) {
+        1 => _QuickPickerType.last1Month,
+        3 => _QuickPickerType.last3Months,
+        9 => _QuickPickerType.last9Months,
+        _ => _QuickPickerType.custom,
+      };
     } else if (model is YearFilter) {
       return _QuickPickerType.year;
     } else if (model is CustomDateFilter) {
