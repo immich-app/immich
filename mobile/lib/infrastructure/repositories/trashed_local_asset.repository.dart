@@ -30,7 +30,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<Iterable<LocalAsset>> getAssetsToHash(Iterable<String> albumIds) {
+  Future<List<LocalAsset>> getAssetsToHash(Iterable<String> albumIds) {
     final query = _db.trashedLocalAssetEntity.select()..where((r) => r.albumId.isIn(albumIds) & r.checksum.isNull());
     return query.map((row) => row.toLocalAsset()).get();
   }

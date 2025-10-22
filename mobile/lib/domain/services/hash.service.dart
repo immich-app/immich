@@ -59,7 +59,7 @@ class HashService {
         final trashedToHash = await _trashedLocalAssetRepository.getAssetsToHash(backupAlbumIds);
         if (trashedToHash.isNotEmpty) {
           final pseudoAlbum = LocalAlbum(id: '-pseudoAlbum', name: 'Trash', updatedAt: DateTime.now());
-          await _hashAssets(pseudoAlbum, trashedToHash.toList(), isTrashed: true);
+          await _hashAssets(pseudoAlbum, trashedToHash, isTrashed: true);
         }
       }
     } on PlatformException catch (e) {

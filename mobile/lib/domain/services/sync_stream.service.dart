@@ -240,6 +240,7 @@ class SyncStreamService {
       return Future.value();
     } else {
       final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
+      //todo here need to use sth like if (autoSync) else await _applyRemoteTrashToReview(localAssetsToTrash);
       if (localAssetsToTrash.isNotEmpty) {
         final mediaUrls = await Future.wait(
           localAssetsToTrash.values
@@ -258,9 +259,10 @@ class SyncStreamService {
   }
 
   Future<void> _applyRemoteRestoreToLocal() async {
-    final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    if (remoteAssetsToRestore.isNotEmpty) {
-      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(remoteAssetsToRestore);
+    final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
+    //todo here need to use sth like if (autoSync) else await _applyRemoteTrashToReview(localAssetsToTrash);
+    if (assetsToRestore.isNotEmpty) {
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
       await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
     } else {
       _logger.info("No remote assets found for restoration");

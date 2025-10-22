@@ -280,6 +280,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery trashSyncReview(String userId, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchTrashSyncBucket(groupBy: groupBy),
     assetSource: (offset, count) => _getTrashSyncBucketAssets(offset: offset, count: count),
+    origin: TimelineOrigin.syncTrash,
   );
 
   TimelineQuery archived(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
@@ -618,7 +619,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..orderBy([OrderingTerm.desc(dateExp)]);
 
     return query.map((row) {
-      final timeline = row.read(dateExp)!.dateFmt(groupBy);
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
       final assetCount = row.read(assetCountExp)!;
       return TimeBucket(date: timeline, assetCount: assetCount);
     }).watch();
