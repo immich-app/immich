@@ -11,15 +11,22 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
+class BackgroundWorkerSettings {
+  final bool requiresCharging;
+  final int minimumDelaySeconds;
+
+  const BackgroundWorkerSettings({required this.requiresCharging, required this.minimumDelaySeconds});
+}
+
 @HostApi()
 abstract class BackgroundWorkerFgHostApi {
-  void enableSyncWorker();
+  void enable();
 
-  // Enables the background upload service with the given callback handle
-  void enableUploadWorker(int callbackHandle);
+  void saveNotificationMessage(String title, String body);
 
-  // Disables the background upload service
-  void disableUploadWorker();
+  void configure(BackgroundWorkerSettings settings);
+
+  void disable();
 }
 
 @HostApi()
@@ -27,14 +34,13 @@ abstract class BackgroundWorkerBgHostApi {
   // Called from the background flutter engine when it has bootstrapped and established the
   // required platform channels to notify the native side to start the background upload
   void onInitialized();
+
+  // Called from the background flutter engine to request the native side to cleanup
+  void close();
 }
 
 @FlutterApi()
 abstract class BackgroundWorkerFlutterApi {
-  // Android & iOS: Called when the local sync is triggered
-  @async
-  void onLocalSync(int? maxSeconds);
-
   // iOS Only: Called when the iOS background upload is triggered
   @async
   void onIosUpload(bool isRefresh, int? maxSeconds);

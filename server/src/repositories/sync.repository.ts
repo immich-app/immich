@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -62,7 +62,7 @@ export class SyncRepository {
   partnerAsset: PartnerAssetsSync;
   partnerAssetExif: PartnerAssetExifsSync;
   partnerStack: PartnerStackSync;
-  people: PersonSync;
+  person: PersonSync;
   stack: StackSync;
   user: UserSync;
   userMetadata: UserMetadataSync;
@@ -84,7 +84,7 @@ export class SyncRepository {
     this.partnerAsset = new PartnerAssetsSync(this.db);
     this.partnerAssetExif = new PartnerAssetExifsSync(this.db);
     this.partnerStack = new PartnerStackSync(this.db);
-    this.people = new PersonSync(this.db);
+    this.person = new PersonSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
     this.userMetadata = new UserMetadataSync(this.db);
@@ -115,6 +115,15 @@ class BaseSync {
       .where(idRef, '<', nowId)
       .$if(!!ack, (qb) => qb.where(idRef, '>', ack!.updateId))
       .orderBy(idRef, 'asc');
+  }
+
+  protected auditCleanup<T extends keyof DB>(t: T, days: number) {
+    const { table, ref } = this.db.dynamic;
+
+    return this.db
+      .deleteFrom(table(t).as(t))
+      .where(ref(`${t}.deletedAt`), '<', sql.raw(`now() - interval '${days} days'`))
+      .execute();
   }
 
   protected upsertQuery<T extends keyof DB>(t: T, { nowId, ack }: SyncQueryOptions) {
@@ -148,6 +157,10 @@ class AlbumSync extends BaseSync {
       .select(['id', 'albumId'])
       .where('userId', '=', options.userId)
       .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('album_audit', daysAgo);
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
@@ -286,6 +299,10 @@ class AlbumToAssetSync extends BaseSync {
       .stream();
   }
 
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('album_asset_audit', daysAgo);
+  }
+
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     const userId = options.userId;
@@ -334,6 +351,10 @@ class AlbumUserSync extends BaseSync {
       .stream();
   }
 
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('album_user_audit', daysAgo);
+  }
+
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     const userId = options.userId;
@@ -371,6 +392,10 @@ class AssetSync extends BaseSync {
       .stream();
   }
 
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('asset_audit', daysAgo);
+  }
+
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('asset', options)
@@ -387,6 +412,7 @@ class AuthUserSync extends BaseSync {
     return this.upsertQuery('user', options)
       .select(columns.syncUser)
       .select(['isAdmin', 'pinCode', 'oauthId', 'storageLabel', 'quotaSizeInBytes', 'quotaUsageInBytes'])
+      .where('id', '=', options.userId)
       .stream();
   }
 }
@@ -398,6 +424,10 @@ class PersonSync extends BaseSync {
       .select(['id', 'personId'])
       .where('ownerId', '=', options.userId)
       .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('person_audit', daysAgo);
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
@@ -429,6 +459,10 @@ class AssetFaceSync extends BaseSync {
       .leftJoin('asset', 'asset.id', 'asset_face_audit.assetId')
       .where('asset.ownerId', '=', options.userId)
       .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('asset_face_audit', daysAgo);
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
@@ -473,6 +507,10 @@ class MemorySync extends BaseSync {
       .stream();
   }
 
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('memory_audit', daysAgo);
+  }
+
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('memory', options)
@@ -505,6 +543,10 @@ class MemoryToAssetSync extends BaseSync {
       .stream();
   }
 
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('memory_asset_audit', daysAgo);
+  }
+
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('memory_asset', options)
@@ -535,6 +577,10 @@ class PartnerSync extends BaseSync {
       .select(['id', 'sharedById', 'sharedWithId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
       .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('partner_audit', daysAgo);
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
@@ -616,6 +662,10 @@ class StackSync extends BaseSync {
       .stream();
   }
 
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('stack_audit', daysAgo);
+  }
+
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('stack', options)
@@ -664,6 +714,10 @@ class UserSync extends BaseSync {
     return this.auditQuery('user_audit', options).select(['id', 'userId']).stream();
   }
 
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('user_audit', daysAgo);
+  }
+
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('user', options).select(columns.syncUser).stream();
@@ -677,6 +731,10 @@ class UserMetadataSync extends BaseSync {
       .select(['id', 'userId', 'key'])
       .where('userId', '=', options.userId)
       .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('user_metadata_audit', daysAgo);
   }
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
@@ -696,6 +754,10 @@ class AssetMetadataSync extends BaseSync {
       .leftJoin('asset', 'asset.id', 'asset_metadata_audit.assetId')
       .where('asset.ownerId', '=', userId)
       .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('asset_metadata_audit', daysAgo);
   }
 
   @GenerateSql({ params: [dummyQueryOptions, DummyValue.UUID], stream: true })

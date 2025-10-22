@@ -61,7 +61,7 @@ class ViewerBottomBar extends ConsumerWidget {
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
         if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-        if (asset.type == AssetType.image) const EditImageActionButton(),
+        if (asset.type == AssetType.image && isOwner) const EditImageActionButton(),
         if (isOwner) ...[
           if (asset.hasRemote && isOwner && isArchived)
             const UnArchiveActionButton(source: ActionSource.viewer)
@@ -81,7 +81,7 @@ class ViewerBottomBar extends ConsumerWidget {
         duration: Durations.short2,
         child: AnimatedSwitcher(
           duration: Durations.short4,
-          child: isSheetOpen || isReadonlyModeEnabled
+          child: isSheetOpen
               ? const SizedBox.shrink()
               : Theme(
                   data: context.themeData.copyWith(
@@ -91,14 +91,14 @@ class ViewerBottomBar extends ConsumerWidget {
                     ),
                   ),
                   child: Container(
-                    height: context.padding.bottom + (asset.isVideo ? 160 : 90),
                     color: Colors.black.withAlpha(125),
-                    padding: EdgeInsets.only(bottom: context.padding.bottom),
+                    padding: EdgeInsets.only(bottom: context.padding.bottom, top: 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (asset.isVideo) const VideoControls(),
-                        if (!isInLockedView) Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                        if (!isInLockedView && !isReadonlyModeEnabled)
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
                       ],
                     ),
                   ),

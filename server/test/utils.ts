@@ -1,12 +1,16 @@
-import { CallHandler, Provider, ValidationPipe } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Provider, ValidationPipe } from '@nestjs/common';
 import { APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
 import { Test } from '@nestjs/testing';
 import { ClassConstructor } from 'class-transformer';
+import { NextFunction } from 'express';
 import { Kysely } from 'kysely';
+import multer from 'multer';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Readable, Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import postgres from 'postgres';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
@@ -43,6 +47,7 @@ import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -82,6 +87,24 @@ export type ControllerContext = {
 
 export const controllerSetup = async (controller: ClassConstructor<unknown>, providers: Provider[]) => {
   const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
+  const upload = multer({ storage: multer.memoryStorage() });
+  const memoryFileInterceptor = {
+    intercept: async (ctx: ExecutionContext, next: CallHandler<unknown>) => {
+      const context = ctx.switchToHttp();
+      const handler = upload.fields([
+        { name: UploadFieldName.ASSET_DATA, maxCount: 1 },
+        { name: UploadFieldName.SIDECAR_DATA, maxCount: 1 },
+      ]);
+
+      await new Promise<void>((resolve, reject) => {
+        const next: NextFunction = (error) => (error ? reject(transformException(error)) : resolve());
+        const maybePromise = handler(context.getRequest(), context.getResponse(), next);
+        Promise.resolve(maybePromise).catch((error) => reject(error));
+      });
+
+      return next.handle();
+    },
+  };
   const moduleRef = await Test.createTestingModule({
     controllers: [controller],
     providers: [
@@ -93,7 +116,7 @@ export const controllerSetup = async (controller: ClassConstructor<unknown>, pro
     ],
   })
     .overrideInterceptor(FileUploadInterceptor)
-    .useValue(noopInterceptor)
+    .useValue(memoryFileInterceptor)
     .overrideInterceptor(AssetUploadInterceptor)
     .useValue(noopInterceptor)
     .compile();
@@ -214,6 +237,7 @@ export type ServiceOverrides = {
   serverInfo: ServerInfoRepository;
   session: SessionRepository;
   sharedLink: SharedLinkRepository;
+  sharedLinkAsset: SharedLinkAssetRepository;
   stack: StackRepository;
   storage: StorageRepository;
   sync: SyncRepository;
@@ -285,6 +309,7 @@ export const newTestService = <T extends BaseService>(
     serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
     session: automock(SessionRepository),
     sharedLink: automock(SharedLinkRepository),
+    sharedLinkAsset: automock(SharedLinkAssetRepository),
     stack: automock(StackRepository),
     storage: newStorageRepositoryMock(),
     sync: automock(SyncRepository),
@@ -335,6 +360,7 @@ export const newTestService = <T extends BaseService>(
     overrides.serverInfo || (mocks.serverInfo as As<ServerInfoRepository>),
     overrides.session || (mocks.session as As<SessionRepository>),
     overrides.sharedLink || (mocks.sharedLink as As<SharedLinkRepository>),
+    overrides.sharedLinkAsset || (mocks.sharedLinkAsset as As<SharedLinkAssetRepository>),
     overrides.stack || (mocks.stack as As<StackRepository>),
     overrides.storage || (mocks.storage as As<StorageRepository>),
     overrides.sync || (mocks.sync as As<SyncRepository>),

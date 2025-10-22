@@ -1,5 +1,7 @@
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetMetadataKey,
   AssetOrder,
@@ -86,6 +88,9 @@ export interface VideoStreamInfo {
   isHDR: boolean;
   bitrate: number;
   pixelFormat: string;
+  colorPrimaries?: string;
+  colorSpace?: string;
+  colorTransfer?: string;
 }
 
 export interface AudioStreamInfo {
@@ -247,7 +252,7 @@ export interface IEmailJob {
 }
 
 export interface INotifySignupJob extends IEntityJob {
-  tempPassword?: string;
+  password?: string;
 }
 
 export interface INotifyAlbumInviteJob extends IEntityJob {
@@ -273,6 +278,9 @@ export interface QueueStatus {
 }
 
 export type JobItem =
+  // Audit
+  | { name: JobName.AuditTableCleanup; data?: IBaseJob }
+
   // Backups
   | { name: JobName.DatabaseBackup; data?: IBaseJob }
 
@@ -307,8 +315,7 @@ export type JobItem =
 
   // Sidecar Scanning
   | { name: JobName.SidecarQueueAll; data: IBaseJob }
-  | { name: JobName.SidecarDiscovery; data: IEntityJob }
-  | { name: JobName.SidecarSync; data: IEntityJob }
+  | { name: JobName.SidecarCheck; data: IEntityJob }
   | { name: JobName.SidecarWrite; data: ISidecarWriteJob }
 
   // Facial Recognition
@@ -395,8 +402,8 @@ export interface VectorUpdateResult {
 }
 
 export interface ImmichFile extends Express.Multer.File {
-  /** sha1 hash of file */
   uuid: string;
+  /** sha1 hash of file */
   checksum: Buffer;
 }
 
@@ -407,6 +414,16 @@ export interface UploadFile {
   originalName: string;
   size: number;
 }
+
+export type UploadRequest = {
+  auth: AuthDto | null;
+  fieldName: UploadFieldName;
+  file: UploadFile;
+  body: {
+    filename?: string;
+    [key: string]: unknown;
+  };
+};
 
 export interface UploadFiles {
   assetData: ImmichFile[];

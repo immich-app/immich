@@ -4,6 +4,7 @@ import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileType, AssetMetadataKey, AssetOrder, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -60,6 +61,7 @@ interface AssetBuilderOptions {
   status?: AssetStatus;
   assetType?: AssetType;
   visibility?: AssetVisibility;
+  withCoordinates?: boolean;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -588,9 +590,9 @@ export class AssetRepository {
   }
 
   @GenerateSql({
-    params: [DummyValue.TIME_BUCKET, { withStacked: true }],
+    params: [DummyValue.TIME_BUCKET, { withStacked: true }, { user: { id: DummyValue.UUID } }],
   })
-  getTimeBucket(timeBucket: string, options: TimeBucketOptions) {
+  getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -600,7 +602,7 @@ export class AssetRepository {
             'asset.duration',
             'asset.id',
             'asset.visibility',
-            'asset.isFavorite',
+            sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
             'asset.livePhotoVideoId',
@@ -628,6 +630,7 @@ export class AssetRepository {
               )
               .as('ratio'),
           ])
+          .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
@@ -701,6 +704,12 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
+          .$if(!!options.withCoordinates, (qb) =>
+            qb.select((eb) => [
+              eb.fn.coalesce(eb.fn('array_agg', ['latitude']), sql.lit('{}')).as('latitude'),
+              eb.fn.coalesce(eb.fn('array_agg', ['longitude']), sql.lit('{}')).as('longitude'),
+            ]),
+          )
           .$if(!!options.withStacked, (qb) =>
             qb.select((eb) => eb.fn.coalesce(eb.fn('json_agg', ['stack']), sql.lit('[]')).as('stack')),
           ),

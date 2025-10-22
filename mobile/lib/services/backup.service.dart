@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -29,6 +28,7 @@ import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart' as pm;
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
+import 'package:immich_mobile/utils/debug_print.dart';
 
 final backupServiceProvider = Provider(
   (ref) => BackupService(
@@ -69,7 +69,7 @@ class BackupService {
     try {
       return await _apiService.assetsApi.getAllUserAssetsByDeviceId(deviceId);
     } catch (e) {
-      debugPrint('Error [getDeviceBackupAsset] ${e.toString()}');
+      dPrint(() => 'Error [getDeviceBackupAsset] ${e.toString()}');
       return null;
     }
   }
@@ -356,8 +356,9 @@ class BackupService {
             final error = responseBody;
             final errorMessage = error['message'] ?? error['error'];
 
-            debugPrint(
-              "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
+            dPrint(
+              () =>
+                  "Error(${error['statusCode']}) uploading ${asset.localId} | $originalFileName | Created on ${asset.fileCreatedAt} | ${error['error']}",
             );
 
             onError(
@@ -398,11 +399,11 @@ class BackupService {
           }
         }
       } on http.CancelledException {
-        debugPrint("Backup was cancelled by the user");
+        dPrint(() => "Backup was cancelled by the user");
         anyErrors = true;
         break;
       } catch (error, stackTrace) {
-        debugPrint("Error backup asset: ${error.toString()}: $stackTrace");
+        dPrint(() => "Error backup asset: ${error.toString()}: $stackTrace");
         anyErrors = true;
         continue;
       } finally {
@@ -411,7 +412,7 @@ class BackupService {
             await file?.delete();
             await livePhotoFile?.delete();
           } catch (e) {
-            debugPrint("ERROR deleting file: ${e.toString()}");
+            dPrint(() => "ERROR deleting file: ${e.toString()}");
           }
         }
       }
@@ -454,7 +455,9 @@ class BackupService {
     if (![200, 201].contains(response.statusCode)) {
       var error = responseBody;
 
-      debugPrint("Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | ${error['error']}");
+      dPrint(
+        () => "Error(${error['statusCode']}) uploading livePhoto for assetId | $livePhotoTitle | ${error['error']}",
+      );
     }
 
     return responseBody.containsKey('id') ? responseBody['id'] : null;

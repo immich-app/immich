@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import Portal from '$lib/elements/Portal.svelte';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';

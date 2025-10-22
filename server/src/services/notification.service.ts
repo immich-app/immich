@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
+import { MapAlbumDto } from 'src/dtos/album.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -161,7 +162,11 @@ export class NotificationService extends BaseService {
 
     const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
     if (asset) {
-      this.eventRepository.clientSend('on_asset_update', userId, mapAsset(asset));
+      this.eventRepository.clientSend(
+        'on_asset_update',
+        userId,
+        mapAsset(asset, { auth: { user: { id: userId } } as AuthDto }),
+      );
     }
   }
 
@@ -191,9 +196,9 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'UserSignup' })
-  async onUserSignup({ notify, id, tempPassword }: ArgOf<'UserSignup'>) {
+  async onUserSignup({ notify, id, password: password }: ArgOf<'UserSignup'>) {
     if (notify) {
-      await this.jobRepository.queue({ name: JobName.NotifyUserSignup, data: { id, tempPassword } });
+      await this.jobRepository.queue({ name: JobName.NotifyUserSignup, data: { id, password } });
     }
   }
 
@@ -251,70 +256,8 @@ export class NotificationService extends BaseService {
     return { messageId };
   }
 
-  async getTemplate(name: EmailTemplate, customTemplate: string) {
-    const { server, templates } = await this.getConfig({ withCache: false });
-
-    let templateResponse = '';
-
-    switch (name) {
-      case EmailTemplate.WELCOME: {
-        const { html: _welcomeHtml } = await this.emailRepository.renderEmail({
-          template: EmailTemplate.WELCOME,
-          data: {
-            baseUrl: getExternalDomain(server),
-            displayName: 'John Doe',
-            username: 'john@doe.com',
-            password: 'thisIsAPassword123',
-          },
-          customTemplate: customTemplate || templates.email.welcomeTemplate,
-        });
-
-        templateResponse = _welcomeHtml;
-        break;
-      }
-      case EmailTemplate.ALBUM_UPDATE: {
-        const { html: _updateAlbumHtml } = await this.emailRepository.renderEmail({
-          template: EmailTemplate.ALBUM_UPDATE,
-          data: {
-            baseUrl: getExternalDomain(server),
-            albumId: '1',
-            albumName: 'Favorite Photos',
-            recipientName: 'Jane Doe',
-            cid: undefined,
-          },
-          customTemplate: customTemplate || templates.email.albumInviteTemplate,
-        });
-        templateResponse = _updateAlbumHtml;
-        break;
-      }
-
-      case EmailTemplate.ALBUM_INVITE: {
-        const { html } = await this.emailRepository.renderEmail({
-          template: EmailTemplate.ALBUM_INVITE,
-          data: {
-            baseUrl: getExternalDomain(server),
-            albumId: '1',
-            albumName: "John Doe's Favorites",
-            senderName: 'John Doe',
-            recipientName: 'Jane Doe',
-            cid: undefined,
-          },
-          customTemplate: customTemplate || templates.email.albumInviteTemplate,
-        });
-        templateResponse = html;
-        break;
-      }
-      default: {
-        templateResponse = '';
-        break;
-      }
-    }
-
-    return { name, html: templateResponse };
-  }
-
   @OnJob({ name: JobName.NotifyUserSignup, queue: QueueName.Notification })
-  async handleUserSignup({ id, tempPassword }: JobOf<JobName.NotifyUserSignup>) {
+  async handleUserSignup({ id, password }: JobOf<JobName.NotifyUserSignup>) {
     const user = await this.userRepository.get(id, { withDeleted: false });
     if (!user) {
       return JobStatus.Skipped;
@@ -327,7 +270,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server),
         displayName: user.name,
         username: user.email,
-        password: tempPassword,
+        password,
       },
       customTemplate: templates.email.welcomeTemplate,
     });
@@ -356,6 +299,8 @@ export class NotificationService extends BaseService {
     if (!recipient) {
       return JobStatus.Skipped;
     }
+
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumInvite, album.owner.name);
 
     const { emailNotifications } = getPreferences(recipient.metadata);
 
@@ -405,6 +350,8 @@ export class NotificationService extends BaseService {
     if (!owner) {
       return JobStatus.Skipped;
     }
+
+    await this.sendAlbumLocalNotification(album, recipientId, NotificationType.AlbumUpdate);
 
     const attachment = await this.getAlbumThumbnailAttachment(album);
 
@@ -492,5 +439,26 @@ export class NotificationService extends BaseService {
       path: albumThumbnailFiles[0].path,
       cid: 'album-thumbnail',
     };
+  }
+
+  private async sendAlbumLocalNotification(
+    album: MapAlbumDto,
+    userId: string,
+    type: NotificationType.AlbumInvite | NotificationType.AlbumUpdate,
+    senderName?: string,
+  ) {
+    const isInvite = type === NotificationType.AlbumInvite;
+    const item = await this.notificationRepository.create({
+      userId,
+      type,
+      level: isInvite ? NotificationLevel.Success : NotificationLevel.Info,
+      title: isInvite ? 'Shared Album Invitation' : 'Shared Album Update',
+      description: isInvite
+        ? `${senderName} shared an album (${album.albumName}) with you`
+        : `New media has been added to the album (${album.albumName})`,
+      data: JSON.stringify({ albumId: album.id }),
+    });
+
+    this.eventRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 }

@@ -22,7 +22,11 @@ class DeleteLocalActionButton extends ConsumerWidget {
       return;
     }
 
-    final result = await ref.read(actionProvider.notifier).deleteLocal(source);
+    final result = await ref.read(actionProvider.notifier).deleteLocal(source, context);
+    if (result == null) {
+      return;
+    }
+
     ref.read(multiSelectProvider.notifier).reset();
 
     if (source == ActionSource.viewer) {

@@ -205,14 +205,11 @@ class ActionService {
   }
 
   Future<int> removeFromAlbum(List<String> remoteIds, String albumId) async {
-    int removedCount = 0;
     final result = await _albumApiRepository.removeAssets(albumId, remoteIds);
-
     if (result.removed.isNotEmpty) {
-      removedCount = await _remoteAlbumRepository.removeAssets(albumId, result.removed);
+      await _remoteAlbumRepository.removeAssets(albumId, result.removed);
     }
-
-    return removedCount;
+    return result.removed.length;
   }
 
   Future<bool> updateDescription(String assetId, String description) async {
@@ -233,8 +230,8 @@ class ActionService {
     await _assetApiRepository.unStack(stackIds);
   }
 
-  Future<int> shareAssets(List<BaseAsset> assets) {
-    return _assetMediaRepository.shareAssets(assets);
+  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context) {
+    return _assetMediaRepository.shareAssets(assets, context);
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {

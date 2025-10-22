@@ -1855,7 +1855,7 @@
     },
     "/assets/bulk-upload-check": {
       "post": {
-        "description": "Checks if assets exist by checksums",
+        "description": "Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1894,7 +1894,8 @@
         "summary": "checkBulkUpload",
         "tags": [
           "Assets"
-        ]
+        ],
+        "x-immich-permission": "asset.upload"
       }
     },
     "/assets/device/{deviceId}": {
@@ -2503,7 +2504,8 @@
         "description": "This endpoint requires the `asset.download` permission."
       },
       "put": {
-        "description": "Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.",
+        "deprecated": true,
+        "description": "This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -2565,12 +2567,14 @@
             "api_key": []
           }
         ],
-        "summary": "replaceAsset",
+        "summary": "Replace the asset with new file, without changing its id",
         "tags": [
-          "Assets"
+          "Assets",
+          "Deprecated"
         ],
         "x-immich-lifecycle": {
-          "addedAt": "v1.106.0"
+          "addedAt": "v1.106.0",
+          "deprecatedAt": "v1.142.0"
         },
         "x-immich-permission": "asset.replace"
       }
@@ -4993,6 +4997,48 @@
         ],
         "x-immich-permission": "partner.read",
         "description": "This endpoint requires the `partner.read` permission."
+      },
+      "post": {
+        "operationId": "createPartner",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PartnerCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PartnerResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Partners"
+        ],
+        "x-immich-permission": "partner.create",
+        "description": "This endpoint requires the `partner.create` permission."
       }
     },
     "/partners/{id}": {
@@ -5032,7 +5078,9 @@
         "description": "This endpoint requires the `partner.delete` permission."
       },
       "post": {
-        "operationId": "createPartner",
+        "deprecated": true,
+        "description": "This property was deprecated in v1.141.0. This endpoint requires the `partner.create` permission.",
+        "operationId": "createPartnerDeprecated",
         "parameters": [
           {
             "name": "id",
@@ -5068,10 +5116,13 @@
           }
         ],
         "tags": [
-          "Partners"
+          "Partners",
+          "Deprecated"
         ],
-        "x-immich-permission": "partner.create",
-        "description": "This endpoint requires the `partner.create` permission."
+        "x-immich-lifecycle": {
+          "deprecatedAt": "v1.141.0"
+        },
+        "x-immich-permission": "partner.create"
       },
       "put": {
         "operationId": "updatePartner",
@@ -5090,7 +5141,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePartnerDto"
+                "$ref": "#/components/schemas/PartnerUpdateDto"
               }
             }
           },
@@ -8848,6 +8899,15 @@
             }
           },
           {
+            "name": "withCoordinates",
+            "required": false,
+            "in": "query",
+            "description": "Include location data in the response",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "withPartners",
             "required": false,
             "in": "query",
@@ -8990,6 +9050,15 @@
             "description": "Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)",
             "schema": {
               "$ref": "#/components/schemas/AssetVisibility"
+            }
+          },
+          {
+            "name": "withCoordinates",
+            "required": false,
+            "in": "query",
+            "description": "Include location data in the response",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -9789,7 +9858,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.140.1",
+    "version": "2.1.0",
     "contact": {}
   },
   "tags": [],
@@ -10024,6 +10093,12 @@
           "assets": {
             "items": {
               "$ref": "#/components/schemas/AssetResponseDto"
+            },
+            "type": "array"
+          },
+          "contributorCounts": {
+            "items": {
+              "$ref": "#/components/schemas/ContributorCountResponseDto"
             },
             "type": "array"
           },
@@ -11402,6 +11477,21 @@
         ],
         "type": "string"
       },
+      "ContributorCountResponseDto": {
+        "properties": {
+          "assetCount": {
+            "type": "integer"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetCount",
+          "userId"
+        ],
+        "type": "object"
+      },
       "CreateAlbumDto": {
         "properties": {
           "albumName": {
@@ -12190,6 +12280,25 @@
         ],
         "type": "object"
       },
+      "MachineLearningAvailabilityChecksDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "interval": {
+            "type": "number"
+          },
+          "timeout": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "timeout"
+        ],
+        "type": "object"
+      },
       "ManualJobName": {
         "enum": [
           "person-cleanup",
@@ -12732,6 +12841,8 @@
           "JobFailed",
           "BackupFailed",
           "SystemMessage",
+          "AlbumInvite",
+          "AlbumUpdate",
           "Custom"
         ],
         "type": "string"
@@ -12852,6 +12963,18 @@
         ],
         "type": "object"
       },
+      "PartnerCreateDto": {
+        "properties": {
+          "sharedWithId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sharedWithId"
+        ],
+        "type": "object"
+      },
       "PartnerDirection": {
         "enum": [
           "shared-by",
@@ -12895,6 +13018,17 @@
           "name",
           "profileChangedAt",
           "profileImagePath"
+        ],
+        "type": "object"
+      },
+      "PartnerUpdateDto": {
+        "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "inTimeline"
         ],
         "type": "object"
       },
@@ -14570,6 +14704,10 @@
           "query": {
             "type": "string"
           },
+          "queryAssetId": {
+            "format": "uuid",
+            "type": "string"
+          },
           "rating": {
             "maximum": 5,
             "minimum": -1,
@@ -14637,9 +14775,6 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "query"
-        ],
         "type": "object"
       },
       "SourceType": {
@@ -15415,6 +15550,10 @@
         ],
         "type": "object"
       },
+      "SyncCompleteV1": {
+        "properties": {},
+        "type": "object"
+      },
       "SyncEntityType": {
         "enum": [
           "AuthUserV1",
@@ -15462,7 +15601,8 @@
           "UserMetadataV1",
           "UserMetadataDeleteV1",
           "SyncAckV1",
-          "SyncResetV1"
+          "SyncResetV1",
+          "SyncCompleteV1"
         ],
         "type": "string"
       },
@@ -16297,6 +16437,9 @@
       },
       "SystemConfigMachineLearningDto": {
         "properties": {
+          "availabilityChecks": {
+            "$ref": "#/components/schemas/MachineLearningAvailabilityChecksDto"
+          },
           "clip": {
             "$ref": "#/components/schemas/CLIPConfig"
           },
@@ -16309,11 +16452,6 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
-          "url": {
-            "deprecated": true,
-            "description": "This property was deprecated in v1.122.0",
-            "type": "string"
-          },
           "urls": {
             "format": "uri",
             "items": {
@@ -16325,6 +16463,7 @@
           }
         },
         "required": [
+          "availabilityChecks",
           "clip",
           "duplicateDetection",
           "enabled",
@@ -16587,6 +16726,9 @@
             "minimum": 0,
             "type": "number"
           },
+          "secure": {
+            "type": "boolean"
+          },
           "username": {
             "type": "string"
           }
@@ -16596,6 +16738,7 @@
           "ignoreCert",
           "password",
           "port",
+          "secure",
           "username"
         ],
         "type": "object"
@@ -16989,6 +17132,14 @@
             },
             "type": "array"
           },
+          "latitude": {
+            "description": "Array of latitude coordinates extracted from EXIF GPS data",
+            "items": {
+              "nullable": true,
+              "type": "number"
+            },
+            "type": "array"
+          },
           "livePhotoVideoId": {
             "description": "Array of live photo video asset IDs (null for non-live photos)",
             "items": {
@@ -17000,6 +17151,14 @@
           "localOffsetHours": {
             "description": "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
             "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "longitude": {
+            "description": "Array of longitude coordinates extracted from EXIF GPS data",
+            "items": {
+              "nullable": true,
               "type": "number"
             },
             "type": "array"
@@ -17232,17 +17391,6 @@
             "type": "string"
           }
         },
-        "type": "object"
-      },
-      "UpdatePartnerDto": {
-        "properties": {
-          "inTimeline": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "inTimeline"
-        ],
         "type": "object"
       },
       "UsageByUserDto": {

@@ -43,14 +43,14 @@ void configureFileDownloaderNotifications() {
   FileDownloader().configureNotificationForGroup(
     kManualUploadGroup,
     running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
-    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_in_progress_notification'.t()),
+    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_complete_notification'.t()),
     groupNotificationId: kManualUploadGroup,
   );
 
   FileDownloader().configureNotificationForGroup(
     kBackupGroup,
     running: TaskNotification('uploading_media'.t(), 'backup_background_service_in_progress_notification'.t()),
-    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_in_progress_notification'.t()),
+    complete: TaskNotification('upload_finished'.t(), 'backup_background_service_complete_notification'.t()),
     groupNotificationId: kBackupGroup,
   );
 }
@@ -89,11 +89,17 @@ abstract final class Bootstrap {
     return (isar, drift, logDb);
   }
 
-  static Future<void> initDomain(Isar db, Drift drift, DriftLogger logDb, {bool shouldBufferLogs = true}) async {
-    final isBeta = await IsarStoreRepository(db).tryGet(StoreKey.betaTimeline) ?? false;
+  static Future<void> initDomain(
+    Isar db,
+    Drift drift,
+    DriftLogger logDb, {
+    bool listenStoreUpdates = true,
+    bool shouldBufferLogs = true,
+  }) async {
+    final isBeta = await IsarStoreRepository(db).tryGet(StoreKey.betaTimeline) ?? true;
     final IStoreRepository storeRepo = isBeta ? DriftStoreRepository(drift) : IsarStoreRepository(db);
 
-    await StoreService.init(storeRepository: storeRepo);
+    await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
 
     await LogService.init(
       logRepository: LogRepository(logDb),

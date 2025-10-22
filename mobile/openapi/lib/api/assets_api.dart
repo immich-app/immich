@@ -18,7 +18,7 @@ class AssetsApi {
 
   /// checkBulkUpload
   ///
-  /// Checks if assets exist by checksums
+  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -52,7 +52,7 @@ class AssetsApi {
 
   /// checkBulkUpload
   ///
-  /// Checks if assets exist by checksums
+  /// Checks if assets exist by checksums. This endpoint requires the `asset.upload` permission.
   ///
   /// Parameters:
   ///
@@ -729,9 +729,9 @@ class AssetsApi {
     return null;
   }
 
-  /// replaceAsset
+  /// Replace the asset with new file, without changing its id
   ///
-  /// Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
+  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -823,9 +823,9 @@ class AssetsApi {
     );
   }
 
-  /// replaceAsset
+  /// Replace the asset with new file, without changing its id
   ///
-  /// Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
+  /// This property was deprecated in v1.142.0. Replace the asset with new file, without changing its id. This endpoint requires the `asset.replace` permission.
   ///
   /// Parameters:
   ///

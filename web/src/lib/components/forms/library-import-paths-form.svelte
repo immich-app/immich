@@ -1,9 +1,8 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -168,9 +167,9 @@
         >
           <td class="w-1/8 text-ellipsis ps-8 text-sm">
             {#if validatedPath.isValid}
-              <Icon path={mdiCheckCircleOutline} size="24" title={validatedPath.message} class="text-success" />
+              <Icon icon={mdiCheckCircleOutline} size="24" title={validatedPath.message} class="text-success" />
             {:else}
-              <Icon path={mdiAlertOutline} size="24" title={validatedPath.message} class="text-warning" />
+              <Icon icon={mdiAlertOutline} size="24" title={validatedPath.message} class="text-warning" />
             {/if}
           </td>
 

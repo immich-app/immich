@@ -5,7 +5,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumb_hash_provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -39,14 +38,7 @@ class Thumbnail extends StatefulWidget {
          ),
          _ => null,
        },
-       imageProvider = switch (asset) {
-         RemoteAsset() =>
-           asset.localId == null
-               ? RemoteThumbProvider(assetId: asset.id)
-               : LocalThumbProvider(id: asset.localId!, size: size, assetType: asset.type),
-         LocalAsset() => LocalThumbProvider(id: asset.id, size: size, assetType: asset.type),
-         _ => null,
-       };
+       imageProvider = asset == null ? null : getThumbnailImageProvider(asset, size: size);
 
   @override
   State<Thumbnail> createState() => _ThumbnailState();
@@ -326,7 +318,7 @@ class _ThumbnailRenderBox extends RenderBox {
         image: _previousImage!,
         fit: _fit,
         filterQuality: FilterQuality.low,
-        opacity: 1.0 - _fadeValue,
+        opacity: 1.0,
       );
     } else if (_image == null || _fadeValue < 1.0) {
       final paint = Paint()..shader = _placeholderGradient.createShader(rect);

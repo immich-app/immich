@@ -1,9 +1,13 @@
 import 'dart:async';
 
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
-import 'package:immich_mobile/domain/services/trash_sync.service.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -12,69 +16,43 @@ class SyncStreamService {
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
-  final TrashSyncService _trashSyncService;
+  final DriftLocalAssetRepository _localAssetRepository;
+  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final LocalFilesManagerRepository _localFilesManager;
+  final StorageRepository _storageRepository;
   final bool Function()? _cancelChecker;
 
   SyncStreamService({
     required SyncApiRepository syncApiRepository,
     required SyncStreamRepository syncStreamRepository,
-    required TrashSyncService trashSyncService,
+    required DriftLocalAssetRepository localAssetRepository,
+    required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
+    required LocalFilesManagerRepository localFilesManager,
+    required StorageRepository storageRepository,
     bool Function()? cancelChecker,
   }) : _syncApiRepository = syncApiRepository,
        _syncStreamRepository = syncStreamRepository,
-       _trashSyncService = trashSyncService,
+       _localAssetRepository = localAssetRepository,
+       _trashedLocalAssetRepository = trashedLocalAssetRepository,
+       _localFilesManager = localFilesManager,
+       _storageRepository = storageRepository,
        _cancelChecker = cancelChecker;
 
   bool get isCancelled => _cancelChecker?.call() ?? false;
 
-  Future<void> sync() {
+  Future<bool> sync() async {
     _logger.info("Remote sync request for user");
     // Start the sync stream and handle events
-    return _syncApiRepository.streamChanges(_handleEvents);
-  }
-
-  Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
-    if (batchData.isEmpty) return;
-
-    _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV1 events');
-
-    final List<SyncAssetV1> assets = [];
-    final List<SyncAssetExifV1> exifs = [];
-
-    try {
-      for (final data in batchData) {
-        if (data is! Map<String, dynamic>) {
-          continue;
-        }
-
-        final payload = data;
-        final assetData = payload['asset'];
-        final exifData = payload['exif'];
-
-        if (assetData == null || exifData == null) {
-          continue;
-        }
-
-        final asset = SyncAssetV1.fromJson(assetData);
-        final exif = SyncAssetExifV1.fromJson(exifData);
-
-        if (asset != null && exif != null) {
-          assets.add(asset);
-          exifs.add(exif);
-        }
-      }
-
-      if (assets.isNotEmpty && exifs.isNotEmpty) {
-        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-batch');
-        await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
-        _logger.info('Successfully processed ${assets.length} assets in batch');
-      }
-    } catch (error, stackTrace) {
-      _logger.severe("Error processing AssetUploadReadyV1 websocket batch events", error, stackTrace);
+    bool shouldReset = false;
+    await _syncApiRepository.streamChanges(_handleEvents, onReset: () => shouldReset = true);
+    if (shouldReset) {
+      _logger.info("Resetting sync state as requested by server");
+      await _syncApiRepository.streamChanges(_handleEvents);
     }
+    return true;
   }
 
-  Future<void> _handleEvents(List<SyncEvent> events, Function() abort) async {
+  Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {
     List<SyncEvent> items = [];
     for (final event in events) {
       if (isCancelled) {
@@ -85,6 +63,10 @@ class SyncStreamService {
 
       if (event.type != items.firstOrNull?.type) {
         await _processBatch(items);
+      }
+
+      if (event.type == SyncEntityType.syncResetV1) {
+        reset();
       }
 
       items.add(event);
@@ -107,6 +89,8 @@ class SyncStreamService {
   Future<void> _handleSyncData(SyncEntityType type, Iterable<Object> data) async {
     _logger.fine("Processing sync data for $type of length ${data.length}");
     switch (type) {
+      case SyncEntityType.authUserV1:
+        return _syncStreamRepository.updateAuthUsersV1(data.cast());
       case SyncEntityType.userV1:
         return _syncStreamRepository.updateUsersV1(data.cast());
       case SyncEntityType.userDeleteV1:
@@ -117,12 +101,12 @@ class SyncStreamService {
         return _syncStreamRepository.deletePartnerV1(data.cast());
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
-        if (_trashSyncService.isServiceEnabled) {
-          await _trashSyncService.handleRemoteChanges(
-            remoteSyncAssets.map<TrashSyncItem>((e) => (checksum: e.checksum, deletedAt: e.deletedAt)),
-          );
+        await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
+        if (CurrentPlatform.isAndroid) {
+          await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
+          await _applyRemoteRestoreToLocal();
         }
-        return _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
+        return;
       case SyncEntityType.assetDeleteV1:
         return _syncStreamRepository.deleteAssetsV1(data.cast());
       case SyncEntityType.assetExifV1:
@@ -169,6 +153,12 @@ class SyncStreamService {
       // to acknowledge that the client has processed all the backfill events
       case SyncEntityType.syncAckV1:
         return;
+      // No-op. SyncCompleteV1 is used to signal the completion of the sync process
+      case SyncEntityType.syncCompleteV1:
+        return;
+      // Request to reset the client state. Clear everything related to remote entities
+      case SyncEntityType.syncResetV1:
+        return _syncStreamRepository.reset();
       case SyncEntityType.memoryV1:
         return _syncStreamRepository.updateMemoriesV1(data.cast());
       case SyncEntityType.memoryDeleteV1:
@@ -201,6 +191,79 @@ class SyncStreamService {
         return _syncStreamRepository.deleteAssetFacesV1(data.cast());
       default:
         _logger.warning("Unknown sync data type: $type");
+    }
+  }
+
+  Future<void> handleWsAssetUploadReadyV1Batch(List<dynamic> batchData) async {
+    if (batchData.isEmpty) return;
+
+    _logger.info('Processing batch of ${batchData.length} AssetUploadReadyV1 events');
+
+    final List<SyncAssetV1> assets = [];
+    final List<SyncAssetExifV1> exifs = [];
+
+    try {
+      for (final data in batchData) {
+        if (data is! Map<String, dynamic>) {
+          continue;
+        }
+
+        final payload = data;
+        final assetData = payload['asset'];
+        final exifData = payload['exif'];
+
+        if (assetData == null || exifData == null) {
+          continue;
+        }
+
+        final asset = SyncAssetV1.fromJson(assetData);
+        final exif = SyncAssetExifV1.fromJson(exifData);
+
+        if (asset != null && exif != null) {
+          assets.add(asset);
+          exifs.add(exif);
+        }
+      }
+
+      if (assets.isNotEmpty && exifs.isNotEmpty) {
+        await _syncStreamRepository.updateAssetsV1(assets, debugLabel: 'websocket-batch');
+        await _syncStreamRepository.updateAssetsExifV1(exifs, debugLabel: 'websocket-batch');
+        _logger.info('Successfully processed ${assets.length} assets in batch');
+      }
+    } catch (error, stackTrace) {
+      _logger.severe("Error processing AssetUploadReadyV1 websocket batch events", error, stackTrace);
+    }
+  }
+
+  Future<void> _handleRemoteTrashed(Iterable<String> checksums) async {
+    if (checksums.isEmpty) {
+      return Future.value();
+    } else {
+      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
+      if (localAssetsToTrash.isNotEmpty) {
+        final mediaUrls = await Future.wait(
+          localAssetsToTrash.values
+              .expand((e) => e)
+              .map((localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl())),
+        );
+        _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
+        final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+        if (result) {
+          await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+        }
+      } else {
+        _logger.info("No assets found in backup-enabled albums for assets: $checksums");
+      }
+    }
+  }
+
+  Future<void> _applyRemoteRestoreToLocal() async {
+    final remoteAssetsToRestore = await _trashedLocalAssetRepository.getToRestore();
+    if (remoteAssetsToRestore.isNotEmpty) {
+      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(remoteAssetsToRestore);
+      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
+    } else {
+      _logger.info("No remote assets found for restoration");
     }
   }
 }

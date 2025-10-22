@@ -1,5 +1,5 @@
 import { SetMetadata, applyDecorators } from '@nestjs/common';
-import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiExtension, ApiOperation, ApiOperationOptions, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
 import { ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
@@ -87,7 +87,7 @@ export function Chunked(
 
       return Promise.all(
         chunks(argument, chunkSize).map(async (chunk) => {
-          await Reflect.apply(originalMethod, this, [
+          return await Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
             ...arguments_.slice(parameterIndex + 1),
@@ -103,7 +103,7 @@ export function ChunkedArray(options?: { paramIndex?: number }): MethodDecorator
 }
 
 export function ChunkedSet(options?: { paramIndex?: number }): MethodDecorator {
-  return Chunked({ ...options, mergeFn: setUnion });
+  return Chunked({ ...options, mergeFn: (args: Set<any>[]) => setUnion(...args) });
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
@@ -159,12 +159,21 @@ type LifecycleMetadata = {
   deprecatedAt?: LifecycleRelease;
 };
 
-export const EndpointLifecycle = ({ addedAt, deprecatedAt }: LifecycleMetadata) => {
+export const EndpointLifecycle = ({
+  addedAt,
+  deprecatedAt,
+  description,
+  ...options
+}: LifecycleMetadata & ApiOperationOptions) => {
   const decorators: MethodDecorator[] = [ApiExtension(LIFECYCLE_EXTENSION, { addedAt, deprecatedAt })];
   if (deprecatedAt) {
     decorators.push(
       ApiTags('Deprecated'),
-      ApiOperation({ deprecated: true, description: DEPRECATED_IN_PREFIX + deprecatedAt }),
+      ApiOperation({
+        deprecated: true,
+        description: DEPRECATED_IN_PREFIX + deprecatedAt + (description ? `. ${description}` : ''),
+        ...options,
+      }),
     );
   }
 

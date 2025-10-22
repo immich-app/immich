@@ -1,4 +1,6 @@
+import 'package:async/async.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -9,10 +11,19 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'asset.provider.dart';
 import 'db.provider.dart';
 
+typedef TrashedAssetsCount = ({int total, int hashed});
+
+//todo need to clean-up!
 final trashSyncRepositoryProvider = Provider<DriftTrashSyncRepository>(
   (ref) => DriftTrashSyncRepository(ref.watch(driftProvider)),
 );
 
+final trashedAssetsCountProvider = StreamProvider<TrashedAssetsCount>((ref) {
+  final repo = ref.watch(trashedLocalAssetRepository);
+  final total$ = repo.watchCount();
+  final hashed$ = repo.watchHashedCount();
+  return StreamZip<int>([total$, hashed$]).map((values) => (total: values[0], hashed: values[1]));
+});
 final trashSyncServiceProvider = Provider(
   (ref) => TrashSyncService(
     appSettingsService: ref.watch(appSettingsServiceProvider),

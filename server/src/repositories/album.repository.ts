@@ -379,4 +379,22 @@ export class AlbumRepository {
       )
       .whereRef('album_asset.albumsId', '=', 'album.id');
   }
+
+  /**
+   * Get per-user asset contribution counts for a single album.
+   * Excludes deleted assets, orders by count desc.
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getContributorCounts(id: string) {
+    return this.db
+      .selectFrom('album_asset')
+      .innerJoin('asset', 'asset.id', 'assetsId')
+      .where('asset.deletedAt', 'is', sql.lit(null))
+      .where('album_asset.albumsId', '=', id)
+      .select('asset.ownerId as userId')
+      .select((eb) => eb.fn.countAll<number>().as('assetCount'))
+      .groupBy('asset.ownerId')
+      .orderBy('assetCount', 'desc')
+      .execute();
+  }
 }
