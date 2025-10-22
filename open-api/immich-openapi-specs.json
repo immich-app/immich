@@ -1946,6 +1946,43 @@
         "x-immich-permission": "asset.upload"
       }
     },
+    "/assets/copy": {
+      "put": {
+        "operationId": "copyAsset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetCopyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.copy",
+        "description": "This endpoint requires the `asset.copy` permission."
+      }
+    },
     "/assets/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
@@ -10584,6 +10621,43 @@
         ],
         "type": "object"
       },
+      "AssetCopyDto": {
+        "properties": {
+          "albums": {
+            "default": true,
+            "type": "boolean"
+          },
+          "favorite": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sharedLinks": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidecar": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "stack": {
+            "default": true,
+            "type": "boolean"
+          },
+          "targetId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceId",
+          "targetId"
+        ],
+        "type": "object"
+      },
       "AssetDeltaSyncDto": {
         "properties": {
           "updatedAfter": {
@@ -13207,6 +13281,7 @@
           "asset.download",
           "asset.upload",
           "asset.replace",
+          "asset.copy",
           "album.create",
           "album.read",
           "album.update",
