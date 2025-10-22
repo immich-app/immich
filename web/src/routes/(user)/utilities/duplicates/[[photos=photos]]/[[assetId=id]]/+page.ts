@@ -11,19 +11,12 @@ export const load = (async ({ params, url }) => {
 
   const indexParam = url.searchParams.get('index') ?? '0';
   const parsedIndex = Number.parseInt(indexParam, 10);
-  
-  const duplicates = await getAssetDuplicates({ page: parsedIndex + 1, size: 1 });
-  const duplicate = duplicates.items[0];
 
-  const loadDuplicates = async (newPage: number, newSize: number) => {
-    return await getAssetDuplicates({ page: newPage, size: newSize });
-  };
+  const duplicatesRes = await getAssetDuplicates({ page: parsedIndex + 1, size: 1 });
 
   return {
     asset,
-    duplicatesRes: duplicates,
-    duplicate,
-    loadDuplicates,
+    duplicatesRes,
     meta: {
       title: $t('duplicates'),
     },

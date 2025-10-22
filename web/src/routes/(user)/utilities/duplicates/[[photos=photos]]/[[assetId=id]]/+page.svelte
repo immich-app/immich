@@ -17,7 +17,7 @@
   import { stackAssets } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { deDuplicateAll, deleteAssets, keepAll, updateAssets } from '@immich/sdk';
+  import { deDuplicateAll, deleteAssets, getAssetDuplicates, keepAll, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -57,10 +57,9 @@
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
       { key: ['⇧', 's'], action: $t('stack_duplicates') },
     ],
-  };
+  };  
 
   let duplicatesRes = $state(data.duplicatesRes);
-  let duplicate = $state<typeof data.duplicate | null>(data.duplicate);
 
   const { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -110,8 +109,7 @@
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-
-        duplicate = null;
+        
 
         deletedNotification(trashIds.length);
         await correctDuplicatesIndexAndGo(duplicatesIndex);
@@ -143,7 +141,7 @@
         await deDuplicateAll();
         deletedNotification(1);
 
-        duplicate = null;
+        duplicatesRes.items = [];
 
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
@@ -163,7 +161,7 @@
           type: NotificationType.Info,
         });
 
-        duplicate = null;
+        duplicatesRes.items = [];
 
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
@@ -176,34 +174,42 @@
   const handleFirst = async () => {
     await correctDuplicatesIndexAndGo(0);
   };
+
   const handlePrevious = async () => {
     await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
   };
+
   const handlePreviousShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handlePrevious();
   };
+
   const handleNext = async () => {
     await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicatesRes.totalItems - 1));
   };
+
   const handleNextShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handleNext();
   };
+
   const handleLast = async () => {
     await correctDuplicatesIndexAndGo(duplicatesRes.totalItems - 1);
   };
+
   const correctDuplicatesIndexAndGo = async (index: number) => {
     page.url.searchParams.set('index', correctDuplicatesIndex(index).toString());
     await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
-    const result = await data.loadDuplicates(index + 1, 1);
-    duplicate = result.items[0];
-    duplicatesRes = result;
+    await loadDuplicate(index + 1);
   };
+
+  const loadDuplicate = async (itemIndex: number) => {
+    duplicatesRes = await getAssetDuplicates({ page: itemIndex, size: 1 });
+  }
 </script>
 
 <svelte:document
@@ -249,7 +255,7 @@
   {/snippet}
 
   <div>
-    {#if duplicate && duplicatesRes.totalItems > 0}
+    {#if duplicatesRes.items[0] && duplicatesRes.totalItems > 0}
       <div class="flex items-center mb-2">
         <div class="text-sm dark:text-white">
           <p>{$t('duplicates_description')}</p>
@@ -265,11 +271,10 @@
         />
       </div>
 
-      {#key duplicate.duplicateId}
+      {#key duplicatesRes.items[0].duplicateId}
         <DuplicatesCompareControl
-          assets={duplicate.assets}
-          onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicateAssetIds, trashIds)}
+          assets={duplicatesRes.items[0].assets}
+          onResolve={(duplicateAssetIds, trashIds) => handleResolve(duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(assets)}
         />
         <div class="max-w-216 mx-auto mb-16">
