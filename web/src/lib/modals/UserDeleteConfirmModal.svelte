@@ -3,57 +3,51 @@
   import { serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteUserAdmin, type UserAdminResponseDto, type UserResponseDto } from '@immich/sdk';
-  import { Checkbox, ConfirmModal, Label } from '@immich/ui';
+  import { Alert, Checkbox, ConfirmModal, Field, Input, Label, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     user: UserResponseDto;
     onClose: (user?: UserAdminResponseDto) => void;
-  }
+  };
 
   let { user, onClose }: Props = $props();
 
-  let forceDelete = $state(false);
-  let deleteButtonDisabled = $state(false);
-  let userIdInput: string = '';
+  let force = $state(false);
+  let email = $state('');
+  let disabled = $derived(force && email !== user.email);
 
-  const handleDeleteUser = async () => {
+  const handleClose = async (confirmed: boolean) => {
+    if (!confirmed) {
+      onClose();
+      return;
+    }
+
     try {
-      const result = await deleteUserAdmin({
-        id: user.id,
-        userAdminDeleteDto: { force: forceDelete },
-      });
-
+      const result = await deleteUserAdmin({ id: user.id, userAdminDeleteDto: { force } });
       onClose(result);
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_user'));
     }
   };
-
-  const handleConfirm = (e: Event) => {
-    userIdInput = (e.target as HTMLInputElement).value;
-    deleteButtonDisabled = userIdInput != user.email;
-  };
 </script>
 
 <ConfirmModal
   title={$t('delete_user')}
-  confirmText={forceDelete ? $t('permanently_delete') : $t('delete')}
-  onClose={(confirmed) => (confirmed ? handleDeleteUser() : onClose())}
-  disabled={deleteButtonDisabled}
+  confirmText={force ? $t('permanently_delete') : $t('delete')}
+  onClose={handleClose}
+  {disabled}
 >
   {#snippet promptSnippet()}
     <div class="flex flex-col gap-4">
-      {#if forceDelete}
-        <p>
+      <Text>
+        {#if force}
           <FormatMessage key="admin.user_delete_immediately" values={{ user: user.name }}>
             {#snippet children({ message })}
               <b>{message}</b>
             {/snippet}
           </FormatMessage>
-        </p>
-      {:else}
-        <p>
+        {:else}
           <FormatMessage
             key="admin.user_delete_delay"
             values={{ user: user.name, delay: $serverConfig.userDeleteDelay }}
@@ -62,34 +56,20 @@
               <b>{message}</b>
             {/snippet}
           </FormatMessage>
-        </p>
-      {/if}
+        {/if}
+      </Text>
 
-      <div class="flex justify-center items-center gap-2">
-        <Checkbox
-          id="queue-user-deletion-checkbox"
-          color="secondary"
-          bind:checked={forceDelete}
-          onCheckedChange={() => (deleteButtonDisabled = forceDelete)}
-        />
+      <div class="flex items-center gap-2">
+        <Checkbox id="queue-user-deletion-checkbox" color="secondary" bind:checked={force} />
         <Label label={$t('admin.user_delete_immediately_checkbox')} for="queue-user-deletion-checkbox" />
       </div>
 
-      {#if forceDelete}
-        <p class="text-danger">{$t('admin.force_delete_user_warning')}</p>
+      {#if force}
+        <Alert color="danger" icon={false}>{$t('admin.force_delete_user_warning')}</Alert>
 
-        <p class="immich-form-label text-sm" id="confirm-user-desc">
-          {$t('admin.confirm_email_below', { values: { email: user.email } })}
-        </p>
-
-        <input
-          class="immich-form-input w-full pb-2"
-          id="confirm-user-id"
-          aria-describedby="confirm-user-desc"
-          name="confirm-user-id"
-          type="text"
-          oninput={handleConfirm}
-        />
+        <Field label={$t('admin.confirm_email_below', { values: { email: user.email } })}>
+          <Input bind:value={email} />
+        </Field>
       {/if}
     </div>
   {/snippet}
