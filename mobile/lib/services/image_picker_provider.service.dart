@@ -56,7 +56,7 @@ class ImagePickerProviderService implements ImagePickerProviderApi {
       dPrint(() => "User selected ${selectedAssets.length} asset(s)");
       
       // Process all selected assets
-      final List<String?> imageUris = [];
+      final List<String> imageUris = [];
       
       for (final asset in selectedAssets) {
         dPrint(() => "Processing asset: ${asset.runtimeType}");
