@@ -57,7 +57,7 @@
       { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
       { key: ['⇧', 's'], action: $t('stack_duplicates') },
     ],
-  };  
+  };
 
   let duplicatesRes = $state(data.duplicatesRes);
 
@@ -109,7 +109,6 @@
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-        
 
         deletedNotification(trashIds.length);
         await correctDuplicatesIndexAndGo(duplicatesIndex);
@@ -209,7 +208,7 @@
 
   const loadDuplicate = async (itemIndex: number) => {
     duplicatesRes = await getAssetDuplicates({ page: itemIndex, size: 1 });
-  }
+  };
 </script>
 
 <svelte:document

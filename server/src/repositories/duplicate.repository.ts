@@ -7,7 +7,6 @@ import { AssetType, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
 import { anyUuid, asUuid, withDefaultVisibility } from 'src/utils/database';
-import { paginationHelper } from 'src/utils/pagination';
 
 interface DuplicateSearch {
   assetId: string;
@@ -77,7 +76,7 @@ export class DuplicateRepository {
 
     const [items, totalItems] = await Promise.all([
       query
-      .offset((page - 1) * size)
+        .offset((page - 1) * size)
         .limit(size)
         .execute(),
       query
@@ -90,7 +89,7 @@ export class DuplicateRepository {
     return {
       items,
       totalItems,
-    }
+    };
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })

@@ -57,13 +57,15 @@ export class DuplicateService extends BaseService {
         group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
       );
 
+      const { trash } = await this.getConfig({ withCache: false });
+
       // This is duplicated from asset.service - deleteAll()
       await this.requireAccess({ auth, permission: Permission.AssetDelete, ids: idsToDelete });
       await this.assetRepository.updateAll(idsToDelete, {
         deletedAt: new Date(),
-        status: false ? AssetStatus.Deleted : AssetStatus.Trashed,
+        status: trash ? AssetStatus.Trashed : AssetStatus.Deleted,
       });
-      await this.eventRepository.emit(false ? 'AssetDeleteAll' : 'AssetTrashAll', {
+      await this.eventRepository.emit(trash ? 'AssetTrashAll' : 'AssetDeleteAll', {
         assetIds: idsToDelete,
         userId: auth.user.id,
       });
