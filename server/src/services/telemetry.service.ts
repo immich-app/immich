@@ -16,8 +16,8 @@ export class TelemetryService extends BaseService {
     this.telemetryRepository.api.addToGauge(`immich.users.total`, 1);
   }
 
-  @OnEvent({ name: 'UserDelete' })
-  onUserDelete() {
+  @OnEvent({ name: 'UserTrash' })
+  onUserTrash() {
     this.telemetryRepository.api.addToGauge(`immich.users.total`, -1);
   }
 

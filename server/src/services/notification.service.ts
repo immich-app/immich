@@ -202,6 +202,11 @@ export class NotificationService extends BaseService {
     }
   }
 
+  @OnEvent({ name: 'UserDelete' })
+  onUserDelete({ id }: ArgOf<'UserDelete'>) {
+    this.eventRepository.clientBroadcast('on_user_delete', id);
+  }
+
   @OnEvent({ name: 'AlbumUpdate' })
   async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
     await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
