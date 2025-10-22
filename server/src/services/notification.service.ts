@@ -78,8 +78,8 @@ export class NotificationService extends BaseService {
     await this.notificationRepository.cleanup();
   }
 
-  @OnEvent({ name: 'JobFailed' })
-  async onJobFailed({ job, error }: ArgOf<'JobFailed'>) {
+  @OnEvent({ name: 'JobError' })
+  async onJobError({ job, error }: ArgOf<'JobError'>) {
     const admin = await this.userRepository.getAdmin();
     if (!admin) {
       return;
