@@ -236,6 +236,8 @@ export enum Permission {
   AdminUserUpdate = 'adminUser.update',
   AdminUserDelete = 'adminUser.delete',
 
+  AdminSessionRead = 'adminSession.read',
+
   AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
 

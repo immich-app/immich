@@ -141,14 +141,18 @@
   };
 
   const calculateSegments = (months: ScrubberMonth[]) => {
-    let height = 0;
-    let dotHeight = 0;
+    let verticalSpanWithoutLabel = 0;
+    let verticalSpanWithoutDot = 0;
 
     let segments: Segment[] = [];
     let previousLabeledSegment: Segment | undefined;
 
     let top = 0;
-    for (const [i, scrubMonth] of months.entries()) {
+
+    // Process months in reverse order to pick labels, then reverse for display
+    const reversed = [...months].reverse();
+
+    for (const scrubMonth of reversed) {
       const scrollBarPercentage = scrubMonth.height / timelineFullHeight;
 
       const segment = {
@@ -162,25 +166,26 @@
         hasDot: false,
       };
       top += segment.height;
-      if (i === 0) {
-        segment.hasDot = true;
-        segment.hasLabel = true;
-        previousLabeledSegment = segment;
-      } else {
-        if (previousLabeledSegment?.year !== segment.year && height > MIN_YEAR_LABEL_DISTANCE) {
-          height = 0;
+      if (previousLabeledSegment) {
+        if (previousLabeledSegment.year !== segment.year && verticalSpanWithoutLabel > MIN_YEAR_LABEL_DISTANCE) {
+          verticalSpanWithoutLabel = 0;
           segment.hasLabel = true;
           previousLabeledSegment = segment;
         }
-        if (segment.height > 5 && dotHeight > MIN_DOT_DISTANCE) {
+        if (segment.height > 5 && verticalSpanWithoutDot > MIN_DOT_DISTANCE) {
           segment.hasDot = true;
-          dotHeight = 0;
+          verticalSpanWithoutDot = 0;
         }
-        height += segment.height;
+      } else {
+        segment.hasDot = true;
+        segment.hasLabel = true;
+        previousLabeledSegment = segment;
       }
-      dotHeight += segment.height;
+      verticalSpanWithoutLabel += segment.height;
+      verticalSpanWithoutDot += segment.height;
       segments.push(segment);
     }
+    segments.reverse();
 
     return segments;
   };
@@ -513,7 +518,7 @@
       class={[
         { 'border-b-2': isDragging },
         { 'rounded-bl-md': !isDragging },
-        'bg-light truncate opacity-85 pointer-events-none absolute end-0 min-w-20 max-w-64 w-fit rounded-ss-md  border-immich-primary py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg z-1',
+        'bg-light truncate opacity-85 pointer-events-none absolute end-0 min-w-20 max-w-64 w-fit rounded-ss-md border-b-2 border-primary py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] z-1',
       ]}
       style:top="{hoverY + 2}px"
     >
@@ -576,7 +581,7 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute end-5 top-[-16px] text-[12px] dark:text-immich-dark-fg font-immich-mono">
+          <div class="absolute end-5 text-[12px] dark:text-immich-dark-fg font-immich-mono bottom-0">
             {segment.year}
           </div>
         {/if}

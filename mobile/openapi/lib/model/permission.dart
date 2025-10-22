@@ -150,6 +150,7 @@ class Permission {
   static const adminUserPeriodRead = Permission._(r'adminUser.read');
   static const adminUserPeriodUpdate = Permission._(r'adminUser.update');
   static const adminUserPeriodDelete = Permission._(r'adminUser.delete');
+  static const adminSessionPeriodRead = Permission._(r'adminSession.read');
   static const adminAuthPeriodUnlinkAll = Permission._(r'adminAuth.unlinkAll');
 
   /// List of all possible values in this [enum][Permission].
@@ -281,6 +282,7 @@ class Permission {
     adminUserPeriodRead,
     adminUserPeriodUpdate,
     adminUserPeriodDelete,
+    adminSessionPeriodRead,
     adminAuthPeriodUnlinkAll,
   ];
 
@@ -447,6 +449,7 @@ class PermissionTypeTransformer {
         case r'adminUser.read': return Permission.adminUserPeriodRead;
         case r'adminUser.update': return Permission.adminUserPeriodUpdate;
         case r'adminUser.delete': return Permission.adminUserPeriodDelete;
+        case r'adminSession.read': return Permission.adminSessionPeriodRead;
         case r'adminAuth.unlinkAll': return Permission.adminAuthPeriodUnlinkAll;
         default:
           if (!allowNull) {

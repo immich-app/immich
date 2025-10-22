@@ -28,11 +28,19 @@ jobs:
     permissions:
       pull-requests: write
     steps:
+      - name: Generate a token
+        id: generate_token
+        if: ${{ inputs.skip != true }}
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Find translation PR
         id: find_pr
         if: ${{ inputs.skip != true }}
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
         run: |
           set -euo pipefail
 
@@ -54,14 +62,6 @@ jobs:
             echo "PR is not mergeable"
             exit 1
           fi
-
-      - name: Generate a token
-        id: generate_token
-        if: ${{ inputs.skip != true }}
-        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
-        with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
-          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Lock weblate
         if: ${{ inputs.skip != true }}
