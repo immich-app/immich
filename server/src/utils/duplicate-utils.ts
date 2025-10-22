@@ -1,6 +1,6 @@
-import { sortBy } from "lodash";
-import { AssetResponseDto } from "src/dtos/asset-response.dto";
-import { getExifCount } from "src/utils/exif-utils";
+import { sortBy } from 'lodash';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { getExifCount } from 'src/utils/exif-utils';
 
 /**
  * Suggests the best duplicate asset to keep from a list of duplicates.

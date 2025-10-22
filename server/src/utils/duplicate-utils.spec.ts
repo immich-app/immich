@@ -1,6 +1,5 @@
-import { AssetResponseDto } from "src/dtos/asset-response.dto";
-import { suggestDuplicate } from "src/utils/duplicate-utils";
-
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { suggestDuplicate } from 'src/utils/duplicate-utils';
 
 describe('choosing a duplicate', () => {
   it('picks the asset with the largest file size', () => {

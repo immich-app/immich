@@ -1,6 +1,5 @@
-import { AssetResponseDto } from "src/dtos/asset-response.dto";
-import { getExifCount } from "src/utils/exif-utils";
-
+import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { getExifCount } from 'src/utils/exif-utils';
 
 describe('getting the exif count', () => {
   it('returns 0 when exifInfo is undefined', () => {
