@@ -773,6 +773,54 @@
         "description": "This endpoint is an admin-only route, and requires the `adminUser.delete` permission."
       }
     },
+    "/admin/users/{id}/sessions": {
+      "get": {
+        "operationId": "getUserSessionsAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminSession.read",
+        "description": "This endpoint is an admin-only route, and requires the `adminSession.read` permission."
+      }
+    },
     "/admin/users/{id}/statistics": {
       "get": {
         "operationId": "getUserStatisticsAdmin",
@@ -13267,6 +13315,7 @@
           "adminUser.read",
           "adminUser.update",
           "adminUser.delete",
+          "adminSession.read",
           "adminAuth.unlinkAll"
         ],
         "type": "string"
@@ -14303,6 +14352,10 @@
       },
       "SessionCreateResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14332,6 +14385,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
@@ -14345,6 +14399,10 @@
       },
       "SessionResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14371,6 +14429,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
