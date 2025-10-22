@@ -23,7 +23,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentRemoteAlbumProvider)!;
-    final asset = ref.watch(currentAssetNotifier) as RemoteAsset?;
+    final asset = ref.read(currentAssetNotifier) as RemoteAsset?;
     final user = ref.watch(currentUserProvider);
 
     final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
