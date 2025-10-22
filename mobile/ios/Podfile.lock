@@ -1,4 +1,6 @@
 PODS:
+  - app_settings (5.1.1):
+    - Flutter
   - background_downloader (0.0.1):
     - Flutter
   - bonsoir_darwin (0.0.1):
@@ -133,6 +135,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - app_settings (from `.symlinks/plugins/app_settings/ios`)
   - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
   - bonsoir_darwin (from `.symlinks/plugins/bonsoir_darwin/darwin`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
@@ -178,6 +181,8 @@ SPEC REPOS:
     - SwiftyGif
 
 EXTERNAL SOURCES:
+  app_settings:
+    :path: ".symlinks/plugins/app_settings/ios"
   background_downloader:
     :path: ".symlinks/plugins/background_downloader/ios"
   bonsoir_darwin:
@@ -246,6 +251,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
+  app_settings: 5127ae0678de1dcc19f2293271c51d37c89428b2
   background_downloader: 50e91d979067b82081aba359d7d916b3ba5fadad
   bonsoir_darwin: 29c7ccf356646118844721f36e1de4b61f6cbd0e
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd

@@ -902,6 +902,7 @@
   "enable": "Enable",
   "enable_backup": "Enable Backup",
   "enable_biometric_auth_description": "Enter your PIN code to enable biometric authentication",
+  "enable_notifications": "Enable notifications",
   "enabled": "Enabled",
   "end_date": "End date",
   "enqueued": "Enqueued",

@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:app_settings/app_settings.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
@@ -117,6 +118,11 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.cloud_upload),
+            onPressed: () => context.pushRoute(const DriftUploadDetailRoute()),
+            tooltip: "view_details".t(context: context),
+          ),
+          IconButton(
             onPressed: () {
               context.pushRoute(const DriftBackupOptionsRoute());
             },
@@ -172,24 +178,33 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                           .watch(appSettingsServiceProvider)
                           .getSetting(AppSettingsEnum.enableBackup);
 
-                      if (snapshot.hasData && !snapshot.data! && Platform.isAndroid && isBackupEnabled) {
+                      final isGranted = snapshot.data ?? false;
+
+                      if (isBackupEnabled && !isGranted && CurrentPlatform.isAndroid) {
                         return Padding(
-                          padding: const EdgeInsets.only(top: 4, bottom: 8),
-                          child: Text(
-                            "notification_backup_reliability".t(),
-                            style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-                            textAlign: TextAlign.center,
+                          padding: const EdgeInsets.only(top: 8, bottom: 8),
+                          child: Column(
+                            spacing: 0,
+                            children: [
+                              Text(
+                                "notification_backup_reliability".t(),
+                                style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colorScheme.onSurfaceSecondary,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              TextButton.icon(
+                                onPressed: () => AppSettings.openAppSettings(type: AppSettingsType.notification),
+                                icon: const Icon(Icons.open_in_new, size: 16),
+                                label: Text("enable_notifications".t()),
+                              ),
+                            ],
                           ),
                         );
                       } else {
                         return const SizedBox.shrink();
                       }
                     },
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.info_outline_rounded),
-                    onPressed: () => context.pushRoute(const DriftUploadDetailRoute()),
-                    label: Text("view_details".t(context: context)),
                   ),
                 ],
               ],

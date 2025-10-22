@@ -9,6 +9,7 @@ environment:
   flutter: 3.35.6
 
 dependencies:
+  app_settings: ^6.1.1
   async: ^2.11.0
   auto_route: ^9.2.0
   background_downloader: ^9.2.5
