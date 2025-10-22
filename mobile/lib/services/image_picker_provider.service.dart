@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:drift/drift.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -41,29 +39,55 @@ class ImagePickerProviderService implements ImagePickerProviderApi {
   }
 
   @override
-  Future<String?> pickImageForIntent() async {
-    dPrint(() => "pickImageForIntent called from native");
+  Future<List<String?>?> pickImagesForIntent() async {
+    dPrint(() => "pickImagesForIntent called from native");
 
     try {
-      // Show the asset selection timeline page to let the user choose an image
+      // Show the asset selection timeline page to let the user choose images
       final selectedAssets = await _appRouter.push<Set<BaseAsset>>(
         DriftAssetSelectionTimelineRoute(),
       );
 
       if (selectedAssets == null || selectedAssets.isEmpty) {
-        dPrint(() => "No asset selected by user");
+        dPrint(() => "No assets selected by user");
         return null;
       }
 
-      // Get the first selected asset
-      final asset = selectedAssets.first;
-      dPrint(() => "User selected asset: ${asset.runtimeType}");
+      dPrint(() => "User selected ${selectedAssets.length} asset(s)");
+      
+      // Process all selected assets
+      final List<String?> imageUris = [];
+      
+      for (final asset in selectedAssets) {
+        dPrint(() => "Processing asset: ${asset.runtimeType}");
+        
+        String? uri = await _getAssetUri(asset);
+        if (uri != null) {
+          imageUris.add(uri);
+        }
+      }
+      
+      if (imageUris.isEmpty) {
+        dPrint(() => "No valid URIs obtained, returning null");
+        return null;
+      }
+      
+      dPrint(() => "Returning ${imageUris.length} image URI(s)");
+      return imageUris;
+    } catch (e, stackTrace) {
+      dPrint(() => "Error in pickImagesForIntent: $e\n$stackTrace");
+      return null;
+    }
+  }
 
+  /// Gets the URI for a single asset (local, merged, or remote)
+  Future<String?> _getAssetUri(BaseAsset asset) async {
+    try {
       // Try to get the file from a local asset
       if (asset is LocalAsset) {
         final file = await _storageRepository.getFileForAsset(asset.id);
         if (file != null) {
-          dPrint(() => "Returning local asset URI: file://${file.path}");
+          dPrint(() => "Got local asset URI: file://${file.path}");
           return 'file://${file.path}';
         }
       } else if (asset is RemoteAsset) {
@@ -73,7 +97,7 @@ class ImagePickerProviderService implements ImagePickerProviderApi {
         if (remoteAsset.localId != null) {
           final file = await _storageRepository.getFileForAsset(remoteAsset.localId!);
           if (file != null) {
-            dPrint(() => "Returning merged asset local URI: file://${file.path}");
+            dPrint(() => "Got merged asset local URI: file://${file.path}");
             return 'file://${file.path}';
           }
         }
@@ -89,7 +113,7 @@ class ImagePickerProviderService implements ImagePickerProviderApi {
           
           if (res.statusCode != 200) {
             dPrint(() => "Asset download failed with status ${res.statusCode}");
-            throw Exception("Asset download failed with status ${res.statusCode}");
+            return null;
           }
           
           await tempFile.writeAsBytes(res.bodyBytes);
@@ -97,36 +121,15 @@ class ImagePickerProviderService implements ImagePickerProviderApi {
           return 'file://${tempFile.path}';
         } catch (e) {
           dPrint(() => "Error downloading remote asset: $e");
-          // Fall through to static test image
+          return null;
         }
       }
-
-      // If we couldn't get any asset file, fall back to static test image
-      dPrint(() => "No file available for asset, using static test image");
-      final imageUri = await _getStaticTestImageUri();
-      dPrint(() => "Returning image URI: $imageUri");
-      return imageUri;
-    } catch (e, stackTrace) {
-      dPrint(() => "Error in pickImageForIntent: $e\n$stackTrace");
+      
+      dPrint(() => "No file available for asset");
+      return null;
+    } catch (e) {
+      dPrint(() => "Error getting asset URI: $e");
       return null;
     }
-  }
-
-  /// Returns a URI to a static test image
-  /// Copies the immich logo from assets to a temporary file and returns a content URI
-  Future<String> _getStaticTestImageUri() async {
-    // Load the asset image
-    final ByteData data = await rootBundle.load('assets/immich-logo.png');
-    final Uint8List bytes = data.buffer.asUint8List();
-
-    // Get temporary directory
-    final Directory tempDir = await getTemporaryDirectory();
-    final File tempFile = File('${tempDir.path}/picker_test_image.png');
-
-    // Write the image to a temporary file
-    await tempFile.writeAsBytes(bytes);
-
-    // Return the file URI (Android native will convert this to a content URI if needed)
-    return 'file://${tempFile.path}';
   }
 }

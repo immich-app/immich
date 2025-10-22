@@ -18,6 +18,7 @@ List<Object?> wrapResponse({Object? result, PlatformException? error, bool empty
   return <Object?>[error.code, error.message, error.details];
 }
 
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -43,32 +44,28 @@ class _PigeonCodec extends StandardMessageCodec {
 abstract class ImagePickerProviderApi {
   static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
 
-  /// Called when Android needs an image for ACTION_GET_CONTENT/ACTION_PICK
-  /// Returns the URI of the selected image (content:// or file:// URI)
-  /// Returns null if user cancels
-  Future<String?> pickImageForIntent();
+  /// Called when Android needs images for ACTION_GET_CONTENT/ACTION_PICK
+  /// Returns a list of URIs of the selected images (content:// or file:// URIs)
+  /// Returns null or empty list if user cancels
+  Future<List<String?>?> pickImagesForIntent();
 
-  static void setUp(ImagePickerProviderApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = ''}) {
+  static void setUp(ImagePickerProviderApi? api, {BinaryMessenger? binaryMessenger, String messageChannelSuffix = '',}) {
     messageChannelSuffix = messageChannelSuffix.isNotEmpty ? '.$messageChannelSuffix' : '';
     {
       final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.immich_mobile.ImagePickerProviderApi.pickImageForIntent$messageChannelSuffix',
-        pigeonChannelCodec,
-        binaryMessenger: binaryMessenger,
-      );
+          'dev.flutter.pigeon.immich_mobile.ImagePickerProviderApi.pickImagesForIntent$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
       if (api == null) {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
           try {
-            final String? output = await api.pickImageForIntent();
+            final List<String?>? output = await api.pickImagesForIntent();
             return wrapResponse(result: output);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
-          } catch (e) {
-            return wrapResponse(
-              error: PlatformException(code: 'error', message: e.toString()),
-            );
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
           }
         });
       }

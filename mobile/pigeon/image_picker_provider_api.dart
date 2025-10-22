@@ -16,9 +16,9 @@ import 'package:pigeon/pigeon.dart';
 /// API for Android native to request an image from Flutter
 @FlutterApi()
 abstract class ImagePickerProviderApi {
-  /// Called when Android needs an image for ACTION_GET_CONTENT/ACTION_PICK
-  /// Returns the URI of the selected image (content:// or file:// URI)
-  /// Returns null if user cancels
+  /// Called when Android needs images for ACTION_GET_CONTENT/ACTION_PICK
+  /// Returns a list of URIs of the selected images (content:// or file:// URIs)
+  /// Returns null or empty list if user cancels
   @async
-  String? pickImageForIntent();
+  List<String?>? pickImagesForIntent();
 }

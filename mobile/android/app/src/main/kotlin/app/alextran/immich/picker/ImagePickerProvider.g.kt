@@ -52,21 +52,21 @@ class ImagePickerProviderApi(private val binaryMessenger: BinaryMessenger, priva
     }
   }
   /**
-   * Called when Android needs an image for ACTION_GET_CONTENT/ACTION_PICK
-   * Returns the URI of the selected image (content:// or file:// URI)
-   * Returns null if user cancels
+   * Called when Android needs images for ACTION_GET_CONTENT/ACTION_PICK
+   * Returns a list of URIs of the selected images (content:// or file:// URIs)
+   * Returns null or empty list if user cancels
    */
-  fun pickImageForIntent(callback: (Result<String?>) -> Unit)
+  fun pickImagesForIntent(callback: (Result<List<String?>?>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
-    val channelName = "dev.flutter.pigeon.immich_mobile.ImagePickerProviderApi.pickImageForIntent$separatedMessageChannelSuffix"
+    val channelName = "dev.flutter.pigeon.immich_mobile.ImagePickerProviderApi.pickImagesForIntent$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
     channel.send(null) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
         } else {
-          val output = it[0] as String?
+          val output = it[0] as List<String?>?
           callback(Result.success(output))
         }
       } else {

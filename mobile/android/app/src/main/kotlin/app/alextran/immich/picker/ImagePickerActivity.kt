@@ -1,6 +1,7 @@
 package app.alextran.immich.picker
 
 import android.app.Activity
+import android.content.ClipData
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -71,32 +72,77 @@ class ImagePickerActivity : FlutterActivity() {
     Log.d(TAG, "=== requestImageFromFlutter() CALLED ===")
     Log.d(TAG, "imagePickerApi is null: ${imagePickerApi == null}")
     
-    imagePickerApi?.pickImageForIntent { result ->
-      Log.d(TAG, "pickImageForIntent callback received")
+    // Check if the calling app allows multiple selection
+    val allowMultiple = intent.getBooleanExtra(Intent.EXTRA_ALLOW_MULTIPLE, false)
+    Log.d(TAG, "Intent allows multiple selection: $allowMultiple")
+    
+    imagePickerApi?.pickImagesForIntent { result ->
+      Log.d(TAG, "pickImagesForIntent callback received")
       result.fold(
-        onSuccess = { imageUriString ->
-          Log.d(TAG, "SUCCESS: Received image URI from Flutter: $imageUriString")
-          if (imageUriString != null) {
-            try {
-              val uri = convertToContentUri(imageUriString)
-              val resultIntent = Intent().apply {
-                data = uri
-                // Grant temporary read permission to the URI
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-              }
-              setResult(Activity.RESULT_OK, resultIntent)
-            } catch (e: Exception) {
-              Log.e(TAG, "Error converting URI", e)
-              setResult(Activity.RESULT_CANCELED)
-            }
-          } else {
-            // User cancelled
+        onSuccess = { imageUriList ->
+          Log.d(TAG, "SUCCESS: Received ${imageUriList?.size ?: 0} image URI(s) from Flutter")
+          
+          if (imageUriList.isNullOrEmpty()) {
+            // User cancelled or no images selected
+            Log.d(TAG, "No images selected, returning RESULT_CANCELED")
             setResult(Activity.RESULT_CANCELED)
+            finish()
+            return@fold
           }
-          finish()
+          
+          try {
+            // Convert all URIs to content URIs
+            val contentUris = imageUriList.mapNotNull { uriString ->
+              uriString?.let { 
+                try {
+                  convertToContentUri(it)
+                } catch (e: Exception) {
+                  Log.e(TAG, "Error converting URI: $it", e)
+                  null
+                }
+              }
+            }
+            
+            if (contentUris.isEmpty()) {
+              Log.e(TAG, "No valid content URIs after conversion")
+              setResult(Activity.RESULT_CANCELED)
+              finish()
+              return@fold
+            }
+            
+            val resultIntent = Intent()
+            
+            if (contentUris.size == 1 || !allowMultiple) {
+              // Single image or app doesn't support multiple
+              Log.d(TAG, "Returning single image URI: ${contentUris.first()}")
+              resultIntent.data = contentUris.first()
+            } else {
+              // Multiple images - use ClipData
+              Log.d(TAG, "Returning ${contentUris.size} images using ClipData")
+              val clipData = ClipData.newUri(contentResolver, "Images", contentUris.first())
+              
+              // Add the rest of the URIs to ClipData
+              for (i in 1 until contentUris.size) {
+                clipData.addItem(ClipData.Item(contentUris[i]))
+              }
+              
+              resultIntent.clipData = clipData
+              resultIntent.data = contentUris.first() // Also set primary URI for compatibility
+            }
+            
+            // Grant temporary read permission to all URIs
+            resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            
+            setResult(Activity.RESULT_OK, resultIntent)
+            finish()
+          } catch (e: Exception) {
+            Log.e(TAG, "Error processing URIs", e)
+            setResult(Activity.RESULT_CANCELED)
+            finish()
+          }
         },
         onFailure = { error ->
-          Log.e(TAG, "Error getting image from Flutter", error)
+          Log.e(TAG, "Error getting images from Flutter", error)
           setResult(Activity.RESULT_CANCELED)
           finish()
         }

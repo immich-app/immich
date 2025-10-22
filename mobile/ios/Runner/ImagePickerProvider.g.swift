@@ -49,10 +49,10 @@ class ImagePickerProviderPigeonCodec: FlutterStandardMessageCodec, @unchecked Se
 ///
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol ImagePickerProviderApiProtocol {
-  /// Called when Android needs an image for ACTION_GET_CONTENT/ACTION_PICK
-  /// Returns the URI of the selected image (content:// or file:// URI)
-  /// Returns null if user cancels
-  func pickImageForIntent(completion: @escaping (Result<String?, PigeonError>) -> Void)
+  /// Called when Android needs images for ACTION_GET_CONTENT/ACTION_PICK
+  /// Returns a list of URIs of the selected images (content:// or file:// URIs)
+  /// Returns null or empty list if user cancels
+  func pickImagesForIntent(completion: @escaping (Result<[String?]?, PigeonError>) -> Void)
 }
 class ImagePickerProviderApi: ImagePickerProviderApiProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -64,11 +64,11 @@ class ImagePickerProviderApi: ImagePickerProviderApiProtocol {
   var codec: ImagePickerProviderPigeonCodec {
     return ImagePickerProviderPigeonCodec.shared
   }
-  /// Called when Android needs an image for ACTION_GET_CONTENT/ACTION_PICK
-  /// Returns the URI of the selected image (content:// or file:// URI)
-  /// Returns null if user cancels
-  func pickImageForIntent(completion: @escaping (Result<String?, PigeonError>) -> Void) {
-    let channelName: String = "dev.flutter.pigeon.immich_mobile.ImagePickerProviderApi.pickImageForIntent\(messageChannelSuffix)"
+  /// Called when Android needs images for ACTION_GET_CONTENT/ACTION_PICK
+  /// Returns a list of URIs of the selected images (content:// or file:// URIs)
+  /// Returns null or empty list if user cancels
+  func pickImagesForIntent(completion: @escaping (Result<[String?]?, PigeonError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.immich_mobile.ImagePickerProviderApi.pickImagesForIntent\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage(nil) { response in
       guard let listResponse = response as? [Any?] else {
@@ -81,7 +81,7 @@ class ImagePickerProviderApi: ImagePickerProviderApiProtocol {
         let details: String? = nilOrValue(listResponse[2])
         completion(.failure(PigeonError(code: code, message: message, details: details)))
       } else {
-        let result: String? = nilOrValue(listResponse[0])
+        let result: [String?]? = nilOrValue(listResponse[0])
         completion(.success(result))
       }
     }
