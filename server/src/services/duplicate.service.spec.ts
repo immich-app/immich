@@ -51,11 +51,11 @@ describe(SearchService.name, () => {
       await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual({
         items: [
           {
-        duplicateId: 'duplicate-id',
-        assets: [
-          expect.objectContaining({ id: assetStub.image.id }),
-          expect.objectContaining({ id: assetStub.image.id }),
-        ],
+            duplicateId: 'duplicate-id',
+            assets: [
+              expect.objectContaining({ id: assetStub.image.id }),
+              expect.objectContaining({ id: assetStub.image.id }),
+            ],
           },
         ],
         totalItems: expect.any(Number),
