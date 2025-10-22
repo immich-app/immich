@@ -4,23 +4,19 @@ import 'package:drift/drift.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/user.service.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/platform/image_picker_provider_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:path_provider/path_provider.dart';
 
 final imagePickerProviderServiceProvider = Provider(
   (ref) => ImagePickerProviderService(
-    ref.watch(driftProvider),
-    ref.watch(userServiceProvider),
     const StorageRepository(),
     ref.watch(apiServiceProvider),
+    ref.watch(appRouterProvider),
   ),
 );
 
@@ -28,20 +24,17 @@ final imagePickerProviderServiceProvider = Provider(
 /// When other apps (like Twitter) request an image via ACTION_GET_CONTENT,
 /// this service provides the image URI
 class ImagePickerProviderService implements ImagePickerProviderApi {
-  final Drift _db;
-  final UserService _userService;
   final StorageRepository _storageRepository;
   final ApiService _apiService;
+  final AppRouter _appRouter;
 
   ImagePickerProviderService(
-    Drift db,
-    UserService userService,
     StorageRepository storageRepository,
     ApiService apiService,
-  ) : _db = db,
-      _userService = userService,
-      _storageRepository = storageRepository,
-      _apiService = apiService {
+    AppRouter appRouter,
+  ) : _storageRepository = storageRepository,
+      _apiService = apiService,
+      _appRouter = appRouter {
     // Register this service with the platform channel
     ImagePickerProviderApi.setUp(this);
     dPrint(() => "ImagePickerProviderService registered");
@@ -52,62 +45,19 @@ class ImagePickerProviderService implements ImagePickerProviderApi {
     dPrint(() => "pickImageForIntent called from native");
 
     try {
-      String userId = _userService.getMyUser().id;
+      // Show the asset selection timeline page to let the user choose an image
+      final selectedAssets = await _appRouter.push<Set<BaseAsset>>(
+        DriftAssetSelectionTimelineRoute(),
+      );
 
-      // Get assets using Drift's mergedAssetDrift (same as timeline)
-      // This returns both local and remote assets
-      final assets = await _db.mergedAssetDrift
-          .mergedAsset(
-            userIds: [userId],
-            limit: (_) => Limit(1, 0), // Just get the first asset (limit 1, offset 0)
-          )
-          .get();
-
-      if (assets.isEmpty) {
-        dPrint(() => "No assets found for user $userId");
+      if (selectedAssets == null || selectedAssets.isEmpty) {
+        dPrint(() => "No asset selected by user");
         return null;
       }
 
-      final firstAsset = assets.first;
-
-      // Convert the merged asset result to a BaseAsset
-      BaseAsset asset;
-      if (firstAsset.remoteId != null && firstAsset.ownerId != null) {
-        // This is a remote asset (or merged)
-        asset = RemoteAsset(
-          id: firstAsset.remoteId!,
-          localId: firstAsset.localId,
-          name: firstAsset.name,
-          ownerId: firstAsset.ownerId!,
-          checksum: firstAsset.checksum,
-          type: firstAsset.type,
-          createdAt: firstAsset.createdAt,
-          updatedAt: firstAsset.updatedAt,
-          thumbHash: firstAsset.thumbHash,
-          width: firstAsset.width,
-          height: firstAsset.height,
-          isFavorite: firstAsset.isFavorite,
-          durationInSeconds: firstAsset.durationInSeconds,
-          livePhotoVideoId: firstAsset.livePhotoVideoId,
-          stackId: firstAsset.stackId,
-        );
-      } else {
-        // This is a local-only asset
-        asset = LocalAsset(
-          id: firstAsset.localId!,
-          remoteId: firstAsset.remoteId,
-          name: firstAsset.name,
-          checksum: firstAsset.checksum,
-          type: firstAsset.type,
-          createdAt: firstAsset.createdAt,
-          updatedAt: firstAsset.updatedAt,
-          width: firstAsset.width,
-          height: firstAsset.height,
-          isFavorite: firstAsset.isFavorite,
-          durationInSeconds: firstAsset.durationInSeconds,
-          orientation: firstAsset.orientation,
-        );
-      }
+      // Get the first selected asset
+      final asset = selectedAssets.first;
+      dPrint(() => "User selected asset: ${asset.runtimeType}");
 
       // Try to get the file from a local asset
       if (asset is LocalAsset) {
