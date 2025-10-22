@@ -38,21 +38,30 @@ describe(SearchService.name, () => {
 
   describe('getDuplicates', () => {
     it('should get duplicates', async () => {
-      mocks.duplicateRepository.getAll.mockResolvedValue([
-        {
-          duplicateId: 'duplicate-id',
-          assets: [assetStub.image, assetStub.image],
-        },
-      ]);
-      await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([
-        {
-          duplicateId: 'duplicate-id',
-          assets: [
-            expect.objectContaining({ id: assetStub.image.id }),
-            expect.objectContaining({ id: assetStub.image.id }),
-          ],
-        },
-      ]);
+      mocks.duplicateRepository.getAll.mockResolvedValue({
+        items: [
+          {
+            duplicateId: 'duplicate-id',
+            assets: [assetStub.image, assetStub.image],
+          },
+        ],
+        totalItems: 1,
+      });
+
+      await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual({
+        items: [
+          {
+        duplicateId: 'duplicate-id',
+        assets: [
+          expect.objectContaining({ id: assetStub.image.id }),
+          expect.objectContaining({ id: assetStub.image.id }),
+        ],
+          },
+        ],
+        totalItems: expect.any(Number),
+        totalPages: expect.any(Number),
+        hasNextPage: expect.any(Boolean),
+      });
     });
   });
 
