@@ -3,14 +3,14 @@ import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
-import { CacheControl, ImmichWorker, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
+import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
@@ -213,12 +213,6 @@ export class UserService extends BaseService {
     };
   }
 
-  @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.Api] })
-  async onBootstrap(): Promise<void> {
-    const userCount = await this.userRepository.getCount();
-    this.telemetryRepository.api.addToGauge('immich.users.total', userCount);
-  }
-
   @OnJob({ name: JobName.UserSyncUsage, queue: QueueName.BackgroundTask })
   async handleUserSyncUsage(): Promise<JobStatus> {
     await this.userRepository.syncUsage();
@@ -234,17 +228,17 @@ export class UserService extends BaseService {
   }
 
   @OnJob({ name: JobName.UserDelete, queue: QueueName.BackgroundTask })
-  async handleUserDelete({ id, force }: JobOf<JobName.UserDelete>): Promise<JobStatus> {
+  async handleUserDelete({ id, force }: JobOf<JobName.UserDelete>) {
     const config = await this.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
-      return JobStatus.Failed;
+      return;
     }
 
     // just for extra protection here
     if (!force && !this.isReadyForDeletion(user, config.user.deleteDelay)) {
       this.logger.warn(`Skipped user that was not ready for deletion: id=${id}`);
-      return JobStatus.Skipped;
+      return;
     }
 
     this.logger.log(`Deleting user: ${user.id}`);
@@ -266,7 +260,7 @@ export class UserService extends BaseService {
     await this.albumRepository.deleteAll(user.id);
     await this.userRepository.delete(user, true);
 
-    return JobStatus.Success;
+    await this.eventRepository.emit('UserDelete', user);
   }
 
   private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, deleteDelay: number): boolean {
