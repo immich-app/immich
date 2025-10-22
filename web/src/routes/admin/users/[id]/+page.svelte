@@ -364,7 +364,7 @@
                 {#each userSessions as session (session.id)}
                   <DeviceCard {session} />
                 {:else}
-                  <span class="text-subtle">No mobile devices</span>
+                  <span class="text-dark">No mobile devices</span>
                 {/each}
               </Stack>
             </div>
