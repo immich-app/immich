@@ -22,7 +22,6 @@ export const load = (async ({ params, url }) => {
   return {
     asset,
     duplicatesRes: duplicates,
-    duplicates: duplicates.items,
     duplicate,
     loadDuplicates,
     meta: {

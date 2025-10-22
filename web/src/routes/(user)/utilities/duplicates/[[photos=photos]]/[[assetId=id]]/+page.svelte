@@ -99,7 +99,7 @@
     toastManager.success(message);
   };
 
-  const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+  const handleResolve = async (duplicateAssetIds: string[], trashIds: string[]) => {
     return withConfirmation(
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !featureFlagsManager.value.trash } });
@@ -115,7 +115,7 @@
     );
   };
 
-  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
+  const handleStack = async (assets: AssetResponseDto[]) => {
     await stackAssets(assets, false);
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
@@ -257,8 +257,8 @@
         <DuplicatesCompareControl
           assets={duplicate.assets}
           onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicate!.duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(duplicate!.duplicateId, assets)}
+            handleResolve(duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(assets)}
         />
         <div class="max-w-5xl mx-auto mb-16">
           <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
