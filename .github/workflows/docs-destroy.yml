@@ -5,6 +5,9 @@ on:
 
 permissions: {}
 
+env:
+  TG_NON_INTERACTIVE: 'true'
+
 jobs:
   deploy:
     name: Docs Destroy
