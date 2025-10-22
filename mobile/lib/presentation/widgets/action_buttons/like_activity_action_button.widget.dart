@@ -12,9 +12,10 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/user.provider.dart';
 
 class LikeActivityActionButton extends ConsumerWidget {
-  const LikeActivityActionButton({super.key, this.menuItem = false});
+  const LikeActivityActionButton({super.key, this.menuItem = false, this.isAlbumLike = false});
 
   final bool menuItem;
+  final bool isAlbumLike;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,7 +23,10 @@ class LikeActivityActionButton extends ConsumerWidget {
     final asset = ref.watch(currentAssetNotifier) as RemoteAsset?;
     final user = ref.watch(currentUserProvider);
 
-    final activities = ref.watch(albumActivityProvider(album?.id ?? "", asset?.id));
+    // we need to ignore the current asset when liking an album
+    final target = isAlbumLike ? null : asset?.id;
+
+    final activities = ref.watch(albumActivityProvider(album?.id ?? "", target));
 
     onTap(Activity? liked) async {
       if (user == null) {
@@ -30,12 +34,12 @@ class LikeActivityActionButton extends ConsumerWidget {
       }
 
       if (liked != null) {
-        await ref.read(albumActivityProvider(album?.id ?? "", asset?.id).notifier).removeActivity(liked.id);
+        await ref.read(albumActivityProvider(album?.id ?? "", target).notifier).removeActivity(liked.id);
       } else {
-        await ref.read(albumActivityProvider(album?.id ?? "", asset?.id).notifier).addLike();
+        await ref.read(albumActivityProvider(album?.id ?? "", target).notifier).addLike();
       }
 
-      ref.invalidate(albumActivityProvider(album?.id ?? "", asset?.id));
+      ref.invalidate(albumActivityProvider(album?.id ?? "", target));
     }
 
     return activities.when(

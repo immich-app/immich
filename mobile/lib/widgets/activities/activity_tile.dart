@@ -7,10 +7,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
-import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
@@ -24,16 +22,6 @@ class ActivityTile extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLike = activity.type == ActivityType.like;
-    // Asset thumbnail is displayed when we are accessing activities from the album page
-    // currentAssetProvider will not be set until we open the gallery viewer
-    bool showAssetThumbnail = false;
-    if (Store.isBetaTimelineEnabled) {
-      final asset = ref.watch(currentAssetNotifier);
-      showAssetThumbnail = asset == null && activity.assetId != null;
-    } else {
-      final asset = ref.watch(currentAssetProvider);
-      showAssetThumbnail = asset == null && activity.assetId != null;
-    }
 
     return ListTile(
       minVerticalPadding: 15,
@@ -49,11 +37,11 @@ class ActivityTile extends HookConsumerWidget {
       title: _ActivityTitle(
         userName: activity.user.name,
         createdAt: activity.createdAt.timeAgo(),
-        leftAlign: isBottomSheet ? false : (isLike || showAssetThumbnail),
+        leftAlign: isBottomSheet ? false : (isLike || !isBottomSheet),
       ),
       // No subtitle for like, so center title
       titleAlignment: !isLike ? ListTileTitleAlignment.top : ListTileTitleAlignment.center,
-      trailing: showAssetThumbnail ? _ActivityAssetThumbnail(activity.assetId!) : null,
+      trailing: !isBottomSheet && activity.assetId != null ? _ActivityAssetThumbnail(activity.assetId!) : null,
       subtitle: !isLike ? Text(activity.comment!) : null,
     );
   }
