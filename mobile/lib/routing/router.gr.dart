@@ -882,22 +882,6 @@ class DriftBackupRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [DriftBetaActivitiesPage]
-class DriftBetaActivitiesRoute extends PageRouteInfo<void> {
-  const DriftBetaActivitiesRoute({List<PageRouteInfo>? children})
-    : super(DriftBetaActivitiesRoute.name, initialChildren: children);
-
-  static const String name = 'DriftBetaActivitiesRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriftBetaActivitiesPage();
-    },
-  );
-}
-
-/// generated route for
 /// [DriftCreateAlbumPage]
 class DriftCreateAlbumRoute extends PageRouteInfo<void> {
   const DriftCreateAlbumRoute({List<PageRouteInfo>? children})
