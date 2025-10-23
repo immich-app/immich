@@ -87,7 +87,7 @@ export class ChangePasswordDto {
   @IsBoolean()
   @Optional()
   @ApiProperty({ example: true })
-  logOutOhterSessions?: boolean;
+  logOutOtherSessions?: boolean;
 }
 
 export class PinCodeSetupDto {

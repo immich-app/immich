@@ -11469,7 +11469,7 @@
       },
       "ChangePasswordDto": {
         "properties": {
-          "logOutOhterSessions": {
+          "logOutOtherSessions": {
             "example": true,
             "type": "boolean"
           },

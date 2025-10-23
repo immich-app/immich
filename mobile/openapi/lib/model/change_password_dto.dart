@@ -13,7 +13,7 @@ part of openapi.api;
 class ChangePasswordDto {
   /// Returns a new [ChangePasswordDto] instance.
   ChangePasswordDto({
-    this.logOutOhterSessions,
+    this.logOutOtherSessions,
     required this.newPassword,
     required this.password,
   });
@@ -24,7 +24,7 @@ class ChangePasswordDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? logOutOhterSessions;
+  bool? logOutOtherSessions;
 
   String newPassword;
 
@@ -32,26 +32,26 @@ class ChangePasswordDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ChangePasswordDto &&
-    other.logOutOhterSessions == logOutOhterSessions &&
+    other.logOutOtherSessions == logOutOtherSessions &&
     other.newPassword == newPassword &&
     other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (logOutOhterSessions == null ? 0 : logOutOhterSessions!.hashCode) +
+    (logOutOtherSessions == null ? 0 : logOutOtherSessions!.hashCode) +
     (newPassword.hashCode) +
     (password.hashCode);
 
   @override
-  String toString() => 'ChangePasswordDto[logOutOhterSessions=$logOutOhterSessions, newPassword=$newPassword, password=$password]';
+  String toString() => 'ChangePasswordDto[logOutOtherSessions=$logOutOtherSessions, newPassword=$newPassword, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.logOutOhterSessions != null) {
-      json[r'logOutOhterSessions'] = this.logOutOhterSessions;
+    if (this.logOutOtherSessions != null) {
+      json[r'logOutOtherSessions'] = this.logOutOtherSessions;
     } else {
-    //  json[r'logOutOhterSessions'] = null;
+    //  json[r'logOutOtherSessions'] = null;
     }
       json[r'newPassword'] = this.newPassword;
       json[r'password'] = this.password;
@@ -67,7 +67,7 @@ class ChangePasswordDto {
       final json = value.cast<String, dynamic>();
 
       return ChangePasswordDto(
-        logOutOhterSessions: mapValueOfType<bool>(json, r'logOutOhterSessions'),
+        logOutOtherSessions: mapValueOfType<bool>(json, r'logOutOtherSessions'),
         newPassword: mapValueOfType<String>(json, r'newPassword')!,
         password: mapValueOfType<String>(json, r'password')!,
       );

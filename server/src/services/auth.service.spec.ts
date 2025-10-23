@@ -151,7 +151,7 @@ describe(AuthService.name, () => {
     it('should change the password and emmit UserLogoutOtherSessions', async () => {
       const user = factory.userAdmin();
       const auth = factory.auth({ user });
-      const dto = { password: 'old-password', newPassword: 'new-password', logOutOhterSessions: true };
+      const dto = { password: 'old-password', newPassword: 'new-password', logOutOtherSessions: true };
 
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
       mocks.user.update.mockResolvedValue(user);

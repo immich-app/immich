@@ -15,11 +15,11 @@
   let password = $state('');
   let newPassword = $state('');
   let confirmPassword = $state('');
-  let logOutOhterSessions = $state(false);
+  let logOutOtherSessions = $state(false);
 
   const handleChangePassword = async () => {
     try {
-      await changePassword({ changePasswordDto: { password, newPassword, logOutOhterSessions } });
+      await changePassword({ changePasswordDto: { password, newPassword, logOutOtherSessions } });
 
       notificationController.show({
         message: $t('updated_password'),
@@ -74,7 +74,7 @@
         <SettingSwitch
           title={$t('log_out_all_devices')}
           subtitle={$t('change_password_form_log_out_description')}
-          bind:checked={logOutOhterSessions}
+          bind:checked={logOutOtherSessions}
         />
 
         <div class="flex justify-end">
