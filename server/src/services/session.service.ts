@@ -75,16 +75,12 @@ export class SessionService extends BaseService {
     await this.sessionRepository.update(id, { pinExpiresAt: null });
   }
 
-  @OnEvent({ name: 'UserLogoutOtherSessions' })
-  async handleUserLogoutOtherSessions({ userId, currentSessionId }: ArgOf<'UserLogoutOtherSessions'>): Promise<void> {
-    await this.deleteAllSessionsForUser(userId, currentSessionId);
+  @OnEvent({ name: 'UserPasswordChange' })
+  async handleUserPasswordChange({ userId, currentSessionId }: ArgOf<'UserPasswordChange'>): Promise<void> {
+    await this.deleteAll(userId, currentSessionId);
   }
 
-  async deleteAll(auth: AuthDto): Promise<void> {
-    await this.deleteAllSessionsForUser(auth.user.id, auth.session?.id);
-  }
-
-  private async deleteAllSessionsForUser(userId: string, excludeSessionId?: string): Promise<void> {
+  async deleteAll(userId: string, excludeSessionId?: string): Promise<void> {
     const sessions = await this.sessionRepository.getByUserId(userId);
     for (const session of sessions) {
       if (session.id === excludeSessionId) {

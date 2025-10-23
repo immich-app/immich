@@ -124,6 +124,11 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
+      expect(mocks.event.emit).toHaveBeenCalledWith('UserPasswordChange', {
+        userId: user.id,
+        currentSessionId: auth.session?.id,
+        shouldLogoutSessions: false
+      });
     });
 
     it('should throw when password does not match existing password', async () => {
@@ -148,7 +153,7 @@ describe(AuthService.name, () => {
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should change the password and emmit UserLogoutOtherSessions', async () => {
+    it('should change the password and logout other sessions', async () => {
       const user = factory.userAdmin();
       const auth = factory.auth({ user });
       const dto = { password: 'old-password', newPassword: 'new-password', logOutOtherSessions: true };
@@ -160,9 +165,10 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
-      expect(mocks.event.emit).toHaveBeenCalledWith('UserLogoutOtherSessions', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('UserPasswordChange', {
         userId: user.id,
         currentSessionId: auth.session?.id,
+        shouldLogoutSessions: true
       });
     });
   });
