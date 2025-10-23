@@ -18,9 +18,6 @@ default_platform(:ios)
 platform :ios do
   desc "iOS Release to TestFlight"
   lane :release_ci do
-    # Setup CI environment
-    setup_ci
-    
     # Load App Store Connect API Key
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -30,25 +27,40 @@ platform :ios do
       in_house: false
     )
     
-    # Import certificate and provisioning profile
-    import_certificate(
-      certificate_path: "certificate.p12",
-      certificate_password: ENV["IOS_CERTIFICATE_PASSWORD"],
-      keychain_name: ENV["KEYCHAIN_NAME"],
-      keychain_password: ENV["KEYCHAIN_PASSWORD"]
-    )
-    
-    # Install provisioning profile
+    # Install provisioning profiles
     install_provisioning_profile(path: "profile.mobileprovision")
+    install_provisioning_profile(path: "profile_share.mobileprovision")
+    install_provisioning_profile(path: "profile_widget.mobileprovision")
     
-    # Configure code signing for main app only
+    # Configure code signing for all targets
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"],
-      targets: ["Runner"],
+      code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
+      bundle_identifier: "app.alextran.immich",
       profile_name: "app.alextran.immich AppStore",
-      code_sign_identity: "Apple Distribution"
+      targets: ["Runner"]
+    )
+    
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "./Runner.xcodeproj",
+      team_id: ENV["FASTLANE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
+      bundle_identifier: "app.alextran.immich.ShareExtension",
+      profile_name: "app.alextran.immich.ShareExtension AppStore",
+      targets: ["ShareExtension"]
+    )
+    
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "./Runner.xcodeproj",
+      team_id: ENV["FASTLANE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
+      bundle_identifier: "app.alextran.immich.Widget",
+      profile_name: "app.alextran.immich.Widget AppStore",
+      targets: ["WidgetExtension"]
     )
     
     # Increment build number
@@ -65,10 +77,11 @@ platform :ios do
       scheme: "Runner",
       workspace: "Runner.xcworkspace",
       export_method: "app-store",
-      xcargs: "-allowProvisioningUpdates",
       export_options: {
         provisioningProfiles: {
-          "app.alextran.immich" => "app.alextran.immich AppStore"
+          "app.alextran.immich" => "app.alextran.immich AppStore",
+          "app.alextran.immich.ShareExtension" => "app.alextran.immich.ShareExtension AppStore",
+          "app.alextran.immich.Widget" => "app.alextran.immich.Widget AppStore"
         }
       }
     )
