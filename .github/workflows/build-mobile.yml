@@ -197,9 +197,14 @@ jobs:
           ruby-version: '3.2'
           working-directory: ./mobile/ios
 
-      - name: Install Fastlane
+      - name: Install CocoaPods dependencies
+        working-directory: ./mobile/ios
         run: |
-          cd mobile/ios
+          pod install
+
+      - name: Install Fastlane
+        working-directory: ./mobile/ios
+        run: |
           gem install bundler
           bundle config set --local path 'vendor/bundle'
           bundle install
