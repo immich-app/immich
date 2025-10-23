@@ -36,6 +36,7 @@ class AdvancedSettings extends HookConsumerWidget {
     final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
     final useAlternatePMFilter = useAppSettingsState(AppSettingsEnum.photoManagerCustomFilter);
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
+    final betaActivitiesStyle = useAppSettingsState(AppSettingsEnum.betaActivitiesStyle);
 
     final logLevel = Level.LEVELS[levelId.value].name;
 
@@ -128,6 +129,11 @@ class AdvancedSettings extends HookConsumerWidget {
             );
           },
         ),
+      SettingsSwitchListTile(
+        valueNotifier: betaActivitiesStyle,
+        title: "advanced_settings_beta_activities_style_title".tr(),
+        subtitle: "advanced_settings_beta_activities_style_subtitle".tr(),
+      ),
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
