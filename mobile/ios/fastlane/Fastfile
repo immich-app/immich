@@ -41,21 +41,14 @@ platform :ios do
     # Install provisioning profile
     install_provisioning_profile(path: "profile.mobileprovision")
     
-    # Configure code signing for main app
+    # Configure code signing for main app only
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"],
       targets: ["Runner"],
-      profile_name: "app.alextran.immich AppStore"
-    )
-    
-    # Use automatic signing for extensions (they use embedded provisioning)
-    update_code_signing_settings(
-      use_automatic_signing: true,
-      path: "./Runner.xcodeproj",
-      team_id: ENV["FASTLANE_TEAM_ID"],
-      targets: ["ShareExtension", "WidgetExtension"]
+      profile_name: "app.alextran.immich AppStore",
+      code_sign_identity: "Apple Distribution"
     )
     
     # Increment build number
@@ -72,6 +65,7 @@ platform :ios do
       scheme: "Runner",
       workspace: "Runner.xcworkspace",
       export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates",
       export_options: {
         provisioningProfiles: {
           "app.alextran.immich" => "app.alextran.immich AppStore"
