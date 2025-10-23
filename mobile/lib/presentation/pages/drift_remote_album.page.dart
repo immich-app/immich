@@ -240,7 +240,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
+      onPopInvokedWithResult: (didPop, _) async {
         if (didPop || !mounted) {
           return;
         }
@@ -250,13 +250,18 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           return route.name == RemoteAlbumRoute.page.name;
         });
 
+        final albumNotifier = ref.read(currentRemoteAlbumProvider.notifier);
+
         Navigator.of(context).pop();
 
+        // wait for the pop animation to finish
+        await Future.delayed(const Duration(milliseconds: 300));
+
         if (ancestorPage == null) {
-          ref.read(currentRemoteAlbumProvider.notifier).dispose();
+          albumNotifier.dispose();
         } else {
           final album = (ancestorPage.routeData.args as RemoteAlbumRouteArgs).album;
-          ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
+          albumNotifier.setAlbum(album);
         }
       },
       child: ProviderScope(
