@@ -156,33 +156,36 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 
         albums.sortBy((a) => a.name);
 
-        return Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
-          child: Column(
-            spacing: 12,
-            children: [
-              if (albums.isNotEmpty)
-                _SheetTile(
-                  title: 'appears_in'.t(context: context).toUpperCase(),
-                  titleStyle: context.textTheme.labelMedium?.copyWith(
-                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
-                    fontWeight: FontWeight.w600,
-                  ),
+        return Column(
+          spacing: 12,
+          children: [
+            if (albums.isNotEmpty)
+              _SheetTile(
+                title: 'appears_in'.t(context: context).toUpperCase(),
+                titleStyle: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                  fontWeight: FontWeight.w600,
                 ),
-              ...albums.map((album) {
-                final isOwner = album.ownerId == userId;
-                return AlbumTile(
-                  album: album,
-                  isOwner: isOwner,
-                  onAlbumSelected: (album) async {
-                    ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
-                    ref.invalidate(assetViewerProvider);
-                    context.router.popAndPush(RemoteAlbumRoute(album: album));
-                  },
-                );
-              }),
-            ],
-          ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Column(
+                spacing: 12,
+                children: albums.map((album) {
+                  final isOwner = album.ownerId == userId;
+                  return AlbumTile(
+                    album: album,
+                    isOwner: isOwner,
+                    onAlbumSelected: (album) async {
+                      ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
+                      ref.invalidate(assetViewerProvider);
+                      context.router.popAndPush(RemoteAlbumRoute(album: album));
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
         );
       },
       loading: () => const SizedBox.shrink(),
