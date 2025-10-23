@@ -124,7 +124,7 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
-      expect(mocks.event.emit).toHaveBeenCalledWith('UserPasswordChange', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AuthChangePassword', {
         userId: user.id,
         currentSessionId: auth.session?.id,
         shouldLogoutSessions: undefined,
@@ -156,7 +156,7 @@ describe(AuthService.name, () => {
     it('should change the password and logout other sessions', async () => {
       const user = factory.userAdmin();
       const auth = factory.auth({ user });
-      const dto = { password: 'old-password', newPassword: 'new-password', logOutOtherSessions: true };
+      const dto = { password: 'old-password', newPassword: 'new-password', invalidateSessions: true };
 
       mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
       mocks.user.update.mockResolvedValue(user);
@@ -165,7 +165,7 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
-      expect(mocks.event.emit).toHaveBeenCalledWith('UserPasswordChange', {
+      expect(mocks.event.emit).toHaveBeenCalledWith('AuthChangePassword', {
         userId: user.id,
         currentSessionId: auth.session?.id,
         shouldLogoutSessions: true,

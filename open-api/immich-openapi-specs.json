@@ -11469,8 +11469,7 @@
       },
       "ChangePasswordDto": {
         "properties": {
-          "logOutOtherSessions": {
-            "example": true,
+          "invalidateSessions": {
             "type": "boolean"
           },
           "newPassword": {

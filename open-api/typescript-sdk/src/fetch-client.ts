@@ -561,7 +561,7 @@ export type SignUpDto = {
     password: string;
 };
 export type ChangePasswordDto = {
-    logOutOtherSessions?: boolean;
+    invalidateSessions?: boolean;
     newPassword: string;
     password: string;
 };

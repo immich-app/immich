@@ -85,7 +85,7 @@ export class ChangePasswordDto {
   newPassword!: string;
 
   @ValidateBoolean({ optional: true })
-  logOutOtherSessions?: boolean;
+  invalidateSessions?: boolean;
 }
 
 export class PinCodeSetupDto {
