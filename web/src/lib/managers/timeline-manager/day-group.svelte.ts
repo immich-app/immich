@@ -148,6 +148,7 @@ export class DayGroup {
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
     this.height = assets.length === 0 ? 0 : geometry.containerHeight;
+    // TODO: lazily get positions instead of loading them all here
     for (let i = 0; i < this.viewerAssets.length; i++) {
       this.viewerAssets[i].position = geometry.getPosition(i);
     }
