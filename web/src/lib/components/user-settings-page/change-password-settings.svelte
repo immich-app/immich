@@ -72,8 +72,8 @@
         />
 
         <SettingSwitch
-          title="Cerrar sesion de todos los dispositivos"
-          subtitle="Se cerrara la sesion de todos los dispositivos autorizados menos el actual"
+          title={$t('log_out_all_devices')}
+          subtitle={$t('change_password_form_log_out_description')}
           bind:checked={logOutOhterSessions}
         />
 
