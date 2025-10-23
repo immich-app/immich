@@ -162,7 +162,7 @@ jobs:
     permissions:
       contents: read
     # Run on main branch or workflow_dispatch
-    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true && github.ref == 'refs/heads/main' }}
+    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
     runs-on: macos-latest
 
     steps:
@@ -204,7 +204,7 @@ jobs:
           bundle config set --local path 'vendor/bundle'
           bundle install
 
-      - name: Create API Key JSON
+      - name: Create API Key
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
@@ -213,15 +213,6 @@ jobs:
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
-          cat > api_key.json << EOF
-          {
-            "key_id": "${API_KEY_ID}",
-            "issuer_id": "${API_KEY_ISSUER_ID}",
-            "key": "$(cat ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8)",
-            "duration": 1200,
-            "in_house": false
-          }
-          EOF
 
       - name: Import Certificate and Provisioning Profile
         env:
