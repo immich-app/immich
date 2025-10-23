@@ -9,6 +9,7 @@ import app.alextran.immich.background.BackgroundWorkerFgHostApi
 import app.alextran.immich.background.BackgroundWorkerLockApi
 import app.alextran.immich.connectivity.ConnectivityApi
 import app.alextran.immich.connectivity.ConnectivityApiImpl
+import app.alextran.immich.core.ImmichPlugin
 import app.alextran.immich.images.ThumbnailApi
 import app.alextran.immich.images.ThumbnailsImpl
 import app.alextran.immich.sync.NativeSyncApi
@@ -42,6 +43,14 @@ class MainActivity : FlutterFragmentActivity() {
       flutterEngine.plugins.add(BackgroundServicePlugin())
       flutterEngine.plugins.add(HttpSSLOptionsPlugin())
       flutterEngine.plugins.add(backgroundEngineLockImpl)
+      flutterEngine.plugins.add(nativeSyncApiImpl)
+    }
+
+    fun cancelPlugins(flutterEngine: FlutterEngine) {
+      val nativeApi =
+        flutterEngine.plugins.get(NativeSyncApiImpl26::class.java) as ImmichPlugin?
+          ?: flutterEngine.plugins.get(NativeSyncApiImpl30::class.java) as ImmichPlugin?
+      nativeApi?.detachFromEngine()
     }
   }
 }
