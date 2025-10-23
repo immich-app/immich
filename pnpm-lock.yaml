@@ -678,8 +678,8 @@ importers:
         specifier: ^2.9.8
         version: 2.11.4
       '@immich/justified-layout-wasm':
-        specifier: ^0.4.1
-        version: 0.4.1
+        specifier: ^0.4.2
+        version: 0.4.2
       '@immich/sdk':
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
@@ -2729,8 +2729,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@immich/justified-layout-wasm@0.4.1':
-    resolution: {integrity: sha512-bWOkpT5wvYSJTVmQRBwqC1huQ3ABBotJhyPTnbeRtAOVC5VWfbrw7fj8mbJi7H68F9cbE3CyzVSxsSdXprWqcA==}
+  '@immich/justified-layout-wasm@0.4.2':
+    resolution: {integrity: sha512-nD6K9NG/cuWchO3F6MEETz7UzmtEE5bvOmcSKefXD5ESPZDo9TvZFty9d2H1h09zaJUjqsi00gHSONM5MS6suQ==}
 
   '@immich/ui@0.37.1':
     resolution: {integrity: sha512-8S9KsyqyRcNgRHeBU8G3qMQ7D7fN4u9I31jjRc9c3s2tkiYucASofPJdcFdmGZnKLX5fIj+yofxiNZV9tVitOg==}
@@ -14188,7 +14188,7 @@ snapshots:
   '@img/sharp-win32-x64@0.34.4':
     optional: true
 
-  '@immich/justified-layout-wasm@0.4.1': {}
+  '@immich/justified-layout-wasm@0.4.2': {}
 
   '@immich/ui@0.37.1(@internationalized/date@3.8.2)(svelte@5.40.1)':
     dependencies:

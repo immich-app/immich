@@ -75,6 +75,18 @@
     }),
   );
 
+  const getStyle = (i: number) => {
+    const geo = geometry;
+    return `top: ${geo.getTop(i)}px; left: ${geo.getLeft(i)}px; width: ${geo.getWidth(i)}px; height: ${geo.getHeight(i)}px;`;
+  };
+
+  const isIntersecting = (i: number) => {
+    const geo = geometry;
+    const window = slidingWindow;
+    const top = geo.getTop(i);
+    return top + pageHeaderOffset < window.bottom && top + geo.getHeight(i) > window.top;
+  };
+
   let currentIndex = 0;
   if (initialAssetId && assets.length > 0) {
     const index = assets.findIndex(({ id }) => id === initialAssetId);
@@ -435,16 +447,12 @@
   <div
     style:position="relative"
     style:height={geometry.containerHeight + 'px'}
-    style:width={geometry.containerWidth - 1 + 'px'}
+    style:width={geometry.containerWidth + 'px'}
   >
     {#each assets as asset, i (asset.id + '-' + i)}
-      {#if (geometry.getTop(i) + pageHeaderOffset) < slidingWindow.bottom && (geometry.getTop(i) + geometry.getHeight(i)) > slidingWindow.top}
+      {#if isIntersecting(i)}
         {@const currentAsset = toTimelineAsset(asset)}
-        <div
-          class="absolute"
-          style:overflow="clip"
-          style="width: {geometry.getWidth(i)}px; height: {geometry.getHeight(i)}px; top: {geometry.getTop(i)}px; left: {geometry.getLeft(i)}px"
-        >
+        <div class="absolute" style:overflow="clip" style={getStyle(i)}>
           <Thumbnail
             readonly={disableAssetSelect}
             onClick={() => {
