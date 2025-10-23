@@ -16,7 +16,6 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 // activity_tile and dismissible_activity are no longer used in this page
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
-import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 
@@ -214,52 +213,6 @@ class _CommentBubble extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _DismissibleWrapper extends StatelessWidget {
-  final String activityId;
-  final VoidCallback? onDelete;
-  final Widget child;
-
-  const _DismissibleWrapper({required this.activityId, required this.child, this.onDelete});
-
-  @override
-  Widget build(BuildContext context) {
-    if (onDelete == null) return child;
-
-    return Dismissible(
-      key: Key(activityId),
-      dismissThresholds: const {DismissDirection.horizontal: 0.7},
-      direction: DismissDirection.horizontal,
-      confirmDismiss: (direction) => showDialog(
-        context: context,
-        builder: (context) => ConfirmDialog(
-          onOk: () {},
-          title: "shared_album_activity_remove_title",
-          content: "shared_album_activity_remove_content",
-          ok: "delete",
-        ),
-      ),
-      onDismissed: (_) async => onDelete?.call(),
-      background: Container(
-        alignment: AlignmentDirectional.centerStart,
-        color: Colors.red[400],
-        child: const Padding(
-          padding: EdgeInsets.all(15),
-          child: Icon(Icons.delete_sweep_rounded, color: Colors.black),
-        ),
-      ),
-      secondaryBackground: Container(
-        alignment: AlignmentDirectional.centerEnd,
-        color: Colors.red[400],
-        child: const Padding(
-          padding: EdgeInsets.all(15),
-          child: Icon(Icons.delete_sweep_rounded, color: Colors.black),
-        ),
-      ),
-      child: child,
     );
   }
 }
