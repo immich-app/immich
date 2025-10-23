@@ -147,6 +147,24 @@ describe(AuthService.name, () => {
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('should change the password and emmit UserChangePassword', async () => {
+      const user = factory.userAdmin();
+      const auth = factory.auth({ user });
+      const dto = { password: 'old-password', newPassword: 'new-password', logOutOhterSessions: true };
+
+      mocks.user.getForChangePassword.mockResolvedValue({ id: user.id, password: 'hash-password' });
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.changePassword(auth, dto);
+
+      expect(mocks.user.getForChangePassword).toHaveBeenCalledWith(user.id);
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
+      expect(mocks.event.emit).toHaveBeenCalledWith('UserChangePassword', {
+        userId: user.id,
+        currentSessionId: auth.session?.id,
+      });
+    });
   });
 
   describe('logout', () => {
