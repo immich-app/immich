@@ -25,6 +25,14 @@ class LocalFilesManagerRepository {
     return await _service.requestManageMediaPermission();
   }
 
+  Future<bool> hasManageMediaPermission() async {
+    return await _service.hasManageMediaPermission();
+  }
+
+  Future<bool> manageMediaPermission() async {
+    return await _service.manageMediaPermission();
+  }
+
   Future<List<String>> restoreAssetsFromTrash(Iterable<LocalAsset> assets) async {
     final restoredIds = <String>[];
     for (final asset in assets) {

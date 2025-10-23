@@ -8,8 +8,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -25,12 +25,15 @@ import 'package:logging/logging.dart';
 
 class AdvancedSettings extends HookConsumerWidget {
   const AdvancedSettings({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool isLoggedIn = ref.read(currentUserProvider) != null;
 
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final manageLocalMediaAndroid = Store.isBetaTimelineEnabled
+        ? useState<bool>(false)
+        : useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
@@ -46,7 +49,15 @@ class AdvancedSettings extends HookConsumerWidget {
         DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         int sdkVersion = androidInfo.version.sdkInt;
-        return sdkVersion >= 31;
+        if (sdkVersion < 31) {
+          return false;
+        }
+        if (Store.isBetaTimelineEnabled) {
+          ref.read(localFilesManagerRepositoryProvider).hasManageMediaPermission().then((hasPermission) {
+            manageLocalMediaAndroid.value = hasPermission;
+          });
+        }
+        return true;
       }
       return false;
     }
@@ -62,18 +73,29 @@ class AdvancedSettings extends HookConsumerWidget {
         future: checkAndroidVersion(),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data == true) {
-            return SettingsSwitchListTile(
-              enabled: true,
-              valueNotifier: manageLocalMediaAndroid,
-              title: "advanced_settings_sync_remote_deletions_title".tr(),
-              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-              onChanged: (value) async {
-                if (value) {
-                  final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+            if (Store.isBetaTimelineEnabled) {
+              return SettingsSwitchListTile(
+                valueNotifier: manageLocalMediaAndroid,
+                title: "manage_media_access_title".tr(),
+                subtitle: "manage_media_access_subtitle".tr(),
+                onChanged: (_) async {
+                  final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
                   manageLocalMediaAndroid.value = result;
-                }
-              },
-            );
+                },
+              );
+            } else {
+              return SettingsSwitchListTile(
+                valueNotifier: manageLocalMediaAndroid,
+                title: "advanced_settings_sync_remote_deletions_title".tr(),
+                subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
+                onChanged: (value) async {
+                  if (value) {
+                    final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+                    manageLocalMediaAndroid.value = result;
+                  }
+                },
+              );
+            }
           } else {
             return const SizedBox.shrink();
           }

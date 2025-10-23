@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:crypto/crypto.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,7 @@ import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -176,6 +178,56 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
+    getManageMediaPermission() async {
+      final hasPermission = await ref.read(localFilesManagerRepositoryProvider).hasManageMediaPermission();
+      if (!hasPermission) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+              elevation: 5,
+              title: Text(
+                'manage_media_access_title',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.primaryColor),
+              ).tr(),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: [const Text('manage_media_access_subtitle', style: TextStyle(fontSize: 14)).tr()],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'cancel'.tr(),
+                    style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'manage_media_access_settings'.tr(),
+                    style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+
+    Future<bool> androidSupportsTrash() async {
+      if (Platform.isAndroid) {
+        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        int sdkVersion = androidInfo.version.sdkInt;
+        return sdkVersion >= 31;
+      }
+      return false;
+    }
+
     login() async {
       TextInput.finishAutofillContext();
 
@@ -193,6 +245,9 @@ class LoginForm extends HookConsumerWidget {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+            if (await androidSupportsTrash()) {
+              getManageMediaPermission();
+            }
             handleSyncFlow();
             ref.read(websocketProvider.notifier).connect();
             context.replaceRoute(const TabShellRoute());
@@ -292,6 +347,9 @@ class LoginForm extends HookConsumerWidget {
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+              if (await androidSupportsTrash()) {
+                getManageMediaPermission();
+              }
               handleSyncFlow();
               context.replaceRoute(const TabShellRoute());
               return;
