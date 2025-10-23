@@ -21,6 +21,13 @@ platform :ios do
     # Setup CI environment
     setup_ci
     
+    # Load App Store Connect API Key
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_filepath: "api_key.json"
+    )
+    
     # Import certificate and provisioning profile
     import_certificate(
       certificate_path: "certificate.p12",
@@ -42,7 +49,10 @@ platform :ios do
     
     # Increment build number
     increment_build_number(
-      build_number: latest_testflight_build_number + 1,
+      build_number: latest_testflight_build_number(
+        api_key: api_key,
+        app_identifier: "app.alextran.immich"
+      ) + 1,
       xcodeproj: "./Runner.xcodeproj"
     )
     
@@ -60,7 +70,7 @@ platform :ios do
     
     # Upload to TestFlight
     upload_to_testflight(
-      api_key_path: "api_key.json",
+      api_key: api_key,
       skip_waiting_for_build_processing: true
     )
   end
