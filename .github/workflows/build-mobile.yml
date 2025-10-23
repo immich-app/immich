@@ -154,3 +154,109 @@ jobs:
             mobile/android/.gradle
             mobile/.dart_tool
           key: ${{ steps.cache-gradle-restore.outputs.cache-primary-key }}
+
+  build-sign-ios:
+    name: Build and sign iOS
+    needs: pre-job
+    permissions:
+      contents: read
+    # Run on main branch or workflow_dispatch
+    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true && github.ref == 'refs/heads/main' }}
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version-file: ./mobile/pubspec.yaml
+          cache: true
+
+      - name: Install Flutter dependencies
+        working-directory: ./mobile
+        run: flutter pub get
+
+      - name: Generate translation files
+        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
+        working-directory: ./mobile
+
+      - name: Generate platform APIs
+        run: make pigeon
+        working-directory: ./mobile
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ./mobile/ios
+
+      - name: Install Fastlane
+        run: |
+          cd mobile/ios
+          gem install bundler
+          bundle install
+
+      - name: Create API Key JSON
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        working-directory: ./mobile/ios
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
+          cat > api_key.json << EOF
+          {
+            "key_id": "${API_KEY_ID}",
+            "issuer_id": "${API_KEY_ISSUER_ID}",
+            "key": "$(cat ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8)",
+            "duration": 1200,
+            "in_house": false
+          }
+          EOF
+
+      - name: Import Certificate and Provisioning Profile
+        env:
+          IOS_CERTIFICATE_P12: ${{ secrets.IOS_CERTIFICATE_P12 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+        working-directory: ./mobile/ios
+        run: |
+          echo "$IOS_CERTIFICATE_P12" | base64 --decode > certificate.p12
+          echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+
+      - name: Create keychain
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        run: |
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -t 3600 -u build.keychain
+
+      - name: Build and deploy to TestFlight
+        env:
+          FASTLANE_TEAM_ID: ${{ secrets.FASTLANE_TEAM_ID }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_NAME: build.keychain
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        working-directory: ./mobile/ios
+        run: bundle exec fastlane release_ci
+
+      - name: Clean up keychain
+        if: always()
+        run: |
+          security delete-keychain build.keychain || true
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-release-ipa
+          path: mobile/ios/Runner.ipa
