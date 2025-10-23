@@ -85,8 +85,6 @@ export class ChangePasswordDto {
   newPassword!: string;
 
   @ValidateBoolean({ optional: true })
-  @Optional()
-  @ApiProperty({ example: true })
   logOutOtherSessions?: boolean;
 }
 
