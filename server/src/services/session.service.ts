@@ -75,8 +75,8 @@ export class SessionService extends BaseService {
     await this.sessionRepository.update(id, { pinExpiresAt: null });
   }
 
-  @OnEvent({ name: 'UserChangePassword' })
-  async handleUserChangePassword({ userId, currentSessionId }: ArgOf<'UserChangePassword'>): Promise<void> {
+  @OnEvent({ name: 'UserLogoutOtherSessions' })
+  async handleUserLogoutOtherSessions({ userId, currentSessionId }: ArgOf<'UserLogoutOtherSessions'>): Promise<void> {
     await this.deleteAllSessionsForUser(userId, currentSessionId);
   }
 

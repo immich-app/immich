@@ -105,7 +105,7 @@ export class AuthService extends BaseService {
     const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
 
     if (dto.logOutOhterSessions) {
-      await this.eventRepository.emit('UserChangePassword', {
+      await this.eventRepository.emit('UserLogoutOtherSessions', {
         userId: auth.user.id,
         currentSessionId: auth.session?.id,
       });
