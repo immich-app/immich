@@ -34,11 +34,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
     final listViewScrollController = useScrollController();
 
     void scrollToBottom() {
-      listViewScrollController.animateTo(
-        listViewScrollController.position.maxScrollExtent + 80,
-        duration: const Duration(milliseconds: 600),
-        curve: Curves.fastOutSlowIn,
-      );
+      listViewScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
     }
 
     Future<void> onAddComment(String comment) async {
@@ -55,7 +51,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
       body: activities.widgetWhen(
         onData: (data) {
           final List<Widget> activityWidgets = [];
-          for (final activity in data) {
+          for (final activity in data.reversed) {
             activityWidgets.add(
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -64,12 +60,16 @@ class DriftActivitiesPage extends HookConsumerWidget {
             );
           }
 
+          // Ensure initial render scrolls to bottom so newest activities are visible
+          // WidgetsBinding.instance.addPostFrameCallback((_) => scrollToBottom());
+
           return SafeArea(
             child: Stack(
               children: [
                 ListView(
                   controller: listViewScrollController,
                   padding: const EdgeInsets.only(top: 8, bottom: 80),
+                  reverse: true,
                   children: activityWidgets,
                 ),
                 Align(
