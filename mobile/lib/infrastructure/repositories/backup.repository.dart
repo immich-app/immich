@@ -81,7 +81,7 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     );
   }
 
-  Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true}) async {
+  Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true, int? limit}) async {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
@@ -110,6 +110,10 @@ class DriftBackupRepository extends DriftDatabaseRepository {
 
     if (onlyHashed) {
       query.where((lae) => lae.checksum.isNotNull());
+    }
+
+    if (limit != null) {
+      query.limit(limit);
     }
 
     return query.map((localAsset) => localAsset.toDto()).get();
