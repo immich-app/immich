@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie, UserMetadataKey } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
-import { Optional, PinCode, toEmail } from 'src/validation';
+import { Optional, PinCode, toEmail, ValidateBoolean } from 'src/validation';
 
 export type CookieResponse = {
   isSecure: boolean;
@@ -84,7 +84,7 @@ export class ChangePasswordDto {
   @ApiProperty({ example: 'password' })
   newPassword!: string;
 
-  @IsBoolean()
+  @ValidateBoolean({ optional: true })
   @Optional()
   @ApiProperty({ example: true })
   logOutOtherSessions?: boolean;
