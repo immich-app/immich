@@ -161,7 +161,7 @@ jobs:
     permissions:
       contents: read
     # Run on main branch or workflow_dispatch
-    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true && github.ref == 'refs/heads/main' }}
+    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true && github.ref == 'refs/heads/main' }}
     runs-on: macos-latest
 
     steps:
@@ -257,7 +257,6 @@ jobs:
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
-        if: success()
         with:
           name: ios-release-ipa
           path: mobile/ios/Runner.ipa
