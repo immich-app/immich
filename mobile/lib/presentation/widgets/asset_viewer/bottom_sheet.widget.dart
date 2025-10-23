@@ -144,13 +144,11 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     }
 
     final remoteAsset = ref.watch(currentAssetNotifier) as RemoteAsset;
-    final albums = ref.watch(remoteAlbumServiceProvider).getAlbumsContainingAsset(remoteAsset.id);
     final userId = ref.watch(currentUserProvider)?.id;
+    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAsset.id));
 
-    return FutureBuilder(
-      future: albums,
-      builder: (_, snap) {
-        final albums = snap.data ?? [];
+    return assetAlbums.when(
+      data: (albums) {
         if (albums.isEmpty) {
           return const SizedBox.shrink();
         }
@@ -186,6 +184,8 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           ),
         );
       },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 

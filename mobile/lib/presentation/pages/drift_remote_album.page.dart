@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -241,11 +240,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           return;
         }
 
-        final ancestors = context.router.stack.take(context.router.stack.length - 1);
-        final ancestorPage = ancestors.lastWhereOrNull((route) {
-          return route.name == RemoteAlbumRoute.page.name;
-        });
-
+        final ancestor = context.findAncestorWidgetOfExactType<RemoteAlbumPage>();
         final albumNotifier = ref.read(currentRemoteAlbumProvider.notifier);
 
         Navigator.of(context).pop();
@@ -253,11 +248,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
         // wait for the pop animation to finish
         await Future.delayed(const Duration(milliseconds: 300));
 
-        if (ancestorPage == null) {
+        if (ancestor == null) {
           albumNotifier.dispose();
         } else {
-          final album = (ancestorPage.routeData.args as RemoteAlbumRouteArgs).album;
-          albumNotifier.setAlbum(album);
+          albumNotifier.setAlbum(ancestor.album);
         }
       },
       child: ProviderScope(
