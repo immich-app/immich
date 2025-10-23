@@ -188,6 +188,170 @@ class UploadService {
     }
   }
 
+  Future<void> startForegroundUpload(
+    String userId,
+    CancellationToken cancelToken,
+    void Function(String localAssetId, int bytes, int totalBytes) onProgress,
+    void Function(String localAssetId, String remoteAssetId) onSuccess,
+    void Function(String errorMessage) onError,
+  ) async {
+    const concurrentUploads = 3;
+    final httpClients = List.generate(concurrentUploads, (_) => Client());
+
+    await _storageRepository.clearCache();
+
+    shouldAbortQueuingTasks = false;
+
+    final candidates = await _backupRepository.getCandidates(userId);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    try {
+      int clientIndex = 0;
+
+      for (int i = 0; i < candidates.length; i += concurrentUploads) {
+        if (shouldAbortQueuingTasks || cancelToken.isCancelled) {
+          break;
+        }
+
+        final batch = candidates.skip(i).take(concurrentUploads).toList();
+        final uploadFutures = <Future<void>>[];
+
+        for (final asset in batch) {
+          final httpClient = httpClients[clientIndex % concurrentUploads];
+          clientIndex++;
+
+          uploadFutures.add(
+            _uploadSingleAsset(
+              asset,
+              httpClient,
+              cancelToken,
+              (bytes, totalBytes) => onProgress(asset.localId!, bytes, totalBytes),
+              onSuccess,
+              onError,
+            ),
+          );
+        }
+
+        await Future.wait(uploadFutures);
+
+        if (shouldAbortQueuingTasks) {
+          break;
+        }
+      }
+    } finally {
+      for (final client in httpClients) {
+        client.close();
+      }
+    }
+  }
+
+  Future<void> _uploadSingleAsset(
+    LocalAsset asset,
+    Client httpClient,
+    CancellationToken cancelToken,
+    void Function(int bytes, int totalBytes) onProgress,
+    void Function(String localAssetId, String remoteAssetId) onSuccess,
+    void Function(String errorMessage) onError,
+  ) async {
+    File? file;
+    File? livePhotoFile;
+
+    try {
+      final entity = await _storageRepository.getAssetEntityForAsset(asset);
+      if (entity == null) {
+        return;
+      }
+
+      file = await _storageRepository.getFileForAsset(asset.id);
+      if (file == null) {
+        return;
+      }
+
+      // For live photos, get the motion video file
+      if (entity.isLivePhoto) {
+        livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
+        if (livePhotoFile == null) {
+          _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
+        }
+      }
+
+      final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;
+      final deviceId = Store.get(StoreKey.deviceId);
+
+      final headers = ApiService.getRequestHeaders();
+      final fields = {
+        'deviceAssetId': asset.localId!,
+        'deviceId': deviceId,
+        'fileCreatedAt': asset.createdAt.toUtc().toIso8601String(),
+        'fileModifiedAt': asset.updatedAt.toUtc().toIso8601String(),
+        'isFavorite': asset.isFavorite.toString(),
+        'duration': asset.duration.toString(),
+      };
+
+      // Upload live photo video first if available
+      String? livePhotoVideoId;
+      if (entity.isLivePhoto && livePhotoFile != null) {
+        final livePhotoTitle = p.setExtension(originalFileName, p.extension(livePhotoFile.path));
+        livePhotoVideoId = await _uploadRepository.uploadLivePhotoVideo(
+          livePhotoFile: livePhotoFile,
+          originalFileName: livePhotoTitle,
+          headers: headers,
+          fields: fields,
+          httpClient: httpClient,
+          cancelToken: cancelToken,
+          onProgress: onProgress,
+        );
+      }
+
+      // Add livePhotoVideoId to fields if available
+      if (livePhotoVideoId != null) {
+        fields['livePhotoVideoId'] = livePhotoVideoId;
+      }
+
+      final result = await _uploadRepository.uploadSingleAsset(
+        file: file,
+        originalFileName: originalFileName,
+        headers: headers,
+        fields: fields,
+        httpClient: httpClient,
+        cancelToken: cancelToken,
+        onProgress: onProgress,
+      );
+
+      if (result.isSuccess && result.remoteAssetId != null) {
+        onSuccess(asset.localId!, result.remoteAssetId!);
+      } else if (result.isCancelled) {
+        dPrint(() => "Backup was cancelled by the user");
+        shouldAbortQueuingTasks = true;
+      } else if (result.errorMessage != null) {
+        dPrint(
+          () =>
+              "Error(${result.statusCode}) uploading ${asset.localId} | $originalFileName | Created on ${asset.createdAt} | ${result.errorMessage}",
+        );
+
+        onError(result.errorMessage!);
+
+        if (result.errorMessage == "Quota has been exceeded!") {
+          shouldAbortQueuingTasks = true;
+        }
+      }
+    } catch (error, stackTrace) {
+      dPrint(() => "Error backup asset: ${error.toString()}: $stackTrace");
+      onError(error.toString());
+    } finally {
+      if (Platform.isIOS) {
+        try {
+          await file?.delete();
+          await livePhotoFile?.delete();
+        } catch (e) {
+          dPrint(() => "ERROR deleting file: ${e.toString()}");
+        }
+      }
+    }
+  }
+
   /// Cancel all ongoing uploads and reset the upload queue
   ///
   /// Return the number of left over tasks in the queue

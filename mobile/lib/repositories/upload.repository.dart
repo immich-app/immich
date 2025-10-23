@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -139,5 +140,156 @@ class UploadRepository {
         continue;
       }
     }
+  }
+
+  /// Upload a single asset with progress tracking
+  Future<UploadResult> uploadSingleAsset({
+    required File file,
+    required String originalFileName,
+    required Map<String, String> headers,
+    required Map<String, String> fields,
+    required Client httpClient,
+    required CancellationToken cancelToken,
+    required void Function(int bytes, int totalBytes) onProgress,
+  }) async {
+    return _uploadFile(
+      file: file,
+      originalFileName: originalFileName,
+      headers: headers,
+      fields: fields,
+      httpClient: httpClient,
+      cancelToken: cancelToken,
+      onProgress: onProgress,
+      logContext: 'asset',
+    );
+  }
+
+  /// Upload live photo video part and return the video asset ID
+  Future<String?> uploadLivePhotoVideo({
+    required File livePhotoFile,
+    required String originalFileName,
+    required Map<String, String> headers,
+    required Map<String, String> fields,
+    required Client httpClient,
+    required CancellationToken cancelToken,
+    required void Function(int bytes, int totalBytes) onProgress,
+  }) async {
+    final result = await _uploadFile(
+      file: livePhotoFile,
+      originalFileName: originalFileName,
+      headers: headers,
+      fields: fields,
+      httpClient: httpClient,
+      cancelToken: cancelToken,
+      onProgress: onProgress,
+      logContext: 'livePhoto video',
+    );
+
+    if (result.isSuccess && result.remoteAssetId != null) {
+      return result.remoteAssetId;
+    }
+
+    return null;
+  }
+
+  /// Internal method to upload a file to the server
+  Future<UploadResult> _uploadFile({
+    required File file,
+    required String originalFileName,
+    required Map<String, String> headers,
+    required Map<String, String> fields,
+    required Client httpClient,
+    required CancellationToken cancelToken,
+    required void Function(int bytes, int totalBytes) onProgress,
+    required String logContext,
+  }) async {
+    final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
+    final Logger logger = Logger('UploadRepository');
+
+    try {
+      final fileStream = file.openRead();
+      final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
+
+      final baseRequest = CustomMultipartRequest('POST', Uri.parse('$savedEndpoint/assets'), onProgress: onProgress);
+
+      baseRequest.headers.addAll(headers);
+      baseRequest.fields.addAll(fields);
+      baseRequest.files.add(assetRawUploadData);
+
+      final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+      final responseBody = jsonDecode(await response.stream.bytesToString());
+
+      if (![200, 201].contains(response.statusCode)) {
+        final error = responseBody;
+        final errorMessage = error['message'] ?? error['error'];
+        
+        logger.warning(
+          "Error(${error['statusCode']}) uploading $logContext | $originalFileName | ${error['error']}",
+        );
+
+        return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
+      }
+
+      return UploadResult.success(remoteAssetId: responseBody['id'] as String);
+    } on CancelledException {
+      logger.warning("Upload $logContext was cancelled");
+      return UploadResult.cancelled();
+    } catch (error, stackTrace) {
+      logger.warning("Error uploading $logContext: ${error.toString()}: $stackTrace");
+      return UploadResult.error(errorMessage: error.toString());
+    }
+  }
+}
+
+/// Result of an upload operation
+class UploadResult {
+  final bool isSuccess;
+  final bool isCancelled;
+  final String? remoteAssetId;
+  final String? errorMessage;
+  final int? statusCode;
+
+  const UploadResult({
+    required this.isSuccess,
+    required this.isCancelled,
+    this.remoteAssetId,
+    this.errorMessage,
+    this.statusCode,
+  });
+
+  factory UploadResult.success({required String remoteAssetId}) {
+    return UploadResult(isSuccess: true, isCancelled: false, remoteAssetId: remoteAssetId);
+  }
+
+  factory UploadResult.error({String? errorMessage, int? statusCode}) {
+    return UploadResult(isSuccess: false, isCancelled: false, errorMessage: errorMessage, statusCode: statusCode);
+  }
+
+  factory UploadResult.cancelled() {
+    return const UploadResult(isSuccess: false, isCancelled: true);
+  }
+}
+
+/// Custom MultipartRequest with progress tracking
+class CustomMultipartRequest extends MultipartRequest {
+  CustomMultipartRequest(super.method, super.url, {required this.onProgress});
+
+  final void Function(int bytes, int totalBytes) onProgress;
+
+  @override
+  ByteStream finalize() {
+    final byteStream = super.finalize();
+    final total = contentLength;
+    var bytes = 0;
+
+    final t = StreamTransformer.fromHandlers(
+      handleData: (List<int> data, EventSink<List<int>> sink) {
+        bytes += data.length;
+        onProgress.call(bytes, total);
+        sink.add(data);
+      },
+    );
+    final stream = byteStream.transform(t);
+    return ByteStream(stream);
   }
 }

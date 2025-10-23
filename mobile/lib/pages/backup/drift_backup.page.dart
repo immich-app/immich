@@ -97,7 +97,8 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     }
 
     Future<void> stopBackup() async {
-      await backupNotifier.cancel();
+      // await backupNotifier.cancel();
+      await backupNotifier.stopBackup();
     }
 
     return Scaffold(
