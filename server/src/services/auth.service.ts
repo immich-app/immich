@@ -107,7 +107,7 @@ export class AuthService extends BaseService {
     await this.eventRepository.emit('UserPasswordChange', {
       userId: auth.user.id,
       currentSessionId: auth.session?.id,
-      shouldLogoutSessions: dto.logOutOtherSessions
+      shouldLogoutSessions: dto.logOutOtherSessions,
     });
 
     return mapUserAdmin(updatedUser);
