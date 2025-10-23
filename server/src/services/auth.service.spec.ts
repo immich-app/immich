@@ -127,7 +127,7 @@ describe(AuthService.name, () => {
       expect(mocks.event.emit).toHaveBeenCalledWith('UserPasswordChange', {
         userId: user.id,
         currentSessionId: auth.session?.id,
-        shouldLogoutSessions: false
+        shouldLogoutSessions: undefined
       });
     });
 
