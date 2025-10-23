@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/backup/ios_background_settings.provider.
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/upload_timer.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -139,6 +140,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _handleBetaTimelineResume() async {
     _ref.read(backupProvider.notifier).cancelBackup();
+    _ref.read(uploadTimerProvider.notifier).start();
     unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
 
     // Give isolates time to complete any ongoing database transactions
@@ -216,6 +218,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     try {
       if (Store.isBetaTimelineEnabled) {
+        _ref.read(uploadTimerProvider.notifier).stop();
         unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
       }
       await _performPause();
@@ -250,6 +253,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     state = AppLifeCycleEnum.detached;
 
     if (Store.isBetaTimelineEnabled) {
+      _ref.read(uploadTimerProvider.notifier).stop();
       unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
     }
 
