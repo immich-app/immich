@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { OnJob } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   SessionCreateDto,
@@ -10,6 +10,7 @@ import {
   mapSession,
 } from 'src/dtos/session.dto';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
@@ -74,10 +75,19 @@ export class SessionService extends BaseService {
     await this.sessionRepository.update(id, { pinExpiresAt: null });
   }
 
+  @OnEvent({ name: 'UserChangePassword' })
+  async handleUserChangePassword({ userId, currentSessionId }: ArgOf<'UserChangePassword'>): Promise<void> {
+    await this.deleteAllSessionsForUser(userId, currentSessionId);
+  }
+
   async deleteAll(auth: AuthDto): Promise<void> {
-    const sessions = await this.sessionRepository.getByUserId(auth.user.id);
+    await this.deleteAllSessionsForUser(auth.user.id, auth.session?.id);
+  }
+
+  private async deleteAllSessionsForUser(userId: string, excludeSessionId?: string): Promise<void> {
+    const sessions = await this.sessionRepository.getByUserId(userId);
     for (const session of sessions) {
-      if (session.id === auth.session?.id) {
+      if (session.id === excludeSessionId) {
         continue;
       }
       await this.sessionRepository.delete(session.id);

@@ -4,6 +4,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { changePassword } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -14,10 +15,11 @@
   let password = $state('');
   let newPassword = $state('');
   let confirmPassword = $state('');
+  let logOutOhterSessions = $state(false);
 
   const handleChangePassword = async () => {
     try {
-      await changePassword({ changePasswordDto: { password, newPassword } });
+      await changePassword({ changePasswordDto: { password, newPassword, logOutOhterSessions } });
 
       notificationController.show({
         message: $t('updated_password'),
@@ -67,6 +69,12 @@
           bind:value={confirmPassword}
           required={true}
           passwordAutocomplete="new-password"
+        />
+
+        <SettingSwitch
+          title="Cerrar sesion de todos los dispositivos"
+          subtitle="Se cerrara la sesion de todos los dispositivos autorizados menos el actual"
+          bind:checked={logOutOhterSessions}
         />
 
         <div class="flex justify-end">

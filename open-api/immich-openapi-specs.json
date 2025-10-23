@@ -11469,6 +11469,10 @@
       },
       "ChangePasswordDto": {
         "properties": {
+          "logOutOhterSessions": {
+            "example": true,
+            "type": "boolean"
+          },
           "newPassword": {
             "example": "password",
             "minLength": 8,

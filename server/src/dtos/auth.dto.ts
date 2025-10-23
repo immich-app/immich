@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser, UserAdmin } from 'src/database';
 import { ImmichCookie, UserMetadataKey } from 'src/enum';
 import { UserMetadataItem } from 'src/types';
@@ -83,6 +83,11 @@ export class ChangePasswordDto {
   @MinLength(8)
   @ApiProperty({ example: 'password' })
   newPassword!: string;
+
+  @IsBoolean()
+  @Optional()
+  @ApiProperty({ example: true })
+  logOutOhterSessions?: boolean;
 }
 
 export class PinCodeSetupDto {

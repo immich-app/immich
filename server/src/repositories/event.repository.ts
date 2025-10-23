@@ -99,6 +99,7 @@ type EventMap = {
   /** user is permanently deleted */
   UserDelete: [UserEvent];
   UserRestore: [UserEvent];
+  UserChangePassword: [{ userId: string; currentSessionId?: string }];
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
