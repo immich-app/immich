@@ -81,6 +81,60 @@ class StorageRepository {
     return entity;
   }
 
+  /// Check if an asset is available locally or needs to be downloaded from iCloud
+  Future<bool> isAssetAvailableLocally(String assetId) async {
+    final log = Logger('StorageRepository');
+
+    try {
+      final entity = await AssetEntity.fromId(assetId);
+      if (entity == null) {
+        log.warning("Cannot get AssetEntity for asset $assetId");
+        return false;
+      }
+
+      return await entity.isLocallyAvailable(isOrigin: true);
+    } catch (error, stackTrace) {
+      log.warning("Error checking if asset is locally available $assetId", error, stackTrace);
+      return false;
+    }
+  }
+
+  /// Load file from iCloud with progress handler (for iOS)
+  Future<File?> loadFileFromCloud(String assetId, {PMProgressHandler? progressHandler}) async {
+    final log = Logger('StorageRepository');
+
+    try {
+      final entity = await AssetEntity.fromId(assetId);
+      if (entity == null) {
+        log.warning("Cannot get AssetEntity for asset $assetId");
+        return null;
+      }
+
+      return await entity.loadFile(progressHandler: progressHandler);
+    } catch (error, stackTrace) {
+      log.warning("Error loading file from cloud for asset $assetId", error, stackTrace);
+      return null;
+    }
+  }
+
+  /// Load live photo motion file from iCloud with progress handler (for iOS)
+  Future<File?> loadMotionFileFromCloud(String assetId, {PMProgressHandler? progressHandler}) async {
+    final log = Logger('StorageRepository');
+
+    try {
+      final entity = await AssetEntity.fromId(assetId);
+      if (entity == null) {
+        log.warning("Cannot get AssetEntity for asset $assetId");
+        return null;
+      }
+
+      return await entity.loadFile(withSubtype: true, progressHandler: progressHandler);
+    } catch (error, stackTrace) {
+      log.warning("Error loading motion file from cloud for asset $assetId", error, stackTrace);
+      return null;
+    }
+  }
+
   Future<void> clearCache() async {
     final log = Logger('StorageRepository');
 

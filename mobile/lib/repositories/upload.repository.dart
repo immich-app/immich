@@ -222,10 +222,8 @@ class UploadRepository {
       if (![200, 201].contains(response.statusCode)) {
         final error = responseBody;
         final errorMessage = error['message'] ?? error['error'];
-        
-        logger.warning(
-          "Error(${error['statusCode']}) uploading $logContext | $originalFileName | ${error['error']}",
-        );
+
+        logger.warning("Error(${error['statusCode']}) uploading $logContext | $originalFileName | ${error['error']}");
 
         return UploadResult.error(statusCode: response.statusCode, errorMessage: errorMessage);
       }

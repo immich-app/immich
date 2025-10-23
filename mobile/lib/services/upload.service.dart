@@ -23,6 +23,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 final uploadServiceProvider = Provider((ref) {
   final service = UploadService(
@@ -193,8 +194,9 @@ class UploadService {
     CancellationToken cancelToken,
     void Function(String localAssetId, int bytes, int totalBytes) onProgress,
     void Function(String localAssetId, String remoteAssetId) onSuccess,
-    void Function(String errorMessage) onError,
-  ) async {
+    void Function(String errorMessage) onError, {
+    void Function(String localAssetId, double progress)? onICloudProgress,
+  }) async {
     const concurrentUploads = 3;
     final httpClients = List.generate(concurrentUploads, (_) => Client());
 
@@ -230,6 +232,7 @@ class UploadService {
               (bytes, totalBytes) => onProgress(asset.localId!, bytes, totalBytes),
               onSuccess,
               onError,
+              onICloudProgress: onICloudProgress,
             ),
           );
         }
@@ -253,8 +256,9 @@ class UploadService {
     CancellationToken cancelToken,
     void Function(int bytes, int totalBytes) onProgress,
     void Function(String localAssetId, String remoteAssetId) onSuccess,
-    void Function(String errorMessage) onError,
-  ) async {
+    void Function(String errorMessage) onError, {
+    void Function(String localAssetId, double progress)? onICloudProgress,
+  }) async {
     File? file;
     File? livePhotoFile;
 
@@ -264,17 +268,52 @@ class UploadService {
         return;
       }
 
-      file = await _storageRepository.getFileForAsset(asset.id);
-      if (file == null) {
-        return;
+      final isAvailableLocally = await _storageRepository.isAssetAvailableLocally(asset.id);
+
+      if (!isAvailableLocally && Platform.isIOS) {
+        _logger.info("Loading iCloud asset ${asset.id} - ${asset.name}");
+
+        // Create progress handler for iCloud download
+        PMProgressHandler? progressHandler;
+        StreamSubscription? progressSubscription;
+
+        if (onICloudProgress != null) {
+          progressHandler = PMProgressHandler();
+          progressSubscription = progressHandler.stream.listen((event) {
+            onICloudProgress(asset.localId!, event.progress);
+          });
+        }
+
+        try {
+          file = await _storageRepository.loadFileFromCloud(asset.id, progressHandler: progressHandler);
+          if (entity.isLivePhoto) {
+            livePhotoFile = await _storageRepository.loadMotionFileFromCloud(
+              asset.id,
+              progressHandler: progressHandler,
+            );
+          }
+        } finally {
+          await progressSubscription?.cancel();
+        }
+      } else {
+        // Get files locally
+        file = await _storageRepository.getFileForAsset(asset.id);
+        if (file == null) {
+          return;
+        }
+
+        // For live photos, get the motion video file
+        if (entity.isLivePhoto) {
+          livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
+          if (livePhotoFile == null) {
+            _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
+          }
+        }
       }
 
-      // For live photos, get the motion video file
-      if (entity.isLivePhoto) {
-        livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
-        if (livePhotoFile == null) {
-          _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
-        }
+      if (file == null) {
+        _logger.warning("Failed to obtain file for asset ${asset.id} - ${asset.name}");
+        return;
       }
 
       final originalFileName = entity.isLivePhoto ? p.setExtension(asset.name, p.extension(file.path)) : asset.name;

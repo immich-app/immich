@@ -67,7 +67,9 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
 
     final isSyncing = ref.watch(driftBackupProvider.select((state) => state.isSyncing));
 
-    final isProcessing = uploadTasks.isNotEmpty || isSyncing;
+    final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
+
+    final isProcessing = uploadTasks.isNotEmpty || isSyncing || iCloudProgress.isNotEmpty;
 
     return AnimatedBuilder(
       animation: _animationController,
