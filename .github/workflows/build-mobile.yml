@@ -58,7 +58,8 @@ jobs:
     permissions:
       contents: read
     # Skip when PR from a fork
-    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
+    # if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
+    if: ${{ false }}
     runs-on: mich
 
     steps:
@@ -194,13 +195,13 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true
           working-directory: ./mobile/ios
 
       - name: Install Fastlane
         run: |
           cd mobile/ios
           gem install bundler
+          bundle config set --local path 'vendor/bundle'
           bundle install
 
       - name: Create API Key JSON
