@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/remote_album_bottom_sheet.widget.dart';
@@ -166,6 +168,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> showActivity(BuildContext context) async {
+    if (Store.get(StoreKey.betaActivitiesStyle, false)) {
+      context.pushRoute(const DriftBetaActivitiesRoute());
+      return;
+    }
     context.pushRoute(const DriftActivitiesRoute());
   }
 
