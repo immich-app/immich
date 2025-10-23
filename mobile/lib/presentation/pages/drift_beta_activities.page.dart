@@ -123,7 +123,7 @@ class _CommentBubble extends ConsumerWidget {
             GestureDetector(
               onTap: openAssetViewer,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
                 child: Image(
                   image: ImmichRemoteThumbnailProvider(assetId: activity.assetId!),
                   fit: BoxFit.cover,
@@ -162,7 +162,7 @@ class _CommentBubble extends ConsumerWidget {
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
         child: Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: bgColor, borderRadius: const BorderRadius.all(Radius.circular(12))),
           child: Text(
             activity.comment ?? '',
             style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurface),
