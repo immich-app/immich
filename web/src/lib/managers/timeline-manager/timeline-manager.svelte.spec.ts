@@ -82,7 +82,7 @@ describe('TimelineManager', () => {
 
       expect(plainMonths).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ year: 2024, month: 3, height: 400.5 }),
+          expect.objectContaining({ year: 2024, month: 3, height: 283 }),
           expect.objectContaining({ year: 2024, month: 2, height: 7711 }),
           expect.objectContaining({ year: 2024, month: 1, height: 286 }),
         ]),
@@ -90,7 +90,7 @@ describe('TimelineManager', () => {
     });
 
     it('calculates timeline height', () => {
-      expect(timelineManager.totalViewerHeight).toBe(8457.5);
+      expect(timelineManager.totalViewerHeight).toBe(8340);
     });
   });
 
