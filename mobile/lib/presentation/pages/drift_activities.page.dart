@@ -3,14 +3,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/activities/activity_tile.dart';
@@ -23,11 +21,10 @@ class DriftActivitiesPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final album = ref.watch(currentRemoteAlbumProvider)!;
-    final asset = ref.watch(currentAssetNotifier) as RemoteAsset?;
     final user = ref.watch(currentUserProvider);
 
-    final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
-    final activities = ref.watch(albumActivityProvider(album.id, asset?.id));
+    final activityNotifier = ref.read(albumActivityProvider(album.id, null).notifier);
+    final activities = ref.watch(albumActivityProvider(album.id, null));
     final listViewScrollController = useScrollController();
 
     void scrollToBottom() {
@@ -45,14 +42,14 @@ class DriftActivitiesPage extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: asset == null ? Text(album.name) : null,
-        actions: [const LikeActivityActionButton(menuItem: true)],
+        title: Text(album.name),
+        actions: [const LikeActivityActionButton(menuItem: true, isAlbumLike: true)],
         actionsPadding: const EdgeInsets.only(right: 8),
       ),
       body: activities.widgetWhen(
         onData: (data) {
           final liked = data.firstWhereOrNull(
-            (a) => a.type == ActivityType.like && a.user.id == user?.id && a.assetId == asset?.id,
+            (a) => a.type == ActivityType.like && a.user.id == user?.id && a.assetId == null,
           );
 
           return SafeArea(

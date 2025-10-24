@@ -1,10 +1,16 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class ActivityTile extends HookConsumerWidget {
@@ -15,11 +21,7 @@ class ActivityTile extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.watch(currentAssetProvider);
     final isLike = activity.type == ActivityType.like;
-    // Asset thumbnail is displayed when we are accessing activities from the album page
-    // currentAssetProvider will not be set until we open the gallery viewer
-    final showAssetThumbnail = asset == null && activity.assetId != null && !isBottomSheet;
 
     return ListTile(
       minVerticalPadding: 15,
@@ -35,11 +37,11 @@ class ActivityTile extends HookConsumerWidget {
       title: _ActivityTitle(
         userName: activity.user.name,
         createdAt: activity.createdAt.timeAgo(),
-        leftAlign: isBottomSheet ? false : (isLike || showAssetThumbnail),
+        leftAlign: isBottomSheet ? false : (isLike || !isBottomSheet),
       ),
       // No subtitle for like, so center title
       titleAlignment: !isLike ? ListTileTitleAlignment.top : ListTileTitleAlignment.center,
-      trailing: showAssetThumbnail ? _ActivityAssetThumbnail(activity.assetId!) : null,
+      trailing: !isBottomSheet && activity.assetId != null ? _ActivityAssetThumbnail(activity.assetId!) : null,
       subtitle: !isLike ? Text(activity.comment!) : null,
     );
   }
@@ -76,24 +78,40 @@ class _ActivityTitle extends StatelessWidget {
   }
 }
 
-class _ActivityAssetThumbnail extends StatelessWidget {
+class _ActivityAssetThumbnail extends ConsumerWidget {
   final String assetId;
 
   const _ActivityAssetThumbnail(this.assetId);
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40,
-      height: 30,
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.all(Radius.circular(4)),
-        image: DecorationImage(
-          image: ImmichRemoteThumbnailProvider(assetId: assetId),
-          fit: BoxFit.cover,
+  Widget build(BuildContext context, WidgetRef ref) {
+    Future<void> onAssetTapped() async {
+      final asset = await ref.read(assetServiceProvider).getRemoteAsset(assetId);
+      if (asset == null) {
+        return;
+      }
+
+      // TODO: remove this check when old timeline is removed
+      if (Store.isBetaTimelineEnabled) {
+        AssetViewer.setAsset(ref, asset);
+        final timelineService = ref.read(timelineFactoryProvider).fromAssets([asset], TimelineOrigin.activity);
+        context.pushRoute(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
+      }
+    }
+
+    return GestureDetector(
+      onTap: onAssetTapped,
+      child: Container(
+        width: 40,
+        height: 30,
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
+          image: DecorationImage(
+            image: ImmichRemoteThumbnailProvider(assetId: assetId),
+            fit: BoxFit.cover,
+          ),
         ),
       ),
-      child: const SizedBox.shrink(),
     );
   }
 }

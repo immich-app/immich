@@ -3,11 +3,14 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/widgets/activities/activity_tile.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
-import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
+import 'package:isar/isar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../fixtures/user.stub.dart';
@@ -20,8 +23,14 @@ final activity = Activity(id: '1', createdAt: DateTime(100), type: ActivityType.
 void main() {
   late MockCurrentAssetProvider assetProvider;
   late List<Override> overrides;
+  late Isar db;
 
-  setUpAll(() => TestUtils.init());
+  setUpAll(() async {
+    TestUtils.init();
+    db = await TestUtils.initIsar();
+
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
+  });
 
   setUp(() {
     assetProvider = MockCurrentAssetProvider();
