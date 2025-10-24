@@ -237,45 +237,24 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop || !mounted) {
-          return;
-        }
-
-        final ancestor = context.findAncestorWidgetOfExactType<RemoteAlbumPage>();
-        final albumNotifier = ref.read(currentRemoteAlbumProvider.notifier);
-
-        Navigator.of(context).pop();
-
-        // wait for the pop animation to finish
-        await Future.delayed(const Duration(milliseconds: 300));
-
-        if (ancestor == null) {
-          albumNotifier.dispose();
-        } else {
-          albumNotifier.setAlbum(ancestor.album);
-        }
-      },
-      child: ProviderScope(
-        overrides: [
-          timelineServiceProvider.overrideWith((ref) {
-            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          }),
-        ],
-        child: Timeline(
-          appBar: RemoteAlbumSliverAppBar(
-            icon: Icons.photo_album_outlined,
-            onShowOptions: () => showOptionSheet(context),
-            onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
-            onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
-            onActivity: () => showActivity(context),
-          ),
-          bottomSheet: RemoteAlbumBottomSheet(album: _album),
+    return ProviderScope(
+      overrides: [
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
+        currentRemoteAlbumScopedProvider.overrideWithValue(_album),
+      ],
+      child: Timeline(
+        appBar: RemoteAlbumSliverAppBar(
+          icon: Icons.photo_album_outlined,
+          onShowOptions: () => showOptionSheet(context),
+          onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
+          onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
+          onActivity: () => showActivity(context),
         ),
+        bottomSheet: RemoteAlbumBottomSheet(album: _album),
       ),
     );
   }
