@@ -16,6 +16,95 @@
 default_platform(:ios)
 
 platform :ios do
+  desc "iOS Development Build to TestFlight (requires separate bundle ID)"
+  lane :release_dev do
+    # NOTE: This requires creating a separate App ID in Apple Developer:
+    # - app.alextran.immich.dev (or similar)
+    # - app.alextran.immich.dev.ShareExtension
+    # - app.alextran.immich.dev.Widget
+    # And corresponding provisioning profiles
+    
+    # Load App Store Connect API Key
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_filepath: "#{Dir.home}/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8",
+      duration: 1200,
+      in_house: false
+    )
+    
+    # Install development provisioning profiles
+    install_provisioning_profile(path: "profile_dev.mobileprovision")
+    install_provisioning_profile(path: "profile_dev_share.mobileprovision")
+    install_provisioning_profile(path: "profile_dev_widget.mobileprovision")
+    
+    # Configure code signing for all targets with DEV bundle IDs
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "./Runner.xcodeproj",
+      team_id: ENV["FASTLANE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
+      bundle_identifier: "app.alextran.immich.dev",
+      profile_name: "app.alextran.immich.dev AppStore",
+      targets: ["Runner"]
+    )
+    
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "./Runner.xcodeproj",
+      team_id: ENV["FASTLANE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
+      bundle_identifier: "app.alextran.immich.dev.ShareExtension",
+      profile_name: "app.alextran.immich.dev.ShareExtension AppStore",
+      targets: ["ShareExtension"]
+    )
+    
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "./Runner.xcodeproj",
+      team_id: ENV["FASTLANE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
+      bundle_identifier: "app.alextran.immich.dev.Widget",
+      profile_name: "app.alextran.immich.dev.Widget AppStore",
+      targets: ["WidgetExtension"]
+    )
+    
+    # Increment build number based on latest TestFlight build for DEV app
+    increment_build_number(
+      build_number: latest_testflight_build_number(
+        api_key: api_key,
+        app_identifier: "app.alextran.immich.dev"
+      ) + 1,
+      xcodeproj: "./Runner.xcodeproj"
+    )
+    
+    # Build with Profile configuration (optimized but with debug symbols)
+    build_app(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      configuration: "Profile",
+      export_method: "app-store",
+      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution: Hau Tran (2F67MQ8R79)' CODE_SIGN_STYLE=Manual",
+      export_options: {
+        provisioningProfiles: {
+          "app.alextran.immich.dev" => "app.alextran.immich.dev AppStore",
+          "app.alextran.immich.dev.ShareExtension" => "app.alextran.immich.dev.ShareExtension AppStore",
+          "app.alextran.immich.dev.Widget" => "app.alextran.immich.dev.Widget AppStore"
+        },
+        signingStyle: "manual",
+        signingCertificate: "Apple Distribution: Hau Tran (2F67MQ8R79)"
+      }
+    )
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      distribute_external: false, # Only internal testers for dev builds
+      changelog: "🚧 Development build - #{ENV['GITHUB_SHA'] || 'local'}\n\nThis is a development build for testing purposes."
+    )
+  end
+
   desc "iOS Release to TestFlight"
   lane :release_ci do
     # Load App Store Connect API Key
