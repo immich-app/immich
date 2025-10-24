@@ -177,7 +177,6 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         );
 
     if (album != null) {
-      // ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
       context.replaceRoute(RemoteAlbumRoute(album: album));
     }
   }
