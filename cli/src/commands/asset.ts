@@ -424,6 +424,7 @@ const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: Uplo
     return;
   }
 
+  console.log('Deleting assets that have been uploaded...');
   const deletionProgress = new SingleBar(
     { format: 'Deleting local assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
     Presets.shades_classic,
