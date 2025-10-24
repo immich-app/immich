@@ -217,8 +217,7 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    bool isSyncRemoteDeletionsMode() =>
-        Platform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false);
+    bool isSyncRemoteDeletionsMode() => Platform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false);
 
     login() async {
       TextInput.finishAutofillContext();
