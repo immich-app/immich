@@ -54,16 +54,10 @@ jobs:
       issues: write
       discussions: write
     steps:
-      - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
-        with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
-          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
-
       - name: Close issue
         if: ${{ github.event_name == 'issues' }}
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           NODE_ID: ${{ github.event.issue.node_id }}
         run: |
           gh api graphql \
@@ -89,7 +83,7 @@ jobs:
       - name: Close discussion
         if: ${{ github.event_name == 'discussion' && github.event.discussion.category.name == 'Feature Request' }}
         env:
-          GH_TOKEN: ${{ steps.token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
           NODE_ID: ${{ github.event.discussion.node_id }}
         run: |
           gh api graphql \

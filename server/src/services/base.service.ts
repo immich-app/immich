@@ -198,8 +198,8 @@ export class BaseService {
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
-    const user = await this.userRepository.getByEmail(dto.email);
-    if (user) {
+    const exists = await this.userRepository.getByEmail(dto.email);
+    if (exists) {
       throw new BadRequestException('User exists');
     }
 
@@ -218,7 +218,10 @@ export class BaseService {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
 
-    this.telemetryRepository.api.addToGauge(`immich.users.total`, 1);
-    return this.userRepository.create(payload);
+    const user = await this.userRepository.create(payload);
+
+    await this.eventRepository.emit('UserCreate', user);
+
+    return user;
   }
 }

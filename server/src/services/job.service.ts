@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ClassConstructor } from 'class-transformer';
-import { snakeCase } from 'lodash';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
@@ -186,7 +185,7 @@ export class JobService extends BaseService {
       throw new BadRequestException(`Job is already running`);
     }
 
-    this.telemetryRepository.jobs.addToCounter(`immich.queues.${snakeCase(name)}.started`, 1);
+    await this.eventRepository.emit('QueueStart', { name });
 
     switch (name) {
       case QueueName.VideoConversion: {
@@ -243,21 +242,19 @@ export class JobService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'JobStart' })
-  async onJobStart(...[queueName, job]: ArgsOf<'JobStart'>) {
-    const queueMetric = `immich.queues.${snakeCase(queueName)}.active`;
-    this.telemetryRepository.jobs.addToGauge(queueMetric, 1);
+  @OnEvent({ name: 'JobRun' })
+  async onJobRun(...[queueName, job]: ArgsOf<'JobRun'>) {
     try {
-      const status = await this.jobRepository.run(job);
-      const jobMetric = `immich.jobs.${snakeCase(job.name)}.${status}`;
-      this.telemetryRepository.jobs.addToCounter(jobMetric, 1);
-      if (status === JobStatus.Success || status == JobStatus.Skipped) {
+      await this.eventRepository.emit('JobStart', queueName, job);
+      const response = await this.jobRepository.run(job);
+      await this.eventRepository.emit('JobSuccess', { job, response });
+      if (response && typeof response === 'string' && [JobStatus.Success, JobStatus.Skipped].includes(response)) {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      await this.eventRepository.emit('JobFailed', { job, error });
+      await this.eventRepository.emit('JobError', { job, error });
     } finally {
-      this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
+      await this.eventRepository.emit('JobComplete', queueName, job);
     }
   }
 
@@ -422,11 +419,6 @@ export class JobService extends BaseService {
         if (item.data.source === 'upload') {
           await this.jobRepository.queue({ name: JobName.AssetDetectDuplicates, data: item.data });
         }
-        break;
-      }
-
-      case JobName.UserDelete: {
-        this.eventRepository.clientBroadcast('on_user_delete', item.data.id);
         break;
       }
     }
