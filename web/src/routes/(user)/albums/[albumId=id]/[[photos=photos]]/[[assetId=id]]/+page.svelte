@@ -45,6 +45,7 @@
   import { featureFlags } from '$lib/stores/server-config.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handlePromiseError, makeSharedLinkUrl } from '$lib/utils';
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
   import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
@@ -254,6 +255,8 @@
 
     try {
       await deleteAlbum({ id: album.id });
+      userInteraction.recentAlbums = undefined;
+      window.dispatchEvent(new CustomEvent('immich:reloadRecentAlbums'));
       await goto(backUrl);
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_album'));
