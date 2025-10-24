@@ -492,6 +492,20 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID, assetId: DummyValue.UUID, fileName: DummyValue.STRING, thumbHash: DummyValue.BUFFER }] })
+  async getDuplicatesByFileNameAndThumbHash(ownerId: string, assetId: string, fileName: string, thumbHash: Buffer): Promise<string[]> {
+    const assets = await this.db
+      .selectFrom('asset')
+      .select('id')
+      .where('ownerId', '=', asUuid(ownerId))
+      .where('id', '!=', asUuid(assetId))
+      .where('asset.originalFileName', '=', fileName)
+      .where('asset.thumbhash', '=', thumbHash)
+      .execute();
+
+    return assets.map((asset) => asset.id);
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
   async getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined> {
     const asset = await this.db
