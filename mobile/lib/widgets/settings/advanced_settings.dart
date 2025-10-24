@@ -31,9 +31,9 @@ class AdvancedSettings extends HookConsumerWidget {
     bool isLoggedIn = ref.read(currentUserProvider) != null;
 
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final manageLocalMediaAndroid = Store.isBetaTimelineEnabled
-        ? useState<bool>(false)
-        : useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final isManageMediaSupported = useState(false);
+    final manageMediaAndroidPermission = useState(false);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert = useAppSettingsState(AppSettingsEnum.allowSelfSignedSSLCert);
@@ -49,18 +49,22 @@ class AdvancedSettings extends HookConsumerWidget {
         DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
         AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
         int sdkVersion = androidInfo.version.sdkInt;
-        if (sdkVersion < 31) {
-          return false;
-        }
-        if (Store.isBetaTimelineEnabled) {
-          ref.read(localFilesManagerRepositoryProvider).hasManageMediaPermission().then((hasPermission) {
-            manageLocalMediaAndroid.value = hasPermission;
-          });
-        }
-        return true;
+        return sdkVersion >= 31;
       }
       return false;
     }
+
+    useEffect(() {
+      () async {
+        isManageMediaSupported.value = await checkAndroidVersion();
+        if (isManageMediaSupported.value) {
+          manageMediaAndroidPermission.value = await ref
+              .read(localFilesManagerRepositoryProvider)
+              .hasManageMediaPermission();
+        }
+      }();
+      return null;
+    }, []);
 
     final advancedSettings = [
       SettingsSwitchListTile(
@@ -69,38 +73,33 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
       ),
-      FutureBuilder<bool>(
-        future: checkAndroidVersion(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data == true) {
-            if (Store.isBetaTimelineEnabled) {
-              return SettingsSwitchListTile(
-                valueNotifier: manageLocalMediaAndroid,
-                title: "manage_media_access_title".tr(),
-                subtitle: "manage_media_access_subtitle".tr(),
-                onChanged: (_) async {
-                  final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
+      if (isManageMediaSupported.value)
+        Column(
+          children: [
+            SettingsSwitchListTile(
+              enabled: true,
+              valueNotifier: manageLocalMediaAndroid,
+              title: "advanced_settings_sync_remote_deletions_title".tr(),
+              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
+              onChanged: (value) async {
+                if (value) {
+                  final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
-                },
-              );
-            } else {
-              return SettingsSwitchListTile(
-                valueNotifier: manageLocalMediaAndroid,
-                title: "advanced_settings_sync_remote_deletions_title".tr(),
-                subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-                onChanged: (value) async {
-                  if (value) {
-                    final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
-                    manageLocalMediaAndroid.value = result;
-                  }
-                },
-              );
-            }
-          } else {
-            return const SizedBox.shrink();
-          }
-        },
-      ),
+                  manageMediaAndroidPermission.value = result;
+                }
+              },
+            ),
+            SettingsSwitchListTile(
+              valueNotifier: manageMediaAndroidPermission,
+              title: "manage_media_access_title".tr(),
+              subtitle: "manage_media_access_subtitle".tr(),
+              onChanged: (_) async {
+                final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
+                manageMediaAndroidPermission.value = result;
+              },
+            ),
+          ],
+        ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,

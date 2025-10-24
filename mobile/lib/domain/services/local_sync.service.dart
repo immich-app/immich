@@ -4,6 +4,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -37,8 +39,13 @@ class LocalSyncService {
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (CurrentPlatform.isAndroid) {
-        await _syncTrashedAssets();
+      if (CurrentPlatform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false)) {
+        final hasPermission = await _localFilesManager.hasManageMediaPermission();
+        if (hasPermission) {
+          await _syncTrashedAssets();
+        } else {
+          _log.warning("syncTrashedAssets cannot proceed because MANAGE_MEDIA permission is missing");
+        }
       }
       if (full || await _nativeSyncApi.shouldFullSync()) {
         _log.fine("Full sync request from ${full ? "user" : "native"}");

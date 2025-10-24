@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -102,9 +104,14 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid) {
-          await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
-          await _applyRemoteRestoreToLocal();
+        if (CurrentPlatform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false)) {
+          final hasPermission = await _localFilesManager.hasManageMediaPermission();
+          if (hasPermission) {
+            await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
+            await _applyRemoteRestoreToLocal();
+          } else {
+            _logger.warning("sync Trashed Assets cannot proceed because MANAGE_MEDIA permission is missing");
+          }
         }
         return;
       case SyncEntityType.assetDeleteV1:

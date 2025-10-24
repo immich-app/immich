@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:crypto/crypto.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -218,15 +217,8 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    Future<bool> androidSupportsTrash() async {
-      if (Platform.isAndroid) {
-        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        int sdkVersion = androidInfo.version.sdkInt;
-        return sdkVersion >= 31;
-      }
-      return false;
-    }
+    bool isSyncRemoteDeletionsMode() =>
+        Platform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false);
 
     login() async {
       TextInput.finishAutofillContext();
@@ -245,7 +237,7 @@ class LoginForm extends HookConsumerWidget {
           final isBeta = Store.isBetaTimelineEnabled;
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (await androidSupportsTrash()) {
+            if (isSyncRemoteDeletionsMode()) {
               getManageMediaPermission();
             }
             handleSyncFlow();
@@ -347,7 +339,7 @@ class LoginForm extends HookConsumerWidget {
             }
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              if (await androidSupportsTrash()) {
+              if (isSyncRemoteDeletionsMode()) {
                 getManageMediaPermission();
               }
               handleSyncFlow();
