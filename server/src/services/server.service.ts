@@ -117,6 +117,8 @@ export class ServerService extends BaseService {
       loginPageMessage: config.server.loginPageMessage,
       trashDays: config.trash.days,
       userDeleteDelay: config.user.deleteDelay,
+      sessionDeleteDelayBrowser: config.user.sessionDeleteDelayBrowser,
+      sessionDeleteDelayMobile: config.user.sessionDeleteDelayMobile,
       oauthButtonText: config.oauth.buttonText,
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
