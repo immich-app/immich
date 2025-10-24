@@ -145,8 +145,8 @@ class _CommentBubble extends ConsumerWidget {
       );
     }
 
-    // Heart-only widget (for likes without asset)
-    Widget? likedToAlbum() {
+    // Likes Album widget (for likes without asset)
+    Widget? likesToAlbum() {
       if (!isLike || hasAsset) return null;
       return Container(
         padding: const EdgeInsets.all(8),
@@ -155,7 +155,7 @@ class _CommentBubble extends ConsumerWidget {
       );
     }
 
-    // Comment bubble; for comment-only we constrain width to ~50%.
+    // Comment bubble, comment-only
     Widget? commentBubble() {
       if (activity.comment == null || activity.comment!.isEmpty) return null;
       return ConstrainedBox(
@@ -171,8 +171,8 @@ class _CommentBubble extends ConsumerWidget {
       );
     }
 
-    // Combined content: optional thumbnail, optional heart-only, optional comment
-    final List<Widget> contentChildren = [thumbnail(), likedToAlbum(), commentBubble()].whereType<Widget>().toList();
+    // Combined content widgets
+    final List<Widget> contentChildren = [thumbnail(), likesToAlbum(), commentBubble()].whereType<Widget>().toList();
 
     return DismissibleActivity(
       onDismiss: canDelete ? (id) async => await activityNotifier.removeActivity(id) : null,
