@@ -42,31 +42,23 @@ class ThumbnailTile extends ConsumerWidget {
       multiSelectProvider.select((multiselect) => multiselect.selectedAssets.contains(asset)),
     );
 
-    final borderStyle = lockSelection
-        ? BoxDecoration(
-            color: context.colorScheme.surfaceContainerHighest,
-            border: Border.all(color: context.colorScheme.surfaceContainerHighest, width: 6),
-          )
-        : isSelected
-        ? BoxDecoration(
-            color: assetContainerColor,
-            border: Border.all(color: assetContainerColor, width: 6),
-          )
-        : const BoxDecoration();
-
     final bool storageIndicator =
         ref.watch(settingsProvider.select((s) => s.get(Setting.showStorageIndicator))) && showStorageIndicator;
 
     return Stack(
       children: [
+        Container(color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor),
         AnimatedContainer(
           duration: Durations.short4,
           curve: Curves.decelerate,
-          decoration: borderStyle,
-          child: ClipRRect(
-            borderRadius: isSelected || lockSelection
-                ? const BorderRadius.all(Radius.circular(15.0))
-                : BorderRadius.zero,
+          padding: EdgeInsets.all(isSelected || lockSelection ? 6 : 0),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 15.0 : 0.0),
+            duration: Durations.short4,
+            curve: Curves.decelerate,
+            builder: (context, value, child) {
+              return ClipRRect(borderRadius: BorderRadius.all(Radius.circular(value)), child: child);
+            },
             child: Stack(
               children: [
                 Positioned.fill(
@@ -116,29 +108,36 @@ class ThumbnailTile extends ConsumerWidget {
             ),
           ),
         ),
-        if (isSelected || lockSelection)
-          Padding(
-            padding: const EdgeInsets.all(3.0),
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: _SelectionIndicator(
-                isSelected: isSelected,
-                isLocked: lockSelection,
-                color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0.0, end: (isSelected || lockSelection) ? 1.0 : 0.0),
+          duration: Durations.short4,
+          curve: Curves.decelerate,
+          builder: (context, value, child) {
+            return Padding(
+              padding: EdgeInsets.all((isSelected || lockSelection) ? value * 3.0 : 3.0),
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Opacity(
+                  opacity: (isSelected || lockSelection) ? 1 : value,
+                  child: _SelectionIndicator(
+                    isLocked: lockSelection,
+                    color: lockSelection ? context.colorScheme.surfaceContainerHighest : assetContainerColor,
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
+        ),
       ],
     );
   }
 }
 
 class _SelectionIndicator extends StatelessWidget {
-  final bool isSelected;
   final bool isLocked;
   final Color? color;
 
-  const _SelectionIndicator({required this.isSelected, required this.isLocked, this.color});
+  const _SelectionIndicator({required this.isLocked, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -147,13 +146,11 @@ class _SelectionIndicator extends StatelessWidget {
         decoration: BoxDecoration(shape: BoxShape.circle, color: color),
         child: const Icon(Icons.check_circle_rounded, color: Colors.grey),
       );
-    } else if (isSelected) {
+    } else {
       return DecoratedBox(
         decoration: BoxDecoration(shape: BoxShape.circle, color: color),
         child: Icon(Icons.check_circle_rounded, color: context.primaryColor),
       );
-    } else {
-      return const Icon(Icons.circle_outlined, color: Colors.white);
     }
   }
 }

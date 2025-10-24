@@ -4,7 +4,7 @@
   import { SettingInputFieldType } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
   import { createApiKey, Permission } from '@immich/sdk';
-  import { Button, Modal, ModalBody, obtainiumBadge } from '@immich/ui';
+  import { Button, Modal, ModalBody, obtainiumBadge, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   let inputUrl = $state(location.origin);
   let inputApiKey = $state('');
@@ -31,64 +31,53 @@
   let { onClose }: Props = $props();
 </script>
 
-<Modal title={$t('obtainium_configurator')} size="large" {onClose}>
+<Modal title={$t('obtainium_configurator')} size="medium" {onClose}>
   <ModalBody>
-    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-5 text-immich-primary dark:text-immich-dark-primary">
-      <div>
-        <label
-          class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm"
-          for="obtainium-configurator"
-        >
-          Obtainium
-        </label>
-        <div id="obtainium-configurator">
-          <form>
-            <div class="mt-2">
-              <SettingInputField inputType={SettingInputFieldType.TEXT} label={$t('url')} bind:value={inputUrl} />
-            </div>
-            <div class="mt-2">
-              <SettingInputField
-                inputType={SettingInputFieldType.TEXT}
-                label={$t('api_key')}
-                bind:value={inputApiKey}
-              />
-            </div>
-            <div class="">
-              <Button shape="round" size="small" onclick={() => handleCreate()}>{$t('new_api_key')}</Button>
-            </div>
-            <div class="mt-2">
-              <SettingSelect
-                label={$t('app_architecture_variant')}
-                bind:value={archVariant}
-                options={[
-                  { value: 'arm64-v8a-release', text: 'arm64-v8a' },
-                  { value: 'armeabi-v7a-release', text: 'armeabi-v7a' },
-                  { value: 'release', text: 'universal' },
-                  { value: 'x86_64-release', text: 'x86_64' },
-                ]}
-              />
-            </div>
-          </form>
+    <div>
+      <Text color="muted" size="small">
+        {$t('obtainium_configurator_instructions')}
+      </Text>
+      <form class="mt-4">
+        <div class="mt-2">
+          <SettingInputField inputType={SettingInputFieldType.TEXT} label={$t('url')} bind:value={inputUrl} />
         </div>
-      </div>
 
-      <div class="content-center">
-        {#if inputUrl && inputApiKey && archVariant}
-          <a
-            href={obtainiumLink}
-            class="underline text-sm immich-form-label"
-            target="_blank"
-            rel="noreferrer"
-            id="obtainium-link"
-          >
-            <img class="pt-2 pr-5" alt="Get it on Obtainium" src={obtainiumBadge} />
-          </a>
-        {:else}
-          <p class="immich-form-label pb-2 text-sm" id="obtainium-link">
-            {$t('obtainium_configurator_instructions')}
-          </p>
-        {/if}
-      </div>
+        <div class="mt-2 flex gap-2 place-items-center place-content-center">
+          <SettingInputField inputType={SettingInputFieldType.TEXT} label={$t('api_key')} bind:value={inputApiKey} />
+
+          <div class="translate-y-[3px]">
+            <Button size="small" onclick={() => handleCreate()}>{$t('create_api_key')}</Button>
+          </div>
+        </div>
+
+        <SettingSelect
+          label={$t('app_architecture_variant')}
+          bind:value={archVariant}
+          options={[
+            { value: 'arm64-v8a-release', text: 'arm64-v8a' },
+            { value: 'armeabi-v7a-release', text: 'armeabi-v7a' },
+            { value: 'release', text: 'universal' },
+            { value: 'x86_64-release', text: 'x86_64' },
+          ]}
+        />
+      </form>
+
+      {#if inputUrl && inputApiKey && archVariant}
+        <div class="content-center">
+          <hr />
+          <div class="flex place-items-center place-content-center">
+            <a
+              href={obtainiumLink}
+              class="underline text-sm immich-form-label"
+              target="_blank"
+              rel="noreferrer"
+              id="obtainium-link"
+            >
+              <img class="pt-2 pr-5 h-[80px]" alt="Get it on Obtainium" src={obtainiumBadge} />
+            </a>
+          </div>
+        </div>
+      {/if}
     </div>
   </ModalBody>
 </Modal>

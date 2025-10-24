@@ -628,7 +628,7 @@ const syncStream = () => {
 };
 
 const loginDetails = () => {
-  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '' };
+  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '', appVersion: null };
 };
 
 const loginResponse = (): LoginResponseDto => {
