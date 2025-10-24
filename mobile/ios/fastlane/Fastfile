@@ -17,13 +17,7 @@ default_platform(:ios)
 
 platform :ios do
   desc "iOS Development Build to TestFlight (requires separate bundle ID)"
-  lane :release_dev do
-    # NOTE: This requires creating a separate App ID in Apple Developer:
-    # - app.alextran.immich.dev (or similar)
-    # - app.alextran.immich.dev.ShareExtension
-    # - app.alextran.immich.dev.Widget
-    # And corresponding provisioning profiles
-    
+  lane :release_dev do    
     # Load App Store Connect API Key
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -44,8 +38,8 @@ platform :ios do
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"],
       code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
-      bundle_identifier: "app.alextran.immich.dev",
-      profile_name: "app.alextran.immich.dev AppStore",
+      bundle_identifier: "app.alextran.immich.development",
+      profile_name: "app.alextran.immich.development AppStore",
       targets: ["Runner"]
     )
     
@@ -54,8 +48,8 @@ platform :ios do
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"],
       code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
-      bundle_identifier: "app.alextran.immich.dev.ShareExtension",
-      profile_name: "app.alextran.immich.dev.ShareExtension AppStore",
+      bundle_identifier: "app.alextran.immich.development.ShareExtension",
+      profile_name: "app.alextran.immich.development.ShareExtension AppStore",
       targets: ["ShareExtension"]
     )
     
@@ -64,8 +58,8 @@ platform :ios do
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"],
       code_sign_identity: "Apple Distribution: Hau Tran (2F67MQ8R79)",
-      bundle_identifier: "app.alextran.immich.dev.Widget",
-      profile_name: "app.alextran.immich.dev.Widget AppStore",
+      bundle_identifier: "app.alextran.immich.development.Widget",
+      profile_name: "app.alextran.immich.development.Widget AppStore",
       targets: ["WidgetExtension"]
     )
     
@@ -73,7 +67,7 @@ platform :ios do
     increment_build_number(
       build_number: latest_testflight_build_number(
         api_key: api_key,
-        app_identifier: "app.alextran.immich.dev"
+        app_identifier: "app.alextran.immich.development"
       ) + 1,
       xcodeproj: "./Runner.xcodeproj"
     )
@@ -87,9 +81,9 @@ platform :ios do
       xcargs: "CODE_SIGN_IDENTITY='Apple Distribution: Hau Tran (2F67MQ8R79)' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
-          "app.alextran.immich.dev" => "app.alextran.immich.dev AppStore",
-          "app.alextran.immich.dev.ShareExtension" => "app.alextran.immich.dev.ShareExtension AppStore",
-          "app.alextran.immich.dev.Widget" => "app.alextran.immich.dev.Widget AppStore"
+          "app.alextran.immich.development" => "app.alextran.immich.development AppStore",
+          "app.alextran.immich.development.ShareExtension" => "app.alextran.immich.development.ShareExtension AppStore",
+          "app.alextran.immich.development.Widget" => "app.alextran.immich.development.Widget AppStore"
         },
         signingStyle: "manual",
         signingCertificate: "Apple Distribution: Hau Tran (2F67MQ8R79)"
