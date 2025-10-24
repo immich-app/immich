@@ -72,11 +72,7 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   }
   await updateAlbums([...newAssets, ...duplicates], options);
 
-  await deleteFiles(
-    newAssets.map(({ filepath }) => filepath),
-    duplicates.map(({ filepath }) => filepath),
-    options,
-  );
+  await deleteFiles(newAssets, duplicates, options);
 };
 
 export const startWatch = async (
@@ -409,25 +405,45 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-const deleteFiles = async (uploaded: string[], duplicates: string[], options: UploadOptionsDto): Promise<void> => {
-  const files: string[] = [...(options.delete ? uploaded : []), ...(options.deleteDuplicates ? duplicates : [])];
+const deleteFiles = async (uploaded: Asset[], duplicates: Asset[], options: UploadOptionsDto): Promise<void> => {
+  let fileCount = 0;
+  if (options.delete) {
+    fileCount += uploaded.length;
+  }
+
+  if (options.deleteDuplicates) {
+    fileCount += duplicates.length;
+  }
+
   if (options.dryRun) {
-    console.log(`Would have deleted ${files.length} local asset${s(files.length)}`);
+    console.log(`Would have deleted ${fileCount} local asset${s(fileCount)}`);
     return;
   }
 
-  console.log('Deleting assets that have been uploaded...');
+  if (fileCount === 0) {
+    return;
+  }
 
   const deletionProgress = new SingleBar(
     { format: 'Deleting local assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
     Presets.shades_classic,
   );
-  deletionProgress.start(files.length, 0);
+  deletionProgress.start(fileCount, 0);
+
+  const chunkDelete = async (files: Asset[]) => {
+    for (const assetBatch of chunk(files, options.concurrency)) {
+      await Promise.all(assetBatch.map((input: Asset) => unlink(input.filepath)));
+      deletionProgress.update(assetBatch.length);
+    }
+  };
 
   try {
-    for (const assetBatch of chunk(files, options.concurrency)) {
-      await Promise.all(assetBatch.map((input: string) => unlink(input)));
-      deletionProgress.update(assetBatch.length);
+    if (options.delete) {
+      await chunkDelete(uploaded);
+    }
+
+    if (options.deleteDuplicates) {
+      await chunkDelete(duplicates);
     }
   } finally {
     deletionProgress.stop();
