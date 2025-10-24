@@ -679,7 +679,6 @@ class AddToAlbumHeader extends ConsumerWidget {
         return;
       }
 
-      // ref.read(currentRemoteAlbumProvider.notifier).setAlbum(newAlbum);
       ref.read(multiSelectProvider.notifier).reset();
       unawaited(context.pushRoute(RemoteAlbumRoute(album: newAlbum)));
     }

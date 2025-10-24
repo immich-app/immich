@@ -168,7 +168,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> showActivity(BuildContext context) async {
-    unawaited(context.pushRoute(const DriftActivitiesRoute()));
+    unawaited(context.pushRoute(DriftActivitiesRoute(album: _album)));
   }
 
   Future<void> showOptionSheet(BuildContext context) async {
@@ -224,7 +224,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
                 : null,
             onShowOptions: () {
               context.pop();
-              context.pushRoute(const DriftAlbumOptionsRoute());
+              context.pushRoute(DriftAlbumOptionsRoute(album: _album));
             },
           );
         },
