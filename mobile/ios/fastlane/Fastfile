@@ -94,8 +94,7 @@ platform :ios do
     upload_to_testflight(
       api_key: api_key,
       skip_waiting_for_build_processing: true,
-      distribute_external: false, # Only internal testers for dev builds
-      changelog: "🚧 Development build - #{ENV['GITHUB_SHA'] || 'local'}\n\nThis is a development build for testing purposes."
+      distribute_external: false
     )
   end
 
@@ -147,6 +146,10 @@ platform :ios do
       bundle_identifier: "app.alextran.immich.Widget",
       profile_name: "app.alextran.immich.Widget AppStore",
       targets: ["WidgetExtension"]
+    )
+
+    increment_version_number(
+      version_number: "2.1.0"
     )
     
     # Increment build number
