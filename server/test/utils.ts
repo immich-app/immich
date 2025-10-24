@@ -60,6 +60,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { DB } from 'src/schema';
 import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
@@ -249,6 +250,7 @@ export type ServiceOverrides = {
   user: UserRepository;
   versionHistory: VersionHistoryRepository;
   view: ViewRepository;
+  websocket: WebsocketRepository;
 };
 
 type As<T> = T extends RepositoryInterface<infer U> ? U : never;
@@ -323,6 +325,8 @@ export const newTestService = <T extends BaseService>(
     user: automock(UserRepository, { strict: false }),
     versionHistory: automock(VersionHistoryRepository),
     view: automock(ViewRepository),
+    // eslint-disable-next-line no-sparse-arrays
+    websocket: automock(WebsocketRepository, { args: [, loggerMock], strict: false }),
   };
 
   const sut = new Service(
@@ -372,6 +376,7 @@ export const newTestService = <T extends BaseService>(
     overrides.user || (mocks.user as As<UserRepository>),
     overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),
     overrides.view || (mocks.view as As<ViewRepository>),
+    overrides.websocket || (mocks.websocket as As<WebsocketRepository>),
   );
 
   return {

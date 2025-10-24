@@ -98,7 +98,7 @@ export class NotificationService extends BaseService {
           description: `Job ${[job.name]} failed with error: ${errorMessage}`,
         });
 
-        this.eventRepository.clientSend('on_notification', admin.id, mapNotification(item));
+        this.websocketRepository.clientSend('on_notification', admin.id, mapNotification(item));
         break;
       }
 
@@ -110,8 +110,8 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'ConfigUpdate' })
   onConfigUpdate({ oldConfig, newConfig }: ArgOf<'ConfigUpdate'>) {
-    this.eventRepository.clientBroadcast('on_config_update');
-    this.eventRepository.serverSend('ConfigUpdate', { oldConfig, newConfig });
+    this.websocketRepository.clientBroadcast('on_config_update');
+    this.websocketRepository.serverSend('ConfigUpdate', { oldConfig, newConfig });
   }
 
   @OnEvent({ name: 'ConfigValidate', priority: -100 })
@@ -131,7 +131,7 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AssetHide' })
   onAssetHide({ assetId, userId }: ArgOf<'AssetHide'>) {
-    this.eventRepository.clientSend('on_asset_hidden', userId, assetId);
+    this.websocketRepository.clientSend('on_asset_hidden', userId, assetId);
   }
 
   @OnEvent({ name: 'AssetShow' })
@@ -141,17 +141,17 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AssetTrash' })
   onAssetTrash({ assetId, userId }: ArgOf<'AssetTrash'>) {
-    this.eventRepository.clientSend('on_asset_trash', userId, [assetId]);
+    this.websocketRepository.clientSend('on_asset_trash', userId, [assetId]);
   }
 
   @OnEvent({ name: 'AssetDelete' })
   onAssetDelete({ assetId, userId }: ArgOf<'AssetDelete'>) {
-    this.eventRepository.clientSend('on_asset_delete', userId, assetId);
+    this.websocketRepository.clientSend('on_asset_delete', userId, assetId);
   }
 
   @OnEvent({ name: 'AssetTrashAll' })
   onAssetsTrash({ assetIds, userId }: ArgOf<'AssetTrashAll'>) {
-    this.eventRepository.clientSend('on_asset_trash', userId, assetIds);
+    this.websocketRepository.clientSend('on_asset_trash', userId, assetIds);
   }
 
   @OnEvent({ name: 'AssetMetadataExtracted' })
@@ -162,7 +162,7 @@ export class NotificationService extends BaseService {
 
     const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([assetId]);
     if (asset) {
-      this.eventRepository.clientSend(
+      this.websocketRepository.clientSend(
         'on_asset_update',
         userId,
         mapAsset(asset, { auth: { user: { id: userId } } as AuthDto }),
@@ -172,27 +172,27 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AssetRestoreAll' })
   onAssetsRestore({ assetIds, userId }: ArgOf<'AssetRestoreAll'>) {
-    this.eventRepository.clientSend('on_asset_restore', userId, assetIds);
+    this.websocketRepository.clientSend('on_asset_restore', userId, assetIds);
   }
 
   @OnEvent({ name: 'StackCreate' })
   onStackCreate({ userId }: ArgOf<'StackCreate'>) {
-    this.eventRepository.clientSend('on_asset_stack_update', userId);
+    this.websocketRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'StackUpdate' })
   onStackUpdate({ userId }: ArgOf<'StackUpdate'>) {
-    this.eventRepository.clientSend('on_asset_stack_update', userId);
+    this.websocketRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'StackDelete' })
   onStackDelete({ userId }: ArgOf<'StackDelete'>) {
-    this.eventRepository.clientSend('on_asset_stack_update', userId);
+    this.websocketRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'StackDeleteAll' })
   onStacksDelete({ userId }: ArgOf<'StackDeleteAll'>) {
-    this.eventRepository.clientSend('on_asset_stack_update', userId);
+    this.websocketRepository.clientSend('on_asset_stack_update', userId);
   }
 
   @OnEvent({ name: 'UserSignup' })
@@ -204,7 +204,7 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'UserDelete' })
   onUserDelete({ id }: ArgOf<'UserDelete'>) {
-    this.eventRepository.clientBroadcast('on_user_delete', id);
+    this.websocketRepository.clientBroadcast('on_user_delete', id);
   }
 
   @OnEvent({ name: 'AlbumUpdate' })
@@ -224,7 +224,7 @@ export class NotificationService extends BaseService {
   @OnEvent({ name: 'SessionDelete' })
   onSessionDelete({ sessionId }: ArgOf<'SessionDelete'>) {
     // after the response is sent
-    setTimeout(() => this.eventRepository.clientSend('on_session_delete', sessionId, sessionId), 500);
+    setTimeout(() => this.websocketRepository.clientSend('on_session_delete', sessionId, sessionId), 500);
   }
 
   async sendTestEmail(id: string, dto: SystemConfigSmtpDto, tempTemplate?: string) {
@@ -464,6 +464,6 @@ export class NotificationService extends BaseService {
       data: JSON.stringify({ albumId: album.id }),
     });
 
-    this.eventRepository.clientSend('on_notification', userId, mapNotification(item));
+    this.websocketRepository.clientSend('on_notification', userId, mapNotification(item));
   }
 }
