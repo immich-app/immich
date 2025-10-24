@@ -1,5 +1,6 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAlbumInfo } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -27,6 +28,8 @@
           albumName: newAlbumName,
         },
       }));
+      // Clear cached recent albums to refresh sidebar when album name is updated
+      userInteraction.recentAlbums = undefined;
       onUpdate(albumName);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_album'));

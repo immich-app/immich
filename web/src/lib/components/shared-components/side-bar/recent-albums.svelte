@@ -3,22 +3,30 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let albums: AlbumResponseDto[] = $state([]);
 
-  onMount(async () => {
-    if (userInteraction.recentAlbums) {
-      albums = userInteraction.recentAlbums;
-      return;
-    }
+  const loadRecentAlbums = async () => {
     try {
       const allAlbums = await getAllAlbums({});
-      albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
-      userInteraction.recentAlbums = albums;
+      // Filter out albums with empty names (newly created albums that haven't been named yet)
+      const namedAlbums = allAlbums.filter(album => album.albumName.trim() !== '');
+      const recentAlbums = namedAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
+      albums = recentAlbums;
+      userInteraction.recentAlbums = recentAlbums;
     } catch (error) {
       handleError(error, $t('failed_to_load_assets'));
+    }
+  };
+
+  $effect(() => {
+    if (userInteraction.recentAlbums) {
+      // Apply the same filtering to cached albums to ensure consistency
+      const filteredCachedAlbums = userInteraction.recentAlbums.filter(album => album.albumName.trim() !== '');
+      albums = filteredCachedAlbums;
+    } else {
+      void loadRecentAlbums();
     }
   });
 </script>
