@@ -6459,6 +6459,14 @@
             }
           },
           {
+            "name": "lensModel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "make",
             "required": false,
             "in": "query",
@@ -13941,7 +13949,8 @@
           "state",
           "city",
           "camera-make",
-          "camera-model"
+          "camera-model",
+          "camera-lens-model"
         ],
         "type": "string"
       },
