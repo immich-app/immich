@@ -32,6 +32,9 @@ platform :ios do
     install_provisioning_profile(path: "profile_share.mobileprovision")
     install_provisioning_profile(path: "profile_widget.mobileprovision")
     
+    # Debug: List available signing identities
+    sh("security find-identity -v -p codesigning")
+    
     # Configure code signing for all targets
     update_code_signing_settings(
       use_automatic_signing: false,
@@ -77,12 +80,15 @@ platform :ios do
       scheme: "Runner",
       workspace: "Runner.xcworkspace",
       export_method: "app-store",
+      xcargs: "CODE_SIGN_IDENTITY='Apple Distribution: Hau Tran (2F67MQ8R79)' CODE_SIGN_STYLE=Manual",
       export_options: {
         provisioningProfiles: {
           "app.alextran.immich" => "app.alextran.immich AppStore",
           "app.alextran.immich.ShareExtension" => "app.alextran.immich.ShareExtension AppStore",
           "app.alextran.immich.Widget" => "app.alextran.immich.Widget AppStore"
-        }
+        },
+        signingStyle: "manual",
+        signingCertificate: "Apple Distribution: Hau Tran (2F67MQ8R79)"
       }
     )
     
