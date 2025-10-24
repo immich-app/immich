@@ -14,6 +14,8 @@ from ..config import log, settings
 
 
 class OrtSession:
+    session: ort.InferenceSession
+
     def __init__(
         self,
         model_path: Path | str,

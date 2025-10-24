@@ -171,6 +171,7 @@ export class ServerFeaturesDto {
   sidecar!: boolean;
   search!: boolean;
   email!: boolean;
+  ocr!: boolean;
 }
 
 export interface ReleaseNotification {

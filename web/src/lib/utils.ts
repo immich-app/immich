@@ -162,6 +162,7 @@ export const getJobName = derived(t, ($t) => {
       [JobName.Library]: $t('external_libraries'),
       [JobName.Notifications]: $t('notifications'),
       [JobName.BackupDatabase]: $t('admin.backup_database'),
+      [JobName.Ocr]: $t('admin.machine_learning_ocr'),
     };
 
     return names[jobName];

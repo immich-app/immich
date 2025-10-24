@@ -84,6 +84,10 @@ export interface SearchEmbeddingOptions {
   userIds: string[];
 }
 
+export interface SearchOcrOptions {
+  ocr?: string;
+}
+
 export interface SearchPeopleOptions {
   personIds?: string[];
 }
@@ -114,7 +118,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchAlbumOptions;
+  SearchAlbumOptions &
+  SearchOcrOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -127,7 +132,10 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
-  SearchTagOptions;
+  SearchTagOptions &
+  SearchOcrOptions;
+
+export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 

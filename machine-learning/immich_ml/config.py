@@ -41,6 +41,7 @@ class PreloadModelData(BaseModel):
 
 class MaxBatchSize(BaseModel):
     facial_recognition: int | None = None
+    text_recognition: int | None = None
 
 
 class Settings(BaseSettings):

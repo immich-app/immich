@@ -205,6 +205,7 @@ export class AssetRepository {
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
               previewAt: eb.ref('excluded.previewAt'),
               thumbnailAt: eb.ref('excluded.thumbnailAt'),
+              ocrAt: eb.ref('excluded.ocrAt'),
             },
             values[0],
           ),

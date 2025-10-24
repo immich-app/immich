@@ -322,7 +322,8 @@ export type ColumnType =
   | 'uuid'
   | 'vector'
   | 'enum'
-  | 'serial';
+  | 'serial'
+  | 'real';
 
 export type DatabaseSchema = {
   databaseName: string;

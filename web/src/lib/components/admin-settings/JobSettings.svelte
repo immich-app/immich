@@ -31,6 +31,7 @@
     JobName.VideoConversion,
     JobName.StorageTemplateMigration,
     JobName.Migration,
+    JobName.Ocr,
   ];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
