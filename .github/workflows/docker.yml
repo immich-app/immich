@@ -116,24 +116,23 @@ jobs:
       matrix:
         include:
           - device: cpu
-            tag-suffix: ''
           - device: cuda
-            tag-suffix: '-cuda'
+            suffixes: '-cuda'
             platforms: linux/amd64
           - device: openvino
-            tag-suffix: '-openvino'
+            suffixes: '-openvino'
             platforms: linux/amd64
           - device: armnn
-            tag-suffix: '-armnn'
+            suffixes: '-armnn'
             platforms: linux/arm64
           - device: rknn
-            tag-suffix: '-rknn'
+            suffixes: '-rknn'
             platforms: linux/arm64
           - device: rocm
-            tag-suffix: '-rocm'
+            suffixes: '-rocm'
             platforms: linux/amd64
             runner-mapping: '{"linux/amd64": "mich"}'
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@946acac326940f8badf09ccf591d9cb345d6a689 # multi-runner-build-workflow-v0.2.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@a667ef0a5cf3ff1ff1e41be52d3fe326b24e3a00 # multi-runner-build-workflow-v1.1.3
     permissions:
       contents: read
       actions: read
@@ -147,7 +146,7 @@ jobs:
       dockerfile: machine-learning/Dockerfile
       platforms: ${{ matrix.platforms }}
       runner-mapping: ${{ matrix.runner-mapping }}
-      tag-suffix: ${{ matrix.tag-suffix }}
+      suffixes: ${{ matrix.suffixes }}
       dockerhub-push: ${{ github.event_name == 'release' }}
       build-args: |
         DEVICE=${{ matrix.device }}
@@ -156,7 +155,7 @@ jobs:
     name: Build and Push Server
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).server == true }}
-    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@946acac326940f8badf09ccf591d9cb345d6a689 # multi-runner-build-workflow-v0.2.1
+    uses: immich-app/devtools/.github/workflows/multi-runner-build.yml@a667ef0a5cf3ff1ff1e41be52d3fe326b24e3a00 # multi-runner-build-workflow-v1.1.3
     permissions:
       contents: read
       actions: read
