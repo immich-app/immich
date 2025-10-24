@@ -35,6 +35,7 @@ import { SyncService } from 'src/services/sync.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
 import { TagService } from 'src/services/tag.service';
+import { TelemetryService } from 'src/services/telemetry.service';
 import { TimelineService } from 'src/services/timeline.service';
 import { TrashService } from 'src/services/trash.service';
 import { UserAdminService } from 'src/services/user-admin.service';
@@ -80,6 +81,7 @@ export const services = [
   SystemConfigService,
   SystemMetadataService,
   TagService,
+  TelemetryService,
   TimelineService,
   TrashService,
   UserAdminService,

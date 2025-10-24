@@ -223,18 +223,16 @@ describe(JobService.name, () => {
     });
   });
 
-  describe('onJobStart', () => {
+  describe('onJobRun', () => {
     it('should process a successful job', async () => {
       mocks.job.run.mockResolvedValue(JobStatus.Success);
 
-      await sut.onJobStart(QueueName.BackgroundTask, {
-        name: JobName.FileDelete,
-        data: { files: ['path/to/file'] },
-      });
+      const job: JobItem = { name: JobName.FileDelete, data: { files: ['path/to/file'] } };
+      await sut.onJobRun(QueueName.BackgroundTask, job);
 
-      expect(mocks.telemetry.jobs.addToGauge).toHaveBeenCalledWith('immich.queues.background_task.active', 1);
-      expect(mocks.telemetry.jobs.addToGauge).toHaveBeenCalledWith('immich.queues.background_task.active', -1);
-      expect(mocks.telemetry.jobs.addToCounter).toHaveBeenCalledWith('immich.jobs.file_delete.success', 1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobStart', QueueName.BackgroundTask, job);
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobSuccess', { job, response: JobStatus.Success });
+      expect(mocks.event.emit).toHaveBeenCalledWith('JobComplete', QueueName.BackgroundTask, job);
       expect(mocks.logger.error).not.toHaveBeenCalled();
     });
 
@@ -301,7 +299,7 @@ describe(JobService.name, () => {
 
         mocks.job.run.mockResolvedValue(JobStatus.Success);
 
-        await sut.onJobStart(QueueName.BackgroundTask, item);
+        await sut.onJobRun(QueueName.BackgroundTask, item);
 
         if (jobs.length > 1) {
           expect(mocks.job.queueAll).toHaveBeenCalledWith(
@@ -318,7 +316,7 @@ describe(JobService.name, () => {
       it(`should not queue any jobs when ${item.name} fails`, async () => {
         mocks.job.run.mockResolvedValue(JobStatus.Failed);
 
-        await sut.onJobStart(QueueName.BackgroundTask, item);
+        await sut.onJobRun(QueueName.BackgroundTask, item);
 
         expect(mocks.job.queueAll).not.toHaveBeenCalled();
       });

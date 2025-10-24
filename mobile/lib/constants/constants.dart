@@ -49,3 +49,7 @@ const double kUploadStatusFailed = -1.0;
 const double kUploadStatusCanceled = -2.0;
 
 const int kMinMonthsToEnableScrubberSnap = 12;
+
+const String kImmichAppStoreLink = "https://apps.apple.com/app/immich/id6449244941";
+const String kImmichPlayStoreLink = "https://play.google.com/store/apps/details?id=app.alextran.immich";
+const String kImmichLatestRelease = "https://github.com/immich-app/immich/releases/latest";

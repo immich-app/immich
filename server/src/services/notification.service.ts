@@ -78,8 +78,8 @@ export class NotificationService extends BaseService {
     await this.notificationRepository.cleanup();
   }
 
-  @OnEvent({ name: 'JobFailed' })
-  async onJobFailed({ job, error }: ArgOf<'JobFailed'>) {
+  @OnEvent({ name: 'JobError' })
+  async onJobError({ job, error }: ArgOf<'JobError'>) {
     const admin = await this.userRepository.getAdmin();
     if (!admin) {
       return;
@@ -200,6 +200,11 @@ export class NotificationService extends BaseService {
     if (notify) {
       await this.jobRepository.queue({ name: JobName.NotifyUserSignup, data: { id, password } });
     }
+  }
+
+  @OnEvent({ name: 'UserDelete' })
+  onUserDelete({ id }: ArgOf<'UserDelete'>) {
+    this.eventRepository.clientBroadcast('on_user_delete', id);
   }
 
   @OnEvent({ name: 'AlbumUpdate' })

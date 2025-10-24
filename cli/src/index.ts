@@ -8,6 +8,7 @@ import { serverInfo } from 'src/commands/server-info';
 import { version } from '../package.json';
 
 const defaultConfigDirectory = path.join(os.homedir(), '.config/immich/');
+const defaultConcurrency = Math.max(1, os.cpus().length - 1);
 
 const program = new Command()
   .name('immich')
@@ -66,7 +67,7 @@ program
   .addOption(
     new Option('-c, --concurrency <number>', 'Number of assets to upload at the same time')
       .env('IMMICH_UPLOAD_CONCURRENCY')
-      .default(4),
+      .default(defaultConcurrency),
   )
   .addOption(
     new Option('-j, --json-output', 'Output detailed information in json format')

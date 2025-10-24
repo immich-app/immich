@@ -19,7 +19,6 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
-import { UserRepository } from 'src/repositories/user.repository';
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
@@ -56,7 +55,6 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     private jobService: JobService,
     private telemetryRepository: TelemetryRepository,
     private authService: AuthService,
-    private userRepository: UserRepository,
   ) {
     logger.setAppName(this.worker);
   }
