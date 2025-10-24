@@ -28,6 +28,9 @@ export interface Events {
   on_new_release: (newRelease: ReleaseEvent) => void;
   on_session_delete: (sessionId: string) => void;
   on_notification: (notification: NotificationDto) => void;
+  on_album_delete: (albumId: string) => void;
+  on_album_create: (albumId: string) => void;
+  on_album_update: (albumId: string) => void;
 }
 
 const websocket: Socket<Events> = io({

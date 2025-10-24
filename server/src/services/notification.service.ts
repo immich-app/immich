@@ -208,17 +208,53 @@ export class NotificationService extends BaseService {
   }
 
   @OnEvent({ name: 'AlbumUpdate' })
-  async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
-    await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
-    await this.jobRepository.queue({
-      name: JobName.NotifyAlbumUpdate,
-      data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
-    });
+  async onAlbumUpdate({ id, userId, notifyRecipients }: ArgOf<'AlbumUpdate'>) {
+    // Fetch album with users to get recipient list
+    const album = await this.albumRepository.getById(id, { withAssets: false });
+    if (!album) {
+      this.logger.warn(`Album ${id} not found for update notification`);
+      // Still send websocket event to updater and return early
+      this.eventRepository.clientSend('on_album_update', userId, id);
+      return;
+    }
+
+    // Get all users except the one who made the update
+    const allRecipients = [...new Set([...album.albumUsers.map(({ user }) => user.id), album.owner.id])].filter(
+      (recipientUserId) => recipientUserId !== userId,
+    );
+
+    // Always send websocket events to all recipients
+    for (const recipient of allRecipients) {
+      // Send websocket event to the recipient
+      this.eventRepository.clientSend('on_album_update', recipient, id);
+
+      // Only send email notifications if notifyRecipients is true
+      if (notifyRecipients) {
+        await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipient}`);
+        await this.jobRepository.queue({
+          name: JobName.NotifyAlbumUpdate,
+          data: { id, recipientId: recipient, delay: NotificationService.albumUpdateEmailDelayMs },
+        });
+      }
+    }
+
+    // Always send websocket event to the user who made the update
+    this.eventRepository.clientSend('on_album_update', userId, id);
   }
 
   @OnEvent({ name: 'AlbumInvite' })
   async onAlbumInvite({ id, userId }: ArgOf<'AlbumInvite'>) {
     await this.jobRepository.queue({ name: JobName.NotifyAlbumInvite, data: { id, recipientId: userId } });
+  }
+
+  @OnEvent({ name: 'AlbumDelete' })
+  onAlbumDelete({ id, userId }: ArgOf<'AlbumDelete'>) {
+    this.eventRepository.clientSend('on_album_delete', userId, id);
+  }
+
+  @OnEvent({ name: 'AlbumCreate' })
+  onAlbumCreate({ id, userId }: ArgOf<'AlbumCreate'>) {
+    this.eventRepository.clientSend('on_album_create', userId, id);
   }
 
   @OnEvent({ name: 'SessionDelete' })
