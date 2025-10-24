@@ -252,19 +252,11 @@
           {/if}
 
           {#if asset.type === AssetTypeEnum.Video}
-            {#if playOriginalVideo}
               <MenuOption
                 icon={mdiVideoOutline}
-                onClick={() => setPlayOriginalVideo(false)}
-                text={$t('play_transcoded_video')}
+                onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
+                text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
               />
-            {:else}
-              <MenuOption
-                icon={mdiVideoOutline}
-                onClick={() => setPlayOriginalVideo(true)}
-                text={$t('play_original_video')}
-              />
-            {/if}
           {/if}
 
           <hr />
