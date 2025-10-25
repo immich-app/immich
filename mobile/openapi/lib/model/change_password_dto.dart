@@ -13,9 +13,18 @@ part of openapi.api;
 class ChangePasswordDto {
   /// Returns a new [ChangePasswordDto] instance.
   ChangePasswordDto({
+    this.invalidateSessions,
     required this.newPassword,
     required this.password,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? invalidateSessions;
 
   String newPassword;
 
@@ -23,20 +32,27 @@ class ChangePasswordDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ChangePasswordDto &&
+    other.invalidateSessions == invalidateSessions &&
     other.newPassword == newPassword &&
     other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (invalidateSessions == null ? 0 : invalidateSessions!.hashCode) +
     (newPassword.hashCode) +
     (password.hashCode);
 
   @override
-  String toString() => 'ChangePasswordDto[newPassword=$newPassword, password=$password]';
+  String toString() => 'ChangePasswordDto[invalidateSessions=$invalidateSessions, newPassword=$newPassword, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.invalidateSessions != null) {
+      json[r'invalidateSessions'] = this.invalidateSessions;
+    } else {
+    //  json[r'invalidateSessions'] = null;
+    }
       json[r'newPassword'] = this.newPassword;
       json[r'password'] = this.password;
     return json;
@@ -51,6 +67,7 @@ class ChangePasswordDto {
       final json = value.cast<String, dynamic>();
 
       return ChangePasswordDto(
+        invalidateSessions: mapValueOfType<bool>(json, r'invalidateSessions'),
         newPassword: mapValueOfType<String>(json, r'newPassword')!,
         password: mapValueOfType<String>(json, r'password')!,
       );

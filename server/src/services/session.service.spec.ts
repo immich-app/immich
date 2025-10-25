@@ -49,7 +49,7 @@ describe('SessionService', () => {
       mocks.session.getByUserId.mockResolvedValue([currentSession, otherSession]);
       mocks.session.delete.mockResolvedValue();
 
-      await sut.deleteAll(auth);
+      await sut.deleteAll(auth.user.id, auth.session?.id);
 
       expect(mocks.session.getByUserId).toHaveBeenCalledWith(auth.user.id);
       expect(mocks.session.delete).toHaveBeenCalledWith(otherSession.id);

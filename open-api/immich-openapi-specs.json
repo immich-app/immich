@@ -11477,6 +11477,9 @@
       },
       "ChangePasswordDto": {
         "properties": {
+          "invalidateSessions": {
+            "type": "boolean"
+          },
           "newPassword": {
             "example": "password",
             "minLength": 8,
