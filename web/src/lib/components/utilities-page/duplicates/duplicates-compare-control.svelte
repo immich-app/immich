@@ -5,7 +5,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { handlePromiseError } from '$lib/utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
+  import { DuplicateSelection } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -13,7 +13,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
-
+  import { duplicateTiePreference, type DuplicateTiePreferences } from '$lib/stores/duplicate-tie-preferences';
+  import { get } from 'svelte/store';
   interface Props {
     assets: AssetResponseDto[];
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
@@ -24,19 +25,24 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
+  const duplicateSelector = new DuplicateSelection();
+  let tiePreferenceLocal: DuplicateTiePreferences | undefined = get(duplicateTiePreference);
+
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
+  const autoSelect = () => {
+    const suggested = duplicateSelector.suggestDuplicate(assets, tiePreferenceLocal) ?? assets[0];
+    selectedAssetIds = new SvelteSet([suggested.id]);
+  };
+
   onMount(() => {
-    const suggestedAsset = suggestDuplicate(assets);
-
-    if (!suggestedAsset) {
-      selectedAssetIds = new SvelteSet(assets[0].id);
-      return;
-    }
-
-    selectedAssetIds.add(suggestedAsset.id);
+    autoSelect();
+    const unsub = duplicateTiePreference.subscribe((newPref) => {
+      tiePreferenceLocal = newPref;
+      autoSelect();
+    });
+    onDestroy(unsub);
   });
 
   onDestroy(() => {
