@@ -19,6 +19,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/intl_keys.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/background_downloader.repository.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
@@ -103,7 +104,7 @@ Future<void> initApp() async {
   initializeTimeZones();
 
   // Initialize the file downloader
-  await FileDownloader().configure(
+  await FileDownloader(persistentStorage: driftPersistentStorage).configure(
     // maxConcurrent: 6, maxConcurrentByHost(server):6, maxConcurrentByGroup: 3
 
     // On Android, if files are larger than 256MB, run in foreground service
