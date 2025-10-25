@@ -281,8 +281,8 @@
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
         />
-        <div class="max-w-216 mx-auto mb-16">
-          <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between items-center">
+        <div class="max-w-256 mx-auto mb-16">
+          <div class="flex mb-4 sm:px-6 w-full place-content-center justify-between items-center place-items-center">
             <div class="flex text-xs text-black">
               <Button
                 size="small"
@@ -305,7 +305,9 @@
                 {$t('previous')}
               </Button>
             </div>
-            <p>{duplicatesIndex + 1}/{duplicates.length.toLocaleString($locale)}</p>
+            <p class="border px-3 md:px-6 py-1 dark:bg-subtle rounded-lg text-xs md:text-sm">
+              {duplicatesIndex + 1} / {duplicates.length.toLocaleString($locale)}
+            </p>
             <div class="flex text-xs text-black">
               <Button
                 size="small"
