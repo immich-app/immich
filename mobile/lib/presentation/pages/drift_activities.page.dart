@@ -53,7 +53,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
             activityWidgets.add(
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: _CommentBubble(activity: activity),
+                child: CommentBubble(activity: activity),
               ),
             );
           }
@@ -87,10 +87,11 @@ class DriftActivitiesPage extends HookConsumerWidget {
   }
 }
 
-class _CommentBubble extends ConsumerWidget {
+class CommentBubble extends ConsumerWidget {
   final Activity activity;
+  final bool isAssetActivity;
 
-  const _CommentBubble({required this.activity});
+  const CommentBubble({super.key, required this.activity, this.isAssetActivity = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -98,7 +99,7 @@ class _CommentBubble extends ConsumerWidget {
     final album = ref.watch(currentRemoteAlbumProvider)!;
     final isOwn = activity.user.id == user?.id;
     final canDelete = isOwn || album.ownerId == user?.id;
-    final hasAsset = activity.assetId != null && activity.assetId!.isNotEmpty;
+    final showThumbnail = !isAssetActivity && activity.assetId != null && activity.assetId!.isNotEmpty;
     final isLike = activity.type == ActivityType.like;
     final bgColor = isOwn ? context.colorScheme.primaryContainer : context.colorScheme.surfaceContainer;
 
@@ -115,7 +116,7 @@ class _CommentBubble extends ConsumerWidget {
 
     // Thumbnail with tappable behavior and optional heart overlay
     Widget? thumbnail() {
-      if (!hasAsset) return null;
+      if (!showThumbnail) return null;
       return ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 150, maxHeight: 150),
         child: Stack(
@@ -145,9 +146,9 @@ class _CommentBubble extends ConsumerWidget {
       );
     }
 
-    // Likes Album widget (for likes without asset)
-    Widget? likesToAlbum() {
-      if (!isLike || hasAsset) return null;
+    // Likes widget
+    Widget? likes() {
+      if (!isLike || showThumbnail) return null;
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
@@ -172,7 +173,7 @@ class _CommentBubble extends ConsumerWidget {
     }
 
     // Combined content widgets
-    final List<Widget> contentChildren = [thumbnail(), likesToAlbum(), commentBubble()].whereType<Widget>().toList();
+    final List<Widget> contentChildren = [thumbnail(), likes(), commentBubble()].whereType<Widget>().toList();
 
     return DismissibleActivity(
       onDismiss: canDelete ? (id) async => await activityNotifier.removeActivity(id) : null,
