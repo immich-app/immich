@@ -20,6 +20,7 @@ targets:
            - lib/infrastructure/entities/*.drift
            - lib/infrastructure/repositories/db.repository.dart
            - lib/infrastructure/repositories/logger_db.repository.dart
+           - lib/infrastructure/repositories/background_downloader.repository.dart
        drift_dev:modular:
          enabled: true
          options: *drift_options
