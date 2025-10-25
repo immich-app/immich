@@ -103,7 +103,6 @@
       subtitle: $t('admin.duplicate_detection_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
-      disabled: !$featureFlags.duplicateDetection,
     },
     [JobName.FaceDetection]: {
       icon: mdiFaceRecognition,
