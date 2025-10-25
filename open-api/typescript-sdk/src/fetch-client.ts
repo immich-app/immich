@@ -152,6 +152,7 @@ export type FoldersResponse = {
     sidebarWeb: boolean;
 };
 export type MemoriesResponse = {
+    duration: number;
     enabled: boolean;
 };
 export type PeopleResponse = {
@@ -209,6 +210,7 @@ export type FoldersUpdate = {
     sidebarWeb?: boolean;
 };
 export type MemoriesUpdate = {
+    duration?: number;
     enabled?: boolean;
 };
 export type PeopleUpdate = {

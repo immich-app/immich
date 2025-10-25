@@ -1,5 +1,6 @@
+import { preferences } from '$lib/stores/user.store';
 import { persisted } from 'svelte-persisted-store';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export enum SlideshowState {
   PlaySlideshow = 'play-slideshow',
@@ -37,7 +38,7 @@ function createSlideshowStore() {
   const slideshowState = writable<SlideshowState>(SlideshowState.None);
 
   const showProgressBar = persisted<boolean>('slideshow-show-progressbar', true);
-  const slideshowDelay = persisted<number>('slideshow-delay', 5, {});
+  const slideshowDelay = persisted<number>('slideshow-delay', get(preferences)?.memories.duration ?? 5, {});
   const slideshowTransition = persisted<boolean>('slideshow-transition', true);
   const slideshowAutoplay = persisted<boolean>('slideshow-autoplay', true, {});
 

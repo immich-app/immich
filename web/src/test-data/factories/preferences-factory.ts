@@ -23,6 +23,7 @@ export const preferencesFactory = Sync.makeFactory<UserPreferencesResponseDto>({
   },
   memories: {
     enabled: false,
+    duration: 5,
   },
   people: {
     enabled: false,
