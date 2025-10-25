@@ -23,7 +23,6 @@
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
   interface Props {
@@ -487,16 +486,18 @@
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
   <Portal target="body">
-    <AssetViewer
-      asset={$viewingAsset}
-      onAction={handleAction}
-      onPrevious={handlePrevious}
-      onNext={handleNext}
-      onRandom={handleRandom}
-      onClose={() => {
-        assetViewingStore.showAssetViewer(false);
-        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-      }}
-    />
+    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
+        asset={$viewingAsset}
+        onAction={handleAction}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onRandom={handleRandom}
+        onClose={() => {
+          assetViewingStore.showAssetViewer(false);
+          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+        }}
+      />
+    {/await}
   </Portal>
 {/if}
