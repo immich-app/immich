@@ -131,9 +131,11 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**replaceAsset**](doc//DeprecatedApi.md#replaceasset) | **PUT** /assets/{id}/original | Replace the asset with new file, without changing its id
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
+*DuplicatesApi* | [**deDuplicateAll**](doc//DuplicatesApi.md#deduplicateall) | **DELETE** /duplicates/de-duplicate-all | 
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | 
 *DuplicatesApi* | [**deleteDuplicates**](doc//DuplicatesApi.md#deleteduplicates) | **DELETE** /duplicates | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
+*DuplicatesApi* | [**keepAll**](doc//DuplicatesApi.md#keepall) | **DELETE** /duplicates/keep-all | 
 *FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | 
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | 
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | 
@@ -371,6 +373,7 @@ Class | Method | HTTP request | Description
  - [DownloadResponseDto](doc//DownloadResponseDto.md)
  - [DownloadUpdate](doc//DownloadUpdate.md)
  - [DuplicateDetectionConfig](doc//DuplicateDetectionConfig.md)
+ - [DuplicateItem](doc//DuplicateItem.md)
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)

@@ -19,6 +19,42 @@ class DuplicatesApi {
   /// This endpoint requires the `duplicate.delete` permission.
   ///
   /// Note: This method returns the HTTP [Response].
+  Future<Response> deDuplicateAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/de-duplicate-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  Future<void> deDuplicateAll() async {
+    final response = await deDuplicateAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
@@ -108,7 +144,13 @@ class DuplicatesApi {
   /// This endpoint requires the `duplicate.read` permission.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getAssetDuplicatesWithHttpInfo() async {
+  ///
+  /// Parameters:
+  ///
+  /// * [num] page:
+  ///
+  /// * [num] size:
+  Future<Response> getAssetDuplicatesWithHttpInfo({ num? page, num? size, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates';
 
@@ -118,6 +160,13 @@ class DuplicatesApi {
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
+
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
 
     const contentTypes = <String>[];
 
@@ -134,8 +183,14 @@ class DuplicatesApi {
   }
 
   /// This endpoint requires the `duplicate.read` permission.
-  Future<List<DuplicateResponseDto>?> getAssetDuplicates() async {
-    final response = await getAssetDuplicatesWithHttpInfo();
+  ///
+  /// Parameters:
+  ///
+  /// * [num] page:
+  ///
+  /// * [num] size:
+  Future<DuplicateResponseDto?> getAssetDuplicates({ num? page, num? size, }) async {
+    final response = await getAssetDuplicatesWithHttpInfo( page: page, size: size, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -143,12 +198,45 @@ class DuplicatesApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<DuplicateResponseDto>') as List)
-        .cast<DuplicateResponseDto>()
-        .toList(growable: false);
-
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DuplicateResponseDto',) as DuplicateResponseDto;
+    
     }
     return null;
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> keepAllWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/duplicates/keep-all';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `duplicate.delete` permission.
+  Future<void> keepAll() async {
+    final response = await keepAllWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

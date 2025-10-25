@@ -15,10 +15,9 @@
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { stackAssets } from '$lib/utils/asset-utils';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
+  import { deDuplicateAll, deleteAssets, getAssetDuplicates, keepAll, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
   import {
     mdiCheckOutline,
@@ -60,11 +59,12 @@
     ],
   };
 
-  let duplicates = $state(data.duplicates);
+  let duplicatesRes = $state(data.duplicatesRes);
+
   const { isViewing: showAssetViewer } = assetViewingStore;
 
   const correctDuplicatesIndex = (index: number) => {
-    return Math.max(0, Math.min(index, duplicates.length - 1));
+    return Math.max(0, Math.min(index, duplicatesRes.totalItems - 1));
   };
 
   let duplicatesIndex = $derived(
@@ -75,7 +75,7 @@
     })(),
   );
 
-  let hasDuplicates = $derived(duplicates.length > 0);
+  let hasDuplicates = $derived(duplicatesRes.totalItems > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
     if (prompt && confirmText) {
       const isConfirmed = await modalManager.showDialog({ prompt, confirmText });
@@ -104,13 +104,11 @@
     });
   };
 
-  const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+  const handleResolve = async (duplicateAssetIds: string[], trashIds: string[]) => {
     return withConfirmation(
       async () => {
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-
-        duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
         await correctDuplicatesIndexAndGo(duplicatesIndex);
@@ -120,42 +118,29 @@
     );
   };
 
-  const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
+  const handleStack = async (assets: AssetResponseDto[]) => {
     await stackAssets(assets, false);
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
-    duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await correctDuplicatesIndexAndGo(duplicatesIndex);
   };
 
-  const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
-    const idsToDelete = duplicates.flatMap((group, i) =>
-      group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
-    );
-
+  const handleDeduplicateAll = () => {
     let prompt, confirmText;
     if ($featureFlags.trash) {
-      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      prompt = $t('bulk_trash_duplicates_confirmation', { values: { count: 1 } });
       confirmText = $t('confirm');
     } else {
-      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: idsToDelete.length } });
+      prompt = $t('bulk_delete_duplicates_confirmation', { values: { count: 1 } });
       confirmText = $t('permanently_delete');
     }
 
     return withConfirmation(
       async () => {
-        await deleteAssets({ assetBulkDeleteDto: { ids: idsToDelete, force: !$featureFlags.trash } });
-        await updateAssets({
-          assetBulkUpdateDto: {
-            ids: [...idsToDelete, ...idsToKeep.filter((id): id is string => !!id)],
-            duplicateId: null,
-          },
-        });
+        await deDuplicateAll();
+        deletedNotification(1);
 
-        duplicates = [];
-
-        deletedNotification(idsToDelete.length);
+        duplicatesRes.items = [];
 
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
@@ -165,22 +150,22 @@
     );
   };
 
-  const handleKeepAll = async () => {
-    const ids = duplicates.map(({ duplicateId }) => duplicateId);
+  const handleKeepAll = () => {
     return withConfirmation(
       async () => {
-        await deleteDuplicates({ bulkIdsDto: { ids } });
-
-        duplicates = [];
+        await keepAll();
 
         notificationController.show({
           message: $t('resolved_all_duplicates'),
           type: NotificationType.Info,
         });
+
+        duplicatesRes.items = [];
+
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },
-      $t('bulk_keep_duplicates_confirmation', { values: { count: ids.length } }),
+      $t('bulk_keep_duplicates_confirmation', { values: { count: 1 } }),
       $t('confirm'),
     );
   };
@@ -188,30 +173,41 @@
   const handleFirst = async () => {
     await correctDuplicatesIndexAndGo(0);
   };
+
   const handlePrevious = async () => {
     await correctDuplicatesIndexAndGo(Math.max(duplicatesIndex - 1, 0));
   };
+
   const handlePreviousShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handlePrevious();
   };
+
   const handleNext = async () => {
-    await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicates.length - 1));
+    await correctDuplicatesIndexAndGo(Math.min(duplicatesIndex + 1, duplicatesRes.totalItems - 1));
   };
+
   const handleNextShortcut = async () => {
     if ($showAssetViewer) {
       return;
     }
     await handleNext();
   };
+
   const handleLast = async () => {
-    await correctDuplicatesIndexAndGo(duplicates.length - 1);
+    await correctDuplicatesIndexAndGo(duplicatesRes.totalItems - 1);
   };
+
   const correctDuplicatesIndexAndGo = async (index: number) => {
     page.url.searchParams.set('index', correctDuplicatesIndex(index).toString());
     await goto(`${AppRoute.DUPLICATES}?${page.url.searchParams.toString()}`);
+    await loadDuplicate(index + 1);
+  };
+
+  const loadDuplicate = async (itemIndex: number) => {
+    duplicatesRes = await getAssetDuplicates({ page: itemIndex, size: 1 });
   };
 </script>
 
@@ -222,7 +218,7 @@
   ]}
 />
 
-<UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
+<UserPageLayout title={data.meta.title + ` (${duplicatesRes.totalItems.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
@@ -257,8 +253,8 @@
     </HStack>
   {/snippet}
 
-  <div class="">
-    {#if duplicates && duplicates.length > 0}
+  <div>
+    {#if duplicatesRes.items[0] && duplicatesRes.totalItems > 0}
       <div class="flex items-center mb-2">
         <div class="text-sm dark:text-white">
           <p>{$t('duplicates_description')}</p>
@@ -274,12 +270,11 @@
         />
       </div>
 
-      {#key duplicates[duplicatesIndex].duplicateId}
+      {#key duplicatesRes.items[0].duplicateId}
         <DuplicatesCompareControl
-          assets={duplicates[duplicatesIndex].assets}
-          onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
+          assets={duplicatesRes.items[0].assets}
+          onResolve={(duplicateAssetIds, trashIds) => handleResolve(duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(assets)}
         />
         <div class="max-w-216 mx-auto mb-16">
           <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between items-center">
@@ -305,7 +300,7 @@
                 {$t('previous')}
               </Button>
             </div>
-            <p>{duplicatesIndex + 1}/{duplicates.length.toLocaleString($locale)}</p>
+            <p>{duplicatesIndex + 1}/{duplicatesRes.totalItems.toLocaleString($locale)}</p>
             <div class="flex text-xs text-black">
               <Button
                 size="small"
@@ -313,7 +308,7 @@
                 color="primary"
                 class="flex place-items-center rounded-s-full gap-2 px-2 sm:px-4"
                 onclick={handleNext}
-                disabled={duplicatesIndex === duplicates.length - 1}
+                disabled={duplicatesIndex === duplicatesRes.totalItems - 1}
               >
                 {$t('next')}
               </Button>
@@ -323,7 +318,7 @@
                 color="primary"
                 class="flex place-items-center rounded-e-full gap-2 px-2 sm:px-4"
                 onclick={handleLast}
-                disabled={duplicatesIndex === duplicates.length - 1}
+                disabled={duplicatesIndex === duplicatesRes.totalItems - 1}
               >
                 {$t('last')}
               </Button>
