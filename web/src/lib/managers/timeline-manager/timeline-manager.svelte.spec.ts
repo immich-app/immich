@@ -1,10 +1,14 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
 import { getMonthGroupByDate } from '$lib/managers/timeline-manager/internal/search-support.svelte';
+import { setTestHooks } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
+import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
 import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { tick } from 'svelte';
+import type { MockInstance } from 'vitest';
 import { TimelineManager } from './timeline-manager.svelte';
 import type { TimelineAsset } from './types';
 
@@ -296,6 +300,122 @@ describe('TimelineManager', () => {
       await timelineManager.updateOptions({ isTrashed: true });
       timelineManager.upsertAssets([asset, trashedAsset]);
       expect(await getAssets(timelineManager)).toEqual([trashedAsset]);
+    });
+  });
+
+  describe('ensure efficient timeline operations', () => {
+    let timelineManager: TimelineManager;
+
+    let month1day1asset1: TimelineAsset,
+      month1day2asset1: TimelineAsset,
+      month1day2asset2: TimelineAsset,
+      month1day3asset1: TimelineAsset,
+      month2day1asset1: TimelineAsset,
+      month2day2asset1: TimelineAsset,
+      month2day2asset2: TimelineAsset;
+
+    type DayMocks = {
+      layoutFn: MockInstance;
+      sortAssetsFn: MockInstance;
+    };
+    type MonthMocks = {
+      sortDayGroupsFn: MockInstance;
+    };
+
+    const dayGroups = new Map<DayGroup, DayMocks>();
+    const monthGroups = new Map<MonthGroup, MonthMocks>();
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      setTestHooks({
+        onCreateDayGroup: (dayGroup: DayGroup) => {
+          dayGroups.set(dayGroup, {
+            layoutFn: vi.spyOn(dayGroup, 'layout'),
+            sortAssetsFn: vi.spyOn(dayGroup, 'sortAssets'),
+          });
+        },
+        onCreateMonthGroup: (monthGroup: MonthGroup) => {
+          monthGroups.set(monthGroup, {
+            sortDayGroupsFn: vi.spyOn(monthGroup, 'sortDayGroups'),
+          });
+        },
+      });
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      month1day1asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-20T12:00:00.000Z'),
+        }),
+      );
+      month1day2asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T12:00:00.000Z'),
+        }),
+      );
+      month1day2asset2 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-15T13:00:00.000Z'),
+        }),
+      );
+      month1day3asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-01-16T12:00:00.000Z'),
+        }),
+      );
+      month2day1asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-16T12:00:00.000Z'),
+        }),
+      );
+      month2day2asset1 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-18T12:00:00.000Z'),
+        }),
+      );
+      month2day2asset2 = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          fileCreatedAt: fromISODateTimeUTCToObject('2024-02-18T13:00:00.000Z'),
+        }),
+      );
+
+      await timelineManager.updateViewport({ width: 1588, height: 1000 });
+      timelineManager.upsertAssets([
+        month1day1asset1,
+        month1day2asset1,
+        month1day2asset2,
+        month1day3asset1,
+        month2day1asset1,
+        month2day2asset1,
+        month2day2asset2,
+      ]);
+      vitest.resetAllMocks();
+    });
+    it.skip('Not Ready Yet - optimizations not complete: moving asset between months only sorts/layout the affected months once', () => {
+      // move from 2024-01-15 to 2024-01-16
+      timelineManager.updateAssetOperation([month1day2asset1.id], (asset) => {
+        asset.localDateTime.day = asset.localDateTime.day + 1;
+      });
+      for (const [day, mocks] of dayGroups) {
+        if (day.day === 15 && day.monthGroup.yearMonth.month === 1) {
+          // source - should be layout once
+          expect.soft(mocks.layoutFn).toBeCalledTimes(1);
+          expect.soft(mocks.sortAssetsFn).toBeCalledTimes(1);
+        }
+        if (day.day === 16 && day.monthGroup.yearMonth.month === 1) {
+          // target - should be layout once
+          expect.soft(mocks.layoutFn).toBeCalledTimes(1);
+          expect.soft(mocks.sortAssetsFn).toBeCalledTimes(1);
+        }
+        // everything else - should not be layed-out
+        expect.soft(mocks.layoutFn).toBeCalledTimes(0);
+        expect.soft(mocks.sortAssetsFn).toBeCalledTimes(0);
+      }
+      for (const [_, mocks] of monthGroups) {
+        // if the day itself did not change, probably no need to sort it
+        // in the timeline manager, the day-group identity is immutable - you will never
+        // "move" a whole day to another day - only the assets inside will be moved from
+        // one to the other.
+        expect.soft(mocks.sortDayGroupsFn).toBeCalledTimes(0);
+      }
     });
   });
 
