@@ -121,33 +121,23 @@ class UploadService {
 
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId);
+    final candidates = await _backupRepository.getCandidates(userId, limit: 100);
     if (candidates.isEmpty) {
       return;
     }
 
-    const batchSize = 100;
-    int count = 0;
-    for (int i = 0; i < candidates.length; i += batchSize) {
-      if (shouldAbortQueuingTasks) {
-        break;
+    List<UploadTask> tasks = [];
+    for (final asset in candidates) {
+      final task = await _getUploadTask(asset);
+      if (task != null) {
+        tasks.add(task);
       }
+    }
 
-      final batch = candidates.skip(i).take(batchSize).toList();
-      List<UploadTask> tasks = [];
-      for (final asset in batch) {
-        final task = await _getUploadTask(asset);
-        if (task != null) {
-          tasks.add(task);
-        }
-      }
+    if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
+      await enqueueTasks(tasks);
 
-      if (tasks.isNotEmpty && !shouldAbortQueuingTasks) {
-        count += tasks.length;
-        await enqueueTasks(tasks);
-
-        onEnqueueTasks(EnqueueStatus(enqueueCount: count, totalCount: candidates.length));
-      }
+      onEnqueueTasks(EnqueueStatus(enqueueCount: tasks.length, totalCount: candidates.length));
     }
   }
 
