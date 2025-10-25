@@ -90,6 +90,9 @@ class BaseSearchDto {
   @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
 
+  @ValidateBoolean({ optional: true })
+  searchOnlyThem?: boolean;
+
   @ValidateUUID({ each: true, optional: true, nullable: true })
   tagIds?: string[] | null;
 

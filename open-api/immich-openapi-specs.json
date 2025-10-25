@@ -6007,6 +6007,14 @@
             }
           },
           {
+            "name": "searchOnlyThem",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "size",
             "required": false,
             "in": "query",
@@ -12707,6 +12715,9 @@
             "minimum": -1,
             "type": "number"
           },
+          "searchOnlyThem": {
+            "type": "boolean"
+          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -13666,6 +13677,9 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "searchOnlyThem": {
+            "type": "boolean"
           },
           "size": {
             "maximum": 1000,
@@ -14781,6 +14795,9 @@
             "minimum": -1,
             "type": "number"
           },
+          "searchOnlyThem": {
+            "type": "boolean"
+          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -14974,6 +14991,9 @@
             "maximum": 5,
             "minimum": -1,
             "type": "number"
+          },
+          "searchOnlyThem": {
+            "type": "boolean"
           },
           "state": {
             "nullable": true,
