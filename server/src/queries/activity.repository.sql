@@ -65,6 +65,7 @@ select
   count(*) filter (
     where
       "activity"."isLiked" = $1
+      and "activity"."assetIds" is null
   ) as "comments",
   count(*) filter (
     where

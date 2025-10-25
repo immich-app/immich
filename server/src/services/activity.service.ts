@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Activity } from 'src/database';
+import { OnEvent } from 'src/decorators';
 import {
   ActivityCreateDto,
   ActivityDto,
@@ -26,7 +27,7 @@ export class ActivityService extends BaseService {
       isLiked: dto.type && dto.type === ReactionType.LIKE,
     });
 
-    return activities.map((activity) => mapActivity(activity));
+    return activities.filter((a) => !a.assetIds || a.assetIds?.length > 0).map((activity) => mapActivity(activity));
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
@@ -40,6 +41,7 @@ export class ActivityService extends BaseService {
     const common = {
       userId: auth.user.id,
       assetId: dto.assetId,
+      assetIds: dto.assetIds,
       albumId: dto.albumId,
     };
 
@@ -68,8 +70,58 @@ export class ActivityService extends BaseService {
     return { duplicate, value: mapActivity(activity) };
   }
 
+  async upsertAssetIds(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
+    await this.requireAccess({ auth, permission: Permission.ActivityCreate, ids: [dto.albumId] });
+
+    const recent = await this.activityRepository.findRecentAssetIdsActivity(dto.albumId, auth.user.id, 15);
+    this.logger.debug(
+      `Recent activity for user ${auth.user.id} in album ${dto.albumId}: ${recent ? recent.id : 'none'}`,
+    );
+
+    let activity: Activity;
+    let duplicate = false;
+
+    if (recent) {
+      // Merge assetIds (remove duplicates)
+      const oldIds: string[] = Array.isArray(recent.assetIds) ? recent.assetIds : [];
+      const newIds: string[] = Array.isArray(dto.assetIds) ? dto.assetIds : [];
+      const merged = [...new Set([...oldIds, ...newIds])];
+      await this.activityRepository.updateAssetIds(recent.id, merged);
+      // get the updated record (including user info)
+      const [updated] = await this.activityRepository.search({
+        userId: auth.user.id,
+        albumId: dto.albumId,
+        assetId: null,
+        isLiked: false,
+      });
+      activity = updated ?? { ...recent, assetIds: merged };
+      duplicate = true;
+
+      return { duplicate, value: mapActivity(activity) };
+    }
+
+    return await this.create({ user: { id: auth.user.id } } as AuthDto, {
+      assetIds: dto.assetIds,
+      albumId: dto.albumId,
+      type: ReactionType.ASSET,
+    });
+  }
+
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ActivityDelete, ids: [id] });
     await this.activityRepository.delete(id);
+  }
+
+  @OnEvent({ name: 'AlbumAssets' })
+  async handleAlbumAssetsEvent(payload: { id: string; assetIds: string[]; userId: string }) {
+    this.logger.debug(
+      `AlbumAssets event received: albumId=${payload.id}, userId=${payload.userId}, assetIds=${payload.assetIds.join(', ')}`,
+    );
+
+    await this.upsertAssetIds({ user: { id: payload.userId } } as AuthDto, {
+      assetIds: payload.assetIds,
+      albumId: payload.id,
+      type: ReactionType.ASSET,
+    });
   }
 }

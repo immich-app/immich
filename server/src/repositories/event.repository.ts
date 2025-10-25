@@ -39,6 +39,7 @@ type EventMap = {
   // album events
   AlbumUpdate: [{ id: string; recipientId: string }];
   AlbumInvite: [{ id: string; userId: string }];
+  AlbumAssets: [{ id: string; assetIds: string[]; userId: string }];
 
   // asset events
   AssetTag: [{ assetId: string }];
