@@ -189,6 +189,7 @@ class AppRouter extends RootStackRouter {
       ],
       transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
+    AutoRoute(page: DriftSearchRoute.page, guards: [_authGuard, _duplicateGuard]),
     CustomRoute(
       page: GalleryViewerRoute.page,
       guards: [_authGuard, _galleryGuard],
