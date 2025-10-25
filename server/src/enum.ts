@@ -71,6 +71,14 @@ export enum MemoryType {
   OnThisDay = 'on_this_day',
 }
 
+export enum AssetOrderWithRandom {
+  // Include existing values
+  Asc = AssetOrder.Asc,
+  Desc = AssetOrder.Desc,
+  /** Randomly Ordered */
+  Random = 'random',
+}
+
 export enum Permission {
   All = 'all',
 
