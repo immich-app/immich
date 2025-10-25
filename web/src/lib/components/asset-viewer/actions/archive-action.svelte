@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
+  import { shiftKey } from '$lib/actions/input';
+  import { Category, category, shortcut } from '$lib/actions/shortcut.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AssetAction } from '$lib/constants';
@@ -28,7 +29,13 @@
   };
 </script>
 
-<svelte:document use:shortcut={{ shortcut: { key: 'a', shift: true }, onShortcut: onArchive }} />
+<svelte:document
+  {@attach shortcut(
+    shiftKey('a'),
+    category(Category.AssetActions, asset.isArchived ? $t('unarchive') : $t('to_archive')),
+    onArchive,
+  )}
+/>
 
 <MenuOption
   icon={asset.isArchived ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline}

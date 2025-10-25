@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { shiftKey } from '$lib/actions/input';
+  import { shortcut } from '$lib/actions/shortcut.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -105,16 +106,11 @@
 </script>
 
 <svelte:document
-  use:shortcuts={[
-    { shortcut: { key: 'a' }, onShortcut: onSelectAll },
-    {
-      shortcut: { key: 's' },
-      onShortcut: () => onViewAsset(assets[0]),
-    },
-    { shortcut: { key: 'd' }, onShortcut: onSelectNone },
-    { shortcut: { key: 'c', shift: true }, onShortcut: handleResolve },
-    { shortcut: { key: 's', shift: true }, onShortcut: handleStack },
-  ]}
+  {@attach shortcut('a', $t('select_all'), onSelectAll)}
+  {@attach shortcut('s', $t('view'), () => onViewAsset(assets[0]))}
+  {@attach shortcut('d', $t('deselect_all'), onSelectNone)}
+  {@attach shortcut(shiftKey('c'), $t('resolve_duplicates'), handleResolve)}
+  {@attach shortcut(shiftKey('s'), $t('stack'), handleStack)}
 />
 
 <div class="pt-4 rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-216 mx-auto mb-4">

@@ -1,4 +1,4 @@
-import { shortcuts } from '$lib/actions/shortcut';
+import { onKeydown } from '$lib/actions/input';
 import { tick } from 'svelte';
 import type { Action } from 'svelte/action';
 
@@ -95,13 +95,22 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
     currentEl?.click();
   };
 
-  const { destroy } = shortcuts(node, [
-    { shortcut: { key: 'ArrowUp' }, onShortcut: (event) => moveSelection('up', event) },
-    { shortcut: { key: 'ArrowDown' }, onShortcut: (event) => moveSelection('down', event) },
-    { shortcut: { key: 'Escape' }, onShortcut: (event) => onEscape(event) },
-    { shortcut: { key: ' ' }, onShortcut: (event) => handleClick(event) },
-    { shortcut: { key: 'Enter' }, onShortcut: (event) => handleClick(event) },
-  ]);
+  const unregisterUp = onKeydown('ArrowUp', (event) => (event.preventDefault(), moveSelection('up', event)))(node);
+  const unregisterDown = onKeydown(
+    'ArrowDown',
+    (event) => (event.preventDefault(), moveSelection('down', event)),
+  )(node);
+  const unregisterEscape = onKeydown('Escape', (event) => onEscape(event))(node);
+  const unregisterSpace = onKeydown(' ', (event) => handleClick(event))(node);
+  const unregisterEnter = onKeydown(' ', (event) => handleClick(event))(node);
+  let destroy = () => {
+    unregisterUp();
+    unregisterDown();
+    unregisterEscape();
+    unregisterSpace();
+    unregisterEnter();
+    destroy = () => void 0;
+  };
 
   return {
     update(newOptions) {
