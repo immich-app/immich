@@ -924,6 +924,10 @@ export type MetadataSearchDto = {
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
+    maxHeight?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    minWidth?: number;
     model?: string | null;
     order?: AssetOrder;
     originalFileName?: string;
@@ -996,6 +1000,10 @@ export type RandomSearchDto = {
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
+    maxHeight?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    minWidth?: number;
     model?: string | null;
     personIds?: string[];
     rating?: number;
@@ -1031,6 +1039,10 @@ export type SmartSearchDto = {
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
+    maxHeight?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    minWidth?: number;
     model?: string | null;
     page?: number;
     personIds?: string[];
@@ -1067,6 +1079,10 @@ export type StatisticsSearchDto = {
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
+    maxHeight?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    minWidth?: number;
     model?: string | null;
     personIds?: string[];
     rating?: number;
@@ -3398,7 +3414,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * This endpoint requires the `asset.read` permission.
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, maxHeight, maxWidth, minFileSize, minHeight, minWidth, model, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
@@ -3413,7 +3429,11 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
+    maxHeight?: number;
+    maxWidth?: number;
     minFileSize?: number;
+    minHeight?: number;
+    minWidth?: number;
     model?: string | null;
     personIds?: string[];
     rating?: number;
@@ -3449,7 +3469,11 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         lensModel,
         libraryId,
         make,
+        maxHeight,
+        maxWidth,
         minFileSize,
+        minHeight,
+        minWidth,
         model,
         personIds,
         rating,

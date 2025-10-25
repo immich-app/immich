@@ -349,7 +349,15 @@ class SearchApi {
   ///
   /// * [String] make:
   ///
+  /// * [num] maxHeight:
+  ///
+  /// * [num] maxWidth:
+  ///
   /// * [int] minFileSize:
+  ///
+  /// * [num] minHeight:
+  ///
+  /// * [num] minWidth:
   ///
   /// * [String] model:
   ///
@@ -382,7 +390,7 @@ class SearchApi {
   /// * [bool] withDeleted:
   ///
   /// * [bool] withExif:
-  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
+  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, num? maxHeight, num? maxWidth, int? minFileSize, num? minHeight, num? minWidth, String? model, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/search/large-assets';
 
@@ -435,8 +443,20 @@ class SearchApi {
     if (make != null) {
       queryParams.addAll(_queryParams('', 'make', make));
     }
+    if (maxHeight != null) {
+      queryParams.addAll(_queryParams('', 'maxHeight', maxHeight));
+    }
+    if (maxWidth != null) {
+      queryParams.addAll(_queryParams('', 'maxWidth', maxWidth));
+    }
     if (minFileSize != null) {
       queryParams.addAll(_queryParams('', 'minFileSize', minFileSize));
+    }
+    if (minHeight != null) {
+      queryParams.addAll(_queryParams('', 'minHeight', minHeight));
+    }
+    if (minWidth != null) {
+      queryParams.addAll(_queryParams('', 'minWidth', minWidth));
     }
     if (model != null) {
       queryParams.addAll(_queryParams('', 'model', model));
@@ -533,7 +553,15 @@ class SearchApi {
   ///
   /// * [String] make:
   ///
+  /// * [num] maxHeight:
+  ///
+  /// * [num] maxWidth:
+  ///
   /// * [int] minFileSize:
+  ///
+  /// * [num] minHeight:
+  ///
+  /// * [num] minWidth:
   ///
   /// * [String] model:
   ///
@@ -566,8 +594,8 @@ class SearchApi {
   /// * [bool] withDeleted:
   ///
   /// * [bool] withExif:
-  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
-    final response = await searchLargeAssetsWithHttpInfo( albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, minFileSize: minFileSize, model: model, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, );
+  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, String? deviceId, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, num? maxHeight, num? maxWidth, int? minFileSize, num? minHeight, num? minWidth, String? model, List<String>? personIds, num? rating, num? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, }) async {
+    final response = await searchLargeAssetsWithHttpInfo( albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, deviceId: deviceId, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, maxHeight: maxHeight, maxWidth: maxWidth, minFileSize: minFileSize, minHeight: minHeight, minWidth: minWidth, model: model, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

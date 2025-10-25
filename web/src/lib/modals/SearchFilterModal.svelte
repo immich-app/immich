@@ -15,6 +15,7 @@
     display: SearchDisplayFilters;
     mediaType: MediaType;
     rating?: number;
+    resolution: SearchResolutionFilter;
   };
 </script>
 
@@ -28,6 +29,9 @@
   import SearchMediaSection from '$lib/components/shared-components/search-bar/search-media-section.svelte';
   import SearchPeopleSection from '$lib/components/shared-components/search-bar/search-people-section.svelte';
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/search-ratings-section.svelte';
+  import SearchResolutionSection, {
+    type SearchResolutionFilter,
+  } from '$lib/components/shared-components/search-bar/search-resolution-section.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/search-tags-section.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/search-text-section.svelte';
   import { preferences } from '$lib/stores/user.store';
@@ -108,6 +112,12 @@
           ? MediaType.Video
           : MediaType.All,
     rating: searchQuery.rating,
+    resolution: {
+      minHeight: searchQuery.minHeight,
+      maxHeight: searchQuery.maxHeight,
+      minWidth: searchQuery.minWidth,
+      maxWidth: searchQuery.maxWidth,
+    },
   });
 
   const resetForm = () => {
@@ -126,6 +136,7 @@
       },
       mediaType: MediaType.All,
       rating: undefined,
+      resolution: {},
     };
   };
 
@@ -158,6 +169,10 @@
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
+      minWidth: filter.resolution.minWidth ?? undefined,
+      maxWidth: filter.resolution.maxWidth ?? undefined,
+      minHeight: filter.resolution.minHeight ?? undefined,
+      maxHeight: filter.resolution.maxHeight ?? undefined,
     };
 
     onClose(payload);
@@ -183,7 +198,7 @@
 <Modal icon={mdiTune} size="giant" title={$t('search_options')} {onClose}>
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
-      <div class="flex flex-col gap-4 pb-10" tabindex="-1">
+      <div class="flex flex-col gap-2" tabindex="-1">
         <!-- PEOPLE -->
         <SearchPeopleSection bind:selectedPeople={filter.personIds} />
 
@@ -206,6 +221,9 @@
         {#if $preferences?.ratings.enabled}
           <SearchRatingsSection bind:rating={filter.rating} />
         {/if}
+
+        <!-- RESOLUTION -->
+        <SearchResolutionSection bind:filters={filter.resolution} />
 
         <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
           <!-- MEDIA TYPE -->
