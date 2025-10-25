@@ -1,11 +1,13 @@
 <script lang="ts">
   import { ProjectionType } from '$lib/constants';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
-  import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { timeToSeconds } from '$lib/utils/date-time';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetVisibility } from '@immich/sdk';
   import {
+    mdiAnimation,
+    mdiAnimationPlay,
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
     mdiCheckCircle,
@@ -281,6 +283,14 @@
           </div>
         {/if}
 
+        {#if asset.isImage && asset.duration}
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon icon={mdiAnimation} size="24" />
+            </span>
+          </div>
+        {/if}
+
         <!-- Stacked asset -->
         {#if asset.stack && showStackedIcon}
           <div
@@ -341,6 +351,25 @@
             curve={selected}
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
+        </div>
+      {:else if asset.isImage && asset.duration && mouseOver}
+        <!-- GIF -->
+        <div class="absolute top-0 h-full w-full pointer-events-none">
+          <div class="absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%]"></div>
+          <ImageThumbnail
+            class={imageClass}
+            {brokenAssetClass}
+            url={getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash })}
+            altText={$getAltText(asset)}
+            widthStyle="{width}px"
+            heightStyle="{height}px"
+            curve={selected}
+          />
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon icon={mdiAnimationPlay} size="24" />
+            </span>
+          </div>
         </div>
       {/if}
 
