@@ -37,6 +37,25 @@ describe(AlbumController.name, () => {
     });
   });
 
+  describe('GET /albums/slim', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get('/albums/slim');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should reject an invalid shared param', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get('/albums/slim?shared=invalid');
+      expect(status).toEqual(400);
+      expect(body).toEqual(factory.responses.badRequest(['shared must be a boolean value']));
+    });
+
+    it('should reject an invalid assetId param', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get('/albums/slim?assetId=invalid');
+      expect(status).toEqual(400);
+      expect(body).toEqual(factory.responses.badRequest(['assetId must be a UUID']));
+    });
+  });
+
   describe('GET /albums/:id', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/albums/${factory.uuid()}`);
