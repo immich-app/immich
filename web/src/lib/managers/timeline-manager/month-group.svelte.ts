@@ -50,12 +50,13 @@ export class MonthGroup {
   readonly yearMonth: TimelineYearMonth;
 
   constructor(
-    store: TimelineManager,
+    timelineManager: TimelineManager,
     yearMonth: TimelineYearMonth,
     initialCount: number,
+    loaded: boolean,
     order: AssetOrder = AssetOrder.Desc,
   ) {
-    this.timelineManager = store;
+    this.timelineManager = timelineManager;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
@@ -72,6 +73,9 @@ export class MonthGroup {
       },
       this.#handleLoadError,
     );
+    if (loaded) {
+      this.isLoaded = true;
+    }
   }
 
   set intersecting(newValue: boolean) {
