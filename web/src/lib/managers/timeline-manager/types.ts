@@ -1,4 +1,4 @@
-import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
+import type { TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
 
 export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead-out';
@@ -37,9 +37,7 @@ export type TimelineAsset = {
   longitude?: number | null;
 };
 
-export type AssetOperation = (asset: TimelineAsset) => { remove: boolean } | unknown;
-
-export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };
+export type AssetOperation = (asset: TimelineAsset) => unknown;
 
 export interface Viewport {
   width: number;

@@ -15,7 +15,7 @@ import {
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
-  setDifference,
+  setDifferenceInPlace,
   toTimelineAsset,
   type TimelineDateTime,
   type TimelineYearMonth,
@@ -30,7 +30,6 @@ import type {
   AssetDescriptor,
   AssetOperation,
   Direction,
-  MoveAsset,
   ScrubberMonth,
   TimelineAsset,
   TimelineManagerOptions,
@@ -326,7 +325,7 @@ export class TimelineManager extends VirtualScrollManager {
   upsertAssets(assets: TimelineAsset[]) {
     const notExcluded = assets.filter((asset) => !this.isExcluded(asset));
     const notUpdated = this.#updateAssets(notExcluded);
-    this.addAssetsToSegments([...notUpdated]);
+    this.addAssetsToSegments(notUpdated);
   }
 
   async findMonthGroupForAsset(id: string) {
@@ -403,29 +402,40 @@ export class TimelineManager extends VirtualScrollManager {
     return randomDay.viewerAssets[randomAssetIndex - accumulatedCount].asset;
   }
 
+  /**
+   * Executes the given operation against every passed in asset id.
+   *
+   * @returns An object with the changed ids, unprocessed ids, and if this resulted
+   * in changes of the timeline geometry.
+   */
   updateAssetOperation(ids: string[], operation: AssetOperation) {
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    return this.#runAssetOperation(new Set(ids), operation);
+    return this.#runAssetOperation(ids, operation);
   }
 
-  #updateAssets(assets: TimelineAsset[]) {
+  /**
+   * Looks up the specified asset from the TimelineAsset using its id, and then updates the
+   * existing object to match the rest of the TimelineAsset parameter.
+
+   * @returns list of assets that were updated (not found)
+   */
+  #updateAssets(updatedAssets: TimelineAsset[]) {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const lookup = new Map<string, TimelineAsset>(assets.map((asset) => [asset.id, asset]));
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const { unprocessedIds } = this.#runAssetOperation(new Set(lookup.keys()), (asset) =>
-      updateObject(asset, lookup.get(asset.id)),
-    );
+    const lookup = new Map<string, TimelineAsset>();
+    const ids = [];
+    for (const asset of updatedAssets) {
+      ids.push(asset.id);
+      lookup.set(asset.id, asset);
+    }
+    const { unprocessedIds } = this.#runAssetOperation(ids, (asset) => updateObject(asset, lookup.get(asset.id)));
     const result: TimelineAsset[] = [];
-    for (const id of unprocessedIds.values()) {
+    for (const id of unprocessedIds) {
       result.push(lookup.get(id)!);
     }
     return result;
   }
 
   removeAssets(ids: string[]) {
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const { unprocessedIds } = this.#runAssetOperation(new Set(ids), () => ({ remove: true }));
-    return [...unprocessedIds];
+    this.#runAssetOperation(ids, () => ({ remove: true }));
   }
 
   protected createUpsertContext(): GroupInsertionCache {
@@ -459,26 +469,26 @@ export class TimelineManager extends VirtualScrollManager {
     this.updateIntersections();
   }
 
-  #runAssetOperation(ids: Set<string>, operation: AssetOperation) {
-    if (ids.size === 0) {
+  #runAssetOperation(ids: string[], operation: AssetOperation) {
+    if (ids.length === 0) {
       // eslint-disable-next-line svelte/prefer-svelte-reactivity
-      return { processedIds: new Set(), unprocessedIds: ids, changedGeometry: false };
+      return { processedIds: new Set<string>(), unprocessedIds: new Set<string>(), changedGeometry: false };
     }
 
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const changedMonthGroups = new Set<MonthGroup>();
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    let idsToProcess = new Set(ids);
+    const idsToProcess = new Set(ids);
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const idsProcessed = new Set<string>();
-    const combinedMoveAssets: MoveAsset[][] = [];
+    const combinedMoveAssets: TimelineAsset[] = [];
     for (const month of this.months) {
       if (idsToProcess.size > 0) {
         const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);
         if (moveAssets.length > 0) {
-          combinedMoveAssets.push(moveAssets);
+          combinedMoveAssets.push(...moveAssets);
         }
-        idsToProcess = setDifference(idsToProcess, processedIds);
+        setDifferenceInPlace(idsToProcess, processedIds);
         for (const id of processedIds) {
           idsProcessed.add(id);
         }
@@ -488,7 +498,7 @@ export class TimelineManager extends VirtualScrollManager {
       }
     }
     if (combinedMoveAssets.length > 0) {
-      this.addAssetsToSegments(combinedMoveAssets.flat().map((a) => a.asset));
+      this.addAssetsToSegments(combinedMoveAssets);
     }
     const changedGeometry = changedMonthGroups.size > 0;
     for (const month of changedMonthGroups) {
