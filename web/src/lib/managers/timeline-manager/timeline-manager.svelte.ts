@@ -234,7 +234,6 @@ export class TimelineManager extends VirtualScrollManager {
     await this.initTask.reset();
     await this.#init(options);
     this.updateViewportGeometry(false);
-    this.#createScrubberMonths();
   }
 
   async #init(options: TimelineManagerOptions) {
