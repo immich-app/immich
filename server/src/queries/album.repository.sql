@@ -422,3 +422,15 @@ group by
   "asset"."ownerId"
 order by
   "assetCount" desc
+
+-- AlbumRepository.copyAlbums
+insert into
+  "album_asset"
+select
+  "album_asset"."albumsId",
+  $1 as "assetsId"
+from
+  "album_asset"
+where
+  "album_asset"."assetsId" = $2
+on conflict do nothing

@@ -128,6 +128,50 @@ class AssetsApi {
     return null;
   }
 
+  /// This endpoint requires the `asset.copy` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetCopyDto] assetCopyDto (required):
+  Future<Response> copyAssetWithHttpInfo(AssetCopyDto assetCopyDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/copy';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetCopyDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.copy` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetCopyDto] assetCopyDto (required):
+  Future<void> copyAsset(AssetCopyDto assetCopyDto,) async {
+    final response = await copyAssetWithHttpInfo(assetCopyDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// This endpoint requires the `asset.update` permission.
   ///
   /// Note: This method returns the HTTP [Response].

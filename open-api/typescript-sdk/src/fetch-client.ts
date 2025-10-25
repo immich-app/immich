@@ -517,6 +517,15 @@ export type AssetBulkUploadCheckResult = {
 export type AssetBulkUploadCheckResponseDto = {
     results: AssetBulkUploadCheckResult[];
 };
+export type AssetCopyDto = {
+    albums?: boolean;
+    favorite?: boolean;
+    "from": string;
+    sharedLinks?: boolean;
+    sidecar?: boolean;
+    stack?: boolean;
+    to: string;
+};
 export type CheckExistingAssetsDto = {
     deviceAssetIds: string[];
     deviceId: string;
@@ -2212,6 +2221,18 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
         ...opts,
         method: "POST",
         body: assetBulkUploadCheckDto
+    })));
+}
+/**
+ * This endpoint requires the `asset.copy` permission.
+ */
+export function copyAsset({ assetCopyDto }: {
+    assetCopyDto: AssetCopyDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/assets/copy", oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: assetCopyDto
     })));
 }
 /**
@@ -4739,6 +4760,7 @@ export enum Permission {
     AssetDownload = "asset.download",
     AssetUpload = "asset.upload",
     AssetReplace = "asset.replace",
+    AssetCopy = "asset.copy",
     AlbumCreate = "album.create",
     AlbumRead = "album.read",
     AlbumUpdate = "album.update",

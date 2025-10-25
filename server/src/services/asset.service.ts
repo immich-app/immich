@@ -7,6 +7,7 @@ import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
+  AssetCopyDto,
   AssetJobName,
   AssetJobsDto,
   AssetMetadataResponseDto,
@@ -180,6 +181,72 @@ export class AssetService extends BaseService {
         await this.albumRepository.removeAssetsFromAll(ids);
       }
     }
+  }
+
+  async copy(
+    auth: AuthDto,
+    { from, to, albums = true, sidecar = true, sharedLinks = true, stack = true, favorite = true }: AssetCopyDto,
+  ) {
+    await this.requireAccess({ auth, permission: Permission.AssetCopy, ids: [from, to] });
+    const fromAsset = await this.assetRepository.getById(from);
+    const toAsset = await this.assetRepository.getById(to);
+
+    if (!fromAsset || !toAsset) {
+      throw new BadRequestException('Both assets must exist');
+    }
+
+    if (albums) {
+      await this.albumRepository.copyAlbums({ assetFrom: from, assetTo: to });
+    }
+
+    if (sharedLinks) {
+      await this.sharedLinkAssetRepository.copySharedLinks({ assetFrom: from, assetTo: to });
+    }
+
+    if (stack) {
+      await this.copyStack(fromAsset, toAsset);
+    }
+
+    if (favorite) {
+      await this.assetRepository.update({ id: to, isFavorite: fromAsset.isFavorite });
+    }
+
+    if (sidecar) {
+      await this.copySidecar(fromAsset, toAsset);
+    }
+  }
+
+  private async copyStack(
+    fromAsset: { id: string; stackId: string | null },
+    toAsset: { id: string; stackId: string | null },
+  ) {
+    if (!fromAsset.stackId) {
+      return;
+    }
+
+    if (toAsset.stackId) {
+      await this.stackRepository.merge({ source: fromAsset.stackId, target: toAsset.stackId });
+      await this.stackRepository.delete(fromAsset.stackId);
+    } else {
+      await this.assetRepository.update({ id: toAsset.id, stackId: fromAsset.stackId });
+    }
+  }
+
+  private async copySidecar(
+    fromAsset: { sidecarPath: string | null },
+    toAsset: { id: string; sidecarPath: string | null; originalPath: string },
+  ) {
+    if (!fromAsset.sidecarPath) {
+      return;
+    }
+
+    if (toAsset.sidecarPath) {
+      await this.storageRepository.unlink(toAsset.sidecarPath);
+    }
+
+    await this.storageRepository.copyFile(fromAsset.sidecarPath, `${toAsset.originalPath}.xmp`);
+    await this.assetRepository.update({ id: toAsset.id, sidecarPath: `${toAsset.originalPath}.xmp` });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: toAsset.id } });
   }
 
   @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })

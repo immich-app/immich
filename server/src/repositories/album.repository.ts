@@ -397,4 +397,18 @@ export class AlbumRepository {
       .orderBy('assetCount', 'desc')
       .execute();
   }
+
+  @GenerateSql({ params: [{ assetFrom: DummyValue.UUID, assetTo: DummyValue.UUID }] })
+  async copyAlbums({ assetFrom, assetTo }: { assetFrom: string; assetTo: string }) {
+    return this.db
+      .insertInto('album_asset')
+      .expression((eb) =>
+        eb
+          .selectFrom('album_asset')
+          .select((eb) => ['album_asset.albumsId', eb.val(assetTo).as('assetsId')])
+          .where('album_asset.assetsId', '=', assetFrom),
+      )
+      .onConflict((oc) => oc.doNothing())
+      .execute();
+  }
 }
