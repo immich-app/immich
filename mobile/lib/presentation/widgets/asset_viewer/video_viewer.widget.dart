@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/setting.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer_controls.widget.dart';
@@ -24,6 +25,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
+import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -51,6 +53,8 @@ class NativeVideoViewer extends HookConsumerWidget {
   final bool showControls;
   final int playbackDelayFactor;
   final Widget image;
+  final ValueNotifier<PhotoViewScaleState>? scaleStateNotifier;
+  final bool disableScaleGestures;
 
   const NativeVideoViewer({
     super.key,
@@ -58,6 +62,8 @@ class NativeVideoViewer extends HookConsumerWidget {
     required this.image,
     this.showControls = true,
     this.playbackDelayFactor = 1,
+    this.scaleStateNotifier,
+    this.disableScaleGestures = false,
   });
 
   @override
@@ -132,6 +138,7 @@ class NativeVideoViewer extends HookConsumerWidget {
 
     final videoSource = useMemoized<Future<VideoSource?>>(() => createSource());
     final aspectRatio = useState<double?>(null);
+
     useMemoized(() async {
       if (!context.mounted || aspectRatio.value != null) {
         return null;
@@ -385,26 +392,47 @@ class NativeVideoViewer extends HookConsumerWidget {
       }
     });
 
-    return Stack(
-      children: [
-        // This remains under the video to avoid flickering
-        // For motion videos, this is the image portion of the asset
-        Center(key: ValueKey(asset.heroTag), child: image),
-        if (aspectRatio.value != null && !isCasting)
-          Visibility.maintain(
-            key: ValueKey(asset),
-            visible: isVisible.value,
-            child: Center(
+    Size? videoContextSize;
+
+    if (aspectRatio.value != null) {
+      final contextAspectRatio = context.width / context.height;
+
+      if (aspectRatio.value! > contextAspectRatio) {
+        videoContextSize = Size(context.width, context.width / aspectRatio.value!);
+      } else {
+        videoContextSize = Size(context.height * aspectRatio.value!, context.height);
+      }
+    }
+
+    return SizedBox(
+      width: context.width,
+      height: context.height,
+      child: Stack(
+        children: [
+          // Hide thumbnail once video is visible to avoid it showing in background when zooming out on video.
+          if (!isVisible.value || controller.value == null) Center(key: ValueKey(asset.heroTag), child: image),
+          if (aspectRatio.value != null && !isCasting)
+            Visibility.maintain(
               key: ValueKey(asset),
-              child: AspectRatio(
+              visible: isVisible.value,
+              child: PhotoView.customChild(
                 key: ValueKey(asset),
-                aspectRatio: aspectRatio.value!,
-                child: isCurrent ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController) : null,
+                enableRotation: false,
+                disableScaleGestures: disableScaleGestures,
+                // Transparent to avoid a black flash when viewer becomes visible but video isn't loaded yet.
+                backgroundDecoration: const BoxDecoration(color: Colors.transparent),
+                scaleStateChangedCallback: (state) => scaleStateNotifier?.value = state,
+                childSize: videoContextSize,
+                child: AspectRatio(
+                  key: ValueKey(asset),
+                  aspectRatio: aspectRatio.value!,
+                  child: isCurrent ? NativeVideoPlayerView(key: ValueKey(asset), onViewReady: initController) : null,
+                ),
               ),
             ),
-          ),
-        if (showControls) const Center(child: VideoViewerControls()),
-      ],
+          if (showControls) const Center(child: VideoViewerControls()),
+        ],
+      ),
     );
   }
 

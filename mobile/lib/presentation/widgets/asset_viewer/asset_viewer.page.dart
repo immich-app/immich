@@ -95,6 +95,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // PhotoViewGallery takes care of disposing it's controllers
   PhotoViewControllerBase? viewController;
   StreamSubscription? reloadSubscription;
+  final ValueNotifier<PhotoViewScaleState> videoScaleStateNotifier = ValueNotifier(PhotoViewScaleState.initial);
 
   late final int heroOffset;
   late PhotoViewControllerValue initialPhotoViewState;
@@ -145,6 +146,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _prevPreCacheStream?.removeListener(_dummyListener);
     _nextPreCacheStream?.removeListener(_dummyListener);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    videoScaleStateNotifier.dispose();
     _stackChildrenKeepAlive?.close();
     super.dispose();
   }
@@ -258,6 +260,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   void _onPageChanged(int index, PhotoViewControllerBase? controller) {
     _onAssetChanged(index);
     viewController = controller;
+    videoScaleStateNotifier.value = PhotoViewScaleState.initial; // reset video zoom state
   }
 
   void _onDragStart(
@@ -269,9 +272,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     viewController = controller;
     dragDownPosition = details.localPosition;
     initialPhotoViewState = controller.value;
+
     final isZoomed =
         scaleStateController.scaleState == PhotoViewScaleState.zoomedIn ||
-        scaleStateController.scaleState == PhotoViewScaleState.covering;
+        scaleStateController.scaleState == PhotoViewScaleState.covering ||
+        videoScaleStateNotifier.value == PhotoViewScaleState.zoomedIn ||
+        videoScaleStateNotifier.value == PhotoViewScaleState.covering;
+
     if (!showingBottomSheet && isZoomed) {
       blockGestures = true;
     }
@@ -572,35 +579,29 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     );
   }
 
-  GlobalKey _getVideoPlayerKey(String id) {
-    videoPlayerKeys.putIfAbsent(id, () => GlobalKey());
-    return videoPlayerKeys[id]!;
-  }
-
   PhotoViewGalleryPageOptions _videoBuilder(BuildContext ctx, BaseAsset asset) {
     return PhotoViewGalleryPageOptions.customChild(
+      key: ValueKey(asset.heroTag),
       onDragStart: _onDragStart,
       onDragUpdate: _onDragUpdate,
       onDragEnd: _onDragEnd,
-      onTapDown: _onTapDown,
+      disableScaleGestures: true,
       heroAttributes: PhotoViewHeroAttributes(tag: '${asset.heroTag}_$heroOffset'),
       filterQuality: FilterQuality.high,
-      maxScale: 1.0,
       basePosition: Alignment.center,
-      child: SizedBox(
-        width: ctx.width,
-        height: ctx.height,
-        child: NativeVideoViewer(
-          key: _getVideoPlayerKey(asset.heroTag),
-          asset: asset,
-          image: Image(
-            key: ValueKey(asset),
-            image: getFullImageProvider(asset, size: ctx.sizeData),
-            fit: BoxFit.contain,
-            height: ctx.height,
-            width: ctx.width,
-            alignment: Alignment.center,
-          ),
+      tightMode: true,
+      child: NativeVideoViewer(
+        key: ValueKey(asset.heroTag),
+        asset: asset,
+        scaleStateNotifier: videoScaleStateNotifier,
+        disableScaleGestures: showingBottomSheet,
+        image: Image(
+          key: ValueKey(asset),
+          image: getFullImageProvider(asset, size: ctx.sizeData),
+          height: ctx.height,
+          width: ctx.width,
+          fit: BoxFit.contain,
+          alignment: Alignment.center,
         ),
       ),
     );
