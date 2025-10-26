@@ -31,7 +31,9 @@ export class DayGroup {
     this.monthGroup = monthGroup;
     this.day = day;
     this.groupTitle = groupTitle;
-    onCreateDayGroup(this);
+    if (import.meta.env.DEV) {
+      onCreateDayGroup(this);
+    }
   }
 
   get top() {
