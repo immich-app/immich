@@ -286,7 +286,7 @@ class TestOrtSession:
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(
             "ViT-B-32__openai",
-            providers=["CUDAExecutionProvider", "CPUExecutionProvider"],
+            providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"],
             provider_options=[],
         )
 
