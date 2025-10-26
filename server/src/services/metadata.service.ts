@@ -447,7 +447,10 @@ export class MetadataService extends BaseService {
      * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
      * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
      */
-    let [width, height] = exifTags.ImageSize?.split('x').map((dim) => Number.parseInt(dim) || undefined) || [];
+    let [width, height] =
+      exifTags.ImageSize?.toString()
+        ?.split('x')
+        ?.map((dim) => Number.parseInt(dim) || undefined) ?? [];
     if (!width || !height) {
       [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
     }

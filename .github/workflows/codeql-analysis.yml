@@ -43,14 +43,21 @@ jobs:
         # Learn more about CodeQL language support at https://aka.ms/codeql-docs/language-support
 
     steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@da177fa133657503ddb7503f8ba53dccefec5da1 # create-workflow-token-action-v1.0.0
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
+          token: ${{ steps.token.outputs.token }}
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
+        uses: github/codeql-action/init@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
         with:
           languages: ${{ matrix.language }}
           # If you wish to specify custom queries, you can do so here or in a config file.
@@ -63,7 +70,7 @@ jobs:
       # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
       # If this step fails, then you should remove it and run the build manually (see below)
       - name: Autobuild
-        uses: github/codeql-action/autobuild@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
+        uses: github/codeql-action/autobuild@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
 
       # ℹ️ Command-line programs to run using the OS shell.
       # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
@@ -76,6 +83,6 @@ jobs:
       #   ./location_of_script_within_repo/buildscript.sh
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@64d10c13136e1c5bce3e5fbde8d4906eeaafc885 # v3.30.6
+        uses: github/codeql-action/analyze@16140ae1a102900babc80a33c44059580f687047 # v4.30.9
         with:
           category: '/language:${{matrix.language}}'

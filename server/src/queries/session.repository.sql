@@ -23,6 +23,7 @@ select
   "session"."id",
   "session"."updatedAt",
   "session"."pinExpiresAt",
+  "session"."appVersion",
   (
     select
       to_json(obj)

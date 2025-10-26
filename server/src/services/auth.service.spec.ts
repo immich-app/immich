@@ -41,6 +41,7 @@ const loginDetails = {
   clientIp: '127.0.0.1',
   deviceOS: '',
   deviceType: '',
+  appVersion: null,
 };
 
 const fixtures = {
@@ -243,6 +244,7 @@ describe(AuthService.name, () => {
         updatedAt: session.updatedAt,
         user: factory.authUser(),
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -408,6 +410,7 @@ describe(AuthService.name, () => {
         updatedAt: session.updatedAt,
         user: factory.authUser(),
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -435,6 +438,7 @@ describe(AuthService.name, () => {
         user: factory.authUser(),
         isPendingSyncReset: false,
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -456,6 +460,7 @@ describe(AuthService.name, () => {
         user: factory.authUser(),
         isPendingSyncReset: false,
         pinExpiresAt: null,
+        appVersion: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);

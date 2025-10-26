@@ -39,7 +39,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import {
@@ -360,12 +360,6 @@
   let person = $derived(data.person);
 
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
-
-  $effect(() => {
-    if (person) {
-      handlePromiseError(updateAssetCount());
-    }
-  });
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);

@@ -23,6 +23,7 @@ export type SendEmailOptions = {
 export type SmtpOptions = {
   host: string;
   port?: number;
+  secure?: boolean;
   username?: string;
   password?: string;
   ignoreCert?: boolean;

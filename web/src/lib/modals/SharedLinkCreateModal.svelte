@@ -103,7 +103,7 @@
     try {
       const expirationDate = expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : null;
 
-      await updateSharedLink({
+      const updatedLink = await updateSharedLink({
         id: editingLink.id,
         sharedLinkEditDto: {
           description,
@@ -121,7 +121,7 @@
         message: $t('edited'),
       });
 
-      onClose();
+      onClose(updatedLink);
     } catch (error) {
       handleError(error, $t('errors.failed_to_edit_shared_link'));
     }

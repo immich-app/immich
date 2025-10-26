@@ -60,14 +60,14 @@ interface UploadRequestOptions {
 }
 
 export class AbortError extends Error {
-  name = 'AbortError';
+  override name = 'AbortError';
 }
 
 class ApiError extends Error {
-  name = 'ApiError';
+  override name = 'ApiError';
 
   constructor(
-    public message: string,
+    public override message: string,
     public statusCode: number,
     public details: string,
   ) {

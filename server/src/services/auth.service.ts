@@ -29,11 +29,13 @@ import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
+import { getUserAgentDetails } from 'src/utils/request';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
   deviceType: string;
   deviceOS: string;
+  appVersion: string | null;
 }
 
 interface ClaimOptions<T> {
@@ -218,7 +220,7 @@ export class AuthService extends BaseService {
     }
 
     if (session) {
-      return this.validateSession(session);
+      return this.validateSession(session, headers);
     }
 
     if (apiKey) {
@@ -463,15 +465,22 @@ export class AuthService extends BaseService {
     return this.cryptoRepository.compareBcrypt(inputSecret, existingHash);
   }
 
-  private async validateSession(tokenValue: string): Promise<AuthDto> {
+  private async validateSession(tokenValue: string, headers: IncomingHttpHeaders): Promise<AuthDto> {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
     const session = await this.sessionRepository.getByToken(hashedToken);
     if (session?.user) {
+      const { appVersion, deviceOS, deviceType } = getUserAgentDetails(headers);
       const now = DateTime.now();
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
-      if (diff.hours > 1) {
-        await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
+      if (diff.hours > 1 || appVersion != session.appVersion) {
+        await this.sessionRepository.update(session.id, {
+          id: session.id,
+          updatedAt: new Date(),
+          appVersion,
+          deviceOS,
+          deviceType,
+        });
       }
 
       // Pin check
@@ -529,6 +538,7 @@ export class AuthService extends BaseService {
       token: tokenHashed,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
+      appVersion: loginDetails.appVersion,
       userId: user.id,
     });
 

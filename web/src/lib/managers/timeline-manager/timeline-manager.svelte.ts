@@ -1,13 +1,5 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
-
+import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-
-import { CancellableTask } from '$lib/utils/cancellable-task';
-import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
-
-import { clamp, debounce, isEqual } from 'lodash-es';
-import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
-
 import { updateIntersectionMonthGroup } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
@@ -16,6 +8,7 @@ import {
   runAssetOperation,
 } from '$lib/managers/timeline-manager/internal/operations-support.svelte';
 import {
+  findClosestGroupForDate,
   findMonthGroupForAsset as findMonthGroupForAssetUtil,
   findMonthGroupForDate,
   getAssetWithOffset,
@@ -23,6 +16,11 @@ import {
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import { CancellableTask } from '$lib/utils/cancellable-task';
+import { toTimelineAsset, type TimelineDateTime, type TimelineYearMonth } from '$lib/utils/timeline-util';
+import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
+import { clamp, isEqual } from 'lodash-es';
+import { SvelteDate, SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
 import { MonthGroup } from './month-group.svelte';
@@ -32,7 +30,6 @@ import type {
   Direction,
   ScrubberMonth,
   TimelineAsset,
-  TimelineManagerLayoutOptions,
   TimelineManagerOptions,
   Viewport,
 } from './types';
@@ -44,28 +41,32 @@ type ViewportTopMonthIntersection = {
   // Where month bottom is in viewport (0 = viewport top, 1 = viewport bottom)
   monthBottomViewportRatio: number;
 };
-export class TimelineManager {
+export class TimelineManager extends VirtualScrollManager {
+  override bottomSectionHeight = $state(60);
+
+  override bodySectionHeight = $derived.by(() => {
+    let height = 0;
+    for (const month of this.months) {
+      height += month.height;
+    }
+    return height;
+  });
+
+  assetCount = $derived.by(() => {
+    let count = 0;
+    for (const month of this.months) {
+      count += month.assetsCount;
+    }
+    return count;
+  });
+
   isInitialized = $state(false);
   months: MonthGroup[] = $state([]);
-  topSectionHeight = $state(0);
-  bottomSectionHeight = $state(60);
-  assetsHeight = $derived(this.months.reduce((accumulator, b) => accumulator + b.height, 0));
-  totalViewerHeight = $derived(this.topSectionHeight + this.assetsHeight + this.bottomSectionHeight);
-  assetCount = $derived(this.months.reduce((accumulator, b) => accumulator + b.assetsCount, 0));
-
   albumAssets: Set<string> = new SvelteSet();
-
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
-
   viewportTopMonthIntersection: ViewportTopMonthIntersection | undefined;
-
-  visibleWindow = $derived.by(() => ({
-    top: this.#scrollTop,
-    bottom: this.#scrollTop + this.viewportHeight,
-  }));
   limitedScroll = $derived(this.maxScrollPercent < 0.5);
-
   initTask = new CancellableTask(
     () => {
       this.isInitialized = true;
@@ -82,32 +83,17 @@ export class TimelineManager {
   );
 
   static #INIT_OPTIONS = {};
-  #viewportHeight = $state(0);
-  #viewportWidth = $state(0);
-  #scrollTop = $state(0);
   #websocketSupport: WebsocketSupport | undefined;
-
-  #rowHeight = $state(235);
-  #headerHeight = $state(48);
-  #gap = $state(12);
-
   #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
-
-  #scrolling = $state(false);
-  #suspendTransitions = $state(false);
-  #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
-  #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
   #updatingIntersections = false;
   #scrollableElement: HTMLElement | undefined = $state();
 
-  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: TimelineManagerLayoutOptions) {
-    let changed = false;
-    changed ||= this.#setHeaderHeight(headerHeight);
-    changed ||= this.#setGap(gap);
-    changed ||= this.#setRowHeight(rowHeight);
-    if (changed) {
-      this.refreshLayout();
-    }
+  constructor() {
+    super();
+  }
+
+  override get scrollTop(): number {
+    return this.#scrollableElement?.scrollTop ?? 0;
   }
 
   set scrollableElement(element: HTMLElement | undefined) {
@@ -122,87 +108,6 @@ export class TimelineManager {
   scrollBy(y: number) {
     this.#scrollableElement?.scrollBy(0, y);
     this.updateSlidingWindow();
-  }
-
-  #setHeaderHeight(value: number) {
-    if (this.#headerHeight == value) {
-      return false;
-    }
-    this.#headerHeight = value;
-    return true;
-  }
-
-  get headerHeight() {
-    return this.#headerHeight;
-  }
-
-  #setGap(value: number) {
-    if (this.#gap == value) {
-      return false;
-    }
-    this.#gap = value;
-    return true;
-  }
-
-  get gap() {
-    return this.#gap;
-  }
-
-  #setRowHeight(value: number) {
-    if (this.#rowHeight == value) {
-      return false;
-    }
-    this.#rowHeight = value;
-    return true;
-  }
-
-  get rowHeight() {
-    return this.#rowHeight;
-  }
-
-  set scrolling(value: boolean) {
-    this.#scrolling = value;
-    if (value) {
-      this.suspendTransitions = true;
-      this.#resetScrolling();
-    }
-  }
-
-  get scrolling() {
-    return this.#scrolling;
-  }
-
-  set suspendTransitions(value: boolean) {
-    this.#suspendTransitions = value;
-    if (value) {
-      this.#resetSuspendTransitions();
-    }
-  }
-
-  get suspendTransitions() {
-    return this.#suspendTransitions;
-  }
-
-  set viewportWidth(value: number) {
-    const changed = value !== this.#viewportWidth;
-    this.#viewportWidth = value;
-    this.suspendTransitions = true;
-    this.#updateViewportGeometry(changed);
-    this.updateSlidingWindow();
-  }
-
-  get viewportWidth() {
-    return this.#viewportWidth;
-  }
-
-  set viewportHeight(value: number) {
-    this.#viewportHeight = value;
-    this.#suspendTransitions = true;
-    void this.#updateViewportGeometry(false);
-  }
-
-  get viewportHeight() {
-    return this.#viewportHeight;
   }
 
   async *assetsIterator(options?: {
@@ -250,14 +155,6 @@ export class TimelineManager {
     this.#websocketSupport = undefined;
   }
 
-  updateSlidingWindow() {
-    const scrollTop = this.#scrollableElement?.scrollTop ?? 0;
-    if (this.#scrollTop !== scrollTop) {
-      this.#scrollTop = scrollTop;
-      this.updateIntersections();
-    }
-  }
-
   #calculateMonthBottomViewportRatio(month: MonthGroup | undefined) {
     if (!month) {
       return 0;
@@ -275,7 +172,7 @@ export class TimelineManager {
     return clamp((this.visibleWindow.top - month.top) / month.height, 0, 1);
   }
 
-  updateIntersections() {
+  override updateIntersections() {
     if (this.#updatingIntersections || !this.isInitialized || this.visibleWindow.bottom === this.visibleWindow.top) {
       return;
     }
@@ -324,7 +221,7 @@ export class TimelineManager {
       );
     });
     this.albumAssets.clear();
-    this.#updateViewportGeometry(false);
+    this.updateViewportGeometry(false);
   }
 
   async updateOptions(options: TimelineManagerOptions) {
@@ -336,7 +233,8 @@ export class TimelineManager {
     }
     await this.initTask.reset();
     await this.#init(options);
-    this.#updateViewportGeometry(false);
+    this.updateViewportGeometry(false);
+    this.#createScrubberMonths();
   }
 
   async #init(options: TimelineManagerOptions) {
@@ -349,9 +247,10 @@ export class TimelineManager {
     }, true);
   }
 
-  public destroy() {
+  public override destroy() {
     this.disconnect();
     this.isInitialized = false;
+    super.destroy();
   }
 
   async updateViewport(viewport: Viewport) {
@@ -370,14 +269,11 @@ export class TimelineManager {
     const changedWidth = viewport.width !== this.viewportWidth;
     this.viewportHeight = viewport.height;
     this.viewportWidth = viewport.width;
-    this.#updateViewportGeometry(changedWidth);
+    this.updateViewportGeometry(changedWidth);
   }
 
-  #updateViewportGeometry(changedWidth: boolean) {
-    if (!this.isInitialized) {
-      return;
-    }
-    if (this.viewportWidth === 0 || this.viewportHeight === 0) {
+  protected override updateViewportGeometry(changedWidth: boolean) {
+    if (!this.isInitialized || this.hasEmptyViewport) {
       return;
     }
     for (const month of this.months) {
@@ -398,27 +294,6 @@ export class TimelineManager {
       height: month.height,
     }));
     this.scrubberTimelineHeight = this.totalViewerHeight;
-  }
-
-  createLayoutOptions() {
-    const viewportWidth = this.viewportWidth;
-
-    return {
-      spacing: 2,
-      heightTolerance: 0.15,
-      rowHeight: this.#rowHeight,
-      rowWidth: Math.floor(viewportWidth),
-    };
-  }
-
-  get maxScrollPercent() {
-    const totalHeight = this.totalViewerHeight;
-    const max = (totalHeight - this.viewportHeight) / totalHeight;
-    return max;
-  }
-
-  get maxScroll() {
-    return this.totalViewerHeight - this.viewportHeight;
   }
 
   async loadMonthGroup(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
@@ -558,7 +433,7 @@ export class TimelineManager {
     return [...unprocessedIds];
   }
 
-  refreshLayout() {
+  override refreshLayout() {
     for (const month of this.months) {
       updateGeometry(this, month, { invalidateHeight: true });
     }
@@ -584,9 +459,13 @@ export class TimelineManager {
   }
 
   async getClosestAssetToDate(dateTime: TimelineDateTime) {
-    const monthGroup = findMonthGroupForDate(this, dateTime);
+    let monthGroup = findMonthGroupForDate(this, dateTime);
     if (!monthGroup) {
-      return;
+      // if exact match not found, find closest
+      monthGroup = findClosestGroupForDate(this.months, dateTime);
+      if (!monthGroup) {
+        return;
+      }
     }
     await this.loadMonthGroup(dateTime, { cancelable: false });
     const asset = monthGroup.findClosest(dateTime);

@@ -154,6 +154,9 @@
 
     // If the asset is already visible, then don't scroll.
     if (assetIsVisible(height)) {
+      // need to update window positions/intersections because since the <Portal>
+      // went from invisible to visible
+      timelineManager.updateSlidingWindow();
       return true;
     }
 
@@ -250,7 +253,7 @@
       scrollToSegmentPercentage(0, timelineManager.topSectionHeight, scrubberMonthScrollPercent);
     } else if (leadOut) {
       scrollToSegmentPercentage(
-        timelineManager.topSectionHeight + timelineManager.assetsHeight,
+        timelineManager.topSectionHeight + timelineManager.bodySectionHeight,
         timelineManager.bottomSectionHeight,
         scrubberMonthScrollPercent,
       );
@@ -611,7 +614,7 @@
       style:position="absolute"
       style:left="0"
       style:right="0"
-      style:transform={`translate3d(0,${timelineManager.topSectionHeight + timelineManager.assetsHeight}px,0)`}
+      style:transform={`translate3d(0,${timelineManager.topSectionHeight + timelineManager.bodySectionHeight}px,0)`}
     ></div>
   </section>
 </section>

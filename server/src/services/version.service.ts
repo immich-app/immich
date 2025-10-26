@@ -92,7 +92,7 @@ export class VersionService extends BaseService {
 
       if (semver.gt(releaseVersion, serverVersion)) {
         this.logger.log(`Found ${releaseVersion}, released at ${new Date(publishedAt).toLocaleString()}`);
-        this.eventRepository.clientBroadcast('on_new_release', asNotification(metadata));
+        this.websocketRepository.clientBroadcast('on_new_release', asNotification(metadata));
       }
     } catch (error: Error | any) {
       this.logger.warn(`Unable to run version check: ${error}\n${error?.stack}`);
@@ -104,10 +104,10 @@ export class VersionService extends BaseService {
 
   @OnEvent({ name: 'WebsocketConnect' })
   async onWebsocketConnection({ userId }: ArgOf<'WebsocketConnect'>) {
-    this.eventRepository.clientSend('on_server_version', userId, serverVersion);
+    this.websocketRepository.clientSend('on_server_version', userId, serverVersion);
     const metadata = await this.systemMetadataRepository.get(SystemMetadataKey.VersionCheckState);
     if (metadata) {
-      this.eventRepository.clientSend('on_new_release', userId, asNotification(metadata));
+      this.websocketRepository.clientSend('on_new_release', userId, asNotification(metadata));
     }
   }
 }

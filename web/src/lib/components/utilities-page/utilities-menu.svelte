@@ -1,7 +1,15 @@
 <script lang="ts">
   import { AppRoute } from '$lib/constants';
-  import { Icon } from '@immich/ui';
-  import { mdiContentDuplicate, mdiCrosshairsGps, mdiImageSizeSelectLarge } from '@mdi/js';
+  import AppDownloadModal from '$lib/modals/AppDownloadModal.svelte';
+  import ObtainiumConfigModal from '$lib/modals/ObtainiumConfigModal.svelte';
+  import { Icon, modalManager } from '@immich/ui';
+  import {
+    mdiCellphoneArrowDownVariant,
+    mdiContentDuplicate,
+    mdiCrosshairsGps,
+    mdiImageSizeSelectLarge,
+    mdiLinkEdit,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   const links = [
@@ -20,4 +28,28 @@
       {link.label}
     </a>
   {/each}
+</div>
+<br />
+<div class="border border-gray-300 dark:border-immich-dark-gray rounded-3xl pt-1 pb-6 dark:text-white">
+  <p class="uppercase text-xs font-medium p-4">{$t('download')}</p>
+  <button
+    type="button"
+    onclick={() => modalManager.show(ObtainiumConfigModal, {})}
+    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+  >
+    <span>
+      <Icon icon={mdiLinkEdit} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
+    </span>
+    {$t('obtainium_configurator')}
+  </button>
+  <button
+    type="button"
+    onclick={() => modalManager.show(AppDownloadModal, {})}
+    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+  >
+    <span>
+      <Icon icon={mdiCellphoneArrowDownVariant} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
+    </span>
+    {$t('app_download_links')}
+  </button>
 </div>

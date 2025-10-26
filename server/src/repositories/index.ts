@@ -31,6 +31,7 @@ import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -43,6 +44,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 
 export const repositories = [
   AccessRepository,
@@ -79,6 +81,7 @@ export const repositories = [
   SessionRepository,
   ServerInfoRepository,
   SharedLinkRepository,
+  SharedLinkAssetRepository,
   StackRepository,
   StorageRepository,
   SyncRepository,
@@ -90,4 +93,5 @@ export const repositories = [
   UserRepository,
   ViewRepository,
   VersionHistoryRepository,
+  WebsocketRepository,
 ];

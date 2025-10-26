@@ -52,7 +52,7 @@
     {#if showDetail}
       <div
         in:scale={{ duration: 250, easing: quartInOut }}
-        class="w-[300px] rounded-lg border bg-gray-100 p-4 text-sm shadow-sm dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-white"
+        class="w-[325px] rounded-xl border border-gray-200 dark:border-subtle p-4 text-sm shadow-xs bg-subtle"
       >
         <div class="place-item-center mb-4 flex justify-between">
           <div class="flex flex-col gap-1">

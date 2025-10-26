@@ -38,6 +38,7 @@ import { ProcessRepository } from 'src/repositories/process.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkAssetRepository } from 'src/repositories/shared-link-asset.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -50,6 +51,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -89,6 +91,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   ServerInfoRepository,
   SessionRepository,
   SharedLinkRepository,
+  SharedLinkAssetRepository,
   StackRepository,
   StorageRepository,
   SyncRepository,
@@ -141,6 +144,7 @@ export class BaseService {
     protected serverInfoRepository: ServerInfoRepository,
     protected sessionRepository: SessionRepository,
     protected sharedLinkRepository: SharedLinkRepository,
+    protected sharedLinkAssetRepository: SharedLinkAssetRepository,
     protected stackRepository: StackRepository,
     protected storageRepository: StorageRepository,
     protected syncRepository: SyncRepository,
@@ -152,6 +156,7 @@ export class BaseService {
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
     protected viewRepository: ViewRepository,
+    protected websocketRepository: WebsocketRepository,
   ) {
     this.logger.setContext(this.constructor.name);
     this.storageCore = StorageCore.create(
@@ -195,8 +200,8 @@ export class BaseService {
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
-    const user = await this.userRepository.getByEmail(dto.email);
-    if (user) {
+    const exists = await this.userRepository.getByEmail(dto.email);
+    if (exists) {
       throw new BadRequestException('User exists');
     }
 
@@ -215,7 +220,10 @@ export class BaseService {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
 
-    this.telemetryRepository.api.addToGauge(`immich.users.total`, 1);
-    return this.userRepository.create(payload);
+    const user = await this.userRepository.create(payload);
+
+    await this.eventRepository.emit('UserCreate', user);
+
+    return user;
   }
 }
