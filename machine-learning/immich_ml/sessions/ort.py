@@ -123,6 +123,17 @@ class OrtSession:
 
     @property
     def _sess_options_default(self) -> ort.SessionOptions:
+        def is_openvino_cpu() -> bool:
+            """Check if OpenVINO provider is configured for CPU."""
+            if "OpenVINOExecutionProvider" not in self.providers:
+                return False
+
+            ov_idx = self.providers.index("OpenVINOExecutionProvider")
+            if ov_idx >= len(self._provider_options):
+                return False
+
+            return self._provider_options[ov_idx].get("device_type") == "CPU"
+
         sess_options = ort.SessionOptions()
         sess_options.enable_cpu_mem_arena = settings.model_arena
 
@@ -133,10 +144,7 @@ class OrtSession:
         # these defaults work well for CPU, but bottleneck GPU
         elif settings.model_inter_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.inter_op_num_threads = 1
-        elif settings.model_inter_op_threads == 0 and (
-            "OpenVINOExecutionProvider" in self.providers
-            and self._provider_options[self.providers.index("OpenVINOExecutionProvider")].get("device_type") == "CPU"
-        ):
+        elif settings.model_inter_op_threads == 0 and is_openvino_cpu():
             sess_options.inter_op_num_threads = 1
 
         # Set intra_op threads
@@ -144,10 +152,7 @@ class OrtSession:
             sess_options.intra_op_num_threads = settings.model_intra_op_threads
         elif settings.model_intra_op_threads == 0 and self.providers == ["CPUExecutionProvider"]:
             sess_options.intra_op_num_threads = 2
-        elif settings.model_intra_op_threads == 0 and (
-            "OpenVINOExecutionProvider" in self.providers
-            and self._provider_options[self.providers.index("OpenVINOExecutionProvider")].get("device_type") == "CPU"
-        ):
+        elif settings.model_intra_op_threads == 0 and is_openvino_cpu():
             sess_options.intra_op_num_threads = 1
 
         if sess_options.inter_op_num_threads > 1:
