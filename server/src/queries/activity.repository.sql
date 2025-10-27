@@ -96,6 +96,7 @@ from
 where
   "activity"."assetId" = $3
   and "activity"."albumId" = $4
+  and "activity"."aggregationId" is null
   and (
     (
       "asset"."deletedAt" is null

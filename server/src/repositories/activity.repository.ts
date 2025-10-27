@@ -105,6 +105,7 @@ export class ActivityRepository {
       .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
+      .where('activity.aggregationId', 'is', null)
       .where(({ or, and, eb }) =>
         or([
           and([eb('asset.deletedAt', 'is', null), eb('asset.visibility', '!=', sql.lit(AssetVisibility.Locked))]),
