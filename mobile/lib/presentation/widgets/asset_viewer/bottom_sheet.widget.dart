@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -178,7 +180,7 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
                     isOwner: isOwner,
                     onAlbumSelected: (album) async {
                       ref.invalidate(assetViewerProvider);
-                      context.router.popAndPush(RemoteAlbumRoute(album: album));
+                      unawaited(context.router.popAndPush(RemoteAlbumRoute(album: album)));
                     },
                   );
                 }).toList(),
