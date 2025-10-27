@@ -15,15 +15,16 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
+const ALBUM_UPDATE_ASSET_LIMIT = 3;
+
 @Injectable()
 export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
     const assetIdFilter = dto.level === ReactionLevel.ALBUM ? null : dto.assetId;
 
-    const includeAlbumUpdates =
-      dto.includeAlbumUpdate === true &&
-      (dto.type === ReactionType.ALBUM_UPDATE || (!dto.type && dto.level === ReactionLevel.ALBUM));
+    const includeAlbumUpdates = dto.includeAlbumUpdate === true && dto.level !== ReactionLevel.ASSET;
+    // (dto.type === ReactionType.ALBUM_UPDATE || (!dto.type && dto.level === ReactionLevel.ALBUM));
 
     const includeRegularActivities = dto.type !== ReactionType.ALBUM_UPDATE;
 
@@ -35,6 +36,7 @@ export class ActivityService extends BaseService {
       assetId: assetIdFilter,
       isLiked,
       includeAlbumUpdates,
+      albumUpdateAssetLimit: ALBUM_UPDATE_ASSET_LIMIT,
     });
 
     const mapped = activities.map((activity) => mapActivity(activity));

@@ -74,6 +74,7 @@ export class ActivityCreateDto extends ActivityDto {
 export const mapActivity = (activity: Activity): ActivityResponseDto => {
   const isAlbumUpdate = !!activity.aggregationId;
   const assetIds = activity.assetIds ?? [];
+  const aggregationCount = isAlbumUpdate ? (activity.albumUpdateAssetCount ?? assetIds.length) : assetIds.length;
 
   return {
     id: isAlbumUpdate ? activity.aggregationId! : activity.id,
@@ -85,8 +86,8 @@ export const mapActivity = (activity: Activity): ActivityResponseDto => {
     albumUpdate: isAlbumUpdate
       ? {
           aggregationId: activity.aggregationId!,
-          assetIds: assetIds.slice(0, 3),
-          aggregationCount: assetIds.length,
+          assetIds,
+          aggregationCount,
         }
       : null,
   };

@@ -164,58 +164,75 @@ export const album_asset_generate_aggregation_id = registerFunction({
     END`,
 });
 
-export const album_asset_sync_activity = registerFunction({
-  name: 'album_asset_sync_activity',
-  returnType: 'TRIGGER',
+export const album_asset_sync_activity_apply = registerFunction({
+  name: 'album_asset_sync_activity_apply',
+  arguments: ['p_aggregation_id uuid', 'p_album_id uuid', 'p_user_id uuid'],
+  returnType: 'void',
   language: 'PLPGSQL',
   body: `
     DECLARE
-      v_aggregation_id uuid;
-      v_album_id uuid;
-      v_user_id uuid;
-      v_asset_ids uuid[];
-      v_created_at TIMESTAMP WITH TIME ZONE;
+    v_asset_ids uuid[];
+    v_created_at TIMESTAMP WITH TIME ZONE;
+    v_album_id uuid := p_album_id;
+    v_user_id uuid := p_user_id;
     BEGIN
-      IF TG_OP = 'INSERT' THEN
-        IF NEW."aggregationId" IS NULL OR NEW."createdBy" IS NULL THEN
-          RETURN NEW;
-        END IF;
-
-        v_aggregation_id := NEW."aggregationId";
-        v_album_id := NEW."albumsId";
-        v_user_id := NEW."createdBy";
-      ELSE
-        IF OLD."aggregationId" IS NULL THEN
-          RETURN OLD;
-        END IF;
-
-        v_aggregation_id := OLD."aggregationId";
-        v_album_id := OLD."albumsId";
-        v_user_id := OLD."createdBy";
-
-        IF v_user_id IS NULL THEN
-          SELECT "userId" INTO v_user_id
-          FROM activity
-          WHERE "aggregationId" = v_aggregation_id
-          LIMIT 1;
-        END IF;
+      IF p_aggregation_id IS NULL THEN
+        RETURN;
       END IF;
 
       SELECT
         ARRAY(
           SELECT aa."assetsId"
           FROM album_asset aa
-          WHERE aa."aggregationId" = v_aggregation_id
+          WHERE aa."aggregationId" = p_aggregation_id
           ORDER BY aa."createdAt" ASC
         )::uuid[],
         MIN("createdAt")
       INTO v_asset_ids, v_created_at
       FROM album_asset
-      WHERE "aggregationId" = v_aggregation_id;
+      WHERE "aggregationId" = p_aggregation_id;
+
+      IF v_album_id IS NULL THEN
+        SELECT "albumsId" INTO v_album_id
+        FROM album_asset
+        WHERE "aggregationId" = p_aggregation_id
+        ORDER BY "createdAt" ASC
+        LIMIT 1;
+      END IF;
 
       IF v_asset_ids IS NULL OR array_length(v_asset_ids, 1) IS NULL THEN
-        DELETE FROM activity WHERE "aggregationId" = v_aggregation_id;
-      ELSE
+        DELETE FROM activity WHERE "aggregationId" = p_aggregation_id;
+        RETURN;
+      END IF;
+
+      IF v_user_id IS NULL THEN
+        SELECT "userId" INTO v_user_id
+        FROM activity
+        WHERE "aggregationId" = p_aggregation_id
+        LIMIT 1;
+      END IF;
+
+      IF v_user_id IS NULL THEN
+        SELECT "createdBy" INTO v_user_id
+        FROM album_asset
+        WHERE "aggregationId" = p_aggregation_id
+        ORDER BY "createdAt" ASC
+        LIMIT 1;
+      END IF;
+
+      IF v_user_id IS NULL THEN
+        RETURN;
+      END IF;
+
+      UPDATE activity
+      SET
+        "assetIds" = v_asset_ids,
+        "albumId" = v_album_id,
+        "userId" = COALESCE(v_user_id, activity."userId"),
+        "createdAt" = v_created_at
+      WHERE "aggregationId" = p_aggregation_id;
+
+      IF NOT FOUND THEN
         INSERT INTO activity (
           "id",
           "albumId",
@@ -228,13 +245,13 @@ export const album_asset_sync_activity = registerFunction({
           "createdAt"
         )
         VALUES (
-          v_aggregation_id,
+          p_aggregation_id,
           v_album_id,
           v_user_id,
           NULL,
           NULL,
           FALSE,
-          v_aggregation_id,
+          p_aggregation_id,
           v_asset_ids,
           v_created_at
         )
@@ -245,12 +262,44 @@ export const album_asset_sync_activity = registerFunction({
               "userId" = COALESCE(EXCLUDED."userId", activity."userId"),
               "createdAt" = EXCLUDED."createdAt";
       END IF;
+    END`,
+});
 
+export const album_asset_sync_activity = registerFunction({
+  name: 'album_asset_sync_activity',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    DECLARE
+      v_row RECORD;
+    BEGIN
       IF TG_OP = 'INSERT' THEN
-        RETURN NEW;
-      ELSE
-        RETURN OLD;
+        FOR v_row IN
+          SELECT DISTINCT "aggregationId", "albumsId", "createdBy"
+          FROM inserted_rows
+          WHERE "aggregationId" IS NOT NULL
+        LOOP
+          PERFORM album_asset_sync_activity_apply(
+            v_row."aggregationId",
+            v_row."albumsId",
+            v_row."createdBy"
+          );
+        END LOOP;
+      ELSIF TG_OP = 'DELETE' THEN
+        FOR v_row IN
+          SELECT DISTINCT "aggregationId", "albumsId", "createdBy"
+          FROM deleted_rows
+          WHERE "aggregationId" IS NOT NULL
+        LOOP
+          PERFORM album_asset_sync_activity_apply(
+            v_row."aggregationId",
+            v_row."albumsId",
+            v_row."createdBy"
+          );
+        END LOOP;
       END IF;
+
+      RETURN NULL;
     END`,
 });
 

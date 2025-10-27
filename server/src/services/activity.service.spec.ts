@@ -33,6 +33,7 @@ describe(ActivityService.name, () => {
           isLiked: undefined,
           userId: undefined,
           includeAlbumUpdates: false,
+          albumUpdateAssetLimit: 3,
         }),
       );
     });
@@ -55,6 +56,7 @@ describe(ActivityService.name, () => {
           isLiked: true,
           userId: undefined,
           includeAlbumUpdates: false,
+          albumUpdateAssetLimit: 3,
         }),
       );
     });
@@ -75,6 +77,7 @@ describe(ActivityService.name, () => {
           isLiked: false,
           userId: undefined,
           includeAlbumUpdates: false,
+          albumUpdateAssetLimit: 3,
         }),
       );
     });
@@ -123,6 +126,7 @@ describe(ActivityService.name, () => {
           albumId,
           assetId: undefined,
           includeAlbumUpdates: true,
+          albumUpdateAssetLimit: 3,
           userId: undefined,
         }),
       );
@@ -166,6 +170,7 @@ describe(ActivityService.name, () => {
           isLiked: undefined,
           userId: undefined,
           includeAlbumUpdates: true,
+          albumUpdateAssetLimit: 3,
         }),
       );
     });

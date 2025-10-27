@@ -26,7 +26,7 @@ import {
   where: '("isLiked" = true)',
 })
 @Check({
-  name: 'activity_like_check',
+  name: 'activity_check',
   expression:
     `(("aggregationId" IS NULL) AND ((comment IS NULL AND "isLiked" = true) OR (comment IS NOT NULL AND "isLiked" = false))) ` +
     `OR ("aggregationId" IS NOT NULL AND comment IS NULL AND "isLiked" = false)`,

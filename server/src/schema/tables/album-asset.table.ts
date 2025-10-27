@@ -29,8 +29,9 @@ import {
   function: album_asset_generate_aggregation_id,
 })
 @AfterInsertTrigger({
-  scope: 'row',
+  scope: 'statement',
   function: album_asset_sync_activity,
+  referencingNewTableAs: 'inserted_rows',
   when: 'pg_trigger_depth() <= 1',
 })
 @AfterDeleteTrigger({
@@ -40,8 +41,9 @@ import {
   when: 'pg_trigger_depth() <= 1',
 })
 @AfterDeleteTrigger({
-  scope: 'row',
+  scope: 'statement',
   function: album_asset_sync_activity,
+  referencingOldTableAs: 'deleted_rows',
   when: 'pg_trigger_depth() <= 1',
 })
 export class AlbumAssetTable {

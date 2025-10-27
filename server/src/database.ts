@@ -67,6 +67,7 @@ export type Activity = {
   isLiked: boolean;
   aggregationId: string | null;
   assetIds: string[] | null;
+  albumUpdateAssetCount?: number | null;
   updateId: string;
 };
 

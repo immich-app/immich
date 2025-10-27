@@ -236,7 +236,7 @@ const assetFactory = (asset: Partial<MapAsset> = {}) => ({
 
 const activityFactory = (activity: Partial<Activity> = {}) => {
   const userId = activity.userId || newUuid();
-  return {
+  const value = {
     id: newUuid(),
     comment: null,
     isLiked: false,
@@ -244,13 +244,20 @@ const activityFactory = (activity: Partial<Activity> = {}) => {
     user: userFactory({ id: userId }),
     assetId: newUuid(),
     aggregationId: null,
-    assetIds: null,
+    assetIds: [] as string[],
+    albumUpdateAssetCount: 0,
     albumId: newUuid(),
     createdAt: newDate(),
     updatedAt: newDate(),
     updateId: newUuidV7(),
     ...activity,
   };
+
+  if ((value.albumUpdateAssetCount == null || value.albumUpdateAssetCount === 0) && Array.isArray(value.assetIds)) {
+    value.albumUpdateAssetCount = value.assetIds.length;
+  }
+
+  return value;
 };
 
 const apiKeyFactory = (apiKey: Partial<ApiKey> = {}) => ({
