@@ -5,7 +5,19 @@
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, Field, HStack, Input, Label, Link, Modal, ModalBody, ModalFooter, Switch, Text } from '@immich/ui';
+  import {
+    Button,
+    Field,
+    HStack,
+    Input,
+    Link,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    NumberInput,
+    Switch,
+    Text,
+  } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -21,15 +33,19 @@
   let email = $derived(user.email);
   let storageLabel = $derived(user.storageLabel || '');
 
-  let quotaSize = $state(user.quotaSizeInBytes === null ? null : convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB));
-
   const previousQuota = user.quotaSizeInBytes;
 
+  let quotaSize = $state(
+    typeof user.quotaSizeInBytes === 'number' ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : undefined,
+  );
+
+  const quotaSizeBytes = $derived(typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null);
+
   let quotaSizeWarning = $derived(
-    previousQuota !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
-      !!quotaSize &&
+    previousQuota !== quotaSizeBytes &&
+      !!quotaSizeBytes &&
       userInteraction.serverInfo &&
-      convertToBytes(Number(quotaSize), ByteUnit.GiB) > userInteraction.serverInfo.diskSizeRaw,
+      quotaSizeBytes > userInteraction.serverInfo.diskSizeRaw,
   );
 
   const handleEditUser = async () => {
@@ -40,7 +56,7 @@
           email,
           name,
           storageLabel,
-          quotaSizeInBytes: quotaSize === null ? null : convertToBytes(Number(quotaSize), ByteUnit.GiB),
+          quotaSizeInBytes: typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null,
           isAdmin,
         },
       });
@@ -68,22 +84,12 @@
         <Input bind:value={name} />
       </Field>
 
-      <div class="flex flex-col gap-1 mt-4">
-        <Label class="flex items-center gap-2" for="quotaSize">{$t('admin.quota_size_gib')}</Label>
-        <input
-          class="immich-form-input"
-          id="quotaSize"
-          name="quotaSize"
-          placeholder={$t('unlimited')}
-          type="number"
-          step="1"
-          min="0"
-          bind:value={quotaSize}
-        />
+      <Field label={$t('admin.quota_size_gib')} class="mt-4">
+        <NumberInput bind:value={quotaSize} min="0" step="1" placeholder={$t('unlimited')} />
         {#if quotaSizeWarning}
           <Text size="small" color="danger">{$t('errors.quota_higher_than_disk_size')}</Text>
         {/if}
-      </div>
+      </Field>
 
       <Field label={$t('storage_label')} class="mt-4">
         <Input bind:value={storageLabel} />

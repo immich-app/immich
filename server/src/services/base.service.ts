@@ -51,6 +51,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -155,6 +156,7 @@ export class BaseService {
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
     protected viewRepository: ViewRepository,
+    protected websocketRepository: WebsocketRepository,
   ) {
     this.logger.setContext(this.constructor.name);
     this.storageCore = StorageCore.create(
@@ -198,8 +200,8 @@ export class BaseService {
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
-    const user = await this.userRepository.getByEmail(dto.email);
-    if (user) {
+    const exists = await this.userRepository.getByEmail(dto.email);
+    if (exists) {
       throw new BadRequestException('User exists');
     }
 
@@ -218,7 +220,10 @@ export class BaseService {
       payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
     }
 
-    this.telemetryRepository.api.addToGauge(`immich.users.total`, 1);
-    return this.userRepository.create(payload);
+    const user = await this.userRepository.create(payload);
+
+    await this.eventRepository.emit('UserCreate', user);
+
+    return user;
   }
 }

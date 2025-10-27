@@ -442,6 +442,176 @@ describe(`immich upload`, () => {
     });
   });
 
+  describe('immich upload --delete-duplicates', () => {
+    it('should delete local duplicate files', async () => {
+      const {
+        stderr: firstStderr,
+        stdout: firstStdout,
+        exitCode: firstExitCode,
+      } = await immichCli(['upload', `${testAssetDir}/albums/nature/silver_fir.jpg`]);
+      expect(firstStderr).toContain('{message}');
+      expect(firstStdout.split('\n')).toEqual(
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 1 new asset')]),
+      );
+      expect(firstExitCode).toBe(0);
+
+      await mkdir(`/tmp/albums/nature`, { recursive: true });
+      await symlink(`${testAssetDir}/albums/nature/silver_fir.jpg`, `/tmp/albums/nature/silver_fir.jpg`);
+
+      // Upload with --delete-duplicates flag
+      const { stderr, stdout, exitCode } = await immichCli([
+        'upload',
+        `/tmp/albums/nature/silver_fir.jpg`,
+        '--delete-duplicates',
+      ]);
+
+      // Check that the duplicate file was deleted
+      const files = await readdir(`/tmp/albums/nature`);
+      await rm(`/tmp/albums/nature`, { recursive: true });
+      expect(files.length).toBe(0);
+
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Found 0 new files and 1 duplicate'),
+          expect.stringContaining('All assets were already uploaded, nothing to do'),
+        ]),
+      );
+      expect(stderr).toContain('{message}');
+      expect(exitCode).toBe(0);
+
+      // Verify no new assets were uploaded
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(1);
+    });
+
+    it('should have accurate dry run with --delete-duplicates', async () => {
+      const {
+        stderr: firstStderr,
+        stdout: firstStdout,
+        exitCode: firstExitCode,
+      } = await immichCli(['upload', `${testAssetDir}/albums/nature/silver_fir.jpg`]);
+      expect(firstStderr).toContain('{message}');
+      expect(firstStdout.split('\n')).toEqual(
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 1 new asset')]),
+      );
+      expect(firstExitCode).toBe(0);
+
+      await mkdir(`/tmp/albums/nature`, { recursive: true });
+      await symlink(`${testAssetDir}/albums/nature/silver_fir.jpg`, `/tmp/albums/nature/silver_fir.jpg`);
+
+      // Upload with --delete-duplicates and --dry-run flags
+      const { stderr, stdout, exitCode } = await immichCli([
+        'upload',
+        `/tmp/albums/nature/silver_fir.jpg`,
+        '--delete-duplicates',
+        '--dry-run',
+      ]);
+
+      // Check that the duplicate file was NOT deleted in dry run mode
+      const files = await readdir(`/tmp/albums/nature`);
+      await rm(`/tmp/albums/nature`, { recursive: true });
+      expect(files.length).toBe(1);
+
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Found 0 new files and 1 duplicate'),
+          expect.stringContaining('Would have deleted 1 local asset'),
+        ]),
+      );
+      expect(stderr).toContain('{message}');
+      expect(exitCode).toBe(0);
+
+      // Verify no new assets were uploaded
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(1);
+    });
+
+    it('should work with both --delete and --delete-duplicates flags', async () => {
+      // First, upload a file to create a duplicate on the server
+      const {
+        stderr: firstStderr,
+        stdout: firstStdout,
+        exitCode: firstExitCode,
+      } = await immichCli(['upload', `${testAssetDir}/albums/nature/silver_fir.jpg`]);
+      expect(firstStderr).toContain('{message}');
+      expect(firstStdout.split('\n')).toEqual(
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 1 new asset')]),
+      );
+      expect(firstExitCode).toBe(0);
+
+      // Both new and duplicate files
+      await mkdir(`/tmp/albums/nature`, { recursive: true });
+      await symlink(`${testAssetDir}/albums/nature/silver_fir.jpg`, `/tmp/albums/nature/silver_fir.jpg`); // duplicate
+      await symlink(`${testAssetDir}/albums/nature/el_torcal_rocks.jpg`, `/tmp/albums/nature/el_torcal_rocks.jpg`); // new
+
+      // Upload with both --delete and --delete-duplicates flags
+      const { stderr, stdout, exitCode } = await immichCli([
+        'upload',
+        `/tmp/albums/nature`,
+        '--delete',
+        '--delete-duplicates',
+      ]);
+
+      // Check that both files were deleted (new file due to --delete, duplicate due to --delete-duplicates)
+      const files = await readdir(`/tmp/albums/nature`);
+      await rm(`/tmp/albums/nature`, { recursive: true });
+      expect(files.length).toBe(0);
+
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Found 1 new files and 1 duplicate'),
+          expect.stringContaining('Successfully uploaded 1 new asset'),
+          expect.stringContaining('Deleting assets that have been uploaded'),
+        ]),
+      );
+      expect(stderr).toContain('{message}');
+      expect(exitCode).toBe(0);
+
+      // Verify one new asset was uploaded (total should be 2 now)
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(2);
+    });
+
+    it('should only delete duplicates when --delete-duplicates is used without --delete', async () => {
+      const {
+        stderr: firstStderr,
+        stdout: firstStdout,
+        exitCode: firstExitCode,
+      } = await immichCli(['upload', `${testAssetDir}/albums/nature/silver_fir.jpg`]);
+      expect(firstStderr).toContain('{message}');
+      expect(firstStdout.split('\n')).toEqual(
+        expect.arrayContaining([expect.stringContaining('Successfully uploaded 1 new asset')]),
+      );
+      expect(firstExitCode).toBe(0);
+
+      // Both new and duplicate files
+      await mkdir(`/tmp/albums/nature`, { recursive: true });
+      await symlink(`${testAssetDir}/albums/nature/silver_fir.jpg`, `/tmp/albums/nature/silver_fir.jpg`); // duplicate
+      await symlink(`${testAssetDir}/albums/nature/el_torcal_rocks.jpg`, `/tmp/albums/nature/el_torcal_rocks.jpg`); // new
+
+      // Upload with only --delete-duplicates flag
+      const { stderr, stdout, exitCode } = await immichCli(['upload', `/tmp/albums/nature`, '--delete-duplicates']);
+
+      // Check that only the duplicate was deleted, new file should remain
+      const files = await readdir(`/tmp/albums/nature`);
+      await rm(`/tmp/albums/nature`, { recursive: true });
+      expect(files).toEqual(['el_torcal_rocks.jpg']);
+
+      expect(stdout.split('\n')).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining('Found 1 new files and 1 duplicate'),
+          expect.stringContaining('Successfully uploaded 1 new asset'),
+        ]),
+      );
+      expect(stderr).toContain('{message}');
+      expect(exitCode).toBe(0);
+
+      // Verify one new asset was uploaded (total should be 2 now)
+      const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
+      expect(assets.total).toBe(2);
+    });
+  });
+
   describe('immich upload --skip-hash', () => {
     it('should skip hashing', async () => {
       const filename = `albums/nature/silver_fir.jpg`;

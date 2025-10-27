@@ -6459,6 +6459,14 @@
             }
           },
           {
+            "name": "lensModel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "make",
             "required": false,
             "in": "query",
@@ -11469,6 +11477,10 @@
       },
       "ChangePasswordDto": {
         "properties": {
+          "invalidateSessions": {
+            "default": false,
+            "type": "boolean"
+          },
           "newPassword": {
             "example": "password",
             "minLength": 8,
@@ -13941,7 +13953,8 @@
           "state",
           "city",
           "camera-make",
-          "camera-model"
+          "camera-model",
+          "camera-lens-model"
         ],
         "type": "string"
       },

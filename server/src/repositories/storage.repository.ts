@@ -107,7 +107,7 @@ export class StorageRepository {
     const file = await fs.open(filepath);
     try {
       const { buffer } = await file.read(options);
-      return buffer;
+      return buffer as Buffer;
     } finally {
       await file.close();
     }

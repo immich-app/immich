@@ -425,8 +425,8 @@ importers:
         specifier: ^7.6.0
         version: 7.14.0
       ioredis:
-        specifier: ^5.3.2
-        version: 5.8.1
+        specifier: ^5.8.2
+        version: 5.8.2
       js-yaml:
         specifier: ^4.1.0
         version: 4.1.0
@@ -677,12 +677,15 @@ importers:
       '@formatjs/icu-messageformat-parser':
         specifier: ^2.9.8
         version: 2.11.4
+      '@immich/justified-layout-wasm':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@immich/sdk':
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.36.0
-        version: 0.36.4(@internationalized/date@3.8.2)(svelte@5.40.1)
+        specifier: ^0.37.1
+        version: 0.37.1(@internationalized/date@3.8.2)(svelte@5.40.1)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2726,8 +2729,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@immich/ui@0.36.4':
-    resolution: {integrity: sha512-urA7yD3ylKPqh6BhctvnpwZ1BZke75qaArRvnmUhjy5mV9Bud4D/yqbX5BlYq+Z3TvNP365BPLJDj7euG91gZw==}
+  '@immich/justified-layout-wasm@0.4.3':
+    resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
+
+  '@immich/ui@0.37.1':
+    resolution: {integrity: sha512-8S9KsyqyRcNgRHeBU8G3qMQ7D7fN4u9I31jjRc9c3s2tkiYucASofPJdcFdmGZnKLX5fIj+yofxiNZV9tVitOg==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -7302,8 +7308,8 @@ packages:
   invariant@2.2.4:
     resolution: {integrity: sha512-phJfQVBuaJM5raOpJjSfkiD6BpbCE4Ns//LaXl6wGYtUBY83nWS6Rf9tXm2e8VaK60JEjYldbPif/A2B1C2gNA==}
 
-  ioredis@5.8.1:
-    resolution: {integrity: sha512-Qho8TgIamqEPdgiMadJwzRMW3TudIg6vpg4YONokGDudy4eqRIJtDbVX72pfLBcWxvbn3qm/40TyGUObdW4tLQ==}
+  ioredis@5.8.2:
+    resolution: {integrity: sha512-C6uC+kleiIMmjViJINWk80sOQw5lEzse1ZmvD+S/s8p8CWapftSaC+kocGTx6xrbrJ4WmYQGC08ffHLr6ToR6Q==}
     engines: {node: '>=12.22.0'}
 
   ip-address@10.0.1:
@@ -14182,7 +14188,9 @@ snapshots:
   '@img/sharp-win32-x64@0.34.4':
     optional: true
 
-  '@immich/ui@0.36.4(@internationalized/date@3.8.2)(svelte@5.40.1)':
+  '@immich/justified-layout-wasm@0.4.3': {}
+
+  '@immich/ui@0.37.1(@internationalized/date@3.8.2)(svelte@5.40.1)':
     dependencies:
       '@mdi/js': 7.4.47
       bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.40.1)
@@ -17212,7 +17220,7 @@ snapshots:
   bullmq@5.61.0:
     dependencies:
       cron-parser: 4.9.0
-      ioredis: 5.8.1
+      ioredis: 5.8.2
       msgpackr: 1.11.5
       node-abort-controller: 3.1.1
       semver: 7.7.3
@@ -19600,7 +19608,7 @@ snapshots:
     dependencies:
       loose-envify: 1.4.0
 
-  ioredis@5.8.1:
+  ioredis@5.8.2:
     dependencies:
       '@ioredis/commands': 1.4.0
       cluster-key-slot: 1.1.2
