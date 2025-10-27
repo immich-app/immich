@@ -45,6 +45,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 
 export const repositories = [
   AccessRepository,
@@ -94,4 +95,5 @@ export const repositories = [
   UserRepository,
   ViewRepository,
   VersionHistoryRepository,
+  WebsocketRepository,
 ];

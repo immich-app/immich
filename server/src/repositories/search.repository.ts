@@ -168,9 +168,16 @@ export interface GetCitiesOptions extends GetStatesOptions {
 
 export interface GetCameraModelsOptions {
   make?: string;
+  lensModel?: string;
 }
 
 export interface GetCameraMakesOptions {
+  model?: string;
+  lensModel?: string;
+}
+
+export interface GetCameraLensModelsOptions {
+  make?: string;
   model?: string;
 }
 
@@ -465,25 +472,40 @@ export class SearchRepository {
     return res.map((row) => row.city!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], { model }: GetCameraMakesOptions): Promise<string[]> {
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
+  async getCameraMakes(userIds: string[], { model, lensModel }: GetCameraMakesOptions): Promise<string[]> {
     const res = await this.getExifField('make', userIds)
       .$if(!!model, (qb) => qb.where('model', '=', model!))
+      .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
 
     return res.map((row) => row.make!);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraModels(userIds: string[], { make }: GetCameraModelsOptions): Promise<string[]> {
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
+  async getCameraModels(userIds: string[], { make, lensModel }: GetCameraModelsOptions): Promise<string[]> {
     const res = await this.getExifField('model', userIds)
       .$if(!!make, (qb) => qb.where('make', '=', make!))
+      .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
       .execute();
 
     return res.map((row) => row.model!);
   }
 
-  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model'>(field: K, userIds: string[]) {
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getCameraLensModels(userIds: string[], { make, model }: GetCameraLensModelsOptions): Promise<string[]> {
+    const res = await this.getExifField('lensModel', userIds)
+      .$if(!!make, (qb) => qb.where('make', '=', make!))
+      .$if(!!model, (qb) => qb.where('model', '=', model!))
+      .execute();
+
+    return res.map((row) => row.lensModel!);
+  }
+
+  private getExifField<K extends 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel'>(
+    field: K,
+    userIds: string[],
+  ) {
     return this.db
       .selectFrom('asset_exif')
       .select(field)

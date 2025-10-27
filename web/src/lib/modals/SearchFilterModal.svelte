@@ -92,6 +92,7 @@
     camera: {
       make: withNullAsUndefined(searchQuery.make),
       model: withNullAsUndefined(searchQuery.model),
+      lensModel: withNullAsUndefined(searchQuery.lensModel),
     },
     date: {
       takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
@@ -151,6 +152,7 @@
       city: filter.location.city,
       make: filter.camera.make,
       model: filter.camera.model,
+      lensModel: filter.camera.lensModel,
       takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
       takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,

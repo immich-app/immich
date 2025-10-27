@@ -74,6 +74,12 @@ delete from "session"
 where
   "id" = $1::uuid
 
+-- SessionRepository.invalidate
+delete from "session"
+where
+  "userId" = $1
+  and "id" != $2
+
 -- SessionRepository.lockAll
 update "session"
 set
