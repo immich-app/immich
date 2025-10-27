@@ -58,7 +58,9 @@ export const addAssets = async (
 
   const newAssetIds = results.filter(({ success }) => success).map(({ id }) => id);
   if (newAssetIds.length > 0) {
-    await (options?.createdBy ? bulk.addAssetIds(dto.parentId, newAssetIds, { createdBy: options.createdBy }) : bulk.addAssetIds(dto.parentId, newAssetIds));
+    await (options?.createdBy
+      ? bulk.addAssetIds(dto.parentId, newAssetIds, { createdBy: options.createdBy })
+      : bulk.addAssetIds(dto.parentId, newAssetIds));
   }
 
   return results;
