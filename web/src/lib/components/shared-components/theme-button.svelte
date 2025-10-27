@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ctrlKey } from '$lib/actions/input';
+  import { ctrlShiftKey } from '$lib/actions/input';
   import { shortcut } from '$lib/actions/shortcut.svelte';
   import { defaultLang, langs, Theme } from '$lib/constants';
   import { themeManager } from '$lib/managers/theme-manager.svelte';
@@ -17,7 +17,7 @@
   };
 </script>
 
-<svelte:window {@attach shortcut(ctrlKey('t'), $t('dark_theme'), handleToggleTheme)} />
+<svelte:window {@attach shortcut(ctrlShiftKey('t'), $t('dark_theme'), handleToggleTheme)} />
 
 {#if !themeManager.theme.system}
   {#await langs

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
+  import { ctrlShiftKey } from '$lib/actions/input';
   import { shortcut } from '$lib/actions/shortcut.svelte';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
@@ -140,9 +141,7 @@
 </svelte:head>
 
 <svelte:document
-  {@attach shortcut({ key: 'm', ctrl: true, shift: true }, $t('get_my_immich_link'), () =>
-    copyToClipboard(getMyImmichLink().toString()),
-  )}
+  {@attach shortcut(ctrlShiftKey('m'), $t('get_my_immich_link'), () => copyToClipboard(getMyImmichLink().toString()))}
 />
 
 {#if page.data.error}
