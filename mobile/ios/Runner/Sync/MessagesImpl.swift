@@ -284,35 +284,73 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         missingAssetIds.remove(asset.localIdentifier)
         assets.append(asset)
       }
-      
+
       if Task.isCancelled {
         return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
       }
-      
+
+      let startTime = Date()
+
       await withTaskGroup(of: HashResult?.self) { taskGroup in
         var results = [HashResult]()
         results.reserveCapacity(assets.count)
-        for asset in assets {
+
+        // Limit concurrent iCloud download/hash operations to prevent overwhelming
+        // the PHAssetResourceManager and improve overall throughput.
+        // Testing shows 8 concurrent operations provides good balance between
+        // speed and system resource usage.
+        let maxConcurrent = 8
+        var activeTasks = 0
+        var assetIndex = 0
+
+        // Add initial batch of concurrent tasks
+        while assetIndex < assets.count && activeTasks < maxConcurrent {
           if Task.isCancelled {
             return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
           }
+          let asset = assets[assetIndex]
           taskGroup.addTask {
             guard let self = self else { return nil }
             return await self.hashAsset(asset, allowNetworkAccess: allowNetworkAccess)
           }
+          assetIndex += 1
+          activeTasks += 1
         }
-        
+
+        // Process results and add new tasks as old ones complete, maintaining
+        // consistent concurrency level throughout the batch
         for await result in taskGroup {
           guard let result = result else {
             return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
           }
           results.append(result)
+          activeTasks -= 1
+
+          // Queue next asset if available
+          if assetIndex < assets.count {
+            if Task.isCancelled {
+              return self?.completeWhenActive(for: completion, with: Self.hashCancelled)
+            }
+            let nextAsset = assets[assetIndex]
+            taskGroup.addTask {
+              guard let self = self else { return nil }
+              return await self.hashAsset(nextAsset, allowNetworkAccess: allowNetworkAccess)
+            }
+            assetIndex += 1
+            activeTasks += 1
+          }
         }
-        
+
+        // Log performance metrics to help diagnose issues
+        let duration = Date().timeIntervalSince(startTime)
+        if duration > 0 {
+          NSLog("[Immich] Hashed \(results.count) assets in \(String(format: "%.1f", duration))s (\(String(format: "%.1f", Double(results.count)/duration)) assets/sec, iCloud=\(allowNetworkAccess))")
+        }
+
         for missing in missingAssetIds {
           results.append(HashResult(assetId: missing, error: "Asset not found in library", hash: nil))
         }
-        
+
         return self?.completeWhenActive(for: completion, with: .success(results))
       }
     }
