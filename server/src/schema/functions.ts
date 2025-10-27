@@ -176,7 +176,8 @@ export const album_asset_sync_activity_apply = registerFunction({
     v_album_id uuid := p_album_id;
     v_user_id uuid := p_user_id;
     BEGIN
-      IF p_aggregation_id IS NULL THEN
+      IF p_aggregation_id IS NULL OR p_album_id IS NULL OR p_user_id IS NULL THEN
+        RAISE NOTICE 'album_asset_sync_activity_apply called with NULL parameters: %, %, %', p_aggregation_id, p_album_id, p_user_id;
         RETURN;
       END IF;
 
@@ -192,35 +193,8 @@ export const album_asset_sync_activity_apply = registerFunction({
       FROM album_asset
       WHERE "aggregationId" = p_aggregation_id;
 
-      IF v_album_id IS NULL THEN
-        SELECT "albumsId" INTO v_album_id
-        FROM album_asset
-        WHERE "aggregationId" = p_aggregation_id
-        ORDER BY "createdAt" ASC
-        LIMIT 1;
-      END IF;
-
       IF v_asset_ids IS NULL OR array_length(v_asset_ids, 1) IS NULL THEN
         DELETE FROM activity WHERE "aggregationId" = p_aggregation_id;
-        RETURN;
-      END IF;
-
-      IF v_user_id IS NULL THEN
-        SELECT "userId" INTO v_user_id
-        FROM activity
-        WHERE "aggregationId" = p_aggregation_id
-        LIMIT 1;
-      END IF;
-
-      IF v_user_id IS NULL THEN
-        SELECT "createdBy" INTO v_user_id
-        FROM album_asset
-        WHERE "aggregationId" = p_aggregation_id
-        ORDER BY "createdAt" ASC
-        LIMIT 1;
-      END IF;
-
-      IF v_user_id IS NULL THEN
         RETURN;
       END IF;
 
