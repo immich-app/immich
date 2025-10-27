@@ -384,8 +384,18 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) async {
-    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
+    // Note: this needs to be 2 queries as the where clause filtering causes the assetCount to always be 1
+    final albumIdsQuery = _db.remoteAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.remoteAlbumAssetEntity.albumId])
+      ..where(_db.remoteAlbumAssetEntity.assetId.equals(assetId));
 
+    final albumIds = await albumIdsQuery.map((row) => row.read(_db.remoteAlbumAssetEntity.albumId)!).get();
+
+    if (albumIds.isEmpty) {
+      return [];
+    }
+
+    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
     final query =
         _db.remoteAlbumEntity.select().join([
             leftOuterJoin(
@@ -409,10 +419,11 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               useColumns: false,
             ),
           ])
-          ..where(_db.remoteAlbumAssetEntity.assetId.equals(assetId))
+          ..where(_db.remoteAlbumEntity.id.isIn(albumIds) & _db.remoteAssetEntity.deletedAt.isNull())
           ..addColumns([assetCount])
           ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
-          ..addColumns([_db.userEntity.name]);
+          ..addColumns([_db.userEntity.name])
+          ..groupBy([_db.remoteAlbumEntity.id]);
 
     return query
         .map(
