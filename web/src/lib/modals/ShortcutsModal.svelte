@@ -32,6 +32,7 @@
         { key: ['Esc'], action: $t('back_close_deselect') },
         { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
         { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },
+        { key: ['Ctrl', '⇧', 'm'], action: $t('my_immich_link') },
       ],
       actions: [
         { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
