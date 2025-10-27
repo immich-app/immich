@@ -3,13 +3,12 @@
   import ApiKeyModal from '$lib/modals/ApiKeyModal.svelte';
   import ApiKeySecretModal from '$lib/modals/ApiKeySecretModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { createApiKey, deleteApiKey, getApiKeys, updateApiKey, type ApiKeyResponseDto } from '@immich/sdk';
-  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { Button, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   interface Props {
     keys: ApiKeyResponseDto[];
@@ -61,10 +60,7 @@
 
     try {
       await updateApiKey({ id: key.id, apiKeyUpdateDto: { name: result.name, permissions: result.permissions } });
-      notificationController.show({
-        message: $t('saved_api_key'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('saved_api_key'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_api_key'));
     } finally {
@@ -80,10 +76,7 @@
 
     try {
       await deleteApiKey({ id: key.id });
-      notificationController.show({
-        message: $t('removed_api_key', { values: { name: key.name } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('removed_api_key', { values: { name: key.name } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_api_key'));
     } finally {

@@ -51,6 +51,6 @@ test.describe('Slideshow', () => {
 
     await expect(page.getByRole('button', { name: 'Exit Slideshow' })).toBeVisible();
     await page.keyboard.press('f');
-    await expect(page.locator('#notification-list')).not.toBeVisible();
+    await expect(page.getByText('Added to favorites')).not.toBeVisible();
   });
 });

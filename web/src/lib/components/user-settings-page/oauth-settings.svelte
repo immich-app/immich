@@ -2,13 +2,12 @@
   import { goto } from '$app/navigation';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { oauth } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
   import { type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, LoadingSpinner } from '@immich/ui';
+  import { Button, LoadingSpinner, toastManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   interface Props {
     user: UserAdminResponseDto;
@@ -22,13 +21,8 @@
     if (oauth.isCallback(globalThis.location)) {
       try {
         loading = true;
-
         user = await oauth.link(globalThis.location);
-
-        notificationController.show({
-          message: $t('linked_oauth_account'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('linked_oauth_account'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_link_oauth_account'));
       } finally {
@@ -42,10 +36,7 @@
   const handleUnlink = async () => {
     try {
       user = await oauth.unlink();
-      notificationController.show({
-        message: $t('unlinked_oauth_account'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('unlinked_oauth_account'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_unlink_account'));
     }

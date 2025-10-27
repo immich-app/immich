@@ -3,10 +3,6 @@
   import empty3Url from '$lib/assets/empty-3.svg';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import RestoreAssets from '$lib/components/timeline/actions/RestoreAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
@@ -19,7 +15,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
-  import { Button, HStack, modalManager, Text } from '@immich/ui';
+  import { Button, HStack, modalManager, Text, toastManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -47,11 +43,7 @@
 
     try {
       const { count } = await emptyTrash();
-
-      notificationController.show({
-        message: $t('assets_permanently_deleted_count', { values: { count } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_permanently_deleted_count', { values: { count } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_empty_trash'));
     }
@@ -64,10 +56,7 @@
     }
     try {
       const { count } = await restoreTrash();
-      notificationController.show({
-        message: $t('assets_restored_count', { values: { count } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('assets_restored_count', { values: { count } }));
 
       // reset asset grid (TODO fix in asset store that it should reset when it is empty)
       // note - this is still a problem, but updateOptions with the same value will not

@@ -1,18 +1,14 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { preferences } from '$lib/stores/user.store';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
   import { updateMyPreferences } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
 
   let archiveSize = $state(convertFromBytes($preferences?.download?.archiveSize || 4, ByteUnit.GiB));
   let includeEmbeddedVideos = $state($preferences?.download?.includeEmbeddedVideos || false);
@@ -29,7 +25,7 @@
       });
       $preferences = newPreferences;
 
-      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
+      toastManager.success($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }

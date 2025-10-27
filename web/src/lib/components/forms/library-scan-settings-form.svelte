@@ -1,11 +1,11 @@
 <script lang="ts">
   import LibraryExclusionPatternModal from '$lib/modals/LibraryExclusionPatternModal.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { handleError } from '../../utils/handle-error';
 
   interface Props {
     library: Partial<LibraryResponseDto>;
