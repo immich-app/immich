@@ -384,15 +384,47 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) async {
-    final albumIdsQuery = _db.remoteAlbumAssetEntity.select()..where((row) => row.assetId.equals(assetId));
+    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
 
-    final albumIds = (await albumIdsQuery.get()).map((e) => e.albumId).toSet();
+    final query =
+        _db.remoteAlbumEntity.select().join([
+            leftOuterJoin(
+              _db.remoteAlbumAssetEntity,
+              _db.remoteAlbumAssetEntity.albumId.equalsExp(_db.remoteAlbumEntity.id),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.userEntity,
+              _db.userEntity.id.equalsExp(_db.remoteAlbumEntity.ownerId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAlbumUserEntity,
+              _db.remoteAlbumUserEntity.albumId.equalsExp(_db.remoteAlbumEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.remoteAlbumAssetEntity.assetId.equals(assetId))
+          ..addColumns([assetCount])
+          ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
+          ..addColumns([_db.userEntity.name]);
 
-    if (albumIds.isEmpty) {
-      return [];
-    }
-
-    return getAll().then((albums) => albums.where((album) => albumIds.contains(album.id)).toList());
+    return query
+        .map(
+          (row) => row
+              .readTable(_db.remoteAlbumEntity)
+              .toDto(
+                ownerName: row.read(_db.userEntity.name) ?? '',
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
+                assetCount: row.read(assetCount) ?? 0,
+              ),
+        )
+        .get();
   }
 }
 
