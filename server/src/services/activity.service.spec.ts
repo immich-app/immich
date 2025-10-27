@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ReactionType } from 'src/dtos/activity.dto';
+import { ReactionLevel, ReactionType } from 'src/dtos/activity.dto';
 import { ActivityService } from 'src/services/activity.service';
 import { factory, newUuid, newUuids } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -25,7 +25,16 @@ describe(ActivityService.name, () => {
 
       await expect(sut.getAll(factory.auth({ user: { id: userId } }), { assetId, albumId })).resolves.toEqual([]);
 
-      expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: undefined });
+      expect(mocks.activity.search).toHaveBeenCalledTimes(1);
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId,
+          albumId,
+          isLiked: undefined,
+          userId: undefined,
+          includeAlbumUpdates: false,
+        }),
+      );
     });
 
     it('should filter by type=like', async () => {
@@ -38,7 +47,16 @@ describe(ActivityService.name, () => {
         sut.getAll(factory.auth({ user: { id: userId } }), { assetId, albumId, type: ReactionType.LIKE }),
       ).resolves.toEqual([]);
 
-      expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: true });
+      expect(mocks.activity.search).toHaveBeenCalledTimes(1);
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId,
+          albumId,
+          isLiked: true,
+          userId: undefined,
+          includeAlbumUpdates: false,
+        }),
+      );
     });
 
     it('should filter by type=comment', async () => {
@@ -49,7 +67,107 @@ describe(ActivityService.name, () => {
 
       await expect(sut.getAll(factory.auth(), { assetId, albumId, type: ReactionType.COMMENT })).resolves.toEqual([]);
 
-      expect(mocks.activity.search).toHaveBeenCalledWith({ assetId, albumId, isLiked: false });
+      expect(mocks.activity.search).toHaveBeenCalledTimes(1);
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId,
+          albumId,
+          isLiked: false,
+          userId: undefined,
+          includeAlbumUpdates: false,
+        }),
+      );
+    });
+
+    it('should return album updates when type=album_update', async () => {
+      const [albumId, aggregationId, assetId] = newUuids();
+      const createdAt = new Date('2024-01-01T00:00:00.000Z');
+      const user = factory.user();
+
+      const activity = factory.activity({
+        id: aggregationId,
+        aggregationId,
+        assetIds: [assetId],
+        albumId,
+        assetId: null,
+        comment: null,
+        createdAt,
+        user,
+        userId: user.id,
+      });
+
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
+      mocks.activity.search.mockResolvedValue([activity]);
+
+      const result = await sut.getAll(factory.auth(), {
+        albumId,
+        type: ReactionType.ALBUM_UPDATE,
+        includeAlbumUpdate: true,
+      });
+
+      expect(result).toEqual([
+        expect.objectContaining({
+          id: aggregationId,
+          type: ReactionType.ALBUM_UPDATE,
+          albumUpdate: {
+            aggregationId,
+            aggregationCount: 1,
+            assetIds: [assetId],
+          },
+        }),
+      ]);
+      expect(result[0].user.id).toBe(user.id);
+      expect(mocks.activity.search).toHaveBeenCalledTimes(1);
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        expect.objectContaining({
+          albumId,
+          assetId: undefined,
+          includeAlbumUpdates: true,
+          userId: undefined,
+        }),
+      );
+    });
+
+    it('should include album updates for album level requests', async () => {
+      const [albumId, activityAssetId, aggregationId] = newUuids();
+      const createdAt = new Date('2024-04-01T00:00:00.000Z');
+      const user = factory.user();
+      const activity = factory.activity({ albumId, assetId: activityAssetId, createdAt: new Date('2024-03-01') });
+
+      const albumUpdate = factory.activity({
+        id: aggregationId,
+        aggregationId,
+        assetIds: ['asset-1', 'asset-2'],
+        albumId,
+        assetId: null,
+        comment: null,
+        createdAt,
+        user,
+        userId: user.id,
+      });
+
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
+      mocks.activity.search.mockResolvedValue([activity, albumUpdate]);
+
+      const result = await sut.getAll(factory.auth(), {
+        albumId,
+        level: ReactionLevel.ALBUM,
+        includeAlbumUpdate: true,
+      });
+
+      expect(result).toHaveLength(2);
+      expect(result[0].createdAt <= result[1].createdAt).toBeTruthy();
+      expect(result.find((item) => item.type === ReactionType.ALBUM_UPDATE)?.albumUpdate).toBeDefined();
+      expect(mocks.activity.search).toHaveBeenCalledTimes(1);
+      expect(mocks.activity.search).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: null,
+          albumId,
+          isLiked: undefined,
+          userId: undefined,
+          includeAlbumUpdates: true,
+        }),
+      );
     });
   });
 

@@ -25,7 +25,10 @@ from
   left join "asset" on "asset"."id" = "activity"."assetId"
 where
   "activity"."albumId" = $1
-  and "asset"."deletedAt" is null
+  and (
+    "activity"."aggregationId" is null
+    and "asset"."deletedAt" is null
+  )
 order by
   "activity"."createdAt" asc
 

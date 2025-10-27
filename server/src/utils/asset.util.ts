@@ -27,6 +27,7 @@ export const addAssets = async (
   auth: AuthDto,
   repositories: { access: AccessRepository; bulk: IBulkAsset },
   dto: { parentId: string; assetIds: string[] },
+  options?: { createdBy?: string },
 ) => {
   const { access, bulk } = repositories;
   const existingAssetIds = await bulk.getAssetIds(dto.parentId, dto.assetIds);
@@ -57,7 +58,7 @@ export const addAssets = async (
 
   const newAssetIds = results.filter(({ success }) => success).map(({ id }) => id);
   if (newAssetIds.length > 0) {
-    await bulk.addAssetIds(dto.parentId, newAssetIds);
+    await (options?.createdBy ? bulk.addAssetIds(dto.parentId, newAssetIds, { createdBy: options.createdBy }) : bulk.addAssetIds(dto.parentId, newAssetIds));
   }
 
   return results;

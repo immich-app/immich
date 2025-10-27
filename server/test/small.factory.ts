@@ -243,6 +243,8 @@ const activityFactory = (activity: Partial<Activity> = {}) => {
     userId,
     user: userFactory({ id: userId }),
     assetId: newUuid(),
+    aggregationId: null,
+    assetIds: null,
     albumId: newUuid(),
     createdAt: newDate(),
     updatedAt: newDate(),

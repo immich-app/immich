@@ -107,7 +107,7 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
-  async addAssetIds(tagId: string, assetIds: string[]): Promise<void> {
+  async addAssetIds(tagId: string, assetIds: string[], _options?: { createdBy?: string }): Promise<void> {
     if (assetIds.length === 0) {
       return;
     }

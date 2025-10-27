@@ -171,6 +171,7 @@ export class AlbumService extends BaseService {
       auth,
       { access: this.accessRepository, bulk: this.albumRepository },
       { parentId: id, assetIds: dto.ids },
+      { createdBy: auth.user.id },
     );
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
@@ -215,7 +216,7 @@ export class AlbumService extends BaseService {
       return results;
     }
 
-    const albumAssetValues: { albumsId: string; assetsId: string }[] = [];
+    const albumAssetValues: { albumsId: string; assetsId: string; createdBy: string }[] = [];
     const events: { id: string; recipients: string[] }[] = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
@@ -228,7 +229,7 @@ export class AlbumService extends BaseService {
       results.success = true;
 
       for (const assetId of notPresentAssetIds) {
-        albumAssetValues.push({ albumsId: albumId, assetsId: assetId });
+        albumAssetValues.push({ albumsId: albumId, assetsId: assetId, createdBy: auth.user.id });
       }
       await this.albumRepository.update(albumId, {
         id: albumId,

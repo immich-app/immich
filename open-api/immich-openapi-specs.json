@@ -24,6 +24,14 @@
             }
           },
           {
+            "name": "includeAlbumUpdate",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "level",
             "required": false,
             "in": "query",
@@ -10023,6 +10031,28 @@
         },
         "type": "object"
       },
+      "ActivityAlbumUpdateResponseDto": {
+        "properties": {
+          "aggregationCount": {
+            "type": "integer"
+          },
+          "aggregationId": {
+            "type": "string"
+          },
+          "assetIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "aggregationCount",
+          "aggregationId",
+          "assetIds"
+        ],
+        "type": "object"
+      },
       "ActivityCreateDto": {
         "properties": {
           "albumId": {
@@ -10052,6 +10082,14 @@
       },
       "ActivityResponseDto": {
         "properties": {
+          "albumUpdate": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivityAlbumUpdateResponseDto"
+              }
+            ],
+            "nullable": true
+          },
           "assetId": {
             "nullable": true,
             "type": "string"
@@ -13767,7 +13805,8 @@
       "ReactionType": {
         "enum": [
           "comment",
-          "like"
+          "like",
+          "album_update"
         ],
         "type": "string"
       },

@@ -1,5 +1,6 @@
 import { asset_face_source_type, asset_visibility_enum, assets_status_enum } from 'src/schema/enums';
 import {
+  album_asset_generate_aggregation_id,
   album_delete_audit,
   album_user_after_insert,
   album_user_delete_audit,
@@ -133,6 +134,7 @@ export class ImmichDatabase {
     partner_delete_audit,
     asset_delete_audit,
     album_delete_audit,
+    album_asset_generate_aggregation_id,
     album_user_after_insert,
     album_user_delete_audit,
     memory_delete_audit,

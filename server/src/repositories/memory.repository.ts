@@ -125,7 +125,7 @@ export class MemoryRepository implements IBulkAsset {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
-  async addAssetIds(id: string, assetIds: string[]) {
+  async addAssetIds(id: string, assetIds: string[], _options?: { createdBy?: string }) {
     if (assetIds.length === 0) {
       return;
     }

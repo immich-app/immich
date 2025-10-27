@@ -132,6 +132,128 @@ export const album_delete_audit = registerFunction({
     END`,
 });
 
+export const album_asset_generate_aggregation_id = registerFunction({
+  name: 'album_asset_generate_aggregation_id',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    DECLARE
+      v_now TIMESTAMP WITH TIME ZONE := clock_timestamp();
+      v_existing uuid;
+    BEGIN
+      IF NEW."createdAt" IS NULL THEN
+        NEW."createdAt" = v_now;
+      END IF;
+
+      SELECT "aggregationId"
+        INTO v_existing
+        FROM album_asset
+        WHERE "albumsId" = NEW."albumsId"
+          AND "createdBy" = NEW."createdBy"
+          AND "createdAt" >= v_now - INTERVAL '60 minutes'
+        ORDER BY "createdAt" DESC
+        LIMIT 1;
+
+      IF v_existing IS NOT NULL THEN
+        NEW."aggregationId" = v_existing;
+      ELSE
+        NEW."aggregationId" = immich_uuid_v7(v_now);
+      END IF;
+
+      RETURN NEW;
+    END`,
+});
+
+export const album_asset_sync_activity = registerFunction({
+  name: 'album_asset_sync_activity',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    DECLARE
+      v_aggregation_id uuid;
+      v_album_id uuid;
+      v_user_id uuid;
+      v_asset_ids uuid[];
+      v_created_at TIMESTAMP WITH TIME ZONE;
+    BEGIN
+      IF TG_OP = 'INSERT' THEN
+        IF NEW."aggregationId" IS NULL OR NEW."createdBy" IS NULL THEN
+          RETURN NEW;
+        END IF;
+
+        v_aggregation_id := NEW."aggregationId";
+        v_album_id := NEW."albumsId";
+        v_user_id := NEW."createdBy";
+      ELSE
+        IF OLD."aggregationId" IS NULL THEN
+          RETURN OLD;
+        END IF;
+
+        v_aggregation_id := OLD."aggregationId";
+        v_album_id := OLD."albumsId";
+        v_user_id := OLD."createdBy";
+
+        IF v_user_id IS NULL THEN
+          SELECT "userId" INTO v_user_id
+          FROM activity
+          WHERE "aggregationId" = v_aggregation_id
+          LIMIT 1;
+        END IF;
+      END IF;
+
+      SELECT
+        ARRAY(
+          SELECT aa."assetsId"
+          FROM album_asset aa
+          WHERE aa."aggregationId" = v_aggregation_id
+          ORDER BY aa."createdAt" ASC
+        )::uuid[],
+        MIN("createdAt")
+      INTO v_asset_ids, v_created_at
+      FROM album_asset
+      WHERE "aggregationId" = v_aggregation_id;
+
+      IF v_asset_ids IS NULL OR array_length(v_asset_ids, 1) IS NULL THEN
+        DELETE FROM activity WHERE "aggregationId" = v_aggregation_id;
+      ELSE
+        INSERT INTO activity (
+          "id",
+          "albumId",
+          "userId",
+          "assetId",
+          "comment",
+          "isLiked",
+          "aggregationId",
+          "assetIds",
+          "createdAt"
+        )
+        VALUES (
+          v_aggregation_id,
+          v_album_id,
+          v_user_id,
+          NULL,
+          NULL,
+          FALSE,
+          v_aggregation_id,
+          v_asset_ids,
+          v_created_at
+        )
+        ON CONFLICT ("aggregationId")
+        DO UPDATE
+          SET "assetIds" = EXCLUDED."assetIds",
+              "albumId" = EXCLUDED."albumId",
+              "userId" = COALESCE(EXCLUDED."userId", activity."userId"),
+              "createdAt" = EXCLUDED."createdAt";
+      END IF;
+
+      IF TG_OP = 'INSERT' THEN
+        RETURN NEW;
+      ELSE
+        RETURN OLD;
+      END IF;
+    END`,
+});
+
 export const album_asset_delete_audit = registerFunction({
   name: 'album_asset_delete_audit',
   returnType: 'TRIGGER',

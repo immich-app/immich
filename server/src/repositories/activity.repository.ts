@@ -14,6 +14,7 @@ export interface ActivitySearch {
   assetId?: string | null;
   userId?: string;
   isLiked?: boolean;
+  includeAlbumUpdates?: boolean;
 }
 
 @Injectable()
@@ -22,7 +23,7 @@ export class ActivityRepository {
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID }] })
   search(options: ActivitySearch) {
-    const { userId, assetId, albumId, isLiked } = options;
+    const { userId, assetId, albumId, isLiked, includeAlbumUpdates = false } = options;
 
     return this.db
       .selectFrom('activity')
@@ -45,6 +46,7 @@ export class ActivityRepository {
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
+      .$if(!includeAlbumUpdates, (qb) => qb.where('activity.aggregationId', 'is', null))
       .where('asset.deletedAt', 'is', null)
       .orderBy('activity.createdAt', 'asc')
       .execute();

@@ -65,6 +65,8 @@ export type Activity = {
   assetId: string | null;
   comment: string | null;
   isLiked: boolean;
+  aggregationId: string | null;
+  assetIds: string[] | null;
   updateId: string;
 };
 
