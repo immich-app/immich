@@ -30,6 +30,7 @@ import {
 })
 @AfterInsertTrigger({
   scope: 'statement',
+  name: 'album_asset_sync_activity_insert',
   function: album_asset_sync_activity,
   referencingNewTableAs: 'inserted_rows',
   when: 'pg_trigger_depth() <= 1',
@@ -42,6 +43,7 @@ import {
 })
 @AfterDeleteTrigger({
   scope: 'statement',
+  name: 'album_asset_sync_activity_delete',
   function: album_asset_sync_activity,
   referencingOldTableAs: 'deleted_rows',
   when: 'pg_trigger_depth() <= 1',
