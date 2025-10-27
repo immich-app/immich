@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:cancellation_token_http/http.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -102,7 +103,7 @@ class UploadService {
     await _storageRepository.clearCache();
     List<UploadTask> tasks = [];
     for (final asset in localAssets) {
-      final task = await _getUploadTask(
+      final task = await getUploadTask(
         asset,
         group: kManualUploadGroup,
         priority: 1, // High priority after upload motion photo part
@@ -140,7 +141,7 @@ class UploadService {
       final batch = candidates.skip(i).take(batchSize).toList();
       List<UploadTask> tasks = [];
       for (final asset in batch) {
-        final task = await _getUploadTask(asset);
+        final task = await getUploadTask(asset);
         if (task != null) {
           tasks.add(task);
         }
@@ -252,7 +253,7 @@ class UploadService {
         return;
       }
 
-      final uploadTask = await _getLivePhotoUploadTask(localAsset, response['id'] as String);
+      final uploadTask = await getLivePhotoUploadTask(localAsset, response['id'] as String);
 
       if (uploadTask == null) {
         return;
@@ -300,7 +301,8 @@ class UploadService {
     );
   }
 
-  Future<UploadTask?> _getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
+  @visibleForTesting
+  Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
@@ -353,7 +355,8 @@ class UploadService {
     );
   }
 
-  Future<UploadTask?> _getLivePhotoUploadTask(LocalAsset asset, String livePhotoVideoId) async {
+  @visibleForTesting
+  Future<UploadTask?> getLivePhotoUploadTask(LocalAsset asset, String livePhotoVideoId) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       return null;
