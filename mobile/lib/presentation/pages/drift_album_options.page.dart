@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +49,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     void leaveAlbum() async {
       try {
         await ref.read(remoteAlbumProvider.notifier).leaveAlbum(album.id, userId: userId);
-        context.navigateTo(const DriftAlbumsRoute());
+        unawaited(context.navigateTo(const DriftAlbumsRoute()));
       } catch (_) {
         showErrorMessage();
       }

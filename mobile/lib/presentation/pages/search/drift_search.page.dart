@@ -271,7 +271,7 @@ class DriftSearchPage extends HookConsumerWidget {
         filter.value = filter.value.copyWith(date: SearchDateFilter());
 
         dateRangeCurrentFilterWidget.value = null;
-        search();
+        unawaited(search());
         return;
       }
 
@@ -301,7 +301,7 @@ class DriftSearchPage extends HookConsumerWidget {
         );
       }
 
-      search();
+      unawaited(search());
     }
 
     // MEDIA PICKER

@@ -214,7 +214,7 @@ class UploadService {
   void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     switch (update.status) {
       case TaskStatus.complete:
-        _handleLivePhoto(update);
+        unawaited(_handleLivePhoto(update));
 
         if (CurrentPlatform.isIOS) {
           try {
@@ -259,7 +259,7 @@ class UploadService {
         return;
       }
 
-      enqueueTasks([uploadTask]);
+      await enqueueTasks([uploadTask]);
     } catch (error, stackTrace) {
       dPrint(() => "Error handling live photo upload task: $error $stackTrace");
     }
