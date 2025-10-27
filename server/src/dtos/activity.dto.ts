@@ -89,7 +89,7 @@ export const mapActivity = (activity: Activity): ActivityResponseDto => {
           assetIds,
           aggregationCount,
         }
-      : null,
+      : undefined,
   };
 };
 
