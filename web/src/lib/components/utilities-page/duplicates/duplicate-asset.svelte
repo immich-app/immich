@@ -43,47 +43,41 @@
       : fromISODateTimeUTC(asset.localDateTime),
   );
 
-  // Check if values differ from other assets
+  const isDifferent = (getter: (asset: AssetResponseDto) => string | undefined): boolean => {
+    return new Set(assets.map((asset) => getter(asset))).size > 1;
+  };
+
   const hasDifferentValues = $derived({
-    fileName: new Set(assets.map((a) => a.originalFileName)).size > 1,
-    fileSize: new Set(assets.map((a) => getFileSize(a))).size > 1,
-    resolution: new Set(assets.map((a) => getAssetResolution(a))).size > 1,
-    date:
-      new Set(
-        assets.map((a) => {
-          const tz = a.exifInfo?.timeZone;
-          const dt =
-            tz && a.exifInfo?.dateTimeOriginal
-              ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
-              : fromISODateTimeUTC(a.localDateTime);
-          return dt?.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale });
-        }),
-      ).size > 1,
-    time:
-      new Set(
-        assets.map((a) => {
-          const tz = a.exifInfo?.timeZone;
-          const dt =
-            tz && a.exifInfo?.dateTimeOriginal
-              ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
-              : fromISODateTimeUTC(a.localDateTime);
-          return dt?.toLocaleString(
-            {
-              hour: 'numeric',
-              minute: '2-digit',
-              second: '2-digit',
-              timeZoneName: tz ? 'shortOffset' : undefined,
-            },
-            { locale: $locale },
-          );
-        }),
-      ).size > 1,
-    location:
-      new Set(
-        assets.map(
-          (a) => [a.exifInfo?.city, a.exifInfo?.state, a.exifInfo?.country].filter(Boolean).join(', ') || 'unknown',
-        ),
-      ).size > 1,
+    fileName: isDifferent((a) => a.originalFileName),
+    fileSize: isDifferent((a) => getFileSize(a)),
+    resolution: isDifferent((a) => getAssetResolution(a)),
+    date: isDifferent((a) => {
+      const tz = a.exifInfo?.timeZone;
+      const dt =
+        tz && a.exifInfo?.dateTimeOriginal
+          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
+          : fromISODateTimeUTC(a.localDateTime);
+      return dt?.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale });
+    }),
+    time: isDifferent((a) => {
+      const tz = a.exifInfo?.timeZone;
+      const dt =
+        tz && a.exifInfo?.dateTimeOriginal
+          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
+          : fromISODateTimeUTC(a.localDateTime);
+      return dt?.toLocaleString(
+        {
+          hour: 'numeric',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZoneName: tz ? 'shortOffset' : undefined,
+        },
+        { locale: $locale },
+      );
+    }),
+    location: isDifferent(
+      (a) => [a.exifInfo?.city, a.exifInfo?.state, a.exifInfo?.country].filter(Boolean).join(', ') || 'unknown',
+    ),
   });
 </script>
 
