@@ -180,7 +180,7 @@ describe('/activities', () => {
       expect(body.length).toBe(1);
       expect(body[0].type).toBe('album_update');
       expect(body[0].albumUpdate.assetIds).toEqual(expect.arrayContaining([asset1.id, asset2.id]));
-      expect(body[0].albumUpdate.aggregationCount).toBe(2);
+      expect(body[0].albumUpdate.totalAssets).toBe(2);
 
       // includeAlbumUpdate: false should return no activities
       const { status: status2, body: body2 } = await request(app)
@@ -220,7 +220,7 @@ describe('/activities', () => {
       expect(body.length).toBe(1);
       expect(body[0].type).toBe('album_update');
       expect(body[0].albumUpdate.assetIds).toEqual(expect.arrayContaining([asset2.id]));
-      expect(body[0].albumUpdate.aggregationCount).toBe(1);
+      expect(body[0].albumUpdate.totalAssets).toBe(1);
     });
   });
 

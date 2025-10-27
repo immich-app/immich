@@ -114,7 +114,7 @@ describe(ActivityService.name, () => {
           type: ReactionType.ALBUM_UPDATE,
           albumUpdate: {
             aggregationId,
-            aggregationCount: 1,
+            totalAssets: 1,
             assetIds: [assetId],
           },
         }),
