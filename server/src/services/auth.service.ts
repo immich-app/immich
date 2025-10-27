@@ -104,6 +104,12 @@ export class AuthService extends BaseService {
 
     const updatedUser = await this.userRepository.update(user.id, { password: hashedPassword });
 
+    await this.eventRepository.emit('AuthChangePassword', {
+      userId: user.id,
+      currentSessionId: auth.session?.id,
+      invalidateSessions: dto.invalidateSessions,
+    });
+
     return mapUserAdmin(updatedUser);
   }
 
