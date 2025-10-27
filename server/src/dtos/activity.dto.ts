@@ -74,7 +74,7 @@ export class ActivityCreateDto extends ActivityDto {
 export const mapActivity = (activity: Activity): ActivityResponseDto => {
   const isAlbumUpdate = !!activity.aggregationId;
   const assetIds = activity.assetIds ?? [];
-  const aggregationCount = isAlbumUpdate ? (activity.albumUpdateAssetCount ?? assetIds.length) : assetIds.length;
+  const totalAssets = isAlbumUpdate ? (activity.albumUpdateAssetCount ?? assetIds.length) : assetIds.length;
 
   return {
     id: isAlbumUpdate ? activity.aggregationId! : activity.id,
@@ -87,7 +87,7 @@ export const mapActivity = (activity: Activity): ActivityResponseDto => {
       ? {
           aggregationId: activity.aggregationId!,
           assetIds,
-          aggregationCount,
+          totalAssets: totalAssets,
         }
       : undefined,
   };
@@ -101,5 +101,5 @@ export class ActivityAlbumUpdateResponseDto {
   assetIds!: string[];
 
   @ApiProperty({ type: 'integer' })
-  aggregationCount!: number;
+  totalAssets!: number;
 }

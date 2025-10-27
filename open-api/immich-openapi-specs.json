@@ -10033,9 +10033,6 @@
       },
       "ActivityAlbumUpdateResponseDto": {
         "properties": {
-          "aggregationCount": {
-            "type": "integer"
-          },
           "aggregationId": {
             "type": "string"
           },
@@ -10044,12 +10041,15 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "totalAssets": {
+            "type": "integer"
           }
         },
         "required": [
-          "aggregationCount",
           "aggregationId",
-          "assetIds"
+          "assetIds",
+          "totalAssets"
         ],
         "type": "object"
       },
