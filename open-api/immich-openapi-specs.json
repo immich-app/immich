@@ -11470,6 +11470,7 @@
       "ChangePasswordDto": {
         "properties": {
           "invalidateSessions": {
+            "default": false,
             "type": "boolean"
           },
           "newPassword": {

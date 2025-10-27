@@ -167,8 +167,8 @@ describe(AuthService.name, () => {
       expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
       expect(mocks.event.emit).toHaveBeenCalledWith('AuthChangePassword', {
         userId: user.id,
+        invalidateSessions: true,
         currentSessionId: auth.session?.id,
-        shouldLogoutSessions: true,
       });
     });
   });

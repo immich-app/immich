@@ -70,23 +70,19 @@ export class SessionService extends BaseService {
     await this.sessionRepository.delete(id);
   }
 
+  async deleteAll(auth: AuthDto): Promise<void> {
+    const userId = auth.user.id;
+    const currentSessionId = auth.session?.id;
+    await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
+  }
+
   async lock(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.SessionLock, ids: [id] });
     await this.sessionRepository.update(id, { pinExpiresAt: null });
   }
 
   @OnEvent({ name: 'AuthChangePassword' })
-  async onEventAuthChangePassword({ userId, currentSessionId }: ArgOf<'AuthChangePassword'>): Promise<void> {
-    await this.deleteAll(userId, currentSessionId);
-  }
-
-  async deleteAll(userId: string, excludeSessionId?: string): Promise<void> {
-    const sessions = await this.sessionRepository.getByUserId(userId);
-    for (const session of sessions) {
-      if (session.id === excludeSessionId) {
-        continue;
-      }
-      await this.sessionRepository.delete(session.id);
-    }
+  async onAuthChangePassword({ userId, currentSessionId }: ArgOf<'AuthChangePassword'>): Promise<void> {
+    await this.sessionRepository.invalidate({ userId, excludeId: currentSessionId });
   }
 }

@@ -28,7 +28,7 @@ export class SessionController {
   @Authenticated({ permission: Permission.SessionDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAllSessions(@Auth() auth: AuthDto): Promise<void> {
-    return this.service.deleteAll(auth.user.id, auth.session?.id);
+    return this.service.deleteAll(auth);
   }
 
   @Put(':id')
