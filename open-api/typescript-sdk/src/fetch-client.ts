@@ -14,6 +14,11 @@ const oazapfts = Oazapfts.runtime(defaults);
 export const servers = {
     server1: "/api"
 };
+export type ActivityAlbumUpdateResponseDto = {
+    aggregationId: string;
+    assetIds: string[];
+    totalAssets: number;
+};
 export type UserResponseDto = {
     avatarColor: UserAvatarColor;
     email: string;
@@ -23,6 +28,7 @@ export type UserResponseDto = {
     profileImagePath: string;
 };
 export type ActivityResponseDto = {
+    albumUpdate?: (ActivityAlbumUpdateResponseDto) | null;
     assetId: string | null;
     comment?: string | null;
     createdAt: string;
@@ -1626,9 +1632,10 @@ export type CreateProfileImageResponseDto = {
 /**
  * This endpoint requires the `activity.read` permission.
  */
-export function getActivities({ albumId, assetId, level, $type, userId }: {
+export function getActivities({ albumId, assetId, includeAlbumUpdate, level, $type, userId }: {
     albumId: string;
     assetId?: string;
+    includeAlbumUpdate?: boolean;
     level?: ReactionLevel;
     $type?: ReactionType;
     userId?: string;
@@ -1639,6 +1646,7 @@ export function getActivities({ albumId, assetId, level, $type, userId }: {
     }>(`/activities${QS.query(QS.explode({
         albumId,
         assetId,
+        includeAlbumUpdate,
         level,
         "type": $type,
         userId
@@ -4649,7 +4657,8 @@ export enum ReactionLevel {
 }
 export enum ReactionType {
     Comment = "comment",
-    Like = "like"
+    Like = "like",
+    AlbumUpdate = "album_update"
 }
 export enum UserAvatarColor {
     Primary = "primary",

@@ -298,6 +298,7 @@ Class | Method | HTTP request | Description
  - [APIKeyCreateResponseDto](doc//APIKeyCreateResponseDto.md)
  - [APIKeyResponseDto](doc//APIKeyResponseDto.md)
  - [APIKeyUpdateDto](doc//APIKeyUpdateDto.md)
+ - [ActivityAlbumUpdateResponseDto](doc//ActivityAlbumUpdateResponseDto.md)
  - [ActivityCreateDto](doc//ActivityCreateDto.md)
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)

@@ -123,12 +123,14 @@ class ActivitiesApi {
   ///
   /// * [String] assetId:
   ///
+  /// * [bool] includeAlbumUpdate:
+  ///
   /// * [ReactionLevel] level:
   ///
   /// * [ReactionType] type:
   ///
   /// * [String] userId:
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, bool? includeAlbumUpdate, ReactionLevel? level, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities';
 
@@ -142,6 +144,9 @@ class ActivitiesApi {
       queryParams.addAll(_queryParams('', 'albumId', albumId));
     if (assetId != null) {
       queryParams.addAll(_queryParams('', 'assetId', assetId));
+    }
+    if (includeAlbumUpdate != null) {
+      queryParams.addAll(_queryParams('', 'includeAlbumUpdate', includeAlbumUpdate));
     }
     if (level != null) {
       queryParams.addAll(_queryParams('', 'level', level));
@@ -175,13 +180,15 @@ class ActivitiesApi {
   ///
   /// * [String] assetId:
   ///
+  /// * [bool] includeAlbumUpdate:
+  ///
   /// * [ReactionLevel] level:
   ///
   /// * [ReactionType] type:
   ///
   /// * [String] userId:
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, level: level, type: type, userId: userId, );
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, bool? includeAlbumUpdate, ReactionLevel? level, ReactionType? type, String? userId, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, includeAlbumUpdate: includeAlbumUpdate, level: level, type: type, userId: userId, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
