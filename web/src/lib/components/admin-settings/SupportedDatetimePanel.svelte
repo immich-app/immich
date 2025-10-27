@@ -11,7 +11,7 @@
   let { options }: Props = $props();
 
   const getLuxonExample = (format: string) => {
-    return DateTime.fromISO('2022-09-04T20:03:05.250Z', { locale: $locale }).toFormat(format);
+    return DateTime.fromISO('2022-02-03T20:03:05.250Z', { locale: $locale }).toFormat(format);
   };
 </script>
 
