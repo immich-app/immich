@@ -1388,6 +1388,7 @@
   "multiselect_grid_edit_gps_err_read_only": "Cannot edit location of read only asset(s), skipping",
   "mute_memories": "Mute Memories",
   "my_albums": "My albums",
+  "my_immich_link": "Generate my.immich.app deep link",
   "name": "Name",
   "name_or_nickname": "Name or nickname",
   "navigate": "Navigate",
