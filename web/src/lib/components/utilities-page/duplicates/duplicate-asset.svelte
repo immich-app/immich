@@ -9,6 +9,9 @@
   import {
     mdiBookmarkOutline,
     mdiCalendar,
+    mdiClock,
+    mdiFile,
+    mdiFitToScreen,
     mdiHeart,
     mdiImageMultipleOutline,
     mdiImageOutline,
@@ -16,15 +19,17 @@
     mdiMapMarkerOutline,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import InfoRow from './info-row.svelte';
 
   interface Props {
+    assets: AssetResponseDto[];
     asset: AssetResponseDto;
     isSelected: boolean;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
   }
 
-  let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
+  let { assets, asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
@@ -37,13 +42,46 @@
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
       : fromISODateTimeUTC(asset.localDateTime),
   );
+
+  const isDifferent = (getter: (asset: AssetResponseDto) => string | undefined): boolean => {
+    return new Set(assets.map((asset) => getter(asset))).size > 1;
+  };
+
+  const hasDifferentValues = $derived({
+    fileName: isDifferent((a) => a.originalFileName),
+    fileSize: isDifferent((a) => getFileSize(a)),
+    resolution: isDifferent((a) => getAssetResolution(a)),
+    date: isDifferent((a) => {
+      const tz = a.exifInfo?.timeZone;
+      const dt =
+        tz && a.exifInfo?.dateTimeOriginal
+          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
+          : fromISODateTimeUTC(a.localDateTime);
+      return dt?.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale });
+    }),
+    time: isDifferent((a) => {
+      const tz = a.exifInfo?.timeZone;
+      const dt =
+        tz && a.exifInfo?.dateTimeOriginal
+          ? fromISODateTime(a.exifInfo.dateTimeOriginal, tz)
+          : fromISODateTimeUTC(a.localDateTime);
+      return dt?.toLocaleString(
+        {
+          hour: 'numeric',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZoneName: tz ? 'shortOffset' : undefined,
+        },
+        { locale: $locale },
+      );
+    }),
+    location: isDifferent(
+      (a) => [a.exifInfo?.city, a.exifInfo?.state, a.exifInfo?.country].filter(Boolean).join(', ') || 'unknown',
+    ),
+  });
 </script>
 
-<div
-  class="max-w-60 rounded-xl border-4 transition-colors font-semibold text-xs {isSelected
-    ? 'bg-primary border-primary'
-    : 'bg-subtle border-subtle'}"
->
+<div class="min-w-60 transition-colors border rounded-lg">
   <div class="relative w-full">
     <button
       type="button"
@@ -57,7 +95,7 @@
         src={getAssetThumbnailUrl(asset.id)}
         alt={$getAltText(toTimelineAsset(asset))}
         title={assetData}
-        class="h-60 object-cover rounded-t-xl w-full"
+        class="h-60 object-cover w-full rounded-t-md"
         draggable="false"
       />
 
@@ -106,19 +144,23 @@
   </div>
 
   <div
-    class="grid place-items-start gap-y-2 py-2 text-xs transition-colors {isSelected
-      ? 'text-white dark:text-black'
-      : 'dark:text-white'}"
+    class="grid place-items-start gap-y-2 py-2 text-sm transition-colors rounded-b-lg {isSelected
+      ? 'bg-success/15 dark:bg-[#001a06]'
+      : 'bg-transparent'}"
   >
-    <div class="flex items-start gap-x-1">
-      <Icon icon={mdiImageOutline} size="16" />
-      <div>
-        <span class="break-all text-center">{asset.originalFileName}</span><br />
-        {getAssetResolution(asset)} - {getFileSize(asset)}
-      </div>
-    </div>
-    <div class="flex items-start gap-x-1">
-      <Icon icon={mdiCalendar} size="16" />
+    <InfoRow icon={mdiImageOutline} highlight={hasDifferentValues.fileName} title={$t('file_name')}>
+      {asset.originalFileName}
+    </InfoRow>
+
+    <InfoRow icon={mdiFile} highlight={hasDifferentValues.fileSize} title={$t('file_size')}>
+      {getFileSize(asset)}
+    </InfoRow>
+
+    <InfoRow icon={mdiFitToScreen} highlight={hasDifferentValues.resolution} title={$t('resolution')}>
+      {getAssetResolution(asset)}
+    </InfoRow>
+
+    <InfoRow icon={mdiCalendar} highlight={hasDifferentValues.date} title={$t('date')}>
       {#if dateTime}
         {dateTime.toLocaleString(
           {
@@ -128,12 +170,18 @@
           },
           { locale: $locale },
         )}
+      {:else}
+        {$t('unknown')}
+      {/if}
+    </InfoRow>
 
+    <InfoRow icon={mdiClock} highlight={hasDifferentValues.time} title={$t('time')}>
+      {#if dateTime}
         {dateTime.toLocaleString(
           {
-            // weekday: 'short',
             hour: 'numeric',
             minute: '2-digit',
+            second: '2-digit',
             timeZoneName: timeZone ? 'shortOffset' : undefined,
           },
           { locale: $locale },
@@ -141,27 +189,22 @@
       {:else}
         {$t('unknown')}
       {/if}
-    </div>
+    </InfoRow>
 
-    <div class="flex items-start gap-x-1">
-      <Icon icon={mdiMapMarkerOutline} size="16" />
+    <InfoRow icon={mdiMapMarkerOutline} highlight={hasDifferentValues.location} title={$t('location')}>
       {#if locationParts.length > 0}
         {locationParts.join(', ')}
       {:else}
         {$t('unknown')}
       {/if}
-    </div>
-    <div class="flex items-start gap-x-1">
-      <Icon icon={mdiBookmarkOutline} size="16" />
+    </InfoRow>
+
+    <InfoRow icon={mdiBookmarkOutline} borderBottom={false} title={$t('albums')}>
       {#await getAllAlbums({ assetId: asset.id })}
         {$t('scanning_for_album')}
       {:then albums}
-        {#if albums.length === 0}
-          {$t('not_in_any_album')}
-        {:else}
-          {$t('in_albums', { values: { count: albums.length } })}
-        {/if}
+        {$t('in_albums', { values: { count: albums.length } })}
       {/await}
-    </div>
+    </InfoRow>
   </div>
 </div>
