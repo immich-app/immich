@@ -31,15 +31,14 @@ import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.d
 
 @RoutePage()
 class DriftSearchPage extends HookConsumerWidget {
-  const DriftSearchPage({super.key, this.preFilter});
-
-  final SearchFilter? preFilter;
+  const DriftSearchPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textSearchType = useState<TextSearchType>(TextSearchType.context);
     final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
     final textSearchController = useTextEditingController();
+    final preFilter = ref.watch(searchPreFilterProvider);
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: preFilter?.people ?? {},
@@ -110,8 +109,8 @@ class DriftSearchPage extends HookConsumerWidget {
         Future.delayed(Duration.zero, () {
           search();
 
-          if (preFilter!.location.city != null) {
-            locationCurrentFilterWidget.value = Text(preFilter!.location.city!, style: context.textTheme.labelLarge);
+          if (preFilter.location.city != null) {
+            locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
           }
         });
       }

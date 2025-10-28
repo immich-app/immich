@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -19,19 +20,20 @@ class SimilarPhotosActionButton extends ConsumerWidget {
     }
 
     ref.invalidate(assetViewerProvider);
-    context.router.popAndPush(
-      DriftSearchRoute(
-        preFilter: SearchFilter(
-          assetId: assetId,
-          people: {},
-          location: SearchLocationFilter(),
-          camera: SearchCameraFilter(),
-          date: SearchDateFilter(),
-          display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
-          mediaType: AssetType.image,
-        ),
-      ),
-    );
+    ref
+        .read(searchPreFilterProvider.notifier)
+        .setFilter(
+          SearchFilter(
+            assetId: assetId,
+            people: {},
+            location: SearchLocationFilter(),
+            camera: SearchCameraFilter(),
+            date: SearchDateFilter(),
+            display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+            mediaType: AssetType.image,
+          ),
+        );
+    context.router.popAndPush(const DriftSearchRoute());
   }
 
   @override
