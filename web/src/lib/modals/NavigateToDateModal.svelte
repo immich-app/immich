@@ -28,7 +28,7 @@
 
     // Get the local date/time components from the selected string using neutral timezone
     const dateTime = toDatetime(selectedDate, selectedOption) as DateTime<true>;
-    const asset = await timelineManager.getClosestAssetToDate(dateTime.toObject());
+    const asset = await timelineManager.search.getClosestAssetToDate(dateTime.toObject());
     onClose(asset);
   };
 

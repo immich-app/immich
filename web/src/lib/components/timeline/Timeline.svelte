@@ -440,10 +440,8 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getSegmentForAssetId(assetInteraction.assetSelectionStart.id) as
-        | TimelineMonth
-        | undefined;
-      let endBucket = timelineManager.getSegmentForAssetId(asset.id) as TimelineMonth | undefined;
+      let startBucket = await timelineManager.search.getMonthForAsset(assetInteraction.assetSelectionStart.id);
+      let endBucket = await timelineManager.search.getMonthForAsset(asset.id);
 
       if (!startBucket || !endBucket) {
         return;

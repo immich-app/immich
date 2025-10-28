@@ -31,7 +31,7 @@ export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean
 
 export const setFocusTo = async (
   scrollToAsset: (asset: TimelineAsset) => boolean,
-  store: TimelineManager,
+  timelineManager: TimelineManager,
   direction: 'earlier' | 'later',
   interval: 'day' | 'month' | 'year' | 'asset',
 ) => {
@@ -53,8 +53,8 @@ export const setFocusTo = async (
 
   const asset =
     direction === 'earlier'
-      ? await store.getEarlierAsset({ id }, interval)
-      : await store.getLaterAsset({ id }, interval);
+      ? await timelineManager.search.getEarlierAsset({ id }, interval)
+      : await timelineManager.search.getLaterAsset({ id }, interval);
 
   if (!invocation.isStillValid()) {
     return;

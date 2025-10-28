@@ -278,15 +278,6 @@ export abstract class VirtualScrollManager {
 
     await segment.load(cancelable);
   }
-
-  getSegmentForAssetId(assetId: string) {
-    for (const segment of this.segments) {
-      const asset = segment.assets.find((asset) => asset.id === assetId);
-      if (asset) {
-        return segment;
-      }
-    }
-  }
 }
 
 export const isEmptyViewport = (viewport: Viewport) => viewport.width === 0 || viewport.height === 0;

@@ -223,31 +223,6 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b:
   return aDateTime.millisecond - bDateTime.millisecond;
 };
 
-export function setDifference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
-  // Check if native Set.prototype.difference is available (ES2025)
-  const setWithDifference = setA as unknown as Set<T> & { difference?: (other: Set<T>) => Set<T> };
-  if (setWithDifference.difference && typeof setWithDifference.difference === 'function') {
-    return setWithDifference.difference(setB);
-  }
-  const result = new Set<T>();
-  for (const value of setA) {
-    if (!setB.has(value)) {
-      result.add(value);
-    }
-  }
-  return result;
-}
-
-/**
- * Removes all elements of setB from setA in-place (mutates setA).
- */
-export function setDifferenceInPlace<T>(setA: Set<T>, setB: Set<T>): Set<T> {
-  for (const value of setB) {
-    setA.delete(value);
-  }
-  return setA;
-}
-
 export const formatGroupTitleFull = (_date: DateTime): string => {
   if (!_date.isValid) {
     return _date.toString();
@@ -273,3 +248,22 @@ export const getSegmentIdentifier = (yearMonth: TimelineYearMonth | TimelineDate
     );
   },
 });
+
+export const findClosestMonthToDate = (months: TimelineMonth[], targetYearMonth: TimelineYearMonth) => {
+  const targetDate = DateTime.fromObject({ year: targetYearMonth.year, month: targetYearMonth.month });
+
+  let closestMonth: TimelineMonth | undefined;
+  let minDifference = Number.MAX_SAFE_INTEGER;
+
+  for (const month of months) {
+    const monthDate = DateTime.fromObject({ year: month.yearMonth.year, month: month.yearMonth.month });
+    const totalDiff = Math.abs(monthDate.diff(targetDate, 'months').months);
+
+    if (totalDiff < minDifference) {
+      minDifference = totalDiff;
+      closestMonth = month;
+    }
+  }
+
+  return closestMonth;
+};

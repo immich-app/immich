@@ -6,7 +6,6 @@ import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svel
 import { TimelineSearchExtension } from '$lib/managers/timeline-manager/TimelineSearchExtension.svelte';
 import { TimelineWebsocketExtension } from '$lib/managers/timeline-manager/TimelineWebsocketExtension';
 import type {
-  AssetDescriptor,
   AssetOperation,
   Direction,
   ScrubberMonth,
@@ -16,19 +15,15 @@ import type {
 } from '$lib/managers/timeline-manager/types';
 import { isMismatched, setDifferenceInPlace, updateObject } from '$lib/managers/timeline-manager/utils.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import {
-  getSegmentIdentifier,
-  toTimelineAsset,
-  type TimelineDateTime,
-  type TimelineYearMonth,
-} from '$lib/utils/timeline-util';
-import { AssetOrder, getAssetInfo, getTimeBuckets } from '@immich/sdk';
+import { getSegmentIdentifier } from '$lib/utils/timeline-util';
+import { AssetOrder, getTimeBuckets } from '@immich/sdk';
 import { isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 
 export class TimelineManager extends VirtualScrollManager {
   override bottomSectionHeight = $state(60);
   readonly search = new TimelineSearchExtension(this);
+  readonly websocket = new TimelineWebsocketExtension(this);
   readonly albumAssets: Set<string> = new SvelteSet();
   readonly limitedScroll = $derived(this.maxScrollPercent < 0.5);
   readonly initTask = new CancellableTask(
@@ -37,10 +32,10 @@ export class TimelineManager extends VirtualScrollManager {
       if (this.#options.albumId || this.#options.personId) {
         return;
       }
-      this.connect();
+      this.websocket.connect();
     },
     () => {
-      this.disconnect();
+      this.websocket.disconnect();
       this.isInitialized = false;
     },
     () => void 0,
@@ -50,7 +45,6 @@ export class TimelineManager extends VirtualScrollManager {
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
 
-  #websocketSupport: TimelineWebsocketExtension | undefined;
   #options: TimelineManagerOptions = {};
   #scrollableElement: HTMLElement | undefined = $state();
 
@@ -88,7 +82,7 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   public override destroy() {
-    this.disconnect();
+    this.websocket.disconnect();
     super.destroy();
   }
 
@@ -127,100 +121,10 @@ export class TimelineManager extends VirtualScrollManager {
     this.onUpdateViewport(oldViewport, viewport);
   }
 
-  connect() {
-    if (this.#websocketSupport) {
-      throw new Error('TimelineManager already connected');
-    }
-    this.#websocketSupport = new TimelineWebsocketExtension(this);
-    this.#websocketSupport.connectWebsocketEvents();
-  }
-
-  disconnect() {
-    if (!this.#websocketSupport) {
-      return;
-    }
-    this.#websocketSupport.disconnectWebsocketEvents();
-    this.#websocketSupport = undefined;
-  }
-
   upsertAssets(assets: TimelineAsset[]) {
     const notExcluded = assets.filter((asset) => !this.isExcluded(asset));
     const notUpdated = this.#updateAssets(notExcluded);
     this.addAssetsToSegments(notUpdated);
-  }
-
-  async findMonthForAsset(id: string) {
-    if (!this.isInitialized) {
-      await this.initTask.waitUntilCompletion();
-    }
-
-    let { month } = this.search.findMonthForAsset(id) ?? {};
-    if (month) {
-      return month;
-    }
-
-    const response = await getAssetInfo({ ...authManager.params, id }).catch(() => null);
-    if (!response) {
-      return;
-    }
-
-    const asset = toTimelineAsset(response);
-    if (!asset || this.isExcluded(asset)) {
-      return;
-    }
-
-    month = await this.#loadMonthAtTime(asset.localDateTime, { cancelable: false });
-    if (month?.findAssetById({ id })) {
-      return month;
-    }
-  }
-
-  async #loadMonthAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
-    await this.loadSegment(getSegmentIdentifier(yearMonth), options);
-    return this.search.findMonthByDate(yearMonth);
-  }
-
-  getMonthByAssetId(assetId: string) {
-    const monthInfo = this.search.findMonthForAsset(assetId);
-    return monthInfo?.month;
-  }
-
-  // note: the `index` input is expected to be in the range [0, assetCount). This
-  // value can be passed to make the method deterministic, which is mainly useful
-  // for testing.
-  async getRandomAsset(index?: number): Promise<TimelineAsset | undefined> {
-    const randomAssetIndex = index ?? Math.floor(Math.random() * this.assetCount);
-
-    let accumulatedCount = 0;
-
-    let randomMonth: TimelineMonth | undefined = undefined;
-    for (const month of this.segments) {
-      if (randomAssetIndex < accumulatedCount + month.assetsCount) {
-        randomMonth = month;
-        break;
-      }
-
-      accumulatedCount += month.assetsCount;
-    }
-    if (!randomMonth) {
-      return;
-    }
-    await this.loadSegment(getSegmentIdentifier(randomMonth.yearMonth), { cancelable: false });
-
-    let randomDay: TimelineDay | undefined = undefined;
-    for (const day of randomMonth.days) {
-      if (randomAssetIndex < accumulatedCount + day.viewerAssets.length) {
-        randomDay = day;
-        break;
-      }
-
-      accumulatedCount += day.viewerAssets.length;
-    }
-    if (!randomDay) {
-      return;
-    }
-
-    return randomDay.viewerAssets[randomAssetIndex - accumulatedCount].asset;
   }
 
   /**
@@ -345,42 +249,6 @@ export class TimelineManager extends VirtualScrollManager {
 
   getFirstAsset(): TimelineAsset | undefined {
     return this.segments[0]?.getFirstAsset();
-  }
-
-  async getLaterAsset(
-    assetDescriptor: AssetDescriptor,
-    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
-  ): Promise<TimelineAsset | undefined> {
-    return await this.search.getAssetWithOffset(assetDescriptor, interval, 'later');
-  }
-
-  async getEarlierAsset(
-    assetDescriptor: AssetDescriptor,
-    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
-  ): Promise<TimelineAsset | undefined> {
-    return await this.search.getAssetWithOffset(assetDescriptor, interval, 'earlier');
-  }
-
-  async getClosestAssetToDate(dateTime: TimelineDateTime) {
-    let month = this.search.findMonthForDate(dateTime);
-    if (!month) {
-      month = this.search.findClosestGroupForDate(this.segments, dateTime);
-      if (!month) {
-        return;
-      }
-    }
-    await this.loadSegment(getSegmentIdentifier(dateTime), { cancelable: false });
-    const asset = month.findClosest(dateTime);
-    if (asset) {
-      return asset;
-    }
-    for await (const asset of this.assetsIterator({ startMonth: month })) {
-      return asset;
-    }
-  }
-
-  async retrieveRange(start: AssetDescriptor, end: AssetDescriptor) {
-    return this.search.retrieveRange(start, end);
   }
 
   async *assetsIterator(options?: {
