@@ -1,12 +1,8 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import PinCodeInput from '$lib/components/user-settings-page/PinCodeInput.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { changePinCode } from '@immich/sdk';
-  import { Button, Heading, Text } from '@immich/ui';
+  import { Button, Heading, Text, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -31,13 +27,8 @@
     isLoading = true;
     try {
       await changePinCode({ pinCodeChangeDto: { pinCode: currentPinCode, newPinCode } });
-
       resetForm();
-
-      notificationController.show({
-        message: $t('pin_code_changed_successfully'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('pin_code_changed_successfully'));
     } catch (error) {
       handleError(error, $t('unable_to_change_pin_code'));
     } finally {

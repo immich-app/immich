@@ -17,14 +17,13 @@
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, modalManager, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart, mdiTrashCan } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
 
   interface Props {
@@ -127,10 +126,7 @@
           }
         }
 
-        notificationController.show({
-          message: $t('people_edits_count', { values: { count: numberOfChanges } }),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('people_edits_count', { values: { count: numberOfChanges } }));
       } catch (error) {
         handleError(error, $t('errors.cant_apply_changes'));
       }
