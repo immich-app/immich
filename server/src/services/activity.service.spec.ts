@@ -1,5 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
+import type { Activity } from 'src/database';
 import { ReactionLevel, ReactionType } from 'src/dtos/activity.dto';
+import type { ActivityRepository } from 'src/repositories/activity.repository';
 import { ActivityService } from 'src/services/activity.service';
 import { factory, newUuid, newUuids } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -7,6 +9,14 @@ import { newTestService, ServiceMocks } from 'test/utils';
 describe(ActivityService.name, () => {
   let sut: ActivityService;
   let mocks: ServiceMocks;
+
+  type ActivitySearchResult = Awaited<ReturnType<ActivityRepository['search']>>[number];
+
+  const toSearchResult = (activity: Activity): ActivitySearchResult => ({
+    ...activity,
+    assetIds: activity.assetIds ?? [],
+    albumUpdateAssetCount: activity.albumUpdateAssetCount ?? null,
+  });
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(ActivityService));
@@ -100,7 +110,7 @@ describe(ActivityService.name, () => {
       });
 
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
-      mocks.activity.search.mockResolvedValue([activity]);
+      mocks.activity.search.mockResolvedValue([toSearchResult(activity)]);
 
       const result = await sut.getAll(factory.auth(), {
         albumId,
@@ -151,7 +161,7 @@ describe(ActivityService.name, () => {
       });
 
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
-      mocks.activity.search.mockResolvedValue([activity, albumUpdate]);
+      mocks.activity.search.mockResolvedValue([toSearchResult(activity), toSearchResult(albumUpdate)]);
 
       const result = await sut.getAll(factory.auth(), {
         albumId,
@@ -250,7 +260,7 @@ describe(ActivityService.name, () => {
 
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
       mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set([albumId]));
-      mocks.activity.search.mockResolvedValue([activity]);
+      mocks.activity.search.mockResolvedValue([toSearchResult(activity)]);
 
       await sut.create(factory.auth(), { albumId, assetId, type: ReactionType.LIKE });
 

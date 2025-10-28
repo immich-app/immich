@@ -197,9 +197,9 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     return { album, result };
   }
 
-  async newAlbumAsset(albumAsset: { albumId: string; assetId: string }, userId: string = factory.uuid()) {
+  async newAlbumAsset(albumAsset: { albumId: string; assetId: string; createdBy: string }) {
     const result = await this.get(AlbumRepository).addAssetIds(albumAsset.albumId, [albumAsset.assetId], {
-      createdBy: userId,
+      createdBy: albumAsset.createdBy,
     });
     return { albumAsset, result };
   }
