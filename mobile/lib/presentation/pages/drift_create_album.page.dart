@@ -8,7 +8,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 
@@ -180,7 +179,6 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         );
 
     if (album != null) {
-      ref.read(currentRemoteAlbumProvider.notifier).setAlbum(album);
       unawaited(context.replaceRoute(RemoteAlbumRoute(album: album)));
     }
   }
