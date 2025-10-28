@@ -19,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
@@ -503,23 +504,26 @@ class DriftSearchPage extends HookConsumerWidget {
                     searchHintText.value = 'search_by_description_example'.t(context: context);
                   },
                 ),
-                MenuItemButton(
-                  child: ListTile(
-                    leading: const Icon(Icons.document_scanner_outlined),
-                    title: Text(
-                      'search_by_ocr'.t(context: context),
-                      style: context.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                FeatureCheck(
+                  feature: (features) => features.ocr,
+                  child: MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.document_scanner_outlined),
+                      title: Text(
+                        'search_by_ocr'.t(context: context),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                        ),
                       ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.ocr,
                     ),
-                    selectedColor: context.colorScheme.primary,
-                    selected: textSearchType.value == TextSearchType.ocr,
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.ocr;
+                      searchHintText.value = 'search_by_ocr_example'.t(context: context);
+                    },
                   ),
-                  onPressed: () {
-                    textSearchType.value = TextSearchType.ocr;
-                    searchHintText.value = 'search_by_ocr_example'.t(context: context);
-                  },
                 ),
               ],
             ),
