@@ -88,6 +88,8 @@ type EventMap = {
   UserDelete: [UserEvent];
   UserRestore: [UserEvent];
 
+  AuthChangePassword: [{ userId: string; currentSessionId?: string; invalidateSessions?: boolean }];
+
   // websocket events
   WebsocketConnect: [{ userId: string }];
 };

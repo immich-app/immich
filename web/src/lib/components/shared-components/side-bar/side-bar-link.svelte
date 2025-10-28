@@ -51,7 +51,9 @@
       </button>
     </span>
   {/if}
+  <!-- safari still needs a tabIndex=0 -->
   <a
+    tabindex="0"
     {href}
     data-sveltekit-preload-data={preloadData ? 'hover' : 'off'}
     draggable="false"

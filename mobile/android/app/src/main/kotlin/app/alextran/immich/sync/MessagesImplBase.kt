@@ -113,9 +113,15 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
         while (c.moveToNext()) {
           val id = c.getLong(idColumn).toString()
+          val name = c.getStringOrNull(nameColumn)
+          val bucketId = c.getStringOrNull(bucketIdColumn)
+          val path = c.getStringOrNull(dataColumn)
 
-          val path = c.getString(dataColumn)
-          if (path.isNullOrBlank() || !File(path).exists()) {
+          // Skip assets with invalid metadata
+          if (
+            name.isNullOrBlank() || bucketId.isNullOrBlank() ||
+            path.isNullOrBlank() || !File(path).exists()
+          ) {
             yield(AssetResult.InvalidAsset(id))
             continue
           }
@@ -125,7 +131,6 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
             MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> 2
             else -> 0
           }
-          val name = c.getString(nameColumn)
           // Date taken is milliseconds since epoch, Date added is seconds since epoch
           val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
             ?: c.getLong(dateAddedColumn)
@@ -136,7 +141,6 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           // Duration is milliseconds
           val duration = if (mediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0
           else c.getLong(durationColumn) / 1000
-          val bucketId = c.getString(bucketIdColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 

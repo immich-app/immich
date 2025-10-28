@@ -121,7 +121,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
 
     // we need to re-filter the albums after sorting
     // so shownAlbums gets updated
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> filterAlbums() async {
@@ -711,7 +711,7 @@ class AddToAlbumHeader extends ConsumerWidget {
 
       ref.read(currentRemoteAlbumProvider.notifier).setAlbum(newAlbum);
       ref.read(multiSelectProvider.notifier).reset();
-      context.pushRoute(RemoteAlbumRoute(album: newAlbum));
+      unawaited(context.pushRoute(RemoteAlbumRoute(album: newAlbum)));
     }
 
     return SliverPadding(

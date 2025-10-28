@@ -5985,6 +5985,14 @@
             }
           },
           {
+            "name": "ocr",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "personIds",
             "required": false,
             "in": "query",
@@ -10408,6 +10416,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -10437,6 +10448,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -11477,6 +11489,10 @@
       },
       "ChangePasswordDto": {
         "properties": {
+          "invalidateSessions": {
+            "default": false,
+            "type": "boolean"
+          },
           "newPassword": {
             "example": "password",
             "minLength": 8,
@@ -12104,7 +12120,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "ocr"
         ],
         "type": "string"
       },
@@ -12674,6 +12691,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "order": {
             "allOf": [
               {
@@ -12984,6 +13004,40 @@
           "client_secret_basic"
         ],
         "type": "string"
+      },
+      "OcrConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxResolution": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minDetectionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "minRecognitionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxResolution",
+          "minDetectionScore",
+          "minRecognitionScore",
+          "modelName"
+        ],
+        "type": "object"
       },
       "OnThisDayDto": {
         "properties": {
@@ -13655,6 +13709,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "personIds": {
             "items": {
               "format": "uuid",
@@ -14123,6 +14180,9 @@
           "oauthAutoLaunch": {
             "type": "boolean"
           },
+          "ocr": {
+            "type": "boolean"
+          },
           "passwordLogin": {
             "type": "boolean"
           },
@@ -14151,6 +14211,7 @@
           "map",
           "oauth",
           "oauthAutoLaunch",
+          "ocr",
           "passwordLogin",
           "reverseGeocoding",
           "search",
@@ -14758,6 +14819,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "page": {
             "minimum": 1,
             "type": "number"
@@ -14961,6 +15025,9 @@
           },
           "model": {
             "nullable": true,
+            "type": "string"
+          },
+          "ocr": {
             "type": "string"
           },
           "personIds": {
@@ -16412,6 +16479,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -16435,6 +16505,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -16520,6 +16591,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/OcrConfig"
+          },
           "urls": {
             "format": "uri",
             "items": {
@@ -16536,6 +16610,7 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
+          "ocr",
           "urls"
         ],
         "type": "object"
