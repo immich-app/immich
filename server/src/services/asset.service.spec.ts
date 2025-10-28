@@ -8,7 +8,6 @@ import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
-import { ocrStub } from 'test/fixtures/ocr.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -711,10 +710,13 @@ describe(AssetService.name, () => {
     });
 
     it('should return OCR data for an asset', async () => {
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      mocks.ocr.getByAssetId.mockResolvedValue([ocrStub.textBox1, ocrStub.textBox2]);
+      const ocr1 = factory.assetOcr({ text: 'Hello World' });
+      const ocr2 = factory.assetOcr({ text: 'Test Image' });
 
-      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocrStub.textBox1, ocrStub.textBox2]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.ocr.getByAssetId.mockResolvedValue([ocr1, ocr2]);
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocr1, ocr2]);
 
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
