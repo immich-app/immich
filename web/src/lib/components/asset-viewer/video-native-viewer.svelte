@@ -140,6 +140,7 @@
         autoplay={$autoPlayVideo}
         playsinline
         controls
+        disablePictureInPicture
         class="h-full object-contain"
         {...useSwipe(onSwipe)}
         oncanplay={(e) => handleCanPlay(e.currentTarget)}
