@@ -5,7 +5,6 @@ import {
   AssetMediaResponseDto,
   LoginResponseDto,
   ReactionType,
-  addAssetsToAlbum,
   createActivity as create,
   createAlbum,
   removeAssetFromAlbum,
@@ -164,17 +163,20 @@ describe('/activities', () => {
       const asset1 = await utils.createAsset(admin.accessToken);
       const asset2 = await utils.createAsset(admin.accessToken);
 
-      await addAssetsToAlbum(
+      const album1 = await createAlbum(
         {
-          id: album.id,
-          bulkIdsDto: { ids: [asset1.id, asset2.id] },
+          createAlbumDto: {
+            albumName: 'Album 1',
+            assetIds: [asset1.id, asset2.id],
+            albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
+          },
         },
         { headers: asBearerAuth(admin.accessToken) },
       );
 
       const { status, body } = await request(app)
         .get('/activities')
-        .query({ albumId: album.id, includeAlbumUpdate: true })
+        .query({ albumId: album1.id, includeAlbumUpdate: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body.length).toBe(1);
@@ -185,7 +187,7 @@ describe('/activities', () => {
       // includeAlbumUpdate: false should return no activities
       const { status: status2, body: body2 } = await request(app)
         .get('/activities')
-        .query({ albumId: album.id, includeAlbumUpdate: false })
+        .query({ albumId: album1.id, includeAlbumUpdate: false })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status2).toBe(200);
       expect(body2.length).toBe(0);
@@ -195,16 +197,20 @@ describe('/activities', () => {
       const asset1 = await utils.createAsset(admin.accessToken);
       const asset2 = await utils.createAsset(admin.accessToken);
 
-      await addAssetsToAlbum(
+      const album1 = await createAlbum(
         {
-          id: album.id,
-          bulkIdsDto: { ids: [asset1.id, asset2.id] },
+          createAlbumDto: {
+            albumName: 'Album 1',
+            assetIds: [asset1.id, asset2.id],
+            albumUsers: [{ userId: nonOwner.userId, role: AlbumUserRole.Editor }],
+          },
         },
         { headers: asBearerAuth(admin.accessToken) },
       );
+
       await removeAssetFromAlbum(
         {
-          id: album.id,
+          id: album1.id,
           bulkIdsDto: {
             ids: [asset1.id],
           },
@@ -214,7 +220,7 @@ describe('/activities', () => {
 
       const { status, body } = await request(app)
         .get('/activities')
-        .query({ albumId: album.id, includeAlbumUpdate: true })
+        .query({ albumId: album1.id, includeAlbumUpdate: true })
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
       expect(body.length).toBe(1);
