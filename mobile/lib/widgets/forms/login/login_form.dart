@@ -181,7 +181,7 @@ class LoginForm extends HookConsumerWidget {
     getManageMediaPermission() async {
       final hasPermission = await ref.read(localFilesManagerRepositoryProvider).hasManageMediaPermission();
       if (!hasPermission) {
-        showDialog(
+        await showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
@@ -205,7 +205,10 @@ class LoginForm extends HookConsumerWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+                    Navigator.of(context).pop();
+                  },
                   child: Text(
                     'manage_media_access_settings'.tr(),
                     style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
@@ -238,7 +241,7 @@ class LoginForm extends HookConsumerWidget {
           if (isBeta) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
             if (isSyncRemoteDeletionsMode()) {
-              getManageMediaPermission();
+              await getManageMediaPermission();
             }
             unawaited(handleSyncFlow());
             ref.read(websocketProvider.notifier).connect();
@@ -340,7 +343,7 @@ class LoginForm extends HookConsumerWidget {
             if (isBeta) {
               await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
               if (isSyncRemoteDeletionsMode()) {
-                getManageMediaPermission();
+                await getManageMediaPermission();
               }
               unawaited(handleSyncFlow());
               unawaited(context.replaceRoute(const TabShellRoute()));
