@@ -392,6 +392,7 @@ void main() {
           isArchived: false,
           isTrashEnabled: true,
           isInLockedView: false,
+          isStacked: false,
           currentAlbum: null,
           advancedTroubleshooting: false,
           source: ActionSource.timeline,
@@ -409,6 +410,7 @@ void main() {
           isTrashEnabled: true,
           isInLockedView: true,
           currentAlbum: null,
+          isStacked: false,
           advancedTroubleshooting: false,
           source: ActionSource.timeline,
         );
@@ -814,18 +816,22 @@ void main() {
         var buttonContext = context;
 
         if (buttonType == ActionButtonType.removeFromAlbum) {
-          buttonContext = ActionButtonContext(
+          final album = createRemoteAlbum();
+          final contextWithAlbum = ActionButtonContext(
             asset: asset,
             isOwner: true,
             isArchived: false,
             isTrashEnabled: true,
             isInLockedView: false,
-            currentAlbum: createRemoteAlbum(),
+            currentAlbum: album,
             advancedTroubleshooting: false,
+            isStacked: false,
             source: ActionSource.timeline,
           );
+          final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
         } else if (buttonType == ActionButtonType.similarPhotos) {
-          buttonContext = ActionButtonContext(
+          final contextWithAlbum = ActionButtonContext(
             asset: createRemoteAsset(),
             isOwner: true,
             isArchived: false,
@@ -851,10 +857,12 @@ void main() {
             isStacked: true,
             source: ActionSource.timeline,
           );
+          final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
+        } else {
+          final widget = buttonType.buildButton(buttonContext);
+          expect(widget, isA<Widget>());
         }
-
-        final widget = buttonType.buildButton(buttonContext);
-        expect(widget, isA<Widget>());
       }
     });
   });
