@@ -8,6 +8,7 @@ import { AssetService } from 'src/services/asset.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
+import { ocrStub } from 'test/fixtures/ocr.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -697,6 +698,39 @@ describe(AssetService.name, () => {
       await expect(sut.handleAssetDeletion({ id: assetStub.image.id, deleteOnDisk: true })).resolves.toBe(
         JobStatus.Failed,
       );
+    });
+  });
+
+  describe('getOcr', () => {
+    it('should require asset read permission', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.ocr.getByAssetId).not.toHaveBeenCalled();
+    });
+
+    it('should return OCR data for an asset', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.ocr.getByAssetId.mockResolvedValue([ocrStub.textBox1, ocrStub.textBox2]);
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([ocrStub.textBox1, ocrStub.textBox2]);
+
+      expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['asset-1']),
+        undefined,
+      );
+      expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');
+    });
+
+    it('should return empty array when no OCR data exists', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.ocr.getByAssetId.mockResolvedValue([]);
+
+      await expect(sut.getOcr(authStub.admin, 'asset-1')).resolves.toEqual([]);
+
+      expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith('asset-1');
     });
   });
 
