@@ -87,7 +87,7 @@ export const mapActivity = (activity: Activity): ActivityResponseDto => {
       ? {
           aggregationId: activity.aggregationId!,
           assetIds,
-          totalAssets: totalAssets,
+          totalAssets,
         }
       : undefined,
   };

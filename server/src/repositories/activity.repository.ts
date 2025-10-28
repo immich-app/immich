@@ -41,7 +41,7 @@ export class ActivityRepository {
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('user').as('user'))
-      .select((eb) =>
+      .select((_eb) =>
         sql<string[]>`CASE
           WHEN "activity"."aggregationId" IS NOT NULL THEN (
             SELECT COALESCE(array_agg(value), ARRAY[]::uuid[])
@@ -54,7 +54,7 @@ export class ActivityRepository {
           ELSE "activity"."assetIds"
         END`.as('assetIds'),
       )
-      .select((eb) => sql<number | null>`cardinality("activity"."assetIds")`.as('albumUpdateAssetCount'))
+      .select((_eb) => sql<number | null>`cardinality("activity"."assetIds")`.as('albumUpdateAssetCount'))
       .leftJoin('asset', 'asset.id', 'activity.assetId')
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('activity.assetId', 'is', null))
