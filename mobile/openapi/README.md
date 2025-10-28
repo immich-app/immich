@@ -282,6 +282,7 @@ Class | Method | HTTP request | Description
 *UsersAdminApi* | [**deleteUserAdmin**](doc//UsersAdminApi.md#deleteuseradmin) | **DELETE** /admin/users/{id} | 
 *UsersAdminApi* | [**getUserAdmin**](doc//UsersAdminApi.md#getuseradmin) | **GET** /admin/users/{id} | 
 *UsersAdminApi* | [**getUserPreferencesAdmin**](doc//UsersAdminApi.md#getuserpreferencesadmin) | **GET** /admin/users/{id}/preferences | 
+*UsersAdminApi* | [**getUserSessionsAdmin**](doc//UsersAdminApi.md#getusersessionsadmin) | **GET** /admin/users/{id}/sessions | 
 *UsersAdminApi* | [**getUserStatisticsAdmin**](doc//UsersAdminApi.md#getuserstatisticsadmin) | **GET** /admin/users/{id}/statistics | 
 *UsersAdminApi* | [**restoreUserAdmin**](doc//UsersAdminApi.md#restoreuseradmin) | **POST** /admin/users/{id}/restore | 
 *UsersAdminApi* | [**searchUsersAdmin**](doc//UsersAdminApi.md#searchusersadmin) | **GET** /admin/users | 
@@ -418,6 +419,7 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OAuthTokenEndpointAuthMethod](doc//OAuthTokenEndpointAuthMethod.md)
+ - [OcrConfig](doc//OcrConfig.md)
  - [OnThisDayDto](doc//OnThisDayDto.md)
  - [OnboardingDto](doc//OnboardingDto.md)
  - [OnboardingResponseDto](doc//OnboardingResponseDto.md)

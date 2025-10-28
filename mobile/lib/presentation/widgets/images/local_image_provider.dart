@@ -85,7 +85,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     yield* initialImageStream();
 
     if (isCancelled) {
-      evict();
+      unawaited(evict());
       return;
     }
 
@@ -103,7 +103,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     }
 
     if (isCancelled) {
-      evict();
+      unawaited(evict());
       return;
     }
 

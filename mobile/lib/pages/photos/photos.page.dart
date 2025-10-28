@@ -82,10 +82,12 @@ class PhotosPage extends HookConsumerWidget {
       final fullRefresh = refreshCount.value > 0;
 
       if (fullRefresh) {
-        Future.wait([
-          ref.read(assetProvider.notifier).getAllAsset(clear: true),
-          ref.read(albumProvider.notifier).refreshRemoteAlbums(),
-        ]);
+        unawaited(
+          Future.wait([
+            ref.read(assetProvider.notifier).getAllAsset(clear: true),
+            ref.read(albumProvider.notifier).refreshRemoteAlbums(),
+          ]),
+        );
 
         // refresh was forced: user requested another refresh within 2 seconds
         refreshCount.value = 0;

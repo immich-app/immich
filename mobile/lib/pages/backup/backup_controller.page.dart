@@ -155,7 +155,7 @@ class BackupControllerPage extends HookConsumerWidget {
                 // waited until returning from selection
                 await ref.read(backupProvider.notifier).backupAlbumSelectionDone();
                 // waited until backup albums are stored in DB
-                ref.read(albumProvider.notifier).refreshDeviceAlbums();
+                await ref.read(albumProvider.notifier).refreshDeviceAlbums();
               },
               child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
             ),

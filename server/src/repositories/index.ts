@@ -25,6 +25,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
@@ -44,6 +45,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 
 export const repositories = [
   AccessRepository,
@@ -73,6 +75,7 @@ export const repositories = [
   MoveRepository,
   NotificationRepository,
   OAuthRepository,
+  OcrRepository,
   PartnerRepository,
   PersonRepository,
   ProcessRepository,
@@ -92,4 +95,5 @@ export const repositories = [
   UserRepository,
   ViewRepository,
   VersionHistoryRepository,
+  WebsocketRepository,
 ];

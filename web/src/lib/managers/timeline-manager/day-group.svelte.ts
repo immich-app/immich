@@ -1,7 +1,7 @@
 import { AssetOrder } from '@immich/sdk';
 
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
-import { getJustifiedLayoutFromAssets, getPosition } from '$lib/utils/layout-utils';
+import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
 
 import { SvelteSet } from 'svelte/reactivity';
@@ -148,9 +148,9 @@ export class DayGroup {
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
     this.height = assets.length === 0 ? 0 : geometry.containerHeight;
+    // TODO: lazily get positions instead of loading them all here
     for (let i = 0; i < this.viewerAssets.length; i++) {
-      const position = getPosition(geometry, i);
-      this.viewerAssets[i].position = position;
+      this.viewerAssets[i].position = geometry.getPosition(i);
     }
   }
 

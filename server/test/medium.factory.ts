@@ -27,8 +27,10 @@ import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
@@ -47,6 +49,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
@@ -167,6 +170,11 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const asset = mediumFactory.assetInsert(dto);
     const result = await this.get(AssetRepository).create(asset);
     return { asset, result };
+  }
+
+  async newAssetFile(dto: Insertable<AssetFileTable>) {
+    const result = await this.get(AssetRepository).upsertFile(dto);
+    return { result };
   }
 
   async newAssetFace(dto: Partial<Insertable<AssetFace>> & { assetId: string }) {
@@ -307,6 +315,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case AssetJobRepository:
     case MemoryRepository:
     case NotificationRepository:
+    case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
     case SearchRepository:
@@ -359,6 +368,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case CryptoRepository:
     case MemoryRepository:
     case NotificationRepository:
+    case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
     case SessionRepository:
@@ -405,6 +415,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case LoggingRepository as unknown as ClassConstructor<T>: {
       const configMock = { getEnv: () => ({ noColor: false }) };
       return automock(LoggingRepository, { args: [undefined, configMock], strict: false });
+    }
+
+    case MachineLearningRepository: {
+      return automock(MachineLearningRepository, { args: [{ setContext: () => {} }] });
     }
 
     case StorageRepository: {
@@ -628,7 +642,7 @@ const syncStream = () => {
 };
 
 const loginDetails = () => {
-  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '' };
+  return { isSecure: false, clientIp: '', deviceType: '', deviceOS: '', appVersion: null };
 };
 
 const loginResponse = (): LoginResponseDto => {

@@ -705,7 +705,7 @@ class SyncService {
     if (assets.isEmpty) return;
 
     if (Platform.isAndroid && _appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) {
-      _toggleTrashStatusForAssets(assets);
+      await _toggleTrashStatusForAssets(assets);
     }
 
     try {

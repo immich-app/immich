@@ -61,7 +61,7 @@ class ViewerBottomBar extends ConsumerWidget {
       ] else ...[
         const ShareActionButton(source: ActionSource.viewer),
         if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-        if (asset.type == AssetType.image && isOwner) const EditImageActionButton(),
+        if (asset.type == AssetType.image) const EditImageActionButton(),
         if (isOwner) ...[
           if (asset.hasRemote && isOwner && isArchived)
             const UnArchiveActionButton(source: ActionSource.viewer)

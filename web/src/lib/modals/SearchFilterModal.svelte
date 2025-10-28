@@ -6,7 +6,8 @@
 
   export type SearchFilter = {
     query: string;
-    queryType: 'smart' | 'metadata' | 'description';
+    ocr?: string;
+    queryType: 'smart' | 'metadata' | 'description' | 'ocr';
     personIds: SvelteSet<string>;
     tagIds: SvelteSet<string> | null;
     location: SearchLocationFilter;
@@ -74,6 +75,7 @@
 
   let filter: SearchFilter = $state({
     query,
+    ocr: searchQuery.ocr,
     queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds:
@@ -90,6 +92,7 @@
     camera: {
       make: withNullAsUndefined(searchQuery.make),
       model: withNullAsUndefined(searchQuery.model),
+      lensModel: withNullAsUndefined(searchQuery.lensModel),
     },
     date: {
       takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
@@ -112,6 +115,7 @@
   const resetForm = () => {
     filter = {
       query: '',
+      ocr: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
@@ -140,6 +144,7 @@
 
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
+      ocr: filter.queryType === 'ocr' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
       country: filter.location.country,
@@ -147,6 +152,7 @@
       city: filter.location.city,
       make: filter.camera.make,
       model: filter.camera.model,
+      lensModel: filter.camera.lensModel,
       takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
       takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,

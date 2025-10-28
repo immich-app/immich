@@ -773,6 +773,54 @@
         "description": "This endpoint is an admin-only route, and requires the `adminUser.delete` permission."
       }
     },
+    "/admin/users/{id}/sessions": {
+      "get": {
+        "operationId": "getUserSessionsAdmin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Users (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "adminSession.read",
+        "description": "This endpoint is an admin-only route, and requires the `adminSession.read` permission."
+      }
+    },
     "/admin/users/{id}/statistics": {
       "get": {
         "operationId": "getUserStatisticsAdmin",
@@ -5937,6 +5985,14 @@
             }
           },
           {
+            "name": "ocr",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "personIds",
             "required": false,
             "in": "query",
@@ -6408,6 +6464,14 @@
             "description": "This property was added in v111.0.0",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "lensModel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -10352,6 +10416,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -10381,6 +10448,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -11421,6 +11489,10 @@
       },
       "ChangePasswordDto": {
         "properties": {
+          "invalidateSessions": {
+            "default": false,
+            "type": "boolean"
+          },
           "newPassword": {
             "example": "password",
             "minLength": 8,
@@ -12048,7 +12120,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "ocr"
         ],
         "type": "string"
       },
@@ -12618,6 +12691,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "order": {
             "allOf": [
               {
@@ -12928,6 +13004,40 @@
           "client_secret_basic"
         ],
         "type": "string"
+      },
+      "OcrConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxResolution": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minDetectionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "minRecognitionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxResolution",
+          "minDetectionScore",
+          "minRecognitionScore",
+          "modelName"
+        ],
+        "type": "object"
       },
       "OnThisDayDto": {
         "properties": {
@@ -13267,6 +13377,7 @@
           "adminUser.read",
           "adminUser.update",
           "adminUser.delete",
+          "adminSession.read",
           "adminAuth.unlinkAll"
         ],
         "type": "string"
@@ -13598,6 +13709,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "personIds": {
             "items": {
               "format": "uuid",
@@ -13892,7 +14006,8 @@
           "state",
           "city",
           "camera-make",
-          "camera-model"
+          "camera-model",
+          "camera-lens-model"
         ],
         "type": "string"
       },
@@ -14065,6 +14180,9 @@
           "oauthAutoLaunch": {
             "type": "boolean"
           },
+          "ocr": {
+            "type": "boolean"
+          },
           "passwordLogin": {
             "type": "boolean"
           },
@@ -14093,6 +14211,7 @@
           "map",
           "oauth",
           "oauthAutoLaunch",
+          "ocr",
           "passwordLogin",
           "reverseGeocoding",
           "search",
@@ -14303,6 +14422,10 @@
       },
       "SessionCreateResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14332,6 +14455,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
@@ -14345,6 +14469,10 @@
       },
       "SessionResponseDto": {
         "properties": {
+          "appVersion": {
+            "nullable": true,
+            "type": "string"
+          },
           "createdAt": {
             "type": "string"
           },
@@ -14371,6 +14499,7 @@
           }
         },
         "required": [
+          "appVersion",
           "createdAt",
           "current",
           "deviceOS",
@@ -14690,6 +14819,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "page": {
             "minimum": 1,
             "type": "number"
@@ -14893,6 +15025,9 @@
           },
           "model": {
             "nullable": true,
+            "type": "string"
+          },
+          "ocr": {
             "type": "string"
           },
           "personIds": {
@@ -16344,6 +16479,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -16367,6 +16505,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -16452,6 +16591,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/OcrConfig"
+          },
           "urls": {
             "format": "uri",
             "items": {
@@ -16468,6 +16610,7 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
+          "ocr",
           "urls"
         ],
         "type": "object"

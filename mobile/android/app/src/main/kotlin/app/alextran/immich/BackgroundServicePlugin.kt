@@ -183,6 +183,17 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler, 
         }
       }
 
+      "hasManageMediaPermission" -> {
+        if (hasManageMediaPermission()) {
+          Log.i("Manage storage permission", "Permission already granted")
+          result.success(true)
+        } else {
+          result.success(false)
+        }
+      }
+
+      "manageMediaPermission" -> requestManageMediaPermission(result)
+
       else -> result.notImplemented()
     }
   }
