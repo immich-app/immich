@@ -383,6 +383,42 @@ void main() {
       });
     });
 
+    group('similar photos button', () {
+      test('should show when not locked and has remote', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          isStacked: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.similarPhotos.shouldShow(context), isTrue);
+      });
+
+      test('should not show when in locked view', () {
+        final remoteAsset = createRemoteAsset();
+        final context = ActionButtonContext(
+          asset: remoteAsset,
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: true,
+          currentAlbum: null,
+          isStacked: false,
+          advancedTroubleshooting: false,
+          source: ActionSource.timeline,
+        );
+
+        expect(ActionButtonType.similarPhotos.shouldShow(context), isFalse);
+      });
+    });
+
     group('trash button', () {
       test('should show when owner, not locked, has remote, and trash enabled', () {
         final remoteAsset = createRemoteAsset();
@@ -777,6 +813,8 @@ void main() {
 
     test('should build correct widget for each button type', () {
       for (final buttonType in ActionButtonType.values) {
+        var buttonContext = context;
+
         if (buttonType == ActionButtonType.removeFromAlbum) {
           final album = createRemoteAlbum();
           final contextWithAlbum = ActionButtonContext(
@@ -786,6 +824,20 @@ void main() {
             isTrashEnabled: true,
             isInLockedView: false,
             currentAlbum: album,
+            advancedTroubleshooting: false,
+            isStacked: false,
+            source: ActionSource.timeline,
+          );
+          final widget = buttonType.buildButton(contextWithAlbum);
+          expect(widget, isA<Widget>());
+        } else if (buttonType == ActionButtonType.similarPhotos) {
+          final contextWithAlbum = ActionButtonContext(
+            asset: createRemoteAsset(),
+            isOwner: true,
+            isArchived: false,
+            isTrashEnabled: true,
+            isInLockedView: false,
+            currentAlbum: null,
             advancedTroubleshooting: false,
             isStacked: false,
             source: ActionSource.timeline,
@@ -808,7 +860,7 @@ void main() {
           final widget = buttonType.buildButton(contextWithAlbum);
           expect(widget, isA<Widget>());
         } else {
-          final widget = buttonType.buildButton(context);
+          final widget = buttonType.buildButton(buttonContext);
           expect(widget, isA<Widget>());
         }
       }

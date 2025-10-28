@@ -178,6 +178,7 @@ class SearchFilter {
   String? description;
   String? ocr;
   String? language;
+  String? assetId;
   Set<PersonDto> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
@@ -193,6 +194,7 @@ class SearchFilter {
     this.description,
     this.ocr,
     this.language,
+    this.assetId,
     required this.people,
     required this.location,
     required this.camera,
@@ -205,6 +207,7 @@ class SearchFilter {
     return (context == null || (context != null && context!.isEmpty)) &&
         (filename == null || (filename!.isEmpty)) &&
         (description == null || (description!.isEmpty)) &&
+        (assetId == null || (assetId!.isEmpty)) &&
         (ocr == null || (ocr!.isEmpty)) &&
         people.isEmpty &&
         location.country == null &&
@@ -226,6 +229,7 @@ class SearchFilter {
     String? description,
     String? language,
     String? ocr,
+    String? assetId,
     Set<PersonDto>? people,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
@@ -239,6 +243,7 @@ class SearchFilter {
       description: description ?? this.description,
       language: language ?? this.language,
       ocr: ocr ?? this.ocr,
+      assetId: assetId ?? this.assetId,
       people: people ?? this.people,
       location: location ?? this.location,
       camera: camera ?? this.camera,
@@ -250,7 +255,7 @@ class SearchFilter {
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, camera: $camera, date: $date, display: $display, mediaType: $mediaType, assetId: $assetId)';
   }
 
   @override
@@ -262,6 +267,7 @@ class SearchFilter {
         other.description == description &&
         other.language == language &&
         other.ocr == ocr &&
+        other.assetId == assetId &&
         other.people == people &&
         other.location == location &&
         other.camera == camera &&
@@ -277,6 +283,7 @@ class SearchFilter {
         description.hashCode ^
         language.hashCode ^
         ocr.hashCode ^
+        assetId.hashCode ^
         people.hashCode ^
         location.hashCode ^
         camera.hashCode ^
