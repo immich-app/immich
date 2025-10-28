@@ -8,9 +8,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -68,17 +69,22 @@ class AdvancedSettings extends HookConsumerWidget {
       return null;
     }, []);
 
-    //todo check it!
+    // //todo check it!
     Future<void> attemptToEnableSetting(bool value, AppSettingsEnum key) async {
       if (value) {
         final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+        manageMediaAndroidPermission.value = result;
         if (key == AppSettingsEnum.manageLocalMediaAndroid) {
           manageLocalMediaAndroid.value = result;
-          reviewOutOfSyncChangesAndroid.value = false;
+          if (result) {
+            reviewOutOfSyncChangesAndroid.value = false;
+          }
         }
         if (key == AppSettingsEnum.reviewOutOfSyncChangesAndroid) {
           reviewOutOfSyncChangesAndroid.value = result;
-          manageLocalMediaAndroid.value = false;
+          if (result) {
+            manageLocalMediaAndroid.value = false;
+          }
         }
       }
       ref.invalidate(appSettingsServiceProvider);
@@ -104,6 +110,9 @@ class AdvancedSettings extends HookConsumerWidget {
                   final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
                   manageMediaAndroidPermission.value = result;
+                  if (result) {
+                    reviewOutOfSyncChangesAndroid.value = false;
+                  }
                 }
               },
             ),
@@ -114,17 +123,89 @@ class AdvancedSettings extends HookConsumerWidget {
               subtitle: "advanced_settings_review_remote_deletions_subtitle".tr(),
               onChanged: (value) => attemptToEnableSetting(value, AppSettingsEnum.reviewOutOfSyncChangesAndroid),
             ),
-            SettingsSwitchListTile(
-              valueNotifier: manageMediaAndroidPermission,
-              title: "manage_media_access_title".tr(),
-              subtitle: "manage_media_access_subtitle".tr(),
-              onChanged: (_) async {
+            // Stack(
+            //   children: [
+            //     if ((manageLocalMediaAndroid.value || reviewOutOfSyncChangesAndroid.value) &&
+            //         !manageMediaAndroidPermission.value)
+            //       const Positioned(
+            //         top: 6,
+            //         right: 40,
+            //         child: SizedBox(
+            //           height: 20,
+            //           width: 20,
+            //           child: Icon(Icons.warning_amber_rounded, color: Color.fromARGB(255, 243, 188, 106), size: 20),
+            //         ),
+            //       ),
+            //     //todo look for more suitable widget
+            //     SettingsSwitchListTile(
+            //       valueNotifier: manageMediaAndroidPermission,
+            //       title: "manage_media_access_title".tr(),
+            //       subtitle: "manage_media_access_subtitle".tr(),
+            //       onChanged: (_) async {
+            //         final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
+            //         manageMediaAndroidPermission.value = result;
+            //       },
+            //     ),
+            //   ],
+            // ),
+          ],
+        ),
+      Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          side: BorderSide(color: context.colorScheme.outlineVariant, width: 1),
+        ),
+        elevation: 0,
+        borderOnForeground: false,
+        child: Column(
+          children: [
+            ListTile(
+              isThreeLine: true,
+              title: Text(
+                "manage_media_access_title".tr(),
+                style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4.0, right: 18.0),
+                child: Text(
+                  "manage_media_access_subtitle".tr(),
+                  style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                ),
+              ),
+              trailing:
+                  ((manageLocalMediaAndroid.value || reviewOutOfSyncChangesAndroid.value) &&
+                      !manageMediaAndroidPermission.value)
+                  ? const Padding(
+                      padding: EdgeInsets.only(top: 8.0, right: 8.0),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: Icon(Icons.warning_amber_rounded, color: Color.fromARGB(255, 243, 188, 106), size: 20),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+            Divider(height: 1, color: context.colorScheme.outlineVariant),
+            ListTile(
+              enableFeedback: true,
+              visualDensity: VisualDensity.compact,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
+              ),
+              onTap: () async {
                 final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
                 manageMediaAndroidPermission.value = result;
               },
+              title: Text(
+                "manage_media_access_settings".tr(),
+                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
+              ),
+              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: context.colorScheme.onSurfaceVariant),
             ),
           ],
         ),
+      ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,

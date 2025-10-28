@@ -8,7 +8,6 @@ import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
-import 'asset.provider.dart';
 import 'db.provider.dart';
 
 typedef TrashedAssetsCount = ({int total, int hashed});

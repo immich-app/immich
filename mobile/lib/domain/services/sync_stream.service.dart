@@ -1,13 +1,16 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:logging/logging.dart';
@@ -20,6 +23,7 @@ class SyncStreamService {
   final SyncStreamRepository _syncStreamRepository;
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final DriftTrashSyncRepository _trashSyncRepository;
   final LocalFilesManagerRepository _localFilesManager;
   final StorageRepository _storageRepository;
   final bool Function()? _cancelChecker;
@@ -29,6 +33,7 @@ class SyncStreamService {
     required SyncStreamRepository syncStreamRepository,
     required DriftLocalAssetRepository localAssetRepository,
     required DriftTrashedLocalAssetRepository trashedLocalAssetRepository,
+    required DriftTrashSyncRepository trashSyncRepository,
     required LocalFilesManagerRepository localFilesManager,
     required StorageRepository storageRepository,
     bool Function()? cancelChecker,
@@ -36,6 +41,7 @@ class SyncStreamService {
        _syncStreamRepository = syncStreamRepository,
        _localAssetRepository = localAssetRepository,
        _trashedLocalAssetRepository = trashedLocalAssetRepository,
+       _trashSyncRepository = trashSyncRepository,
        _localFilesManager = localFilesManager,
        _storageRepository = storageRepository,
        _cancelChecker = cancelChecker;
@@ -104,7 +110,9 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false)) {
+        if (CurrentPlatform.isAndroid &&
+            ((Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false) ||
+                (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false))) {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {
             await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
@@ -247,17 +255,28 @@ class SyncStreamService {
       return Future.value();
     } else {
       final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
-      //todo here need to use sth like if (autoSync) else await _applyRemoteTrashToReview(localAssetsToTrash);
       if (localAssetsToTrash.isNotEmpty) {
-        final mediaUrls = await Future.wait(
-          localAssetsToTrash.values
-              .expand((e) => e)
-              .map((localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl())),
-        );
-        _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
-        final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
-        if (result) {
-          await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+        final reviewMode = (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false);
+        if (reviewMode) {
+          final itemsToReview = localAssetsToTrash.values.flattened
+              .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
+              .where((la) => la.checksum.isNotEmpty);
+
+          _logger.info("Apply remote trash action to review for: $itemsToReview");
+          await _trashSyncRepository.insertIfNotExists(itemsToReview);
+        } else {
+          final mediaUrls = await Future.wait(
+            localAssetsToTrash.values
+                .expand((e) => e)
+                .map(
+                  (localAsset) => _storageRepository.getAssetEntityForAsset(localAsset).then((e) => e?.getMediaUrl()),
+                ),
+          );
+          _logger.info("Moving to trash ${mediaUrls.join(", ")} assets");
+          final result = await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
+          if (result) {
+            await _trashedLocalAssetRepository.trashLocalAsset(localAssetsToTrash);
+          }
         }
       } else {
         _logger.info("No assets found in backup-enabled albums for assets: $checksums");
@@ -267,10 +286,16 @@ class SyncStreamService {
 
   Future<void> _applyRemoteRestoreToLocal() async {
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    //todo here need to use sth like if (autoSync) else await _applyRemoteTrashToReview(localAssetsToTrash);
     if (assetsToRestore.isNotEmpty) {
-      final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
-      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
+      final reviewMode = (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false);
+      if (reviewMode) {
+        final checksums = assetsToRestore.map((e) => e.checksum).nonNulls;
+        _logger.info("Clear unapproved trash sync for: $checksums");
+        await _trashSyncRepository.deleteUnapproved(checksums);
+      } else {
+        final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
+        await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
+      }
     } else {
       _logger.info("No remote assets found for restoration");
     }
