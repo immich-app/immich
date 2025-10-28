@@ -41,7 +41,7 @@ export abstract class ScrollSegment {
 
   abstract get viewerAssets(): ViewerAsset[];
 
-  abstract findAssetAbsolutePosition(assetId: string): number;
+  abstract findAssetAbsolutePosition(assetId: string): { top: number; height: number } | undefined;
 
   protected abstract fetch(signal: AbortSignal): Promise<unknown>;
 

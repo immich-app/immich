@@ -1,9 +1,10 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
-import { onCreateTimelineMonth } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
 import { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
+import { GroupInsertionCache } from '$lib/managers/timeline-manager/TimelineInsertionCache.svelte';
 import type { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
+import { onCreateTimelineMonth } from '$lib/managers/timeline-manager/TimelineTestHooks.svelte';
 import type { AssetDescriptor, AssetOperation, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { setDifferenceInPlace } from '$lib/managers/timeline-manager/utils.svelte';
 import { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 import { ScrollSegment, type SegmentIdentifier } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
 import {
@@ -15,7 +16,6 @@ import {
   fromTimelinePlainYearMonth,
   getSegmentIdentifier,
   getTimes,
-  setDifferenceInPlace,
   toISOYearMonthUTC,
   type TimelineDateTime,
   type TimelineYearMonth,
@@ -70,17 +70,19 @@ export class TimelineMonth extends ScrollSegment {
 
   findAssetAbsolutePosition(assetId: string) {
     this.#clearDeferredLayout();
-    for (const group of this.days) {
-      const viewerAsset = group.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
+    for (const day of this.days) {
+      const viewerAsset = day.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
       if (viewerAsset) {
         if (!viewerAsset.position) {
           console.warn('No position for asset');
-          break;
+          return;
         }
-        return this.top + group.top + viewerAsset.position.top + this.scrollManager.headerHeight;
+        return {
+          top: this.top + day.top + viewerAsset.position.top + this.#timelineManager.headerHeight,
+          height: viewerAsset.position.height,
+        };
       }
     }
-    return -1;
   }
 
   protected async fetch(signal: AbortSignal): Promise<unknown> {

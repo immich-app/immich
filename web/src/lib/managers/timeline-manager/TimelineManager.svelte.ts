@@ -1,18 +1,10 @@
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import type { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
+import { GroupInsertionCache } from '$lib/managers/timeline-manager/TimelineInsertionCache.svelte';
 import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
-import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
-import {
-  findClosestGroupForDate,
-  findMonthForAsset as findMonthForAssetUtil,
-  findMonthForDate,
-  getAssetWithOffset,
-  getMonthByDate,
-  retrieveRange as retrieveRangeUtil,
-} from '$lib/managers/timeline-manager/internal/search-support.svelte';
-import { isMismatched, updateObject } from '$lib/managers/timeline-manager/internal/utils.svelte';
-import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import { TimelineSearchExtension } from '$lib/managers/timeline-manager/TimelineSearchExtension.svelte';
+import { TimelineWebsocketExtension } from '$lib/managers/timeline-manager/TimelineWebsocketExtension';
 import type {
   AssetDescriptor,
   AssetOperation,
@@ -22,10 +14,10 @@ import type {
   TimelineManagerOptions,
   Viewport,
 } from '$lib/managers/timeline-manager/types';
+import { isMismatched, setDifferenceInPlace, updateObject } from '$lib/managers/timeline-manager/utils.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import {
   getSegmentIdentifier,
-  setDifferenceInPlace,
   toTimelineAsset,
   type TimelineDateTime,
   type TimelineYearMonth,
@@ -36,14 +28,10 @@ import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 
 export class TimelineManager extends VirtualScrollManager {
   override bottomSectionHeight = $state(60);
-
-  segments: TimelineMonth[] = $state([]);
-  albumAssets: Set<string> = new SvelteSet();
-  scrubberMonths: ScrubberMonth[] = $state([]);
-  scrubberTimelineHeight: number = $state(0);
-
-  limitedScroll = $derived(this.maxScrollPercent < 0.5);
-  initTask = new CancellableTask(
+  readonly search = new TimelineSearchExtension(this);
+  readonly albumAssets: Set<string> = new SvelteSet();
+  readonly limitedScroll = $derived(this.maxScrollPercent < 0.5);
+  readonly initTask = new CancellableTask(
     () => {
       this.isInitialized = true;
       if (this.#options.albumId || this.#options.personId) {
@@ -58,10 +46,12 @@ export class TimelineManager extends VirtualScrollManager {
     () => void 0,
   );
 
-  static #INIT_OPTIONS = {};
-  #websocketSupport: WebsocketSupport | undefined;
-  #options: TimelineManagerOptions = TimelineManager.#INIT_OPTIONS;
+  segments: TimelineMonth[] = $state([]);
+  scrubberMonths: ScrubberMonth[] = $state([]);
+  scrubberTimelineHeight: number = $state(0);
 
+  #websocketSupport: TimelineWebsocketExtension | undefined;
+  #options: TimelineManagerOptions = {};
   #scrollableElement: HTMLElement | undefined = $state();
 
   constructor() {
@@ -106,7 +96,7 @@ export class TimelineManager extends VirtualScrollManager {
     if (options.deferInit) {
       return;
     }
-    if (this.#options !== TimelineManager.#INIT_OPTIONS && isEqual(this.#options, options)) {
+    if (isEqual(this.#options, options)) {
       return;
     }
     await this.initTask.reset();
@@ -141,7 +131,7 @@ export class TimelineManager extends VirtualScrollManager {
     if (this.#websocketSupport) {
       throw new Error('TimelineManager already connected');
     }
-    this.#websocketSupport = new WebsocketSupport(this);
+    this.#websocketSupport = new TimelineWebsocketExtension(this);
     this.#websocketSupport.connectWebsocketEvents();
   }
 
@@ -164,7 +154,7 @@ export class TimelineManager extends VirtualScrollManager {
       await this.initTask.waitUntilCompletion();
     }
 
-    let { month } = findMonthForAssetUtil(this, id) ?? {};
+    let { month } = this.search.findMonthForAsset(id) ?? {};
     if (month) {
       return month;
     }
@@ -187,11 +177,11 @@ export class TimelineManager extends VirtualScrollManager {
 
   async #loadMonthAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
     await this.loadSegment(getSegmentIdentifier(yearMonth), options);
-    return getMonthByDate(this, yearMonth);
+    return this.search.findMonthByDate(yearMonth);
   }
 
   getMonthByAssetId(assetId: string) {
-    const monthInfo = findMonthForAssetUtil(this, assetId);
+    const monthInfo = this.search.findMonthForAsset(assetId);
     return monthInfo?.month;
   }
 
@@ -274,7 +264,7 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected upsertAssetIntoSegment(asset: TimelineAsset, context: GroupInsertionCache): void {
-    let month = getMonthByDate(this, asset.localDateTime);
+    let month = this.search.findMonthByDate(asset.localDateTime);
 
     if (!month) {
       month = new TimelineMonth(this, asset.localDateTime, 1, true, this.#options.order);
@@ -361,20 +351,20 @@ export class TimelineManager extends VirtualScrollManager {
     assetDescriptor: AssetDescriptor,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
-    return await getAssetWithOffset(this, assetDescriptor, interval, 'later');
+    return await this.search.getAssetWithOffset(assetDescriptor, interval, 'later');
   }
 
   async getEarlierAsset(
     assetDescriptor: AssetDescriptor,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
   ): Promise<TimelineAsset | undefined> {
-    return await getAssetWithOffset(this, assetDescriptor, interval, 'earlier');
+    return await this.search.getAssetWithOffset(assetDescriptor, interval, 'earlier');
   }
 
   async getClosestAssetToDate(dateTime: TimelineDateTime) {
-    let month = findMonthForDate(this, dateTime);
+    let month = this.search.findMonthForDate(dateTime);
     if (!month) {
-      month = findClosestGroupForDate(this.segments, dateTime);
+      month = this.search.findClosestGroupForDate(this.segments, dateTime);
       if (!month) {
         return;
       }
@@ -390,17 +380,7 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   async retrieveRange(start: AssetDescriptor, end: AssetDescriptor) {
-    return retrieveRangeUtil(this, start, end);
-  }
-
-  clearDeferredLayout(month: TimelineMonth) {
-    const hasDeferred = month.days.some((group) => group.deferredLayout);
-    if (hasDeferred) {
-      month.updateGeometry({ invalidateHeight: true, noDefer: true });
-      for (const group of month.days) {
-        group.deferredLayout = false;
-      }
-    }
+    return this.search.retrieveRange(start, end);
   }
 
   async *assetsIterator(options?: {

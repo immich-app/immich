@@ -1,7 +1,8 @@
 import type { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
 import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { setDifference, type TimelineDate } from '$lib/utils/timeline-util';
+import { setDifference } from '$lib/managers/timeline-manager/utils.svelte';
+import { type TimelineDate } from '$lib/utils/timeline-util';
 import { AssetOrder } from '@immich/sdk';
 
 export class GroupInsertionCache {

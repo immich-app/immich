@@ -9,6 +9,7 @@
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
+  import { isIntersecting } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
   import type { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
   import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
@@ -18,6 +19,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { getSegmentIdentifier, getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
@@ -128,13 +130,25 @@
     timelineManager.scrollableElement = scrollableElement;
   });
 
-  const getAssetPosition = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
+  const scrollToAssetPosition = (assetId: string, month: TimelineMonth) => {
+    const position = month.findAssetAbsolutePosition(assetId);
 
-  const getAssetHeight = (assetId: string, month: TimelineMonth) => month.findAssetAbsolutePosition(assetId);
+    if (!position) {
+      return;
+    }
 
-  const assetIsVisible = (assetTop: number): boolean => {
-    if (!scrollableElement) {
-      return false;
+    // Need to update window positions/intersections because <Portal> may have
+    // gone from invisible to visible.
+    timelineManager.updateVisibleWindow();
+
+    const assetTop = position.top;
+    const assetBottom = position.top + position.height;
+    const visibleTop = timelineManager.visibleWindow.top;
+    const visibleBottom = timelineManager.visibleWindow.bottom;
+
+    // Check if the asset is already at least partially visible in the viewport
+    if (isIntersecting(assetTop, assetBottom, visibleTop, visibleBottom)) {
+      return;
     }
 
     const currentTop = scrollableElement?.scrollTop || 0;
@@ -159,33 +173,21 @@
     timelineManager.scrollTo(scrollTarget);
   };
 
-  const scrollToAssetId = async (assetId: string) => {
-    const month = await timelineManager.search.getMonthForAsset(assetId);
+  const scrollAndLoadAsset = async (assetId: string) => {
+    const month = await timelineManager.findMonthForAsset(assetId);
     if (!month) {
       return false;
     }
-
-    const height = getAssetHeight(assetId, month);
-
-    // If the asset is already visible, then don't scroll.
-    if (assetIsVisible(height)) {
-      // need to update window positions/intersections because since the <Portal>
-      // went from invisible to visible
-      timelineManager.updateVisibleWindow();
-      return true;
-    }
-
-    timelineManager.scrollTo(height);
+    scrollToAssetPosition(assetId, month);
     return true;
   };
 
   const scrollToAsset = (asset: TimelineAsset) => {
-    const month = timelineManager.getSegmentForAssetId(asset.id) as TimelineMonth | undefined;
+    const month = timelineManager.search.findMonthForAsset(asset.id)?.month;
     if (!month) {
       return false;
     }
-    const height = getAssetHeight(asset.id, month);
-    timelineManager.scrollTo(height);
+    scrollToAssetPosition(asset.id, month);
     return true;
   };
 

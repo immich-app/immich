@@ -1,12 +1,12 @@
 import type { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
 import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
 
-let testHooks: TestHooks | undefined = undefined;
-
 export type TestHooks = {
   onCreateTimelineMonth(month: TimelineMonth): unknown;
   onCreateTimelineDay(day: TimelineDay): unknown;
 };
+
+let testHooks: TestHooks | undefined = undefined;
 
 export const setTestHooks = (hooks: TestHooks) => {
   testHooks = hooks;

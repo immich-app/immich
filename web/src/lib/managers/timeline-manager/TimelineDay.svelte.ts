@@ -1,5 +1,5 @@
-import { onCreateTimelineDay } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
 import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
+import { onCreateTimelineDay } from '$lib/managers/timeline-manager/TimelineTestHooks.svelte';
 import type { AssetOperation, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';

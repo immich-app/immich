@@ -5,12 +5,9 @@ import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { throttle } from 'lodash-es';
 import type { Unsubscriber } from 'svelte/store';
 
-export class WebsocketSupport {
-  #pendingChanges: PendingChange[] = [];
-  #unsubscribers: Unsubscriber[] = [];
-  #timelineManager: TimelineManager;
-
-  #processPendingChanges = throttle(() => {
+export class TimelineWebsocketExtension {
+  readonly #timelineManager: TimelineManager;
+  readonly #processPendingChanges = throttle(() => {
     const { add, update, remove } = this.#getPendingChangeBatches();
     if (add.length > 0) {
       this.#timelineManager.upsertAssets(add);
@@ -23,6 +20,9 @@ export class WebsocketSupport {
     }
     this.#pendingChanges = [];
   }, 2500);
+
+  #pendingChanges: PendingChange[] = [];
+  #unsubscribers: Unsubscriber[] = [];
 
   constructor(timeineManager: TimelineManager) {
     this.#timelineManager = timeineManager;
