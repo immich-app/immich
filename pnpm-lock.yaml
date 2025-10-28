@@ -684,8 +684,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.39.1
-        version: 0.39.1(@internationalized/date@3.8.2)(svelte@5.40.1)
+        specifier: ^0.39.2
+        version: 0.39.2(@internationalized/date@3.8.2)(svelte@5.40.1)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2732,8 +2732,8 @@ packages:
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
 
-  '@immich/ui@0.39.1':
-    resolution: {integrity: sha512-sal9VyFcmLRHE+NJh122dnmjfwlPOeZCi3yIsDzuI5xNMEUtNJ8MlXRE7hgrKU3FOLmy2QLhcI+oEJchCT+Ibg==}
+  '@immich/ui@0.39.2':
+    resolution: {integrity: sha512-oArkqUM6XFKuo0JdBKV6iK2FKmdvsLh9QSbHyetzqHxmXCpCncy2WaK4hQ/4vriqnGxNL7Tvi299TjbJPikbiA==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -14190,7 +14190,7 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
-  '@immich/ui@0.39.1(@internationalized/date@3.8.2)(svelte@5.40.1)':
+  '@immich/ui@0.39.2(@internationalized/date@3.8.2)(svelte@5.40.1)':
     dependencies:
       '@mdi/js': 7.4.47
       bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.40.1)

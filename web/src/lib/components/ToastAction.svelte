@@ -22,10 +22,10 @@
   };
 </script>
 
-<ToastContainer {color}>
+<ToastContainer {color} class="shadow-sm border border-gray-200 dark:border-gray-900">
   <ToastContent {color} {title} {description} {onClose} {icon}>
     {#if button}
-      <div class="flex justify-end gap-2 px-2 pb-2">
+      <div class="flex justify-end gap-2 px-2 pb-2 mr-3 mt-2">
         <Button color={button.color ?? 'secondary'} size="small" onclick={onClick}>{button.text}</Button>
       </div>
     {/if}
