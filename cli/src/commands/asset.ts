@@ -18,7 +18,6 @@ import { chunk } from 'lodash-es';
 import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
-import process from 'node:process';
 import picomatch from 'picomatch';
 import { Queue } from 'src/queue';
 import { BaseOptions, Batcher, FileHashCache, authenticate, crawl } from 'src/utils';
@@ -196,52 +195,18 @@ export const checkForDuplicates = async (
   }
 
   let multiBar: MultiBar | undefined;
-  let totalSize = 0;
-  const statsMap = new Map<string, Stats>();
-
-  // Calculate total size first
-  for (const filepath of files) {
-    const stats = await stat(filepath);
-    statsMap.set(filepath, stats);
-    totalSize += stats.size;
-  }
-
-  let processedBytes = 0;
-  let checkedBytes = 0;
 
   if (progress) {
     multiBar = new MultiBar(
-      {
-        format: '{message} | {bar} | {percentage}% | ETA: {eta_formatted} | {value}/{total}',
-        formatValue: (v: number, options, type) => {
-          // Don't format percentage
-          if (type === 'percentage') {
-            return v.toString();
-          }
-          return byteSize(v).toString();
-        },
-        etaBuffer: 100, // Increase samples for ETA calculation
-      },
+      { format: '{message} | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
       Presets.shades_classic,
     );
-
-    // Ensure we restore cursor on interrupt
-    process.on('SIGINT', () => {
-      if (multiBar) {
-        multiBar.stop();
-      }
-      process.exit(0);
-    });
   } else {
-    console.log(`Received ${files.length} files (${byteSize(totalSize)}), hashing...`);
+    console.log(`Received ${files.length} files, hashing...`);
   }
 
-  const hashProgressBar = multiBar?.create(totalSize, 0, {
-    message: 'Hashing files          ',
-  });
-  const checkProgressBar = multiBar?.create(totalSize, 0, {
-    message: 'Checking for duplicates',
-  });
+  const hashProgressBar = multiBar?.create(files.length, 0, { message: 'Hashing files          ' });
+  const checkProgressBar = multiBar?.create(files.length, 0, { message: 'Checking for duplicates' });
 
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
@@ -261,16 +226,7 @@ export const checkForDuplicates = async (
         }
       }
 
-      // Update progress based on total size of processed files
-      let processedSize = 0;
-      for (const asset of assets) {
-        const stats = statsMap.get(asset.id);
-        processedSize += stats?.size || 0;
-      }
-      processedBytes += processedSize;
-      // hashProgressBar?.increment(processedSize);
-      checkedBytes += processedSize;
-      checkProgressBar?.increment(processedSize);
+      checkProgressBar?.increment(assets.length);
     },
     { concurrency, retry: 3 },
   );
@@ -282,11 +238,7 @@ export const checkForDuplicates = async (
   try {
     const queue = new Queue<string, AssetBulkUploadCheckItem[]>(
       async (filepath: string): Promise<AssetBulkUploadCheckItem[]> => {
-        const stats = statsMap.get(filepath);
-        if (!stats) {
-          throw new Error(`Stats not found for ${filepath}`);
-        }
-
+        const stats = await stat(filepath);
         const mtimeMs = stats.mtime.getTime();
         const cachedChecksum = hashCache.get(filepath, mtimeMs, stats.size);
         const checksum = cachedChecksum ? cachedChecksum : await hashCache.compute(filepath, mtimeMs, stats.size);
@@ -300,7 +252,7 @@ export const checkForDuplicates = async (
           void checkBulkUploadQueue.push(batch);
         }
 
-        hashProgressBar?.increment(stats.size);
+        hashProgressBar?.increment();
         return results;
       },
       { concurrency, retry: 3 },
