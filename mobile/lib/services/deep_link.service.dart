@@ -172,7 +172,6 @@ class DeepLinkService {
         return null;
       }
 
-      // _betaCurrentAlbumNotifier.setAlbum(album);
       return RemoteAlbumRoute(album: album);
     } else {
       // TODO: Remove this when beta is default
