@@ -167,13 +167,17 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   });
 
   // Calculate total size
-  let totalSize = 0;
   try {
-    for (const file of files) {
-      const stats = await stat(file);
-      totalSize += stats.size;
-    }
-    console.log(`Found ${files.length} assets (${byteSize(totalSize)})`);
+    const results = await Promise.allSettled(
+      files.map((file) =>
+        stat(file).then(
+          (stats) => stats.size,
+          () => 0,
+        ),
+      ),
+    );
+
+    const totalSize = results.reduce((sum, result) => (result.status === 'fulfilled' ? sum + result.value : sum), 0);
   } catch (error) {
     console.warn('Failed to calculate total size', error);
   }
