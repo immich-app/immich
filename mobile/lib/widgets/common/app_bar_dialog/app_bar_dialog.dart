@@ -46,19 +46,24 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }, []);
 
     buildTopRow() {
-      return Stack(
-        children: [
-          Align(
-            alignment: Alignment.topLeft,
-            child: InkWell(onTap: () => context.pop(), child: const Icon(Icons.close, size: 20)),
-          ),
-          Center(
-            child: Image.asset(
-              context.isDarkTheme ? 'assets/immich-text-dark.png' : 'assets/immich-text-light.png',
-              height: 16,
+      return SizedBox(
+        height: 56,
+        child: Stack(
+          alignment: Alignment.centerLeft,
+          children: [
+            IconButton(onPressed: () => context.pop(), icon: const Icon(Icons.close, size: 20)),
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Image.asset(
+                  context.isDarkTheme ? 'assets/immich-text-dark.png' : 'assets/immich-text-light.png',
+                  height: 16,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
@@ -260,7 +265,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(padding: const EdgeInsets.all(20), child: buildTopRow()),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 8), child: buildTopRow()),
                 const AppBarProfileInfoBox(),
                 buildStorageInformation(),
                 const AppBarServerInfo(),
