@@ -97,6 +97,7 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | 
 *AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | checkBulkUpload
 *AssetsApi* | [**checkExistingAssets**](doc//AssetsApi.md#checkexistingassets) | **POST** /assets/exist | checkExistingAssets
+*AssetsApi* | [**copyAsset**](doc//AssetsApi.md#copyasset) | **PUT** /assets/copy | 
 *AssetsApi* | [**deleteAssetMetadata**](doc//AssetsApi.md#deleteassetmetadata) | **DELETE** /assets/{id}/metadata/{key} | 
 *AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /assets | 
 *AssetsApi* | [**downloadAsset**](doc//AssetsApi.md#downloadasset) | **GET** /assets/{id}/original | 
@@ -104,6 +105,7 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**getAssetInfo**](doc//AssetsApi.md#getassetinfo) | **GET** /assets/{id} | 
 *AssetsApi* | [**getAssetMetadata**](doc//AssetsApi.md#getassetmetadata) | **GET** /assets/{id}/metadata | 
 *AssetsApi* | [**getAssetMetadataByKey**](doc//AssetsApi.md#getassetmetadatabykey) | **GET** /assets/{id}/metadata/{key} | 
+*AssetsApi* | [**getAssetOcr**](doc//AssetsApi.md#getassetocr) | **GET** /assets/{id}/ocr | 
 *AssetsApi* | [**getAssetStatistics**](doc//AssetsApi.md#getassetstatistics) | **GET** /assets/statistics | 
 *AssetsApi* | [**getRandom**](doc//AssetsApi.md#getrandom) | **GET** /assets/random | 
 *AssetsApi* | [**playAssetVideo**](doc//AssetsApi.md#playassetvideo) | **GET** /assets/{id}/video/playback | 
@@ -320,6 +322,7 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckItem](doc//AssetBulkUploadCheckItem.md)
  - [AssetBulkUploadCheckResponseDto](doc//AssetBulkUploadCheckResponseDto.md)
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
+ - [AssetCopyDto](doc//AssetCopyDto.md)
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
  - [AssetFaceCreateDto](doc//AssetFaceCreateDto.md)
@@ -340,6 +343,7 @@ Class | Method | HTTP request | Description
  - [AssetMetadataResponseDto](doc//AssetMetadataResponseDto.md)
  - [AssetMetadataUpsertDto](doc//AssetMetadataUpsertDto.md)
  - [AssetMetadataUpsertItemDto](doc//AssetMetadataUpsertItemDto.md)
+ - [AssetOcrResponseDto](doc//AssetOcrResponseDto.md)
  - [AssetOrder](doc//AssetOrder.md)
  - [AssetResponseDto](doc//AssetResponseDto.md)
  - [AssetStackResponseDto](doc//AssetStackResponseDto.md)
