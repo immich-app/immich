@@ -84,15 +84,15 @@ where
 
 -- TagRepository.addAssetIds
 insert into
-  "tag_asset" ("tagsId", "assetsId")
+  "tag_asset" ("tagId", "assetId")
 values
   ($1, $2)
 
 -- TagRepository.removeAssetIds
 delete from "tag_asset"
 where
-  "tagsId" = $1
-  and "assetsId" in ($2)
+  "tagId" = $1
+  and "assetId" in ($2)
 
 -- TagRepository.upsertAssetIds
 insert into
@@ -107,9 +107,9 @@ returning
 begin
 delete from "tag_asset"
 where
-  "assetsId" = $1
+  "assetId" = $1
 insert into
-  "tag_asset" ("tagsId", "assetsId")
+  "tag_asset" ("tagId", "assetId")
 values
   ($1, $2)
 on conflict do nothing

@@ -212,7 +212,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
 
   async newAlbumUser(dto: { albumId: string; userId: string; role?: AlbumUserRole }) {
     const { albumId, userId, role = AlbumUserRole.Editor } = dto;
-    const result = await this.get(AlbumUserRepository).create({ albumsId: albumId, usersId: userId, role });
+    const result = await this.get(AlbumUserRepository).create({ albumId, userId, role });
     return { albumUser: { albumId, userId, role }, result };
   }
 
@@ -255,9 +255,9 @@ export class MediumTestContext<S extends BaseService = BaseService> {
 
   async newTagAsset(tagBulkAssets: { tagIds: string[]; assetIds: string[] }) {
     const tagsAssets: Insertable<TagAssetTable>[] = [];
-    for (const tagsId of tagBulkAssets.tagIds) {
-      for (const assetsId of tagBulkAssets.assetIds) {
-        tagsAssets.push({ tagsId, assetsId });
+    for (const tagId of tagBulkAssets.tagIds) {
+      for (const assetId of tagBulkAssets.assetIds) {
+        tagsAssets.push({ tagId, assetId });
       }
     }
 
