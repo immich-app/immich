@@ -7,6 +7,7 @@ import { AssetResponseDto, MapAsset, SanitizedAssetResponseDto, mapAsset } from 
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
+  AssetCopyDto,
   AssetJobName,
   AssetJobsDto,
   AssetMetadataResponseDto,
@@ -181,6 +182,84 @@ export class AssetService extends BaseService {
         await this.albumRepository.removeAssetsFromAll(ids);
       }
     }
+  }
+
+  async copy(
+    auth: AuthDto,
+    {
+      sourceId,
+      targetId,
+      albums = true,
+      sidecar = true,
+      sharedLinks = true,
+      stack = true,
+      favorite = true,
+    }: AssetCopyDto,
+  ) {
+    await this.requireAccess({ auth, permission: Permission.AssetCopy, ids: [sourceId, targetId] });
+    const sourceAsset = await this.assetRepository.getById(sourceId);
+    const targetAsset = await this.assetRepository.getById(targetId);
+
+    if (!sourceAsset || !targetAsset) {
+      throw new BadRequestException('Both assets must exist');
+    }
+
+    if (sourceId === targetId) {
+      throw new BadRequestException('Source and target id must be distinct');
+    }
+
+    if (albums) {
+      await this.albumRepository.copyAlbums({ sourceAssetId: sourceId, targetAssetId: targetId });
+    }
+
+    if (sharedLinks) {
+      await this.sharedLinkAssetRepository.copySharedLinks({ sourceAssetId: sourceId, targetAssetId: targetId });
+    }
+
+    if (stack) {
+      await this.copyStack(sourceAsset, targetAsset);
+    }
+
+    if (favorite) {
+      await this.assetRepository.update({ id: targetId, isFavorite: sourceAsset.isFavorite });
+    }
+
+    if (sidecar) {
+      await this.copySidecar(sourceAsset, targetAsset);
+    }
+  }
+
+  private async copyStack(
+    sourceAsset: { id: string; stackId: string | null },
+    targetAsset: { id: string; stackId: string | null },
+  ) {
+    if (!sourceAsset.stackId) {
+      return;
+    }
+
+    if (targetAsset.stackId) {
+      await this.stackRepository.merge({ sourceId: sourceAsset.stackId, targetId: targetAsset.stackId });
+      await this.stackRepository.delete(sourceAsset.stackId);
+    } else {
+      await this.assetRepository.update({ id: targetAsset.id, stackId: sourceAsset.stackId });
+    }
+  }
+
+  private async copySidecar(
+    targetAsset: { sidecarPath: string | null },
+    sourceAsset: { id: string; sidecarPath: string | null; originalPath: string },
+  ) {
+    if (!targetAsset.sidecarPath) {
+      return;
+    }
+
+    if (sourceAsset.sidecarPath) {
+      await this.storageRepository.unlink(sourceAsset.sidecarPath);
+    }
+
+    await this.storageRepository.copyFile(targetAsset.sidecarPath, `${sourceAsset.originalPath}.xmp`);
+    await this.assetRepository.update({ id: sourceAsset.id, sidecarPath: `${sourceAsset.originalPath}.xmp` });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: sourceAsset.id } });
   }
 
   @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })
