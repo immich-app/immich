@@ -684,8 +684,8 @@ importers:
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.39.1
-        version: 0.39.1(@internationalized/date@3.8.2)(svelte@5.41.3)
+        specifier: ^0.40.2
+        version: 0.40.2(@internationalized/date@3.8.2)(svelte@5.41.3)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2776,8 +2776,13 @@ packages:
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
 
-  '@immich/ui@0.39.1':
-    resolution: {integrity: sha512-sal9VyFcmLRHE+NJh122dnmjfwlPOeZCi3yIsDzuI5xNMEUtNJ8MlXRE7hgrKU3FOLmy2QLhcI+oEJchCT+Ibg==}
+  '@immich/svelte-markdown-preprocess@0.0.1':
+    resolution: {integrity: sha512-1vWoT4LO6fEyxrKwLKiNFECEkRVbuvpYPDvA7LavObTt2ijnonPYBDgfTwCPTofjxcocIGYUayv3CzgOzFiMOA==}
+    peerDependencies:
+      svelte: ^5.0.0
+
+  '@immich/ui@0.40.2':
+    resolution: {integrity: sha512-6NS4yVx0VoyH+AaM7TISDaoIzZe3RuDOi6xMkK2LrOPQbKwTuheD2iagxsRYzUtJ9IPrmCPrwRBc9Jq5BkvmBQ==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -14338,8 +14343,13 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
-  '@immich/ui@0.39.1(@internationalized/date@3.8.2)(svelte@5.41.3)':
+  '@immich/svelte-markdown-preprocess@0.0.1(svelte@5.41.3)':
     dependencies:
+      svelte: 5.41.3
+
+  '@immich/ui@0.40.2(@internationalized/date@3.8.2)(svelte@5.41.3)':
+    dependencies:
+      '@immich/svelte-markdown-preprocess': 0.0.1(svelte@5.41.3)
       '@mdi/js': 7.4.47
       bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.41.3)
       luxon: 3.7.2
