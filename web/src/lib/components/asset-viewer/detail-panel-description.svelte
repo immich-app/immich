@@ -1,11 +1,8 @@
 <script lang="ts">
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
+  import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
-  import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
+  import { toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -23,10 +20,7 @@
 
       asset.exifInfo = { ...asset.exifInfo, description: newDescription };
 
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('asset_description_updated'),
-      });
+      toastManager.success($t('asset_description_updated'));
     } catch (error) {
       handleError(error, $t('cannot_update_the_description'));
     }

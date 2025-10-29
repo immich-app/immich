@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
@@ -39,4 +40,8 @@ final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
 final remoteAlbumProvider = NotifierProvider<RemoteAlbumNotifier, RemoteAlbumState>(
   RemoteAlbumNotifier.new,
   dependencies: [remoteAlbumServiceProvider],
+);
+
+final albumsContainingAssetProvider = FutureProvider.family<List<RemoteAlbum>, String>(
+  (ref, assetId) => ref.watch(remoteAlbumServiceProvider).getAlbumsContainingAsset(assetId),
 );

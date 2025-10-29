@@ -63,7 +63,7 @@ importers:
         specifier: ^4.13.1
         version: 4.13.4
       '@types/node':
-        specifier: ^22.18.10
+        specifier: ^22.18.12
         version: 22.18.12
       '@vitest/coverage-v8':
         specifier: ^3.0.0
@@ -211,7 +211,7 @@ importers:
         specifier: ^3.4.2
         version: 3.7.1
       '@types/node':
-        specifier: ^22.18.10
+        specifier: ^22.18.12
         version: 22.18.12
       '@types/oidc-provider':
         specifier: ^9.0.0
@@ -293,7 +293,7 @@ importers:
         version: 1.0.4
     devDependencies:
       '@types/node':
-        specifier: ^22.18.10
+        specifier: ^22.18.12
         version: 22.18.12
       typescript:
         specifier: ^5.3.3
@@ -582,7 +582,7 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@types/node':
-        specifier: ^22.18.10
+        specifier: ^22.18.12
         version: 22.18.12
       '@types/nodemailer':
         specifier: ^7.0.0
@@ -677,12 +677,15 @@ importers:
       '@formatjs/icu-messageformat-parser':
         specifier: ^2.9.8
         version: 2.11.4
+      '@immich/justified-layout-wasm':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@immich/sdk':
         specifier: file:../open-api/typescript-sdk
         version: link:../open-api/typescript-sdk
       '@immich/ui':
-        specifier: ^0.37.1
-        version: 0.37.1(@internationalized/date@3.8.2)(svelte@5.40.1)
+        specifier: ^0.39.1
+        version: 0.39.1(@internationalized/date@3.8.2)(svelte@5.40.1)
       '@mapbox/mapbox-gl-rtl-text':
         specifier: 0.2.3
         version: 0.2.3(mapbox-gl@1.13.3)
@@ -2726,8 +2729,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@immich/ui@0.37.1':
-    resolution: {integrity: sha512-8S9KsyqyRcNgRHeBU8G3qMQ7D7fN4u9I31jjRc9c3s2tkiYucASofPJdcFdmGZnKLX5fIj+yofxiNZV9tVitOg==}
+  '@immich/justified-layout-wasm@0.4.3':
+    resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
+
+  '@immich/ui@0.39.1':
+    resolution: {integrity: sha512-sal9VyFcmLRHE+NJh122dnmjfwlPOeZCi3yIsDzuI5xNMEUtNJ8MlXRE7hgrKU3FOLmy2QLhcI+oEJchCT+Ibg==}
     peerDependencies:
       svelte: ^5.0.0
 
@@ -14182,7 +14188,9 @@ snapshots:
   '@img/sharp-win32-x64@0.34.4':
     optional: true
 
-  '@immich/ui@0.37.1(@internationalized/date@3.8.2)(svelte@5.40.1)':
+  '@immich/justified-layout-wasm@0.4.3': {}
+
+  '@immich/ui@0.39.1(@internationalized/date@3.8.2)(svelte@5.40.1)':
     dependencies:
       '@mdi/js': 7.4.47
       bits-ui: 2.9.8(@internationalized/date@3.8.2)(svelte@5.40.1)

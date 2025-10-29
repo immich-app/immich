@@ -17,7 +17,7 @@
   <ModalBody>
     <div class="flex flex-col w-full h-full gap-2 border border-gray-300 dark:border-light rounded-2xl">
       <div class="h-[75vh] min-h-[300px] w-full">
-        {#await import('../components/shared-components/map/map.svelte')}
+        {#await import('$lib/components/shared-components/map/map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
             <div class="flex items-center justify-center h-full w-full">

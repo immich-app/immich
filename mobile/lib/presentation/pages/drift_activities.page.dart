@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -14,11 +15,12 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 
 @RoutePage()
 class DriftActivitiesPage extends HookConsumerWidget {
-  const DriftActivitiesPage({super.key});
+  final RemoteAlbum album;
+
+  const DriftActivitiesPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final album = ref.watch(currentRemoteAlbumProvider)!;
     final asset = ref.read(currentAssetNotifier) as RemoteAsset?;
 
     final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
@@ -34,49 +36,52 @@ class DriftActivitiesPage extends HookConsumerWidget {
       scrollToBottom();
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: asset == null ? Text(album.name) : null,
-        actions: [const LikeActivityActionButton(menuItem: true)],
-        actionsPadding: const EdgeInsets.only(right: 8),
-      ),
-      body: activities.widgetWhen(
-        onData: (data) {
-          final List<Widget> activityWidgets = [];
-          for (final activity in data.reversed) {
-            activityWidgets.add(
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: CommentBubble(activity: activity),
+    return ProviderScope(
+      overrides: [currentRemoteAlbumScopedProvider.overrideWithValue(album)],
+      child: Scaffold(
+        appBar: AppBar(
+          title: asset == null ? Text(album.name) : null,
+          actions: [const LikeActivityActionButton(menuItem: true)],
+          actionsPadding: const EdgeInsets.only(right: 8),
+        ),
+        body: activities.widgetWhen(
+          onData: (data) {
+            final List<Widget> activityWidgets = [];
+            for (final activity in data.reversed) {
+              activityWidgets.add(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  child: CommentBubble(activity: activity),
+                ),
+              );
+            }
+
+            return SafeArea(
+              child: Stack(
+                children: [
+                  ListView(
+                    controller: listViewScrollController,
+                    padding: const EdgeInsets.only(top: 8, bottom: 80),
+                    reverse: true,
+                    children: activityWidgets,
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: context.scaffoldBackgroundColor,
+                        border: Border(top: BorderSide(color: context.colorScheme.secondaryContainer, width: 1)),
+                      ),
+                      child: DriftActivityTextField(isEnabled: album.isActivityEnabled, onSubmit: onAddComment),
+                    ),
+                  ),
+                ],
               ),
             );
-          }
-
-          return SafeArea(
-            child: Stack(
-              children: [
-                ListView(
-                  controller: listViewScrollController,
-                  padding: const EdgeInsets.only(top: 8, bottom: 80),
-                  reverse: true,
-                  children: activityWidgets,
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.scaffoldBackgroundColor,
-                      border: Border(top: BorderSide(color: context.colorScheme.secondaryContainer, width: 1)),
-                    ),
-                    child: DriftActivityTextField(isEnabled: album.isActivityEnabled, onSubmit: onAddComment),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+          },
+        ),
+        resizeToAvoidBottomInset: true,
       ),
-      resizeToAvoidBottomInset: true,
     );
   }
 }

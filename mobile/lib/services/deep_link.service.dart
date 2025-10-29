@@ -10,7 +10,6 @@ import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
-import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -29,7 +28,6 @@ final deepLinkServiceProvider = Provider(
     // Below is used for beta timeline
     ref.watch(timelineFactoryProvider),
     ref.watch(beta_asset_provider.assetServiceProvider),
-    ref.watch(currentRemoteAlbumProvider.notifier),
     ref.watch(remoteAlbumServiceProvider),
     ref.watch(driftMemoryServiceProvider),
   ),
@@ -46,7 +44,6 @@ class DeepLinkService {
   /// Used for beta timeline
   final TimelineFactory _betaTimelineFactory;
   final beta_asset_service.AssetService _betaAssetService;
-  final CurrentAlbumNotifier _betaCurrentAlbumNotifier;
   final RemoteAlbumService _betaRemoteAlbumService;
   final DriftMemoryService _betaMemoryServiceProvider;
 
@@ -58,7 +55,6 @@ class DeepLinkService {
     this._currentAlbum,
     this._betaTimelineFactory,
     this._betaAssetService,
-    this._betaCurrentAlbumNotifier,
     this._betaRemoteAlbumService,
     this._betaMemoryServiceProvider,
   );
@@ -176,7 +172,6 @@ class DeepLinkService {
         return null;
       }
 
-      _betaCurrentAlbumNotifier.setAlbum(album);
       return RemoteAlbumRoute(album: album);
     } else {
       // TODO: Remove this when beta is default

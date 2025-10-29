@@ -1,10 +1,6 @@
 <script lang="ts">
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -15,7 +11,7 @@
     type AlbumResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button, Modal, ModalBody, Text, modalManager } from '@immich/ui';
+  import { Button, Modal, ModalBody, Text, modalManager, toastManager } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -80,21 +76,20 @@
         userId === 'me'
           ? $t('album_user_left', { values: { album: album.albumName } })
           : $t('album_user_removed', { values: { user: user.name } });
-      notificationController.show({ type: NotificationType.Info, message });
+      toastManager.success(message);
       onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_album_users'));
     }
   };
 
-  const handleSetReadonly = async (user: UserResponseDto, role: AlbumUserRole) => {
+  const handleChangeRole = async (user: UserResponseDto, role: AlbumUserRole) => {
     try {
       await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
-
-      notificationController.show({ type: NotificationType.Info, message });
+      toastManager.success(message);
       onClose(true);
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
@@ -131,10 +126,10 @@
             {#if isOwned}
               <ButtonContextMenu icon={mdiDotsVertical} size="medium" title={$t('options')}>
                 {#if role === AlbumUserRole.Viewer}
-                  <MenuOption onClick={() => handleSetReadonly(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
+                  <MenuOption onClick={() => handleChangeRole(user, AlbumUserRole.Editor)} text={$t('allow_edits')} />
                 {:else}
                   <MenuOption
-                    onClick={() => handleSetReadonly(user, AlbumUserRole.Viewer)}
+                    onClick={() => handleChangeRole(user, AlbumUserRole.Viewer)}
                     text={$t('disallow_edits')}
                   />
                 {/if}

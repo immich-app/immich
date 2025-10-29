@@ -11,10 +11,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
@@ -68,7 +64,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -189,10 +185,7 @@
       });
 
       const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count } }),
-      });
+      toastManager.success($t('assets_added_count', { values: { count } }));
 
       await refreshAlbum();
 
@@ -304,10 +297,7 @@
           albumThumbnailAssetId: assetId,
         },
       });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('album_cover_updated'),
-      });
+      toastManager.success($t('album_cover_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }

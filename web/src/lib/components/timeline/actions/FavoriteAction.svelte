@@ -1,14 +1,10 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import type { OnFavorite } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, toastManager } from '@immich/ui';
   import { mdiHeartMinusOutline, mdiHeartOutline, mdiTimerSand } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -46,12 +42,11 @@
 
       onFavorite?.(ids, isFavorite);
 
-      notificationController.show({
-        message: isFavorite
+      toastManager.success(
+        isFavorite
           ? $t('added_to_favorites_count', { values: { count: ids.length } })
           : $t('removed_from_favorites_count', { values: { count: ids.length } }),
-        type: NotificationType.Info,
-      });
+      );
 
       clearSelect();
     } catch (error) {

@@ -12,11 +12,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { isTenMinutesApart } from '$lib/utils/timesince';
   import { ReactionType, type ActivityResponseDto, type AssetTypeEnum, type UserResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner } from '@immich/ui';
+  import { Icon, IconButton, LoadingSpinner, toastManager } from '@immich/ui';
   import { mdiClose, mdiDeleteOutline, mdiDotsVertical, mdiHeart, mdiSend } from '@mdi/js';
   import * as luxon from 'luxon';
   import { t } from 'svelte-i18n';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import UserAvatar from '../shared-components/user-avatar.svelte';
 
   const units: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
@@ -75,10 +74,7 @@
         [ReactionType.Comment]: $t('comment_deleted'),
         [ReactionType.Like]: $t('like_deleted'),
       };
-      notificationController.show({
-        message: deleteMessages[reaction.type],
-        type: NotificationType.Info,
-      });
+      toastManager.success(deleteMessages[reaction.type]);
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_reaction'));
     }

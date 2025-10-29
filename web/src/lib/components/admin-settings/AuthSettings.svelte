@@ -1,8 +1,4 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
@@ -13,7 +9,7 @@
   import AuthDisableLoginConfirmModal from '$lib/modals/AuthDisableLoginConfirmModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { OAuthTokenEndpointAuthMethod, unlinkAllOAuthAccountsAdmin, type SystemConfigDto } from '@immich/sdk';
-  import { Button, modalManager, Text } from '@immich/ui';
+  import { Button, modalManager, Text, toastManager } from '@immich/ui';
   import { mdiRestart } from '@mdi/js';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
@@ -65,7 +61,7 @@
 
     try {
       await unlinkAllOAuthAccountsAdmin({});
-      notificationController.show({ message: $t('success'), type: NotificationType.Info });
+      toastManager.success({});
     } catch (error) {
       handleError(error, $t('errors.something_went_wrong'));
     }

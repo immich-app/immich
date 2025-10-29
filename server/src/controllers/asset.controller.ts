@@ -16,6 +16,7 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
@@ -93,6 +94,12 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetRead })
   getAssetMetadata(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetMetadataResponseDto[]> {
     return this.service.getMetadata(auth, id);
+  }
+
+  @Get(':id/ocr')
+  @Authenticated({ permission: Permission.AssetRead })
+  getAssetOcr(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetOcrResponseDto[]> {
+    return this.service.getOcr(auth, id);
   }
 
   @Put(':id/metadata')
