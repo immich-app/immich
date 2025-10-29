@@ -69,10 +69,11 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
         component: ToastAction,
         props: {
           title: $t('info'),
-          color: 'info',
+          color: 'primary',
           description,
           button: {
             text: $t('view_album'),
+            color: 'primary',
             onClick() {
               return goto(`${AppRoute.ALBUMS}/${albumId}`);
             },

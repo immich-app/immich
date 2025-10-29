@@ -312,6 +312,7 @@
         description: $t('album_info_updated'),
         button: {
           text: $t('view_album'),
+          color: 'primary',
           onClick() {
             return goto(resolve(`${AppRoute.ALBUMS}/${album.id}`));
           },
