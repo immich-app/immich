@@ -153,3 +153,10 @@ from
   left join "stack" on "stack"."id" = "asset"."stackId"
 where
   "asset"."id" = $1
+
+-- StackRepository.merge
+update "asset"
+set
+  "stackId" = $1
+where
+  "asset"."stackId" = $2
