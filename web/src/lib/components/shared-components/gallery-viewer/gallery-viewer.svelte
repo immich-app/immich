@@ -16,19 +16,18 @@
   import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { handleError } from '$lib/utils/handle-error';
-  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+  import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
   import { navigate } from '$lib/utils/navigation';
   import { isTimelineAsset, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, type AssetResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { debounce } from 'lodash-es';
   import { t } from 'svelte-i18n';
-  import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
 
   interface Props {
     initialAssetId?: string;
-    assets: (TimelineAsset | AssetResponseDto)[];
+    assets: TimelineAsset[] | AssetResponseDto[];
     assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
@@ -66,60 +65,26 @@
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAssetId } = assetViewingStore;
 
-  let geometry: CommonJustifiedLayout | undefined = $state();
-
-  $effect(() => {
-    const _assets = assets;
-    updateSlidingWindow();
-
-    const rowWidth = Math.floor(viewport.width);
-    const rowHeight = rowWidth < 850 ? 100 : 235;
-
-    geometry = getJustifiedLayoutFromAssets(_assets, {
+  const geometry = $derived(
+    getJustifiedLayoutFromAssets(assets, {
       spacing: 2,
-      heightTolerance: 0.15,
-      rowHeight,
-      rowWidth,
-    });
-  });
+      heightTolerance: 0.5,
+      rowHeight: Math.floor(viewport.width) < 850 ? 100 : 235,
+      rowWidth: Math.floor(viewport.width),
+    }),
+  );
 
-  let assetLayouts = $derived.by(() => {
-    const assetLayout = [];
-    let containerHeight = 0;
-    let containerWidth = 0;
-    if (geometry) {
-      containerHeight = geometry.containerHeight;
-      containerWidth = geometry.containerWidth;
-      for (const [index, asset] of assets.entries()) {
-        const top = geometry.getTop(index);
-        const left = geometry.getLeft(index);
-        const width = geometry.getWidth(index);
-        const height = geometry.getHeight(index);
+  const getStyle = (i: number) => {
+    const geo = geometry;
+    return `top: ${geo.getTop(i)}px; left: ${geo.getLeft(i)}px; width: ${geo.getWidth(i)}px; height: ${geo.getHeight(i)}px;`;
+  };
 
-        const layoutTopWithOffset = top + pageHeaderOffset;
-        const layoutBottom = layoutTopWithOffset + height;
-
-        const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
-
-        const layout = {
-          asset,
-          top,
-          left,
-          width,
-          height,
-          display,
-        };
-
-        assetLayout.push(layout);
-      }
-    }
-
-    return {
-      assetLayout,
-      containerHeight,
-      containerWidth,
-    };
-  });
+  const isIntersecting = (i: number) => {
+    const geo = geometry;
+    const window = slidingWindow;
+    const top = geo.getTop(i);
+    return top + pageHeaderOffset < window.bottom && top + geo.getHeight(i) > window.top;
+  };
 
   let currentIndex = 0;
   if (initialAssetId && assets.length > 0) {
@@ -131,26 +96,26 @@
 
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
-  let slidingWindow = $state({ top: 0, bottom: 0 });
-
-  const updateSlidingWindow = () => {
-    const v = $state.snapshot(viewport);
-    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + v.height;
-    const w = {
+  let scrollTop = $state(0);
+  let slidingWindow = $derived.by(() => {
+    const top = (scrollTop || 0) - slidingWindowOffset;
+    const bottom = top + viewport.height;
+    return {
       top,
       bottom,
     };
-    slidingWindow = w;
-  };
+  });
+
+  const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
+
   const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
 
   let lastIntersectedHeight = 0;
   $effect(() => {
     // Intersect if there's only one viewport worth of assets left to scroll.
-    if (assetLayouts.containerHeight - slidingWindow.bottom <= viewport.height) {
+    if (geometry.containerHeight - slidingWindow.bottom <= viewport.height) {
       // Notify we got to (near) the end of scroll.
-      const intersectedHeight = assetLayouts.containerHeight;
+      const intersectedHeight = geometry.containerHeight;
       if (lastIntersectedHeight !== intersectedHeight) {
         debouncedOnIntersected();
         lastIntersectedHeight = intersectedHeight;
@@ -264,7 +229,7 @@
     isShowDeleteConfirmation = false;
     await deleteAssets(
       !(isTrashEnabled && !force),
-      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
+      (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id)) as TimelineAsset[]),
       assetInteraction.selectedAssets,
       onReload,
     );
@@ -277,7 +242,7 @@
       assetInteraction.isAllArchived ? AssetVisibility.Timeline : AssetVisibility.Archive,
     );
     if (ids) {
-      assets = assets.filter((asset) => !ids.includes(asset.id));
+      assets = assets.filter((asset) => !ids.includes(asset.id)) as TimelineAsset[];
       deselectAllAssets();
     }
   };
@@ -480,41 +445,36 @@
 {#if assets.length > 0}
   <div
     style:position="relative"
-    style:height={assetLayouts.containerHeight + 'px'}
-    style:width={assetLayouts.containerWidth - 1 + 'px'}
+    style:height={geometry.containerHeight + 'px'}
+    style:width={geometry.containerWidth + 'px'}
   >
-    {#each assetLayouts.assetLayout as layout, layoutIndex (layout.asset.id + '-' + layoutIndex)}
-      {@const currentAsset = layout.asset}
-
-      {#if layout.display}
-        <div
-          class="absolute"
-          style:overflow="clip"
-          style="width: {layout.width}px; height: {layout.height}px; top: {layout.top}px; left: {layout.left}px"
-        >
+    {#each assets as asset, i (asset.id + '-' + i)}
+      {#if isIntersecting(i)}
+        {@const currentAsset = toTimelineAsset(asset)}
+        <div class="absolute" style:overflow="clip" style={getStyle(i)}>
           <Thumbnail
             readonly={disableAssetSelect}
             onClick={() => {
               if (assetInteraction.selectionActive) {
-                handleSelectAssets(toTimelineAsset(currentAsset));
+                handleSelectAssets(currentAsset);
                 return;
               }
-              void viewAssetHandler(toTimelineAsset(currentAsset));
+              void viewAssetHandler(currentAsset);
             }}
-            onSelect={() => handleSelectAssets(toTimelineAsset(currentAsset))}
-            onMouseEvent={() => assetMouseEventHandler(toTimelineAsset(currentAsset))}
+            onSelect={() => handleSelectAssets(currentAsset)}
+            onMouseEvent={() => assetMouseEventHandler(currentAsset)}
             {showArchiveIcon}
-            asset={toTimelineAsset(currentAsset)}
+            asset={currentAsset}
             selected={assetInteraction.hasSelectedAsset(currentAsset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(currentAsset.id)}
-            thumbnailWidth={layout.width}
-            thumbnailHeight={layout.height}
+            thumbnailWidth={geometry.getWidth(i)}
+            thumbnailHeight={geometry.getHeight(i)}
           />
-          {#if showAssetName && !isTimelineAsset(currentAsset)}
+          {#if showAssetName && !isTimelineAsset(asset)}
             <div
               class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-linear-to-t bg-slate-50/75 dark:bg-slate-800/75 overflow-clip text-ellipsis whitespace-pre-wrap"
             >
-              {currentAsset.originalFileName}
+              {asset.originalFileName}
             </div>
           {/if}
         </div>
@@ -526,16 +486,18 @@
 <!-- Overlay Asset Viewer -->
 {#if $isViewerOpen}
   <Portal target="body">
-    <AssetViewer
-      asset={$viewingAsset}
-      onAction={handleAction}
-      onPrevious={handlePrevious}
-      onNext={handleNext}
-      onRandom={handleRandom}
-      onClose={() => {
-        assetViewingStore.showAssetViewer(false);
-        handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
-      }}
-    />
+    {#await import('$lib/components/asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
+      <AssetViewer
+        asset={$viewingAsset}
+        onAction={handleAction}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onRandom={handleRandom}
+        onClose={() => {
+          assetViewingStore.showAssetViewer(false);
+          handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
+        }}
+      />
+    {/await}
   </Portal>
 {/if}

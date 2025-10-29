@@ -1,17 +1,13 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
   import { AssetOrder, updateMyPreferences } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
 
   // Albums
   let defaultAssetOrder = $state($preferences?.albums?.defaultAssetOrder ?? AssetOrder.Desc);
@@ -58,7 +54,7 @@
 
       $preferences = { ...data };
 
-      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
+      toastManager.success($t('saved_settings'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_settings'));
     }

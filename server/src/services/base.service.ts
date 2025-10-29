@@ -32,6 +32,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
@@ -51,6 +52,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { WebsocketRepository } from 'src/repositories/websocket.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -83,6 +85,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   MoveRepository,
   NotificationRepository,
   OAuthRepository,
+  OcrRepository,
   PartnerRepository,
   PersonRepository,
   ProcessRepository,
@@ -136,6 +139,7 @@ export class BaseService {
     protected moveRepository: MoveRepository,
     protected notificationRepository: NotificationRepository,
     protected oauthRepository: OAuthRepository,
+    protected ocrRepository: OcrRepository,
     protected partnerRepository: PartnerRepository,
     protected personRepository: PersonRepository,
     protected processRepository: ProcessRepository,
@@ -155,6 +159,7 @@ export class BaseService {
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
     protected viewRepository: ViewRepository,
+    protected websocketRepository: WebsocketRepository,
   ) {
     this.logger.setContext(this.constructor.name);
     this.storageCore = StorageCore.create(

@@ -2491,6 +2491,53 @@
         "description": "This endpoint requires the `asset.read` permission."
       }
     },
+    "/assets/{id}/ocr": {
+      "get": {
+        "operationId": "getAssetOcr",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetOcrResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
+      }
+    },
     "/assets/{id}/original": {
       "get": {
         "operationId": "downloadAsset",
@@ -5985,6 +6032,14 @@
             }
           },
           {
+            "name": "ocr",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "personIds",
             "required": false,
             "in": "query",
@@ -6456,6 +6511,14 @@
             "description": "This property was added in v111.0.0",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "lensModel",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -10400,6 +10463,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -10429,6 +10495,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -11097,6 +11164,88 @@
         ],
         "type": "object"
       },
+      "AssetOcrResponseDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "boxScore": {
+            "description": "Confidence score for text detection box",
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "description": "Recognized text",
+            "type": "string"
+          },
+          "textScore": {
+            "description": "Confidence score for text recognition",
+            "format": "double",
+            "type": "number"
+          },
+          "x1": {
+            "description": "Normalized x coordinate of box corner 1 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x2": {
+            "description": "Normalized x coordinate of box corner 2 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x3": {
+            "description": "Normalized x coordinate of box corner 3 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x4": {
+            "description": "Normalized x coordinate of box corner 4 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y1": {
+            "description": "Normalized y coordinate of box corner 1 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y2": {
+            "description": "Normalized y coordinate of box corner 2 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y3": {
+            "description": "Normalized y coordinate of box corner 3 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y4": {
+            "description": "Normalized y coordinate of box corner 4 (0-1)",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "boxScore",
+          "id",
+          "text",
+          "textScore",
+          "x1",
+          "x2",
+          "x3",
+          "x4",
+          "y1",
+          "y2",
+          "y3",
+          "y4"
+        ],
+        "type": "object"
+      },
       "AssetOrder": {
         "enum": [
           "asc",
@@ -11469,6 +11618,10 @@
       },
       "ChangePasswordDto": {
         "properties": {
+          "invalidateSessions": {
+            "default": false,
+            "type": "boolean"
+          },
           "newPassword": {
             "example": "password",
             "minLength": 8,
@@ -12096,7 +12249,8 @@
           "sidecar",
           "library",
           "notifications",
-          "backupDatabase"
+          "backupDatabase",
+          "ocr"
         ],
         "type": "string"
       },
@@ -12666,6 +12820,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "order": {
             "allOf": [
               {
@@ -12976,6 +13133,40 @@
           "client_secret_basic"
         ],
         "type": "string"
+      },
+      "OcrConfig": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "maxResolution": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minDetectionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "minRecognitionScore": {
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxResolution",
+          "minDetectionScore",
+          "minRecognitionScore",
+          "modelName"
+        ],
+        "type": "object"
       },
       "OnThisDayDto": {
         "properties": {
@@ -13647,6 +13838,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "personIds": {
             "items": {
               "format": "uuid",
@@ -13941,7 +14135,8 @@
           "state",
           "city",
           "camera-make",
-          "camera-model"
+          "camera-model",
+          "camera-lens-model"
         ],
         "type": "string"
       },
@@ -14114,6 +14309,9 @@
           "oauthAutoLaunch": {
             "type": "boolean"
           },
+          "ocr": {
+            "type": "boolean"
+          },
           "passwordLogin": {
             "type": "boolean"
           },
@@ -14142,6 +14340,7 @@
           "map",
           "oauth",
           "oauthAutoLaunch",
+          "ocr",
           "passwordLogin",
           "reverseGeocoding",
           "search",
@@ -14749,6 +14948,9 @@
             "nullable": true,
             "type": "string"
           },
+          "ocr": {
+            "type": "string"
+          },
           "page": {
             "minimum": 1,
             "type": "number"
@@ -14952,6 +15154,9 @@
           },
           "model": {
             "nullable": true,
+            "type": "string"
+          },
+          "ocr": {
             "type": "string"
           },
           "personIds": {
@@ -16403,6 +16608,9 @@
           "notifications": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "search": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -16426,6 +16634,7 @@
           "metadataExtraction",
           "migration",
           "notifications",
+          "ocr",
           "search",
           "sidecar",
           "smartSearch",
@@ -16511,6 +16720,9 @@
           "facialRecognition": {
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
+          "ocr": {
+            "$ref": "#/components/schemas/OcrConfig"
+          },
           "urls": {
             "format": "uri",
             "items": {
@@ -16527,6 +16739,7 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
+          "ocr",
           "urls"
         ],
         "type": "object"
