@@ -162,10 +162,11 @@ platform :ios do
     )
   end
 
-  desc "iOS Release"
-  lane :release do
+  desc "iOS Manual Release"
+  lane :release_manual do
     enable_automatic_code_signing(
       path: "./Runner.xcodeproj",
+      targets: ["Runner", "ShareExtension", "WidgetExtension"]
     )
     increment_version_number(
       version_number: "2.1.0"
@@ -173,9 +174,24 @@ platform :ios do
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
     )
-    build_app(scheme: "Runner",
-              workspace: "Runner.xcworkspace",
-              xcargs: "-allowProvisioningUpdates")
+    
+    # Build archive with automatic signing
+    gym(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      configuration: "Release",
+      export_method: "app-store",
+      skip_package_ipa: false,
+      xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        method: "app-store",
+        signingStyle: "automatic",
+        uploadBitcode: false,
+        uploadSymbols: true,
+        compileBitcode: false
+      }
+    )
+    
     upload_to_testflight(
       skip_waiting_for_build_processing: true
     )
