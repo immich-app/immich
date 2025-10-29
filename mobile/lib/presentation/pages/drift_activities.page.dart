@@ -115,12 +115,19 @@ class _CommentBubble extends ConsumerWidget {
       if (route != null) await context.pushRoute(route);
     }
 
-    // avatar (hidden for own messages)
-    Widget avatar() => isOwn ? const SizedBox.shrink() : UserCircleAvatar(user: activity.user, size: 28, radius: 14);
+    Widget avatar() {
+      if (isOwn) {
+        return const SizedBox.shrink();
+      }
 
-    // Thumbnail with tappable behavior and optional heart overlay
+      return UserCircleAvatar(user: activity.user, size: 28, radius: 14);
+    }
+
     Widget? thumbnail() {
-      if (!hasAsset) return null;
+      if (!hasAsset) {
+        return null;
+      }
+
       return ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 150, maxHeight: 150),
         child: Stack(
@@ -152,7 +159,10 @@ class _CommentBubble extends ConsumerWidget {
 
     // Likes Album widget (for likes without asset)
     Widget? likesToAlbum() {
-      if (!isLike || hasAsset) return null;
+      if (!isLike || hasAsset) {
+        return null;
+      }
+
       return Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
@@ -160,9 +170,11 @@ class _CommentBubble extends ConsumerWidget {
       );
     }
 
-    // Comment bubble, comment-only
     Widget? commentBubble() {
-      if (activity.comment == null || activity.comment!.isEmpty) return null;
+      if (activity.comment == null || activity.comment!.isEmpty) {
+        return null;
+      }
+
       return ConstrainedBox(
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
         child: Container(
@@ -170,7 +182,7 @@ class _CommentBubble extends ConsumerWidget {
           decoration: BoxDecoration(color: bgColor, borderRadius: const BorderRadius.all(Radius.circular(12))),
           child: Text(
             activity.comment ?? '',
-            style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurface),
+            style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.onSurface),
           ),
         ),
       );
@@ -200,7 +212,7 @@ class _CommentBubble extends ConsumerWidget {
                     ...contentChildren.map((w) => Padding(padding: const EdgeInsets.only(bottom: 8.0), child: w)),
                     Text(
                       '${activity.user.name} • ${activity.createdAt.timeAgo()}',
-                      style: context.textTheme.labelSmall?.copyWith(
+                      style: context.textTheme.labelMedium?.copyWith(
                         color: context.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
