@@ -1,14 +1,10 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import { handleError } from '$lib/utils/handle-error';
   import { changePassword } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import type { HttpError } from '@sveltejs/kit';
+  import { Button, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -21,20 +17,14 @@
     try {
       await changePassword({ changePasswordDto: { password, newPassword, invalidateSessions } });
 
-      notificationController.show({
-        message: $t('updated_password'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('updated_password'));
 
       password = '';
       newPassword = '';
       confirmPassword = '';
     } catch (error) {
       console.error('Error [user-profile] [changePassword]', error);
-      notificationController.show({
-        message: (error as HttpError)?.body?.message || $t('errors.unable_to_change_password'),
-        type: NotificationType.Error,
-      });
+      handleError(error, $t('errors.unable_to_change_password'));
     }
   };
 

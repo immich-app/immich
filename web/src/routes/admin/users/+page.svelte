@@ -1,10 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
   import UserCreateModal from '$lib/modals/UserCreateModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
@@ -15,7 +11,7 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { Button, HStack, Icon, IconButton, Text, modalManager } from '@immich/ui';
+  import { Button, HStack, Icon, IconButton, Text, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteRestore, mdiEyeOutline, mdiInfinity, mdiPlusBoxOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
@@ -38,10 +34,7 @@
     const user = allUsers.find(({ id }) => id === userId);
     if (user) {
       allUsers = allUsers.filter((user) => user.id !== userId);
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('admin.user_successfully_removed', { values: { email: user.email } }),
-      });
+      toastManager.success($t('admin.user_successfully_removed', { values: { email: user.email } }));
     }
   };
 

@@ -2,15 +2,10 @@
   import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import NotificationItem from '$lib/components/shared-components/navigation-bar/notification-item.svelte';
-  import {
-    notificationController,
-    NotificationType as WebNotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { NotificationType, type NotificationDto } from '@immich/sdk';
-  import { Button, Icon, Scrollable, Stack, Text } from '@immich/ui';
+  import { Button, Icon, Scrollable, Stack, Text, toastManager } from '@immich/ui';
   import { mdiBellOutline, mdiCheckAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
@@ -29,7 +24,7 @@
   const markAllAsRead = async () => {
     try {
       await notificationManager.markAllAsRead();
-      notificationController.show({ message: $t('marked_all_as_read'), type: WebNotificationType.Info });
+      toastManager.info($t('marked_all_as_read'));
     } catch (error) {
       handleError(error, $t('errors.failed_to_update_notification_status'));
     }

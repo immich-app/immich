@@ -2,12 +2,11 @@
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
-  import { Icon, IconButton } from '@immich/ui';
+  import { Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
-  import { notificationController, NotificationType } from './notification/notification';
   import UploadAssetPreview from './upload-asset-preview.svelte';
 
   let showDetail = $state(false);
@@ -29,21 +28,12 @@
     out:fade={{ duration: 250 }}
     onoutroend={() => {
       if ($stats.errors > 0) {
-        notificationController.show({
-          message: $t('upload_errors', { values: { count: $stats.errors } }),
-          type: NotificationType.Warning,
-        });
+        toastManager.danger($t('upload_errors', { values: { count: $stats.errors } }));
       } else if ($stats.success > 0) {
-        notificationController.show({
-          message: $t('upload_success'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('upload_success'));
       }
       if ($stats.duplicates > 0) {
-        notificationController.show({
-          message: $t('upload_skipped_duplicates', { values: { count: $stats.duplicates } }),
-          type: NotificationType.Warning,
-        });
+        toastManager.warning($t('upload_skipped_duplicates', { values: { count: $stats.duplicates } }));
       }
       uploadAssetsStore.reset();
     }}
