@@ -472,7 +472,7 @@ If it mentions SIGILL (note the lack of a K) or error code 132, it most likely m
 
 ### Why am I getting database ownership errors?
 
-If you get database errors such as `FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership` upon database startup, this is likely due to an issue with your filesystem.
+If you get database errors such as `FATAL:  data directory "/var/lib/postgresql" has wrong ownership` upon database startup, this is likely due to an issue with your filesystem.
 NTFS and ex/FAT/32 filesystems are not supported. See [here](/install/requirements#special-requirements-for-windows-users) for more details.
 
 ### How can I verify the integrity of my database?

@@ -142,7 +142,7 @@ The `UPLOAD_LOCATION` environment variable controls where files are stored:
 ```yaml
 # From .devcontainer/server/container-compose-overrides.yml
 - ${UPLOAD_LOCATION-./Library}/photos:/workspaces/immich/server/upload
-- ${UPLOAD_LOCATION-./Library}/postgres:/var/lib/postgresql/data
+- ${UPLOAD_LOCATION-./Library}/postgres:/var/lib/postgresql
 ```
 
 ### Database Configuration
