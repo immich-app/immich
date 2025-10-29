@@ -104,7 +104,7 @@ class SyncStreamService {
       case SyncEntityType.assetV1:
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false)) {
+        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {
             await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));

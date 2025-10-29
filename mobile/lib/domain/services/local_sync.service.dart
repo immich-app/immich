@@ -39,7 +39,7 @@ class LocalSyncService {
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (CurrentPlatform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false)) {
+      if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
         final hasPermission = await _localFilesManager.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();

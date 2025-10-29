@@ -193,7 +193,11 @@ class LoginForm extends HookConsumerWidget {
               ).tr(),
               content: SingleChildScrollView(
                 child: ListBody(
-                  children: [const Text('manage_media_access_subtitle', style: TextStyle(fontSize: 14)).tr()],
+                  children: [
+                    const Text('manage_media_access_subtitle', style: TextStyle(fontSize: 14)).tr(),
+                    const SizedBox(height: 4),
+                    const Text('manage_media_access_rationale', style: TextStyle(fontSize: 12)).tr(),
+                  ],
                 ),
               ),
               actions: [
@@ -221,7 +225,7 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    bool isSyncRemoteDeletionsMode() => Platform.isAndroid && (Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false);
+    bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
 
     login() async {
       TextInput.finishAutofillContext();

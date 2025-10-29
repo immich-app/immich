@@ -17,6 +17,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
+import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
@@ -89,11 +90,14 @@ class AdvancedSettings extends HookConsumerWidget {
                 }
               },
             ),
-            SettingsSwitchListTile(
-              valueNotifier: manageMediaAndroidPermission,
+            SettingsActionTile(
               title: "manage_media_access_title".tr(),
-              subtitle: "manage_media_access_subtitle".tr(),
-              onChanged: (_) async {
+              statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
+              subtitle: "manage_media_access_rationale".tr(),
+              statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
+                  ? const Color.fromARGB(255, 243, 188, 106)
+                  : null,
+              onActionTap: () async {
                 final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
                 manageMediaAndroidPermission.value = result;
               },
