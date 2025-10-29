@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { SALT_ROUNDS } from 'src/constants';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
   UserAdminCreateDto,
@@ -103,6 +104,8 @@ export class UserAdminService extends BaseService {
     const status = force ? UserStatus.Removing : UserStatus.Deleted;
     const user = await this.userRepository.update(id, { status, deletedAt: new Date() });
 
+    await this.eventRepository.emit('UserTrash', user);
+
     if (force) {
       await this.jobRepository.queue({ name: JobName.UserDelete, data: { id: user.id, force } });
     }
@@ -114,7 +117,13 @@ export class UserAdminService extends BaseService {
     await this.findOrFail(id, { withDeleted: true });
     await this.albumRepository.restoreAll(id);
     const user = await this.userRepository.restore(id);
+    await this.eventRepository.emit('UserRestore', user);
     return mapUserAdmin(user);
+  }
+
+  async getSessions(auth: AuthDto, id: string): Promise<SessionResponseDto[]> {
+    const sessions = await this.sessionRepository.getByUserId(id);
+    return sessions.map((session) => mapSession(session));
   }
 
   async getStatistics(auth: AuthDto, id: string, dto: AssetStatsDto): Promise<AssetStatsResponseDto> {

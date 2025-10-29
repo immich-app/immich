@@ -91,8 +91,6 @@ format-%:
 	pnpm --filter $(call map-package,$*) run format:fix
 lint-%:
 	pnpm --filter $(call map-package,$*) run lint:fix
-lint-web:
-	pnpm --filter $(call map-package,$*) run lint:p
 check-%:
 	pnpm --filter $(call map-package,$*) run check
 check-web:

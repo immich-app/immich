@@ -4,7 +4,8 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provi
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class ViewerOpenBottomSheetEvent extends Event {
-  const ViewerOpenBottomSheetEvent();
+  final bool activitiesMode;
+  const ViewerOpenBottomSheetEvent({this.activitiesMode = false});
 }
 
 class ViewerReloadAssetEvent extends Event {

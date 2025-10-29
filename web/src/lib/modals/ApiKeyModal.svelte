@@ -1,11 +1,19 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import ApiKeyGrid from '$lib/components/user-settings-page/user-api-key-grid.svelte';
   import { Permission } from '@immich/sdk';
-  import { Button, Checkbox, Field, HStack, IconButton, Input, Label, Modal, ModalBody, ModalFooter } from '@immich/ui';
+  import {
+    Button,
+    Checkbox,
+    Field,
+    HStack,
+    IconButton,
+    Input,
+    Label,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    toastManager,
+  } from '@immich/ui';
   import { mdiClose, mdiKeyVariant } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -60,16 +68,10 @@
   };
 
   const handleSubmit = () => {
-    if (!apiKey.name) {
-      notificationController.show({
-        message: $t('api_key_empty'),
-        type: NotificationType.Warning,
-      });
+    if (!name) {
+      toastManager.warning($t('api_key_empty'));
     } else if (selectedItems.length === 0) {
-      notificationController.show({
-        message: $t('permission_empty'),
-        type: NotificationType.Warning,
-      });
+      toastManager.warning($t('permission_empty'));
     } else {
       if (selectAllItems) {
         onClose({ name, permissions: [Permission.All] });

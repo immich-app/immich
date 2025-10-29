@@ -407,3 +407,30 @@ from
 where
   "album_asset"."albumsId" = $1
   and "album_asset"."assetsId" in ($2)
+
+-- AlbumRepository.getContributorCounts
+select
+  "asset"."ownerId" as "userId",
+  count(*) as "assetCount"
+from
+  "album_asset"
+  inner join "asset" on "asset"."id" = "assetsId"
+where
+  "asset"."deletedAt" is null
+  and "album_asset"."albumsId" = $1
+group by
+  "asset"."ownerId"
+order by
+  "assetCount" desc
+
+-- AlbumRepository.copyAlbums
+insert into
+  "album_asset"
+select
+  "album_asset"."albumsId",
+  $1 as "assetsId"
+from
+  "album_asset"
+where
+  "album_asset"."assetsId" = $2
+on conflict do nothing

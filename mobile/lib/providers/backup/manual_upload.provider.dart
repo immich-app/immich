@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cancellation_token_http/http.dart';
@@ -26,11 +27,11 @@ import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/backup_album.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
-import 'package:immich_mobile/utils/debug_print.dart';
 
 final manualUploadProvider = StateNotifierProvider<ManualUploadNotifier, ManualUploadState>((ref) {
   return ManualUploadNotifier(
@@ -294,7 +295,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           );
         }
       } else {
-        openAppSettings();
+        unawaited(openAppSettings());
         dPrint(() => "[_startUpload] Do not have permission to the gallery");
       }
     } catch (e) {

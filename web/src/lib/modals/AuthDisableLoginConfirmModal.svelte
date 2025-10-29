@@ -19,7 +19,7 @@
         <FormatMessage key="admin.authentication_settings_reenable">
           {#snippet children({ message })}
             <a
-              href="https://immich.app/docs/administration/server-commands"
+              href="https://docs.immich.app/administration/server-commands"
               rel="noreferrer"
               target="_blank"
               class="underline"

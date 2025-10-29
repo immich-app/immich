@@ -161,7 +161,6 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           _resumeBackup(),
         ]);
       } else {
-        _ref.read(driftBackupProvider.notifier).updateError(BackupError.syncFailed);
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
       }
 
@@ -243,7 +242,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
 
     try {
-      LogService.I.flush();
+      await LogService.I.flush();
     } catch (_) {}
   }
 
@@ -256,7 +255,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     // Flush logs before closing database
     try {
-      LogService.I.flush();
+      await LogService.I.flush();
     } catch (_) {}
 
     // Close Isar database safely

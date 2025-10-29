@@ -2,17 +2,13 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
   import { AppRoute } from '$lib/constants';
   import GroupTab from '$lib/elements/GroupTab.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllSharedLinks, removeSharedLink, SharedLinkType, type SharedLinkResponseDto } from '@immich/sdk';
-  import { modalManager } from '@immich/ui';
+  import { modalManager, toastManager } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -47,15 +43,22 @@
 
     try {
       await removeSharedLink({ id });
-      notificationController.show({ message: $t('deleted_shared_link'), type: NotificationType.Info });
+      toastManager.success($t('deleted_shared_link'));
       await refresh();
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_shared_link'));
     }
   };
 
-  const handleEditDone = async () => {
-    await refresh();
+  const handleEditDone = async (updatedLink?: SharedLinkResponseDto) => {
+    if (updatedLink) {
+      const index = sharedLinks.findIndex((link) => link.id === updatedLink.id);
+      if (index !== -1) {
+        sharedLinks[index] = updatedLink;
+      }
+    } else {
+      await refresh();
+    }
     await goto(AppRoute.SHARED_LINKS);
   };
 

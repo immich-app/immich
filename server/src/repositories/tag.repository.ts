@@ -163,22 +163,22 @@ export class TagRepository {
   }
 
   async deleteEmptyTags() {
-    // TODO rewrite as a single statement
-    await this.db.transaction().execute(async (tx) => {
-      const result = await tx
-        .selectFrom('asset')
-        .innerJoin('tag_asset', 'tag_asset.assetsId', 'asset.id')
-        .innerJoin('tag_closure', 'tag_closure.id_descendant', 'tag_asset.tagsId')
-        .innerJoin('tag', 'tag.id', 'tag_closure.id_descendant')
-        .select((eb) => ['tag.id', eb.fn.count<number>('asset.id').as('count')])
-        .groupBy('tag.id')
-        .execute();
+    const result = await this.db
+      .deleteFrom('tag')
+      .where(({ not, exists, selectFrom }) =>
+        not(
+          exists(
+            selectFrom('tag_closure')
+              .whereRef('tag.id', '=', 'tag_closure.id_ancestor')
+              .innerJoin('tag_asset', 'tag_closure.id_descendant', 'tag_asset.tagsId'),
+          ),
+        ),
+      )
+      .executeTakeFirst();
 
-      const ids = result.filter(({ count }) => count === 0).map(({ id }) => id);
-      if (ids.length > 0) {
-        await this.db.deleteFrom('tag').where('id', 'in', ids).execute();
-        this.logger.log(`Deleted ${ids.length} empty tags`);
-      }
-    });
+    const deletedRows = Number(result.numDeletedRows);
+    if (deletedRows > 0) {
+      this.logger.log(`Deleted ${deletedRows} empty tags`);
+    }
   }
 }

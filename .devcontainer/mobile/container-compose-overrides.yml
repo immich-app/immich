@@ -6,28 +6,35 @@ services:
       - IMMICH_SERVER_URL=http://127.0.0.1:2283/
     volumes: !override # bind mount host to /workspaces/immich
       - ..:/workspaces/immich
-      - cli_node_modules:/workspaces/immich/cli/node_modules
-      - e2e_node_modules:/workspaces/immich/e2e/node_modules
-      - open_api_node_modules:/workspaces/immich/open-api/typescript-sdk/node_modules
-      - server_node_modules:/workspaces/immich/server/node_modules
-      - web_node_modules:/workspaces/immich/web/node_modules
-      - ${UPLOAD_LOCATION}/photos:/data
+      - ${UPLOAD_LOCATION:-upload-devcontainer-volume}${UPLOAD_LOCATION:+/photos}:/data
+      - pnpm-store:/usr/src/app/.pnpm-store
+      - server-node_modules:/usr/src/app/server/node_modules
+      - web-node_modules:/usr/src/app/web/node_modules
+      - github-node_modules:/usr/src/app/.github/node_modules
+      - cli-node_modules:/usr/src/app/cli/node_modules
+      - docs-node_modules:/usr/src/app/docs/node_modules
+      - e2e-node_modules:/usr/src/app/e2e/node_modules
+      - sdk-node_modules:/usr/src/app/open-api/typescript-sdk/node_modules
+      - app-node_modules:/usr/src/app/node_modules
+      - sveltekit:/usr/src/app/web/.svelte-kit
+      - coverage:/usr/src/app/web/coverage
       - /etc/localtime:/etc/localtime:ro
-
+  immich-web:
+    env_file: !reset []
+  immich-machine-learning:
+    env_file: !reset []
   database:
+    env_file: !reset []
+    environment: !override
+      POSTGRES_PASSWORD: ${DB_PASSWORD-postgres}
+      POSTGRES_USER: ${DB_USERNAME-postgres}
+      POSTGRES_DB: ${DB_DATABASE_NAME-immich}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+      POSTGRES_HOST_AUTH_METHOD: md5
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
-
+      - ${UPLOAD_LOCATION:-postgres-devcontainer-volume}${UPLOAD_LOCATION:+/postgres}:/var/lib/postgresql/data
+  redis:
+    env_file: !reset []
 volumes:
-  # Node modules for each service to avoid conflicts and ensure consistent dependencies
-  cli_node_modules:
-  e2e_node_modules:
-  open_api_node_modules:
-  server_node_modules:
-  web_node_modules:
-
-  # UPLOAD_LOCATION must be set to a absolute path or vol-upload
-  vol-upload:
-
-  # DB_DATA_LOCATION must be set to a absolute path or vol-database
-  vol-database:
+  upload-devcontainer-volume:
+  postgres-devcontainer-volume:

@@ -4,6 +4,7 @@
   import CastButton from '$lib/cast/cast-button.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
+  import AddToStackAction from '$lib/components/asset-viewer/actions/add-to-stack-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
@@ -55,6 +56,7 @@
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
+    mdiVideoOutline,
   } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -77,6 +79,8 @@
     // export let showEditorHandler: () => void;
     onClose: () => void;
     motionPhoto?: Snippet;
+    playOriginalVideo: boolean;
+    setPlayOriginalVideo: (value: boolean) => void;
   }
 
   let {
@@ -96,6 +100,8 @@
     onShowDetail,
     onClose,
     motionPhoto,
+    playOriginalVideo = false,
+    setPlayOriginalVideo,
   }: Props = $props();
 
   const sharedLink = getSharedLink();
@@ -196,6 +202,7 @@
         {/if}
 
         {#if isOwner}
+          <AddToStackAction {asset} {stack} {onAction} />
           {#if stack}
             <UnstackAction {stack} {onAction} />
             <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
@@ -243,6 +250,15 @@
           {#if !asset.isTrashed}
             <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
           {/if}
+
+          {#if asset.type === AssetTypeEnum.Video}
+            <MenuOption
+              icon={mdiVideoOutline}
+              onClick={() => setPlayOriginalVideo(!playOriginalVideo)}
+              text={playOriginalVideo ? $t('play_transcoded_video') : $t('play_original_video')}
+            />
+          {/if}
+
           <hr />
           <MenuOption
             icon={mdiHeadSyncOutline}

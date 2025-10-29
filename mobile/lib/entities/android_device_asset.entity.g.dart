@@ -47,7 +47,7 @@ const AndroidDeviceAssetSchema = CollectionSchema(
   getId: _androidDeviceAssetGetId,
   getLinks: _androidDeviceAssetGetLinks,
   attach: _androidDeviceAssetAttach,
-  version: '3.1.8',
+  version: '3.3.0-dev.3',
 );
 
 int _androidDeviceAssetEstimateSize(

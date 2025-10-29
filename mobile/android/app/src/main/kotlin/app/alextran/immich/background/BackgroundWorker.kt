@@ -73,6 +73,8 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       NotificationManager.IMPORTANCE_LOW
     )
     notificationManager.createNotificationChannel(notificationChannel)
+    val notificationConfig = BackgroundWorkerPreferences(ctx).getNotificationConfig()
+    showNotification(notificationConfig.first, notificationConfig.second)
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
       engine = FlutterEngine(ctx)
@@ -109,7 +111,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   }
 
   // TODO: Move this to a separate NotificationManager class
-  override fun showNotification(title: String, content: String) {
+  private fun showNotification(title: String, content: String) {
     val notification = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
       .setSmallIcon(R.drawable.notification_icon)
       .setOnlyAlertOnce(true)
@@ -188,6 +190,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   private fun complete(success: Result) {
     Log.d(TAG, "About to complete BackupWorker with result: $success")
     isComplete = true
+    if (engine != null) {
+      MainActivity.cancelPlugins(engine!!)
+    }
     engine?.destroy()
     engine = null
     flutterApi = null

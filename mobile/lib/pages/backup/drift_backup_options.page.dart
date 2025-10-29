@@ -66,7 +66,6 @@ class DriftBackupOptionsPage extends ConsumerWidget {
                   return backupNotifier.startBackup(currentUser.id);
                 } else {
                   Logger('DriftBackupOptionsPage').warning('Background sync failed, not starting backup');
-                  backupNotifier.updateError(BackupError.syncFailed);
                 }
               }),
             ),

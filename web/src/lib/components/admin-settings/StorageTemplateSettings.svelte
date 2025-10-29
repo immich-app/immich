@@ -119,7 +119,7 @@
         {#snippet children({ tag, message })}
           {#if tag === 'template-link'}
             <a
-              href="https://immich.app/docs/administration/storage-template"
+              href="https://docs.immich.app/administration/storage-template"
               class="underline"
               target="_blank"
               rel="noreferrer"
@@ -128,7 +128,7 @@
             </a>
           {:else if tag === 'implications-link'}
             <a
-              href="https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations"
+              href="https://docs.immich.app/administration/backup-and-restore#asset-types-and-storage-locations"
               class="underline"
               target="_blank"
               rel="noreferrer"

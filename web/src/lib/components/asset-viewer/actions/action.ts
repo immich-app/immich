@@ -12,6 +12,7 @@ type ActionMap = {
   [AssetAction.RESTORE]: { asset: TimelineAsset };
   [AssetAction.ADD]: { asset: TimelineAsset };
   [AssetAction.ADD_TO_ALBUM]: { asset: TimelineAsset; album: AlbumResponseDto };
+  [AssetAction.STACK]: { stack: StackResponseDto };
   [AssetAction.UNSTACK]: { assets: TimelineAsset[] };
   [AssetAction.KEEP_THIS_DELETE_OTHERS]: { asset: TimelineAsset };
   [AssetAction.SET_STACK_PRIMARY_ASSET]: { stack: StackResponseDto };

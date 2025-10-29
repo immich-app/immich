@@ -7,7 +7,9 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
+import 'package:immich_mobile/widgets/common/app_bar_dialog/server_update_notification.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 class AppBarServerInfo extends HookConsumerWidget {
@@ -17,6 +19,8 @@ class AppBarServerInfo extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
     ServerInfo serverInfoState = ref.watch(serverInfoProvider);
+    final user = ref.watch(currentUserProvider);
+    final bool showVersionWarning = ref.watch(versionWarningPresentProvider(user));
 
     final appInfo = useState({});
     const titleFontSize = 12.0;
@@ -45,17 +49,10 @@ class AppBarServerInfo extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  serverInfoState.isVersionMismatch
-                      ? serverInfoState.versionMismatchErrorMessage
-                      : "profile_drawer_client_server_up_to_date".tr(),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 11, color: context.primaryColor, fontWeight: FontWeight.w500),
-                ),
-              ),
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+              if (showVersionWarning) ...[
+                const Padding(padding: EdgeInsets.symmetric(horizontal: 8.0), child: ServerUpdateNotification()),
+                const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Divider(thickness: 1)),
+              ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -182,7 +179,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Row(
                         children: [
-                          if (serverInfoState.isNewReleaseAvailable)
+                          if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate)
                             const Padding(
                               padding: EdgeInsets.only(right: 5.0),
                               child: Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: 12),

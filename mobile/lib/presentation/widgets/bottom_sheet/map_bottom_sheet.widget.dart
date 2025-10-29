@@ -5,6 +5,7 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
 class MapBottomSheet extends StatelessWidget {
   const MapBottomSheet({super.key});
@@ -32,8 +33,13 @@ class _ScopedMapTimeline extends StatelessWidget {
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith((ref) {
+          final user = ref.watch(currentUserProvider);
+          if (user == null) {
+            throw Exception('User must be logged in to access archive');
+          }
+
           final bounds = ref.watch(mapStateProvider).bounds;
-          final timelineService = ref.watch(timelineFactoryProvider).map(bounds);
+          final timelineService = ref.watch(timelineFactoryProvider).map(user.id, bounds);
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),

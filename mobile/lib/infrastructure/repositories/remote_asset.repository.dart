@@ -81,9 +81,11 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         .getSingleOrNull();
   }
 
-  Future<List<(String, String)>> getPlaces() {
+  Future<List<(String, String)>> getPlaces(String userId) {
     final asset = Subquery(
-      _db.remoteAssetEntity.select()..orderBy([(row) => OrderingTerm.desc(row.createdAt)]),
+      _db.remoteAssetEntity.select()
+        ..where((row) => row.ownerId.equals(userId))
+        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)]),
       "asset",
     );
 

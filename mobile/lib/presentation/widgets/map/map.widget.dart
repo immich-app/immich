@@ -115,12 +115,14 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     }
 
     final bounds = await controller.getVisibleRegion();
-    _reloadMutex.run(() async {
-      if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
-        final markers = await ref.read(mapMarkerProvider(bounds).future);
-        await reloadMarkers(markers);
-      }
-    });
+    unawaited(
+      _reloadMutex.run(() async {
+        if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
+          final markers = await ref.read(mapMarkerProvider(bounds).future);
+          await reloadMarkers(markers);
+        }
+      }),
+    );
   }
 
   Future<void> reloadMarkers(Map<String, dynamic> markers) async {
@@ -148,7 +150,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 
     final controller = mapController;
     if (controller != null && location != null) {
-      controller.animateCamera(
+      await controller.animateCamera(
         CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), MapUtils.mapZoomToAssetLevel),
         duration: const Duration(milliseconds: 800),
       );
@@ -185,6 +187,8 @@ class _Map extends StatelessWidget {
           initialCameraPosition: initialLocation == null
               ? const CameraPosition(target: LatLng(0, 0), zoom: 0)
               : CameraPosition(target: initialLocation, zoom: MapUtils.mapZoomToAssetLevel),
+          compassEnabled: false,
+          rotateGesturesEnabled: false,
           styleString: style,
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,

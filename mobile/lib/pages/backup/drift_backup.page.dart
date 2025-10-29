@@ -49,9 +49,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
       ref.read(driftBackupProvider.notifier).updateSyncing(true);
       syncSuccess = await ref.read(backgroundSyncProvider).syncRemote();
-      ref
-          .read(driftBackupProvider.notifier)
-          .updateError(syncSuccess == true ? BackupError.none : BackupError.syncFailed);
       ref.read(driftBackupProvider.notifier).updateSyncing(false);
 
       if (mounted) {
@@ -94,7 +91,6 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
       if (syncSuccess == false) {
         Logger("DriftBackupPage").warning("Remote sync did not complete successfully, skipping backup");
-        backupNotifier.updateError(BackupError.syncFailed);
         return;
       }
       await backupNotifier.startBackup(currentUser.id);
@@ -274,7 +270,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
             if (currentUser == null) {
               return;
             }
-            ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+            unawaited(ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id));
           },
           child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         ),

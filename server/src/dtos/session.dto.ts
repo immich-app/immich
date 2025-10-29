@@ -34,6 +34,7 @@ export class SessionResponseDto {
   current!: boolean;
   deviceType!: string;
   deviceOS!: string;
+  appVersion!: string | null;
   isPendingSyncReset!: boolean;
 }
 
@@ -47,6 +48,7 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   updatedAt: entity.updatedAt.toISOString(),
   expiresAt: entity.expiresAt?.toISOString(),
   current: currentId === entity.id,
+  appVersion: entity.appVersion,
   deviceOS: entity.deviceOS,
   deviceType: entity.deviceType,
   isPendingSyncReset: entity.isPendingSyncReset,
