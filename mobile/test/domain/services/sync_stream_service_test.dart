@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -37,6 +38,7 @@ void main() {
   late SyncApiRepository mockSyncApiRepo;
   late DriftLocalAssetRepository mockLocalAssetRepo;
   late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepo;
+  late DriftTrashSyncRepository mockTrashSyncRepo;
   late LocalFilesManagerRepository mockLocalFilesManagerRepo;
   late StorageRepository mockStorageRepo;
   late Future<void> Function(List<SyncEvent>, Function(), Function()) handleEventsCallback;
@@ -50,6 +52,7 @@ void main() {
     mockSyncApiRepo = MockSyncApiRepository();
     mockLocalAssetRepo = MockLocalAssetRepository();
     mockTrashedLocalAssetRepo = MockTrashedLocalAssetRepository();
+    mockTrashSyncRepo = MockTrashSyncRepository();
     mockLocalFilesManagerRepo = MockLocalFilesManagerRepository();
     mockStorageRepo = MockStorageRepository();
     mockAbortCallbackWrapper = _MockAbortCallbackWrapper();
@@ -105,6 +108,7 @@ void main() {
       syncStreamRepository: mockSyncStreamRepo,
       localAssetRepository: mockLocalAssetRepo,
       trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+      trashSyncRepository: mockTrashSyncRepo,
       localFilesManager: mockLocalFilesManagerRepo,
       storageRepository: mockStorageRepo,
     );
@@ -174,6 +178,7 @@ void main() {
         syncStreamRepository: mockSyncStreamRepo,
         localAssetRepository: mockLocalAssetRepo,
         trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+        trashSyncRepository: mockTrashSyncRepo,
         localFilesManager: mockLocalFilesManagerRepo,
         storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,
@@ -213,6 +218,7 @@ void main() {
         syncStreamRepository: mockSyncStreamRepo,
         localAssetRepository: mockLocalAssetRepo,
         trashedLocalAssetRepository: mockTrashedLocalAssetRepo,
+        trashSyncRepository: mockTrashSyncRepo,
         localFilesManager: mockLocalFilesManagerRepo,
         storageRepository: mockStorageRepo,
         cancelChecker: cancellationChecker.call,

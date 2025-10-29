@@ -45,8 +45,8 @@ class LocalSyncService {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       if (CurrentPlatform.isAndroid &&
-          ((Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false) ||
-              (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false))) {
+          (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+              Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
         final hasPermission = await _localFilesManager.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();
@@ -318,7 +318,7 @@ class LocalSyncService {
 
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
 
-    final reviewMode = (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false);
+    final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
 
     if (assetsToRestore.isNotEmpty) {
       if (reviewMode) {

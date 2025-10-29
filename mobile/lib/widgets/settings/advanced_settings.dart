@@ -69,7 +69,6 @@ class AdvancedSettings extends HookConsumerWidget {
       return null;
     }, []);
 
-    // //todo check it!
     Future<void> attemptToEnableSetting(bool value, AppSettingsEnum key) async {
       if (value) {
         final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
@@ -105,16 +104,7 @@ class AdvancedSettings extends HookConsumerWidget {
               valueNotifier: manageLocalMediaAndroid,
               title: "advanced_settings_sync_remote_deletions_title".tr(),
               subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-              onChanged: (value) async {
-                if (value) {
-                  final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
-                  manageLocalMediaAndroid.value = result;
-                  manageMediaAndroidPermission.value = result;
-                  if (result) {
-                    reviewOutOfSyncChangesAndroid.value = false;
-                  }
-                }
-              },
+              onChanged: (value) => attemptToEnableSetting(value, AppSettingsEnum.manageLocalMediaAndroid),
             ),
             SettingsSwitchListTile(
               enabled: true,
@@ -123,31 +113,6 @@ class AdvancedSettings extends HookConsumerWidget {
               subtitle: "advanced_settings_review_remote_deletions_subtitle".tr(),
               onChanged: (value) => attemptToEnableSetting(value, AppSettingsEnum.reviewOutOfSyncChangesAndroid),
             ),
-            // Stack(
-            //   children: [
-            //     if ((manageLocalMediaAndroid.value || reviewOutOfSyncChangesAndroid.value) &&
-            //         !manageMediaAndroidPermission.value)
-            //       const Positioned(
-            //         top: 6,
-            //         right: 40,
-            //         child: SizedBox(
-            //           height: 20,
-            //           width: 20,
-            //           child: Icon(Icons.warning_amber_rounded, color: Color.fromARGB(255, 243, 188, 106), size: 20),
-            //         ),
-            //       ),
-            //     //todo look for more suitable widget
-            //     SettingsSwitchListTile(
-            //       valueNotifier: manageMediaAndroidPermission,
-            //       title: "manage_media_access_title".tr(),
-            //       subtitle: "manage_media_access_subtitle".tr(),
-            //       onChanged: (_) async {
-            //         final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
-            //         manageMediaAndroidPermission.value = result;
-            //       },
-            //     ),
-            //   ],
-            // ),
           ],
         ),
       Card(
@@ -162,28 +127,22 @@ class AdvancedSettings extends HookConsumerWidget {
             ListTile(
               isThreeLine: true,
               title: Text(
-                "manage_media_access_title".tr(),
+                "${"manage_media_access_title".tr()}: ${manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr()}",
                 style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
               ),
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 4.0, right: 18.0),
                 child: Text(
-                  "manage_media_access_subtitle".tr(),
+                  "manage_media_access_rationale".tr(),
                   style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ),
               trailing:
                   ((manageLocalMediaAndroid.value || reviewOutOfSyncChangesAndroid.value) &&
                       !manageMediaAndroidPermission.value)
-                  ? const Padding(
-                      padding: EdgeInsets.only(top: 8.0, right: 8.0),
-                      child: SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: Icon(Icons.warning_amber_rounded, color: Color.fromARGB(255, 243, 188, 106), size: 20),
-                      ),
-                    )
+                  ? const Icon(Icons.warning_amber_rounded, color: Color.fromARGB(255, 243, 188, 106), size: 20)
                   : const SizedBox.shrink(),
+              titleAlignment: ListTileTitleAlignment.center,
             ),
             Divider(height: 1, color: context.colorScheme.outlineVariant),
             ListTile(

@@ -111,8 +111,8 @@ class SyncStreamService {
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
         if (CurrentPlatform.isAndroid &&
-            ((Store.tryGet(StoreKey.manageLocalMediaAndroid) ?? false) ||
-                (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false))) {
+            (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+                Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {
             await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
@@ -256,7 +256,7 @@ class SyncStreamService {
     } else {
       final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
       if (localAssetsToTrash.isNotEmpty) {
-        final reviewMode = (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false);
+        final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
         if (reviewMode) {
           final itemsToReview = localAssetsToTrash.values.flattened
               .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
@@ -287,7 +287,7 @@ class SyncStreamService {
   Future<void> _applyRemoteRestoreToLocal() async {
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (assetsToRestore.isNotEmpty) {
-      final reviewMode = (Store.tryGet(StoreKey.reviewOutOfSyncChangesAndroid) ?? false);
+      final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
       if (reviewMode) {
         final checksums = assetsToRestore.map((e) => e.checksum).nonNulls;
         _logger.info("Clear unapproved trash sync for: $checksums");
