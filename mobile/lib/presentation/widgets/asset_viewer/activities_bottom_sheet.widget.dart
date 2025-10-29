@@ -44,9 +44,7 @@ class ActivitiesBottomSheet extends HookConsumerWidget {
                 return const SizedBox.shrink();
               }
               final activity = data[data.length - 1 - index];
-              // final canDelete = activity.user.id == user?.id || album.ownerId == user?.id;
               return Padding(
-                // padding: const EdgeInsets.symmetric(vertical: 1),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: CommentBubble(activity: activity, isAssetActivity: true),
               );
