@@ -46,7 +46,7 @@ class LocalSyncService {
     try {
       if (CurrentPlatform.isAndroid &&
           Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-              Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
+              Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
         final hasPermission = await _localFilesManager.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();
