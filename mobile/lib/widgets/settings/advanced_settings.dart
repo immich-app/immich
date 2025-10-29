@@ -19,6 +19,7 @@ import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/beta_timeline_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
+import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
@@ -113,58 +114,20 @@ class AdvancedSettings extends HookConsumerWidget {
               subtitle: "advanced_settings_review_remote_deletions_subtitle".tr(),
               onChanged: (value) => attemptToEnableSetting(value, AppSettingsEnum.reviewOutOfSyncChangesAndroid),
             ),
-          ],
-        ),
-      Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(20)),
-          side: BorderSide(color: context.colorScheme.outlineVariant, width: 1),
-        ),
-        elevation: 0,
-        borderOnForeground: false,
-        child: Column(
-          children: [
-            ListTile(
-              isThreeLine: true,
-              title: Text(
-                "${"manage_media_access_title".tr()}: ${manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr()}",
-                style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4.0, right: 18.0),
-                child: Text(
-                  "manage_media_access_rationale".tr(),
-                  style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-                ),
-              ),
-              trailing:
-                  ((manageLocalMediaAndroid.value || reviewOutOfSyncChangesAndroid.value) &&
-                      !manageMediaAndroidPermission.value)
-                  ? const Icon(Icons.warning_amber_rounded, color: Color.fromARGB(255, 243, 188, 106), size: 20)
-                  : const SizedBox.shrink(),
-              titleAlignment: ListTileTitleAlignment.center,
-            ),
-            Divider(height: 1, color: context.colorScheme.outlineVariant),
-            ListTile(
-              enableFeedback: true,
-              visualDensity: VisualDensity.compact,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0.0),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
-              ),
-              onTap: () async {
+            SettingsActionTile(
+              title: "manage_media_access_title".tr(),
+              statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
+              subtitle: "manage_media_access_rationale".tr(),
+              statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
+                  ? const Color.fromARGB(255, 243, 188, 106)
+                  : null,
+              onActionTap: () async {
                 final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
                 manageMediaAndroidPermission.value = result;
               },
-              title: Text(
-                "manage_media_access_settings".tr(),
-                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
-              ),
-              trailing: Icon(Icons.arrow_forward_ios, size: 16, color: context.colorScheme.onSurfaceVariant),
             ),
           ],
         ),
-      ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,

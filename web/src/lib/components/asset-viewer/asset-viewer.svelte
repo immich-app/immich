@@ -31,11 +31,11 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
+  import { toastManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
   import DetailPanel from './detail-panel.svelte';
@@ -275,7 +275,7 @@
   const handleRunJob = async (name: AssetJobName) => {
     try {
       await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
-      notificationController.show({ type: NotificationType.Info, message: $getAssetJobMessage(name) });
+      toastManager.success($getAssetJobMessage(name));
     } catch (error) {
       handleError(error, $t('errors.unable_to_submit_job'));
     }

@@ -45,7 +45,7 @@ class LocalSyncService {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       if (CurrentPlatform.isAndroid &&
-          (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+          Store.get(StoreKey.manageLocalMediaAndroid, false) ||
               Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
         final hasPermission = await _localFilesManager.hasManageMediaPermission();
         if (hasPermission) {

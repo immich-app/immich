@@ -227,7 +227,7 @@ class LoginForm extends HookConsumerWidget {
 
     bool isSyncRemoteDeletionsMode() =>
         Platform.isAndroid &&
-        (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+        Store.get(StoreKey.manageLocalMediaAndroid, false) ||
             Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false));
 
     login() async {

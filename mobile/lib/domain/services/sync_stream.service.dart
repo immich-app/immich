@@ -111,7 +111,7 @@ class SyncStreamService {
         final remoteSyncAssets = data.cast<SyncAssetV1>();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
         if (CurrentPlatform.isAndroid &&
-            (Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+            Store.get(StoreKey.manageLocalMediaAndroid, false) ||
                 Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false))) {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {

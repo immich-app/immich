@@ -168,7 +168,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   }
 
   Future<void> showActivity(BuildContext context) async {
-    unawaited(context.pushRoute(const DriftActivitiesRoute()));
+    unawaited(context.pushRoute(DriftActivitiesRoute(album: _album)));
   }
 
   Future<void> showOptionSheet(BuildContext context) async {
@@ -224,7 +224,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
                 : null,
             onShowOptions: () {
               context.pop();
-              context.pushRoute(const DriftAlbumOptionsRoute());
+              context.pushRoute(DriftAlbumOptionsRoute(album: _album));
             },
           );
         },
@@ -237,35 +237,24 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null ? user.id == _album.ownerId : false;
 
-    return PopScope(
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) {
-          Future.microtask(() {
-            if (mounted) {
-              ref.read(currentRemoteAlbumProvider.notifier).dispose();
-              ref.read(remoteAlbumProvider.notifier).refresh();
-            }
-          });
-        }
-      },
-      child: ProviderScope(
-        overrides: [
-          timelineServiceProvider.overrideWith((ref) {
-            final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
-            ref.onDispose(timelineService.dispose);
-            return timelineService;
-          }),
-        ],
-        child: Timeline(
-          appBar: RemoteAlbumSliverAppBar(
-            icon: Icons.photo_album_outlined,
-            onShowOptions: () => showOptionSheet(context),
-            onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
-            onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
-            onActivity: () => showActivity(context),
-          ),
-          bottomSheet: RemoteAlbumBottomSheet(album: _album),
+    return ProviderScope(
+      overrides: [
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineService = ref.watch(timelineFactoryProvider).remoteAlbum(albumId: _album.id);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
+        currentRemoteAlbumScopedProvider.overrideWithValue(_album),
+      ],
+      child: Timeline(
+        appBar: RemoteAlbumSliverAppBar(
+          icon: Icons.photo_album_outlined,
+          onShowOptions: () => showOptionSheet(context),
+          onToggleAlbumOrder: isOwner ? () => toggleAlbumOrder() : null,
+          onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
+          onActivity: () => showActivity(context),
         ),
+        bottomSheet: RemoteAlbumBottomSheet(album: _album),
       ),
     );
   }
