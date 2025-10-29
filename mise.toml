@@ -1,5 +1,5 @@
 [tools]
-node = "22.21.0"
+node = "24.11.0"
 flutter = "3.35.7"
 pnpm = "10.19.0"
 terragrunt = "0.91.2"
