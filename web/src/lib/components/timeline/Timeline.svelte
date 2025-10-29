@@ -174,7 +174,7 @@
   };
 
   const scrollAndLoadAsset = async (assetId: string) => {
-    const month = await timelineManager.findMonthForAsset(assetId);
+    const month = await timelineManager.search.getMonthForAsset(assetId);
     if (!month) {
       return false;
     }

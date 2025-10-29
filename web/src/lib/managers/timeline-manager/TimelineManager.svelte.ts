@@ -6,14 +6,13 @@ import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svel
 import { TimelineSearchExtension } from '$lib/managers/timeline-manager/TimelineSearchExtension.svelte';
 import { TimelineWebsocketExtension } from '$lib/managers/timeline-manager/TimelineWebsocketExtension';
 import type {
-  AssetOperation,
   Direction,
   ScrubberMonth,
   TimelineAsset,
   TimelineManagerOptions,
   Viewport,
 } from '$lib/managers/timeline-manager/types';
-import { isMismatched, setDifferenceInPlace, updateObject } from '$lib/managers/timeline-manager/utils.svelte';
+import { isMismatched } from '$lib/managers/timeline-manager/utils.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { getSegmentIdentifier } from '$lib/utils/timeline-util';
 import { AssetOrder, getTimeBuckets } from '@immich/sdk';
@@ -121,53 +120,11 @@ export class TimelineManager extends VirtualScrollManager {
     this.onUpdateViewport(oldViewport, viewport);
   }
 
-  upsertAssets(assets: TimelineAsset[]) {
-    const notExcluded = assets.filter((asset) => !this.isExcluded(asset));
-    const notUpdated = this.#updateAssets(notExcluded);
-    this.addAssetsToSegments(notUpdated);
-  }
-
-  /**
-   * Executes the given operation against every passed in asset id.
-   *
-   * @returns An object with the changed ids, unprocessed ids, and if this resulted
-   * in changes of the timeline geometry.
-   */
-  updateAssetOperation(ids: string[], operation: AssetOperation) {
-    return this.#runAssetOperation(ids, operation);
-  }
-
-  /**
-   * Looks up the specified asset from the TimelineAsset using its id, and then updates the
-   * existing object to match the rest of the TimelineAsset parameter.
-
-   * @returns list of assets that were updated (not found)
-   */
-  #updateAssets(updatedAssets: TimelineAsset[]) {
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const lookup = new Map<string, TimelineAsset>();
-    const ids = [];
-    for (const asset of updatedAssets) {
-      ids.push(asset.id);
-      lookup.set(asset.id, asset);
-    }
-    const { unprocessedIds } = this.#runAssetOperation(ids, (asset) => updateObject(asset, lookup.get(asset.id)));
-    const result: TimelineAsset[] = [];
-    for (const id of unprocessedIds) {
-      result.push(lookup.get(id)!);
-    }
-    return result;
-  }
-
-  removeAssets(ids: string[]) {
-    this.#runAssetOperation(ids, () => ({ remove: true }));
-  }
-
-  protected createUpsertContext(): GroupInsertionCache {
+  protected override createUpsertContext(): GroupInsertionCache {
     return new GroupInsertionCache();
   }
 
-  protected upsertAssetIntoSegment(asset: TimelineAsset, context: GroupInsertionCache): void {
+  protected override upsertAssetIntoSegment(asset: TimelineAsset, context: GroupInsertionCache): void {
     let month = this.search.findMonthByDate(asset.localDateTime);
 
     if (!month) {
@@ -178,64 +135,30 @@ export class TimelineManager extends VirtualScrollManager {
     month.addTimelineAsset(asset, context);
   }
 
-  protected addAssetsToSegments(assets: TimelineAsset[]) {
-    if (assets.length === 0) {
-      return;
-    }
-    const context = this.createUpsertContext();
-    const monthCount = this.segments.length;
-    for (const asset of assets) {
-      this.upsertAssetIntoSegment(asset, context);
-    }
-    if (this.segments.length !== monthCount) {
-      this.postCreateSegments();
-    }
-    this.postUpsert(context);
-    this.updateIntersections();
+  protected override postCreateSegments(): void {
+    this.segments.sort((a, b) => {
+      return a.yearMonth.year === b.yearMonth.year
+        ? b.yearMonth.month - a.yearMonth.month
+        : b.yearMonth.year - a.yearMonth.year;
+    });
   }
 
-  #runAssetOperation(ids: string[], operation: AssetOperation) {
-    if (ids.length === 0) {
-      // eslint-disable-next-line svelte/prefer-svelte-reactivity
-      return { processedIds: new Set<string>(), unprocessedIds: new Set<string>(), changedGeometry: false };
+  protected override postUpsert(context: GroupInsertionCache): void {
+    for (const group of context.existingDays) {
+      group.sortAssets(this.#options.order);
     }
 
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const changedMonths = new Set<TimelineMonth>();
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const idsToProcess = new Set(ids);
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const idsProcessed = new Set<string>();
-    const combinedMoveAssets: TimelineAsset[] = [];
-    for (const month of this.segments) {
-      if (idsToProcess.size > 0) {
-        const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);
-        if (moveAssets.length > 0) {
-          combinedMoveAssets.push(...moveAssets);
-        }
-        setDifferenceInPlace(idsToProcess, processedIds);
-        for (const id of processedIds) {
-          idsProcessed.add(id);
-        }
-        if (changedGeometry) {
-          changedMonths.add(month);
-        }
-      }
+    for (const month of context.monthsWithNewDays) {
+      month.sortDays();
     }
-    if (combinedMoveAssets.length > 0) {
-      this.addAssetsToSegments(combinedMoveAssets);
-    }
-    const changedGeometry = changedMonths.size > 0;
-    for (const month of changedMonths) {
+
+    for (const month of context.updatedMonths) {
+      month.sortDays();
       month.updateGeometry({ invalidateHeight: true });
     }
-    if (changedGeometry) {
-      this.updateIntersections();
-    }
-    return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry };
   }
 
-  isExcluded(asset: TimelineAsset) {
+  override isExcluded(asset: TimelineAsset) {
     return (
       isMismatched(this.#options.visibility, asset.visibility) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
@@ -317,28 +240,5 @@ export class TimelineManager extends VirtualScrollManager {
       height: month.height,
     }));
     this.scrubberTimelineHeight = this.totalViewerHeight;
-  }
-
-  protected postCreateSegments(): void {
-    this.segments.sort((a, b) => {
-      return a.yearMonth.year === b.yearMonth.year
-        ? b.yearMonth.month - a.yearMonth.month
-        : b.yearMonth.year - a.yearMonth.year;
-    });
-  }
-
-  protected postUpsert(context: GroupInsertionCache): void {
-    for (const group of context.existingDays) {
-      group.sortAssets(this.#options.order);
-    }
-
-    for (const month of context.monthsWithNewDays) {
-      month.sortDays();
-    }
-
-    for (const month of context.updatedMonths) {
-      month.sortDays();
-      month.updateGeometry({ invalidateHeight: true });
-    }
   }
 }

@@ -1,19 +1,21 @@
-import type { Viewport } from '$lib/managers/timeline-manager/types';
+import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
+import { setDifferenceInPlace } from '$lib/managers/timeline-manager/utils.svelte';
 import type { ScrollSegment, SegmentIdentifier } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
+import { updateObject } from '$lib/managers/VirtualScrollManager/utils.svelte';
 
 import { clamp, debounce } from 'lodash-es';
+
+export type VisibleWindow = {
+  top: number;
+  bottom: number;
+};
+export type AssetOperation = (asset: TimelineAsset) => unknown;
 
 type LayoutOptions = {
   headerHeight: number;
   rowHeight: number;
   gap: number;
 };
-
-export type VisibleWindow = {
-  top: number;
-  bottom: number;
-};
-
 type ViewportTopSegmentIntersection = {
   segment: ScrollSegment | null;
   // Where viewport top intersects segment (0 = segment top, 1 = segment bottom)
@@ -277,6 +279,112 @@ export abstract class VirtualScrollManager {
     }
 
     await segment.load(cancelable);
+  }
+
+  upsertAssets(assets: TimelineAsset[]) {
+    const notExcluded = assets.filter((asset) => !this.isExcluded(asset));
+    const notUpdated = this.#updateAssets(notExcluded);
+    this.addAssetsToSegments(notUpdated);
+  }
+
+  removeAssets(ids: string[]) {
+    this.#runAssetOperation(ids, () => ({ remove: true }));
+  }
+
+  /**
+   * Executes the given operation against every passed in asset id.
+   *
+   * @returns An object with the changed ids, unprocessed ids, and if this resulted
+   * in changes of the timeline geometry.
+   */
+  updateAssetOperation(ids: string[], operation: AssetOperation) {
+    return this.#runAssetOperation(ids, operation);
+  }
+
+  isExcluded(_: TimelineAsset) {
+    return false;
+  }
+
+  protected addAssetsToSegments(assets: TimelineAsset[]) {
+    if (assets.length === 0) {
+      return;
+    }
+    const context = this.createUpsertContext();
+    const monthCount = this.segments.length;
+    for (const asset of assets) {
+      this.upsertAssetIntoSegment(asset, context);
+    }
+    if (this.segments.length !== monthCount) {
+      this.postCreateSegments();
+    }
+    this.postUpsert(context);
+    this.updateIntersections();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected upsertAssetIntoSegment(asset: TimelineAsset, context: unknown): void {}
+  protected createUpsertContext(): unknown {
+    return undefined;
+  }
+  protected postUpsert(_: unknown): void {}
+  protected postCreateSegments(): void {}
+
+  /**
+     * Looks up the specified asset from the TimelineAsset using its id, and then updates the
+     * existing object to match the rest of the TimelineAsset parameter.
+  
+     * @returns list of assets that were updated (not found)
+     */
+  #updateAssets(updatedAssets: TimelineAsset[]) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const lookup = new Map<string, TimelineAsset>();
+    const ids = [];
+    for (const asset of updatedAssets) {
+      ids.push(asset.id);
+      lookup.set(asset.id, asset);
+    }
+    const { unprocessedIds } = this.#runAssetOperation(ids, (asset) => updateObject(asset, lookup.get(asset.id)));
+    const result: TimelineAsset[] = [];
+    for (const id of unprocessedIds) {
+      result.push(lookup.get(id)!);
+    }
+    return result;
+  }
+
+  #runAssetOperation(ids: string[], operation: AssetOperation) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const changedMonths = new Set<ScrollSegment>();
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const idsToProcess = new Set(ids);
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const idsProcessed = new Set<string>();
+    const combinedMoveAssets: TimelineAsset[] = [];
+    for (const month of this.segments) {
+      if (idsToProcess.size > 0) {
+        const { moveAssets, processedIds, changedGeometry } = month.runAssetOperation(idsToProcess, operation);
+        if (moveAssets.length > 0) {
+          combinedMoveAssets.push(...moveAssets);
+        }
+        setDifferenceInPlace(idsToProcess, processedIds);
+        for (const id of processedIds) {
+          idsProcessed.add(id);
+        }
+        if (changedGeometry) {
+          changedMonths.add(month);
+        }
+      }
+    }
+    if (combinedMoveAssets.length > 0) {
+      this.addAssetsToSegments(combinedMoveAssets);
+    }
+    const changedGeometry = changedMonths.size > 0;
+    for (const month of changedMonths) {
+      month.updateGeometry({ invalidateHeight: true });
+    }
+    if (changedGeometry) {
+      this.updateIntersections();
+    }
+    return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry };
   }
 }
 
