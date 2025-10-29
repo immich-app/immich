@@ -1,10 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import DeleteAssetDialog from '$lib/components/photos-page/delete-asset-dialog.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import { AssetAction } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
@@ -12,7 +8,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, toastManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction, PreAction } from './action';
@@ -46,11 +42,7 @@
       preAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
       onAction({ type: AssetAction.TRASH, asset: toTimelineAsset(asset) });
-
-      notificationController.show({
-        message: $t('moved_to_trash'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('moved_to_trash'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_trash_asset'));
     }
@@ -61,11 +53,7 @@
       preAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id], force: true } });
       onAction({ type: AssetAction.DELETE, asset: toTimelineAsset(asset) });
-
-      notificationController.show({
-        message: $t('permanently_deleted_asset'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('permanently_deleted_asset'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_asset'));
     } finally {

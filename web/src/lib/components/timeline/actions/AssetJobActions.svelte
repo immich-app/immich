@@ -1,13 +1,10 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import { getAssetControlContext } from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import { getAssetJobIcon, getAssetJobMessage, getAssetJobName } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetJobName, runAssetJobs } from '@immich/sdk';
+  import { toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -25,7 +22,7 @@
     try {
       const ids = [...getOwnedAssets()].map(({ id }) => id);
       await runAssetJobs({ assetJobsDto: { assetIds: ids, name } });
-      notificationController.show({ message: $getAssetJobMessage(name), type: NotificationType.Info });
+      toastManager.success($getAssetJobMessage(name));
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_submit_job'));

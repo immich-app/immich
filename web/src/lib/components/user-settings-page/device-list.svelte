@@ -1,9 +1,8 @@
 <script lang="ts">
+  import { handleError } from '$lib/utils/handle-error';
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
-  import { Button, modalManager } from '@immich/ui';
+  import { Button, modalManager, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import { handleError } from '../../utils/handle-error';
-  import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
 
   interface Props {
@@ -25,7 +24,7 @@
 
     try {
       await deleteSession({ id: device.id });
-      notificationController.show({ message: $t('logged_out_device'), type: NotificationType.Info });
+      toastManager.success($t('logged_out_device'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_log_out_device'));
     } finally {
@@ -41,10 +40,7 @@
 
     try {
       await deleteAllSessions();
-      notificationController.show({
-        message: $t('logged_out_all_devices'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('logged_out_all_devices'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_log_out_all_devices'));
     } finally {

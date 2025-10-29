@@ -26,12 +26,12 @@ export abstract class VirtualScrollManager {
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
-  #justifiedLayoutOptions = $derived.by(() => ({
+  #justifiedLayoutOptions = $derived({
     spacing: 2,
-    heightTolerance: 0.15,
+    heightTolerance: 0.5,
     rowHeight: this.#rowHeight,
     rowWidth: Math.floor(this.viewportWidth),
-  }));
+  });
 
   constructor() {
     this.setLayoutOptions();

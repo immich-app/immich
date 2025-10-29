@@ -36,10 +36,6 @@ class _DriftActivityTextFieldState extends ConsumerState<DriftActivityTextField>
     inputController = TextEditingController();
     inputFocusNode = FocusNode();
 
-    if (!widget.isBottomSheet) {
-      inputFocusNode.requestFocus();
-    }
-
     inputFocusNode.addListener(() {
       if (inputFocusNode.hasFocus) {
         widget.onKeyboardFocus?.call();

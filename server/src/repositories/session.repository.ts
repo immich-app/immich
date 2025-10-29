@@ -101,6 +101,15 @@ export class SessionRepository {
     await this.db.deleteFrom('session').where('id', '=', asUuid(id)).execute();
   }
 
+  @GenerateSql({ params: [{ userId: DummyValue.UUID, excludeId: DummyValue.UUID }] })
+  async invalidate({ userId, excludeId }: { userId: string; excludeId?: string }) {
+    await this.db
+      .deleteFrom('session')
+      .where('userId', '=', userId)
+      .$if(!!excludeId, (qb) => qb.where('id', '!=', excludeId!))
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   async lockAll(userId: string) {
     await this.db.updateTable('session').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
