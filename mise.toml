@@ -1,9 +1,9 @@
 [tools]
-node = "22.20.0"
-flutter = "3.35.6"
-pnpm = "10.18.1"
-terragrunt = "0.58.12"
-opentofu = "1.7.1"
+node = "24.11.0"
+flutter = "3.35.7"
+pnpm = "10.19.0"
+terragrunt = "0.91.2"
+opentofu = "1.10.6"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.30.0"

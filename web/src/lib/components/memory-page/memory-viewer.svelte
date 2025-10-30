@@ -10,10 +10,6 @@
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -37,7 +33,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, getAssetInfo } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, toastManager } from '@immich/ui';
   import {
     mdiCardsOutline,
     mdiChevronDown,
@@ -205,7 +201,7 @@
     }
 
     await memoryStore.deleteMemory(current.memory.id);
-    notificationController.show({ message: $t('removed_memory'), type: NotificationType.Info });
+    toastManager.success($t('removed_memory'));
     init(page);
   };
 
@@ -216,10 +212,7 @@
 
     const newSavedState = !current.memory.isSaved;
     await memoryStore.updateMemorySaved(current.memory.id, newSavedState);
-    notificationController.show({
-      message: newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'),
-      type: NotificationType.Info,
-    });
+    toastManager.success(newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'));
     init(page);
   };
 

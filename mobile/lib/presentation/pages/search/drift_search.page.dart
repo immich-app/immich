@@ -19,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/feature_check.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
@@ -31,15 +32,14 @@ import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.d
 
 @RoutePage()
 class DriftSearchPage extends HookConsumerWidget {
-  const DriftSearchPage({super.key, this.preFilter});
-
-  final SearchFilter? preFilter;
+  const DriftSearchPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textSearchType = useState<TextSearchType>(TextSearchType.context);
     final searchHintText = useState<String>('sunrise_on_the_beach'.t(context: context));
     final textSearchController = useTextEditingController();
+    final preFilter = ref.watch(searchPreFilterProvider);
     final filter = useState<SearchFilter>(
       SearchFilter(
         people: preFilter?.people ?? {},
@@ -49,6 +49,7 @@ class DriftSearchPage extends HookConsumerWidget {
         display: preFilter?.display ?? SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         mediaType: preFilter?.mediaType ?? AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
+        assetId: preFilter?.assetId,
       ),
     );
 
@@ -109,8 +110,8 @@ class DriftSearchPage extends HookConsumerWidget {
         Future.delayed(Duration.zero, () {
           search();
 
-          if (preFilter!.location.city != null) {
-            locationCurrentFilterWidget.value = Text(preFilter!.location.city!, style: context.textTheme.labelLarge);
+          if (preFilter.location.city != null) {
+            locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
           }
         });
       }
@@ -271,7 +272,7 @@ class DriftSearchPage extends HookConsumerWidget {
         filter.value = filter.value.copyWith(date: SearchDateFilter());
 
         dateRangeCurrentFilterWidget.value = null;
-        search();
+        unawaited(search());
         return;
       }
 
@@ -301,7 +302,7 @@ class DriftSearchPage extends HookConsumerWidget {
         );
       }
 
-      search();
+      unawaited(search());
     }
 
     // MEDIA PICKER
@@ -395,15 +396,18 @@ class DriftSearchPage extends HookConsumerWidget {
     handleTextSubmitted(String value) {
       switch (textSearchType.value) {
         case TextSearchType.context:
-          filter.value = filter.value.copyWith(filename: '', context: value, description: '');
+          filter.value = filter.value.copyWith(filename: '', context: value, description: '', ocr: '');
 
           break;
         case TextSearchType.filename:
-          filter.value = filter.value.copyWith(filename: value, context: '', description: '');
+          filter.value = filter.value.copyWith(filename: value, context: '', description: '', ocr: '');
 
           break;
         case TextSearchType.description:
-          filter.value = filter.value.copyWith(filename: '', context: '', description: value);
+          filter.value = filter.value.copyWith(filename: '', context: '', description: value, ocr: '');
+          break;
+        case TextSearchType.ocr:
+          filter.value = filter.value.copyWith(filename: '', context: '', description: '', ocr: value);
           break;
       }
 
@@ -414,6 +418,7 @@ class DriftSearchPage extends HookConsumerWidget {
       TextSearchType.context => Icons.image_search_rounded,
       TextSearchType.filename => Icons.abc_rounded,
       TextSearchType.description => Icons.text_snippet_outlined,
+      TextSearchType.ocr => Icons.document_scanner_outlined,
     };
 
     return Scaffold(
@@ -498,6 +503,27 @@ class DriftSearchPage extends HookConsumerWidget {
                     textSearchType.value = TextSearchType.description;
                     searchHintText.value = 'search_by_description_example'.t(context: context);
                   },
+                ),
+                FeatureCheck(
+                  feature: (features) => features.ocr,
+                  child: MenuItemButton(
+                    child: ListTile(
+                      leading: const Icon(Icons.document_scanner_outlined),
+                      title: Text(
+                        'search_by_ocr'.t(context: context),
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
+                        ),
+                      ),
+                      selectedColor: context.colorScheme.primary,
+                      selected: textSearchType.value == TextSearchType.ocr,
+                    ),
+                    onPressed: () {
+                      textSearchType.value = TextSearchType.ocr;
+                      searchHintText.value = 'search_by_ocr_example'.t(context: context);
+                    },
+                  ),
                 ),
               ],
             ),

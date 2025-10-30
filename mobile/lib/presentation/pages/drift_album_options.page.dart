@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -20,15 +23,11 @@ import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage()
 class DriftAlbumOptionsPage extends HookConsumerWidget {
-  const DriftAlbumOptionsPage({super.key});
+  final RemoteAlbum album;
+  const DriftAlbumOptionsPage({super.key, required this.album});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final album = ref.watch(currentRemoteAlbumProvider);
-    if (album == null) {
-      return const SizedBox();
-    }
-
     final sharedUsersAsync = ref.watch(remoteAlbumSharedUsersProvider(album.id));
     final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.isActivityEnabled);
@@ -47,7 +46,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     void leaveAlbum() async {
       try {
         await ref.read(remoteAlbumProvider.notifier).leaveAlbum(album.id, userId: userId);
-        context.navigateTo(const DriftAlbumsRoute());
+        unawaited(context.navigateTo(const DriftAlbumsRoute()));
       } catch (_) {
         showErrorMessage();
       }
@@ -189,48 +188,51 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.maybePop(null),
+    return ProviderScope(
+      overrides: [currentRemoteAlbumScopedProvider.overrideWithValue(album)],
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => context.maybePop(null),
+          ),
+          centerTitle: true,
+          title: Text("options".t(context: context)),
         ),
-        centerTitle: true,
-        title: Text("options".t(context: context)),
-      ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 8),
-          if (isOwner)
-            SwitchListTile.adaptive(
-              value: activityEnabled.value,
-              onChanged: (bool value) async {
-                activityEnabled.value = value;
-                await ref.read(remoteAlbumProvider.notifier).setActivityStatus(album.id, value);
-              },
-              activeThumbColor: activityEnabled.value ? context.primaryColor : context.themeData.disabledColor,
-              dense: true,
-              title: Text(
-                "comments_and_likes",
-                style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
-              ).t(context: context),
-              subtitle: Text(
-                "let_others_respond",
-                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-              ).t(context: context),
-            ),
-          buildSectionTitle("shared_album_section_people_title".t(context: context)),
-          if (isOwner) ...[
-            ListTile(
-              leading: const Icon(Icons.person_add_rounded),
-              title: Text("invite_people".t(context: context)),
-              onTap: () async => addUsers(),
-            ),
-            const Divider(indent: 16),
+        body: ListView(
+          children: [
+            const SizedBox(height: 8),
+            if (isOwner)
+              SwitchListTile.adaptive(
+                value: activityEnabled.value,
+                onChanged: (bool value) async {
+                  activityEnabled.value = value;
+                  await ref.read(remoteAlbumProvider.notifier).setActivityStatus(album.id, value);
+                },
+                activeThumbColor: activityEnabled.value ? context.primaryColor : context.themeData.disabledColor,
+                dense: true,
+                title: Text(
+                  "comments_and_likes",
+                  style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+                ).t(context: context),
+                subtitle: Text(
+                  "let_others_respond",
+                  style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+                ).t(context: context),
+              ),
+            buildSectionTitle("shared_album_section_people_title".t(context: context)),
+            if (isOwner) ...[
+              ListTile(
+                leading: const Icon(Icons.person_add_rounded),
+                title: Text("invite_people".t(context: context)),
+                onTap: () async => addUsers(),
+              ),
+              const Divider(indent: 16),
+            ],
+            buildOwnerInfo(),
+            buildSharedUsersList(),
           ],
-          buildOwnerInfo(),
-          buildSharedUsersList(),
-        ],
+        ),
       ),
     );
   }

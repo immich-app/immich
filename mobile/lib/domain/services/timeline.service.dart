@@ -33,6 +33,7 @@ enum TimelineOrigin {
   map,
   search,
   deepLink,
+  albumActivities,
 }
 
 class TimelineFactory {
