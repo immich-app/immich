@@ -217,7 +217,7 @@ export class AssetService extends BaseService {
     }
 
     if (stack) {
-      await this.copyStack(sourceAsset, targetAsset);
+      await this.copyStack({ sourceAsset, targetAsset });
     }
 
     if (favorite) {
@@ -225,14 +225,17 @@ export class AssetService extends BaseService {
     }
 
     if (sidecar) {
-      await this.copySidecar(sourceAsset, targetAsset);
+      await this.copySidecar({ sourceAsset, targetAsset });
     }
   }
 
-  private async copyStack(
-    sourceAsset: { id: string; stackId: string | null },
-    targetAsset: { id: string; stackId: string | null },
-  ) {
+  private async copyStack({
+    sourceAsset,
+    targetAsset,
+  }: {
+    sourceAsset: { id: string; stackId: string | null };
+    targetAsset: { id: string; stackId: string | null };
+  }) {
     if (!sourceAsset.stackId) {
       return;
     }
@@ -245,10 +248,13 @@ export class AssetService extends BaseService {
     }
   }
 
-  private async copySidecar(
-    targetAsset: { sidecarPath: string | null },
-    sourceAsset: { id: string; sidecarPath: string | null; originalPath: string },
-  ) {
+  private async copySidecar({
+    sourceAsset,
+    targetAsset,
+  }: {
+    sourceAsset: { id: string; sidecarPath: string | null; originalPath: string };
+    targetAsset: { sidecarPath: string | null };
+  }) {
     if (!targetAsset.sidecarPath) {
       return;
     }
