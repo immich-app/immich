@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -44,9 +45,8 @@ class LocalSyncService {
   Future<void> sync({bool full = false}) async {
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
-      if (CurrentPlatform.isAndroid &&
-          Store.get(StoreKey.manageLocalMediaAndroid, false) ||
-              Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
+      if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false) ||
+          Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
         final hasPermission = await _localFilesManager.hasManageMediaPermission();
         if (hasPermission) {
           await _syncTrashedAssets();
@@ -325,6 +325,12 @@ class LocalSyncService {
         final checksums = assetsToRestore.map((e) => e.checksum).nonNulls;
         _log.info("Clear unapproved trash sync for: $checksums");
         await _trashSyncRepository.deleteUnapproved(checksums);
+        //todo add new entries to restoration review - check it!
+        final itemsToReview = assetsToRestore
+            .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
+            .where((la) => la.checksum.isNotEmpty);
+
+        await _trashSyncRepository.insertIfNotExists(itemsToReview, TrashActionType.restore);
       } else {
         final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
         await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
@@ -341,7 +347,7 @@ class LocalSyncService {
             .where((la) => la.checksum.isNotEmpty);
 
         _log.info("Apply remote trash action to review for: $itemsToReview");
-        await _trashSyncRepository.insertIfNotExists(itemsToReview);
+        await _trashSyncRepository.insertIfNotExists(itemsToReview, TrashActionType.delete);
       } else {
         final mediaUrls = await Future.wait(
           localAssetsToTrash.values
@@ -356,6 +362,9 @@ class LocalSyncService {
       }
     } else {
       _log.info("syncTrashedAssets, No assets found in backup-enabled albums for move to trash");
+    }
+    if (reviewMode) {
+      await _trashSyncRepository.deleteAlreadySynced();
     }
   }
 }

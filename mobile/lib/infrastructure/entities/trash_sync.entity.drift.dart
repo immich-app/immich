@@ -3,23 +3,26 @@
 import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
     as i1;
+import 'package:immich_mobile/domain/models/trash_sync.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart'
-    as i2;
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
     as i3;
-import 'package:drift/internal/modular.dart' as i4;
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
+    as i4;
+import 'package:drift/internal/modular.dart' as i5;
 
 typedef $$TrashSyncEntityTableCreateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
       required String assetId,
       required String checksum,
       i0.Value<bool?> isSyncApproved,
+      required i2.TrashActionType actionType,
     });
 typedef $$TrashSyncEntityTableUpdateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
       i0.Value<String> assetId,
       i0.Value<String> checksum,
       i0.Value<bool?> isSyncApproved,
+      i0.Value<i2.TrashActionType> actionType,
     });
 
 final class $$TrashSyncEntityTableReferences
@@ -35,29 +38,29 @@ final class $$TrashSyncEntityTableReferences
     super.$_typedResult,
   );
 
-  static i3.$LocalAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
-      i4.ReadDatabaseContainer(db)
-          .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity')
+  static i4.$LocalAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
+      i5.ReadDatabaseContainer(db)
+          .resultSet<i4.$LocalAssetEntityTable>('local_asset_entity')
           .createAlias(
             i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
+              i5.ReadDatabaseContainer(db)
                   .resultSet<i1.$TrashSyncEntityTable>('trash_sync_entity')
                   .assetId,
-              i4.ReadDatabaseContainer(
+              i5.ReadDatabaseContainer(
                 db,
-              ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity').id,
+              ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity').id,
             ),
           );
 
-  i3.$$LocalAssetEntityTableProcessedTableManager get assetId {
+  i4.$$LocalAssetEntityTableProcessedTableManager get assetId {
     final $_column = $_itemColumn<String>('asset_id')!;
 
-    final manager = i3
+    final manager = i4
         .$$LocalAssetEntityTableTableManager(
           $_db,
-          i4.ReadDatabaseContainer(
+          i5.ReadDatabaseContainer(
             $_db,
-          ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
+          ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
         )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
@@ -87,24 +90,30 @@ class $$TrashSyncEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i3.$$LocalAssetEntityTableFilterComposer get assetId {
-    final i3.$$LocalAssetEntityTableFilterComposer composer = $composerBuilder(
+  i0.ColumnWithTypeConverterFilters<i2.TrashActionType, i2.TrashActionType, int>
+  get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  );
+
+  i4.$$LocalAssetEntityTableFilterComposer get assetId {
+    final i4.$$LocalAssetEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.assetId,
-      referencedTable: i4.ReadDatabaseContainer(
+      referencedTable: i5.ReadDatabaseContainer(
         $db,
-      ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
+      ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => i3.$$LocalAssetEntityTableFilterComposer(
+          }) => i4.$$LocalAssetEntityTableFilterComposer(
             $db: $db,
-            $table: i4.ReadDatabaseContainer(
+            $table: i5.ReadDatabaseContainer(
               $db,
-            ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
+            ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -134,25 +143,30 @@ class $$TrashSyncEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i3.$$LocalAssetEntityTableOrderingComposer get assetId {
-    final i3.$$LocalAssetEntityTableOrderingComposer composer =
+  i0.ColumnOrderings<int> get actionType => $composableBuilder(
+    column: $table.actionType,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
+  i4.$$LocalAssetEntityTableOrderingComposer get assetId {
+    final i4.$$LocalAssetEntityTableOrderingComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.assetId,
-          referencedTable: i4.ReadDatabaseContainer(
+          referencedTable: i5.ReadDatabaseContainer(
             $db,
-          ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
+          ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i3.$$LocalAssetEntityTableOrderingComposer(
+              }) => i4.$$LocalAssetEntityTableOrderingComposer(
                 $db: $db,
-                $table: i4.ReadDatabaseContainer(
+                $table: i5.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
+                ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -180,25 +194,31 @@ class $$TrashSyncEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
-  i3.$$LocalAssetEntityTableAnnotationComposer get assetId {
-    final i3.$$LocalAssetEntityTableAnnotationComposer composer =
+  i0.GeneratedColumnWithTypeConverter<i2.TrashActionType, int> get actionType =>
+      $composableBuilder(
+        column: $table.actionType,
+        builder: (column) => column,
+      );
+
+  i4.$$LocalAssetEntityTableAnnotationComposer get assetId {
+    final i4.$$LocalAssetEntityTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.assetId,
-          referencedTable: i4.ReadDatabaseContainer(
+          referencedTable: i5.ReadDatabaseContainer(
             $db,
-          ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
+          ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i3.$$LocalAssetEntityTableAnnotationComposer(
+              }) => i4.$$LocalAssetEntityTableAnnotationComposer(
                 $db: $db,
-                $table: i4.ReadDatabaseContainer(
+                $table: i5.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity'),
+                ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -242,20 +262,25 @@ class $$TrashSyncEntityTableTableManager
                 i0.Value<String> assetId = const i0.Value.absent(),
                 i0.Value<String> checksum = const i0.Value.absent(),
                 i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
+                i0.Value<i2.TrashActionType> actionType =
+                    const i0.Value.absent(),
               }) => i1.TrashSyncEntityCompanion(
                 assetId: assetId,
                 checksum: checksum,
                 isSyncApproved: isSyncApproved,
+                actionType: actionType,
               ),
           createCompanionCallback:
               ({
                 required String assetId,
                 required String checksum,
                 i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
+                required i2.TrashActionType actionType,
               }) => i1.TrashSyncEntityCompanion.insert(
                 assetId: assetId,
                 checksum: checksum,
                 isSyncApproved: isSyncApproved,
+                actionType: actionType,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -331,7 +356,7 @@ i0.Index get idxTrashSyncChecksum => i0.Index(
   'CREATE INDEX idx_trash_sync_checksum ON trash_sync_entity (checksum)',
 );
 
-class $TrashSyncEntityTable extends i2.TrashSyncEntity
+class $TrashSyncEntityTable extends i3.TrashSyncEntity
     with i0.TableInfo<$TrashSyncEntityTable, i1.TrashSyncEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
@@ -376,7 +401,24 @@ class $TrashSyncEntityTable extends i2.TrashSyncEntity
     ),
   );
   @override
-  List<i0.GeneratedColumn> get $columns => [assetId, checksum, isSyncApproved];
+  late final i0.GeneratedColumnWithTypeConverter<i2.TrashActionType, int>
+  actionType =
+      i0.GeneratedColumn<int>(
+        'action_type',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<i2.TrashActionType>(
+        i1.$TrashSyncEntityTable.$converteractionType,
+      );
+  @override
+  List<i0.GeneratedColumn> get $columns => [
+    assetId,
+    checksum,
+    isSyncApproved,
+    actionType,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -435,6 +477,12 @@ class $TrashSyncEntityTable extends i2.TrashSyncEntity
         i0.DriftSqlType.bool,
         data['${effectivePrefix}is_sync_approved'],
       ),
+      actionType: i1.$TrashSyncEntityTable.$converteractionType.fromSql(
+        attachedDatabase.typeMapping.read(
+          i0.DriftSqlType.int,
+          data['${effectivePrefix}action_type'],
+        )!,
+      ),
     );
   }
 
@@ -443,6 +491,10 @@ class $TrashSyncEntityTable extends i2.TrashSyncEntity
     return $TrashSyncEntityTable(attachedDatabase, alias);
   }
 
+  static i0.JsonTypeConverter2<i2.TrashActionType, int, int>
+  $converteractionType = const i0.EnumIndexConverter<i2.TrashActionType>(
+    i2.TrashActionType.values,
+  );
   @override
   bool get withoutRowId => true;
   @override
@@ -454,10 +506,12 @@ class TrashSyncEntityData extends i0.DataClass
   final String assetId;
   final String checksum;
   final bool? isSyncApproved;
+  final i2.TrashActionType actionType;
   const TrashSyncEntityData({
     required this.assetId,
     required this.checksum,
     this.isSyncApproved,
+    required this.actionType,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -466,6 +520,11 @@ class TrashSyncEntityData extends i0.DataClass
     map['checksum'] = i0.Variable<String>(checksum);
     if (!nullToAbsent || isSyncApproved != null) {
       map['is_sync_approved'] = i0.Variable<bool>(isSyncApproved);
+    }
+    {
+      map['action_type'] = i0.Variable<int>(
+        i1.$TrashSyncEntityTable.$converteractionType.toSql(actionType),
+      );
     }
     return map;
   }
@@ -479,6 +538,9 @@ class TrashSyncEntityData extends i0.DataClass
       assetId: serializer.fromJson<String>(json['assetId']),
       checksum: serializer.fromJson<String>(json['checksum']),
       isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
+      actionType: i1.$TrashSyncEntityTable.$converteractionType.fromJson(
+        serializer.fromJson<int>(json['actionType']),
+      ),
     );
   }
   @override
@@ -488,6 +550,9 @@ class TrashSyncEntityData extends i0.DataClass
       'assetId': serializer.toJson<String>(assetId),
       'checksum': serializer.toJson<String>(checksum),
       'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
+      'actionType': serializer.toJson<int>(
+        i1.$TrashSyncEntityTable.$converteractionType.toJson(actionType),
+      ),
     };
   }
 
@@ -495,12 +560,14 @@ class TrashSyncEntityData extends i0.DataClass
     String? assetId,
     String? checksum,
     i0.Value<bool?> isSyncApproved = const i0.Value.absent(),
+    i2.TrashActionType? actionType,
   }) => i1.TrashSyncEntityData(
     assetId: assetId ?? this.assetId,
     checksum: checksum ?? this.checksum,
     isSyncApproved: isSyncApproved.present
         ? isSyncApproved.value
         : this.isSyncApproved,
+    actionType: actionType ?? this.actionType,
   );
   TrashSyncEntityData copyWithCompanion(i1.TrashSyncEntityCompanion data) {
     return TrashSyncEntityData(
@@ -509,6 +576,9 @@ class TrashSyncEntityData extends i0.DataClass
       isSyncApproved: data.isSyncApproved.present
           ? data.isSyncApproved.value
           : this.isSyncApproved,
+      actionType: data.actionType.present
+          ? data.actionType.value
+          : this.actionType,
     );
   }
 
@@ -517,20 +587,23 @@ class TrashSyncEntityData extends i0.DataClass
     return (StringBuffer('TrashSyncEntityData(')
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved')
+          ..write('isSyncApproved: $isSyncApproved, ')
+          ..write('actionType: $actionType')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(assetId, checksum, isSyncApproved);
+  int get hashCode =>
+      Object.hash(assetId, checksum, isSyncApproved, actionType);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.TrashSyncEntityData &&
           other.assetId == this.assetId &&
           other.checksum == this.checksum &&
-          other.isSyncApproved == this.isSyncApproved);
+          other.isSyncApproved == this.isSyncApproved &&
+          other.actionType == this.actionType);
 }
 
 class TrashSyncEntityCompanion
@@ -538,26 +611,32 @@ class TrashSyncEntityCompanion
   final i0.Value<String> assetId;
   final i0.Value<String> checksum;
   final i0.Value<bool?> isSyncApproved;
+  final i0.Value<i2.TrashActionType> actionType;
   const TrashSyncEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.isSyncApproved = const i0.Value.absent(),
+    this.actionType = const i0.Value.absent(),
   });
   TrashSyncEntityCompanion.insert({
     required String assetId,
     required String checksum,
     this.isSyncApproved = const i0.Value.absent(),
+    required i2.TrashActionType actionType,
   }) : assetId = i0.Value(assetId),
-       checksum = i0.Value(checksum);
+       checksum = i0.Value(checksum),
+       actionType = i0.Value(actionType);
   static i0.Insertable<i1.TrashSyncEntityData> custom({
     i0.Expression<String>? assetId,
     i0.Expression<String>? checksum,
     i0.Expression<bool>? isSyncApproved,
+    i0.Expression<int>? actionType,
   }) {
     return i0.RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (checksum != null) 'checksum': checksum,
       if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
+      if (actionType != null) 'action_type': actionType,
     });
   }
 
@@ -565,11 +644,13 @@ class TrashSyncEntityCompanion
     i0.Value<String>? assetId,
     i0.Value<String>? checksum,
     i0.Value<bool?>? isSyncApproved,
+    i0.Value<i2.TrashActionType>? actionType,
   }) {
     return i1.TrashSyncEntityCompanion(
       assetId: assetId ?? this.assetId,
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
+      actionType: actionType ?? this.actionType,
     );
   }
 
@@ -585,6 +666,11 @@ class TrashSyncEntityCompanion
     if (isSyncApproved.present) {
       map['is_sync_approved'] = i0.Variable<bool>(isSyncApproved.value);
     }
+    if (actionType.present) {
+      map['action_type'] = i0.Variable<int>(
+        i1.$TrashSyncEntityTable.$converteractionType.toSql(actionType.value),
+      );
+    }
     return map;
   }
 
@@ -593,7 +679,8 @@ class TrashSyncEntityCompanion
     return (StringBuffer('TrashSyncEntityCompanion(')
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved')
+          ..write('isSyncApproved: $isSyncApproved, ')
+          ..write('actionType: $actionType')
           ..write(')'))
         .toString();
   }

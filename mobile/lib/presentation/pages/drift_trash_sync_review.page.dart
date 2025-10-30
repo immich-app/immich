@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/cupertino.dart' show CupertinoSegmentedControl;
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_sync_bottom_bar.widget.dart';
@@ -56,7 +57,36 @@ class DriftTrashSyncReviewPage extends ConsumerWidget {
             return SliverPadding(
               padding: const EdgeInsets.all(16.0),
               sliver: SliverToBoxAdapter(
-                child: SizedBox(height: 72.0, child: const Text("asset_out_of_sync_subtitle").tr()),
+                child: Column(
+                  children: [
+                    // Container(
+                    //   width: 500,
+                    //   child: CupertinoSegmentedControl<int>(
+                    //     selectedColor: Colors.grey,
+                    //     unselectedColor: Colors.transparent,
+                    //     borderColor: Colors.white,
+                    //     children: {
+                    //       0: Text('Deleted'),
+                    //       1: Text('Restored'),
+                    //     },
+                    //     onValueChanged: (int val) {
+                    //
+                    //     },
+                    //     groupValue: 0,
+                    //   ),
+                    // ),
+                  const SizedBox(height: 8,),
+                    ListTile(
+                        title: SizedBox(height: 72.0, child: const Text("asset_out_of_sync_subtitle").tr()),
+                      onTap: () async {
+                        final res = await ref.read(trashSyncServiceProvider).watchPendingApprovalChecksums().first;
+                        debugPrint('watchPendingApprovalChecksums: $res');
+                      },
+
+                    ),
+
+                  ],
+                ),
               ),
             );
           },

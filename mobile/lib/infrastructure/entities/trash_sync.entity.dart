@@ -8,20 +8,23 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 class TrashSyncEntity extends Table with DriftDefaultsMixin {
   const TrashSyncEntity();
 
- TextColumn get assetId => text().references(
-    LocalAssetEntity,
-    #id,
-    onDelete: KeyAction.cascade,
-  )();
+  TextColumn get assetId => text().references(LocalAssetEntity, #id, onDelete: KeyAction.cascade)();
 
   TextColumn get checksum => text()();
 
   BoolColumn get isSyncApproved => boolean().nullable()();
+
+  IntColumn get actionType => intEnum<TrashActionType>()();
 
   @override
   Set<Column> get primaryKey => {assetId};
 }
 
 extension LocalAssetEntityDataDomainEx on TrashSyncEntityData {
-  TrashSyncDecision toDto() => TrashSyncDecision(assetId: assetId, checksum: checksum, isSyncApproved: isSyncApproved);
+  TrashSyncDecision toDto() => TrashSyncDecision(
+    assetId: assetId,
+    checksum: checksum,
+    isSyncApproved: isSyncApproved,
+    actionType: actionType,
+  );
 }

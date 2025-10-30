@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
@@ -263,7 +264,7 @@ class SyncStreamService {
               .where((la) => la.checksum.isNotEmpty);
 
           _logger.info("Apply remote trash action to review for: $itemsToReview");
-          await _trashSyncRepository.insertIfNotExists(itemsToReview);
+          await _trashSyncRepository.insertIfNotExists(itemsToReview,TrashActionType.delete);
         } else {
           final mediaUrls = await Future.wait(
             localAssetsToTrash.values
@@ -291,7 +292,9 @@ class SyncStreamService {
       if (reviewMode) {
         final checksums = assetsToRestore.map((e) => e.checksum).nonNulls;
         _logger.info("Clear unapproved trash sync for: $checksums");
+        //clear info about assets that were restored in cloud and still not resolved by user on device
         await _trashSyncRepository.deleteUnapproved(checksums);
+        //todo what to do with assets that were restored in claud?
       } else {
         final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
         await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);

@@ -8,7 +8,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -26,6 +25,9 @@ import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/ssl_client_cert_settings.dart';
 import 'package:logging/logging.dart';
 
+//todo
+// enum TrashSyncMode {none, auto, review}
+
 class AdvancedSettings extends HookConsumerWidget {
   const AdvancedSettings({super.key});
 
@@ -36,7 +38,7 @@ class AdvancedSettings extends HookConsumerWidget {
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
-    final manageMediaAndroidPermission = useState(false);
+    final manageMediaAndroidPermission = useState<bool?>(null);
     final reviewOutOfSyncChangesAndroid = useAppSettingsState(AppSettingsEnum.reviewOutOfSyncChangesAndroid);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
@@ -116,9 +118,15 @@ class AdvancedSettings extends HookConsumerWidget {
             ),
             SettingsActionTile(
               title: "manage_media_access_title".tr(),
-              statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
+              statusText: manageMediaAndroidPermission.value == null
+                  ? null
+                  : manageMediaAndroidPermission.value == true
+                  ? "allowed".tr()
+                  : "not_allowed".tr(),
               subtitle: "manage_media_access_rationale".tr(),
-              statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
+              statusColor:
+                  manageMediaAndroidPermission.value == false &&
+                      (manageLocalMediaAndroid.value || reviewOutOfSyncChangesAndroid.value)
                   ? const Color.fromARGB(255, 243, 188, 106)
                   : null,
               onActionTap: () async {
@@ -128,6 +136,23 @@ class AdvancedSettings extends HookConsumerWidget {
             ),
           ],
         ),
+//todo using RadioButtonGroup is more suitable for this setting
+      // if (isManageMediaSupported.value)
+      //   Column(
+      //     crossAxisAlignment: CrossAxisAlignment.start,
+      //     children: [
+      //       SettingsSubTitle(title: "advanced_settings_sync_remote_deletions_title".tr()),
+      //       SettingsRadioListTile(
+      //         groups: [
+      //           SettingsRadioGroup(title: 'Off', value: TrashSyncMode.none),
+      //           SettingsRadioGroup(title: 'Automaticaly', value: TrashSyncMode.auto),
+      //           SettingsRadioGroup(title: 'advanced_settings_review_remote_deletions_title'.tr(), value: TrashSyncMode.review),
+      //         ],
+      //         groupBy: TrashSyncMode.none,
+      //         onRadioChanged: (_){},
+      //       ),
+      //     ],
+      //   ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,

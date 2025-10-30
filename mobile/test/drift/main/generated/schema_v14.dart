@@ -7700,8 +7700,20 @@ class TrashSyncEntity extends Table
       'CHECK ("is_sync_approved" IN (0, 1))',
     ),
   );
+  late final GeneratedColumn<int> actionType = GeneratedColumn<int>(
+    'action_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
   @override
-  List<GeneratedColumn> get $columns => [assetId, checksum, isSyncApproved];
+  List<GeneratedColumn> get $columns => [
+    assetId,
+    checksum,
+    isSyncApproved,
+    actionType,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -7725,6 +7737,10 @@ class TrashSyncEntity extends Table
         DriftSqlType.bool,
         data['${effectivePrefix}is_sync_approved'],
       ),
+      actionType: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}action_type'],
+      )!,
     );
   }
 
@@ -7744,10 +7760,12 @@ class TrashSyncEntityData extends DataClass
   final String assetId;
   final String checksum;
   final bool? isSyncApproved;
+  final int actionType;
   const TrashSyncEntityData({
     required this.assetId,
     required this.checksum,
     this.isSyncApproved,
+    required this.actionType,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7757,6 +7775,7 @@ class TrashSyncEntityData extends DataClass
     if (!nullToAbsent || isSyncApproved != null) {
       map['is_sync_approved'] = Variable<bool>(isSyncApproved);
     }
+    map['action_type'] = Variable<int>(actionType);
     return map;
   }
 
@@ -7769,6 +7788,7 @@ class TrashSyncEntityData extends DataClass
       assetId: serializer.fromJson<String>(json['assetId']),
       checksum: serializer.fromJson<String>(json['checksum']),
       isSyncApproved: serializer.fromJson<bool?>(json['isSyncApproved']),
+      actionType: serializer.fromJson<int>(json['actionType']),
     );
   }
   @override
@@ -7778,6 +7798,7 @@ class TrashSyncEntityData extends DataClass
       'assetId': serializer.toJson<String>(assetId),
       'checksum': serializer.toJson<String>(checksum),
       'isSyncApproved': serializer.toJson<bool?>(isSyncApproved),
+      'actionType': serializer.toJson<int>(actionType),
     };
   }
 
@@ -7785,12 +7806,14 @@ class TrashSyncEntityData extends DataClass
     String? assetId,
     String? checksum,
     Value<bool?> isSyncApproved = const Value.absent(),
+    int? actionType,
   }) => TrashSyncEntityData(
     assetId: assetId ?? this.assetId,
     checksum: checksum ?? this.checksum,
     isSyncApproved: isSyncApproved.present
         ? isSyncApproved.value
         : this.isSyncApproved,
+    actionType: actionType ?? this.actionType,
   );
   TrashSyncEntityData copyWithCompanion(TrashSyncEntityCompanion data) {
     return TrashSyncEntityData(
@@ -7799,6 +7822,9 @@ class TrashSyncEntityData extends DataClass
       isSyncApproved: data.isSyncApproved.present
           ? data.isSyncApproved.value
           : this.isSyncApproved,
+      actionType: data.actionType.present
+          ? data.actionType.value
+          : this.actionType,
     );
   }
 
@@ -7807,46 +7833,55 @@ class TrashSyncEntityData extends DataClass
     return (StringBuffer('TrashSyncEntityData(')
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved')
+          ..write('isSyncApproved: $isSyncApproved, ')
+          ..write('actionType: $actionType')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(assetId, checksum, isSyncApproved);
+  int get hashCode =>
+      Object.hash(assetId, checksum, isSyncApproved, actionType);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TrashSyncEntityData &&
           other.assetId == this.assetId &&
           other.checksum == this.checksum &&
-          other.isSyncApproved == this.isSyncApproved);
+          other.isSyncApproved == this.isSyncApproved &&
+          other.actionType == this.actionType);
 }
 
 class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
   final Value<String> assetId;
   final Value<String> checksum;
   final Value<bool?> isSyncApproved;
+  final Value<int> actionType;
   const TrashSyncEntityCompanion({
     this.assetId = const Value.absent(),
     this.checksum = const Value.absent(),
     this.isSyncApproved = const Value.absent(),
+    this.actionType = const Value.absent(),
   });
   TrashSyncEntityCompanion.insert({
     required String assetId,
     required String checksum,
     this.isSyncApproved = const Value.absent(),
+    required int actionType,
   }) : assetId = Value(assetId),
-       checksum = Value(checksum);
+       checksum = Value(checksum),
+       actionType = Value(actionType);
   static Insertable<TrashSyncEntityData> custom({
     Expression<String>? assetId,
     Expression<String>? checksum,
     Expression<bool>? isSyncApproved,
+    Expression<int>? actionType,
   }) {
     return RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (checksum != null) 'checksum': checksum,
       if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
+      if (actionType != null) 'action_type': actionType,
     });
   }
 
@@ -7854,11 +7889,13 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
     Value<String>? assetId,
     Value<String>? checksum,
     Value<bool?>? isSyncApproved,
+    Value<int>? actionType,
   }) {
     return TrashSyncEntityCompanion(
       assetId: assetId ?? this.assetId,
       checksum: checksum ?? this.checksum,
       isSyncApproved: isSyncApproved ?? this.isSyncApproved,
+      actionType: actionType ?? this.actionType,
     );
   }
 
@@ -7874,6 +7911,9 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
     if (isSyncApproved.present) {
       map['is_sync_approved'] = Variable<bool>(isSyncApproved.value);
     }
+    if (actionType.present) {
+      map['action_type'] = Variable<int>(actionType.value);
+    }
     return map;
   }
 
@@ -7882,7 +7922,8 @@ class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
     return (StringBuffer('TrashSyncEntityCompanion(')
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved')
+          ..write('isSyncApproved: $isSyncApproved, ')
+          ..write('actionType: $actionType')
           ..write(')'))
         .toString();
   }

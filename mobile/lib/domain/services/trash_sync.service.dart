@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -104,7 +105,7 @@ class TrashSyncService {
         .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
         .where((la) => la.checksum.isNotEmpty);
     _logger.info("Apply remote trash action to review for: $itemsToReview");
-    return _trashSyncRepository.insertIfNotExists(itemsToReview);
+    return _trashSyncRepository.insertIfNotExists(itemsToReview, TrashActionType.delete);
   }
 
   Future<void> _applyRemoteRestore(Iterable<String> modifiedAssetsChecksums) async {
