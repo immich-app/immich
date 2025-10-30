@@ -26,10 +26,13 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
+from immich_ml.models.ocr.detection import TextDetector
+from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
+from rapidocr.inference_engine.onnxruntime.main import ONNXRuntimeError
 
 
 class TestBase:
@@ -338,6 +341,78 @@ class TestOrtSession:
         )
 
         assert sess_options is session.sess_options
+
+
+class TestOcrFallback:
+    def test_detection_fallback_retries_with_next_provider(self, mocker: MockerFixture) -> None:
+        mocker.patch("immich_ml.models.ocr.detection.decode_cv2", side_effect=lambda data: data)
+
+        fallback_output = SimpleNamespace(
+            boxes=np.array([[[0, 0], [1, 0], [1, 1], [0, 1]]], dtype=np.float32),
+            scores=np.array([0.6], dtype=np.float32),
+            img=np.zeros((2, 2, 3), dtype=np.float32),
+        )
+        failing_model = mocker.Mock(side_effect=ONNXRuntimeError("CoreML failure"))
+        fallback_model = mocker.Mock(return_value=fallback_output)
+        mocker.patch.object(TextDetector, "_build_detector", side_effect=[failing_model, fallback_model])
+
+        ort_instances: list[Any] = []
+
+        class FakeOrtSession:
+            def __init__(self, *_: Any, providers: list[str] | None = None, **__: Any) -> None:
+                self.providers = providers or ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                ort_instances.append(self)
+
+        mocker.patch("immich_ml.models.ocr.detection.OrtSession", FakeOrtSession)
+
+        detector = TextDetector("PP-OCRv5_mobile")
+        detector.load()
+
+        output = detector.predict(b"raw-bytes")
+
+        assert np.array_equal(output["boxes"], fallback_output.boxes)
+        assert np.array_equal(output["scores"], fallback_output.scores)
+        assert np.array_equal(output["image"], fallback_output.img)
+
+        assert ort_instances[1].providers == ["CPUExecutionProvider"]
+        fallback_model.assert_called_once()
+
+    def test_recognition_fallback_retries_with_next_provider(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(TextRecognizer, "get_crop_img_list", return_value=[np.zeros((1, 1, 3), dtype=np.float32)])
+
+        failing_model = mocker.Mock(side_effect=ONNXRuntimeError("CoreML failure"))
+        fallback_result = SimpleNamespace(txts=["hello"], scores=[0.95])
+        fallback_model = mocker.Mock(return_value=fallback_result)
+        mocker.patch.object(TextRecognizer, "_build_recognizer", side_effect=[failing_model, fallback_model])
+
+        ort_instances: list[Any] = []
+
+        class FakeOrtSession:
+            def __init__(self, *_: Any, providers: list[str] | None = None, **__: Any) -> None:
+                self.providers = providers or ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                ort_instances.append(self)
+
+        mocker.patch("immich_ml.models.ocr.recognition.OrtSession", FakeOrtSession)
+
+        recognizer = TextRecognizer("PP-OCRv5_mobile")
+        recognizer.load()
+
+        ocr_input = {
+            "boxes": np.array([[[0, 0], [2, 0], [2, 1], [0, 1]]], dtype=np.float32),
+            "image": np.zeros((2, 2, 3), dtype=np.float32),
+            "scores": np.array([0.9], dtype=np.float32),
+        }
+
+        output = recognizer.predict(None, ocr_input)
+
+        assert output["text"] == ["hello"]
+        assert np.allclose(output["textScore"], np.array([0.95], dtype=np.float32))
+        assert ort_instances[1].providers == ["CPUExecutionProvider"]
+        fallback_model.assert_called_once()
 
 
 class TestAnnSession:
