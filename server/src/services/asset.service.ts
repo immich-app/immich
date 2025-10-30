@@ -217,7 +217,7 @@ export class AssetService extends BaseService {
     }
 
     if (stack) {
-      await this.copyStack(sourceAsset, targetAsset);
+      await this.copyStack({ sourceAsset, targetAsset });
     }
 
     if (favorite) {
@@ -225,14 +225,17 @@ export class AssetService extends BaseService {
     }
 
     if (sidecar) {
-      await this.copySidecar(sourceAsset, targetAsset);
+      await this.copySidecar({ sourceAsset, targetAsset });
     }
   }
 
-  private async copyStack(
-    sourceAsset: { id: string; stackId: string | null },
-    targetAsset: { id: string; stackId: string | null },
-  ) {
+  private async copyStack({
+    sourceAsset,
+    targetAsset,
+  }: {
+    sourceAsset: { id: string; stackId: string | null };
+    targetAsset: { id: string; stackId: string | null };
+  }) {
     if (!sourceAsset.stackId) {
       return;
     }
@@ -245,21 +248,24 @@ export class AssetService extends BaseService {
     }
   }
 
-  private async copySidecar(
-    targetAsset: { sidecarPath: string | null },
-    sourceAsset: { id: string; sidecarPath: string | null; originalPath: string },
-  ) {
-    if (!targetAsset.sidecarPath) {
+  private async copySidecar({
+    sourceAsset,
+    targetAsset,
+  }: {
+    sourceAsset: { sidecarPath: string | null };
+    targetAsset: { id: string; sidecarPath: string | null; originalPath: string };
+  }) {
+    if (!sourceAsset.sidecarPath) {
       return;
     }
 
-    if (sourceAsset.sidecarPath) {
-      await this.storageRepository.unlink(sourceAsset.sidecarPath);
+    if (targetAsset.sidecarPath) {
+      await this.storageRepository.unlink(targetAsset.sidecarPath);
     }
 
-    await this.storageRepository.copyFile(targetAsset.sidecarPath, `${sourceAsset.originalPath}.xmp`);
-    await this.assetRepository.update({ id: sourceAsset.id, sidecarPath: `${sourceAsset.originalPath}.xmp` });
-    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: sourceAsset.id } });
+    await this.storageRepository.copyFile(sourceAsset.sidecarPath, `${targetAsset.originalPath}.xmp`);
+    await this.assetRepository.update({ id: targetAsset.id, sidecarPath: `${targetAsset.originalPath}.xmp` });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: targetAsset.id } });
   }
 
   @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })
