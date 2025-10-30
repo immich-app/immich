@@ -48,6 +48,7 @@ enum ActionButtonType {
   advancedInfo,
   share,
   shareLink,
+  similarPhotos,
   archive,
   unarchive,
   download,
@@ -60,8 +61,7 @@ enum ActionButtonType {
   upload,
   removeFromAlbum,
   unstack,
-  likeActivity,
-  similarPhotos;
+  likeActivity;
 
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
