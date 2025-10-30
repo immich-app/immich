@@ -7,6 +7,7 @@ from PIL.Image import Image
 from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.ch_ppocr_rec import TextRecognizer as RapidTextRecognizer
 from rapidocr.inference_engine.base import FileInfo, InferSession
+from rapidocr.inference_engine.onnxruntime.main import ONNXRuntimeError
 from rapidocr.utils import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangRec, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
@@ -56,20 +57,24 @@ class TextRecognizer(InferenceModel):
     def _load(self) -> ModelSession:
         # TODO: support other runtimes
         session = OrtSession(self.model_path)
-        self.model = RapidTextRecognizer(
-            OcrOptions(
-                session=session.session,
-                rec_batch_num=settings.max_batch_size.text_recognition if settings.max_batch_size is not None else 6,
-                rec_img_shape=(3, 48, 320),
-            )
-        )
+        self.model = self._build_recognizer(session)
         return session
 
     def _predict(self, _: Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
         boxes, img, box_scores = texts["boxes"], texts["image"], texts["scores"]
         if boxes.shape[0] == 0:
             return self._empty
-        rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
+        try:
+            rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
+        except ONNXRuntimeError as error:
+            if self._fallback_to_next_provider(error):
+                try:
+                    rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
+                except ONNXRuntimeError as cpu_error:
+                    log.error("Fallback inference failed for OCR recognition: %s", cpu_error)
+                    raise
+            else:
+                raise
         if rec.txts is None:
             return self._empty
 
@@ -114,6 +119,41 @@ class TextRecognizer(InferenceModel):
                 dst_img = np.rot90(dst_img)
             imgs.append(dst_img)
         return imgs
+
+    def _build_recognizer(self, session: OrtSession) -> RapidTextRecognizer:
+        batch_size = settings.max_batch_size.text_recognition if settings.max_batch_size is not None else 6
+        return RapidTextRecognizer(
+            OcrOptions(
+                session=session.session,
+                rec_batch_num=batch_size,
+                rec_img_shape=(3, 48, 320),
+            )
+        )
+
+    def _fallback_to_next_provider(self, error: Exception) -> bool:
+        if not isinstance(self.session, OrtSession):
+            return False
+        providers = list(getattr(self.session, "providers", []))
+        if len(providers) <= 1:
+            return False
+
+        failed_provider = providers[0]
+        next_providers = providers[1:]
+        log.warning(
+            "Provider '%s' failed for OCR recognition (%s). Retrying with providers: %s",
+            failed_provider,
+            error,
+            next_providers,
+        )
+        cpu_session = OrtSession(self.model_path, providers=next_providers)
+        try:
+            provider_list = cpu_session.session.get_providers()
+        except Exception:  # pragma: no cover - defensive
+            provider_list = ["<unavailable>"]
+        log.info("OCR recognition fallback providers now: %s", provider_list)
+        self.session = cpu_session
+        self.model = self._build_recognizer(cpu_session)
+        return True
 
     def configure(self, **kwargs: Any) -> None:
         self.min_score = kwargs.get("minScore", self.min_score)

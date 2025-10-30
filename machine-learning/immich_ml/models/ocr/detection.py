@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image
 from rapidocr.ch_ppocr_det import TextDetector as RapidTextDetector
 from rapidocr.inference_engine.base import FileInfo, InferSession
+from rapidocr.inference_engine.onnxruntime.main import ONNXRuntimeError
 from rapidocr.utils import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangDet, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
@@ -53,7 +54,31 @@ class TextDetector(InferenceModel):
     def _load(self) -> ModelSession:
         # TODO: support other runtime sessions
         session = OrtSession(self.model_path)
-        self.model = RapidTextDetector(
+        self.model = self._build_detector(session)
+        return session
+
+    def _predict(self, inputs: bytes | Image.Image) -> TextDetectionOutput:
+        try:
+            results = self.model(decode_cv2(inputs))
+        except ONNXRuntimeError as error:
+            if self._fallback_to_next_provider(error):
+                try:
+                    results = self.model(decode_cv2(inputs))
+                except ONNXRuntimeError as cpu_error:
+                    log.error("Fallback inference failed for OCR detection: %s", cpu_error)
+                    raise
+            else:
+                raise
+        if results.boxes is None or results.scores is None or results.img is None:
+            return self._empty
+        return {
+            "image": results.img,
+            "boxes": np.array(results.boxes, dtype=np.float32),
+            "scores": np.array(results.scores, dtype=np.float32),
+        }
+
+    def _build_detector(self, session: OrtSession) -> RapidTextDetector:
+        return RapidTextDetector(
             OcrOptions(
                 session=session.session,
                 limit_side_len=self.max_resolution,
@@ -62,17 +87,31 @@ class TextDetector(InferenceModel):
                 score_mode=self.score_mode,
             )
         )
-        return session
 
-    def _predict(self, inputs: bytes | Image.Image) -> TextDetectionOutput:
-        results = self.model(decode_cv2(inputs))
-        if results.boxes is None or results.scores is None or results.img is None:
-            return self._empty
-        return {
-            "image": results.img,
-            "boxes": np.array(results.boxes, dtype=np.float32),
-            "scores": np.array(results.scores, dtype=np.float32),
-        }
+    def _fallback_to_next_provider(self, error: Exception) -> bool:
+        if not isinstance(self.session, OrtSession):
+            return False
+        providers = list(getattr(self.session, "providers", []))
+        if len(providers) <= 1:
+            return False
+
+        failed_provider = providers[0]
+        next_providers = providers[1:]
+        log.warning(
+            "Provider '%s' failed for OCR detection (%s). Retrying with providers: %s",
+            failed_provider,
+            error,
+            next_providers,
+        )
+        cpu_session = OrtSession(self.model_path, providers=next_providers)
+        try:
+            provider_list = cpu_session.session.get_providers()
+        except Exception:  # pragma: no cover - defensive
+            provider_list = ["<unavailable>"]
+        log.info("OCR detection fallback providers now: %s", provider_list)
+        self.session = cpu_session
+        self.model = self._build_detector(cpu_session)
+        return True
 
     def configure(self, **kwargs: Any) -> None:
         if (max_resolution := kwargs.get("maxResolution")) is not None:
