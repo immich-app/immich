@@ -126,6 +126,22 @@ stop_micro() {
   log "Stopping microservices process $pid"
   kill "$pid" 2>/dev/null || true
   local waited=0
+
+  # kill perl processes too that run exif_tool
+  for PID_DIR in /proc/[0-9]*; do
+    # Check if the process directory exists and contains a cmdline file
+    if [ -f "$PID_DIR/cmdline" ]; then
+
+        # Check if "perl" is found in the command line (case-insensitive grep)
+        # The -q option keeps grep quiet, only using its exit code.
+        if grep -q -i 'perl' "$PID_DIR/cmdline"; then
+            PERL_PID=$(basename "$PID_DIR")
+            log "Killing perl process with PID: $PERL_PID"
+            kill "$PERL_PID" 2>/dev/null || true
+        fi
+    fi
+  done
+
   while micro_running && [[ $waited -lt $GRACEFUL_TIMEOUT ]]; do
     sleep 1
     waited=$((waited+1))
