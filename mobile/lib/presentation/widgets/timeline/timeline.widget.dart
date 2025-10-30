@@ -40,6 +40,7 @@ class Timeline extends StatelessWidget {
     this.groupBy,
     this.withScrubber = true,
     this.snapToMonth = true,
+    this.initialScrollOffset,
   });
 
   final Widget? topSliverWidget;
@@ -51,6 +52,7 @@ class Timeline extends StatelessWidget {
   final GroupAssetsBy? groupBy;
   final bool withScrubber;
   final bool snapToMonth;
+  final double? initialScrollOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +80,7 @@ class Timeline extends StatelessWidget {
             bottomSheet: bottomSheet,
             withScrubber: withScrubber,
             snapToMonth: snapToMonth,
+            initialScrollOffset: initialScrollOffset,
           ),
         ),
       ),
@@ -93,6 +96,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.bottomSheet,
     this.withScrubber = true,
     this.snapToMonth = true,
+    this.initialScrollOffset,
   });
 
   final Widget? topSliverWidget;
@@ -101,6 +105,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final Widget? bottomSheet;
   final bool withScrubber;
   final bool snapToMonth;
+  final double? initialScrollOffset;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -124,7 +129,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController(onAttach: _restoreScalePosition);
+    _scrollController = ScrollController(
+      initialScrollOffset: widget.initialScrollOffset ?? 0.0,
+      onAttach: _restoreScalePosition,
+    );
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
     final currentTilesPerRow = ref.read(settingsProvider).get(Setting.tilesPerRow);

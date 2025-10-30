@@ -26,6 +26,7 @@ export const featureFlags = writable<FeatureFlags>({
   configFile: false,
   trash: true,
   email: false,
+  ocr: true,
 });
 
 export type ServerConfig = ServerConfigDto & { loaded: boolean };

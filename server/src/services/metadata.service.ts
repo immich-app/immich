@@ -30,6 +30,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
@@ -454,14 +455,17 @@ export class MetadataService extends BaseService {
      * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
      * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
      */
-    let [width, height] = exifTags.ImageSize?.split('x').map((dim) => Number.parseInt(dim) || undefined) || [];
+    let [width, height] =
+      exifTags.ImageSize?.toString()
+        ?.split('x')
+        ?.map((dim) => Number.parseInt(dim) || undefined) ?? [];
     if (!width || !height) {
       [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
     }
     return { width, height };
   }
 
-  private getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
     if (asset.type === AssetType.Image) {
       const hasSidecar = asset.files?.some(({ type }) => type === AssetFileType.Sidecar);
 
@@ -470,21 +474,15 @@ export class MetadataService extends BaseService {
       }
     }
 
-    return this.mergeExifTags(asset);
-  }
-
-  private async mergeExifTags(asset: {
-    originalPath: string;
-    files: AssetFile[];
-    type: AssetType;
-  }): Promise<ImmichTags> {
     if (asset.files && asset.files.length > 1) {
       throw new Error(`Asset ${asset.originalPath} has multiple sidecar files`);
     }
 
+    const sidecarFile = getAssetFiles(asset.files).sidecarFile;
+
     const [mediaTags, sidecarTags, videoTags] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
-      asset.files && asset.files.length > 0 ? this.metadataRepository.readTags(asset.files[0].path) : null,
+      sidecarFile ? this.metadataRepository.readTags(sidecarFile.path) : null,
       asset.type === AssetType.Video ? this.getVideoTags(asset.originalPath) : null,
     ]);
 

@@ -18,7 +18,7 @@
     <p>{$t('official_immich_resources')}</p>
     <div class="flex flex-col sm:grid sm:grid-cols-2 gap-2 mt-5">
       <div>
-        <a href="https://{info.version}.archive.docs.immich.app/overview/introduction" target="_blank" rel="noreferrer">
+        <a href="https://docs.{info.version}.archive.immich.app/overview/introduction" target="_blank" rel="noreferrer">
           <Icon icon={mdiInformationOutline} size="1.5em" class="inline-block" />
           <p class="font-medium text-primary text-sm underline inline-block" id="documentation-label">
             {$t('documentation')}

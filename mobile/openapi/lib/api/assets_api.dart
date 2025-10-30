@@ -128,6 +128,50 @@ class AssetsApi {
     return null;
   }
 
+  /// This endpoint requires the `asset.copy` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetCopyDto] assetCopyDto (required):
+  Future<Response> copyAssetWithHttpInfo(AssetCopyDto assetCopyDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/copy';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetCopyDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.copy` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [AssetCopyDto] assetCopyDto (required):
+  Future<void> copyAsset(AssetCopyDto assetCopyDto,) async {
+    final response = await copyAssetWithHttpInfo(assetCopyDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// This endpoint requires the `asset.update` permission.
   ///
   /// Note: This method returns the HTTP [Response].
@@ -528,6 +572,62 @@ class AssetsApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetMetadataResponseDto',) as AssetMetadataResponseDto;
     
+    }
+    return null;
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getAssetOcrWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/assets/{id}/ocr'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// This endpoint requires the `asset.read` permission.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<List<AssetOcrResponseDto>?> getAssetOcr(String id,) async {
+    final response = await getAssetOcrWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetOcrResponseDto>') as List)
+        .cast<AssetOcrResponseDto>()
+        .toList(growable: false);
+
     }
     return null;
   }

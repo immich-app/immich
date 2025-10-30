@@ -18,6 +18,7 @@ class SystemConfigMachineLearningDto {
     required this.duplicateDetection,
     required this.enabled,
     required this.facialRecognition,
+    required this.ocr,
     this.urls = const [],
   });
 
@@ -31,6 +32,8 @@ class SystemConfigMachineLearningDto {
 
   FacialRecognitionConfig facialRecognition;
 
+  OcrConfig ocr;
+
   List<String> urls;
 
   @override
@@ -40,6 +43,7 @@ class SystemConfigMachineLearningDto {
     other.duplicateDetection == duplicateDetection &&
     other.enabled == enabled &&
     other.facialRecognition == facialRecognition &&
+    other.ocr == ocr &&
     _deepEquality.equals(other.urls, urls);
 
   @override
@@ -50,10 +54,11 @@ class SystemConfigMachineLearningDto {
     (duplicateDetection.hashCode) +
     (enabled.hashCode) +
     (facialRecognition.hashCode) +
+    (ocr.hashCode) +
     (urls.hashCode);
 
   @override
-  String toString() => 'SystemConfigMachineLearningDto[availabilityChecks=$availabilityChecks, clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, urls=$urls]';
+  String toString() => 'SystemConfigMachineLearningDto[availabilityChecks=$availabilityChecks, clip=$clip, duplicateDetection=$duplicateDetection, enabled=$enabled, facialRecognition=$facialRecognition, ocr=$ocr, urls=$urls]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -62,6 +67,7 @@ class SystemConfigMachineLearningDto {
       json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'enabled'] = this.enabled;
       json[r'facialRecognition'] = this.facialRecognition;
+      json[r'ocr'] = this.ocr;
       json[r'urls'] = this.urls;
     return json;
   }
@@ -80,6 +86,7 @@ class SystemConfigMachineLearningDto {
         duplicateDetection: DuplicateDetectionConfig.fromJson(json[r'duplicateDetection'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         facialRecognition: FacialRecognitionConfig.fromJson(json[r'facialRecognition'])!,
+        ocr: OcrConfig.fromJson(json[r'ocr'])!,
         urls: json[r'urls'] is Iterable
             ? (json[r'urls'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -135,6 +142,7 @@ class SystemConfigMachineLearningDto {
     'duplicateDetection',
     'enabled',
     'facialRecognition',
+    'ocr',
     'urls',
   };
 }

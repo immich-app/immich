@@ -221,6 +221,15 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
         .get();
   }
 
+  Future<AlbumUserRole?> getUserRole(String albumId, String userId) async {
+    final query = _db.remoteAlbumUserEntity.select()
+      ..where((row) => row.albumId.equals(albumId) & row.userId.equals(userId))
+      ..limit(1);
+
+    final result = await query.getSingleOrNull();
+    return result?.role;
+  }
+
   Future<List<RemoteAsset>> getAssets(String albumId) {
     final query = _db.remoteAlbumAssetEntity.select().join([
       innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
@@ -372,6 +381,61 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       );
 
     return query.map((row) => row.read(_db.remoteAssetEntity.id)!).get();
+  }
+
+  Future<List<RemoteAlbum>> getAlbumsContainingAsset(String assetId) async {
+    // Note: this needs to be 2 queries as the where clause filtering causes the assetCount to always be 1
+    final albumIdsQuery = _db.remoteAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.remoteAlbumAssetEntity.albumId])
+      ..where(_db.remoteAlbumAssetEntity.assetId.equals(assetId));
+
+    final albumIds = await albumIdsQuery.map((row) => row.read(_db.remoteAlbumAssetEntity.albumId)!).get();
+
+    if (albumIds.isEmpty) {
+      return [];
+    }
+
+    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
+    final query =
+        _db.remoteAlbumEntity.select().join([
+            leftOuterJoin(
+              _db.remoteAlbumAssetEntity,
+              _db.remoteAlbumAssetEntity.albumId.equalsExp(_db.remoteAlbumEntity.id),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.userEntity,
+              _db.userEntity.id.equalsExp(_db.remoteAlbumEntity.ownerId),
+              useColumns: false,
+            ),
+            leftOuterJoin(
+              _db.remoteAlbumUserEntity,
+              _db.remoteAlbumUserEntity.albumId.equalsExp(_db.remoteAlbumEntity.id),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.remoteAlbumEntity.id.isIn(albumIds) & _db.remoteAssetEntity.deletedAt.isNull())
+          ..addColumns([assetCount])
+          ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
+          ..addColumns([_db.userEntity.name])
+          ..groupBy([_db.remoteAlbumEntity.id]);
+
+    return query
+        .map(
+          (row) => row
+              .readTable(_db.remoteAlbumEntity)
+              .toDto(
+                ownerName: row.read(_db.userEntity.name) ?? '',
+                isShared: row.read(_db.remoteAlbumUserEntity.userId.count(distinct: true))! > 0,
+                assetCount: row.read(assetCount) ?? 0,
+              ),
+        )
+        .get();
   }
 }
 

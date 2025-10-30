@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,17 +12,22 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -51,7 +60,7 @@ class AssetDetailBottomSheet extends ConsumerWidget {
       isArchived: isArchived,
       isTrashEnabled: isTrashEnable,
       isInLockedView: isInLockedView,
-      isStacked: asset.hasRemote && (asset as RemoteAsset).stackId != null,
+      isStacked: asset is RemoteAsset && asset.stackId != null,
       currentAlbum: currentAlbum,
       advancedTroubleshooting: advancedTroubleshooting,
       source: ActionSource.viewer,
@@ -131,6 +140,60 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
   }
 
+  Widget _buildAppearsInList(WidgetRef ref, BuildContext context) {
+    final isRemote = ref.watch(currentAssetNotifier)?.hasRemote ?? false;
+    if (!isRemote) {
+      return const SizedBox.shrink();
+    }
+
+    final remoteAsset = ref.watch(currentAssetNotifier) as RemoteAsset;
+    final userId = ref.watch(currentUserProvider)?.id;
+    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAsset.id));
+
+    return assetAlbums.when(
+      data: (albums) {
+        if (albums.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        albums.sortBy((a) => a.name);
+
+        return Column(
+          spacing: 12,
+          children: [
+            if (albums.isNotEmpty)
+              _SheetTile(
+                title: 'appears_in'.t(context: context).toUpperCase(),
+                titleStyle: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Column(
+                spacing: 12,
+                children: albums.map((album) {
+                  final isOwner = album.ownerId == userId;
+                  return AlbumTile(
+                    album: album,
+                    isOwner: isOwner,
+                    onAlbumSelected: (album) async {
+                      ref.invalidate(assetViewerProvider);
+                      unawaited(context.router.popAndPush(RemoteAlbumRoute(album: album)));
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = ref.watch(currentAssetNotifier);
@@ -140,29 +203,34 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
 
     final exifInfo = ref.watch(currentAssetExifProvider).valueOrNull;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
+    final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
 
-    return SliverList.list(
-      children: [
-        // Asset Date and Time
-        _SheetTile(
-          title: _getDateTime(context, asset),
-          titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-          trailing: asset.hasRemote ? const Icon(Icons.edit, size: 18) : null,
-          onTap: asset.hasRemote ? () async => await _editDateTime(context, ref) : null,
-        ),
-        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo),
-        const SheetPeopleDetails(),
-        const SheetLocationDetails(),
-        // Details header
-        _SheetTile(
-          title: 'exif_bottom_sheet_details'.t(context: context),
-          titleStyle: context.textTheme.labelMedium?.copyWith(
-            color: context.textTheme.labelMedium?.color?.withAlpha(200),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        // File info
-        _SheetTile(
+    // Build file info tile based on asset type
+    Widget buildFileInfoTile() {
+      if (asset is LocalAsset) {
+        final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
+        return FutureBuilder<String?>(
+          future: assetMediaRepository.getOriginalFilename(asset.id),
+          builder: (context, snapshot) {
+            final displayName = snapshot.data ?? asset.name;
+            return _SheetTile(
+              title: displayName,
+              titleStyle: context.textTheme.labelLarge,
+              leading: Icon(
+                asset.isImage ? Icons.image_outlined : Icons.videocam_outlined,
+                size: 24,
+                color: context.textTheme.labelLarge?.color,
+              ),
+              subtitle: _getFileInfo(asset, exifInfo),
+              subtitleStyle: context.textTheme.bodyMedium?.copyWith(
+                color: context.textTheme.bodyMedium?.color?.withAlpha(155),
+              ),
+            );
+          },
+        );
+      } else {
+        // For remote assets, use the name directly
+        return _SheetTile(
           title: asset.name,
           titleStyle: context.textTheme.labelLarge,
           leading: Icon(
@@ -174,7 +242,32 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
           subtitleStyle: context.textTheme.bodyMedium?.copyWith(
             color: context.textTheme.bodyMedium?.color?.withAlpha(155),
           ),
+        );
+      }
+    }
+
+    return SliverList.list(
+      children: [
+        // Asset Date and Time
+        _SheetTile(
+          title: _getDateTime(context, asset),
+          titleStyle: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
+          onTap: asset.hasRemote && isOwner ? () async => await _editDateTime(context, ref) : null,
         ),
+        if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
+        const SheetPeopleDetails(),
+        const SheetLocationDetails(),
+        // Details header
+        _SheetTile(
+          title: 'exif_bottom_sheet_details'.t(context: context),
+          titleStyle: context.textTheme.labelMedium?.copyWith(
+            color: context.textTheme.labelMedium?.color?.withAlpha(200),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        // File info
+        buildFileInfoTile(),
         // Camera info
         if (cameraTitle != null)
           _SheetTile(
@@ -186,7 +279,10 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
-        const SizedBox(height: 64),
+        // Appears in (Albums)
+        _buildAppearsInList(ref, context),
+        // padding at the bottom to avoid cut-off
+        const SizedBox(height: 100),
       ],
     );
   }
@@ -265,8 +361,9 @@ class _SheetTile extends ConsumerWidget {
 
 class _SheetAssetDescription extends ConsumerStatefulWidget {
   final ExifInfo exif;
+  final bool isEditable;
 
-  const _SheetAssetDescription({required this.exif});
+  const _SheetAssetDescription({required this.exif, this.isEditable = true});
 
   @override
   ConsumerState<_SheetAssetDescription> createState() => _SheetAssetDescriptionState();
@@ -312,27 +409,33 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
 
     // Update controller text when EXIF data changes
     final currentDescription = currentExifInfo?.description ?? '';
+    final hintText = (widget.isEditable ? 'exif_bottom_sheet_description' : 'exif_bottom_sheet_no_description').t(
+      context: context,
+    );
     if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
       _controller.text = currentDescription;
     }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
-      child: TextField(
-        controller: _controller,
-        keyboardType: TextInputType.multiline,
-        focusNode: _descriptionFocus,
-        maxLines: null, // makes it grow as text is added
-        decoration: InputDecoration(
-          hintText: 'exif_bottom_sheet_description'.t(context: context),
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          disabledBorder: InputBorder.none,
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
+      child: IgnorePointer(
+        ignoring: !widget.isEditable,
+        child: TextField(
+          controller: _controller,
+          keyboardType: TextInputType.multiline,
+          focusNode: _descriptionFocus,
+          maxLines: null, // makes it grow as text is added
+          decoration: InputDecoration(
+            hintText: hintText,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            errorBorder: InputBorder.none,
+            focusedErrorBorder: InputBorder.none,
+          ),
+          onTapOutside: (_) => saveDescription(currentExifInfo?.description),
         ),
-        onTapOutside: (_) => saveDescription(currentExifInfo?.description),
       ),
     );
   }

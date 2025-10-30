@@ -16,13 +16,72 @@
 default_platform(:ios)
 
 platform :ios do
+  desc "iOS Release to TestFlight"
+  lane :release_ci do
+    # Setup CI environment
+    setup_ci
+    
+    # Load App Store Connect API Key
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_filepath: "api_key.json"
+    )
+    
+    # Import certificate and provisioning profile
+    import_certificate(
+      certificate_path: "certificate.p12",
+      certificate_password: ENV["IOS_CERTIFICATE_PASSWORD"],
+      keychain_name: ENV["KEYCHAIN_NAME"],
+      keychain_password: ENV["KEYCHAIN_PASSWORD"]
+    )
+    
+    # Install provisioning profile
+    install_provisioning_profile(path: "profile.mobileprovision")
+    
+    # Configure code signing
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "./Runner.xcodeproj",
+      team_id: ENV["FASTLANE_TEAM_ID"],
+      profile_name: "app.alextran.immich AppStore"
+    )
+    
+    # Increment build number
+    increment_build_number(
+      build_number: latest_testflight_build_number(
+        api_key: api_key,
+        app_identifier: "app.alextran.immich"
+      ) + 1,
+      xcodeproj: "./Runner.xcodeproj"
+    )
+    
+    # Build the app
+    build_app(
+      scheme: "Runner",
+      workspace: "Runner.xcworkspace",
+      export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          "app.alextran.immich" => "app.alextran.immich AppStore"
+        }
+      }
+    )
+    
+    # Upload to TestFlight
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+
   desc "iOS Release"
   lane :release do
     enable_automatic_code_signing(
       path: "./Runner.xcodeproj",
     )
     increment_version_number(
-      version_number: "2.0.1"
+      version_number: "2.2.0"
     )
     increment_build_number(
       build_number: latest_testflight_build_number + 1,

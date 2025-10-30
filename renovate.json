@@ -21,6 +21,11 @@
       "addLabels": [
         "📱mobile"
       ]
+    },
+    {
+      "matchPackageNames": ["ghcr.io/immich-app/postgres"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ],
   "ignorePaths": [

@@ -17,7 +17,6 @@
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
-  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
@@ -35,9 +34,8 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const timelineManager = new TimelineManager();
-  $effect(() => void timelineManager.updateOptions({ albumId: album.id, order: album.order }));
-  onDestroy(() => timelineManager.destroy());
+  const options = $derived({ albumId: album.id, order: album.order });
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
 
   const assetInteraction = new AssetInteraction();
 
@@ -61,7 +59,7 @@
 />
 
 <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
-  <Timeline enableRouting={true} {album} {timelineManager} {assetInteraction}>
+  <Timeline enableRouting={true} {album} bind:timelineManager {options} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
       <h1 class="text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all">

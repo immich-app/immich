@@ -28,7 +28,8 @@
   <a href="readme_i18n/README_de_DE.md">Deutsch</a>
   <a href="readme_i18n/README_nl_NL.md">Nederlands</a>
   <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
-  <a href="readme_i18n/README_zh_CN.md">中文</a>
+  <a href="readme_i18n/README_zh_CN.md">简体中文</a>
+  <a href="readme_i18n/README_zh_TW.md">正體中文</a>
   <a href="readme_i18n/README_uk_UA.md">Українська</a>
   <a href="readme_i18n/README_ru_RU.md">Русский</a>
   <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>

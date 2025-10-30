@@ -120,7 +120,7 @@ class BackupVerificationService {
     await tuple.fileMediaRepository.enableBackgroundAccess();
     final ApiService apiService = ApiService();
     apiService.setEndpoint(tuple.endpoint);
-    apiService.setAccessToken(tuple.auth);
+    await apiService.setAccessToken(tuple.auth);
     for (int i = 0; i < tuple.deleteCandidates.length; i++) {
       if (await _compareAssets(tuple.deleteCandidates[i], tuple.originals[i], apiService)) {
         result.add(tuple.deleteCandidates[i]);

@@ -42,6 +42,7 @@ class Permission {
   static const assetPeriodDownload = Permission._(r'asset.download');
   static const assetPeriodUpload = Permission._(r'asset.upload');
   static const assetPeriodReplace = Permission._(r'asset.replace');
+  static const assetPeriodCopy = Permission._(r'asset.copy');
   static const albumPeriodCreate = Permission._(r'album.create');
   static const albumPeriodRead = Permission._(r'album.read');
   static const albumPeriodUpdate = Permission._(r'album.update');
@@ -150,6 +151,7 @@ class Permission {
   static const adminUserPeriodRead = Permission._(r'adminUser.read');
   static const adminUserPeriodUpdate = Permission._(r'adminUser.update');
   static const adminUserPeriodDelete = Permission._(r'adminUser.delete');
+  static const adminSessionPeriodRead = Permission._(r'adminSession.read');
   static const adminAuthPeriodUnlinkAll = Permission._(r'adminAuth.unlinkAll');
 
   /// List of all possible values in this [enum][Permission].
@@ -173,6 +175,7 @@ class Permission {
     assetPeriodDownload,
     assetPeriodUpload,
     assetPeriodReplace,
+    assetPeriodCopy,
     albumPeriodCreate,
     albumPeriodRead,
     albumPeriodUpdate,
@@ -281,6 +284,7 @@ class Permission {
     adminUserPeriodRead,
     adminUserPeriodUpdate,
     adminUserPeriodDelete,
+    adminSessionPeriodRead,
     adminAuthPeriodUnlinkAll,
   ];
 
@@ -339,6 +343,7 @@ class PermissionTypeTransformer {
         case r'asset.download': return Permission.assetPeriodDownload;
         case r'asset.upload': return Permission.assetPeriodUpload;
         case r'asset.replace': return Permission.assetPeriodReplace;
+        case r'asset.copy': return Permission.assetPeriodCopy;
         case r'album.create': return Permission.albumPeriodCreate;
         case r'album.read': return Permission.albumPeriodRead;
         case r'album.update': return Permission.albumPeriodUpdate;
@@ -447,6 +452,7 @@ class PermissionTypeTransformer {
         case r'adminUser.read': return Permission.adminUserPeriodRead;
         case r'adminUser.update': return Permission.adminUserPeriodUpdate;
         case r'adminUser.delete': return Permission.adminUserPeriodDelete;
+        case r'adminSession.read': return Permission.adminSessionPeriodRead;
         case r'adminAuth.unlinkAll': return Permission.adminAuthPeriodUnlinkAll;
         default:
           if (!allowNull) {

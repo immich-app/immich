@@ -3,10 +3,9 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { removeSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
-  import { IconButton, modalManager } from '@immich/ui';
+  import { IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { NotificationType, notificationController } from '../../shared-components/notification/notification';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -45,12 +44,7 @@
       }
 
       const count = results.filter((item) => item.success).length;
-
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('assets_removed_count', { values: { count } }),
-      });
-
+      toastManager.success($t('assets_removed_count', { values: { count } }));
       clearSelect();
     } catch (error) {
       handleError(error, $t('errors.unable_to_remove_assets_from_shared_link'));

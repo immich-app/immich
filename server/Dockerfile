@@ -1,39 +1,54 @@
-FROM ghcr.io/immich-app/base-server-dev:202509210934@sha256:b5ce2d7eaf379d4cf15efd4bab180d8afc8a80d20b36c9800f4091aca6ae267e AS builder
+FROM ghcr.io/immich-app/base-server-dev:202510281104@sha256:e2f94c2e92cbae5982b014e610ff29731c0fbcb4bf69022c7fe27594e40c9f83 AS builder
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
-  COREPACK_HOME=/tmp
+  COREPACK_HOME=/tmp \
+  PNPM_HOME=/buildcache/pnpm-store \
+  PATH="/buildcache/pnpm-store:$PATH"
 
 RUN npm install --global corepack@latest && \
-  corepack enable pnpm
+  corepack enable pnpm && \
+  pnpm config set store-dir "$PNPM_HOME"
 
 FROM builder AS server
 
 WORKDIR /usr/src/app
-COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./server ./server/
-RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
+RUN --mount=type=cache,id=pnpm-server,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile build && \
   SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --filter immich --frozen-lockfile --prod --no-optional deploy /output/server-pruned
 
 FROM builder AS web
 
 WORKDIR /usr/src/app
-COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./web ./web/
 COPY ./i18n ./i18n/
 COPY ./open-api ./open-api/
-RUN SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
+RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter @immich/sdk --filter immich-web --frozen-lockfile --force install && \
   pnpm --filter @immich/sdk --filter immich-web build
 
 FROM builder AS cli
 
-COPY ./package* ./pnpm* .pnpmfile.cjs ./
 COPY ./cli ./cli/
 COPY ./open-api ./open-api/
-RUN pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && \
+RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
+  --mount=type=bind,source=package.json,target=package.json \
+  --mount=type=bind,source=.pnpmfile.cjs,target=.pnpmfile.cjs \
+  --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+  --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+  pnpm --filter @immich/sdk --filter @immich/cli --frozen-lockfile install && \
   pnpm --filter @immich/sdk --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-FROM ghcr.io/immich-app/base-server-prod:202509210934@sha256:0c7eacf0ba88ca52e1a267cfc62d20d07792ea2c604818c2cbd37dc7dcefdac9
+FROM ghcr.io/immich-app/base-server-prod:202510281104@sha256:84f8f3eb4cfafc5e624235f7db703e1222fd60831bef1d488d8d8cad2be5023d
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

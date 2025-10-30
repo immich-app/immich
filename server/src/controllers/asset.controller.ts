@@ -5,6 +5,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
+  AssetCopyDto,
   AssetJobsDto,
   AssetMetadataResponseDto,
   AssetMetadataRouteParams,
@@ -16,6 +17,7 @@ import {
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
@@ -89,10 +91,23 @@ export class AssetController {
     return this.service.update(auth, id, dto);
   }
 
+  @Put('copy')
+  @Authenticated({ permission: Permission.AssetCopy })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  copyAsset(@Auth() auth: AuthDto, @Body() dto: AssetCopyDto): Promise<void> {
+    return this.service.copy(auth, dto);
+  }
+
   @Get(':id/metadata')
   @Authenticated({ permission: Permission.AssetRead })
   getAssetMetadata(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetMetadataResponseDto[]> {
     return this.service.getMetadata(auth, id);
+  }
+
+  @Get(':id/ocr')
+  @Authenticated({ permission: Permission.AssetRead })
+  getAssetOcr(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetOcrResponseDto[]> {
+    return this.service.getOcr(auth, id);
   }
 
   @Put(':id/metadata')

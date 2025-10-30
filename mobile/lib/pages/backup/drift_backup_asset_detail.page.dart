@@ -11,6 +11,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 @RoutePage()
@@ -31,55 +32,66 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
             itemBuilder: (context, index) {
               final asset = candidates[index];
               final albumsAsyncValue = ref.watch(driftCandidateBackupAlbumInfoProvider(asset.id));
-              return LargeLeadingTile(
-                title: Text(
-                  asset.name,
-                  style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500, fontSize: 16),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      asset.createdAt.toString(),
-                      style: TextStyle(fontSize: 13.0, color: context.colorScheme.onSurfaceSecondary),
+              final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
+              return FutureBuilder<String?>(
+                future: assetMediaRepository.getOriginalFilename(asset.id),
+                builder: (context, snapshot) {
+                  final displayName = snapshot.data ?? asset.name;
+                  return LargeLeadingTile(
+                    title: Text(
+                      displayName,
+                      style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500, fontSize: 16),
                     ),
-                    Text(
-                      asset.checksum ?? "N/A",
-                      style: TextStyle(fontSize: 13.0, color: context.colorScheme.onSurfaceSecondary),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    albumsAsyncValue.when(
-                      data: (albums) {
-                        if (albums.isEmpty) {
-                          return const SizedBox.shrink();
-                        }
-                        return Text(
-                          albums.map((a) => a.name).join(', '),
-                          style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          asset.createdAt.toString(),
+                          style: TextStyle(fontSize: 13.0, color: context.colorScheme.onSurfaceSecondary),
+                        ),
+                        Text(
+                          asset.checksum ?? "N/A",
+                          style: TextStyle(fontSize: 13.0, color: context.colorScheme.onSurfaceSecondary),
                           overflow: TextOverflow.ellipsis,
-                        );
-                      },
-                      error: (error, stackTrace) => Text(
-                        'error_saving_image'.tr(args: [error.toString()]),
-                        style: TextStyle(color: context.colorScheme.error),
-                      ),
-                      loading: () => const SizedBox(height: 16, width: 16, child: CircularProgressIndicator.adaptive()),
+                        ),
+                        albumsAsyncValue.when(
+                          data: (albums) {
+                            if (albums.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            return Text(
+                              albums.map((a) => a.name).join(', '),
+                              style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          },
+                          error: (error, stackTrace) => Text(
+                            'error_saving_image'.tr(args: [error.toString()]),
+                            style: TextStyle(color: context.colorScheme.error),
+                          ),
+                          loading: () =>
+                              const SizedBox(height: 16, width: 16, child: CircularProgressIndicator.adaptive()),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                leading: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
-                  child: SizedBox(
-                    width: 64,
-                    height: 64,
-                    child: Thumbnail.fromAsset(asset: asset, size: const Size(64, 64), fit: BoxFit.cover),
-                  ),
-                ),
-                trailing: const Padding(padding: EdgeInsets.only(right: 24, left: 8), child: Icon(Icons.image_search)),
-                onTap: () async {
-                  await context.maybePop();
-                  await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
-                  EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
+                    leading: ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                      child: SizedBox(
+                        width: 64,
+                        height: 64,
+                        child: Thumbnail.fromAsset(asset: asset, size: const Size(64, 64), fit: BoxFit.cover),
+                      ),
+                    ),
+                    trailing: const Padding(
+                      padding: EdgeInsets.only(right: 24, left: 8),
+                      child: Icon(Icons.image_search),
+                    ),
+                    onTap: () async {
+                      await context.maybePop();
+                      await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+                      EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
+                    },
+                  );
                 },
               );
             },

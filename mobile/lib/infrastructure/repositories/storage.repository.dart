@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -88,6 +89,18 @@ class StorageRepository {
       await PhotoManager.clearFileCache();
     } catch (error, stackTrace) {
       log.warning("Error clearing cache", error, stackTrace);
+    }
+
+    if (!CurrentPlatform.isIOS) {
+      return;
+    }
+
+    try {
+      if (await Directory.systemTemp.exists()) {
+        await Directory.systemTemp.delete(recursive: true);
+      }
+    } catch (error, stackTrace) {
+      log.warning("Error deleting temporary directory", error, stackTrace);
     }
   }
 }

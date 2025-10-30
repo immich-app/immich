@@ -29,7 +29,7 @@
   <div class="relative mx-auto font-mono text-2xl font-semibold">
     <span class="text-gray-400 dark:text-gray-600">{zeros()}</span><span>{value}</span>
     {#if unit}
-      <Code color="muted" class="absolute -top-5 end-1 font-light">{unit}</Code>
+      <Code color="muted" class="absolute -top-5 end-1 font-light p-0">{unit}</Code>
     {/if}
   </div>
 </div>

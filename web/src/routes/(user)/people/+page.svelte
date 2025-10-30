@@ -9,10 +9,6 @@
   import PeopleInfiniteScroll from '$lib/components/faces-page/people-infinite-scroll.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import { ActionQueryParameterValue, AppRoute, QueryParameter, SessionStorageKey } from '$lib/constants';
   import PersonEditBirthDateModal from '$lib/modals/PersonEditBirthDateModal.svelte';
   import PersonMergeSuggestionModal from '$lib/modals/PersonMergeSuggestionModal.svelte';
@@ -22,7 +18,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
   import { getAllPeople, getPerson, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Icon, modalManager } from '@immich/ui';
+  import { Button, Icon, modalManager, toastManager } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -161,10 +157,7 @@
             break;
           }
         }
-        notificationController.show({
-          message: $t('change_name_successfully'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('change_name_successfully'));
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
@@ -185,10 +178,7 @@
         return person;
       });
 
-      notificationController.show({
-        message: $t('changed_visibility_successfully'),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('changed_visibility_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }
@@ -208,10 +198,7 @@
         return person;
       });
 
-      notificationController.show({
-        message: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
-        type: NotificationType.Info,
-      });
+      toastManager.success(updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
     }

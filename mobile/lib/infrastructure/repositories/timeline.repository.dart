@@ -35,6 +35,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
     assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
+    origin: TimelineOrigin.main,
   );
 
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
@@ -91,6 +92,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery localAlbum(String albumId, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchLocalAlbumBucket(albumId, groupBy: groupBy),
     assetSource: (offset, count) => _getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
+    origin: TimelineOrigin.localAlbum,
   );
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
@@ -156,6 +158,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery remoteAlbum(String albumId, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchRemoteAlbumBucket(albumId, groupBy: groupBy),
     assetSource: (offset, count) => _getRemoteAlbumBucketAssets(albumId, offset: offset, count: count),
+    origin: TimelineOrigin.remoteAlbum,
   );
 
   Stream<List<Bucket>> _watchRemoteAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
@@ -244,15 +247,17 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .get();
   }
 
-  TimelineQuery fromAssets(List<BaseAsset> assets) => (
+  TimelineQuery fromAssets(List<BaseAsset> assets, TimelineOrigin origin) => (
     bucketSource: () => Stream.value(_generateBuckets(assets.length)),
     assetSource: (offset, count) => Future.value(assets.skip(offset).take(count).toList(growable: false)),
+    origin: origin,
   );
 
   TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
     filter: (row) =>
         row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.equals(ownerId),
     groupBy: groupBy,
+    origin: TimelineOrigin.remoteAssets,
   );
 
   TimelineQuery favorite(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
@@ -262,11 +267,13 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         row.ownerId.equals(userId) &
         row.visibility.equalsValue(AssetVisibility.timeline),
     groupBy: groupBy,
+    origin: TimelineOrigin.favorite,
   );
 
   TimelineQuery trash(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
     filter: (row) => row.deletedAt.isNotNull() & row.ownerId.equals(userId),
     groupBy: groupBy,
+    origin: TimelineOrigin.trash,
     joinLocal: true,
   );
 
@@ -274,11 +281,13 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     filter: (row) =>
         row.deletedAt.isNull() & row.ownerId.equals(userId) & row.visibility.equalsValue(AssetVisibility.archive),
     groupBy: groupBy,
+    origin: TimelineOrigin.archive,
   );
 
   TimelineQuery locked(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
     filter: (row) =>
         row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.locked) & row.ownerId.equals(userId),
+    origin: TimelineOrigin.lockedFolder,
     groupBy: groupBy,
   );
 
@@ -288,17 +297,20 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         row.type.equalsValue(AssetType.video) &
         row.visibility.equalsValue(AssetVisibility.timeline) &
         row.ownerId.equals(userId),
+    origin: TimelineOrigin.video,
     groupBy: groupBy,
   );
 
   TimelineQuery place(String place, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchPlaceBucket(place, groupBy: groupBy),
     assetSource: (offset, count) => _getPlaceBucketAssets(place, offset: offset, count: count),
+    origin: TimelineOrigin.place,
   );
 
   TimelineQuery person(String userId, String personId, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchPersonBucket(userId, personId, groupBy: groupBy),
     assetSource: (offset, count) => _getPersonBucketAssets(userId, personId, offset: offset, count: count),
+    origin: TimelineOrigin.person,
   );
 
   Stream<List<Bucket>> _watchPlaceBucket(String place, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
@@ -434,6 +446,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   TimelineQuery map(String userId, LatLngBounds bounds, GroupAssetsBy groupBy) => (
     bucketSource: () => _watchMapBucket(userId, bounds, groupBy: groupBy),
     assetSource: (offset, count) => _getMapBucketAssets(userId, bounds, offset: offset, count: count),
+    origin: TimelineOrigin.map,
   );
 
   Stream<List<Bucket>> _watchMapBucket(
@@ -502,6 +515,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   @pragma('vm:prefer-inline')
   TimelineQuery _remoteQueryBuilder({
     required Expression<bool> Function($RemoteAssetEntityTable row) filter,
+    required TimelineOrigin origin,
     GroupAssetsBy groupBy = GroupAssetsBy.day,
     bool joinLocal = false,
   }) {
@@ -509,6 +523,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       bucketSource: () => _watchRemoteBucket(filter: filter, groupBy: groupBy),
       assetSource: (offset, count) =>
           _getRemoteAssets(filter: filter, offset: offset, count: count, joinLocal: joinLocal),
+      origin: origin,
     );
   }
 

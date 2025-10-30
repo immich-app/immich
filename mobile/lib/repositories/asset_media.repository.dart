@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -21,11 +23,33 @@ final assetMediaRepositoryProvider = Provider((ref) => AssetMediaRepository(ref.
 
 class AssetMediaRepository {
   final AssetApiRepository _assetApiRepository;
+
   static final Logger _log = Logger("AssetMediaRepository");
 
   const AssetMediaRepository(this._assetApiRepository);
 
-  Future<List<String>> deleteAll(List<String> ids) => PhotoManager.editor.deleteWithIds(ids);
+  Future<bool> _androidSupportsTrash() async {
+    if (Platform.isAndroid) {
+      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      int sdkVersion = androidInfo.version.sdkInt;
+      return sdkVersion >= 31;
+    }
+    return false;
+  }
+
+  Future<List<String>> deleteAll(List<String> ids) async {
+    if (CurrentPlatform.isAndroid) {
+      if (await _androidSupportsTrash()) {
+        return PhotoManager.editor.android.moveToTrash(
+          ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
+        );
+      } else {
+        return PhotoManager.editor.deleteWithIds(ids);
+      }
+    }
+    return PhotoManager.editor.deleteWithIds(ids);
+  }
 
   Future<asset_entity.Asset?> get(String id) async {
     final entity = await AssetEntity.fromId(id);
@@ -115,18 +139,20 @@ class AssetMediaRepository {
     // we dont want to await the share result since the
     // "preparing" dialog will not disappear until
     final size = context.sizeData;
-    Share.shareXFiles(
-      downloadedXFiles,
-      sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
-    ).then((result) async {
-      for (var file in tempFiles) {
-        try {
-          await file.delete();
-        } catch (e) {
-          _log.warning("Failed to delete temporary file: ${file.path}", e);
+    unawaited(
+      Share.shareXFiles(
+        downloadedXFiles,
+        sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
+      ).then((result) async {
+        for (var file in tempFiles) {
+          try {
+            await file.delete();
+          } catch (e) {
+            _log.warning("Failed to delete temporary file: ${file.path}", e);
+          }
         }
-      }
-    });
+      }),
+    );
 
     return downloadedXFiles.length;
   }

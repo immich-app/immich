@@ -96,6 +96,7 @@ export enum Permission {
   AssetDownload = 'asset.download',
   AssetUpload = 'asset.upload',
   AssetReplace = 'asset.replace',
+  AssetCopy = 'asset.copy',
 
   AlbumCreate = 'album.create',
   AlbumRead = 'album.read',
@@ -236,6 +237,8 @@ export enum Permission {
   AdminUserRead = 'adminUser.read',
   AdminUserUpdate = 'adminUser.update',
   AdminUserDelete = 'adminUser.delete',
+
+  AdminSessionRead = 'adminSession.read',
 
   AdminAuthUnlinkAll = 'adminAuth.unlinkAll',
 }
@@ -512,6 +515,7 @@ export enum QueueName {
   Library = 'library',
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
+  Ocr = 'ocr',
 }
 
 export enum JobName {
@@ -584,6 +588,10 @@ export enum JobName {
   TagCleanup = 'TagCleanup',
 
   VersionCheck = 'VersionCheck',
+
+  // OCR
+  OcrQueueAll = 'OcrQueueAll',
+  Ocr = 'Ocr',
 }
 
 export enum JobCommand {
@@ -723,6 +731,8 @@ export enum NotificationType {
   JobFailed = 'JobFailed',
   BackupFailed = 'BackupFailed',
   SystemMessage = 'SystemMessage',
+  AlbumInvite = 'AlbumInvite',
+  AlbumUpdate = 'AlbumUpdate',
   Custom = 'Custom',
 }
 

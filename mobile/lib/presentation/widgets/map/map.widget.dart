@@ -115,12 +115,14 @@ class _DriftMapState extends ConsumerState<DriftMap> {
     }
 
     final bounds = await controller.getVisibleRegion();
-    _reloadMutex.run(() async {
-      if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
-        final markers = await ref.read(mapMarkerProvider(bounds).future);
-        await reloadMarkers(markers);
-      }
-    });
+    unawaited(
+      _reloadMutex.run(() async {
+        if (mounted && ref.read(mapStateProvider.notifier).setBounds(bounds)) {
+          final markers = await ref.read(mapMarkerProvider(bounds).future);
+          await reloadMarkers(markers);
+        }
+      }),
+    );
   }
 
   Future<void> reloadMarkers(Map<String, dynamic> markers) async {
@@ -148,7 +150,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
 
     final controller = mapController;
     if (controller != null && location != null) {
-      controller.animateCamera(
+      await controller.animateCamera(
         CameraUpdate.newLatLngZoom(LatLng(location.latitude, location.longitude), MapUtils.mapZoomToAssetLevel),
         duration: const Duration(milliseconds: 800),
       );
