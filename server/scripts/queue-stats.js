@@ -54,20 +54,25 @@ function getRedisConnectionOptions() {
     REDIS_PASSWORD,
   } = process.env;
 
+  let prefix = 'immich_bull'; // default used in config.repository.ts
+  if (process.env.BULL_PREFIX) {
+    prefix = process.env.BULL_PREFIX;
+  }
+
   if (REDIS_URL) {
     if (REDIS_URL.startsWith('ioredis://')) {
       const encoded = REDIS_URL.substring('ioredis://'.length);
       try {
         const json = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
-        return json;
+        return { ...json, prefix };
       } catch {
-        return { url: REDIS_URL };
+        return { url: REDIS_URL, prefix };
       }
     }
-    return { url: REDIS_URL };
+    return { url: REDIS_URL, prefix };
   }
   if (REDIS_SOCKET) {
-    return { path: REDIS_SOCKET, db: Number(REDIS_DBINDEX) };
+    return { path: REDIS_SOCKET, db: Number(REDIS_DBINDEX), prefix };
   }
   return {
     host: REDIS_HOSTNAME,
@@ -76,11 +81,12 @@ function getRedisConnectionOptions() {
     username: REDIS_USERNAME || undefined,
     password: REDIS_PASSWORD || undefined,
     maxRetriesPerRequest: 1,
+    prefix,
   };
 }
 
 async function fetchQueue(name, connection) {
-  const queue = new Queue(name, { connection });
+  const queue = new Queue(name, { connection, prefix: connection.prefix });
   try {
     const [counts, isPaused, activeCount] = await Promise.all([
       queue.getJobCounts('active', 'completed', 'failed', 'delayed', 'waiting', 'paused'),

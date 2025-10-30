@@ -36,6 +36,7 @@ GRACEFUL_TIMEOUT="${GRACEFUL_TIMEOUT:-30}"
 JITTER_MAX_SECONDS="${JITTER_MAX_SECONDS:-5}"  # Maximum random jitter added to each interval sleep
 PID_FILE="/tmp/immich_ephemeral_microservices.pid"
 LOG_TAG="[ephemeral-microservices]"
+VERBOSE=1
 
 log() {
   echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ${LOG_TAG} $*"
