@@ -105,7 +105,7 @@ start_micro() {
       export ${EXTRA_START_ENV}
     fi
     # start.sh will exec node main.js; we place it in background via sh -c wrapper.
-    start.sh >/dev/null 2>&1 &
+    start.sh &
     echo $! > "$PID_FILE"
   )
   sleep 2
