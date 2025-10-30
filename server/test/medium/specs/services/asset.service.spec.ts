@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -179,12 +179,23 @@ describe(AssetService.name, () => {
       const { sut, ctx } = setup();
       const storageRepo = ctx.getMock(StorageRepository);
       const jobRepo = ctx.getMock(JobRepository);
+      const assetRepo = ctx.getMock(AssetRepository);
 
       storageRepo.copyFile.mockResolvedValue();
       jobRepo.queue.mockResolvedValue();
 
       const { user } = await ctx.newUser();
-      const { asset: oldAsset } = await ctx.newAsset({ ownerId: user.id, sidecarPath: '/path/to/my/sidecar.xmp' });
+
+      const { asset: oldAssetWithoutSidecar } = await ctx.newAsset({ ownerId: user.id });
+
+      const sidecarFile = await ctx.newAssetFile({
+        assetId: oldAssetWithoutSidecar.id,
+        path: '/path/to/my/sidecar.xmp',
+        type: AssetFileType.Sidecar,
+      });
+
+      const oldAsset = { ...oldAssetWithoutSidecar, files: [sidecarFile] };
+
       const { asset: newAsset } = await ctx.newAsset({ ownerId: user.id });
 
       await ctx.newExif({ assetId: oldAsset.id, description: 'foo' });
@@ -195,6 +206,12 @@ describe(AssetService.name, () => {
       await sut.copy(auth, { sourceId: oldAsset.id, targetId: newAsset.id });
 
       expect(storageRepo.copyFile).toHaveBeenCalledWith('/path/to/my/sidecar.xmp', `${newAsset.originalPath}.xmp`);
+
+      expect(assetRepo.upsertFile).toHaveBeenCalledWith({
+        assetId: newAsset.id,
+        path: `${newAsset.originalPath}.xmp`,
+        type: AssetFileType.Sidecar,
+      });
 
       expect(jobRepo.queue).toHaveBeenCalledWith({
         name: JobName.AssetExtractMetadata,

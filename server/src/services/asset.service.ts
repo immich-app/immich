@@ -262,32 +262,33 @@ export class AssetService extends BaseService {
     sourceAsset,
     targetAsset,
   }: {
-    sourceAsset: { id: string; files: AssetFile[] | null; originalPath: string };
-    targetAsset: { files: AssetFile[] | null };
+    sourceAsset: { files?: AssetFile[] };
+    targetAsset: { id: string; files?: AssetFile[]; originalPath: string };
   }) {
-    if (!targetAsset.files) {
+    if (!sourceAsset.files) {
       return;
     }
 
-    const targetSidecarFile = getAssetFiles(targetAsset.files).sidecarFile;
+    const sourceSidecarPath = getAssetFiles(sourceAsset.files).sidecarFile?.path;
 
-    if (!targetSidecarFile) {
+    if (!sourceSidecarPath) {
       return;
     }
 
-    const sourceSidecarFile = getAssetFiles(sourceAsset.files).sidecarFile;
-
-    if (sourceSidecarFile) {
-      await this.storageRepository.unlink(sourceSidecarFile.path);
+    if (targetAsset.files) {
+      const targetSidecar = getAssetFiles(targetAsset.files).sidecarFile;
+      if (targetSidecar) {
+        await this.storageRepository.unlink(targetSidecar.path);
+      }
     }
 
-    await this.storageRepository.copyFile(targetSidecarFile.path, `${sourceAsset.originalPath}.xmp`);
+    await this.storageRepository.copyFile(sourceSidecarPath, `${targetAsset.originalPath}.xmp`);
     await this.assetRepository.upsertFile({
-      assetId: sourceAsset.id,
+      assetId: targetAsset.id,
+      path: `${targetAsset.originalPath}.xmp`,
       type: AssetFileType.Sidecar,
-      path: `${sourceAsset.originalPath}.xmp`,
     });
-    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: sourceAsset.id } });
+    await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: targetAsset.id } });
   }
 
   @OnJob({ name: JobName.AssetDeleteCheck, queue: QueueName.BackgroundTask })
