@@ -227,7 +227,7 @@ export class AssetService extends BaseService {
     }
 
     if (stack) {
-      await this.copyStack(sourceAsset, targetAsset);
+      await this.copyStack({ sourceAsset, targetAsset });
     }
 
     if (favorite) {
@@ -235,14 +235,17 @@ export class AssetService extends BaseService {
     }
 
     if (sidecar) {
-      await this.copySidecar(sourceAsset, targetAsset);
+      await this.copySidecar({ sourceAsset, targetAsset });
     }
   }
 
-  private async copyStack(
-    sourceAsset: { id: string; stackId: string | null },
-    targetAsset: { id: string; stackId: string | null },
-  ) {
+  private async copyStack({
+    sourceAsset,
+    targetAsset,
+  }: {
+    sourceAsset: { id: string; stackId: string | null };
+    targetAsset: { id: string; stackId: string | null };
+  }) {
     if (!sourceAsset.stackId) {
       return;
     }
@@ -255,10 +258,17 @@ export class AssetService extends BaseService {
     }
   }
 
-  private async copySidecar(
-    sourceAsset: { id: string; files: AssetFile[] | undefined; originalPath: string },
-    targetAsset: { files: AssetFile[] | undefined },
-  ) {
+  private async copySidecar({
+    sourceAsset,
+    targetAsset,
+  }: {
+    sourceAsset: { id: string; files: AssetFile[] | null; originalPath: string };
+    targetAsset: { files: AssetFile[] | null };
+  }) {
+    if (!targetAsset.files) {
+      return;
+    }
+
     const targetSidecarFile = getAssetFiles(targetAsset.files).sidecarFile;
 
     if (!targetSidecarFile) {
