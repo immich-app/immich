@@ -20,7 +20,7 @@ class FFmpegInstance {
   private firstSegmentDone?: PromiseWithResolvers<void>;
   private ffmpegTerminated?: PromiseWithResolvers<void>;
   private ffmpegCommand?: ChildProcessWithoutNullStreams;
-  private offset: number;
+  private offset_: number;
   private segment_: number = 0;
   private current: number;
   args: string[];
@@ -42,7 +42,7 @@ class FFmpegInstance {
     this.sessionId = sessionId;
     this.inputPath = inputPath;
     this.logPath = logPath;
-    this.offset = offset;
+    this.offset_ = offset;
     this.current = offset;
   }
 
@@ -55,6 +55,9 @@ class FFmpegInstance {
 
   get segment(): number {
     return this.segment_;
+  }
+  get offset(): number {
+    return this.offset_;
   }
 
   waitForSegment() {
@@ -74,7 +77,7 @@ class FFmpegInstance {
           const name = line.split(',')[0];
           const idx = parseInt(name.split('.')[0]);
 
-          if (idx == this.offset) {
+          if (idx == this.offset_) {
             this.firstSegmentDone?.resolve();
           }
           if (idx - this.current > this.SEGMENT_TROTTLING_COUNT) {
@@ -143,7 +146,6 @@ class HLSConnection {
 
   ffmpegCommands: { video?: FFmpegInstance; audio?: FFmpegInstance } = {};
 
-  private keyTimes: number[] = [];
   private partTimes: number[] = [];
   private partFrames: number[] = [];
 
@@ -179,7 +181,8 @@ class HLSConnection {
     this.logger = logger;
     this.sessionId = sessionId;
     this.liveFfmpegConfig = { ...liveFfmpegConfig };
-    this.liveFfmpegConfig.gopSize = -1; // There is force_key_frames for this task.
+    this.gopSize = Math.ceil(stats.videoStreams[0]!.fps * HLSConnection.SEGMENT_TARGET_TIME);
+    this.liveFfmpegConfig.gopSize = this.gopSize;
 
     this.inputPath = asset.originalPath;
     this.id = asset.id;
@@ -187,7 +190,6 @@ class HLSConnection {
     this.videoInterfaces = videoInterfaces;
 
     this.parts = new PartManager();
-    this.gopSize = Math.ceil(this.stats.videoStreams[0]!.fps * HLSConnection.SEGMENT_TARGET_TIME);
   }
 
   async seek(idx: number) {
@@ -199,9 +201,15 @@ class HLSConnection {
       );
       return;
     } catch {
-      if (idx - (this.ffmpegCommands.video?.segment ?? 0) > HLSConnection.segmentGapRequiringTranscodingChange) {
+      if (
+        this.ffmpegCommands.video != undefined &&
+        (idx < (this.ffmpegCommands.video?.offset ?? 0) ||
+          idx - (this.ffmpegCommands.video?.segment ?? this.ffmpegCommands.video?.offset) >
+            HLSConnection.segmentGapRequiringTranscodingChange)
+      ) {
         this.ffmpegCommands.video?.kill();
-        this.startTranscodingVideo();
+        this.ffmpegCommands.video = undefined as FFmpegInstance | undefined;
+        await this.startTranscodingVideo();
         await this.ffmpegCommands.video?.waitForSegment();
       }
     }
@@ -309,7 +317,11 @@ class HLSConnection {
     });
 
     const videoStream = this.stats.videoStreams[0];
-    const args = ['-nostats', '-hide_banner', '-loglevel', 'warning'];
+    // prettier-ignore
+    const args = ['-nostats', '-hide_banner', '-loglevel', 'warning',
+      '-ss', this.partTimes[this.requestedSegment].toString(),
+      '-noaccurate_seek'
+    ];
     if (this.videoQuality === 'original') {
       // prettier-ignore
       args.push(
@@ -357,6 +369,7 @@ class HLSConnection {
       '-an',
       '-segment_format', 'mp4',
       '-segment_list_type', 'csv',
+      '-segment_start_number', this.requestedSegment.toString(),
 
       '-segment_frames', this.partFrames!.join(',')
     );
@@ -419,9 +432,9 @@ class HLSConnection {
       '-f', 'segment',
       '-vn',
       '-segment_format', 'mp4',
-      '-segment_list_type', 'csv',
+      '-segment_list_type', 'csv', 
 
-      '-segment_times', this.keyTimes!.join(','),
+      '-segment_times', this.partTimes!.join(','),
 
       '-segment_header_filename',
       `${ROOT_DIR}/${this.sessionId}/${this.audioCodec}/${this.audioQuality}/init.mp4`,
@@ -450,7 +463,6 @@ class HLSConnection {
       throw new NotFoundException(`Video ${this.id} has no frames`);
     }
     this.partTimes = [];
-    this.keyTimes = [];
     const videoPlaylist = [
       '#EXTM3U',
       '#EXT-X-VERSION:7',
@@ -471,7 +483,6 @@ class HLSConnection {
         const prevFrame = Math.abs(this.frames[l]);
 
         if (isKf) {
-          this.keyTimes.push(frame);
           this.partTimes.push(frame);
           this.partFrames.push(r + 1);
           videoPlaylist.push(`#EXTINF:${(Math.abs(this.frames[r + 1]) - prevFrame).toFixed(5)}`, `${partIdx++}.mp4`);
