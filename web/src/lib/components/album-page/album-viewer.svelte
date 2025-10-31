@@ -15,11 +15,10 @@
   import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
+  import { IconButton, Logo } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import ImmichLogoSmallLink from '../shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '../shared-components/theme-button.svelte';
   import AlbumSummary from './album-summary.svelte';
 
@@ -97,7 +96,9 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink />
+        <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
+          <Logo variant="inline" />
+        </a>
       {/snippet}
 
       {#snippet trailing()}
