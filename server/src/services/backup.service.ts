@@ -80,19 +80,13 @@ export class BackupService extends BaseService {
     const config = database.config;
 
     const isUrlConnection = config.connectionType === 'url';
-
-    // Remove known bad url parameters for pg_dumpall (e.g.
-    // `libpqcompat`) so the CLI doesn't fail with messages like
-    // `invalid sslmode value: "no-verify"`.
+    
     let connectionUrl: string | null = isUrlConnection ? config.url : null;
-    if (connectionUrl !== null) {
-      try {
-        const url = new URL(connectionUrl);
-        url.searchParams.delete('libpqcompat');
-        connectionUrl = url.toString();
-      } catch (e) {
-        // ignore and fall back to original URL
-      }
+    if (connectionUrl) {
+      // remove known bad url parameters for pg_dumpall
+      const url = new URL(connectionUrl);
+      url.searchParams.delete('libpqcompat');
+      connectionUrl = url.toString();
     }
 
     const databaseParams = isUrlConnection
