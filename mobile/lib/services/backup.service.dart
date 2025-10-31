@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart' as http;
+import 'package:http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -233,7 +233,7 @@ class BackupService {
 
   Future<bool> backupAsset(
     Iterable<BackupCandidate> assets,
-    http.CancellationToken cancelToken, {
+    Completer<void> abortTrigger, {
     bool isBackground = false,
     PMProgressHandler? pmProgressHandler,
     required void Function(SuccessUploadAsset result) onSuccess,
@@ -313,10 +313,11 @@ class BackupService {
             filename: originalFileName,
           );
 
-          final baseRequest = MultipartRequest(
+          final baseRequest = AbortableMultipartRequest(
             'POST',
             Uri.parse('$savedEndpoint/assets'),
             onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
+            abortTrigger: abortTrigger.future,
           );
 
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
@@ -341,14 +342,14 @@ class BackupService {
 
           String? livePhotoVideoId;
           if (asset.local!.isLivePhoto && livePhotoFile != null) {
-            livePhotoVideoId = await uploadLivePhotoVideo(originalFileName, livePhotoFile, baseRequest, cancelToken);
+            livePhotoVideoId = await uploadLivePhotoVideo(originalFileName, livePhotoFile, baseRequest, abortTrigger);
           }
 
           if (livePhotoVideoId != null) {
             baseRequest.fields['livePhotoVideoId'] = livePhotoVideoId;
           }
 
-          final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+          final response = await httpClient.send(baseRequest);
 
           final responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -398,7 +399,7 @@ class BackupService {
             await _albumService.syncUploadAlbums(candidate.albumNames, [responseBody['id'] as String]);
           }
         }
-      } on http.CancelledException {
+      } on http.RequestAbortedException {
         dPrint(() => "Backup was cancelled by the user");
         anyErrors = true;
         break;
@@ -428,8 +429,8 @@ class BackupService {
   Future<String?> uploadLivePhotoVideo(
     String originalFileName,
     File? livePhotoVideoFile,
-    MultipartRequest baseRequest,
-    http.CancellationToken cancelToken,
+    AbortableMultipartRequest baseRequest,
+    Completer<void> abortTrigger,
   ) async {
     if (livePhotoVideoFile == null) {
       return null;
@@ -442,13 +443,18 @@ class BackupService {
       livePhotoVideoFile.lengthSync(),
       filename: livePhotoTitle,
     );
-    final livePhotoReq = MultipartRequest(baseRequest.method, baseRequest.url, onProgress: baseRequest.onProgress)
+    final livePhotoReq = AbortableMultipartRequest(
+      baseRequest.method,
+      baseRequest.url,
+      onProgress: baseRequest.onProgress,
+      abortTrigger: abortTrigger.future,
+    )
       ..headers.addAll(baseRequest.headers)
       ..fields.addAll(baseRequest.fields);
 
     livePhotoReq.files.add(livePhotoRawUploadData);
 
-    var response = await httpClient.send(livePhotoReq, cancellationToken: cancelToken);
+    var response = await httpClient.send(livePhotoReq);
 
     var responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -497,4 +503,18 @@ class MultipartRequest extends http.MultipartRequest {
     final stream = byteStream.transform(t);
     return http.ByteStream(stream);
   }
+}
+
+/// Custom implementation combining AbortableMultipartRequest functionality with progress tracking
+class AbortableMultipartRequest extends MultipartRequest with http.Abortable {
+  /// Creates a new [AbortableMultipartRequest] with progress tracking.
+  AbortableMultipartRequest(
+    super.method,
+    super.url, {
+    required super.onProgress,
+    this.abortTrigger,
+  });
+
+  @override
+  final Future<void>? abortTrigger;
 }

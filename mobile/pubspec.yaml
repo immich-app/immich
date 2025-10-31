@@ -13,7 +13,6 @@ dependencies:
   auto_route: ^9.2.0
   background_downloader: ^9.2.6
   cached_network_image: ^3.4.1
-  cancellation_token_http: ^2.1.0
   cast: ^2.1.0
   collection: ^1.19.1
   connectivity_plus: ^6.1.3

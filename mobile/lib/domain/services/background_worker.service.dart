@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -65,7 +64,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   final Drift _drift;
   final DriftLogger _driftLogger;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
-  final CancellationToken _cancellationToken = CancellationToken();
+  final Completer<void> _abortTrigger = Completer<void>();
   final Logger _logger = Logger('BackgroundWorkerBgService');
 
   bool _isCleanedUp = false;
@@ -189,7 +188,9 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       _ref?.dispose();
       _ref = null;
 
-      _cancellationToken.cancel();
+      if (!_abortTrigger.isCompleted) {
+        _abortTrigger.complete();
+      }
       _logger.info("Cleaning up background worker");
       final cleanupFutures = [
         nativeSyncApi?.cancelHashing(),
@@ -239,7 +240,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         final networkCapabilities = await _ref?.read(connectivityApiProvider).getCapabilities() ?? [];
         return _ref
             ?.read(uploadServiceProvider)
-            .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _cancellationToken);
+            .startBackupWithHttpClient(currentUser.id, networkCapabilities.hasWifi, _abortTrigger);
       },
       (error, stack) {
         dPrint(() => "Error in backup zone $error, $stack");

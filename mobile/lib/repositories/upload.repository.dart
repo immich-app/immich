@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:cancellation_token_http/http.dart';
+import 'package:http/http.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -92,13 +93,13 @@ class UploadRepository {
     );
   }
 
-  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, CancellationToken cancelToken) async {
+  Future<void> backupWithDartClient(Iterable<UploadTaskWithFile> tasks, Completer<void> abortTrigger) async {
     final httpClient = Client();
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
 
     Logger logger = Logger('UploadRepository');
     for (final candidate in tasks) {
-      if (cancelToken.isCancelled) {
+      if (abortTrigger.isCompleted) {
         logger.warning("Backup was cancelled by the user");
         break;
       }
@@ -112,13 +113,17 @@ class UploadRepository {
           filename: candidate.task.filename,
         );
 
-        final baseRequest = MultipartRequest('POST', Uri.parse('$savedEndpoint/assets'));
+        final baseRequest = AbortableMultipartRequest(
+          'POST',
+          Uri.parse('$savedEndpoint/assets'),
+          abortTrigger: abortTrigger.future,
+        );
 
         baseRequest.headers.addAll(candidate.task.headers);
         baseRequest.fields.addAll(candidate.task.fields);
         baseRequest.files.add(assetRawUploadData);
 
-        final response = await httpClient.send(baseRequest, cancellationToken: cancelToken);
+        final response = await httpClient.send(baseRequest);
 
         final responseBody = jsonDecode(await response.stream.bytesToString());
 
@@ -131,7 +136,7 @@ class UploadRepository {
 
           continue;
         }
-      } on CancelledException {
+      } on RequestAbortedException {
         logger.warning("Backup was cancelled by the user");
         break;
       } catch (error, stackTrace) {

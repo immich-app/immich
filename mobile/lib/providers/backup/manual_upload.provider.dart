@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
@@ -65,7 +64,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
           progressInFileSpeeds: const [],
           progressInFileSpeedUpdateTime: DateTime.now(),
           progressInFileSpeedUpdateSentBytes: 0,
-          cancelToken: CancellationToken(),
+          abortTrigger: Completer<void>(),
           currentUploadAsset: CurrentUploadAsset(
             id: '...',
             fileCreatedAt: DateTime.parse('2020-10-04'),
@@ -236,7 +235,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             fileName: '...',
             fileType: '...',
           ),
-          cancelToken: CancellationToken(),
+          abortTrigger: Completer<void>(),
         );
         // Reset Error List
         ref.watch(errorBackupListProvider.notifier).empty();
@@ -256,7 +255,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
             .read(backupServiceProvider)
             .backupAsset(
               uploadAssets,
-              state.cancelToken,
+              state.abortTrigger,
               pmProgressHandler: pmProgressHandler,
               onSuccess: _onAssetUploaded,
               onProgress: _onProgress,
@@ -273,14 +272,14 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         );
 
         // User cancelled upload
-        if (!ok && state.cancelToken.isCancelled) {
+        if (!ok && state.abortTrigger.isCompleted) {
           await _localNotificationService.showOrUpdateManualUploadStatus(
             "backup_manual_title".tr(),
             "backup_manual_cancelled".tr(),
             presentBanner: true,
           );
           hasErrors = true;
-        } else if (state.successfulUploads == 0 || (!ok && !state.cancelToken.isCancelled)) {
+        } else if (state.successfulUploads == 0 || (!ok && !state.abortTrigger.isCompleted)) {
           await _localNotificationService.showOrUpdateManualUploadStatus(
             "backup_manual_title".tr(),
             "failed".tr(),
@@ -324,7 +323,9 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         _backupProvider.backupProgress != BackUpProgressEnum.manualInProgress) {
       _backupProvider.notifyBackgroundServiceCanRun();
     }
-    state.cancelToken.cancel();
+    if (!state.abortTrigger.isCompleted) {
+      state.abortTrigger.complete();
+    }
     if (_backupProvider.backupProgress != BackUpProgressEnum.manualInProgress) {
       _backupProvider.updateBackupProgress(BackUpProgressEnum.idle);
     }

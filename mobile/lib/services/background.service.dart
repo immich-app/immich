@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 
-import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
@@ -43,7 +42,7 @@ class BackgroundService {
   static const MethodChannel _backgroundChannel = MethodChannel('immich/backgroundChannel');
   static const notifyInterval = Duration(milliseconds: 400);
   bool _isBackgroundInitialized = false;
-  CancellationToken? _cancellationToken;
+  Completer<void>? _abortTrigger;
   bool _canceledBySystem = false;
   int _wantsLockTime = 0;
   bool _hasLock = false;
@@ -321,7 +320,9 @@ class BackgroundService {
         }
       case "systemStop":
         _canceledBySystem = true;
-        _cancellationToken?.cancel();
+        if (_abortTrigger != null && !_abortTrigger!.isCompleted) {
+          _abortTrigger!.complete();
+        }
         return true;
       default:
         dPrint(() => "Unknown method ${call.method}");
@@ -441,12 +442,12 @@ class BackgroundService {
       ),
     );
 
-    _cancellationToken = CancellationToken();
+    _abortTrigger = Completer<void>();
     final pmProgressHandler = Platform.isIOS ? PMProgressHandler() : null;
 
     final bool ok = await backupService.backupAsset(
       toUpload,
-      _cancellationToken!,
+      _abortTrigger!,
       pmProgressHandler: pmProgressHandler,
       onSuccess: (result) => _onAssetUploaded(shouldNotify: notifyTotalProgress),
       onProgress: (bytes, totalBytes) => _onProgress(bytes, totalBytes, shouldNotify: notifySingleProgress),
@@ -455,7 +456,7 @@ class BackgroundService {
       isBackground: true,
     );
 
-    if (!ok && !_cancellationToken!.isCancelled) {
+    if (!ok && !_abortTrigger!.isCompleted) {
       unawaited(
         _showErrorNotification(
           title: "backup_background_service_error_title".tr(),

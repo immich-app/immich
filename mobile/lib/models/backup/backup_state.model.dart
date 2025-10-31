@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-import 'package:cancellation_token_http/http.dart';
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 
@@ -21,7 +22,7 @@ class BackUpState {
   final DateTime progressInFileSpeedUpdateTime;
   final int progressInFileSpeedUpdateSentBytes;
   final double iCloudDownloadProgress;
-  final CancellationToken cancelToken;
+  final Completer<void> abortTrigger;
   final ServerDiskInfo serverInfo;
   final bool autoBackup;
   final bool backgroundBackup;
@@ -53,7 +54,7 @@ class BackUpState {
     required this.progressInFileSpeedUpdateTime,
     required this.progressInFileSpeedUpdateSentBytes,
     required this.iCloudDownloadProgress,
-    required this.cancelToken,
+    required this.abortTrigger,
     required this.serverInfo,
     required this.autoBackup,
     required this.backgroundBackup,
@@ -78,7 +79,7 @@ class BackUpState {
     DateTime? progressInFileSpeedUpdateTime,
     int? progressInFileSpeedUpdateSentBytes,
     double? iCloudDownloadProgress,
-    CancellationToken? cancelToken,
+    Completer<void>? abortTrigger,
     ServerDiskInfo? serverInfo,
     bool? autoBackup,
     bool? backgroundBackup,
@@ -102,7 +103,7 @@ class BackUpState {
       progressInFileSpeedUpdateTime: progressInFileSpeedUpdateTime ?? this.progressInFileSpeedUpdateTime,
       progressInFileSpeedUpdateSentBytes: progressInFileSpeedUpdateSentBytes ?? this.progressInFileSpeedUpdateSentBytes,
       iCloudDownloadProgress: iCloudDownloadProgress ?? this.iCloudDownloadProgress,
-      cancelToken: cancelToken ?? this.cancelToken,
+      abortTrigger: abortTrigger ?? this.abortTrigger,
       serverInfo: serverInfo ?? this.serverInfo,
       autoBackup: autoBackup ?? this.autoBackup,
       backgroundBackup: backgroundBackup ?? this.backgroundBackup,
@@ -120,7 +121,7 @@ class BackUpState {
 
   @override
   String toString() {
-    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, cancelToken: $cancelToken, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
+    return 'BackUpState(backupProgress: $backupProgress, allAssetsInDatabase: $allAssetsInDatabase, progressInPercentage: $progressInPercentage, progressInFileSize: $progressInFileSize, progressInFileSpeed: $progressInFileSpeed, progressInFileSpeeds: $progressInFileSpeeds, progressInFileSpeedUpdateTime: $progressInFileSpeedUpdateTime, progressInFileSpeedUpdateSentBytes: $progressInFileSpeedUpdateSentBytes, iCloudDownloadProgress: $iCloudDownloadProgress, abortTrigger: $abortTrigger, serverInfo: $serverInfo, autoBackup: $autoBackup, backgroundBackup: $backgroundBackup, backupRequireWifi: $backupRequireWifi, backupRequireCharging: $backupRequireCharging, backupTriggerDelay: $backupTriggerDelay, availableAlbums: $availableAlbums, selectedBackupAlbums: $selectedBackupAlbums, excludedBackupAlbums: $excludedBackupAlbums, allUniqueAssets: $allUniqueAssets, selectedAlbumsBackupAssetsIds: $selectedAlbumsBackupAssetsIds, currentUploadAsset: $currentUploadAsset)';
   }
 
   @override
@@ -137,7 +138,7 @@ class BackUpState {
         other.progressInFileSpeedUpdateTime == progressInFileSpeedUpdateTime &&
         other.progressInFileSpeedUpdateSentBytes == progressInFileSpeedUpdateSentBytes &&
         other.iCloudDownloadProgress == iCloudDownloadProgress &&
-        other.cancelToken == cancelToken &&
+        other.abortTrigger == abortTrigger &&
         other.serverInfo == serverInfo &&
         other.autoBackup == autoBackup &&
         other.backgroundBackup == backgroundBackup &&
@@ -163,7 +164,7 @@ class BackUpState {
         progressInFileSpeedUpdateTime.hashCode ^
         progressInFileSpeedUpdateSentBytes.hashCode ^
         iCloudDownloadProgress.hashCode ^
-        cancelToken.hashCode ^
+        abortTrigger.hashCode ^
         serverInfo.hashCode ^
         autoBackup.hashCode ^
         backgroundBackup.hashCode ^
