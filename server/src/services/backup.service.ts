@@ -80,8 +80,8 @@ export class BackupService extends BaseService {
     const config = database.config;
 
     const isUrlConnection = config.connectionType === 'url';
-    
-    let connectionUrl: string | null = isUrlConnection ? config.url : null;
+
+    let connectionUrl: string = isUrlConnection ? config.url : "";
     if (URL.canParse(connectionUrl)) {
       // remove known bad url parameters for pg_dumpall
       const url = new URL(connectionUrl);
