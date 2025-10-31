@@ -38,6 +38,12 @@ class SimilarPhotosActionButton extends ConsumerWidget {
           ),
         );
 
+    /// Using and currentTabIndex to make sure we are using the correct
+    /// navigation behavior. We want to be able to navigate back to the
+    /// main timline using View In Timeline button without the need of
+    /// waiting for the timeline to be rebuild. At the same time, we want
+    /// to refresh the search page when tapping the Similar Photos button
+    /// while already in the Search tab.
     final currentTabIndex = (ref.read(currentTabIndexProvider.notifier).state);
 
     if (currentTabIndex != kSearchTabIndex) {
