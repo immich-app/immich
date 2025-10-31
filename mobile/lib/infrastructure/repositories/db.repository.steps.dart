@@ -5893,7 +5893,7 @@ final class Schema14 extends i0.VersionedSchema {
       withoutRowId: true,
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(asset_id)'],
-      columns: [_column_34, _column_13, _column_96, _column_97],
+      columns: [_column_96, _column_13, _column_97, _column_98],
       attachedDatabase: database,
     ),
     alias: null,
@@ -5928,7 +5928,14 @@ class Shape24 extends i0.VersionedTable {
       columnsByName['action_type']! as i1.GeneratedColumn<int>;
 }
 
-i1.GeneratedColumn<bool> _column_96(String aliasedName) =>
+i1.GeneratedColumn<String> _column_96(String aliasedName) =>
+    i1.GeneratedColumn<String>(
+      'asset_id',
+      aliasedName,
+      false,
+      type: i1.DriftSqlType.string,
+    );
+i1.GeneratedColumn<bool> _column_97(String aliasedName) =>
     i1.GeneratedColumn<bool>(
       'is_sync_approved',
       aliasedName,
@@ -5938,7 +5945,7 @@ i1.GeneratedColumn<bool> _column_96(String aliasedName) =>
         'CHECK ("is_sync_approved" IN (0, 1))',
       ),
     );
-i1.GeneratedColumn<int> _column_97(String aliasedName) =>
+i1.GeneratedColumn<int> _column_98(String aliasedName) =>
     i1.GeneratedColumn<int>(
       'action_type',
       aliasedName,

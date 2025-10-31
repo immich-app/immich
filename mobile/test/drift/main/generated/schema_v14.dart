@@ -7679,9 +7679,6 @@ class TrashSyncEntity extends Table
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES local_asset_entity (id) ON DELETE CASCADE',
-    ),
   );
   late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
     'checksum',

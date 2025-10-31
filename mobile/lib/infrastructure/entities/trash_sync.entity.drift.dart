@@ -6,9 +6,6 @@ import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.da
 import 'package:immich_mobile/domain/models/trash_sync.model.dart' as i2;
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.dart'
     as i3;
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart'
-    as i4;
-import 'package:drift/internal/modular.dart' as i5;
 
 typedef $$TrashSyncEntityTableCreateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
@@ -25,52 +22,6 @@ typedef $$TrashSyncEntityTableUpdateCompanionBuilder =
       i0.Value<i2.TrashActionType> actionType,
     });
 
-final class $$TrashSyncEntityTableReferences
-    extends
-        i0.BaseReferences<
-          i0.GeneratedDatabase,
-          i1.$TrashSyncEntityTable,
-          i1.TrashSyncEntityData
-        > {
-  $$TrashSyncEntityTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
-
-  static i4.$LocalAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
-      i5.ReadDatabaseContainer(db)
-          .resultSet<i4.$LocalAssetEntityTable>('local_asset_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i5.ReadDatabaseContainer(db)
-                  .resultSet<i1.$TrashSyncEntityTable>('trash_sync_entity')
-                  .assetId,
-              i5.ReadDatabaseContainer(
-                db,
-              ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity').id,
-            ),
-          );
-
-  i4.$$LocalAssetEntityTableProcessedTableManager get assetId {
-    final $_column = $_itemColumn<String>('asset_id')!;
-
-    final manager = i4
-        .$$LocalAssetEntityTableTableManager(
-          $_db,
-          i5.ReadDatabaseContainer(
-            $_db,
-          ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
-        )
-        .filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_assetIdTable($_db));
-    if (item == null) return manager;
-    return i0.ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
 class $$TrashSyncEntityTableFilterComposer
     extends i0.Composer<i0.GeneratedDatabase, i1.$TrashSyncEntityTable> {
   $$TrashSyncEntityTableFilterComposer({
@@ -80,6 +31,11 @@ class $$TrashSyncEntityTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i0.ColumnFilters<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
   i0.ColumnFilters<String> get checksum => $composableBuilder(
     column: $table.checksum,
     builder: (column) => i0.ColumnFilters(column),
@@ -95,33 +51,6 @@ class $$TrashSyncEntityTableFilterComposer
     column: $table.actionType,
     builder: (column) => i0.ColumnWithTypeConverterFilters(column),
   );
-
-  i4.$$LocalAssetEntityTableFilterComposer get assetId {
-    final i4.$$LocalAssetEntityTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.assetId,
-      referencedTable: i5.ReadDatabaseContainer(
-        $db,
-      ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => i4.$$LocalAssetEntityTableFilterComposer(
-            $db: $db,
-            $table: i5.ReadDatabaseContainer(
-              $db,
-            ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
 class $$TrashSyncEntityTableOrderingComposer
@@ -133,6 +62,11 @@ class $$TrashSyncEntityTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i0.ColumnOrderings<String> get assetId => $composableBuilder(
+    column: $table.assetId,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i0.ColumnOrderings<String> get checksum => $composableBuilder(
     column: $table.checksum,
     builder: (column) => i0.ColumnOrderings(column),
@@ -147,34 +81,6 @@ class $$TrashSyncEntityTableOrderingComposer
     column: $table.actionType,
     builder: (column) => i0.ColumnOrderings(column),
   );
-
-  i4.$$LocalAssetEntityTableOrderingComposer get assetId {
-    final i4.$$LocalAssetEntityTableOrderingComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.assetId,
-          referencedTable: i5.ReadDatabaseContainer(
-            $db,
-          ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
-          getReferencedColumn: (t) => t.id,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => i4.$$LocalAssetEntityTableOrderingComposer(
-                $db: $db,
-                $table: i5.ReadDatabaseContainer(
-                  $db,
-                ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return composer;
-  }
 }
 
 class $$TrashSyncEntityTableAnnotationComposer
@@ -186,6 +92,9 @@ class $$TrashSyncEntityTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  i0.GeneratedColumn<String> get assetId =>
+      $composableBuilder(column: $table.assetId, builder: (column) => column);
+
   i0.GeneratedColumn<String> get checksum =>
       $composableBuilder(column: $table.checksum, builder: (column) => column);
 
@@ -199,34 +108,6 @@ class $$TrashSyncEntityTableAnnotationComposer
         column: $table.actionType,
         builder: (column) => column,
       );
-
-  i4.$$LocalAssetEntityTableAnnotationComposer get assetId {
-    final i4.$$LocalAssetEntityTableAnnotationComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.assetId,
-          referencedTable: i5.ReadDatabaseContainer(
-            $db,
-          ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
-          getReferencedColumn: (t) => t.id,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => i4.$$LocalAssetEntityTableAnnotationComposer(
-                $db: $db,
-                $table: i5.ReadDatabaseContainer(
-                  $db,
-                ).resultSet<i4.$LocalAssetEntityTable>('local_asset_entity'),
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return composer;
-  }
 }
 
 class $$TrashSyncEntityTableTableManager
@@ -240,9 +121,16 @@ class $$TrashSyncEntityTableTableManager
           i1.$$TrashSyncEntityTableAnnotationComposer,
           $$TrashSyncEntityTableCreateCompanionBuilder,
           $$TrashSyncEntityTableUpdateCompanionBuilder,
-          (i1.TrashSyncEntityData, i1.$$TrashSyncEntityTableReferences),
+          (
+            i1.TrashSyncEntityData,
+            i0.BaseReferences<
+              i0.GeneratedDatabase,
+              i1.$TrashSyncEntityTable,
+              i1.TrashSyncEntityData
+            >,
+          ),
           i1.TrashSyncEntityData,
-          i0.PrefetchHooks Function({bool assetId})
+          i0.PrefetchHooks Function()
         > {
   $$TrashSyncEntityTableTableManager(
     i0.GeneratedDatabase db,
@@ -283,56 +171,9 @@ class $$TrashSyncEntityTableTableManager
                 actionType: actionType,
               ),
           withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  i1.$$TrashSyncEntityTableReferences(db, table, e),
-                ),
-              )
+              .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
               .toList(),
-          prefetchHooksCallback: ({assetId = false}) {
-            return i0.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends i0.TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (assetId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.assetId,
-                                referencedTable: i1
-                                    .$$TrashSyncEntityTableReferences
-                                    ._assetIdTable(db),
-                                referencedColumn: i1
-                                    .$$TrashSyncEntityTableReferences
-                                    ._assetIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
+          prefetchHooksCallback: null,
         ),
       );
 }
@@ -347,9 +188,16 @@ typedef $$TrashSyncEntityTableProcessedTableManager =
       i1.$$TrashSyncEntityTableAnnotationComposer,
       $$TrashSyncEntityTableCreateCompanionBuilder,
       $$TrashSyncEntityTableUpdateCompanionBuilder,
-      (i1.TrashSyncEntityData, i1.$$TrashSyncEntityTableReferences),
+      (
+        i1.TrashSyncEntityData,
+        i0.BaseReferences<
+          i0.GeneratedDatabase,
+          i1.$TrashSyncEntityTable,
+          i1.TrashSyncEntityData
+        >,
+      ),
       i1.TrashSyncEntityData,
-      i0.PrefetchHooks Function({bool assetId})
+      i0.PrefetchHooks Function()
     >;
 i0.Index get idxTrashSyncChecksum => i0.Index(
   'idx_trash_sync_checksum',
@@ -372,9 +220,6 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
     false,
     type: i0.DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
-      'REFERENCES local_asset_entity (id) ON DELETE CASCADE',
-    ),
   );
   static const i0.VerificationMeta _checksumMeta = const i0.VerificationMeta(
     'checksum',

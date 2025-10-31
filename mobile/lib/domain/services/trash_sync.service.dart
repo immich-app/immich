@@ -82,7 +82,7 @@ class TrashSyncService {
     if (allowToTrash) {
       return await _applyRemoteTrashToLocal(localAssetsToTrash);
     } else {
-      await _applyRemoteTrashToReview(localAssetsToTrash);
+      // await _applyRemoteTrashToReview(localAssetsToTrash);
       return true;
     }
   }
@@ -100,13 +100,13 @@ class TrashSyncService {
     return await _localFilesManager.moveToTrash(mediaUrls.nonNulls.toList());
   }
 
-  Future<void> _applyRemoteTrashToReview(List<LocalAsset> localAssetsToTrash) async {
-    final itemsToReview = localAssetsToTrash
-        .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
-        .where((la) => la.checksum.isNotEmpty);
-    _logger.info("Apply remote trash action to review for: $itemsToReview");
-    return _trashSyncRepository.insertIfNotExists(itemsToReview, TrashActionType.delete);
-  }
+  // Future<void> _applyRemoteTrashToReview(List<LocalAsset> localAssetsToTrash) async {
+  //   final itemsToReview = localAssetsToTrash
+  //       .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
+  //       .where((la) => la.checksum.isNotEmpty);
+  //   _logger.info("Apply remote trash action to review for: $itemsToReview");
+  //   return _trashSyncRepository.insertIfNotExists(itemsToReview, TrashActionType.delete);
+  // }
 
   Future<void> _applyRemoteRestore(Iterable<String> modifiedAssetsChecksums) async {
     final remoteAssetsToRestore = await _remoteAssetRepository.getByChecksums(modifiedAssetsChecksums, isTrashed: true);

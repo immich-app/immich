@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/trash_sync.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
@@ -8,7 +7,7 @@ import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 class TrashSyncEntity extends Table with DriftDefaultsMixin {
   const TrashSyncEntity();
 
-  TextColumn get assetId => text().references(LocalAssetEntity, #id, onDelete: KeyAction.cascade)();
+  TextColumn get assetId => text()();
 
   TextColumn get checksum => text()();
 

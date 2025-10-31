@@ -301,13 +301,6 @@ abstract class $Drift extends i0.GeneratedDatabase {
       ),
       result: [i0.TableUpdate('asset_face_entity', kind: i0.UpdateKind.update)],
     ),
-    i0.WritePropagation(
-      on: i0.TableUpdateQuery.onTableName(
-        'local_asset_entity',
-        limitUpdateKind: i0.UpdateKind.delete,
-      ),
-      result: [i0.TableUpdate('trash_sync_entity', kind: i0.UpdateKind.delete)],
-    ),
   ]);
   @override
   i0.DriftDatabaseOptions get options =>

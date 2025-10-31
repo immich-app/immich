@@ -12,26 +12,74 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
   const DriftTrashSyncRepository(this._db) : super(_db);
 
-  Future<void> insertIfNotExists(Iterable<ReviewItem> itemsToReview, TrashActionType actionType) async {
+  // Future<void> insertIfNotExists(Iterable<ReviewItem> itemsToReview, TrashActionType actionType) async {
+  //   if (itemsToReview.isEmpty) {
+  //     return Future.value();
+  //   }
+  //
+  //   final alreadyExistChecksums =
+  //       await (_db.trashSyncEntity.select()..where((tbl) => tbl.checksum.isIn(itemsToReview.map((e) => e.checksum))))
+  //           .map((e) => e.checksum)
+  //           .get();
+  //
+  //   final toInsert = itemsToReview
+  //       .where((e) => !alreadyExistChecksums.contains(e.checksum))
+  //       .map(
+  //         (e) => TrashSyncEntityCompanion.insert(assetId: e.localAssetId, checksum: e.checksum, actionType: actionType),
+  //       )
+  //       .toList();
+  //
+  //   if (toInsert.isEmpty) {
+  //     return Future.value();
+  //   }
+  //   return _db.batch((batch) {
+  //     batch.insertAll(_db.trashSyncEntity, toInsert);
+  //   });
+  // }
+
+  Future<void> upsertWithActionTypeCheck(Iterable<ReviewItem> itemsToReview, TrashActionType actionType) async {
     if (itemsToReview.isEmpty) {
       return Future.value();
     }
 
-    final alreadyExistChecksums =
-        await (_db.trashSyncEntity.select()..where((tbl) => tbl.checksum.isIn(itemsToReview.map((e) => e.checksum))))
-            .map((e) => e.checksum)
-            .get();
+    /* remove it on
+    * localAssetId - unique for device storage volume
+    * checksum - unique in remote for particular library, not unique for local asset, trashed local asset, trash sync event
+    */
 
-    final toInsert = itemsToReview
-        .where((e) => !alreadyExistChecksums.contains(e.checksum))
-        .map((e) => TrashSyncEntityCompanion.insert(assetId: e.localAssetId, checksum: e.checksum, actionType: actionType ))
-        .toList();
+    final assetIds = itemsToReview.map((e) => e.localAssetId).toList();
 
-    if (toInsert.isEmpty) {
-      return Future.value();
+    // final existingEntities = await (_db.trashSyncEntity.select()..where((tbl) => tbl.assetId.isIn(assetIds))).get();
+
+    final existingEntities = <TrashSyncEntityData>[];
+
+    for (final slice in assetIds.slices(kDriftMaxChunk)) {
+      final sliceResult = await (_db.trashSyncEntity.select()..where((tbl) => tbl.assetId.isIn(slice))).get();
+      existingEntities.addAll(sliceResult);
     }
+
+    final existingMap = {for (var e in existingEntities) e.assetId: e};
+
     return _db.batch((batch) {
-      batch.insertAll(_db.trashSyncEntity, toInsert);
+      for (var item in itemsToReview) {
+        final existing = existingMap[item.localAssetId];
+        if (existing?.actionType != actionType) {
+          batch.insert(
+            _db.trashSyncEntity,
+            TrashSyncEntityCompanion.insert(
+              assetId: item.localAssetId,
+              checksum: item.checksum,
+              actionType: actionType,
+            ),
+            onConflict: DoUpdate(
+              (_) => TrashSyncEntityCompanion.custom(
+                actionType: Variable(actionType.index),
+                isSyncApproved: const Variable(null),
+              ),
+            ),
+          );
+        }
+      }
     });
   }
 

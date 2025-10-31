@@ -116,8 +116,13 @@ class SyncStreamService {
                 Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false)) {
           final hasPermission = await _localFilesManager.hasManageMediaPermission();
           if (hasPermission) {
-            await _handleRemoteTrashed(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum));
-            await _applyRemoteRestoreToLocal();
+            final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
+            final trashedChecksums = remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.checksum);
+            await _handleRemoteTrashed(trashedChecksums, reviewMode);
+            await _applyRemoteRestoreToLocal(reviewMode);
+            if (reviewMode) {
+              await _trashSyncRepository.deleteAlreadySynced();
+            }
           } else {
             _logger.warning("sync Trashed Assets cannot proceed because MANAGE_MEDIA permission is missing");
           }
@@ -251,20 +256,19 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _handleRemoteTrashed(Iterable<String> checksums) async {
+  Future<void> _handleRemoteTrashed(Iterable<String> checksums, bool reviewMode) async {
     if (checksums.isEmpty) {
       return Future.value();
     } else {
       final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(checksums);
       if (localAssetsToTrash.isNotEmpty) {
-        final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
         if (reviewMode) {
           final itemsToReview = localAssetsToTrash.values.flattened
               .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
               .where((la) => la.checksum.isNotEmpty);
 
           _logger.info("Apply remote trash action to review for: $itemsToReview");
-          await _trashSyncRepository.insertIfNotExists(itemsToReview,TrashActionType.delete);
+          await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview,TrashActionType.delete);
         } else {
           final mediaUrls = await Future.wait(
             localAssetsToTrash.values
@@ -285,16 +289,15 @@ class SyncStreamService {
     }
   }
 
-  Future<void> _applyRemoteRestoreToLocal() async {
+  Future<void> _applyRemoteRestoreToLocal(bool reviewMode) async {
     final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
     if (assetsToRestore.isNotEmpty) {
-      final reviewMode = Store.get(StoreKey.reviewOutOfSyncChangesAndroid, false);
       if (reviewMode) {
-        final checksums = assetsToRestore.map((e) => e.checksum).nonNulls;
-        _logger.info("Clear unapproved trash sync for: $checksums");
-        //clear info about assets that were restored in cloud and still not resolved by user on device
-        await _trashSyncRepository.deleteUnapproved(checksums);
-        //todo what to do with assets that were restored in claud?
+        final itemsToReview = assetsToRestore
+            .map<ReviewItem>((la) => (localAssetId: la.id, checksum: la.checksum ?? ''))
+            .where((la) => la.checksum.isNotEmpty);
+        _logger.info("remote restored, itemsToReview: $itemsToReview");
+        await _trashSyncRepository.upsertWithActionTypeCheck(itemsToReview, TrashActionType.restore);
       } else {
         final restoredIds = await _localFilesManager.restoreAssetsFromTrash(assetsToRestore);
         await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
