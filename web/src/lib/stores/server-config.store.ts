@@ -43,6 +43,7 @@ export const serverConfig = writable<ServerConfig>({
   mapDarkStyleUrl: '',
   mapLightStyleUrl: '',
   publicUsers: true,
+  maintenanceMode: false,
 });
 
 export type SystemConfig = SystemConfigDto & { loaded: boolean };
@@ -53,6 +54,11 @@ export const retrieveServerConfig = async () => {
 
   featureFlags.update(() => ({ ...flags, loaded: true }));
   serverConfig.update(() => ({ ...config, loaded: true }));
+
+  // Hijack config to redirect into maintenance mode screen if applicable
+  if (config.maintenanceMode !== location.pathname.startsWith('/maintenance')) {
+    location.href = config.maintenanceMode ? '/maintenance' : '/';
+  }
 };
 
 export const retrieveSystemConfig = async () => {

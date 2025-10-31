@@ -1,7 +1,7 @@
 <script lang="ts">
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import type { SystemConfigDto } from '@immich/sdk';
+  import { getServerConfig, type SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -20,6 +20,16 @@
 
   const onsubmit = (event: Event) => {
     event.preventDefault();
+
+    // poll the server until it comes back online
+    setInterval(
+      () =>
+        void getServerConfig()
+          // eslint-disable-next-line no-self-assign
+          .then(() => (location.href = location.href))
+          .catch(() => {}),
+      1000,
+    );
   };
 </script>
 
