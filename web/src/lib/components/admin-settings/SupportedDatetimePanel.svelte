@@ -25,7 +25,7 @@
     <p>{$t('admin.storage_template_date_time_description')}</p>
     <p>{$t('admin.storage_template_date_time_sample', { values: { date: '2022-02-03T20:03:05.250' } })}</p>
   </div>
-  <div class="flex gap-[40px]">
+  <div class="flex gap-10">
     <div>
       <p class="uppercase font-medium text-primary">{$t('year')}</p>
       <ul>

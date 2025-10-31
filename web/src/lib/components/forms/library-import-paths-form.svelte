@@ -156,7 +156,7 @@
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each validatedPaths as validatedPath, listIndex (validatedPath.importPath)}
         <tr
-          class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+          class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
         >
           <td class="w-1/8 text-ellipsis ps-8 text-sm">
             {#if validatedPath.isValid}
@@ -180,7 +180,7 @@
         </tr>
       {/each}
       <tr
-        class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+        class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
       >
         <td class="w-4/5 text-ellipsis px-4 text-sm">
           {#if importPaths.length === 0}

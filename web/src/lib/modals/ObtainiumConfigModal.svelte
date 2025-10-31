@@ -73,7 +73,7 @@
               rel="noreferrer"
               id="obtainium-link"
             >
-              <img class="pt-2 pr-5 h-[80px]" alt="Get it on Obtainium" src={obtainiumBadge} />
+              <img class="pt-2 pr-5 h-20" alt="Get it on Obtainium" src={obtainiumBadge} />
             </a>
           </div>
         </div>
