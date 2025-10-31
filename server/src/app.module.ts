@@ -7,7 +7,7 @@ import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commandsAndQuestions } from 'src/commands';
 import { IWorker } from 'src/constants';
-import { controllers } from 'src/controllers';
+import { controllers, maintenanceControllers } from 'src/controllers';
 import { ImmichWorker } from 'src/enum';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
@@ -90,6 +90,13 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.Api }],
 })
 export class ApiModule extends BaseModule {}
+
+@Module({
+  imports: [...imports, ScheduleModule.forRoot()],
+  controllers: [...maintenanceControllers],
+  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.Maintenance }],
+})
+export class MaintenanceModule extends BaseModule {}
 
 @Module({
   imports: [...imports],

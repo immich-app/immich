@@ -154,6 +154,7 @@ export class ServerConfigDto {
   publicUsers!: boolean;
   mapDarkStyleUrl!: string;
   mapLightStyleUrl!: string;
+  maintenanceMode!: boolean;
 }
 
 export class ServerFeaturesDto {

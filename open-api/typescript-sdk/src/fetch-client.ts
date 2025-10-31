@@ -1159,6 +1159,7 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    maintenanceMode: boolean;
     mapDarkStyleUrl: string;
     mapLightStyleUrl: string;
     oauthButtonText: string;

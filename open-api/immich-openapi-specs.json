@@ -14325,6 +14325,9 @@
           "loginPageMessage": {
             "type": "string"
           },
+          "maintenanceMode": {
+            "type": "boolean"
+          },
           "mapDarkStyleUrl": {
             "type": "string"
           },
@@ -14349,6 +14352,7 @@
           "isInitialized",
           "isOnboarded",
           "loginPageMessage",
+          "maintenanceMode",
           "mapDarkStyleUrl",
           "mapLightStyleUrl",
           "oauthButtonText",

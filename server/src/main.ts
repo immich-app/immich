@@ -1,10 +1,14 @@
+import { NestFactory } from '@nestjs/core';
 import { CommandFactory } from 'nest-commander';
 import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
-import { ImmichAdminModule } from 'src/app.module';
+import { ApiModule, ImmichAdminModule } from 'src/app.module';
 import { ImmichWorker, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { getConfig } from 'src/utils/config';
 
 /**
  * Manages worker lifecycle
@@ -22,15 +26,43 @@ class Workers {
   /**
    * Boot all enabled workers
    */
-  bootstrap() {
+  async bootstrap() {
+    const {
+      maintenance: { enabled: maintenanceMode },
+    } = await this.getConfig();
     const { workers } = new ConfigRepository().getEnv();
 
-    // todo: filter for API if in maintenance
-    // todo: swap API for maintenance API
-
-    for (const worker of workers) {
-      this.startWorker(worker);
+    if (maintenanceMode) {
+      this.startWorker(ImmichWorker.Maintenance);
+    } else {
+      for (const worker of workers) {
+        this.startWorker(worker);
+      }
     }
+  }
+
+  /**
+   * Initialise a short-lived Nest application to build configuration
+   * @returns System configuration
+   */
+  private async getConfig() {
+    const app = await NestFactory.create(ApiModule);
+    const logger = await app.resolve(LoggingRepository);
+    const configRepo = app.get(ConfigRepository);
+    const metadataRepo = app.get(SystemMetadataRepository);
+
+    const systemConfig = await getConfig(
+      {
+        configRepo,
+        metadataRepo,
+        logger,
+      },
+      { withCache: false },
+    );
+
+    await app.close();
+
+    return systemConfig;
   }
 
   /**

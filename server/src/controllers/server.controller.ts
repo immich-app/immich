@@ -115,3 +115,36 @@ export class ServerController {
     return this.systemMetadataService.getVersionCheckState();
   }
 }
+
+@Controller('server')
+export class MaintenanceServerController {
+  constructor(
+    private service: ServerService,
+    private versionService: VersionService,
+  ) {}
+
+  @Get('ping')
+  pingServer(): ServerPingResponse {
+    return this.service.ping();
+  }
+
+  @Get('version')
+  getServerVersion(): ServerVersionResponseDto {
+    return this.versionService.getVersion();
+  }
+
+  @Get('features')
+  getServerFeatures(): Promise<ServerFeaturesDto> {
+    return this.service.getFeatures();
+  }
+
+  @Get('config')
+  getServerConfig(): Promise<ServerConfigDto> {
+    return this.service.getSystemConfig();
+  }
+
+  @Get('media-types')
+  getSupportedMediaTypes(): ServerMediaTypesResponseDto {
+    return this.service.getSupportedMediaTypes();
+  }
+}
