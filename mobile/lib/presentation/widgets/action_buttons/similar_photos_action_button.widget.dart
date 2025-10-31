@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class SimilarPhotosActionButton extends ConsumerWidget {
@@ -35,7 +37,15 @@ class SimilarPhotosActionButton extends ConsumerWidget {
             mediaType: AssetType.image,
           ),
         );
-    unawaited(context.router.navigate(const DriftSearchRoute()));
+
+    final currentTabIndex = (ref.read(currentTabIndexProvider.notifier).state);
+
+    if (currentTabIndex != kSearchTabIndex) {
+      unawaited(context.router.navigate(const DriftSearchRoute()));
+      ref.read(currentTabIndexProvider.notifier).state = kSearchTabIndex;
+    } else {
+      unawaited(context.router.popAndPush(const DriftSearchRoute()));
+    }
   }
 
   @override

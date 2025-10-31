@@ -4,6 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -106,31 +108,33 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 }
 
 void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
+  ref.read(currentTabIndexProvider.notifier).state = index;
+
   // On Photos page menu tapped
-  if (router.activeIndex == 0 && index == 0) {
+  if (router.activeIndex == kPhotoTabIndex && index == kPhotoTabIndex) {
     EventStream.shared.emit(const ScrollToTopEvent());
   }
 
-  if (index == 0) {
+  if (index == kPhotoTabIndex) {
     ref.invalidate(driftMemoryFutureProvider);
   }
 
-  if (router.activeIndex != 1 && index == 1) {
+  if (router.activeIndex != kSearchTabIndex && index == kSearchTabIndex) {
     ref.read(searchPreFilterProvider.notifier).clear();
   }
 
   // On Search page tapped
-  if (router.activeIndex == 1 && index == 1) {
+  if (router.activeIndex == kSearchTabIndex && index == kSearchTabIndex) {
     ref.read(searchInputFocusProvider).requestFocus();
   }
 
   // Album page
-  if (index == 2) {
+  if (index == kAlbumTabIndex) {
     ref.read(remoteAlbumProvider.notifier).refresh();
   }
 
   // Library page
-  if (index == 3) {
+  if (index == kLibraryTabIndex) {
     ref.invalidate(localAlbumProvider);
     ref.invalidate(driftGetAllPeopleProvider);
   }
