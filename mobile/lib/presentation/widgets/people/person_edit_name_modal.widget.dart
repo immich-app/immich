@@ -89,7 +89,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
       final allContain = queryParts.every((q) => nameParts.any((n) => n.contains(q)));
 
       if (allStart) {
-        // Prioritize names that start with the query
+        // Prioritize names (first or surname) that start with the query
         startsWithMatches.add(p);
       } else if (allContain) {
         containsMatches.add(p);
@@ -117,6 +117,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
             TextFormField(
               autofocus: true,
               controller: _formController,
+              textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 hintText: 'add_a_name'.tr(),
                 border: const OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
