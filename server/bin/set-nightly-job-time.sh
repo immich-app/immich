@@ -22,21 +22,35 @@ echo "[INFO] Copying IMMICH config file from '$IMMICH_CONFIG_FILE' to '/tmp/immi
 cp /config/immich-config.yaml /tmp/immich_config.yaml
 
 NIGHTLY_TASKS_OFFSET_MINUTES=${NIGHTLY_TASKS_OFFSET_MINUTES:-1}
-echo "[INFO] Calculating nightly job start time (current UTC time + ${NIGHTLY_TASKS_OFFSET_MINUTES} minute(s))..."
-if date -u -v+${NIGHTLY_TASKS_OFFSET_MINUTES}M "+%H:%M" >/dev/null 2>&1; then
-  NIGHTLY_TASKS_START_TIME=$(date -u -v+${NIGHTLY_TASKS_OFFSET_MINUTES}M "+%H:%M")
+NIGHTLY_TASKS_JITTER_MINUTES=${NIGHTLY_TASKS_JITTER_MINUTES:-0}
+
+# Calculate random jitter (0..NIGHTLY_TASKS_JITTER_MINUTES) if jitter > 0
+JITTER_APPLIED=0
+if [ "$NIGHTLY_TASKS_JITTER_MINUTES" -gt 0 ]; then
+  # Use $RANDOM (0-32767) scaled to jitter range
+  JITTER_APPLIED=$(( RANDOM % (NIGHTLY_TASKS_JITTER_MINUTES + 1) ))
+fi
+
+TOTAL_OFFSET_MINUTES=$(( NIGHTLY_TASKS_OFFSET_MINUTES + JITTER_APPLIED ))
+
+echo "[INFO] Calculating nightly job start time (current UTC time + ${NIGHTLY_TASKS_OFFSET_MINUTES} base minute(s) + ${JITTER_APPLIED} jitter = ${TOTAL_OFFSET_MINUTES} total)..."
+if date -u -v+${TOTAL_OFFSET_MINUTES}M "+%H:%M" >/dev/null 2>&1; then
+  NIGHTLY_TASKS_START_TIME=$(date -u -v+${TOTAL_OFFSET_MINUTES}M "+%H:%M")
   echo "[INFO] Using BSD/macOS date syntax."
 else
-  NIGHTLY_TASKS_START_TIME=$(date -u -d "+${NIGHTLY_TASKS_OFFSET_MINUTES} minute" "+%H:%M")
+  NIGHTLY_TASKS_START_TIME=$(date -u -d "+${TOTAL_OFFSET_MINUTES} minute" "+%H:%M")
   echo "[INFO] Using GNU/Linux date syntax."
 fi
-echo "[INFO] Nightly job start time set to '$NIGHTLY_TASKS_START_TIME'."
+echo "[INFO] Nightly job start time set to '$NIGHTLY_TASKS_START_TIME' (jitter applied: ${JITTER_APPLIED} minute(s))."
 
 echo "[INFO] Appending nightlyTasks section to '/tmp/immich_config.yaml'..."
 cat <<EOF >> /tmp/immich_config.yaml
 nightlyTasks:
   startTime: "$NIGHTLY_TASKS_START_TIME"
-  # Offset applied (minutes): ${NIGHTLY_TASKS_OFFSET_MINUTES}
+  # Base offset (minutes): ${NIGHTLY_TASKS_OFFSET_MINUTES}
+  # Jitter range (minutes): ${NIGHTLY_TASKS_JITTER_MINUTES}
+  # Jitter applied (minutes): ${JITTER_APPLIED}
+  # Total offset (minutes): ${TOTAL_OFFSET_MINUTES}
 EOF
 
 export IMMICH_CONFIG_FILE="/tmp/immich_config.yaml"
