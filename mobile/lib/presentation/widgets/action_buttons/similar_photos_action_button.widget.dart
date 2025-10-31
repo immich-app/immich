@@ -35,7 +35,7 @@ class SimilarPhotosActionButton extends ConsumerWidget {
             mediaType: AssetType.image,
           ),
         );
-    unawaited(context.router.popAndPush(const DriftSearchRoute()));
+    unawaited(context.router.navigate(const DriftSearchRoute()));
   }
 
   @override
