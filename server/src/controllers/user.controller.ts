@@ -12,7 +12,7 @@ import {
   Query,
   Res,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
