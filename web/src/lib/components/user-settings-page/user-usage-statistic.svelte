@@ -10,11 +10,35 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  // ----- existing stats state -----
-  let timelineStats: AssetStatsResponseDto = $state({ videos: 0, images: 0, total: 0 });
-  let favoriteStats: AssetStatsResponseDto = $state({ videos: 0, images: 0, total: 0 });
-  let archiveStats: AssetStatsResponseDto  = $state({ videos: 0, images: 0, total: 0 });
-  let trashStats: AssetStatsResponseDto    = $state({ videos: 0, images: 0, total: 0 });
+  let timelineStats: AssetStatsResponseDto = $state({
+    videos: 0,
+    images: 0,
+    total: 0,
+  });
+
+  let favoriteStats: AssetStatsResponseDto = $state({
+    videos: 0,
+    images: 0,
+    total: 0,
+  });
+
+  let archiveStats: AssetStatsResponseDto = $state({
+    videos: 0,
+    images: 0,
+    total: 0,
+  });
+
+  let trashStats: AssetStatsResponseDto = $state({
+    videos: 0,
+    images: 0,
+    total: 0,
+  });
+  
+  let albumStats: AlbumStatisticsResponseDto = $state({
+    owned: 0,
+    shared: 0,
+    notShared: 0,
+  });
 
   let albumStats: AlbumStatisticsResponseDto = $state({ owned: 0, shared: 0, notShared: 0 });
 
