@@ -61,12 +61,9 @@ class TextDetector(InferenceModel):
         try:
             results = self.model(decode_cv2(inputs))
         except ONNXRuntimeError as error:
-            if self._fallback_to_next_provider(error):
-                try:
-                    results = self.model(decode_cv2(inputs))
-                except ONNXRuntimeError as cpu_error:
-                    log.error("Fallback inference failed for OCR detection: %s", cpu_error)
-                    raise
+            if isinstance(self.session, OrtSession) and self.session.fallback_to_cpu(error):
+                self.model = self._build_detector(self.session)
+                results = self.model(decode_cv2(inputs))
             else:
                 raise
         if results.boxes is None or results.scores is None or results.img is None:
@@ -87,31 +84,6 @@ class TextDetector(InferenceModel):
                 score_mode=self.score_mode,
             )
         )
-
-    def _fallback_to_next_provider(self, error: Exception) -> bool:
-        if not isinstance(self.session, OrtSession):
-            return False
-        providers = list(getattr(self.session, "providers", []))
-        if len(providers) <= 1:
-            return False
-
-        failed_provider = providers[0]
-        next_providers = providers[1:]
-        log.warning(
-            "Provider '%s' failed for OCR detection (%s). Retrying with providers: %s",
-            failed_provider,
-            error,
-            next_providers,
-        )
-        cpu_session = OrtSession(self.model_path, providers=next_providers)
-        try:
-            provider_list = cpu_session.session.get_providers()
-        except Exception:  # pragma: no cover - defensive
-            provider_list = ["<unavailable>"]
-        log.info("OCR detection fallback providers now: %s", provider_list)
-        self.session = cpu_session
-        self.model = self._build_detector(cpu_session)
-        return True
 
     def configure(self, **kwargs: Any) -> None:
         if (max_resolution := kwargs.get("maxResolution")) is not None:

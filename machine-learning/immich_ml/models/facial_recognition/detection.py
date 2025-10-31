@@ -19,9 +19,7 @@ class FaceDetector(InferenceModel):
 
     def _load(self) -> ModelSession:
         session = self._make_session(self.model_path)
-        self.model = RetinaFace(session=session)
-        self.model.prepare(ctx_id=0, det_thresh=self.min_score, input_size=(640, 640))
-
+        self.model = self._build_detector(session)
         return session
 
     def _predict(self, inputs: NDArray[np.uint8] | bytes) -> FaceDetectionOutput:
@@ -35,7 +33,20 @@ class FaceDetector(InferenceModel):
         }
 
     def _detect(self, inputs: NDArray[np.uint8] | bytes) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
-        return self.model.detect(inputs)  # type: ignore
+        session = getattr(self, "session", None)
+        try:
+            return self.model.detect(inputs)  # type: ignore
+        except Exception as error:  # pragma: no cover - only executed during provider failures
+            if session and hasattr(session, "fallback_to_cpu") and hasattr(session, "is_onnxruntime_error"):
+                if session.is_onnxruntime_error(error) and session.fallback_to_cpu(error):
+                    self.model = self._build_detector(session)
+                    return self.model.detect(inputs)  # type: ignore
+            raise
 
     def configure(self, **kwargs: Any) -> None:
         self.model.det_thresh = kwargs.pop("minScore", self.model.det_thresh)
+
+    def _build_detector(self, session: ModelSession) -> RetinaFace:
+        detector = RetinaFace(session=session)
+        detector.prepare(ctx_id=0, det_thresh=self.min_score, input_size=(640, 640))
+        return detector

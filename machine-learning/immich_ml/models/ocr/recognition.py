@@ -67,12 +67,9 @@ class TextRecognizer(InferenceModel):
         try:
             rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
         except ONNXRuntimeError as error:
-            if self._fallback_to_next_provider(error):
-                try:
-                    rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
-                except ONNXRuntimeError as cpu_error:
-                    log.error("Fallback inference failed for OCR recognition: %s", cpu_error)
-                    raise
+            if isinstance(self.session, OrtSession) and self.session.fallback_to_cpu(error):
+                self.model = self._build_recognizer(self.session)
+                rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
             else:
                 raise
         if rec.txts is None:
@@ -129,31 +126,6 @@ class TextRecognizer(InferenceModel):
                 rec_img_shape=(3, 48, 320),
             )
         )
-
-    def _fallback_to_next_provider(self, error: Exception) -> bool:
-        if not isinstance(self.session, OrtSession):
-            return False
-        providers = list(getattr(self.session, "providers", []))
-        if len(providers) <= 1:
-            return False
-
-        failed_provider = providers[0]
-        next_providers = providers[1:]
-        log.warning(
-            "Provider '%s' failed for OCR recognition (%s). Retrying with providers: %s",
-            failed_provider,
-            error,
-            next_providers,
-        )
-        cpu_session = OrtSession(self.model_path, providers=next_providers)
-        try:
-            provider_list = cpu_session.session.get_providers()
-        except Exception:  # pragma: no cover - defensive
-            provider_list = ["<unavailable>"]
-        log.info("OCR recognition fallback providers now: %s", provider_list)
-        self.session = cpu_session
-        self.model = self._build_recognizer(cpu_session)
-        return True
 
     def configure(self, **kwargs: Any) -> None:
         self.min_score = kwargs.get("minScore", self.min_score)

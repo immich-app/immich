@@ -24,15 +24,26 @@ class OrtSession:
         sess_options: ort.SessionOptions | None = None,
     ):
         self.model_path = Path(model_path)
-        self.providers = providers if providers is not None else self._providers_default
-        self.provider_options = provider_options if provider_options is not None else self._provider_options_default
-        self.sess_options = sess_options if sess_options is not None else self._sess_options_default
-        self.session = ort.InferenceSession(
-            self.model_path.as_posix(),
-            providers=self.providers,
-            provider_options=self.provider_options,
-            sess_options=self.sess_options,
+        initial_providers = providers if providers is not None else self._providers_default
+        initial_provider_options = (
+            provider_options if provider_options is not None else self._build_provider_options(initial_providers)
         )
+        self.providers = initial_providers
+        self.provider_options = initial_provider_options
+        using_default_sess_options = sess_options is None
+        self._using_default_sess_options = using_default_sess_options
+        self.sess_options = sess_options if sess_options is not None else self._sess_options_default
+
+        try:
+            self.session = ort.InferenceSession(
+                self.model_path.as_posix(),
+                providers=self.providers,
+                provider_options=self.provider_options,
+                sess_options=self.sess_options,
+            )
+        except Exception as error:
+            if not self.fallback_to_cpu(error):
+                raise
 
     def get_inputs(self) -> list[SessionNode]:
         inputs: list[SessionNode] = self.session.get_inputs()
@@ -83,10 +94,9 @@ class OrtSession:
         log.debug(f"Setting execution provider options to {provider_options}")
         self._provider_options = provider_options
 
-    @property
-    def _provider_options_default(self) -> list[dict[str, Any]]:
+    def _build_provider_options(self, providers: list[str]) -> list[dict[str, Any]]:
         provider_options = []
-        for provider in self.providers:
+        for provider in providers:
             match provider:
                 case "CPUExecutionProvider":
                     options = {"arena_extend_strategy": "kSameAsRequested"}
@@ -143,3 +153,59 @@ class OrtSession:
             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
         return sess_options
+
+    def fallback_to_cpu(self, error: Exception | None = None) -> bool:
+        # the new CPU session.
+        current_providers = list(self.providers)
+        if current_providers == ["CPUExecutionProvider"]:
+            log.warning(
+                "ORT session %s is already using CPUExecutionProvider; cannot fall back further (%s).",
+                self.model_path,
+                error,
+            )
+            return False
+
+        failed_provider = current_providers[0] if current_providers else "<unknown>"
+        log.warning(
+            "Provider '%s' failed for ORT session %s (%s). Retrying with CPUExecutionProvider only.",
+            failed_provider,
+            self.model_path,
+            error,
+        )
+
+        fallback_providers = ["CPUExecutionProvider"]
+        current_provider_options = list(self.provider_options)
+        fallback_options = [
+            options
+            for provider, options in zip(current_providers, current_provider_options)
+            if provider == "CPUExecutionProvider"
+        ]
+        if not fallback_options:
+            fallback_options = self._build_provider_options(fallback_providers)
+
+        self.providers = fallback_providers
+        self.provider_options = fallback_options
+
+        if self._using_default_sess_options:
+            self.sess_options = self._sess_options_default
+        else:
+            log.debug("Retaining custom session options after provider fallback.")
+
+        self.session = ort.InferenceSession(
+            self.model_path.as_posix(),
+            providers=self.providers,
+            provider_options=self.provider_options,
+            sess_options=self.sess_options,
+        )
+
+        try:
+            provider_list = self.session.get_providers()
+        except Exception:  # pragma: no cover - defensive
+            provider_list = ["<unavailable>"]
+        log.info("ORT session fallback providers now: %s", provider_list)
+        return True
+
+    @staticmethod
+    def is_onnxruntime_error(error: Exception) -> bool:
+        module = type(error).__module__
+        return "onnxruntime" in module
