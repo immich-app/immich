@@ -157,7 +157,7 @@
     "machine_learning_ocr": "OCR",
     "machine_learning_ocr_description": "Utiliser l'apprentissage automatique pour reconnaître le texte dans les images",
     "machine_learning_ocr_enabled": "Activer la reconnaissance de caractères",
-    "machine_learning_ocr_enabled_description": "Si désactivé, la reconnaissance de texte ne s'appliquera pas aux images",
+    "machine_learning_ocr_enabled_description": "Si désactivé, la reconnaissance de texte ne s'appliquera pas aux images.",
     "machine_learning_ocr_max_resolution": "Résolution maximale",
     "machine_learning_ocr_max_resolution_description": "Les prévisualisations au-dessus de cette résolution seront retaillées en conservant leur ratio. Des valeurs plus grandes sont plus précises, mais sont plus lentes et utilisent plus de mémoire.",
     "machine_learning_ocr_min_detection_score": "Score minimum de détection",
