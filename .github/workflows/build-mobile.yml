@@ -1,20 +1,15 @@
 name: Build Mobile
 
 on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Target environment'
-        required: true
-        default: 'development'
-        type: choice
-        options:
-          - production
-          - development
   workflow_call:
     inputs:
       ref:
         required: false
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
         type: string
     secrets:
       KEY_JKS:
@@ -287,9 +282,9 @@ jobs:
         working-directory: ./mobile/ios
         run: |
           if [[ "$ENVIRONMENT" == "development" ]]; then
-            bundle exec fastlane release_dev
+            bundle exec fastlane gha_testflight_dev
           else
-            bundle exec fastlane release_ci
+            bundle exec fastlane gha_release_prod
           fi
 
       - name: Clean up keychain

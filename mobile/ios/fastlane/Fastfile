@@ -122,7 +122,7 @@ platform :ios do
   end
   
   desc "iOS Development Build to TestFlight (requires separate bundle ID)"
-  lane :release_dev do
+  lane :gha_testflight_dev do
     api_key = get_api_key
     
     # Install development provisioning profiles
@@ -143,7 +143,7 @@ platform :ios do
   end
 
   desc "iOS Release to TestFlight"
-  lane :release_ci do
+  lane :gha_release_prod do
     api_key = get_api_key
     
     # Install provisioning profiles
