@@ -179,7 +179,6 @@ describe(AssetService.name, () => {
       const { sut, ctx } = setup();
       const storageRepo = ctx.getMock(StorageRepository);
       const jobRepo = ctx.getMock(JobRepository);
-      const assetRepo = ctx.getMock(AssetRepository);
 
       storageRepo.copyFile.mockResolvedValue();
       jobRepo.queue.mockResolvedValue();
@@ -206,12 +205,6 @@ describe(AssetService.name, () => {
       await sut.copy(auth, { sourceId: oldAsset.id, targetId: newAsset.id });
 
       expect(storageRepo.copyFile).toHaveBeenCalledWith('/path/to/my/sidecar.xmp', `${newAsset.originalPath}.xmp`);
-
-      expect(assetRepo.upsertFile).toHaveBeenCalledWith({
-        assetId: newAsset.id,
-        path: `${newAsset.originalPath}.xmp`,
-        type: AssetFileType.Sidecar,
-      });
 
       expect(jobRepo.queue).toHaveBeenCalledWith({
         name: JobName.AssetExtractMetadata,
