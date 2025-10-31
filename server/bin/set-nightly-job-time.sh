@@ -21,12 +21,13 @@ set -euo pipefail
 echo "[INFO] Copying IMMICH config file from '$IMMICH_CONFIG_FILE' to '/tmp/immich_config.yaml'..."
 cp /config/immich-config.yaml /tmp/immich_config.yaml
 
-echo "[INFO] Calculating nightly job start time (current UTC time + 1 minute)..."
-if date -u -v+1M "+%H:%M" >/dev/null 2>&1; then
-  NIGHTLY_TASKS_START_TIME=$(date -u -v+1M "+%H:%M")
+NIGHTLY_TASKS_OFFSET_MINUTES=${NIGHTLY_TASKS_OFFSET_MINUTES:-1}
+echo "[INFO] Calculating nightly job start time (current UTC time + ${NIGHTLY_TASKS_OFFSET_MINUTES} minute(s))..."
+if date -u -v+${NIGHTLY_TASKS_OFFSET_MINUTES}M "+%H:%M" >/dev/null 2>&1; then
+  NIGHTLY_TASKS_START_TIME=$(date -u -v+${NIGHTLY_TASKS_OFFSET_MINUTES}M "+%H:%M")
   echo "[INFO] Using BSD/macOS date syntax."
 else
-  NIGHTLY_TASKS_START_TIME=$(date -u -d "+1 minute" "+%H:%M")
+  NIGHTLY_TASKS_START_TIME=$(date -u -d "+${NIGHTLY_TASKS_OFFSET_MINUTES} minute" "+%H:%M")
   echo "[INFO] Using GNU/Linux date syntax."
 fi
 echo "[INFO] Nightly job start time set to '$NIGHTLY_TASKS_START_TIME'."
@@ -35,6 +36,7 @@ echo "[INFO] Appending nightlyTasks section to '/tmp/immich_config.yaml'..."
 cat <<EOF >> /tmp/immich_config.yaml
 nightlyTasks:
   startTime: "$NIGHTLY_TASKS_START_TIME"
+  # Offset applied (minutes): ${NIGHTLY_TASKS_OFFSET_MINUTES}
 EOF
 
 export IMMICH_CONFIG_FILE="/tmp/immich_config.yaml"
