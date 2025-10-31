@@ -82,7 +82,7 @@ export class BackupService extends BaseService {
     const isUrlConnection = config.connectionType === 'url';
     
     let connectionUrl: string | null = isUrlConnection ? config.url : null;
-    if (connectionUrl) {
+    if (URL.canParse(connectionUrl)) {
       // remove known bad url parameters for pg_dumpall
       const url = new URL(connectionUrl);
       url.searchParams.delete('libpqcompat');
