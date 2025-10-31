@@ -16,6 +16,11 @@ on:
       ref:
         required: false
         type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
+        type: string
     secrets:
       KEY_JKS:
         required: true
