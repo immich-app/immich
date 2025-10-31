@@ -504,3 +504,16 @@ where
       and "libraryId" = $2::uuid
       and "isExternal" = $3
   )
+
+
+-- Get per-day upload counts for one user in a date range, timezone.
+SELECT
+  date_trunc('day', timezone(:tz, "createdAt"))::date AS day,
+  COUNT(*)::int AS count
+FROM assets
+WHERE "ownerId" = :userId
+  AND "createdAt" >= :from
+  AND "createdAt" <  :to
+  AND "deletedAt" IS NULL
+GROUP BY day
+ORDER BY day;

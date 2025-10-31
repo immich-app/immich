@@ -162,6 +162,35 @@ export class AssetRepository {
       .execute();
   }
 
+  // Daily uploads for a user in [from, to)
+  async getUserDailyUploads(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<Array<{ date: string; count: number }>> {
+    
+    const dayExpr = sql<string>`to_char(date_trunc('day', a."createdAt"), 'YYYY-MM-DD')`;
+  
+    const rows = await this.db
+      .selectFrom('asset as a') // <-- table alias 'a'
+      .select([
+        dayExpr.as('date'),
+        this.db.fn.countAll<number>().as('count'),
+      ])
+      .where('a.ownerId', '=', userId)
+      .where('a.deletedAt', 'is', null)
+      .where('a.createdAt', '>=', from)   // <-- no quotes
+      .where('a.createdAt', '<', to)      // <-- no quotes
+      .groupBy(dayExpr)
+      .orderBy(dayExpr, 'asc')
+      .execute();
+  
+    return rows.map((r) => ({ date: r.date, count: Number(r.count) }));
+  }
+
+
+  
+
   @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
   @Chunked()
   async updateAllExif(ids: string[], options: Updateable<AssetExifTable>): Promise<void> {

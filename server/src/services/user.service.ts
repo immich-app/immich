@@ -34,6 +34,36 @@ export class UserService extends BaseService {
     return users.map((user) => mapUser(user));
   }
 
+  async getMyUploadActivity(
+    userId: string,
+    from: Date,
+    to: Date,
+  ): Promise<Array<{ date: string; count: number }>> {
+    const data: Array<{ date: string; count: number }> =
+      await this.assetRepository.getUserDailyUploads(userId, from, to);
+  
+    const byDate = new Map<string, number>(data.map((d) => [d.date, d.count]));
+    const out: Array<{ date: string; count: number }> = [];
+  
+    // normalize inputs to UTC midnight
+    const cur = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()));
+    const end = new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()));
+  
+    while (cur < end) {
+      const y = cur.getUTCFullYear();
+      const m = String(cur.getUTCMonth() + 1).padStart(2, '0');
+      const d = String(cur.getUTCDate()).padStart(2, '0');
+      const key = `${y}-${m}-${d}`;
+  
+      out.push({ date: key, count: byDate.get(key) ?? 0 });
+  
+      cur.setUTCDate(cur.getUTCDate() + 1);
+    }
+  
+    return out;
+  }
+  
+  
   async getMe(auth: AuthDto): Promise<UserAdminResponseDto> {
     const user = await this.userRepository.get(auth.user.id, {});
     if (!user) {

@@ -9,9 +9,10 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
@@ -43,6 +44,22 @@ export class UserController {
     return this.service.search(auth);
   }
 
+  @Get('me/activity')
+  @Authenticated({ permission: Permission.UserRead })
+  async getMyUploadActivity(
+    @Auth() auth: AuthDto,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    // Default: last 52 weeks (end exclusive)
+    const end = to ? new Date(to) : new Date();
+    const start = from ? new Date(from) : new Date(end);
+    if (!from) start.setUTCDate(start.getUTCDate() - 7 * 52);
+
+    return this.service.getMyUploadActivity(auth.user.id, start, end);
+  }
+
+  
   @Get('me')
   @Authenticated({ permission: Permission.UserRead })
   getMyUser(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
