@@ -16370,6 +16370,9 @@
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
+          "maintenance": {
+            "$ref": "#/components/schemas/SystemConfigMaintenanceDto"
+          },
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
@@ -16421,6 +16424,7 @@
           "library",
           "logging",
           "machineLearning",
+          "maintenance",
           "map",
           "metadata",
           "newVersionCheck",
@@ -16816,6 +16820,17 @@
           "facialRecognition",
           "ocr",
           "urls"
+        ],
+        "type": "object"
+      },
+      "SystemConfigMaintenanceDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
         ],
         "type": "object"
       },

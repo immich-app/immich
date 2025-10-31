@@ -1470,6 +1470,9 @@ export type SystemConfigMachineLearningDto = {
     ocr: OcrConfig;
     urls: string[];
 };
+export type SystemConfigMaintenanceDto = {
+    enabled: boolean;
+};
 export type SystemConfigMapDto = {
     darkStyle: string;
     enabled: boolean;
@@ -1557,6 +1560,7 @@ export type SystemConfigDto = {
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
     machineLearning: SystemConfigMachineLearningDto;
+    maintenance: SystemConfigMaintenanceDto;
     map: SystemConfigMapDto;
     metadata: SystemConfigMetadataDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;

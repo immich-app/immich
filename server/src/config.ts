@@ -87,6 +87,9 @@ export interface SystemConfig {
     lightStyle: string;
     darkStyle: string;
   };
+  maintenance: {
+    enabled: boolean;
+  };
   reverseGeocoding: {
     enabled: boolean;
   };
@@ -275,6 +278,9 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true,
     lightStyle: 'https://tiles.immich.cloud/v1/style/light.json',
     darkStyle: 'https://tiles.immich.cloud/v1/style/dark.json',
+  },
+  maintenance: {
+    enabled: false,
   },
   reverseGeocoding: {
     enabled: true,
