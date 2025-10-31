@@ -6,53 +6,99 @@ import { ImmichAdminModule } from 'src/app.module';
 import { ImmichWorker, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 
-const immichApp = process.argv[2];
-if (immichApp) {
-  process.argv.splice(2, 1);
-}
+/**
+ * Manages worker lifecycle
+ */
+class Workers {
+  /**
+   * Currently running workers
+   */
+  workers: Partial<Record<ImmichWorker, Worker | ChildProcess>>;
 
-let apiProcess: ChildProcess | undefined;
+  constructor() {
+    this.workers = {};
+  }
 
-const onError = (name: string, error: Error) => {
-  console.error(`${name} worker error: ${error}, stack: ${error.stack}`);
-};
+  /**
+   * Boot all enabled workers
+   */
+  bootstrap() {
+    const { workers } = new ConfigRepository().getEnv();
 
-const onExit = (name: string, exitCode: number | null) => {
-  if (exitCode !== 0) {
-    console.error(`${name} worker exited with code ${exitCode}`);
+    // todo: filter for API if in maintenance
+    // todo: swap API for maintenance API
 
-    if (apiProcess && name !== ImmichWorker.Api) {
-      console.error('Killing api process');
-      apiProcess.kill('SIGTERM');
-      apiProcess = undefined;
+    for (const worker of workers) {
+      this.startWorker(worker);
     }
   }
 
-  process.exit(exitCode);
-};
+  /**
+   * Start an individual worker
+   * @param name Worker
+   */
+  private startWorker(name: ImmichWorker) {
+    console.log(`Starting ${name} worker`);
 
-function bootstrapWorker(name: ImmichWorker) {
-  console.log(`Starting ${name} worker`);
+    // eslint-disable-next-line unicorn/prefer-module
+    const basePath = dirname(__filename);
+    const workerFile = join(basePath, 'workers', `${name}.js`);
 
-  // eslint-disable-next-line unicorn/prefer-module
-  const basePath = dirname(__filename);
-  const workerFile = join(basePath, 'workers', `${name}.js`);
+    let worker: Worker | ChildProcess;
+    if (name === ImmichWorker.Api) {
+      worker = fork(workerFile, [], {
+        execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
+      });
+    } else {
+      worker = new Worker(workerFile);
+    }
 
-  let worker: Worker | ChildProcess;
-  if (name === ImmichWorker.Api) {
-    worker = fork(workerFile, [], {
-      execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
-    });
-    apiProcess = worker;
-  } else {
-    worker = new Worker(workerFile);
+    worker.on('error', (error) => this.onError(name, error));
+    worker.on('exit', (exitCode) => this.onExit(name, exitCode));
+
+    this.workers[name] = worker;
   }
 
-  worker.on('error', (error) => onError(name, error));
-  worker.on('exit', (exitCode) => onExit(name, exitCode));
+  onError(name: ImmichWorker, error: Error) {
+    console.error(`${name} worker error: ${error}, stack: ${error.stack}`);
+  }
+
+  onExit(name: ImmichWorker, exitCode: number | null) {
+    // restart immich server
+    if (exitCode === 7) {
+      console.info(`${name} worker shutdown for restart`);
+      delete this.workers[name];
+
+      // once all workers shut down, bootstrap again
+      if (Object.keys(this.workers).length === 0) {
+        this.bootstrap();
+      }
+
+      return;
+    }
+
+    // shutdown the entire process
+    delete this.workers[name];
+
+    if (exitCode !== 0) {
+      console.error(`${name} worker exited with code ${exitCode}`);
+
+      if (this.workers[ImmichWorker.Api] && name !== ImmichWorker.Api) {
+        console.error('Killing api process');
+        (this.workers[ImmichWorker.Api] as ChildProcess).kill('SIGTERM');
+      }
+    }
+
+    process.exit(exitCode);
+  }
 }
 
-function bootstrap() {
+function main() {
+  const immichApp = process.argv[2];
+  if (immichApp) {
+    process.argv.splice(2, 1);
+  }
+
   if (immichApp === 'immich-admin') {
     process.title = 'immich_admin_cli';
     process.env.IMMICH_LOG_LEVEL = LogLevel.Warn;
@@ -72,10 +118,7 @@ function bootstrap() {
   }
 
   process.title = 'immich';
-  const { workers } = new ConfigRepository().getEnv();
-  for (const worker of workers) {
-    bootstrapWorker(worker);
-  }
+  new Workers().bootstrap();
 }
 
-void bootstrap();
+void main();

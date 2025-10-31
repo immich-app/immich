@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, type INestApplication, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
@@ -12,6 +12,8 @@ import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService extends BaseService {
+  nestApplication: INestApplication | undefined;
+
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.SystemConfig })
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
@@ -53,7 +55,16 @@ export class SystemConfigService extends BaseService {
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
+  async onConfigUpdate({ newConfig, oldConfig }: ArgOf<'ConfigUpdate'>) {
+    // if maintenance is toggled, we need to restart
+    if (newConfig.maintenance.enabled !== oldConfig.maintenance.enabled) {
+      // issue: close() seems to hang for API worker, so timeout after 1s
+      setTimeout(() => process.exit(7), 1000);
+
+      await this.nestApplication?.close(); // attempt graceful shutdown
+      process.exit(7); // signal restart
+    }
+
     this.onConfigInit({ newConfig });
     clearConfigCache();
   }

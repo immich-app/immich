@@ -6,6 +6,7 @@ import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
+import { SystemConfigService } from 'src/services/system-config.service';
 import { isStartUpError } from 'src/utils/misc';
 
 export async function bootstrap() {
@@ -17,6 +18,7 @@ export async function bootstrap() {
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
+  app.get(SystemConfigService).nestApplication = app;
 
   const { environment, host } = configRepository.getEnv();
 
