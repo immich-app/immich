@@ -15,18 +15,18 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios release_dev
+### ios gha_testflight_dev
 
 ```sh
-[bundle exec] fastlane ios release_dev
+[bundle exec] fastlane ios gha_testflight_dev
 ```
 
 iOS Development Build to TestFlight (requires separate bundle ID)
 
-### ios release_ci
+### ios gha_release_prod
 
 ```sh
-[bundle exec] fastlane ios release_ci
+[bundle exec] fastlane ios gha_release_prod
 ```
 
 iOS Release to TestFlight
