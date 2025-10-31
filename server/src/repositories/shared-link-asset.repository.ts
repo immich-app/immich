@@ -1,5 +1,6 @@
 import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 
 export class SharedLinkAssetRepository {
@@ -14,5 +15,19 @@ export class SharedLinkAssetRepository {
       .execute();
 
     return deleted.map((row) => row.assetsId);
+  }
+
+  @GenerateSql({ params: [{ sourceAssetId: DummyValue.UUID, targetAssetId: DummyValue.UUID }] })
+  async copySharedLinks({ sourceAssetId, targetAssetId }: { sourceAssetId: string; targetAssetId: string }) {
+    return this.db
+      .insertInto('shared_link_asset')
+      .expression((eb) =>
+        eb
+          .selectFrom('shared_link_asset')
+          .select((eb) => [eb.val(targetAssetId).as('assetsId'), 'shared_link_asset.sharedLinksId'])
+          .where('shared_link_asset.assetsId', '=', sourceAssetId),
+      )
+      .onConflict((oc) => oc.doNothing())
+      .execute();
   }
 }

@@ -10,6 +10,7 @@ from rapidocr.inference_engine.base import FileInfo, InferSession
 from rapidocr.utils import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangRec, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
+from rapidocr.utils.vis_res import VisRes
 
 from immich_ml.config import log, settings
 from immich_ml.models.base import InferenceModel
@@ -31,6 +32,7 @@ class TextRecognizer(InferenceModel):
             "text": [],
             "textScore": np.empty(0, dtype=np.float32),
         }
+        VisRes.__init__ = lambda self, **kwargs: None  # pyright: ignore[reportAttributeAccessIssue]
         super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
 
     def _download(self) -> None:
