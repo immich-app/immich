@@ -25,6 +25,7 @@ type EventMap = {
   // app events
   AppBootstrap: [];
   AppShutdown: [];
+  AppRestart: [];
 
   ConfigInit: [{ newConfig: SystemConfig }];
   // config events

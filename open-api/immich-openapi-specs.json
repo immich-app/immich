@@ -242,6 +242,83 @@
         "description": "This endpoint is an admin-only route, and requires the `adminAuth.unlinkAll` permission."
       }
     },
+    "/admin/maintenance": {
+      "get": {
+        "operationId": "getMaintenanceMode",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MaintenanceModeResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Maintenance (admin)"
+        ]
+      }
+    },
+    "/admin/maintenance/end": {
+      "post": {
+        "operationId": "endMaintenance",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "systemMetadata.update",
+        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.update` permission."
+      }
+    },
+    "/admin/maintenance/start": {
+      "post": {
+        "operationId": "startMaintenance",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Maintenance (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "systemMetadata.update",
+        "description": "This endpoint is an admin-only route, and requires the `systemMetadata.update` permission."
+      }
+    },
     "/admin/notifications": {
       "post": {
         "operationId": "createNotification",
@@ -12575,6 +12652,17 @@
         ],
         "type": "object"
       },
+      "MaintenanceModeResponseDto": {
+        "properties": {
+          "isMaintenanceMode": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isMaintenanceMode"
+        ],
+        "type": "object"
+      },
       "ManualJobName": {
         "enum": [
           "person-cleanup",
@@ -16374,9 +16462,6 @@
           "machineLearning": {
             "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
           },
-          "maintenance": {
-            "$ref": "#/components/schemas/SystemConfigMaintenanceDto"
-          },
           "map": {
             "$ref": "#/components/schemas/SystemConfigMapDto"
           },
@@ -16428,7 +16513,6 @@
           "library",
           "logging",
           "machineLearning",
-          "maintenance",
           "map",
           "metadata",
           "newVersionCheck",
@@ -16824,17 +16908,6 @@
           "facialRecognition",
           "ocr",
           "urls"
-        ],
-        "type": "object"
-      },
-      "SystemConfigMaintenanceDto": {
-        "properties": {
-          "enabled": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
         ],
         "type": "object"
       },

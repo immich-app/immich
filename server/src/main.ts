@@ -4,11 +4,9 @@ import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { ApiModule, ImmichAdminModule } from 'src/app.module';
-import { ImmichWorker, LogLevel } from 'src/enum';
+import { ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { getConfig } from 'src/utils/config';
 
 /**
  * Manages worker lifecycle
@@ -32,12 +30,10 @@ class Workers {
    * Boot all enabled workers
    */
   async bootstrap() {
-    const {
-      maintenance: { enabled: maintenanceMode },
-    } = await this.getConfig();
+    const { isMaintenanceMode } = await this.getConfig();
     const { workers } = new ConfigRepository().getEnv();
 
-    if (maintenanceMode) {
+    if (isMaintenanceMode) {
       this.startWorker(ImmichWorker.Maintenance);
     } else {
       for (const worker of workers) {
@@ -50,24 +46,13 @@ class Workers {
    * Initialise a short-lived Nest application to build configuration
    * @returns System configuration
    */
-  private async getConfig() {
+  private async getConfig(): Promise<{ isMaintenanceMode?: boolean }> {
     const app = await NestFactory.create(ApiModule);
-    const logger = await app.resolve(LoggingRepository);
-    const configRepo = app.get(ConfigRepository);
     const metadataRepo = app.get(SystemMetadataRepository);
-
-    const systemConfig = await getConfig(
-      {
-        configRepo,
-        metadataRepo,
-        logger,
-      },
-      { withCache: false },
-    );
 
     await app.close();
 
-    return systemConfig;
+    return metadataRepo.get(SystemMetadataKey.MaintenanceMode).then((value) => value ?? {});
   }
 
   /**

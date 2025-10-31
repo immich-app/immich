@@ -267,6 +267,7 @@ export enum SystemMetadataKey {
   FacialRecognitionState = 'facial-recognition-state',
   MemoriesState = 'memories-state',
   AdminOnboarding = 'admin-onboarding',
+  MaintenanceMode = 'maintenance-mode',
   SystemConfig = 'system-config',
   SystemFlags = 'system-flags',
   VersionCheckState = 'version-check-state',

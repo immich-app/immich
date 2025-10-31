@@ -40,6 +40,9 @@ export type ActivityStatisticsResponseDto = {
     comments: number;
     likes: number;
 };
+export type MaintenanceModeResponseDto = {
+    isMaintenanceMode: boolean;
+};
 export type NotificationCreateDto = {
     data?: object;
     description?: string | null;
@@ -1471,9 +1474,6 @@ export type SystemConfigMachineLearningDto = {
     ocr: OcrConfig;
     urls: string[];
 };
-export type SystemConfigMaintenanceDto = {
-    enabled: boolean;
-};
 export type SystemConfigMapDto = {
     darkStyle: string;
     enabled: boolean;
@@ -1561,7 +1561,6 @@ export type SystemConfigDto = {
     library: SystemConfigLibraryDto;
     logging: SystemConfigLoggingDto;
     machineLearning: SystemConfigMachineLearningDto;
-    maintenance: SystemConfigMaintenanceDto;
     map: SystemConfigMapDto;
     metadata: SystemConfigMetadataDto;
     newVersionCheck: SystemConfigNewVersionCheckDto;
@@ -1750,6 +1749,32 @@ export function deleteActivity({ id }: {
  */
 export function unlinkAllOAuthAccountsAdmin(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/admin/auth/unlink-all", {
+        ...opts,
+        method: "POST"
+    }));
+}
+export function getMaintenanceMode(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: MaintenanceModeResponseDto;
+    }>("/admin/maintenance", {
+        ...opts
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `systemMetadata.update` permission.
+ */
+export function endMaintenance(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/end", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * This endpoint is an admin-only route, and requires the `systemMetadata.update` permission.
+ */
+export function startMaintenance(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/admin/maintenance/start", {
         ...opts,
         method: "POST"
     }));

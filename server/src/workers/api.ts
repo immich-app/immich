@@ -12,7 +12,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
-import { SystemConfigService } from 'src/services/system-config.service';
+import { MaintenanceService } from 'src/services/maintenance.service';
 import { isStartUpError, useSwagger } from 'src/utils/misc';
 async function bootstrap() {
   process.title = 'immich-api';
@@ -25,7 +25,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
-  app.get(SystemConfigService).nestApplication = app;
+  app.get(MaintenanceService).nestApplication = app;
 
   const { environment, host, port, resourcePaths } = configRepository.getEnv();
 

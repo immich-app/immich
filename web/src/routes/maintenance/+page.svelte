@@ -1,18 +1,11 @@
 <script>
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { user } from '$lib/stores/user.store';
-  import { getConfig, getServerConfig, updateConfig } from '@immich/sdk';
+  import { endMaintenance, getServerConfig } from '@immich/sdk';
   import { Button, Heading } from '@immich/ui';
 
   async function exit() {
-    await updateConfig({
-      systemConfigDto: {
-        ...(await getConfig()),
-        maintenance: {
-          enabled: false,
-        },
-      },
-    });
+    await endMaintenance();
 
     // poll the server until it comes back online
     setInterval(

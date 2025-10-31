@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { isAbsolute } from 'node:path';
 import { SALT_ROUNDS } from 'src/constants';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
+import { SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
@@ -39,15 +40,11 @@ export class CliService extends BaseService {
   }
 
   async disableMaintenanceMode(): Promise<void> {
-    const config = await this.getConfig({ withCache: false });
-    config.maintenance.enabled = false;
-    await this.updateConfig(config);
+    this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: false });
   }
 
   async enableMaintenanceMode(): Promise<void> {
-    const config = await this.getConfig({ withCache: false });
-    config.maintenance.enabled = true;
-    await this.updateConfig(config);
+    this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true });
   }
 
   async grantAdminAccess(email: string): Promise<void> {
