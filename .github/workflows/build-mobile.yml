@@ -62,7 +62,9 @@ jobs:
     permissions:
       contents: read
     # Skip when PR from a fork
-    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
+    # if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
+
+    if: ${{false}}
     runs-on: mich
 
     steps:
@@ -165,7 +167,7 @@ jobs:
     permissions:
       contents: read
     # Run on main branch or workflow_dispatch
-    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile == true && github.ref == 'refs/heads/main' }}
+    if: ${{ !github.event.pull_request.head.repo.fork && fromJSON(needs.pre-job.outputs.should_run).mobile }}
     runs-on: macos-latest
 
     steps:
@@ -232,7 +234,7 @@ jobs:
           IOS_DEVELOPMENT_PROVISIONING_PROFILE: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE }}
           IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION }}
           IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
-          ENVIRONMENT: ${{ inputs.environment || 'development' }}
+          ENVIRONMENT: ${{ inputs.environment || 'production' }}
         working-directory: ./mobile/ios
         run: |
           # Decode certificate
@@ -278,7 +280,7 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          ENVIRONMENT: ${{ inputs.environment || 'development' }}
+          ENVIRONMENT: ${{ inputs.environment || 'production' }}
         working-directory: ./mobile/ios
         run: |
           if [[ "$ENVIRONMENT" == "development" ]]; then
