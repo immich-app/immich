@@ -6,8 +6,10 @@ import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, type ProxyOptions, type UserConfig } from 'vite';
 
+process.env.IMMICH_SERVER_URL ??= 'http://immich-server:2283/';
+
 const upstream = {
-  target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
+  target: process.env.IMMICH_SERVER_URL,
   secure: true,
   changeOrigin: true,
   logLevel: 'info',
