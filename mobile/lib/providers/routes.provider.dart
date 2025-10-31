@@ -5,4 +5,3 @@ final inLockedViewProvider = StateProvider<bool>((ref) => false);
 final currentRouteNameProvider = StateProvider<String?>((ref) => null);
 final previousRouteNameProvider = StateProvider<String?>((ref) => null);
 final previousRouteDataProvider = StateProvider<RouteSettings?>((ref) => null);
-final currentTabIndexProvider = StateProvider<int>((ref) => 0);

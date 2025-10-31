@@ -14,7 +14,6 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -108,8 +107,6 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 }
 
 void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
-  ref.read(currentTabIndexProvider.notifier).state = index;
-
   // On Photos page menu tapped
   if (router.activeIndex == kPhotoTabIndex && index == kPhotoTabIndex) {
     EventStream.shared.emit(const ScrollToTopEvent());
