@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from rapidocr.ch_ppocr_det import TextDetector as RapidTextDetector
 from rapidocr.inference_engine.base import FileInfo, InferSession
-from rapidocr.utils import DownloadFile, DownloadFileInput
+from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangDet, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
 

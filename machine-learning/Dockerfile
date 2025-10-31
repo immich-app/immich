@@ -2,7 +2,7 @@ ARG DEVICE=cpu
 
 FROM python:3.11-bookworm@sha256:fc1f2e357c307c4044133952b203e66a47e7726821a664f603a180a0c5823844 AS builder-cpu
 
-FROM builder-cpu AS builder-openvino
+FROM python:3.13-slim-trixie@sha256:0222b795db95bf7412cede36ab46a266cfb31f632e64051aac9806dabf840a61 AS builder-openvino
 
 FROM builder-cpu AS builder-cuda
 
@@ -73,15 +73,15 @@ FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
-FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-openvino
+FROM python:3.13-slim-trixie@sha256:0222b795db95bf7412cede36ab46a266cfb31f632e64051aac9806dabf840a61 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb && \
-    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.20.3/intel-igc-core-2_2.20.3+19972_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.20.3/intel-igc-opencl-2_2.20.3+19972_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/25.40.35563.4/intel-opencl-icd_25.40.35563.4-0_amd64.deb && \
     # TODO: Figure out how to get renovate to manage this differently versioned libigdgmm file
-    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/25.40.35563.4/libigdgmm12_22.8.2_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
     apt-get remove wget -yqq && \
