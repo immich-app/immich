@@ -56,17 +56,18 @@ export class SystemConfigService extends BaseService {
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
   async onConfigUpdate({ newConfig, oldConfig }: ArgOf<'ConfigUpdate'>) {
-    // if maintenance is toggled, we need to restart
-    if (newConfig.maintenance.enabled !== oldConfig.maintenance.enabled) {
-      // issue: close() seems to hang for API worker, so timeout after 1s
-      setTimeout(() => process.exit(7), 1000);
-
-      await this.nestApplication?.close(); // attempt graceful shutdown
-      process.exit(7); // signal restart
-    }
-
     this.onConfigInit({ newConfig });
     clearConfigCache();
+
+    // if maintenance is toggled, we need to restart
+    if (newConfig.maintenance.enabled !== oldConfig.maintenance.enabled) {
+      this.nestApplication
+        ?.close() // attempt graceful shutdown
+        .then(() => process.exit(7)); // then signal restart
+
+      // issue: close() seems to hang for API worker, so timeout after 1s
+      setTimeout(() => process.exit(7), 1000);
+    }
   }
 
   @OnEvent({ name: 'ConfigValidate' })
