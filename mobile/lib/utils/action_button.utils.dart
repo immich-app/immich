@@ -127,7 +127,7 @@ enum ActionButtonType {
             context.currentAlbum!.isShared,
       ActionButtonType.similarPhotos =>
         !context.isInLockedView && //
-            context.asset.hasRemote,
+            context.asset is RemoteAsset,
     };
   }
 
