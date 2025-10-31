@@ -30,7 +30,7 @@ import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserAdminController } from 'src/controllers/user-admin.controller';
-import { UserController } from 'src/controllers/user.controller';
+import { MaintenanceUserController, UserController } from 'src/controllers/user.controller';
 import { ViewController } from 'src/controllers/view.controller';
 
 export const controllers = [
@@ -70,4 +70,4 @@ export const controllers = [
   ViewController,
 ];
 
-export const maintenanceControllers = [MaintenanceServerController, SystemConfigController];
+export const maintenanceControllers = [MaintenanceServerController, MaintenanceUserController, SystemConfigController];
