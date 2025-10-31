@@ -97,10 +97,12 @@ class FaceRecognizer(InferenceModel):
     def _run_get_feat(self, cropped_faces: list[NDArray[np.uint8]]) -> NDArray[np.float32]:
         session = getattr(self, "session", None)
         try:
-            return self.model.get_feat(cropped_faces)
+            embeddings = self.model.get_feat(cropped_faces)
+            return np.asarray(embeddings, dtype=np.float32)
         except Exception as error:  # pragma: no cover - executed during provider failures
             if session and hasattr(session, "fallback_to_cpu") and hasattr(session, "is_onnxruntime_error"):
                 if session.is_onnxruntime_error(error) and session.fallback_to_cpu(error):
                     self.model = self._build_recognizer(session)
-                    return self.model.get_feat(cropped_faces)
+                    embeddings = self.model.get_feat(cropped_faces)
+                    return np.asarray(embeddings, dtype=np.float32)
             raise
