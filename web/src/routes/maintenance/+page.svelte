@@ -1,21 +1,21 @@
 <script>
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import { user } from '$lib/stores/user.store';
-  import { endMaintenance, getServerConfig } from '@immich/sdk';
+  import { websocketStore } from '$lib/stores/websocket';
+  import { endMaintenance } from '@immich/sdk';
   import { Button, Heading } from '@immich/ui';
 
   async function exit() {
-    await endMaintenance();
+    let waiting = false;
+    websocketStore.connected.subscribe((connected) => {
+      if (!connected) {
+        waiting = true;
+      } else if (connected && waiting) {
+        location.href = '/';
+      }
+    });
 
-    // poll the server until it comes back online
-    setInterval(
-      () =>
-        void getServerConfig()
-          // eslint-disable-next-line no-self-assign
-          .then(() => (location.href = location.href))
-          .catch(() => {}),
-      1000,
-    );
+    await endMaintenance();
   }
 </script>
 

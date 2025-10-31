@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { getServerConfig, startMaintenance } from '@immich/sdk';
+  import { websocketStore } from '$lib/stores/websocket';
+  import { startMaintenance } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { fade } from 'svelte/transition';
 
@@ -10,17 +11,16 @@
   let { disabled = false }: Props = $props();
 
   async function enable() {
-    await startMaintenance();
+    let waiting = false;
+    websocketStore.connected.subscribe((connected) => {
+      if (!connected) {
+        waiting = true;
+      } else if (connected && waiting) {
+        location.href = '/';
+      }
+    });
 
-    // poll the server until it comes back online
-    setInterval(
-      () =>
-        void getServerConfig()
-          // eslint-disable-next-line no-self-assign
-          .then(() => (location.href = location.href))
-          .catch(() => {}),
-      1000,
-    );
+    await startMaintenance();
   }
 </script>
 
