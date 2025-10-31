@@ -188,9 +188,6 @@ export class AssetRepository {
     return rows.map((r) => ({ date: r.date, count: Number(r.count) }));
   }
 
-
-  
-
   @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
   @Chunked()
   async updateAllExif(ids: string[], options: Updateable<AssetExifTable>): Promise<void> {

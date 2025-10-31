@@ -102,7 +102,6 @@
     maxCount = Math.max(1, ...data.map((d) => d.count));
   }
 
-  // In runes mode, use $effect instead of `$:` for reactive blocks
   $effect(() => {
     if (days.length) {
       const byDate = new Map(days.map((d) => [d.date, d.count]));
@@ -124,7 +123,6 @@
     }
   });
 
-  // One onMount: load existing stats + heatmap data
   onMount(async () => {
     await getUsage();
     await loadActivity();
@@ -186,7 +184,7 @@
   </div>
 </section>
 
-<!-- ===== Heatmap section ===== -->
+<!-- Heatmap section -->
 <section class="my-6">
   <h3 class="text-sm font-medium text-primary dark:text-white mb-2">Upload Activity (last 52 weeks)</h3>
 
