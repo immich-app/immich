@@ -79,6 +79,9 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           onPressed: () async {
             await context.maybePop();
             await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
+
+            // Add a delay to ensure timeline is ready before scrolling
+            await Future.delayed(const Duration(milliseconds: 300));
             EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
           },
           icon: const Icon(Icons.image_search),
