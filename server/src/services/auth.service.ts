@@ -483,7 +483,7 @@ export class AuthService extends BaseService {
         await this.sessionRepository.update(session.id, {
           id: session.id,
           updatedAt: new Date(),
-          appVersion,
+          appVersion: appVersion ?? session.appVersion,
           deviceOS,
           deviceType,
         });

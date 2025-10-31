@@ -10,12 +10,21 @@ export const fromMaybeArray = <T>(param: T | T[]) => (Array.isArray(param) ? par
 const getAppVersionFromUA = (ua: string) =>
   ua.match(/^Immich_(?:Android|iOS)_(?<appVersion>.+)$/)?.groups?.appVersion ?? null;
 
+const isImmichUserAgent = (ua: string) => {
+  const immichPatterns = [/^Mobile$/, /^Dart\//, /^immich_mobile/, /^AppleCoreMedia/, /^Dalvik\//];
+
+  return immichPatterns.some((pattern) => pattern.test(ua));
+};
+
 export const getUserAgentDetails = (headers: IncomingHttpHeaders) => {
   const userAgent = UAParser(headers['user-agent']);
   const appVersion = getAppVersionFromUA(headers['user-agent'] ?? '');
+  const isImmichApp = appVersion !== null || isImmichUserAgent(headers['user-agent'] ?? '');
 
   return {
-    deviceType: userAgent.browser.name || userAgent.device.type || (headers['devicemodel'] as string) || '',
+    deviceType: isImmichApp
+      ? 'Immich app'
+      : userAgent.browser.name || userAgent.device.type || (headers['devicemodel'] as string) || '',
     deviceOS: userAgent.os.name || (headers['devicetype'] as string) || '',
     appVersion,
   };
