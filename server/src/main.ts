@@ -19,6 +19,11 @@ class Workers {
    */
   workers: Partial<Record<ImmichWorker, Worker | ChildProcess>>;
 
+  /**
+   * Fail-safe in case anything dies during restart
+   */
+  restarting = false;
+
   constructor() {
     this.workers = {};
   }
@@ -97,13 +102,16 @@ class Workers {
 
   onExit(name: ImmichWorker, exitCode: number | null) {
     // restart immich server
-    if (exitCode === 7) {
+    if (exitCode === 7 || this.restarting) {
+      this.restarting = true;
+
       console.info(`${name} worker shutdown for restart`);
       delete this.workers[name];
 
       // once all workers shut down, bootstrap again
       if (Object.keys(this.workers).length === 0) {
         this.bootstrap();
+        this.restarting = false;
       }
 
       return;
