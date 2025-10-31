@@ -38,6 +38,18 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
+  async disableMaintenanceMode(): Promise<void> {
+    const config = await this.getConfig({ withCache: false });
+    config.maintenance.enabled = false;
+    await this.updateConfig(config);
+  }
+
+  async enableMaintenanceMode(): Promise<void> {
+    const config = await this.getConfig({ withCache: false });
+    config.maintenance.enabled = true;
+    await this.updateConfig(config);
+  }
+
   async grantAdminAccess(email: string): Promise<void> {
     const user = await this.userRepository.getByEmail(email);
     if (!user) {

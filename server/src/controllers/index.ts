@@ -70,4 +70,4 @@ export const controllers = [
   ViewController,
 ];
 
-export const maintenanceControllers = [MaintenanceServerController];
+export const maintenanceControllers = [MaintenanceServerController, SystemConfigController];
