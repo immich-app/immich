@@ -17,21 +17,21 @@
           target="_blank"
           id="play-store-link"
         >
-          <img class="w-[200px] mt-2" alt="Get it on Google Play" src={playStoreBadge} />
+          <img class="w-50 mt-2" alt="Get it on Google Play" src={playStoreBadge} />
         </a>
       </div>
 
       <div class="flex flex-col place-items-start">
         <Text>App Store</Text>
         <a href="https://apps.apple.com/us/app/immich/id1613945652" target="_blank" id="app-store-link">
-          <img class="w-[200px] mt-2" alt="Download on the App Store" src={appStoreBadge} />
+          <img class="w-50 mt-2" alt="Download on the App Store" src={appStoreBadge} />
         </a>
       </div>
 
       <div class="flex flex-col place-items-start">
         <Text>F-Droid</Text>
         <a href="https://f-droid.org/packages/app.alextran.immich/" target="_blank" id="fdroid-link">
-          <img class="w-[200px] mt-2" alt="Get it on F-Droid" src={fdroidBadge} />
+          <img class="w-50 mt-2" alt="Get it on F-Droid" src={fdroidBadge} />
         </a>
       </div>
     </div>

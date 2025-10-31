@@ -20,7 +20,7 @@
   });
 </script>
 
-<div class="flex h-[140px] w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
+<div class="flex h-35 w-full flex-col justify-between rounded-3xl bg-subtle text-primary p-5">
   <div class="flex place-items-center gap-4">
     <Icon {icon} size="40" />
     <Text size="large" fontWeight="bold" class="uppercase">{title}</Text>

@@ -278,7 +278,7 @@
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
             {#each libraries as library, index (library.id)}
               <tr
-                class="grid grid-cols-6 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+                class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
               >
                 <td class="text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class="text-ellipsis px-4 text-sm">

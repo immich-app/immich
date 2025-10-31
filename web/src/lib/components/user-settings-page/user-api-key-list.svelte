@@ -80,7 +80,7 @@
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#each keys as key (key.id)}
             <tr
-              class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+              class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
             >
               <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden">{key.name}</td>
               <td
