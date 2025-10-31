@@ -5,6 +5,7 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
+  AssetCopyDto,
   AssetJobsDto,
   AssetMetadataResponseDto,
   AssetMetadataRouteParams,
@@ -78,6 +79,13 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   getAssetInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto> {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
+  }
+
+  @Put('copy')
+  @Authenticated({ permission: Permission.AssetCopy })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  copyAsset(@Auth() auth: AuthDto, @Body() dto: AssetCopyDto): Promise<void> {
+    return this.service.copy(auth, dto);
   }
 
   @Put(':id')
