@@ -19,7 +19,7 @@
 set -euo pipefail
 
 echo "[INFO] Copying IMMICH config file from '$IMMICH_CONFIG_FILE' to '/tmp/immich_config.yaml'..."
-cp "$IMMICH_CONFIG_FILE" /tmp/immich_config.yaml
+cp /config/immich-config.yaml /tmp/immich_config.yaml
 
 echo "[INFO] Calculating nightly job start time (current UTC time + 1 minute)..."
 if date -u -v+1M "+%H:%M" >/dev/null 2>&1; then

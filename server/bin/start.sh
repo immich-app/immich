@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 echo "Initializing Immich $IMMICH_SOURCE_REF"
 
+/bin/bash set-nightly-job-time.sh
+
 # TODO: Update to mimalloc v3 when verified memory isn't released issue is fixed
 # lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.3"
 # if [ -f "$lib_path" ]; then
@@ -28,8 +30,6 @@ read_file_and_export "DB_DATABASE_NAME_FILE" "DB_DATABASE_NAME"
 read_file_and_export "DB_USERNAME_FILE" "DB_USERNAME"e
 read_file_and_export "DB_PASSWORD_FILE" "DB_PASSWORD"
 read_file_and_export "REDIS_PASSWORD_FILE" "REDIS_PASSWORD"
-
-/bin/bash set-nightly-job-time.sh
 
 if CPU_CORES="${CPU_CORES:=$(get-cpus.sh 2>/dev/null)}"; then
   echo "Detected CPU Cores: $CPU_CORES"
