@@ -53,3 +53,8 @@ const int kMinMonthsToEnableScrubberSnap = 12;
 const String kImmichAppStoreLink = "https://apps.apple.com/app/immich/id6449244941";
 const String kImmichPlayStoreLink = "https://play.google.com/store/apps/details?id=app.alextran.immich";
 const String kImmichLatestRelease = "https://github.com/immich-app/immich/releases/latest";
+
+const int kPhotoTabIndex = 0;
+const int kSearchTabIndex = 1;
+const int kAlbumTabIndex = 2;
+const int kLibraryTabIndex = 3;
