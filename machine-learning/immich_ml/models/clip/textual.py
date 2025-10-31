@@ -93,7 +93,10 @@ class BaseCLIPTextualEncoder(InferenceModel):
         providers, available = self._preferred_providers()
         if providers is not None:
             log.warning(
-                "Disabling CoreML for CLIP textual model '%s'; only CoreML available (providers=%s). Falling back to %s",
+                (
+                    "Disabling CoreML for CLIP textual model '%s'; only CoreML available "
+                    "(providers=%s). Falling back to %s"
+                ),
                 self.model_name,
                 sorted(available),
                 providers,

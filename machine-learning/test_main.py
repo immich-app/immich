@@ -162,8 +162,22 @@ class TestBase:
         )
 
     def test_throws_exception_if_model_path_does_not_exist(
-        self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock
+        self,
+        snapshot_download: mock.Mock,
+        ort_session: mock.Mock,
+        path: mock.Mock,
+        mocker: MockerFixture,
     ) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.textual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
+        mocker.patch.object(
+            InferenceModel,
+            "_make_session",
+            side_effect=FileNotFoundError("Model file not found"),
+            autospec=True,
+        )
         path.return_value.__truediv__.return_value.__truediv__.return_value.is_file.return_value = False
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
@@ -569,6 +583,17 @@ class TestRknnSession:
 class TestCLIP:
     embedding = np.random.rand(512).astype(np.float32)
     cache_dir = Path("test_cache")
+
+    @pytest.fixture(autouse=True)
+    def _mock_clip_providers(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.visual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
+        mocker.patch(
+            "immich_ml.models.clip.textual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
 
     def test_basic_image(
         self,
