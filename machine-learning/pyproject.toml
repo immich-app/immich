@@ -3,7 +3,7 @@ name = "immich-ml"
 version = "2.2.1"
 description = ""
 authors = [{ name = "Hau Tran", email = "alex.tran1502@gmail.com" }]
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.11,<3.14"
 readme = "README.md"
 dependencies = [
     "aiocache>=0.12.1,<1.0",
@@ -59,14 +59,6 @@ rocm = []
 
 [tool.uv]
 compile-bytecode = true
-
-#[[tool.uv.index]]
-#name = "cuda12"
-#url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"
-#explicit = true
-
-#[tool.uv.sources]
-#onnxruntime-gpu = { index = "cuda12" }
 
 [tool.hatch.build.targets.sdist]
 include = ["immich_ml"]
