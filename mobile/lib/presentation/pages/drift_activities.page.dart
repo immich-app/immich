@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 
 @RoutePage()
@@ -21,10 +19,8 @@ class DriftActivitiesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asset = ref.read(currentAssetNotifier) as RemoteAsset?;
-
-    final activityNotifier = ref.read(albumActivityProvider(album.id, asset?.id).notifier);
-    final activities = ref.watch(albumActivityProvider(album.id, asset?.id));
+    final activityNotifier = ref.read(albumActivityProvider(album.id).notifier);
+    final activities = ref.watch(albumActivityProvider(album.id));
     final listViewScrollController = useScrollController();
 
     void scrollToBottom() {
@@ -40,7 +36,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
       overrides: [currentRemoteAlbumScopedProvider.overrideWithValue(album)],
       child: Scaffold(
         appBar: AppBar(
-          title: asset == null ? Text(album.name) : null,
+          title: Text(album.name),
           actions: [const LikeActivityActionButton(menuItem: true)],
           actionsPadding: const EdgeInsets.only(right: 8),
         ),

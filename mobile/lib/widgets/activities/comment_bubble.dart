@@ -28,7 +28,9 @@ class CommentBubble extends ConsumerWidget {
     final isLike = activity.type == ActivityType.like;
     final bgColor = isOwn ? context.colorScheme.primaryContainer : context.colorScheme.surfaceContainer;
 
-    final activityNotifier = ref.read(albumActivityProvider(album.id, activity.assetId).notifier);
+    final activityNotifier = ref.read(
+      albumActivityProvider(album.id, isAssetActivity ? activity.assetId : null).notifier,
+    );
 
     Future<void> openAssetViewer() async {
       final activityService = ref.read(activityServiceProvider);
