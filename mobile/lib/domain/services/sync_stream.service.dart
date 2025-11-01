@@ -130,9 +130,9 @@ class SyncStreamService {
       // to acknowledge that the client has processed all the backfill events
       case SyncEntityType.syncAckV1:
         return;
-      // No-op. SyncCompleteV1 is used to signal the completion of the sync process
+      // SyncCompleteV1 is used to signal the completion of the sync process. Cleanup stale assets and signal completion
       case SyncEntityType.syncCompleteV1:
-        return;
+        return _syncStreamRepository.pruneAssets();
       // Request to reset the client state. Clear everything related to remote entities
       case SyncEntityType.syncResetV1:
         return _syncStreamRepository.reset();

@@ -141,14 +141,28 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
   }
 
   Widget _buildAppearsInList(WidgetRef ref, BuildContext context) {
-    final isRemote = ref.watch(currentAssetNotifier)?.hasRemote ?? false;
-    if (!isRemote) {
+    final aseet = ref.watch(currentAssetNotifier);
+    if (aseet == null) {
       return const SizedBox.shrink();
     }
 
-    final remoteAsset = ref.watch(currentAssetNotifier) as RemoteAsset;
+    if (!aseet.hasRemote) {
+      return const SizedBox.shrink();
+    }
+
+    String? remoteAssetId;
+    if (aseet is RemoteAsset) {
+      remoteAssetId = aseet.id;
+    } else if (aseet is LocalAsset) {
+      remoteAssetId = aseet.remoteAssetId;
+    }
+
+    if (remoteAssetId == null) {
+      return const SizedBox.shrink();
+    }
+
     final userId = ref.watch(currentUserProvider)?.id;
-    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAsset.id));
+    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAssetId));
 
     return assetAlbums.when(
       data: (albums) {

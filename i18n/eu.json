@@ -58,6 +58,7 @@
     "image_format_description": "WebP ereduak JPEG baino fitxategi txikiagoak sortzen ditu, baina motelagoa da kodifikatzen.",
     "image_preview_title": "Aurreikusiaen Konfigurazioa",
     "image_quality": "Kalitatea",
+    "image_resolution": "Erresoluzioa",
     "image_settings": "Argazkien Konfigurazioa",
     "image_thumbnail_title": "Argazki Txikien Konfigurazioa",
     "job_created": "Zeregina sortuta",
@@ -81,8 +82,11 @@
     "metadata_faces_import_setting": "Gaitu aurpegien inportazioa",
     "metadata_settings": "Metadata Konfigurazioa",
     "metadata_settings_description": "Kudeatu metadaten konfigurazioa",
-    "migration_job": "Migrazio"
+    "migration_job": "Migrazio",
+    "oauth_settings": "OAuth",
+    "transcoding_acceleration_vaapi": "VAAPI"
   },
+  "advanced": "Aurreratua",
   "advanced_settings_readonly_mode_title": "Irakurri-bakarrik Modua",
   "apply_count": "Ezarri ({count, number})",
   "assets_added_to_albums_count": "Gehituta {assetTotal, plural, one {# asset} other {# assets}} to {albumTotal, plural, one {# album} other {# albums}}",

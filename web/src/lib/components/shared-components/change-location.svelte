@@ -172,7 +172,7 @@
       </div>
 
       <span>{$t('pick_a_location')}</span>
-      <div class="h-[500px] min-h-[300px] w-full z-0">
+      <div class="h-125 min-h-75 w-full z-0">
         {#await import('$lib/components/shared-components/map/map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->

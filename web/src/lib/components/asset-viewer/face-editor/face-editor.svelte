@@ -322,7 +322,7 @@
       <Input placeholder={$t('search_people')} bind:value={searchTerm} size="tiny" />
     </div>
 
-    <div class="h-[250px] overflow-y-auto mt-2">
+    <div class="h-62.5 overflow-y-auto mt-2">
       {#if filteredCandidates.length > 0}
         <div class="mt-2 rounded-lg">
           {#each filteredCandidates as person (person.id)}
