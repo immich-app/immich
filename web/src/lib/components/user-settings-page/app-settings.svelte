@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
-  import NumberRangeInput from '$lib/components/shared-components/number-range-input.svelte';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingsLanguageSelector from '$lib/components/shared-components/settings/settings-language-selector.svelte';
   import { fallbackLocale, locales } from '$lib/constants';
@@ -62,14 +63,32 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <div class="ms-4 mt-4 flex flex-col gap-4">
-      <div class="ms-4">
-        <SettingSwitch
-          title={$t('theme_selection')}
-          subtitle={$t('theme_selection_description')}
-          checked={themeManager.theme.system}
-          onToggle={(isChecked) => themeManager.setSystem(isChecked)}
-        />
-      </div>
+      <SettingAccordion key="appearance" title={$t('theme')} subtitle={$t('theme_customization_description')}>
+        <div class="ms-4 mt-6">
+          <SettingSwitch
+            title={$t('theme_selection')}
+            subtitle={$t('theme_selection_description')}
+            checked={themeManager.theme.system}
+            onToggle={(isChecked) => themeManager.setSystem(isChecked)}
+          />
+        </div>
+
+        <div class="ms-4 mt-6">
+          <SettingSelect
+            label={$t('timeline_custom_margin')}
+            desc={$t('timeline_custom_margin_description')}
+            bind:value={$timelineMargin}
+            options={[
+              { value: 2, text: '2px' },
+              { value: 5, text: '5px' },
+              { value: 10, text: '10px' },
+              { value: 15, text: '15px' },
+            ]}
+            name="timeline-margin"
+            number
+          />
+        </div>
+      </SettingAccordion>
 
       <div class="ms-4">
         <SettingsLanguageSelector showSettingDescription />
@@ -135,24 +154,6 @@
           subtitle={$t('permanent_deletion_warning_setting_description')}
           bind:checked={$showDeleteModal}
         />
-      </div>
-      <div class="ms-4">
-        <div class="mb-4 w-full">
-          <label class="font-medium text-primary text-sm" for="timeline-margin">
-            {$t('timeline_custom_margin')}
-          </label>
-          <p class="text-sm dark:text-immich-dark-fg">
-            {$t('timeline_custom_margin_description')}
-          </p>
-          <NumberRangeInput
-            id="timeline-margin"
-            bind:value={$timelineMargin}
-            min={2}
-            max={15}
-            step={1}
-            onInput={() => {}}
-          />
-        </div>
       </div>
     </div>
   </div>
