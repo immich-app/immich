@@ -150,4 +150,6 @@ export const autoPlayVideo = persisted<boolean>('auto-play-video', true, {});
 
 export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-video', false, {});
 
+export const timelineMargin = persisted<number>('timeline-margin', 5, {});
+
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});

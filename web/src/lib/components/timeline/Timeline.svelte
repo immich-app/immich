@@ -19,6 +19,7 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
+  import { timelineMargin } from '$lib/stores/preferences.store';
   import { isAssetViewerRoute } from '$lib/utils/navigation';
   import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto } from '@immich/sdk';
@@ -118,10 +119,14 @@
       ? {
           rowHeight: 100,
           headerHeight: 32,
+          gap: 20,
+          margin: $timelineMargin,
         }
       : {
           rowHeight: 235,
           headerHeight: 48,
+          gap: 50,
+          margin: $timelineMargin,
         };
     timelineManager.setLayoutOptions(layoutOptions);
   });

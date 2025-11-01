@@ -4,6 +4,7 @@ type LayoutOptions = {
   headerHeight: number;
   rowHeight: number;
   gap: number;
+  margin: number;
 };
 export abstract class VirtualScrollManager {
   topSectionHeight = $state(0);
@@ -21,13 +22,14 @@ export abstract class VirtualScrollManager {
   #scrollTop = $state(0);
   #rowHeight = $state(235);
   #headerHeight = $state(48);
-  #gap = $state(12);
+  #gap = $state(50);
+  #margin = $state(5);
   #scrolling = $state(false);
   #suspendTransitions = $state(false);
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
   #justifiedLayoutOptions = $derived({
-    spacing: 2,
+    spacing: this.#margin,
     heightTolerance: 0.5,
     rowHeight: this.#rowHeight,
     rowWidth: Math.floor(this.viewportWidth),
@@ -76,6 +78,18 @@ export abstract class VirtualScrollManager {
 
   get gap() {
     return this.#gap;
+  }
+
+  #setMargin(value: number) {
+    if (this.#margin == value) {
+      return false;
+    }
+    this.#margin = value;
+    return true;
+  }
+
+  get margin() {
+    return this.#margin;
   }
 
   #setRowHeight(value: number) {
@@ -142,10 +156,11 @@ export abstract class VirtualScrollManager {
 
   protected updateViewportGeometry(_: boolean) {}
 
-  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 12 }: Partial<LayoutOptions> = {}) {
+  setLayoutOptions({ headerHeight = 48, rowHeight = 235, gap = 50, margin = 5 }: Partial<LayoutOptions> = {}) {
     let changed = false;
     changed ||= this.#setHeaderHeight(headerHeight);
     changed ||= this.#setGap(gap);
+    changed ||= this.#setMargin(margin);
     changed ||= this.#setRowHeight(rowHeight);
     if (changed) {
       this.refreshLayout();

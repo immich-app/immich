@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
+  import NumberRangeInput from '$lib/components/shared-components/number-range-input.svelte';
   import SettingCombobox from '$lib/components/shared-components/settings/setting-combobox.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingsLanguageSelector from '$lib/components/shared-components/settings/settings-language-selector.svelte';
@@ -13,6 +14,7 @@
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
+    timelineMargin,
   } from '$lib/stores/preferences.store';
   import { createDateFormatter, findLocale } from '$lib/utils';
   import { onMount } from 'svelte';
@@ -133,6 +135,24 @@
           subtitle={$t('permanent_deletion_warning_setting_description')}
           bind:checked={$showDeleteModal}
         />
+      </div>
+      <div class="ms-4">
+        <div class="mb-4 w-full">
+          <label class="font-medium text-primary text-sm" for="timeline-margin">
+            {$t('timeline_custom_margin')}
+          </label>
+          <p class="text-sm dark:text-immich-dark-fg">
+            {$t('timeline_custom_margin_description')}
+          </p>
+          <NumberRangeInput
+            id="timeline-margin"
+            bind:value={$timelineMargin}
+            min={2}
+            max={15}
+            step={1}
+            onInput={() => {}}
+          />
+        </div>
       </div>
     </div>
   </div>

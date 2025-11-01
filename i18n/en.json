@@ -1528,6 +1528,8 @@
   "permission": "Permission",
   "permission_empty": "Your permission shouldn't be empty",
   "permission_onboarding_back": "Back",
+  "timeline_custom_margin": "Timeline Margin",
+  "timeline_custom_margin_description": "Set the margin between timeline photos (1-15 pixels)",
   "permission_onboarding_continue_anyway": "Continue anyway",
   "permission_onboarding_get_started": "Get started",
   "permission_onboarding_go_to_settings": "Go to settings",
