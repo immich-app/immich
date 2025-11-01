@@ -91,7 +91,9 @@ class AssetMediaRepository {
 
     // titleAsync gets the correct original filename for some assets on iOS
     // otherwise using the `entity.title` would return a random GUID
-    return await entity.titleAsync;
+    final originalFilename = await entity.titleAsync;
+    // treat empty filename as missing
+    return originalFilename.isNotEmpty ? originalFilename : null;
   }
 
   // TODO: make this more efficient
