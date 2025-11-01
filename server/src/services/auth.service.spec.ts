@@ -269,6 +269,8 @@ describe(AuthService.name, () => {
         user: factory.authUser(),
         pinExpiresAt: null,
         appVersion: null,
+        deviceOS: '',
+        deviceType: '',
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -435,6 +437,8 @@ describe(AuthService.name, () => {
         user: factory.authUser(),
         pinExpiresAt: null,
         appVersion: null,
+        deviceOS: '',
+        deviceType: '',
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -463,6 +467,8 @@ describe(AuthService.name, () => {
         isPendingSyncReset: false,
         pinExpiresAt: null,
         appVersion: null,
+        deviceOS: '',
+        deviceType: '',
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -485,6 +491,8 @@ describe(AuthService.name, () => {
         isPendingSyncReset: false,
         pinExpiresAt: null,
         appVersion: null,
+        deviceOS: '',
+        deviceType: '',
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
