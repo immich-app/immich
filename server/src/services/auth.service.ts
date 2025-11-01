@@ -480,13 +480,21 @@ export class AuthService extends BaseService {
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
       if (diff.hours > 1 || appVersion != session.appVersion) {
-        await this.sessionRepository.update(session.id, {
-          id: session.id,
+        const updates: Record<string, any> = {
           updatedAt: new Date(),
-          appVersion: appVersion ?? session.appVersion,
-          deviceOS: deviceOS || session.deviceOS,
-          deviceType: deviceType || session.deviceType,
-        });
+        };
+
+        if (appVersion && appVersion !== session.appVersion) {
+          updates.appVersion = appVersion;
+        }
+        if (deviceOS && deviceOS !== session.deviceOS) {
+          updates.deviceOS = deviceOS;
+        }
+        if (deviceType && deviceType !== session.deviceType) {
+          updates.deviceType = deviceType;
+        }
+
+        await this.sessionRepository.update(session.id, updates);
       }
 
       // Pin check
