@@ -16,13 +16,20 @@ class AlbumActivity extends _$AlbumActivity {
 
   Future<void> removeActivity(String id) async {
     if (await ref.watch(activityServiceProvider).removeActivity(id)) {
-      final activities = state.valueOrNull ?? [];
-      final removedActivity = activities.firstWhere((a) => a.id == id);
-      activities.remove(removedActivity);
-      state = AsyncData(activities);
-      // Decrement activity count only for comments
+      final removedActivity = _removeFromState(id);
+      if (removedActivity == null) {
+        return;
+      }
+
+      if (assetId != null) {
+        ref.read(albumActivityProvider(albumId).notifier)._removeFromState(id);
+      }
+
       if (removedActivity.type == ActivityType.comment) {
         ref.watch(activityStatisticsProvider(albumId, assetId).notifier).removeActivity();
+        if (assetId != null) {
+          ref.watch(activityStatisticsProvider(albumId).notifier).removeActivity();
+        }
       }
     }
   }
@@ -50,6 +57,21 @@ class AlbumActivity extends _$AlbumActivity {
         ref.watch(activityStatisticsProvider(albumId).notifier).addActivity();
       }
     }
+  }
+
+  Activity? _removeFromState(String id) {
+    final activities = state.valueOrNull;
+    if (activities == null) {
+      return null;
+    }
+    final index = activities.indexWhere((a) => a.id == id);
+    if (index == -1) {
+      return null;
+    }
+    final updated = [...activities]..removeAt(index);
+    final removed = activities[index];
+    state = AsyncData(updated);
+    return removed;
   }
 }
 
