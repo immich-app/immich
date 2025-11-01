@@ -11,7 +11,14 @@ const getAppVersionFromUA = (ua: string) =>
   ua.match(/^Immich_(?:Android|iOS)_(?<appVersion>.+)$/)?.groups?.appVersion ?? null;
 
 const isImmichUserAgent = (ua: string) => {
-  const immichPatterns = [/^Mobile$/, /^Dart\//, /^immich_mobile/, /^AppleCoreMedia/, /^Dalvik\//];
+  const immichPatterns = [
+    /^Mobile$/,
+    /^Dart\//,
+    /^immich_mobile/,
+    /^AppleCoreMedia/,
+    /^Dalvik\//,
+    /^Immich_(?:Android|iOS)_/,
+  ];
 
   return immichPatterns.some((pattern) => pattern.test(ua));
 };

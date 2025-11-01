@@ -484,8 +484,8 @@ export class AuthService extends BaseService {
           id: session.id,
           updatedAt: new Date(),
           appVersion: appVersion ?? session.appVersion,
-          deviceOS,
-          deviceType,
+          deviceOS: deviceOS || session.deviceOS,
+          deviceType: deviceType || session.deviceType,
         });
       }
 
