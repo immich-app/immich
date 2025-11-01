@@ -26,19 +26,9 @@ The default configuration looks like this:
   "ffmpeg": {
     "accel": "disabled",
     "accelDecode": false,
-    "acceptedAudioCodecs": [
-      "aac",
-      "mp3",
-      "libopus"
-    ],
-    "acceptedContainers": [
-      "mov",
-      "ogg",
-      "webm"
-    ],
-    "acceptedVideoCodecs": [
-      "h264"
-    ],
+    "acceptedAudioCodecs": ["aac", "mp3", "libopus"],
+    "acceptedContainers": ["mov", "ogg", "webm"],
+    "acceptedVideoCodecs": ["h264"],
     "bframes": -1,
     "cqMode": "auto",
     "crf": 23,
@@ -155,9 +145,7 @@ The default configuration looks like this:
       "minRecognitionScore": 0.8,
       "modelName": "PP-OCRv5_mobile"
     },
-    "urls": [
-      "http://immich-machine-learning:3003"
-    ]
+    "urls": ["http://immich-machine-learning:3003"]
   },
   "map": {
     "darkStyle": "https://tiles.immich.cloud/v1/style/dark.json",
