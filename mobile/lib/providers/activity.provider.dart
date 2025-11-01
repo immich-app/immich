@@ -37,8 +37,10 @@ class AlbumActivity extends _$AlbumActivity {
   Future<void> addLike() async {
     final activity = await ref.watch(activityServiceProvider).addActivity(albumId, ActivityType.like, assetId: assetId);
     if (activity.hasValue) {
-      final activities = state.asData?.value ?? [];
-      state = AsyncData([...activities, activity.requireValue]);
+      _addToState(activity.requireValue);
+      if (assetId != null) {
+        ref.read(albumActivityProvider(albumId).notifier)._addToState(activity.requireValue);
+      }
     }
   }
 
@@ -48,8 +50,10 @@ class AlbumActivity extends _$AlbumActivity {
         .addActivity(albumId, ActivityType.comment, assetId: assetId, comment: comment);
 
     if (activity.hasValue) {
-      final activities = state.valueOrNull ?? [];
-      state = AsyncData([...activities, activity.requireValue]);
+      _addToState(activity.requireValue);
+      if (assetId != null) {
+        ref.read(albumActivityProvider(albumId).notifier)._addToState(activity.requireValue);
+      }
       ref.watch(activityStatisticsProvider(albumId, assetId).notifier).addActivity();
       // The previous addActivity call would increase the count of an asset if assetId != null
       // To also increase the activity count of the album, calling it once again with assetId set to null
@@ -57,6 +61,14 @@ class AlbumActivity extends _$AlbumActivity {
         ref.watch(activityStatisticsProvider(albumId).notifier).addActivity();
       }
     }
+  }
+
+  void _addToState(Activity activity) {
+    final activities = state.valueOrNull ?? [];
+    if (activities.any((a) => a.id == activity.id)) {
+      return;
+    }
+    state = AsyncData([...activities, activity]);
   }
 
   Activity? _removeFromState(String id) {

@@ -61,6 +61,7 @@ void main() {
     when(
       () => activityMock.getAllActivities('test-album', assetId: 'test-asset'),
     ).thenAnswer((_) async => [..._activities]);
+    when(() => activityMock.getAllActivities('test-album')).thenAnswer((_) async => [..._activities]);
 
     // Init and wait for providers future to complete
     provider = albumActivityProvider('test-album', 'test-asset');
@@ -95,6 +96,10 @@ void main() {
         () => activityMock.addActivity('test-album', ActivityType.like, assetId: 'test-asset'),
       ).thenAnswer((_) async => AsyncData(like));
 
+      final albumProvider = albumActivityProvider('test-album');
+      container.read(albumProvider.notifier);
+      await container.read(albumProvider.future);
+
       await container.read(provider.notifier).addLike();
 
       verify(() => activityMock.addActivity('test-album', ActivityType.like, assetId: 'test-asset'));
@@ -106,6 +111,10 @@ void main() {
       // Never bump activity count for new likes
       verifyNever(() => activityStatisticsMock.addActivity());
       verifyNever(() => albumActivityStatisticsMock.addActivity());
+
+      final albumActivities = container.read(albumProvider).requireValue;
+      expect(albumActivities, hasLength(5));
+      expect(albumActivities, contains(like));
     });
 
     test('Like failed', () async {
@@ -113,6 +122,10 @@ void main() {
       when(
         () => activityMock.addActivity('test-album', ActivityType.like, assetId: 'test-asset'),
       ).thenAnswer((_) async => AsyncError(Exception('Mock'), StackTrace.current));
+
+      final albumProvider = albumActivityProvider('test-album');
+      container.read(albumProvider.notifier);
+      await container.read(albumProvider.future);
 
       await container.read(provider.notifier).addLike();
 
@@ -123,6 +136,10 @@ void main() {
       expect(activities, isNot(contains(like)));
 
       verifyNever(() => albumActivityStatisticsMock.addActivity());
+
+      final albumActivities = container.read(albumProvider).requireValue;
+      expect(albumActivities, hasLength(4));
+      expect(albumActivities, isNot(contains(like)));
     });
   });
 
@@ -193,18 +210,6 @@ void main() {
   });
 
   group('addComment()', () {
-    setUp(() {
-      albumActivityStatisticsMock = ActivityStatisticsMock();
-      // when(() => albumActivityStatisticsMock.build(any())).thenReturn(0);
-      container = TestUtils.createContainer(
-        overrides: [
-          activityServiceProvider.overrideWith((ref) => activityMock),
-          activityStatisticsProvider('test-album', 'test-asset').overrideWith(() => activityStatisticsMock),
-          activityStatisticsProvider('test-album').overrideWith(() => albumActivityStatisticsMock),
-        ],
-      );
-    });
-
     test('Comment successfully added', () async {
       final comment = Activity(
         id: '5',
@@ -214,6 +219,10 @@ void main() {
         comment: 'Test-Comment',
         assetId: 'test-asset',
       );
+
+      final albumProvider = albumActivityProvider('test-album');
+      container.read(albumProvider.notifier);
+      await container.read(albumProvider.future);
 
       when(
         () => activityMock.addActivity(
@@ -243,6 +252,10 @@ void main() {
 
       verify(() => activityStatisticsMock.addActivity());
       verify(() => albumActivityStatisticsMock.addActivity());
+
+      final albumActivities = container.read(albumProvider).requireValue;
+      expect(albumActivities, hasLength(5));
+      expect(albumActivities, contains(comment));
     });
 
     test('Comment successfully added without assetId', () async {
@@ -262,6 +275,8 @@ void main() {
       when(() => activityMock.getAllActivities('test-album')).thenAnswer((_) async => [..._activities]);
 
       final albumProvider = albumActivityProvider('test-album');
+      container.read(albumProvider.notifier);
+      await container.read(albumProvider.future);
       await container.read(albumProvider.notifier).addComment('Test-Comment');
 
       verify(
@@ -295,6 +310,10 @@ void main() {
         ),
       ).thenAnswer((_) async => AsyncError(Exception('Error'), StackTrace.current));
 
+      final albumProvider = albumActivityProvider('test-album');
+      container.read(albumProvider.notifier);
+      await container.read(albumProvider.future);
+
       await container.read(provider.notifier).addComment('Test-Comment');
 
       final activities = await container.read(provider.future);
@@ -303,6 +322,10 @@ void main() {
 
       verifyNever(() => activityStatisticsMock.addActivity());
       verifyNever(() => albumActivityStatisticsMock.addActivity());
+
+      final albumActivities = container.read(albumProvider).requireValue;
+      expect(albumActivities, hasLength(4));
+      expect(albumActivities, isNot(contains(comment)));
     });
   });
 }
