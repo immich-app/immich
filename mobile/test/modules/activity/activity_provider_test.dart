@@ -33,6 +33,7 @@ final _activities = [
 void main() {
   late ActivityServiceMock activityMock;
   late ActivityStatisticsMock activityStatisticsMock;
+  late ActivityStatisticsMock albumActivityStatisticsMock;
   late ProviderContainer container;
   late AlbumActivityProvider provider;
   late ListenerMock<AsyncValue<List<Activity>>> listener;
@@ -44,14 +45,19 @@ void main() {
   setUp(() async {
     activityMock = ActivityServiceMock();
     activityStatisticsMock = ActivityStatisticsMock();
+    albumActivityStatisticsMock = ActivityStatisticsMock();
+
     container = TestUtils.createContainer(
       overrides: [
         activityServiceProvider.overrideWith((ref) => activityMock),
         activityStatisticsProvider('test-album', 'test-asset').overrideWith(() => activityStatisticsMock),
+        activityStatisticsProvider('test-album').overrideWith(() => albumActivityStatisticsMock),
       ],
     );
 
     // Mock values
+    when(() => activityStatisticsMock.build(any(), any())).thenReturn(0);
+    when(() => albumActivityStatisticsMock.build(any())).thenReturn(0);
     when(
       () => activityMock.getAllActivities('test-album', assetId: 'test-asset'),
     ).thenAnswer((_) async => [..._activities]);
@@ -99,6 +105,7 @@ void main() {
 
       // Never bump activity count for new likes
       verifyNever(() => activityStatisticsMock.addActivity());
+      verifyNever(() => albumActivityStatisticsMock.addActivity());
     });
 
     test('Like failed', () async {
@@ -114,6 +121,8 @@ void main() {
       final activities = await container.read(provider.future);
       expect(activities, hasLength(4));
       expect(activities, isNot(contains(like)));
+
+      verifyNever(() => albumActivityStatisticsMock.addActivity());
     });
   });
 
@@ -130,6 +139,7 @@ void main() {
       expect(activities, isNot(anyElement(predicate((Activity a) => a.id == '3'))));
 
       verifyNever(() => activityStatisticsMock.removeActivity());
+      verifyNever(() => albumActivityStatisticsMock.removeActivity());
     });
 
     test('Remove Like failed', () async {
@@ -140,6 +150,9 @@ void main() {
       final activities = await container.read(provider.future);
       expect(activities, hasLength(4));
       expect(activities, anyElement(predicate((Activity a) => a.id == '3')));
+
+      verifyNever(() => activityStatisticsMock.removeActivity());
+      verifyNever(() => albumActivityStatisticsMock.removeActivity());
     });
 
     test('Comment successfully removed', () async {
@@ -151,14 +164,38 @@ void main() {
       expect(activities, isNot(anyElement(predicate((Activity a) => a.id == '1'))));
 
       verify(() => activityStatisticsMock.removeActivity());
+      verify(() => albumActivityStatisticsMock.removeActivity());
+    });
+
+    test('Removes activity from album state when asset scoped', () async {
+      when(() => activityMock.removeActivity('3')).thenAnswer((_) async => true);
+      when(() => activityMock.getAllActivities('test-album')).thenAnswer((_) async => [..._activities]);
+
+      final albumProvider = albumActivityProvider('test-album');
+      container.read(albumProvider.notifier);
+      await container.read(albumProvider.future);
+
+      await container.read(provider.notifier).removeActivity('3');
+
+      final assetActivities = container.read(provider).requireValue;
+      final albumActivities = container.read(albumProvider).requireValue;
+
+      expect(assetActivities, hasLength(3));
+      expect(assetActivities, isNot(anyElement(predicate((Activity a) => a.id == '3'))));
+
+      expect(albumActivities, hasLength(3));
+      expect(albumActivities, isNot(anyElement(predicate((Activity a) => a.id == '3'))));
+
+      verify(() => activityMock.removeActivity('3'));
+      verifyNever(() => activityStatisticsMock.removeActivity());
+      verifyNever(() => albumActivityStatisticsMock.removeActivity());
     });
   });
 
   group('addComment()', () {
-    late ActivityStatisticsMock albumActivityStatisticsMock;
-
     setUp(() {
       albumActivityStatisticsMock = ActivityStatisticsMock();
+      // when(() => albumActivityStatisticsMock.build(any())).thenReturn(0);
       container = TestUtils.createContainer(
         overrides: [
           activityServiceProvider.overrideWith((ref) => activityMock),
