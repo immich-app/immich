@@ -22,20 +22,20 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 25GiB+ disk space required to pull this image
 # TODO: find a way to reduce the image size
-FROM rocm/dev-ubuntu-22.04:6.4.3-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS builder-rocm
+FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS builder-rocm
 
 # renovate: datasource=github-releases depName=Microsoft/onnxruntime
-ARG ONNXRUNTIME_VERSION="v1.20.1"
+ARG ONNXRUNTIME_VERSION="v1.21.1"
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
-RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1-linux-x86_64.sh && \
-    chmod +x cmake-3.30.1-linux-x86_64.sh && \
-    mkdir -p /code/cmake-3.30.1-linux-x86_64 && \
-    ./cmake-3.30.1-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.30.1-linux-x86_64 && \
-    rm cmake-3.30.1-linux-x86_64.sh
+RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.12-venv
+RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.sh && \
+    chmod +x cmake-3.31.9-linux-x86_64.sh && \
+    mkdir -p /code/cmake-3.31.9-linux-x86_64 && \
+    ./cmake-3.31.9-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.31.9-linux-x86_64 && \
+    rm cmake-3.31.9-linux-x86_64.sh
 
-ENV PATH=/code/cmake-3.30.1-linux-x86_64/bin:${PATH}
+ENV PATH=/code/cmake-3.31.9-linux-x86_64/bin:${PATH}
 
 RUN git clone --single-branch --branch "${ONNXRUNTIME_VERSION}" --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
@@ -105,7 +105,7 @@ COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
-FROM rocm/dev-ubuntu-22.04:6.4.3-complete@sha256:1f7e92ca7e3a3785680473329ed1091fc99db3e90fcb3a1688f2933e870ed76b AS prod-rocm
+FROM rocm/dev-ubuntu-24.04:6.4.4-complete@sha256:31418ac10a3769a71eaef330c07280d1d999d7074621339b8f93c484c35f6078 AS prod-rocm
 
 FROM prod-cpu AS prod-armnn
 

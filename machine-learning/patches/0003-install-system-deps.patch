@@ -1,0 +1,25 @@
+diff --git a/dockerfiles/scripts/install_common_deps.sh b/dockerfiles/scripts/install_common_deps.sh
+index bbb672a99e..5bdcdc2cf9 100644
+--- a/dockerfiles/scripts/install_common_deps.sh
++++ b/dockerfiles/scripts/install_common_deps.sh
+@@ -8,16 +8,16 @@ apt-get update && apt-get install -y --no-install-recommends \
+         curl \
+         libcurl4-openssl-dev \
+         libssl-dev \
+-        python3-dev
++        python3-dev \
++        python3-numpy \
++        python3-packaging \
++        python3-wheel
+ 
+ # Dependencies: conda
+ wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh -O ~/miniconda.sh --no-check-certificate && /bin/bash ~/miniconda.sh -b -p /opt/miniconda
+ rm ~/miniconda.sh
+ /opt/miniconda/bin/conda clean -ya
+ 
+-pip install numpy
+-pip install packaging
+-pip install "wheel>=0.35.1"
+ rm -rf /opt/miniconda/pkgs
+ 
+ # Dependencies: cmake
