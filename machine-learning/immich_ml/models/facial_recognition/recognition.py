@@ -37,10 +37,7 @@ class FaceRecognizer(InferenceModel):
         if (not self.batch_size or self.batch_size > 1) and str(session.get_inputs()[0].shape[0]) != "batch":
             self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
-        self.model = ArcFaceONNX(
-            self.model_path_for_format(ModelFormat.ONNX).as_posix(),
-            session=session,
-        )
+        self.model = self._build_recognizer(session)
         return session
 
     def _predict(
@@ -55,12 +52,12 @@ class FaceRecognizer(InferenceModel):
 
     def _predict_batch(self, cropped_faces: list[NDArray[np.uint8]]) -> NDArray[np.float32]:
         if not self.batch_size or len(cropped_faces) <= self.batch_size:
-            embeddings: NDArray[np.float32] = self.model.get_feat(cropped_faces)
+            embeddings: NDArray[np.float32] = self._run_get_feat(cropped_faces)
             return embeddings
 
         batch_embeddings: list[NDArray[np.float32]] = []
         for i in range(0, len(cropped_faces), self.batch_size):
-            batch_embeddings.append(self.model.get_feat(cropped_faces[i : i + self.batch_size]))
+            batch_embeddings.append(self._run_get_feat(cropped_faces[i : i + self.batch_size]))
         return np.concatenate(batch_embeddings, axis=0)
 
     def postprocess(self, faces: FaceDetectionOutput, embeddings: NDArray[np.float32]) -> FacialRecognitionOutput:
@@ -90,3 +87,22 @@ class FaceRecognizer(InferenceModel):
     def _batch_size_default(self) -> int | None:
         providers = ort.get_available_providers()
         return None if self.model_format == ModelFormat.ONNX and "OpenVINOExecutionProvider" not in providers else 1
+
+    def _build_recognizer(self, session: ModelSession) -> ArcFaceONNX:
+        return ArcFaceONNX(
+            self.model_path_for_format(ModelFormat.ONNX).as_posix(),
+            session=session,
+        )
+
+    def _run_get_feat(self, cropped_faces: list[NDArray[np.uint8]]) -> NDArray[np.float32]:
+        session = getattr(self, "session", None)
+        try:
+            embeddings = self.model.get_feat(cropped_faces)
+            return np.asarray(embeddings, dtype=np.float32)
+        except Exception as error:  # pragma: no cover - executed during provider failures
+            if session and hasattr(session, "fallback_to_cpu") and hasattr(session, "is_onnxruntime_error"):
+                if session.is_onnxruntime_error(error) and session.fallback_to_cpu(error):
+                    self.model = self._build_recognizer(session)
+                    embeddings = self.model.get_feat(cropped_faces)
+                    return np.asarray(embeddings, dtype=np.float32)
+            raise

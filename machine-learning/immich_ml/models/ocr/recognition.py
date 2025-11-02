@@ -7,6 +7,7 @@ from PIL.Image import Image
 from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.ch_ppocr_rec import TextRecognizer as RapidTextRecognizer
 from rapidocr.inference_engine.base import FileInfo, InferSession
+from rapidocr.inference_engine.onnxruntime.main import ONNXRuntimeError
 from rapidocr.utils import DownloadFile, DownloadFileInput
 from rapidocr.utils.typings import EngineType, LangRec, OCRVersion, TaskType
 from rapidocr.utils.typings import ModelType as RapidModelType
@@ -56,20 +57,21 @@ class TextRecognizer(InferenceModel):
     def _load(self) -> ModelSession:
         # TODO: support other runtimes
         session = OrtSession(self.model_path)
-        self.model = RapidTextRecognizer(
-            OcrOptions(
-                session=session.session,
-                rec_batch_num=settings.max_batch_size.text_recognition if settings.max_batch_size is not None else 6,
-                rec_img_shape=(3, 48, 320),
-            )
-        )
+        self.model = self._build_recognizer(session)
         return session
 
     def _predict(self, _: Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
         boxes, img, box_scores = texts["boxes"], texts["image"], texts["scores"]
         if boxes.shape[0] == 0:
             return self._empty
-        rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
+        try:
+            rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
+        except ONNXRuntimeError as error:
+            if isinstance(self.session, OrtSession) and self.session.fallback_to_cpu(error):
+                self.model = self._build_recognizer(self.session)
+                rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
+            else:
+                raise
         if rec.txts is None:
             return self._empty
 
@@ -114,6 +116,16 @@ class TextRecognizer(InferenceModel):
                 dst_img = np.rot90(dst_img)
             imgs.append(dst_img)
         return imgs
+
+    def _build_recognizer(self, session: OrtSession) -> RapidTextRecognizer:
+        batch_size = settings.max_batch_size.text_recognition if settings.max_batch_size is not None else 6
+        return RapidTextRecognizer(
+            OcrOptions(
+                session=session.session,
+                rec_batch_num=batch_size,
+                rec_img_shape=(3, 48, 320),
+            )
+        )
 
     def configure(self, **kwargs: Any) -> None:
         self.min_score = kwargs.get("minScore", self.min_score)

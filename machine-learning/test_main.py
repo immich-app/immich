@@ -26,10 +26,13 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
+from immich_ml.models.ocr.detection import TextDetector
+from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.schemas import ModelFormat, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
+from rapidocr.inference_engine.onnxruntime.main import ONNXRuntimeError
 
 
 class TestBase:
@@ -159,8 +162,22 @@ class TestBase:
         )
 
     def test_throws_exception_if_model_path_does_not_exist(
-        self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock
+        self,
+        snapshot_download: mock.Mock,
+        ort_session: mock.Mock,
+        path: mock.Mock,
+        mocker: MockerFixture,
     ) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.textual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
+        mocker.patch.object(
+            InferenceModel,
+            "_make_session",
+            side_effect=FileNotFoundError("Model file not found"),
+            autospec=True,
+        )
         path.return_value.__truediv__.return_value.__truediv__.return_value.is_file.return_value = False
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
@@ -339,6 +356,148 @@ class TestOrtSession:
 
         assert sess_options is session.sess_options
 
+    def test_falls_back_to_cpu_when_session_creation_fails(self, ort_session: mock.Mock) -> None:
+        failure = RuntimeError("CoreML failure")
+        successful_session = mock.Mock()
+        ort_session.side_effect = [failure, successful_session]
+
+        session = OrtSession(
+            "ViT-B-32__openai",
+            providers=["CoreMLExecutionProvider", "CPUExecutionProvider"],
+        )
+
+        assert session.session is successful_session
+        assert session.providers == self.CPU_EP
+        assert ort_session.call_count == 2
+        assert ort_session.call_args_list[1].kwargs["providers"] == self.CPU_EP
+        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested"}]
+        assert session.sess_options.inter_op_num_threads == 1
+        assert session.sess_options.intra_op_num_threads == 2
+
+    def test_fallback_reuses_cpu_provider_options_if_provided(
+        self, ort_session: mock.Mock
+    ) -> None:
+        failure = RuntimeError("CoreML failure")
+        successful_session = mock.Mock()
+        ort_session.side_effect = [failure, successful_session]
+
+        cpu_options = {"arena_extend_strategy": "kSameAsRequested", "custom": "value"}
+        session = OrtSession(
+            "ViT-B-32__openai",
+            providers=["CoreMLExecutionProvider", "CPUExecutionProvider"],
+            provider_options=[{"foo": "bar"}, cpu_options],
+        )
+
+        assert session.session is successful_session
+        assert session.providers == self.CPU_EP
+        assert session.provider_options == [cpu_options]
+        assert ort_session.call_args_list[1].kwargs["providers"] == self.CPU_EP
+
+    def test_fallback_adds_cpu_if_not_requested(self, ort_session: mock.Mock) -> None:
+        failure = RuntimeError("CoreML failure")
+        successful_session = mock.Mock()
+        ort_session.side_effect = [failure, successful_session]
+
+        session = OrtSession(
+            "ViT-B-32__openai",
+            providers=["CoreMLExecutionProvider"],
+        )
+
+        assert session.session is successful_session
+        assert session.providers == self.CPU_EP
+        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested"}]
+        assert ort_session.call_args_list[1].kwargs["providers"] == self.CPU_EP
+
+class TestOcrFallback:
+    def test_detection_fallback_retries_with_cpu_provider(self, mocker: MockerFixture) -> None:
+        mocker.patch("immich_ml.models.ocr.detection.decode_cv2", side_effect=lambda data: data)
+
+        fallback_output = SimpleNamespace(
+            boxes=np.array([[[0, 0], [1, 0], [1, 1], [0, 1]]], dtype=np.float32),
+            scores=np.array([0.6], dtype=np.float32),
+            img=np.zeros((2, 2, 3), dtype=np.float32),
+        )
+        failing_model = mocker.Mock(side_effect=ONNXRuntimeError("CoreML failure"))
+        fallback_model = mocker.Mock(return_value=fallback_output)
+        mocker.patch.object(TextDetector, "_build_detector", side_effect=[failing_model, fallback_model])
+
+        ort_instances: list[Any] = []
+
+        class FakeOrtSession:
+            def __init__(self, *_: Any, providers: list[str] | None = None, **__: Any) -> None:
+                self.providers = providers or ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                self.fallback_calls = 0
+                ort_instances.append(self)
+
+            def fallback_to_cpu(self, error: Exception) -> bool:
+                self.fallback_calls += 1
+                self.providers = ["CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                return True
+
+        mocker.patch("immich_ml.models.ocr.detection.OrtSession", FakeOrtSession)
+
+        detector = TextDetector("PP-OCRv5_mobile")
+        detector.load()
+
+        output = detector.predict(b"raw-bytes")
+
+        assert np.array_equal(output["boxes"], fallback_output.boxes)
+        assert np.array_equal(output["scores"], fallback_output.scores)
+        assert np.array_equal(output["image"], fallback_output.img)
+
+        assert ort_instances[0].providers == ["CPUExecutionProvider"]
+        assert ort_instances[0].fallback_calls == 1
+        fallback_model.assert_called_once()
+
+    def test_recognition_fallback_retries_with_cpu_provider(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(TextRecognizer, "get_crop_img_list", return_value=[np.zeros((1, 1, 3), dtype=np.float32)])
+
+        failing_model = mocker.Mock(side_effect=ONNXRuntimeError("CoreML failure"))
+        fallback_result = SimpleNamespace(txts=["hello"], scores=[0.95])
+        fallback_model = mocker.Mock(return_value=fallback_result)
+        mocker.patch.object(TextRecognizer, "_build_recognizer", side_effect=[failing_model, fallback_model])
+
+        ort_instances: list[Any] = []
+
+        class FakeOrtSession:
+            def __init__(self, *_: Any, providers: list[str] | None = None, **__: Any) -> None:
+                self.providers = providers or ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                self.fallback_calls = 0
+                ort_instances.append(self)
+
+            def fallback_to_cpu(self, error: Exception) -> bool:
+                self.fallback_calls += 1
+                self.providers = ["CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                return True
+
+        mocker.patch("immich_ml.models.ocr.recognition.OrtSession", FakeOrtSession)
+
+        recognizer = TextRecognizer("PP-OCRv5_mobile")
+        recognizer.load()
+
+        ocr_input = {
+            "boxes": np.array([[[0, 0], [2, 0], [2, 1], [0, 1]]], dtype=np.float32),
+            "image": np.zeros((2, 2, 3), dtype=np.float32),
+            "scores": np.array([0.9], dtype=np.float32),
+        }
+
+        output = recognizer.predict(None, ocr_input)
+
+        assert output["text"] == ["hello"]
+        assert np.allclose(output["textScore"], np.array([0.95], dtype=np.float32))
+        assert ort_instances[0].providers == ["CPUExecutionProvider"]
+        assert ort_instances[0].fallback_calls == 1
+        fallback_model.assert_called_once()
+
+
 
 class TestAnnSession:
     def test_creates_ann_session(self, ann_session: mock.Mock, info: mock.Mock) -> None:
@@ -424,6 +583,17 @@ class TestRknnSession:
 class TestCLIP:
     embedding = np.random.rand(512).astype(np.float32)
     cache_dir = Path("test_cache")
+
+    @pytest.fixture(autouse=True)
+    def _mock_clip_providers(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.visual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
+        mocker.patch(
+            "immich_ml.models.clip.textual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
 
     def test_basic_image(
         self,
@@ -630,6 +800,54 @@ class TestCLIP:
         assert np.allclose(tokens["input_ids"], np.array([mock_ids], dtype=np.int32), atol=0)
         assert np.allclose(tokens["attention_mask"], np.array([mock_attention_mask], dtype=np.int32), atol=0)
 
+    def test_visual_encoder_prefers_cpu_when_only_coreml(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.visual.ort.get_available_providers",
+            return_value=["CoreMLExecutionProvider", "CPUExecutionProvider"],
+        )
+
+        encoder = OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache")
+
+        providers, available = encoder._preferred_providers()
+        assert providers == ["CPUExecutionProvider"]
+        assert set(available) == {"CoreMLExecutionProvider", "CPUExecutionProvider"}
+
+    def test_visual_encoder_keeps_accelerators_when_available(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.visual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
+
+        encoder = OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache")
+
+        providers, available = encoder._preferred_providers()
+        assert providers is None
+        assert set(available) == {"CUDAExecutionProvider", "CPUExecutionProvider"}
+
+    def test_textual_encoder_prefers_cpu_when_only_coreml(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.textual.ort.get_available_providers",
+            return_value=["CoreMLExecutionProvider", "CPUExecutionProvider"],
+        )
+
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
+
+        providers, available = encoder._preferred_providers()
+        assert providers == ["CPUExecutionProvider"]
+        assert set(available) == {"CoreMLExecutionProvider", "CPUExecutionProvider"}
+
+    def test_textual_encoder_keeps_accelerators_when_available(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.clip.textual.ort.get_available_providers",
+            return_value=["CUDAExecutionProvider", "CPUExecutionProvider"],
+        )
+
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
+
+        providers, available = encoder._preferred_providers()
+        assert providers is None
+        assert set(available) == {"CUDAExecutionProvider", "CPUExecutionProvider"}
+
 
 class TestFaceRecognition:
     def test_set_min_score(self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock) -> None:
@@ -664,6 +882,55 @@ class TestFaceRecognition:
         assert np.equal(faces["scores"], scores).all()
         det_model.detect.assert_called_once()
 
+    def test_detection_fallback_retries_with_cpu_provider(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.facial_recognition.detection.decode_cv2", side_effect=lambda data: data, autospec=True
+        )
+
+        FakeOnnxError = type("FakeOnnxError", (RuntimeError,), {})
+        FakeOnnxError.__module__ = "onnxruntime.capi.onnxruntime_pybind11_state"
+
+        fallback_bboxes = np.array([[0, 1, 2, 3, 0.9]], dtype=np.float32)
+        fallback_landmarks = np.random.rand(1, 5, 2).astype(np.float32)
+        failing_model = mock.Mock()
+        failing_model.detect.side_effect = FakeOnnxError("CoreML failure")
+        fallback_model = mock.Mock()
+        fallback_model.detect.return_value = (fallback_bboxes, fallback_landmarks)
+
+        class FakeOrtSession:
+            def __init__(self, *_: Any, **__: Any) -> None:
+                self.providers = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                self.fallback_calls = 0
+
+            def fallback_to_cpu(self, error: Exception) -> bool:
+                self.fallback_calls += 1
+                self.providers = ["CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                return True
+
+            @staticmethod
+            def is_onnxruntime_error(error: Exception) -> bool:
+                return True
+
+        fake_session = FakeOrtSession()
+
+        mocker.patch.object(InferenceModel, "_make_session", return_value=fake_session, autospec=True)
+        mocker.patch.object(FaceDetector, "_build_detector", side_effect=[failing_model, fallback_model], autospec=True)
+
+        detector = FaceDetector("buffalo_s", cache_dir="test_cache")
+        detector.load()
+
+        output = detector.predict(np.zeros((2, 2, 3), dtype=np.uint8))
+
+        assert fake_session.fallback_calls == 1
+        assert np.array_equal(output["boxes"], fallback_bboxes[:, :4])
+        assert np.array_equal(output["landmarks"], fallback_landmarks)
+        assert np.array_equal(output["scores"], fallback_bboxes[:, 4])
+        fallback_model.detect.assert_called_once()
+
     def test_recognition(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
         face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
@@ -692,7 +959,7 @@ class TestFaceRecognition:
             embedding = orjson.loads(embedding_str)
             assert isinstance(embedding, list)
             assert len(embedding) == 512
-            assert isinstance(face.get("score", None), np.float32)
+        assert isinstance(face.get("score", None), np.float32)
 
         rec_model.get_feat.assert_called_once()
         call_args = rec_model.get_feat.call_args_list[0].args
@@ -700,6 +967,71 @@ class TestFaceRecognition:
         assert isinstance(call_args[0], list)
         assert isinstance(call_args[0][0], np.ndarray)
         assert call_args[0][0].shape == (112, 112, 3)
+
+    def test_recognition_fallback_retries_with_cpu_provider(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.decode_cv2", side_effect=lambda data: data, autospec=True
+        )
+        FakeOnnxError = type("FakeOnnxError", (RuntimeError,), {})
+        FakeOnnxError.__module__ = "onnxruntime.capi.onnxruntime_pybind11_state"
+
+        failing_model = mock.Mock()
+        failing_model.get_feat.side_effect = FakeOnnxError("CoreML failure")
+
+        embeddings = np.random.rand(1, 512).astype(np.float32)
+        fallback_model = mock.Mock()
+        fallback_model.get_feat.return_value = embeddings
+
+        class FakeOrtSession:
+            def __init__(self, *_: Any, **__: Any) -> None:
+                self.providers = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                self.fallback_calls = 0
+                tensor_shape = ("batch", 3, 112, 112)
+                self._inputs = [SimpleNamespace(shape=tensor_shape)]
+
+            def get_inputs(self) -> list[Any]:
+                return self._inputs
+
+            def fallback_to_cpu(self, error: Exception) -> bool:
+                self.fallback_calls += 1
+                self.providers = ["CPUExecutionProvider"]
+                self.session = mocker.Mock()
+                self.session.get_providers.return_value = self.providers
+                return True
+
+            @staticmethod
+            def is_onnxruntime_error(error: Exception) -> bool:
+                return True
+
+        fake_session = FakeOrtSession()
+        mocker.patch.object(
+            InferenceModel, "_make_session", side_effect=[fake_session, fake_session], autospec=True
+        )
+        mocker.patch.object(
+            FaceRecognizer, "_build_recognizer", side_effect=[failing_model, fallback_model], autospec=True
+        )
+        mocker.patch.object(
+            FaceRecognizer, "_crop", return_value=[np.zeros((112, 112, 3), dtype=np.uint8)], autospec=True
+        )
+
+        recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache")
+        recognizer.load()
+        recognizer.batch_size = None
+
+        faces = {
+            "boxes": np.array([[0, 0, 1, 1]], dtype=np.float32),
+            "scores": np.array([0.95], dtype=np.float32),
+            "landmarks": np.random.rand(1, 5, 2).astype(np.float32),
+        }
+
+        output = recognizer.predict(np.zeros((2, 2, 3), dtype=np.uint8), faces)
+
+        assert fake_session.fallback_calls == 1
+        assert len(output) == 1
+        fallback_model.get_feat.assert_called_once()
+        assert output[0]["score"] == faces["scores"][0]
 
     def test_recognition_adds_batch_axis_for_ort(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture

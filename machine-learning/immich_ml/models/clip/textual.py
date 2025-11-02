@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import onnxruntime as ort
 from numpy.typing import NDArray
 from tokenizers import Encoding, Tokenizer
 
@@ -13,11 +14,18 @@ from immich_ml.models.base import InferenceModel
 from immich_ml.models.constants import WEBLATE_TO_FLORES200
 from immich_ml.models.transforms import clean_text, serialize_np_array
 from immich_ml.schemas import ModelSession, ModelTask, ModelType
+from immich_ml.sessions.ort import OrtSession
 
 
 class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
+
+    _ACCEL_PROVIDERS = {
+        "CUDAExecutionProvider",
+        "ROCMExecutionProvider",
+        "OpenVINOExecutionProvider",
+    }
 
     def _predict(self, inputs: str, language: str | None = None) -> str:
         tokens = self.tokenize(inputs, language=language)
@@ -80,6 +88,29 @@ class BaseCLIPTextualEncoder(InferenceModel):
         tokenizer_cfg: dict[str, Any] = json.load(self.tokenizer_cfg_path.open())
         log.debug(f"Loaded tokenizer config for CLIP model '{self.model_name}'")
         return tokenizer_cfg
+
+    def _make_session(self, model_path: Path) -> ModelSession:
+        providers, available = self._preferred_providers()
+        if providers is not None:
+            log.warning(
+                (
+                    "Disabling CoreML for CLIP textual model '%s'; only CoreML available "
+                    "(providers=%s). Falling back to %s"
+                ),
+                self.model_name,
+                sorted(available),
+                providers,
+            )
+            return OrtSession(model_path, providers=providers)
+        return super()._make_session(model_path)
+
+    def _preferred_providers(self) -> tuple[list[str] | None, set[str]]:
+        available_providers = set(ort.get_available_providers())
+        if "CoreMLExecutionProvider" not in available_providers:
+            return None, available_providers
+        if available_providers & self._ACCEL_PROVIDERS:
+            return None, available_providers
+        return ["CPUExecutionProvider"], available_providers
 
 
 class OpenClipTextualEncoder(BaseCLIPTextualEncoder):
