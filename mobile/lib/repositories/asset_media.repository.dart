@@ -96,7 +96,7 @@ class AssetMediaRepository {
       // treat empty filename as missing
       return originalFilename.isNotEmpty ? originalFilename : null;
     } catch (e) {
-      _log.warning("Failed to get original filename for asset: $id", e);
+      _log.warning("Failed to get original filename for asset: $id. Error: $e");
       return null;
     }
   }
