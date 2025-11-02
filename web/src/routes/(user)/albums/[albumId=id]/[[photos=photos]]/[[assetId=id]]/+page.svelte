@@ -13,6 +13,7 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import MoveToAlbumAction from '$lib/components/timeline/actions/MoveToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeDescription from '$lib/components/timeline/actions/ChangeDescriptionAction.svelte';
@@ -559,6 +560,7 @@
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
+          <MoveToAlbumAction />
         </ButtonContextMenu>
         {#if assetInteraction.isAllUserOwned}
           <FavoriteAction
@@ -570,7 +572,7 @@
               })}
           ></FavoriteAction>
         {/if}
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
+              <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />

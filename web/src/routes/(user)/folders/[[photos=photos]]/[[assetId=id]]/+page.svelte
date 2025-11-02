@@ -8,6 +8,7 @@
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import Sidebar from '$lib/components/sidebar/sidebar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import MoveToAlbumAction from '$lib/components/timeline/actions/MoveToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -134,6 +135,7 @@
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
+        <MoveToAlbumAction />
       </ButtonContextMenu>
       <FavoriteAction
         removeFavorite={assetInteraction.isAllFavorite}
@@ -153,7 +155,7 @@
         <DownloadAction menuItem />
         <ChangeDate menuItem />
         <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
+  <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />

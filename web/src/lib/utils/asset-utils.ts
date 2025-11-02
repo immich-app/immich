@@ -23,10 +23,12 @@ import {
   createStack,
   deleteAssets,
   deleteStacks,
+  getAllAlbums,
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
   getStack,
+  removeAssetFromAlbum,
   untagAssets,
   updateAsset,
   updateAssets,
@@ -83,6 +85,8 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       { timeout: 5000 },
     );
   }
+
+  return result;
 };
 
 export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], showNotification = true) => {
@@ -115,6 +119,67 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
     return result;
   }
 };
+
+export const moveAssetsToAlbum = async (albumId: string, assetIds: string[], showNotification = true) => {
+  const result = await addAssets({
+    ...authManager.params,
+    id: albumId,
+    bulkIdsDto: {
+      ids: assetIds,
+    },
+  });
+
+  const count = result.filter(({ success }) => success).length;
+  const duplicateErrorCount = result.filter(({ error }) => error === 'duplicate').length;
+  const $t = get(t);
+ 
+  if (showNotification) {
+    let message = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
+    if (count > 0) {
+      try {
+        const albumAssetMap: Record<string, string[]> = {};
+        // For each asset, find albums that include it
+        for (const id of assetIds) {
+          const albumsForAsset = await getAllAlbums({ assetId: id });
+          for (const a of albumsForAsset) {
+            if (a.id === albumId) continue;
+            albumAssetMap[a.id] = albumAssetMap[a.id] ?? [];
+            albumAssetMap[a.id].push(id);
+          }
+        }
+
+        // Remove assets from each album found
+        for (const [albumId, ids] of Object.entries(albumAssetMap)) {
+          await removeAssetFromAlbum({ id: albumId, bulkIdsDto: { ids } });
+      }
+      message = $t('moved_assets_to_album', { values: { count: count } });
+    } catch (err) {
+      console.error('[moveAssetsToAlbum] error while removing from existing albums', err);
+    }
+    } else if (duplicateErrorCount > 0) {
+      message = $t('assets_were_part_of_album_count', { values: { count: duplicateErrorCount } });
+    }
+    toastManager.custom(
+      {
+        component: ToastAction,
+        props: {
+          title: $t('info'),
+          color: 'primary',
+          description: message,
+          button: {
+            text: $t('view_album'),
+            color: 'primary',
+            onClick() {
+              return goto(`${AppRoute.ALBUMS}/${albumId}`);
+            },
+          },
+        },
+      },
+      { timeout: 5000 },
+    );
+  };
+  return result;
+}
 
 export const tagAssets = async ({
   assetIds,

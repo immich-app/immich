@@ -5,6 +5,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
+  import MoveToAlbumAction from '$lib/components/timeline/actions/MoveToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import AssetJobActions from '$lib/components/timeline/actions/AssetJobActions.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -117,6 +118,7 @@
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
+      <MoveToAlbumAction />
     </ButtonContextMenu>
     <FavoriteAction
       removeFavorite={assetInteraction.isAllFavorite}
@@ -145,7 +147,7 @@
       {/if}
       <ChangeDate menuItem />
       <ChangeDescription menuItem />
-      <ChangeLocation menuItem />
+  <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => timelineManager.removeAssets(assetIds)} />
       {#if $preferences.tags.enabled}
         <TagAction menuItem />
