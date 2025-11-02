@@ -40,10 +40,10 @@
 
   const handlePrevious = async () => {
     const release = await mutex.acquire();
-    const laterAsset = await timelineManager.getLaterAsset($viewingAsset);
+    const laterAsset = await timelineManager.search.getLaterAsset($viewingAsset);
 
     if (laterAsset) {
-      const preloadAsset = await timelineManager.getLaterAsset(laterAsset);
+      const preloadAsset = await timelineManager.search.getLaterAsset(laterAsset);
       const asset = await getAssetInfo({ ...authManager.params, id: laterAsset.id });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: laterAsset.id });
@@ -55,10 +55,10 @@
 
   const handleNext = async () => {
     const release = await mutex.acquire();
-    const earlierAsset = await timelineManager.getEarlierAsset($viewingAsset);
+    const earlierAsset = await timelineManager.search.getEarlierAsset($viewingAsset);
 
     if (earlierAsset) {
-      const preloadAsset = await timelineManager.getEarlierAsset(earlierAsset);
+      const preloadAsset = await timelineManager.search.getEarlierAsset(earlierAsset);
       const asset = await getAssetInfo({ ...authManager.params, id: earlierAsset.id });
       assetViewingStore.setAsset(asset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: earlierAsset.id });
@@ -69,7 +69,7 @@
   };
 
   const handleRandom = async () => {
-    const randomAsset = await timelineManager.getRandomAsset();
+    const randomAsset = await timelineManager.search.getRandomAsset();
 
     if (randomAsset) {
       const asset = await getAssetInfo({ ...authManager.params, id: randomAsset.id });

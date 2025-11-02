@@ -23,12 +23,24 @@ export class TimelineWebsocketExtension {
 
   #pendingChanges: PendingChange[] = [];
   #unsubscribers: Unsubscriber[] = [];
+  #connected = false;
 
   constructor(timeineManager: TimelineManager) {
     this.#timelineManager = timeineManager;
   }
 
-  connectWebsocketEvents() {
+  connect() {
+    if (this.#connected) {
+      throw new Error('TimelineManager already connected');
+    }
+    this.#connectWebsocketEvents();
+  }
+
+  disconnect() {
+    this.#disconnectWebsocketEvents();
+  }
+
+  #connectWebsocketEvents() {
     this.#unsubscribers.push(
       websocketEvents.on('on_upload_success', (asset) =>
         this.#addPendingChanges({ type: 'add', values: [toTimelineAsset(asset)] }),
@@ -41,7 +53,7 @@ export class TimelineWebsocketExtension {
     );
   }
 
-  disconnectWebsocketEvents() {
+  #disconnectWebsocketEvents() {
     for (const unsubscribe of this.#unsubscribers) {
       unsubscribe();
     }

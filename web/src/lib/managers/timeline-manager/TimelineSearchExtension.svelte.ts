@@ -1,16 +1,70 @@
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import type { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
 import type { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
 import type { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
 import type { AssetDescriptor, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { plainDateTimeCompare, type TimelineYearMonth } from '$lib/utils/timeline-util';
-import { AssetOrder } from '@immich/sdk';
-import { DateTime } from 'luxon';
+import {
+  findClosestMonthToDate,
+  getSegmentIdentifier,
+  plainDateTimeCompare,
+  toTimelineAsset,
+  type TimelineDateTime,
+  type TimelineYearMonth,
+} from '$lib/utils/timeline-util';
+import { AssetOrder, getAssetInfo } from '@immich/sdk';
 
 export class TimelineSearchExtension {
   #timelineManager: TimelineManager;
   constructor(timelineManager: TimelineManager) {
     this.#timelineManager = timelineManager;
   }
-  async getAssetWithOffset(
+
+  async getLaterAsset(
+    assetDescriptor: AssetDescriptor,
+    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
+  ): Promise<TimelineAsset | undefined> {
+    return await this.#getAssetWithOffset(assetDescriptor, interval, 'later');
+  }
+
+  async getEarlierAsset(
+    assetDescriptor: AssetDescriptor,
+    interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
+  ): Promise<TimelineAsset | undefined> {
+    return await this.#getAssetWithOffset(assetDescriptor, interval, 'earlier');
+  }
+
+  async getMonthForAsset(id: string) {
+    if (!this.#timelineManager.isInitialized) {
+      await this.#timelineManager.initTask.waitUntilCompletion();
+    }
+
+    let { month } = this.findMonthForAsset(id) ?? {};
+    if (month) {
+      return month;
+    }
+
+    const response = await getAssetInfo({ ...authManager.params, id }).catch(() => null);
+    if (!response) {
+      return;
+    }
+
+    const asset = toTimelineAsset(response);
+    if (!asset || this.#timelineManager.isExcluded(asset)) {
+      return;
+    }
+
+    month = await this.#loadMonthAtTime(asset.localDateTime, { cancelable: false });
+    if (month?.findAssetById({ id })) {
+      return month;
+    }
+  }
+
+  async #loadMonthAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
+    await this.#timelineManager.loadSegment(getSegmentIdentifier(yearMonth), options);
+    return this.findMonthByDate(yearMonth);
+  }
+
+  async #getAssetWithOffset(
     assetDescriptor: AssetDescriptor,
     interval: 'asset' | 'day' | 'month' | 'year' = 'asset',
     direction: Direction,
@@ -22,16 +76,16 @@ export class TimelineSearchExtension {
 
     switch (interval) {
       case 'asset': {
-        return this.getAssetByAssetOffset(asset, month, direction);
+        return this.#getAssetByAssetOffset(asset, month, direction);
       }
       case 'day': {
-        return this.getAssetByDayOffset(asset, month, direction);
+        return this.#getAssetByDayOffset(asset, month, direction);
       }
       case 'month': {
-        return this.getAssetByMonthOffset(month, direction);
+        return this.#getAssetByMonthOffset(month, direction);
       }
       case 'year': {
-        return this.getAssetByYearOffset(month, direction);
+        return this.#getAssetByYearOffset(month, direction);
       }
     }
   }
@@ -51,7 +105,45 @@ export class TimelineSearchExtension {
     );
   }
 
-  async getAssetByAssetOffset(asset: TimelineAsset, month: TimelineMonth, direction: Direction) {
+  // note: the `index` input is expected to be in the range [0, assetCount). This
+  // value can be passed to make the method deterministic, which is mainly useful
+  // for testing.
+  async getRandomAsset(index?: number): Promise<TimelineAsset | undefined> {
+    const randomAssetIndex = index ?? Math.floor(Math.random() * this.#timelineManager.assetCount);
+
+    let accumulatedCount = 0;
+
+    let randomMonth: TimelineMonth | undefined = undefined;
+    for (const month of this.#timelineManager.segments) {
+      if (randomAssetIndex < accumulatedCount + month.assetsCount) {
+        randomMonth = month;
+        break;
+      }
+
+      accumulatedCount += month.assetsCount;
+    }
+    if (!randomMonth) {
+      return;
+    }
+    await this.#timelineManager.loadSegment(getSegmentIdentifier(randomMonth.yearMonth), { cancelable: false });
+
+    let randomDay: TimelineDay | undefined = undefined;
+    for (const day of randomMonth.days) {
+      if (randomAssetIndex < accumulatedCount + day.viewerAssets.length) {
+        randomDay = day;
+        break;
+      }
+
+      accumulatedCount += day.viewerAssets.length;
+    }
+    if (!randomDay) {
+      return;
+    }
+
+    return randomDay.viewerAssets[randomAssetIndex - accumulatedCount].asset;
+  }
+
+  async #getAssetByAssetOffset(asset: TimelineAsset, month: TimelineMonth, direction: Direction) {
     const day = month.findDayForAsset(asset);
     for await (const targetAsset of this.#timelineManager.assetsIterator({
       startMonth: month,
@@ -65,7 +157,7 @@ export class TimelineSearchExtension {
     }
   }
 
-  async getAssetByDayOffset(asset: TimelineAsset, month: TimelineMonth, direction: Direction) {
+  async #getAssetByDayOffset(asset: TimelineAsset, month: TimelineMonth, direction: Direction) {
     const day = month.findDayForAsset(asset);
     for await (const targetAsset of this.#timelineManager.assetsIterator({
       startMonth: month,
@@ -79,7 +171,7 @@ export class TimelineSearchExtension {
     }
   }
 
-  async getAssetByMonthOffset(month: TimelineMonth, direction: Direction) {
+  async #getAssetByMonthOffset(month: TimelineMonth, direction: Direction) {
     for (const targetMonth of this.#timelineManager.monthIterator({ startMonth: month, direction })) {
       if (targetMonth.yearMonth.month !== month.yearMonth.month) {
         const { value, done } = await this.#timelineManager
@@ -90,7 +182,7 @@ export class TimelineSearchExtension {
     }
   }
 
-  async getAssetByYearOffset(month: TimelineMonth, direction: Direction) {
+  async #getAssetByYearOffset(month: TimelineMonth, direction: Direction) {
     for (const targetMonth of this.#timelineManager.monthIterator({ startMonth: month, direction })) {
       if (targetMonth.yearMonth.year !== month.yearMonth.year) {
         const { value, done } = await this.#timelineManager
@@ -140,22 +232,21 @@ export class TimelineSearchExtension {
     }
   }
 
-  findClosestGroupForDate(months: TimelineMonth[], targetYearMonth: TimelineYearMonth) {
-    const targetDate = DateTime.fromObject({ year: targetYearMonth.year, month: targetYearMonth.month });
-
-    let closestMonth: TimelineMonth | undefined;
-    let minDifference = Number.MAX_SAFE_INTEGER;
-
-    for (const month of months) {
-      const monthDate = DateTime.fromObject({ year: month.yearMonth.year, month: month.yearMonth.month });
-      const totalDiff = Math.abs(monthDate.diff(targetDate, 'months').months);
-
-      if (totalDiff < minDifference) {
-        minDifference = totalDiff;
-        closestMonth = month;
+  async getClosestAssetToDate(dateTime: TimelineDateTime) {
+    let month = this.findMonthForDate(dateTime);
+    if (!month) {
+      month = findClosestMonthToDate(this.#timelineManager.segments, dateTime);
+      if (!month) {
+        return;
       }
     }
-
-    return closestMonth;
+    await this.#timelineManager.loadSegment(getSegmentIdentifier(dateTime), { cancelable: false });
+    const asset = month.findClosest(dateTime);
+    if (asset) {
+      return asset;
+    }
+    for await (const asset of this.#timelineManager.assetsIterator({ startMonth: month })) {
+      return asset;
+    }
   }
 }

@@ -3,10 +3,11 @@ import { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
 import { GroupInsertionCache } from '$lib/managers/timeline-manager/TimelineInsertionCache.svelte';
 import type { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
 import { onCreateTimelineMonth } from '$lib/managers/timeline-manager/TimelineTestHooks.svelte';
-import type { AssetDescriptor, AssetOperation, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { setDifferenceInPlace } from '$lib/managers/timeline-manager/utils.svelte';
+import type { AssetDescriptor, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 import { ScrollSegment, type SegmentIdentifier } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
+import { setDifferenceInPlace } from '$lib/managers/VirtualScrollManager/utils.svelte';
+import type { AssetOperation } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import {
   formatGroupTitle,
   formatGroupTitleFull,
@@ -68,7 +69,7 @@ export class TimelineMonth extends ScrollSegment {
     return assets;
   }
 
-  findAssetAbsolutePosition(assetId: string) {
+  override findAssetAbsolutePosition(assetId: string) {
     this.#clearDeferredLayout();
     for (const day of this.days) {
       const viewerAsset = day.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
@@ -206,16 +207,7 @@ export class TimelineMonth extends ScrollSegment {
     return this.days[0]?.getFirstAsset();
   }
 
-  runAssetOperation(ids: Set<string>, operation: AssetOperation) {
-    if (ids.size === 0) {
-      return {
-        moveAssets: [] as TimelineAsset[],
-        // eslint-disable-next-line svelte/prefer-svelte-reactivity
-        processedIds: new Set<string>(),
-        unprocessedIds: ids,
-        changedGeometry: false,
-      };
-    }
+  override runAssetOperation(ids: Set<string>, operation: AssetOperation) {
     const { days } = this;
     let combinedChangedGeometry = false;
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -228,6 +220,7 @@ export class TimelineMonth extends ScrollSegment {
       if (idsToProcess.size > 0) {
         const group = days[index];
         const { moveAssets, processedIds, changedGeometry } = group.runAssetOperation(ids, operation);
+
         if (moveAssets.length > 0) {
           combinedMoveAssets.push(...moveAssets);
         }

@@ -1,6 +1,7 @@
 import type { TimelineAsset, UpdateGeometryOptions } from '$lib/managers/timeline-manager/types';
 import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 import type {
+  AssetOperation,
   VirtualScrollManager,
   VisibleWindow,
 } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
@@ -195,6 +196,36 @@ export abstract class ScrollSegment {
       );
     }
     this.updateIntersection({ intersecting: actuallyIntersecting || preIntersecting, actuallyIntersecting });
+  }
+
+  runAssetOperation(ids: Set<string>, operation: AssetOperation) {
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const unprocessedIds = new Set<string>(ids);
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const processedIds = new Set<string>();
+    const moveAssets: TimelineAsset[] = [];
+    let changedGeometry = false;
+    for (const assetId of unprocessedIds) {
+      const index = this.viewerAssets.findIndex((viewAsset) => viewAsset.id == assetId);
+      if (index === -1) {
+        continue;
+      }
+
+      const asset = this.viewerAssets[index].asset!;
+      const opResult = operation(asset);
+      let remove = false;
+      if (opResult) {
+        remove = (opResult as { remove: boolean }).remove ?? false;
+      }
+
+      unprocessedIds.delete(assetId);
+      processedIds.add(assetId);
+      if (remove || this.scrollManager.isExcluded(asset)) {
+        this.viewerAssets.splice(index, 1);
+        changedGeometry = true;
+      }
+    }
+    return { moveAssets, processedIds, unprocessedIds, changedGeometry };
   }
 }
 

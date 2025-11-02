@@ -105,15 +105,6 @@ export class TimelineDay {
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
-    if (ids.size === 0) {
-      return {
-        moveAssets: [] as TimelineAsset[],
-        // eslint-disable-next-line svelte/prefer-svelte-reactivity
-        processedIds: new Set<string>(),
-        unprocessedIds: ids,
-        changedGeometry: false,
-      };
-    }
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const unprocessedIds = new Set<string>(ids);
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
