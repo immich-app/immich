@@ -32,6 +32,7 @@ const QUEUE_NAMES = [
   'library',
   'notifications',
   'backupDatabase',
+  'ocr'
 ];
 
 function parseArgs() {
