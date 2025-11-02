@@ -37,13 +37,6 @@ class TextRecognizer(InferenceModel):
         VisRes.__init__ = lambda self, **kwargs: None  # pyright: ignore[reportAttributeAccessIssue]
         super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
 
-    @property
-    def model_path(self) -> Path:
-        path = super().model_path
-        if self.language == LangRec.CH:
-            return path
-        return path.parent / self.language.value / path.name
-
     def _download(self) -> None:
         model_info = InferSession.get_model_url(
             FileInfo(
