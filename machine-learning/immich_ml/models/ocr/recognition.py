@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -25,6 +26,7 @@ class TextRecognizer(InferenceModel):
     identity = (ModelType.RECOGNITION, ModelTask.OCR)
 
     def __init__(self, model_name: str, **model_kwargs: Any) -> None:
+        self.language = LangRec[model_name.split("__")[0]] if "__" in model_name else LangRec.CH
         self.min_score = model_kwargs.get("minScore", 0.9)
         self._empty: TextRecognitionOutput = {
             "box": np.empty(0, dtype=np.float32),
@@ -35,13 +37,20 @@ class TextRecognizer(InferenceModel):
         VisRes.__init__ = lambda self, **kwargs: None  # pyright: ignore[reportAttributeAccessIssue]
         super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
 
+    @property
+    def model_path(self) -> Path:
+        path = super().model_path
+        if self.language == LangRec.CH:
+            return path
+        return path.parent / self.language.value / path.name
+
     def _download(self) -> None:
         model_info = InferSession.get_model_url(
             FileInfo(
                 engine_type=EngineType.ONNXRUNTIME,
                 ocr_version=OCRVersion.PPOCRV5,
                 task_type=TaskType.REC,
-                lang_type=LangRec.CH,
+                lang_type=self.language,
                 model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
             )
         )
@@ -61,6 +70,7 @@ class TextRecognizer(InferenceModel):
                 session=session.session,
                 rec_batch_num=settings.max_batch_size.text_recognition if settings.max_batch_size is not None else 6,
                 rec_img_shape=(3, 48, 320),
+                lang_type=self.language,
             )
         )
         return session
