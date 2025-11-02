@@ -13,7 +13,7 @@
       <div class="flex flex-col place-items-start">
         <Text>Google Play</Text>
         <a
-          href="https://play.google.com/store/apps/details?id=app.alextran.immich"
+          href="https://play.google.com/store/apps/details?id=app.pixelunion.immich"
           target="_blank"
           id="play-store-link"
         >
