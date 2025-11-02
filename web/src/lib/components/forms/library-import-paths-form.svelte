@@ -1,13 +1,12 @@
 <script lang="ts">
   import LibraryImportPathModal from '$lib/modals/LibraryImportPathModal.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
   import { validate, type LibraryResponseDto } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { handleError } from '../../utils/handle-error';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
     library: LibraryResponseDto;
@@ -50,16 +49,10 @@
     }
     if (failedPaths === 0) {
       if (notifyIfSuccessful) {
-        notificationController.show({
-          message: $t('admin.paths_validated_successfully'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('admin.paths_validated_successfully'));
       }
     } else {
-      notificationController.show({
-        message: $t('errors.paths_validation_failed', { values: { paths: failedPaths } }),
-        type: NotificationType.Warning,
-      });
+      toastManager.warning($t('errors.paths_validation_failed', { values: { paths: failedPaths } }));
     }
   };
 
@@ -163,7 +156,7 @@
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each validatedPaths as validatedPath, listIndex (validatedPath.importPath)}
         <tr
-          class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+          class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
         >
           <td class="w-1/8 text-ellipsis ps-8 text-sm">
             {#if validatedPath.isValid}
@@ -187,7 +180,7 @@
         </tr>
       {/each}
       <tr
-        class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+        class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
       >
         <td class="w-4/5 text-ellipsis px-4 text-sm">
           {#if importPaths.length === 0}

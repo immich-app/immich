@@ -11,10 +11,6 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import AddToAlbum from '$lib/components/timeline/actions/AddToAlbumAction.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
@@ -68,7 +64,7 @@
     updateAlbumInfo,
     type AlbumUserAddDto,
   } from '@immich/sdk';
-  import { Button, Icon, IconButton, modalManager } from '@immich/ui';
+  import { Button, Icon, IconButton, modalManager, toastManager } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiCogOutline,
@@ -189,10 +185,7 @@
       });
 
       const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count } }),
-      });
+      toastManager.success($t('assets_added_count', { values: { count } }));
 
       await refreshAlbum();
 
@@ -304,10 +297,7 @@
           albumThumbnailAssetId: assetId,
         },
       });
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('album_cover_updated'),
-      });
+      toastManager.success($t('album_cover_updated'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));
     }
@@ -328,18 +318,19 @@
     }
   });
 
-  let timelineManager = new TimelineManager();
-
-  $effect(() => {
+  let timelineManager = $state<TimelineManager>() as TimelineManager;
+  const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.VIEW) {
-      void timelineManager.updateOptions({ albumId, order: albumOrder });
-    } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
-      void timelineManager.updateOptions({
+      return { albumId, order: albumOrder };
+    }
+    if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
+      return {
         visibility: AssetVisibility.Timeline,
         withPartners: true,
         timelineAlbumId: albumId,
-      });
+      };
     }
+    return {};
   });
 
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
@@ -352,10 +343,7 @@
     handlePromiseError(activityManager.init(album.id));
   });
 
-  onDestroy(() => {
-    activityManager.reset();
-    timelineManager.destroy();
-  });
+  onDestroy(() => activityManager.reset());
 
   let isOwned = $derived($user.id == album.ownerId);
 
@@ -446,7 +434,8 @@
       <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
-        {timelineManager}
+        bind:timelineManager
+        {options}
         assetInteraction={currentAssetIntersection}
         {isShared}
         {isSelectionMode}
@@ -527,8 +516,8 @@
           {/if}
 
           {#if album.assetCount === 0}
-            <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
-              <div class="w-[300px]">
+            <section id="empty-album" class=" mt-50 flex place-content-center place-items-center">
+              <div class="w-75">
                 <p class="uppercase text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
                 <button
                   type="button"
@@ -733,7 +722,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-2 w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
         <ActivityViewer

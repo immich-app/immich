@@ -70,7 +70,8 @@ RUN if [ "$DEVICE" = "rocm" ]; then \
 
 FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-cpu
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 FROM python:3.11-slim-bookworm@sha256:873f91540d53b36327ed4fb018c9669107a4e2a676719720edb4209c4b15d029 AS prod-openvino
 
@@ -88,10 +89,12 @@ RUN apt-get update && \
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
+    # Pascal support was dropped in 9.11
+    apt-get install --no-install-recommends -yqq libcudnn9-cuda-12=9.10.2.21-1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -104,7 +107,8 @@ FROM rocm/dev-ubuntu-22.04:6.4.3-complete@sha256:1f7e92ca7e3a3785680473329ed1091
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn \
-    LD_PRELOAD=/usr/lib/libmimalloc.so.2
+    LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 RUN apt-get update && apt-get install -y --no-install-recommends ocl-icd-libopencl1 mesa-opencl-icd libgomp1 && \
     rm -rf /var/lib/apt/lists/* && \
@@ -127,7 +131,8 @@ FROM prod-cpu AS prod-rknn
 # renovate: datasource=github-tags depName=airockchip/rknn-toolkit2
 ARG RKNN_TOOLKIT_VERSION="v2.3.0"
 
-ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
+    MACHINE_LEARNING_MODEL_ARENA=false
 
 ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 "https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/${RKNN_TOOLKIT_VERSION}/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so" /usr/lib/
 
@@ -136,7 +141,7 @@ FROM prod-${DEVICE} AS prod
 ARG DEVICE
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get install -y --no-install-recommends tini ccache libgl1 libglib2.0-0 libgomp1 $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

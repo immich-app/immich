@@ -190,6 +190,9 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   private fun complete(success: Result) {
     Log.d(TAG, "About to complete BackupWorker with result: $success")
     isComplete = true
+    if (engine != null) {
+      MainActivity.cancelPlugins(engine!!)
+    }
     engine?.destroy()
     engine = null
     flutterApi = null

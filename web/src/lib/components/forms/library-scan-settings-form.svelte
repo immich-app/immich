@@ -1,11 +1,11 @@
 <script lang="ts">
   import LibraryExclusionPatternModal from '$lib/modals/LibraryExclusionPatternModal.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { Button, IconButton, modalManager } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { handleError } from '../../utils/handle-error';
 
   interface Props {
     library: Partial<LibraryResponseDto>;
@@ -111,7 +111,7 @@
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as exclusionPattern, listIndex (exclusionPattern)}
         <tr
-          class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+          class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
         >
           <td class="w-3/4 text-ellipsis px-4 text-sm">{exclusionPattern}</td>
           <td class="w-1/4 text-ellipsis flex justify-center">
@@ -128,7 +128,7 @@
         </tr>
       {/each}
       <tr
-        class="flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+        class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
       >
         <td class="w-3/4 text-ellipsis px-4 text-sm">
           {#if exclusionPatterns.length === 0}

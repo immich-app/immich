@@ -115,7 +115,7 @@ export class StorageService extends BaseService {
 
           if (!path.startsWith(previous)) {
             throw new Error(
-              'Detected an inconsistent media location. For more information, see https://immich.app/errors#inconsistent-media-location',
+              'Detected an inconsistent media location. For more information, see https://docs.immich.app/errors#inconsistent-media-location',
             );
           }
 

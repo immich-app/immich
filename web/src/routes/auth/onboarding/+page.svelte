@@ -4,6 +4,7 @@
   import OnboardingCard from '$lib/components/onboarding-page/onboarding-card.svelte';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
   import OnboardingLocale from '$lib/components/onboarding-page/onboarding-language.svelte';
+  import OnboardingMobileApp from '$lib/components/onboarding-page/onboarding-mobile-app.svelte';
   import OnboardingServerPrivacy from '$lib/components/onboarding-page/onboarding-server-privacy.svelte';
   import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
@@ -13,7 +14,14 @@
   import { retrieveServerConfig, retrieveSystemConfig, serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { setUserOnboarding, updateAdminOnboarding } from '@immich/sdk';
-  import { mdiHarddisk, mdiIncognito, mdiThemeLightDark, mdiTranslate } from '@mdi/js';
+  import {
+    mdiCellphoneArrowDownVariant,
+    mdiCloudCheckOutline,
+    mdiHarddisk,
+    mdiIncognito,
+    mdiThemeLightDark,
+    mdiTranslate,
+  } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -25,6 +33,7 @@
       | typeof OnboardingStorageTemplate
       | typeof OnboardingServerPrivacy
       | typeof OnboardingUserPrivacy
+      | typeof OnboardingMobileApp
       | typeof OnboardingLocale;
     role: OnboardingRole;
     title?: string;
@@ -48,18 +57,11 @@
       icon: mdiTranslate,
     },
     {
-      name: 'server_privacy',
-      component: OnboardingServerPrivacy,
-      role: OnboardingRole.SERVER,
-      title: $t('server_privacy'),
-      icon: mdiIncognito,
-    },
-    {
-      name: 'storage_template',
-      component: OnboardingStorageTemplate,
-      role: OnboardingRole.SERVER,
-      title: $t('admin.storage_template_settings'),
-      icon: mdiHarddisk,
+      name: 'mobile_app',
+      component: OnboardingMobileApp,
+      role: OnboardingRole.USER,
+      title: $t('mobile_app'),
+      icon: mdiCellphoneArrowDownVariant,
     },
   ]);
 
@@ -136,7 +138,7 @@
         style="width: {(onboardingProgress / onboardingStepCount) * 100}%"
       ></div>
     </div>
-    <div class="py-8 flex place-content-center place-items-center m-auto">
+    <div class="py-8 flex place-content-center place-items-center m-auto w-[min(100%,800px)]">
       <OnboardingCard
         title={onboardingSteps[index].title}
         icon={onboardingSteps[index].icon}

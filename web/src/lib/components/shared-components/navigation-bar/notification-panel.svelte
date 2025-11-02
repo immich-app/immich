@@ -2,15 +2,10 @@
   import { goto } from '$app/navigation';
   import { focusTrap } from '$lib/actions/focus-trap';
   import NotificationItem from '$lib/components/shared-components/navigation-bar/notification-item.svelte';
-  import {
-    notificationController,
-    NotificationType as WebNotificationType,
-  } from '$lib/components/shared-components/notification/notification';
-
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { NotificationType, type NotificationDto } from '@immich/sdk';
-  import { Button, Icon, Scrollable, Stack, Text } from '@immich/ui';
+  import { Button, Icon, Scrollable, Stack, Text, toastManager } from '@immich/ui';
   import { mdiBellOutline, mdiCheckAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
@@ -29,7 +24,7 @@
   const markAllAsRead = async () => {
     try {
       await notificationManager.markAllAsRead();
-      notificationController.show({ message: $t('marked_all_as_read'), type: WebNotificationType.Info });
+      toastManager.info($t('marked_all_as_read'));
     } catch (error) {
       handleError(error, $t('errors.failed_to_update_notification_status'));
     }
@@ -71,10 +66,10 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="notification-panel"
-  class="absolute right-[25px] top-[70px] z-1 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-100 border border-gray-200 shadow-lg dark:border dark:border-light dark:bg-immich-dark-gray text-light"
+  class="absolute right-6 top-17.5 z-1 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-100 border border-gray-200 shadow-lg dark:border dark:border-light dark:bg-immich-dark-gray text-light"
   use:focusTrap
 >
-  <Stack class="max-h-[500px]">
+  <Stack class="max-h-125">
     <div class="flex justify-between items-center mt-4 mx-4">
       <Text size="medium" color="secondary" class="font-semibold">{$t('notifications')}</Text>
       <div>

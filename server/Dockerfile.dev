@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202510092146@sha256:124ec9659cba4a206924de5e3691f84acde16d75fa2b10b7007542424b696b96 AS dev
+FROM ghcr.io/immich-app/base-server-dev:202510281104@sha256:e2f94c2e92cbae5982b014e610ff29731c0fbcb4bf69022c7fe27594e40c9f83 AS dev
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
   CI=1 \
@@ -61,7 +61,7 @@ RUN if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
 # Flutter SDK
 # https://flutter.dev/docs/development/tools/sdk/releases?tab=linux
 ENV FLUTTER_CHANNEL="stable"
-ENV FLUTTER_VERSION="3.35.4"
+ENV FLUTTER_VERSION="3.35.7"
 ENV FLUTTER_HOME=/flutter
 ENV PATH=${PATH}:${FLUTTER_HOME}/bin
 

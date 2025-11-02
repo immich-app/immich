@@ -107,7 +107,7 @@
 
   const onSubmit = () => {
     const searchType = getSearchType();
-    let payload: SmartSearchDto | MetadataSearchDto = {} as SmartSearchDto | MetadataSearchDto;
+    let payload = {} as SmartSearchDto | MetadataSearchDto;
 
     switch (searchType) {
       case 'smart': {
@@ -120,6 +120,10 @@
       }
       case 'description': {
         payload = { description: value } as MetadataSearchDto;
+        break;
+      }
+      case 'ocr': {
+        payload = { ocr: value } as MetadataSearchDto;
         break;
       }
     }
@@ -171,17 +175,14 @@
     onSubmit();
   };
 
-  function getSearchType(): 'smart' | 'metadata' | 'description' {
+  function getSearchType() {
     const searchType = localStorage.getItem('searchQueryType');
     switch (searchType) {
-      case 'smart': {
-        return 'smart';
-      }
-      case 'metadata': {
-        return 'metadata';
-      }
-      case 'description': {
-        return 'description';
+      case 'smart':
+      case 'metadata':
+      case 'description':
+      case 'ocr': {
+        return searchType;
       }
       default: {
         return 'smart';
@@ -200,6 +201,9 @@
       }
       case 'description': {
         return $t('description');
+      }
+      case 'ocr': {
+        return $t('ocr');
       }
     }
   }
@@ -231,7 +235,7 @@
         name="q"
         id="main-search-bar"
         class="w-full transition-all border-2 ps-14 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg
-        {showClearIcon ? 'pe-[90px]' : 'pe-14'}
+        {showClearIcon ? 'pe-22.5' : 'pe-14'}
         {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
         {searchStore.isSearchEnabled ? 'border-gray-200 dark:border-gray-700 bg-white' : 'border-transparent'}"

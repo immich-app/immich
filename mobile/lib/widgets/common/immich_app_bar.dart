@@ -6,7 +6,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -28,8 +27,8 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final BackUpState backupState = ref.watch(backupProvider);
     final bool isEnableAutoBackup = backupState.backgroundBackup || backupState.autoBackup;
-    final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
+    final bool versionWarningPresent = ref.watch(versionWarningPresentProvider(user));
     final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
@@ -46,8 +45,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
           backgroundColor: Colors.transparent,
           alignment: Alignment.bottomRight,
-          isLabelVisible:
-              serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
+          isLabelVisible: versionWarningPresent,
           offset: const Offset(-2, -12),
           child: user == null
               ? const Icon(Icons.face_outlined, size: widgetSize)

@@ -1,4 +1,3 @@
-import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { defaultLang, langs, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { lang } from '$lib/stores/preferences.store';
@@ -25,6 +24,7 @@ import {
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { toastManager } from '@immich/ui';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
@@ -60,14 +60,14 @@ interface UploadRequestOptions {
 }
 
 export class AbortError extends Error {
-  name = 'AbortError';
+  override name = 'AbortError';
 }
 
 class ApiError extends Error {
-  name = 'ApiError';
+  override name = 'ApiError';
 
   constructor(
-    public message: string,
+    public override message: string,
     public statusCode: number,
     public details: string,
   ) {
@@ -162,6 +162,7 @@ export const getJobName = derived(t, ($t) => {
       [JobName.Library]: $t('external_libraries'),
       [JobName.Notifications]: $t('notifications'),
       [JobName.BackupDatabase]: $t('admin.backup_database'),
+      [JobName.Ocr]: $t('admin.machine_learning_ocr'),
     };
 
     return names[jobName];
@@ -262,7 +263,7 @@ export const copyToClipboard = async (secret: string) => {
 
   try {
     await navigator.clipboard.writeText(secret);
-    notificationController.show({ message: $t('copied_to_clipboard'), type: NotificationType.Info });
+    toastManager.info($t('copied_to_clipboard'));
   } catch (error) {
     handleError(error, $t('errors.unable_to_copy_to_clipboard'));
   }

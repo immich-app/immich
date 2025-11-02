@@ -1,9 +1,5 @@
 <script lang="ts">
   import TemplateSettings from '$lib/components/admin-settings/TemplateSettings.svelte';
-  import {
-    NotificationType,
-    notificationController,
-  } from '$lib/components/shared-components/notification/notification';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
@@ -12,7 +8,7 @@
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { sendTestEmailAdmin, type SystemConfigDto } from '@immich/sdk';
-  import { Button, LoadingSpinner } from '@immich/ui';
+  import { Button, LoadingSpinner, toastManager } from '@immich/ui';
   import { isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -45,6 +41,7 @@
           transport: {
             host: config.notifications.smtp.transport.host,
             port: config.notifications.smtp.transport.port,
+            secure: config.notifications.smtp.transport.secure,
             username: config.notifications.smtp.transport.username,
             password: config.notifications.smtp.transport.password,
             ignoreCert: config.notifications.smtp.transport.ignoreCert,
@@ -54,10 +51,7 @@
         },
       });
 
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('admin.notification_email_test_email_sent', { values: { email: $user.email } }),
-      });
+      toastManager.success($t('admin.notification_email_test_email_sent', { values: { email: $user.email } }));
 
       if (!disabled) {
         onSave({ notifications: config.notifications });
@@ -126,6 +120,13 @@
               bind:value={config.notifications.smtp.transport.password}
               isEdited={config.notifications.smtp.transport.password !==
                 savedConfig.notifications.smtp.transport.password}
+            />
+
+            <SettingSwitch
+              title={$t('admin.notification_email_secure')}
+              subtitle={$t('admin.notification_email_secure_description')}
+              disabled={disabled || !config.notifications.smtp.enabled}
+              bind:checked={config.notifications.smtp.transport.secure}
             />
 
             <SettingSwitch

@@ -1,4 +1,4 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import type { TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
@@ -24,7 +24,7 @@ export type TimelineDateTime = TimelineDate & {
 };
 
 export type ScrubberListener = (scrubberData: {
-  scrubberMonth: { year: number; month: number };
+  scrubberMonth: ViewportTopMonth;
   overallScrollPercent: number;
   scrubberMonthScrollPercent: number;
 }) => void | Promise<void>;
@@ -154,12 +154,6 @@ export function formatGroupTitle(_date: DateTime): string {
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
-export const getDateTimeOffsetLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
-  date.toLocaleString(
-    { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'longOffset' },
-    opts,
-  );
-
 export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): TimelineAsset => {
   if (isTimelineAsset(unknownAsset)) {
     return unknownAsset;
@@ -200,6 +194,9 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
 
 export const isTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): unknownAsset is TimelineAsset =>
   (unknownAsset as TimelineAsset).ratio !== undefined;
+
+export const isTimelineAssets = (assets: AssetResponseDto[] | TimelineAsset[]): assets is TimelineAsset[] =>
+  assets.length === 0 || 'ratio' in assets[0];
 
 export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b: TimelineDateTime) => {
   const [aDateTime, bDateTime] = ascending ? [a, b] : [b, a];
