@@ -612,12 +612,15 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
         final validUsers = {currentUserId, ...partnerIds.nonNulls};
 
-        // Asset is not owned by the current user or any of their partners and is not part of any (shared) album
+        // Asset is not owned by the current user or any of their partners and is not part of any (shared) album or memory
         // Likely a stale asset that was previously shared but has been removed
         await _db.remoteAssetEntity.deleteWhere((asset) {
           return asset.ownerId.isNotIn(validUsers) &
               asset.id.isNotInQuery(
                 _db.remoteAlbumAssetEntity.selectOnly()..addColumns([_db.remoteAlbumAssetEntity.assetId]),
+              ) &
+              asset.id.isNotInQuery(
+                _db.memoryAssetEntity.selectOnly()..addColumns([_db.memoryAssetEntity.assetId]),
               );
         });
       });
