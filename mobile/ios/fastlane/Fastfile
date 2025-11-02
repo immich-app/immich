@@ -169,7 +169,7 @@ platform :ios do
       targets: ["Runner", "ShareExtension", "WidgetExtension"]
     )
     increment_version_number(
-      version_number: "2.2.1"
+      version_number: "2.2.2"
     )
     increment_build_number(
       build_number: latest_testflight_build_number + 1,
