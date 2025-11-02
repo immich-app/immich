@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart';
+import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,11 +12,14 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_location_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_sheet/sheet_people_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
@@ -20,6 +27,7 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -132,6 +140,74 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
     await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context);
   }
 
+  Widget _buildAppearsInList(WidgetRef ref, BuildContext context) {
+    final aseet = ref.watch(currentAssetNotifier);
+    if (aseet == null) {
+      return const SizedBox.shrink();
+    }
+
+    if (!aseet.hasRemote) {
+      return const SizedBox.shrink();
+    }
+
+    String? remoteAssetId;
+    if (aseet is RemoteAsset) {
+      remoteAssetId = aseet.id;
+    } else if (aseet is LocalAsset) {
+      remoteAssetId = aseet.remoteAssetId;
+    }
+
+    if (remoteAssetId == null) {
+      return const SizedBox.shrink();
+    }
+
+    final userId = ref.watch(currentUserProvider)?.id;
+    final assetAlbums = ref.watch(albumsContainingAssetProvider(remoteAssetId));
+
+    return assetAlbums.when(
+      data: (albums) {
+        if (albums.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        albums.sortBy((a) => a.name);
+
+        return Column(
+          spacing: 12,
+          children: [
+            if (albums.isNotEmpty)
+              _SheetTile(
+                title: 'appears_in'.t(context: context).toUpperCase(),
+                titleStyle: context.textTheme.labelMedium?.copyWith(
+                  color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(left: 24),
+              child: Column(
+                spacing: 12,
+                children: albums.map((album) {
+                  final isOwner = album.ownerId == userId;
+                  return AlbumTile(
+                    album: album,
+                    isOwner: isOwner,
+                    onAlbumSelected: (album) async {
+                      ref.invalidate(assetViewerProvider);
+                      unawaited(context.router.popAndPush(RemoteAlbumRoute(album: album)));
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asset = ref.watch(currentAssetNotifier);
@@ -217,7 +293,10 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
               color: context.textTheme.bodyMedium?.color?.withAlpha(155),
             ),
           ),
-        const SizedBox(height: 64),
+        // Appears in (Albums)
+        _buildAppearsInList(ref, context),
+        // padding at the bottom to avoid cut-off
+        const SizedBox(height: 100),
       ],
     );
   }

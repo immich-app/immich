@@ -8,14 +8,13 @@
     type AssetFaceUpdateItem,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, toastManager } from '@immich/ui';
   import { mdiMerge, mdiPlus } from '@mdi/js';
   import { onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import FaceThumbnail from './face-thumbnail.svelte';
   import PeopleList from './people-list.svelte';
 
@@ -72,11 +71,7 @@
       disableButtons = true;
       const data = await createPerson({ personCreateDto: {} });
       await reassignFaces({ id: data.id, assetFaceUpdateDto: { data: selectedPeople } });
-
-      notificationController.show({
-        message: $t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }),
-        type: NotificationType.Info,
-      });
+      toastManager.success($t('reassigned_assets_to_new_person', { values: { count: assetIds.length } }));
     } catch (error) {
       handleError(error, $t('errors.unable_to_reassign_assets_new_person'));
     } finally {
@@ -93,12 +88,11 @@
       disableButtons = true;
       if (selectedPerson) {
         await reassignFaces({ id: selectedPerson.id, assetFaceUpdateDto: { data: selectedPeople } });
-        notificationController.show({
-          message: $t('reassigned_assets_to_existing_person', {
+        toastManager.success(
+          $t('reassigned_assets_to_existing_person', {
             values: { count: assetIds.length, name: selectedPerson.name || null },
           }),
-          type: NotificationType.Info,
-        });
+        );
       }
     } catch (error) {
       handleError(
@@ -153,10 +147,10 @@
     {/snippet}
   </ControlAppBar>
   {@render merge?.()}
-  <section class="px-[70px] pt-[100px]">
+  <section class="px-17.5 pt-25">
     <section id="merge-face-selector relative">
       {#if selectedPerson !== null}
-        <div class="mb-10 h-[200px] place-content-center place-items-center">
+        <div class="mb-10 h-50 place-content-center place-items-center">
           <p class="mb-4 text-center uppercase dark:text-white">Choose matching faces to re assign</p>
 
           <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">

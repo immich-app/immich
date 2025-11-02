@@ -101,6 +101,7 @@ jobs:
       ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
     with:
       ref: ${{ needs.bump_version.outputs.ref }}
+      environment: production
 
   prepare_release:
     runs-on: ubuntu-latest

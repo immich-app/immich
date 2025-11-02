@@ -1946,6 +1946,43 @@
         "x-immich-permission": "asset.upload"
       }
     },
+    "/assets/copy": {
+      "put": {
+        "operationId": "copyAsset",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetCopyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.copy",
+        "description": "This endpoint requires the `asset.copy` permission."
+      }
+    },
     "/assets/device/{deviceId}": {
       "get": {
         "description": "Get all asset of a device that are in the database, ID only.",
@@ -2467,6 +2504,53 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AssetMetadataResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.read",
+        "description": "This endpoint requires the `asset.read` permission."
+      }
+    },
+    "/assets/{id}/ocr": {
+      "get": {
+        "operationId": "getAssetOcr",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetOcrResponseDto"
+                  },
+                  "type": "array"
                 }
               }
             },
@@ -9922,7 +10006,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "2.1.0",
+    "version": "2.2.1",
     "contact": {}
   },
   "tags": [],
@@ -10604,6 +10688,43 @@
         ],
         "type": "object"
       },
+      "AssetCopyDto": {
+        "properties": {
+          "albums": {
+            "default": true,
+            "type": "boolean"
+          },
+          "favorite": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sharedLinks": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidecar": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sourceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "stack": {
+            "default": true,
+            "type": "boolean"
+          },
+          "targetId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sourceId",
+          "targetId"
+        ],
+        "type": "object"
+      },
       "AssetDeltaSyncDto": {
         "properties": {
           "updatedAfter": {
@@ -11114,6 +11235,88 @@
         "required": [
           "key",
           "value"
+        ],
+        "type": "object"
+      },
+      "AssetOcrResponseDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "boxScore": {
+            "description": "Confidence score for text detection box",
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "text": {
+            "description": "Recognized text",
+            "type": "string"
+          },
+          "textScore": {
+            "description": "Confidence score for text recognition",
+            "format": "double",
+            "type": "number"
+          },
+          "x1": {
+            "description": "Normalized x coordinate of box corner 1 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x2": {
+            "description": "Normalized x coordinate of box corner 2 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x3": {
+            "description": "Normalized x coordinate of box corner 3 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x4": {
+            "description": "Normalized x coordinate of box corner 4 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y1": {
+            "description": "Normalized y coordinate of box corner 1 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y2": {
+            "description": "Normalized y coordinate of box corner 2 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y3": {
+            "description": "Normalized y coordinate of box corner 3 (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y4": {
+            "description": "Normalized y coordinate of box corner 4 (0-1)",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "assetId",
+          "boxScore",
+          "id",
+          "text",
+          "textScore",
+          "x1",
+          "x2",
+          "x3",
+          "x4",
+          "y1",
+          "y2",
+          "y3",
+          "y4"
         ],
         "type": "object"
       },
@@ -13269,6 +13472,7 @@
           "asset.download",
           "asset.upload",
           "asset.replace",
+          "asset.copy",
           "album.create",
           "album.read",
           "album.update",

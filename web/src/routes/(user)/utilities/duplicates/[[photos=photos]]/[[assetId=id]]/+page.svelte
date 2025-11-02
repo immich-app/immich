@@ -3,10 +3,6 @@
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { AppRoute } from '$lib/constants';
   import DuplicatesInformationModal from '$lib/modals/DuplicatesInformationModal.svelte';
@@ -19,7 +15,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, deleteDuplicates, updateAssets } from '@immich/sdk';
-  import { Button, HStack, IconButton, modalManager, Text } from '@immich/ui';
+  import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
   import {
     mdiCheckOutline,
     mdiChevronLeft,
@@ -96,12 +92,10 @@
       return;
     }
 
-    notificationController.show({
-      message: $featureFlags.trash
-        ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
-        : $t('permanently_deleted_assets_count', { values: { count: trashedCount } }),
-      type: NotificationType.Info,
-    });
+    const message = $featureFlags.trash
+      ? $t('assets_moved_to_trash_count', { values: { count: trashedCount } })
+      : $t('permanently_deleted_assets_count', { values: { count: trashedCount } });
+    toastManager.success(message);
   };
 
   const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
@@ -173,10 +167,7 @@
 
         duplicates = [];
 
-        notificationController.show({
-          message: $t('resolved_all_duplicates'),
-          type: NotificationType.Info,
-        });
+        toastManager.success($t('resolved_all_duplicates'));
         page.url.searchParams.delete('index');
         await goto(`${AppRoute.DUPLICATES}`);
       },

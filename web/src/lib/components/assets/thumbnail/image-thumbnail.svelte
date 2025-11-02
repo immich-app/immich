@@ -68,7 +68,7 @@
       circle && 'rounded-full',
       shadow && 'shadow-lg',
       (circle || !heightStyle) && 'aspect-square',
-      border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+      border && 'border-3 border-immich-dark-primary/80 hover:border-immich-primary',
       brokenAssetClass,
     ]
       .filter(Boolean)
