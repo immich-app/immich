@@ -45,9 +45,25 @@ COPY ./patches/* /tmp/
 RUN git apply /tmp/*.patch
 
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
+
+ENV CCACHE_DIR="/ccache"
 # Note: the `parallel` setting uses a substantial amount of RAM
-RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 17 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" --skip_tests --use_rocm --rocm_home=/opt/rocm
+RUN --mount=type=cache,target=/ccache \
+    ./build.sh \
+    --allow_running_as_root \
+    --config Release \
+    --build_wheel \
+    --update \
+    --build \
+    --parallel 17 \
+    --cmake_extra_defines \
+    ONNXRUNTIME_VERSION="${ONNXRUNTIME_VERSION}" \
+    CMAKE_HIP_ARCHITECTURES="gfx900;gfx908;gfx90a;gfx1030;gfx1100;gfx1101;gfx1102;gfx940;gfx941;gfx942;gfx1200;gfx1201" \
+    --skip_tests \
+    --use_rocm \
+    --rocm_home=/opt/rocm \
+    --use_cache \
+    --compile_no_warning_as_error
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
