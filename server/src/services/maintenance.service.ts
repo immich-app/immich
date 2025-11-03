@@ -17,8 +17,8 @@ export class MaintenanceService extends BaseService {
       const value = await systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
 
       return {
-        ...value,
         isMaintenanceMode: false,
+        ...value,
       };
     } catch (error) {
       // Table doesn't exist (migrations haven't run yet)
