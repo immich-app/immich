@@ -4,18 +4,17 @@ import { redirect, type Handle } from '@sveltejs/kit';
 
 export const handle = (async ({ event, resolve }) => {
   // try to check maintenance status and redirect accordingly ahead of time
-  let redirectToMode: boolean | undefined;
-  try {
-    const { maintenanceMode } = await fetch(process.env.IMMICH_SERVER_URL + 'api/server/config').then((response) =>
-      response.json(),
-    );
+  const redirectToMaintenance = await fetch(process.env.IMMICH_SERVER_URL + 'api/server/config')
+    .then((response) => response.json())
+    .then(
+      ({ maintenanceMode }: { maintenanceMode: boolean }) =>
+        maintenanceMode !== event.url.pathname.startsWith('/maintenance'),
+    )
+    .catch((_) => undefined);
 
-    if (maintenanceMode !== event.url.pathname.startsWith('/maintenance')) {
-      redirectToMode = maintenanceMode;
-    }
-  } catch (err) {}
-
-  if (typeof redirectToMode === 'boolean') throw redirect(302, redirectToMode ? '/maintenance' : '/');
+  if (typeof redirectToMaintenance === 'boolean') {
+    throw redirect(302, redirectToMaintenance ? '/maintenance' : '/');
+  }
 
   // replace the variables from app.html
   return resolve(event, {

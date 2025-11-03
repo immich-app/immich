@@ -69,6 +69,7 @@ export async function bootstrapApi(title: string = 'immich-api', module = ApiMod
   logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }
 
+// eslint-disable-next-line unicorn/prefer-module
 if (require.main === module) {
   bootstrapApi().catch((error) => {
     if (!isStartUpError(error)) {

@@ -39,12 +39,12 @@ export class CliService extends BaseService {
     await this.updateConfig(config);
   }
 
-  async disableMaintenanceMode(): Promise<void> {
-    this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: false });
+  disableMaintenanceMode(): Promise<void> {
+    return this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: false });
   }
 
-  async enableMaintenanceMode(): Promise<void> {
-    this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true });
+  enableMaintenanceMode(): Promise<void> {
+    return this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, { isMaintenanceMode: true });
   }
 
   async grantAdminAccess(email: string): Promise<void> {

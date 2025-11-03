@@ -53,7 +53,7 @@ export class SystemConfigService extends BaseService {
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
-  async onConfigUpdate({ newConfig, oldConfig }: ArgOf<'ConfigUpdate'>) {
+  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
     this.onConfigInit({ newConfig });
     clearConfigCache();
   }

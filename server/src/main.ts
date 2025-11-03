@@ -67,14 +67,12 @@ class Workers {
     const basePath = dirname(__filename);
     const workerFile = join(basePath, 'workers', `${name}.js`);
 
-    let worker: Worker | ChildProcess;
-    if (name === ImmichWorker.Api) {
-      worker = fork(workerFile, [], {
-        execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
-      });
-    } else {
-      worker = new Worker(workerFile);
-    }
+    const worker: Worker | ChildProcess =
+      name === ImmichWorker.Api
+        ? fork(workerFile, [], {
+            execArgv: process.execArgv.map((arg) => (arg.startsWith('--inspect') ? '--inspect=0.0.0.0:9231' : arg)),
+          })
+        : new Worker(workerFile);
 
     worker.on('error', (error) => this.onError(name, error));
     worker.on('exit', (exitCode) => this.onExit(name, exitCode));
@@ -96,7 +94,7 @@ class Workers {
 
       // once all workers shut down, bootstrap again
       if (Object.keys(this.workers).length === 0) {
-        this.bootstrap();
+        void this.bootstrap();
         this.restarting = false;
       }
 
@@ -144,7 +142,7 @@ function main() {
   }
 
   process.title = 'immich';
-  new Workers().bootstrap();
+  void new Workers().bootstrap();
 }
 
 void main();

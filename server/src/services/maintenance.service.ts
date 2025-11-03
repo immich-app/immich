@@ -15,13 +15,13 @@ export class MaintenanceService extends BaseService {
   ): Promise<{ isMaintenanceMode: boolean }> {
     return systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
-      .catch((err) => {
+      .catch((error) => {
         // Table doesn't exist (migrations haven't run yet)
-        if (err instanceof PostgresError && err.code === '42P01') {
+        if (error instanceof PostgresError && error.code === '42P01') {
           return { isMaintenanceMode: false };
         }
 
-        throw err;
+        throw error;
       })
       .then((value) => ({ ...value, isMaintenanceMode: false }));
   }
