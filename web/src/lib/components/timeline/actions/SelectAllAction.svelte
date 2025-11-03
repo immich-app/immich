@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, selectAllAssets } from '$lib/utils/asset-utils';

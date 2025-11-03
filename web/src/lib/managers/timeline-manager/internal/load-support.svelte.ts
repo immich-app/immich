@@ -1,21 +1,21 @@
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
+import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
+import type { TimelineManagerOptions } from '$lib/managers/timeline-manager/types';
 import { toISOYearMonthUTC } from '$lib/utils/timeline-util';
 import { getTimeBucket } from '@immich/sdk';
-import type { MonthGroup } from '../month-group.svelte';
-import { TimelineManager } from '../timeline-manager.svelte';
-import type { TimelineManagerOptions } from '../types';
 
 export async function loadFromTimeBuckets(
   timelineManager: TimelineManager,
-  monthGroup: MonthGroup,
+  month: TimelineMonth,
   options: TimelineManagerOptions,
   signal: AbortSignal,
 ): Promise<void> {
-  if (monthGroup.getFirstAsset()) {
+  if (month.getFirstAsset()) {
     return;
   }
 
-  const timeBucket = toISOYearMonthUTC(monthGroup.yearMonth);
+  const timeBucket = toISOYearMonthUTC(month.yearMonth);
   const bucketResponse = await getTimeBucket(
     {
       ...authManager.params,
@@ -43,10 +43,10 @@ export async function loadFromTimeBuckets(
     }
   }
 
-  const unprocessedAssets = monthGroup.addAssets(bucketResponse, true);
+  const unprocessedAssets = month.addAssets(bucketResponse, true);
   if (unprocessedAssets.length > 0) {
     console.error(
-      `Warning: getTimeBucket API returning assets not in requested month: ${monthGroup.yearMonth.month}, ${JSON.stringify(
+      `Warning: getTimeBucket API returning assets not in requested month: ${month.yearMonth.month}, ${JSON.stringify(
         unprocessedAssets.map((unprocessed) => ({
           id: unprocessed.id,
           localDateTime: unprocessed.localDateTime,

@@ -2,17 +2,17 @@
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
+  import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import Scrubber from '$lib/components/timeline/Scrubber.svelte';
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
-  import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
-  import type { DayGroup } from '$lib/managers/timeline-manager/day-group.svelte';
   import { isIntersecting } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
-  import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
+  import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
   import type { TimelineAsset, TimelineManagerOptions, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -58,11 +58,11 @@
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
-      dayGroup: DayGroup,
+      day: TimelineDay,
       onClick: (
         timelineManager: TimelineManager,
         assets: TimelineAsset[],
-        groupTitle: string,
+        dayTitle: string,
         asset: TimelineAsset,
       ) => void,
     ) => void;
@@ -130,10 +130,10 @@
     timelineManager.scrollableElement = scrollableElement;
   });
 
-  const getAssetPosition = (assetId: string, monthGroup: MonthGroup) => monthGroup.findAssetAbsolutePosition(assetId);
+  const getAssetPosition = (assetId: string, month: TimelineMonth) => month.findAssetAbsolutePosition(assetId);
 
-  const scrollToAssetPosition = (assetId: string, monthGroup: MonthGroup) => {
-    const position = getAssetPosition(assetId, monthGroup);
+  const scrollToAssetPosition = (assetId: string, month: TimelineMonth) => {
+    const position = getAssetPosition(assetId, month);
 
     if (!position) {
       return;
@@ -176,20 +176,20 @@
   };
 
   const scrollAndLoadAsset = async (assetId: string) => {
-    const monthGroup = await timelineManager.findMonthGroupForAsset(assetId);
-    if (!monthGroup) {
+    const month = await timelineManager.findMonthForAsset(assetId);
+    if (!month) {
       return false;
     }
-    scrollToAssetPosition(assetId, monthGroup);
+    scrollToAssetPosition(assetId, month);
     return true;
   };
 
   const scrollToAsset = (asset: TimelineAsset) => {
-    const monthGroup = timelineManager.getMonthGroupByAssetId(asset.id);
-    if (!monthGroup) {
+    const month = timelineManager.getMonthByAssetId(asset.id);
+    if (!month) {
       return false;
     }
-    scrollToAssetPosition(asset.id, monthGroup);
+    scrollToAssetPosition(asset.id, month);
     return true;
   };
 
@@ -264,10 +264,10 @@
     }
   });
 
-  const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, monthGroupScrollPercent: number) => {
+  const scrollToSegmentPercentage = (segmentTop: number, segmentHeight: number, monthScrollPercent: number) => {
     const topOffset = segmentTop;
     const maxScrollPercent = timelineManager.maxScrollPercent;
-    const delta = segmentHeight * monthGroupScrollPercent;
+    const delta = segmentHeight * monthScrollPercent;
     const scrollToTop = (topOffset + delta) * maxScrollPercent;
 
     timelineManager.scrollTo(scrollToTop);
@@ -296,13 +296,13 @@
         scrubberMonthScrollPercent,
       );
     } else {
-      const monthGroup = timelineManager.months.find(
+      const month = timelineManager.months.find(
         ({ yearMonth: { year, month } }) => year === scrubberMonth.year && month === scrubberMonth.month,
       );
-      if (!monthGroup) {
+      if (!month) {
         return;
       }
-      scrollToSegmentPercentage(monthGroup.top, monthGroup.height, scrubberMonthScrollPercent);
+      scrollToSegmentPercentage(month.top, month.height, scrubberMonthScrollPercent);
     }
   };
 
@@ -327,28 +327,28 @@
 
       const monthsLength = timelineManager.months.length;
       for (let i = -1; i < monthsLength + 1; i++) {
-        let monthGroup: ViewportTopMonth;
-        let monthGroupHeight = 0;
+        let month: ViewportTopMonth;
+        let monthHeight = 0;
         if (i === -1) {
           // lead-in
-          monthGroup = 'lead-in';
-          monthGroupHeight = timelineManager.topSectionHeight;
+          month = 'lead-in';
+          monthHeight = timelineManager.topSectionHeight;
         } else if (i === monthsLength) {
           // lead-out
-          monthGroup = 'lead-out';
-          monthGroupHeight = timelineManager.bottomSectionHeight;
+          month = 'lead-out';
+          monthHeight = timelineManager.bottomSectionHeight;
         } else {
-          monthGroup = timelineManager.months[i].yearMonth;
-          monthGroupHeight = timelineManager.months[i].height;
+          month = timelineManager.months[i].yearMonth;
+          monthHeight = timelineManager.months[i].height;
         }
 
-        let next = top - monthGroupHeight * maxScrollPercent;
+        let next = top - monthHeight * maxScrollPercent;
         // instead of checking for < 0, add a little wiggle room for subpixel resolution
-        if (next < -1 && monthGroup) {
-          viewportTopMonth = monthGroup;
+        if (next < -1 && month) {
+          viewportTopMonth = month;
 
           // allowing next to be at least 1 may cause percent to go negative, so ensure positive percentage
-          viewportTopMonthScrollPercent = Math.max(0, top / (monthGroupHeight * maxScrollPercent));
+          viewportTopMonthScrollPercent = Math.max(0, top / (monthHeight * maxScrollPercent));
 
           // compensate for lost precision/rounding errors advance to the next bucket, if present
           if (viewportTopMonthScrollPercent > 0.9999 && i + 1 < monthsLength - 1) {
@@ -442,8 +442,8 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucket = timelineManager.getMonthGroupByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucket = timelineManager.getMonthGroupByAssetId(asset.id);
+      let startBucket = timelineManager.getMonthByAssetId(assetInteraction.assetSelectionStart.id);
+      let endBucket = timelineManager.getMonthByAssetId(asset.id);
 
       if (startBucket === null || endBucket === null) {
         return;
@@ -451,13 +451,13 @@
 
       // Select/deselect assets in range (start,end)
       let started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === endBucket) {
+      for (const month of timelineManager.months) {
+        if (month === endBucket) {
           break;
         }
         if (started) {
-          await timelineManager.loadMonthGroup(monthGroup.yearMonth);
-          for (const asset of monthGroup.assetsIterator()) {
+          await timelineManager.loadMonth(month.yearMonth);
+          for (const asset of month.assetsIterator()) {
             if (deselect) {
               assetInteraction.removeAssetFromMultiselectGroup(asset.id);
             } else {
@@ -465,29 +465,29 @@
             }
           }
         }
-        if (monthGroup === startBucket) {
+        if (month === startBucket) {
           started = true;
         }
       }
 
       // Update date group selection in range [start,end]
       started = false;
-      for (const monthGroup of timelineManager.months) {
-        if (monthGroup === startBucket) {
+      for (const month of timelineManager.months) {
+        if (month === startBucket) {
           started = true;
         }
         if (started) {
           // Split month group into day groups and check each group
-          for (const dayGroup of monthGroup.dayGroups) {
-            const dayGroupTitle = dayGroup.groupTitle;
-            if (dayGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
-              assetInteraction.addGroupToMultiselectGroup(dayGroupTitle);
+          for (const day of month.days) {
+            const dayTitle = day.dayTitle;
+            if (day.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
+              assetInteraction.addGroupToMultiselectGroup(dayTitle);
             } else {
-              assetInteraction.removeGroupFromMultiselectGroup(dayGroupTitle);
+              assetInteraction.removeGroupFromMultiselectGroup(dayTitle);
             }
           }
         }
-        if (monthGroup === endBucket) {
+        if (month === endBucket) {
           break;
         }
       }
@@ -531,7 +531,7 @@
   $effect(() => {
     if ($showAssetViewer) {
       const { localDateTime } = getTimes($viewingAsset.fileCreatedAt, DateTime.local().offset / 60);
-      void timelineManager.loadMonthGroup({ year: localDateTime.year, month: localDateTime.month });
+      void timelineManager.loadMonth({ year: localDateTime.year, month: localDateTime.month });
     }
   });
 </script>
@@ -622,23 +622,23 @@
       {/if}
     </section>
 
-    {#each timelineManager.months as monthGroup (monthGroup.viewId)}
-      {@const display = monthGroup.intersecting}
-      {@const absoluteHeight = monthGroup.top}
+    {#each timelineManager.months as month (month.viewId)}
+      {@const display = month.intersecting}
+      {@const absoluteHeight = month.top}
 
-      {#if !monthGroup.isLoaded}
+      {#if !month.isLoaded}
         <div
-          style:height={monthGroup.height + 'px'}
+          style:height={month.height + 'px'}
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton {invisible} height={monthGroup.height} title={monthGroup.monthGroupTitle} />
+          <Skeleton {invisible} height={month.height} title={month.monthTitle} />
         </div>
       {:else if display}
         <div
           class="month-group"
-          style:height={monthGroup.height + 'px'}
+          style:height={month.height + 'px'}
           style:position="absolute"
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
@@ -650,7 +650,7 @@
             {timelineManager}
             {isSelectionMode}
             {singleSelect}
-            {monthGroup}
+            {month}
             onSelect={({ title, assets }) => handleGroupSelect(timelineManager, title, assets)}
             onSelectAssetCandidates={handleSelectAssetCandidates}
             onSelectAssets={handleSelectAssets}

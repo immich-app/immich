@@ -1,18 +1,16 @@
-import { AssetOrder } from '@immich/sdk';
-
+import { onCreateDay } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
+import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
+import type { AssetOperation, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
 import type { CommonLayoutOptions } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { plainDateTimeCompare } from '$lib/utils/timeline-util';
+import { AssetOrder } from '@immich/sdk';
 
-import { onCreateDayGroup } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
-import type { MonthGroup } from './month-group.svelte';
-import type { AssetOperation, Direction, TimelineAsset } from './types';
-import { ViewerAsset } from './viewer-asset.svelte';
-
-export class DayGroup {
-  readonly monthGroup: MonthGroup;
+export class TimelineDay {
+  readonly month: TimelineMonth;
   readonly index: number;
-  readonly groupTitle: string;
+  readonly dayTitle: string;
   readonly day: number;
   viewerAssets: ViewerAsset[] = $state([]);
 
@@ -26,13 +24,13 @@ export class DayGroup {
   #col = $state(0);
   #deferredLayout = false;
 
-  constructor(monthGroup: MonthGroup, index: number, day: number, groupTitle: string) {
+  constructor(month: TimelineMonth, index: number, day: number, dayTitle: string) {
     this.index = index;
-    this.monthGroup = monthGroup;
+    this.month = month;
     this.day = day;
-    this.groupTitle = groupTitle;
+    this.dayTitle = dayTitle;
     if (import.meta.env.DEV) {
-      onCreateDayGroup(this);
+      onCreateDay(this);
     }
   }
 
@@ -144,7 +142,7 @@ export class DayGroup {
       }
       unprocessedIds.delete(assetId);
       processedIds.add(assetId);
-      if (remove || this.monthGroup.timelineManager.isExcluded(asset)) {
+      if (remove || this.month.timelineManager.isExcluded(asset)) {
         this.viewerAssets.splice(index, 1);
         changedGeometry = true;
       }
@@ -153,7 +151,7 @@ export class DayGroup {
   }
 
   layout(options: CommonLayoutOptions, noDefer: boolean) {
-    if (!noDefer && !this.monthGroup.intersecting) {
+    if (!noDefer && !this.month.intersecting) {
       this.#deferredLayout = true;
       return;
     }
@@ -167,7 +165,7 @@ export class DayGroup {
     }
   }
 
-  get absoluteDayGroupTop() {
-    return this.monthGroup.top + this.#top;
+  get absoluteTop() {
+    return this.month.top + this.#top;
   }
 }

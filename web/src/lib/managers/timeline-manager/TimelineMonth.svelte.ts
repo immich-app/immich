@@ -1,10 +1,15 @@
-import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
-
+import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
+import { onCreateMonth } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
+import { TimelineDay } from '$lib/managers/timeline-manager/TimelineDay.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
+import type { AssetDescriptor, AssetOperation, Direction, TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
+import { ScrollSegment } from '$lib/managers/VirtualScrollManager/ScrollSegment.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { handleError } from '$lib/utils/handle-error';
 import {
-  formatGroupTitle,
-  formatMonthGroupTitle,
+  formatDayTitle,
+  formatMonthTitle,
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
@@ -13,22 +18,15 @@ import {
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
-
+import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 
-import { onCreateMonthGroup } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
-import { DayGroup } from './day-group.svelte';
-import { GroupInsertionCache } from './group-insertion-cache.svelte';
-import { TimelineManager } from './timeline-manager.svelte';
-import type { AssetDescriptor, AssetOperation, Direction, TimelineAsset } from './types';
-import { ViewerAsset } from './viewer-asset.svelte';
-
-export class MonthGroup {
+export class TimelineMonth extends ScrollSegment {
   #intersecting: boolean = $state(false);
   actuallyIntersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
-  dayGroups: DayGroup[] = $state([]);
+  days: TimelineDay[] = $state([]);
   readonly timelineManager: TimelineManager;
 
   #height: number = $state(0);
@@ -39,14 +37,12 @@ export class MonthGroup {
   percent: number = $state(0);
 
   assetsCount: number = $derived(
-    this.isLoaded
-      ? this.dayGroups.reduce((accumulator, g) => accumulator + g.viewerAssets.length, 0)
-      : this.#initialCount,
+    this.isLoaded ? this.days.reduce((accumulator, g) => accumulator + g.viewerAssets.length, 0) : this.#initialCount,
   );
   loader: CancellableTask | undefined;
   isHeightActual: boolean = $state(false);
 
-  readonly monthGroupTitle: string;
+  readonly monthTitle: string;
   readonly yearMonth: TimelineYearMonth;
 
   constructor(
@@ -56,19 +52,20 @@ export class MonthGroup {
     loaded: boolean,
     order: AssetOrder = AssetOrder.Desc,
   ) {
+    super();
     this.timelineManager = timelineManager;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
 
     this.yearMonth = yearMonth;
-    this.monthGroupTitle = formatMonthGroupTitle(fromTimelinePlainYearMonth(yearMonth));
+    this.monthTitle = formatMonthTitle(fromTimelinePlainYearMonth(yearMonth));
 
     this.loader = new CancellableTask(
       () => {
         this.isLoaded = true;
       },
       () => {
-        this.dayGroups = [];
+        this.days = [];
         this.isLoaded = false;
       },
       this.#handleLoadError,
@@ -77,7 +74,7 @@ export class MonthGroup {
       this.isLoaded = true;
     }
     if (import.meta.env.DEV) {
-      onCreateMonthGroup(this);
+      onCreateMonth(this);
     }
   }
 
@@ -88,7 +85,7 @@ export class MonthGroup {
     }
     this.#intersecting = newValue;
     if (newValue) {
-      void this.timelineManager.loadMonthGroup(this.yearMonth);
+      void this.timelineManager.loadMonth(this.yearMonth);
     } else {
       this.cancel();
     }
@@ -98,25 +95,25 @@ export class MonthGroup {
     return this.#intersecting;
   }
 
-  get lastDayGroup() {
-    return this.dayGroups.at(-1);
+  get lastDay() {
+    return this.days.at(-1);
   }
 
   getFirstAsset() {
-    return this.dayGroups[0]?.getFirstAsset();
+    return this.days[0]?.getFirstAsset();
   }
 
   getAssets() {
     // eslint-disable-next-line unicorn/no-array-reduce
-    return this.dayGroups.reduce((accumulator: TimelineAsset[], g: DayGroup) => accumulator.concat(g.getAssets()), []);
+    return this.days.reduce((accumulator: TimelineAsset[], g: TimelineDay) => accumulator.concat(g.getAssets()), []);
   }
 
-  sortDayGroups() {
+  sortDays() {
     if (this.#sortOrder === AssetOrder.Asc) {
-      return this.dayGroups.sort((a, b) => a.day - b.day);
+      return this.days.sort((a, b) => a.day - b.day);
     }
 
-    return this.dayGroups.sort((a, b) => b.day - a.day);
+    return this.days.sort((a, b) => b.day - a.day);
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
@@ -129,17 +126,17 @@ export class MonthGroup {
         changedGeometry: false,
       };
     }
-    const { dayGroups } = this;
+    const { days } = this;
     let combinedChangedGeometry = false;
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const idsToProcess = new Set(ids);
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const idsProcessed = new Set<string>();
     const combinedMoveAssets: TimelineAsset[] = [];
-    let index = dayGroups.length;
+    let index = days.length;
     while (index--) {
       if (idsToProcess.size > 0) {
-        const group = dayGroups[index];
+        const group = days[index];
         const { moveAssets, processedIds, changedGeometry } = group.runAssetOperation(ids, operation);
         if (moveAssets.length > 0) {
           combinedMoveAssets.push(...moveAssets);
@@ -150,7 +147,7 @@ export class MonthGroup {
         }
         combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
         if (group.viewerAssets.length === 0) {
-          dayGroups.splice(index, 1);
+          days.splice(index, 1);
           combinedChangedGeometry = true;
         }
       }
@@ -205,12 +202,12 @@ export class MonthGroup {
       this.addTimelineAsset(timelineAsset, addContext);
     }
     if (!preSorted) {
-      for (const group of addContext.existingDayGroups) {
+      for (const group of addContext.existingDays) {
         group.sortAssets(this.#sortOrder);
       }
 
-      if (addContext.newDayGroups.size > 0) {
-        this.sortDayGroups();
+      if (addContext.newDays.size > 0) {
+        this.sortDays();
       }
 
       addContext.sort(this, this.#sortOrder);
@@ -227,20 +224,20 @@ export class MonthGroup {
       return;
     }
 
-    let dayGroup = addContext.getDayGroup(localDateTime) || this.findDayGroupByDay(localDateTime.day);
-    if (dayGroup) {
-      addContext.setDayGroup(dayGroup, localDateTime);
+    let day = addContext.getDay(localDateTime) || this.findDayByDay(localDateTime.day);
+    if (day) {
+      addContext.setDay(day, localDateTime);
     } else {
-      const groupTitle = formatGroupTitle(fromTimelinePlainDate(localDateTime));
-      dayGroup = new DayGroup(this, this.dayGroups.length, localDateTime.day, groupTitle);
-      this.dayGroups.push(dayGroup);
-      addContext.setDayGroup(dayGroup, localDateTime);
-      addContext.newDayGroups.add(dayGroup);
+      const dayTitle = formatDayTitle(fromTimelinePlainDate(localDateTime));
+      day = new TimelineDay(this, this.days.length, localDateTime.day, dayTitle);
+      this.days.push(day);
+      addContext.setDay(day, localDateTime);
+      addContext.newDays.add(day);
     }
 
-    const viewerAsset = new ViewerAsset(dayGroup, timelineAsset);
-    dayGroup.viewerAssets.push(viewerAsset);
-    addContext.changedDayGroups.add(dayGroup);
+    const viewerAsset = new ViewerAsset(day, timelineAsset);
+    day.viewerAssets.push(viewerAsset);
+    addContext.changedDays.add(day);
   }
 
   get viewId() {
@@ -256,9 +253,9 @@ export class MonthGroup {
     const index = timelineManager.months.indexOf(this);
     const heightDelta = height - this.#height;
     this.#height = height;
-    const prevMonthGroup = timelineManager.months[index - 1];
-    if (prevMonthGroup) {
-      const newTop = prevMonthGroup.#top + prevMonthGroup.#height;
+    const prevMonth = timelineManager.months[index - 1];
+    if (prevMonth) {
+      const newTop = prevMonth.#top + prevMonth.#height;
       if (this.#top !== newTop) {
         this.#top = newTop;
       }
@@ -267,10 +264,10 @@ export class MonthGroup {
       return;
     }
     for (let cursor = index + 1; cursor < timelineManager.months.length; cursor++) {
-      const monthGroup = this.timelineManager.months[cursor];
-      const newTop = monthGroup.#top + heightDelta;
-      if (monthGroup.#top !== newTop) {
-        monthGroup.#top = newTop;
+      const month = this.timelineManager.months[cursor];
+      const newTop = month.#top + heightDelta;
+      if (month.#top !== newTop) {
+        month.#top = newTop;
       }
     }
     if (!timelineManager.viewportTopMonthIntersection) {
@@ -302,21 +299,21 @@ export class MonthGroup {
     handleError(error, _$t('errors.failed_to_load_assets'));
   }
 
-  findDayGroupForAsset(asset: TimelineAsset) {
-    for (const group of this.dayGroups) {
+  findDayForAsset(asset: TimelineAsset) {
+    for (const group of this.days) {
       if (group.viewerAssets.some((viewerAsset) => viewerAsset.id === asset.id)) {
         return group;
       }
     }
   }
 
-  findDayGroupByDay(day: number) {
-    return this.dayGroups.find((group) => group.day === day);
+  findDayByDay(day: number) {
+    return this.days.find((group) => group.day === day);
   }
 
   findAssetAbsolutePosition(assetId: string) {
     this.timelineManager.clearDeferredLayout(this);
-    for (const group of this.dayGroups) {
+    for (const group of this.days) {
       const viewerAsset = group.viewerAssets.find((viewAsset) => viewAsset.id === assetId);
       if (viewerAsset) {
         if (!viewerAsset.position) {
@@ -331,18 +328,14 @@ export class MonthGroup {
     }
   }
 
-  *assetsIterator(options?: { startDayGroup?: DayGroup; startAsset?: TimelineAsset; direction?: Direction }) {
+  *assetsIterator(options?: { startDay?: TimelineDay; startAsset?: TimelineAsset; direction?: Direction }) {
     const direction = options?.direction ?? 'earlier';
     let { startAsset } = options ?? {};
     const isEarlier = direction === 'earlier';
-    let groupIndex = options?.startDayGroup
-      ? this.dayGroups.indexOf(options.startDayGroup)
-      : isEarlier
-        ? 0
-        : this.dayGroups.length - 1;
+    let groupIndex = options?.startDay ? this.days.indexOf(options.startDay) : isEarlier ? 0 : this.days.length - 1;
 
-    while (groupIndex >= 0 && groupIndex < this.dayGroups.length) {
-      const group = this.dayGroups[groupIndex];
+    while (groupIndex >= 0 && groupIndex < this.days.length) {
+      const group = this.days[groupIndex];
       yield* group.assetsIterator({ startAsset, direction });
       startAsset = undefined;
       groupIndex += isEarlier ? 1 : -1;

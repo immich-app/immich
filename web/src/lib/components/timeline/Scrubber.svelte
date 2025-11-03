@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+  import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
   import type { ScrubberMonth, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
   import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { getTabbable } from '$lib/utils/focus-util';
@@ -91,7 +91,7 @@
     scrubberWidth = usingMobileDevice ? MOBILE_WIDTH : DESKTOP_WIDTH;
   });
 
-  const toScrollFromMonthGroupPercentage = (
+  const toScrollFromMonthPercentage = (
     scrubberMonth: ViewportTopMonth,
     scrubberMonthPercent: number,
     scrubOverallPercent: number,
@@ -124,7 +124,7 @@
     }
   };
   const scrollY = $derived(
-    toScrollFromMonthGroupPercentage(viewportTopMonth, viewportTopMonthScrollPercent, timelineScrollPercent),
+    toScrollFromMonthPercentage(viewportTopMonth, viewportTopMonthScrollPercent, timelineScrollPercent),
   );
   const timelineFullHeight = $derived(timelineManager.scrubberTimelineHeight);
   const relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
@@ -280,12 +280,12 @@
       const boundingClientRect = bestElement.boundingClientRect;
       const sy = boundingClientRect.y;
       const relativeY = y - sy;
-      const monthGroupPercentY = relativeY / boundingClientRect.height;
+      const monthPercentY = relativeY / boundingClientRect.height;
       return {
         isOnPaddingTop: false,
         isOnPaddingBottom: false,
         segment,
-        monthGroupPercentY,
+        monthPercentY,
       };
     }
 
@@ -308,7 +308,7 @@
       isOnPaddingTop,
       isOnPaddingBottom,
       segment: undefined,
-      monthGroupPercentY: 0,
+      monthPercentY: 0,
     };
   };
 
@@ -327,7 +327,7 @@
     const upper = rect?.height - (PADDING_TOP + PADDING_BOTTOM);
     hoverY = clamp(clientY - rect?.top - PADDING_TOP, lower, upper);
     const x = rect!.left + rect!.width / 2;
-    const { segment, monthGroupPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
+    const { segment, monthPercentY, isOnPaddingTop, isOnPaddingBottom } = getActive(x, clientY);
     activeSegment = segment;
     isHoverOnPaddingTop = isOnPaddingTop;
     isHoverOnPaddingBottom = isOnPaddingBottom;
@@ -335,7 +335,7 @@
     const scrubData = {
       scrubberMonth: segmentDate,
       overallScrollPercent: toTimelineY(hoverY),
-      scrubberMonthScrollPercent: monthGroupPercentY,
+      scrubberMonthScrollPercent: monthPercentY,
     };
     if (wasDragging === false && isDragging) {
       void startScrub?.(scrubData);

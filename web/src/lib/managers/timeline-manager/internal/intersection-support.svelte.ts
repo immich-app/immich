@@ -1,16 +1,16 @@
+import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
+import { TimelineMonth } from '$lib/managers/timeline-manager/TimelineMonth.svelte';
 import { TUNABLES } from '$lib/utils/tunables';
-import type { MonthGroup } from '../month-group.svelte';
-import { TimelineManager } from '../timeline-manager.svelte';
 
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
 } = TUNABLES;
 
-export function updateIntersectionMonthGroup(timelineManager: TimelineManager, month: MonthGroup) {
-  const actuallyIntersecting = calculateMonthGroupIntersecting(timelineManager, month, 0, 0);
+export function updateIntersectionMonth(timelineManager: TimelineManager, month: TimelineMonth) {
+  const actuallyIntersecting = calculateMonthIntersecting(timelineManager, month, 0, 0);
   let preIntersecting = false;
   if (!actuallyIntersecting) {
-    preIntersecting = calculateMonthGroupIntersecting(
+    preIntersecting = calculateMonthIntersecting(
       timelineManager,
       month,
       INTERSECTION_EXPAND_TOP,
@@ -40,18 +40,18 @@ export function isIntersecting(regionTop: number, regionBottom: number, windowTo
   );
 }
 
-export function calculateMonthGroupIntersecting(
+export function calculateMonthIntersecting(
   timelineManager: TimelineManager,
-  monthGroup: MonthGroup,
+  month: TimelineMonth,
   expandTop: number,
   expandBottom: number,
 ) {
-  const monthGroupTop = monthGroup.top;
-  const monthGroupBottom = monthGroupTop + monthGroup.height;
+  const monthTop = month.top;
+  const monthBottom = monthTop + month.height;
   const topWindow = timelineManager.visibleWindow.top - expandTop;
   const bottomWindow = timelineManager.visibleWindow.bottom + expandBottom;
 
-  return isIntersecting(monthGroupTop, monthGroupBottom, topWindow, bottomWindow);
+  return isIntersecting(monthTop, monthBottom, topWindow, bottomWindow);
 }
 
 /**
