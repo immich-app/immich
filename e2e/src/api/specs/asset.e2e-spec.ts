@@ -1140,6 +1140,16 @@ describe('/asset', () => {
           },
         },
       },
+      {
+        input: 'metadata/gps-position/empty_gps.jpg',
+        expected: {
+          type: AssetTypeEnum.Image,
+          exifInfo: {
+            latitude: null,
+            longitude: null,
+          },
+        },
+      },
     ];
 
     it.each(tests)(`should upload and generate a thumbnail for different file types`, async ({ input, expected }) => {
