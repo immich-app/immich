@@ -516,8 +516,8 @@
           {/if}
 
           {#if album.assetCount === 0}
-            <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
-              <div class="w-[300px]">
+            <section id="empty-album" class=" mt-50 flex place-content-center place-items-center">
+              <div class="w-75">
                 <p class="uppercase text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
                 <button
                   type="button"
@@ -722,7 +722,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-2 w-[360px] md:w-[460px] overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
         <ActivityViewer

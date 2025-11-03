@@ -81,6 +81,13 @@ export class AssetController {
     return this.service.get(auth, id) as Promise<AssetResponseDto>;
   }
 
+  @Put('copy')
+  @Authenticated({ permission: Permission.AssetCopy })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  copyAsset(@Auth() auth: AuthDto, @Body() dto: AssetCopyDto): Promise<void> {
+    return this.service.copy(auth, dto);
+  }
+
   @Put(':id')
   @Authenticated({ permission: Permission.AssetUpdate })
   updateAsset(
@@ -89,13 +96,6 @@ export class AssetController {
     @Body() dto: UpdateAssetDto,
   ): Promise<AssetResponseDto> {
     return this.service.update(auth, id, dto);
-  }
-
-  @Put('copy')
-  @Authenticated({ permission: Permission.AssetCopy })
-  @HttpCode(HttpStatus.NO_CONTENT)
-  copyAsset(@Auth() auth: AuthDto, @Body() dto: AssetCopyDto): Promise<void> {
-    return this.service.copy(auth, dto);
   }
 
   @Get(':id/metadata')

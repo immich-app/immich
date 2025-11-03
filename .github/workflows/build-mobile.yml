@@ -1,11 +1,15 @@
 name: Build Mobile
 
 on:
-  workflow_dispatch:
   workflow_call:
     inputs:
       ref:
         required: false
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'development'
         type: string
     secrets:
       KEY_JKS:
@@ -15,6 +19,30 @@ on:
       ANDROID_KEY_PASSWORD:
         required: true
       ANDROID_STORE_PASSWORD:
+        required: true
+      APP_STORE_CONNECT_API_KEY_ID:
+        required: true
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID:
+        required: true
+      APP_STORE_CONNECT_API_KEY:
+        required: true
+      IOS_CERTIFICATE_P12:
+        required: true
+      IOS_CERTIFICATE_PASSWORD:
+        required: true
+      IOS_PROVISIONING_PROFILE:
+        required: true
+      IOS_PROVISIONING_PROFILE_SHARE_EXTENSION:
+        required: true
+      IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION:
+        required: true
+      IOS_DEVELOPMENT_PROVISIONING_PROFILE:
+        required: true
+      IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION:
+        required: true
+      IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION:
+        required: true
+      FASTLANE_TEAM_ID:
         required: true
   pull_request:
   push:
@@ -193,17 +221,22 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.4.7'
+          ruby-version: '3.3'
           working-directory: ./mobile/ios
 
-      - name: Install Fastlane
+      - name: Install CocoaPods dependencies
+        working-directory: ./mobile/ios
         run: |
-          cd mobile/ios
+          pod install
+
+      - name: Install Fastlane
+        working-directory: ./mobile/ios
+        run: |
           gem install bundler
           bundle config set --local path 'vendor/bundle'
           bundle install
 
-      - name: Create API Key JSON
+      - name: Create API Key
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
@@ -212,34 +245,54 @@ jobs:
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
           echo "$API_KEY_CONTENT" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8
-          cat > api_key.json << EOF
-          {
-            "key_id": "${API_KEY_ID}",
-            "issuer_id": "${API_KEY_ISSUER_ID}",
-            "key": "$(cat ~/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8)",
-            "duration": 1200,
-            "in_house": false
-          }
-          EOF
 
-      - name: Import Certificate and Provisioning Profile
+      - name: Import Certificate and Provisioning Profiles
         env:
           IOS_CERTIFICATE_P12: ${{ secrets.IOS_CERTIFICATE_P12 }}
           IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+          IOS_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_SHARE_EXTENSION }}
+          IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
+          IOS_DEVELOPMENT_PROVISIONING_PROFILE: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE }}
+          IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION }}
+          IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION: ${{ secrets.IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION }}
+          ENVIRONMENT: ${{ inputs.environment || 'development' }}
         working-directory: ./mobile/ios
         run: |
+          # Decode certificate
           echo "$IOS_CERTIFICATE_P12" | base64 --decode > certificate.p12
-          echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
 
-      - name: Create keychain
+          # Decode provisioning profiles based on environment
+          if [[ "$ENVIRONMENT" == "development" ]]; then
+            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE" | base64 --decode > profile_dev.mobileprovision
+            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_dev_share.mobileprovision
+            echo "$IOS_DEVELOPMENT_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_dev_widget.mobileprovision
+            ls -lh profile_dev*.mobileprovision
+          else
+            echo "$IOS_PROVISIONING_PROFILE" | base64 --decode > profile.mobileprovision
+            echo "$IOS_PROVISIONING_PROFILE_SHARE_EXTENSION" | base64 --decode > profile_share.mobileprovision
+            echo "$IOS_PROVISIONING_PROFILE_WIDGET_EXTENSION" | base64 --decode > profile_widget.mobileprovision
+            ls -lh profile*.mobileprovision
+          fi
+
+      - name: Create keychain and import certificate
         env:
           KEYCHAIN_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+        working-directory: ./mobile/ios
         run: |
+          # Create keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
           security set-keychain-settings -t 3600 -u build.keychain
+
+          # Import certificate
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+
+          # Verify certificate was imported
+          security find-identity -v -p codesigning build.keychain
 
       - name: Build and deploy to TestFlight
         env:
@@ -249,8 +302,14 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          ENVIRONMENT: ${{ inputs.environment || 'development' }}
         working-directory: ./mobile/ios
-        run: bundle exec fastlane release_ci
+        run: |
+          if [[ "$ENVIRONMENT" == "development" ]]; then
+            bundle exec fastlane gha_testflight_dev
+          else
+            bundle exec fastlane gha_release_prod
+          fi
 
       - name: Clean up keychain
         if: always()

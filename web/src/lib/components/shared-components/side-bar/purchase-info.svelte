@@ -94,7 +94,7 @@
       <div class="flex justify-between w-full place-items-center place-content-center">
         <div class="flex place-items-center place-content-center gap-1">
           <div class="h-6 w-6">
-            <ImmichLogo noText class="h-[24px]" />
+            <ImmichLogo noText class="h-6" />
           </div>
           <p class="flex text-primary font-medium">
             {$t('purchase_button_buy_immich')}
@@ -113,7 +113,7 @@
   {#if showMessage}
     <dialog
       open
-      class="hidden sidebar:block w-[500px] absolute bottom-[75px] start-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl shadow-2xl px-8 py-6"
+      class="hidden sidebar:block w-125 absolute bottom-19 start-64 bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
@@ -122,7 +122,7 @@
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
-          <ImmichLogo noText class="h-[32px]" />
+          <ImmichLogo noText class="h-8" />
         </div>
         <IconButton
           shape="round"

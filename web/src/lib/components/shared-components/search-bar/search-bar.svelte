@@ -30,10 +30,10 @@
   let showSuggestions = $state(false);
   let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
-  let isFocus = $state(false);
   let close: (() => Promise<void>) | undefined;
 
   const listboxId = generateId();
+  const searchTypeId = generateId();
 
   onDestroy(() => {
     searchStore.isSearchEnabled = false;
@@ -161,12 +161,10 @@
 
   const openDropdown = () => {
     showSuggestions = true;
-    isFocus = true;
   };
 
   const closeDropdown = () => {
     showSuggestions = false;
-    isFocus = false;
     searchHistoryBox?.clearSelection();
   };
 
@@ -235,7 +233,7 @@
         name="q"
         id="main-search-bar"
         class="w-full transition-all border-2 ps-14 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg
-        {showClearIcon ? 'pe-[90px]' : 'pe-14'}
+        {showClearIcon ? 'pe-22.5' : 'pe-14'}
         {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
         {searchStore.isSearchEnabled ? 'border-gray-200 dark:border-gray-700 bg-white' : 'border-transparent'}"
@@ -251,6 +249,7 @@
         aria-activedescendant={selectedId ?? ''}
         aria-expanded={showSuggestions && isSearchSuggestions}
         aria-autocomplete="list"
+        aria-describedby={searchTypeId}
         use:shortcuts={[
           { shortcut: { key: 'Escape' }, onShortcut: onEscape },
           { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
@@ -287,12 +286,12 @@
       />
     </div>
 
-    {#if isFocus}
+    {#if searchStore.isSearchEnabled}
       <div
-        class="absolute inset-y-0 flex items-center"
+        id={searchTypeId}
+        class="absolute inset-y-0 flex items-center end-16"
         class:max-md:hidden={value}
-        class:end-16={isFocus}
-        class:end-28={isFocus && value.length > 0}
+        class:end-28={value.length > 0}
       >
         <p
           class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs"

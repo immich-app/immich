@@ -53,9 +53,7 @@
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
 
-<div
-  class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-[35px]"
->
+<div class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-9">
   <div class="flex w-full flex-col">
     {#if queueStatus.isPaused}
       <JobTileStatus color="warning">{$t('paused')}</JobTileStatus>
