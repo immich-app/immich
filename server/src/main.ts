@@ -3,11 +3,11 @@ import { CommandFactory } from 'nest-commander';
 import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
-import { PostgresError } from 'postgres';
 import { ApiModule, ImmichAdminModule } from 'src/app.module';
-import { ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum';
+import { ImmichWorker, LogLevel } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { MaintenanceService } from 'src/services/maintenance.service';
 
 /**
  * Manages worker lifecycle
@@ -47,22 +47,13 @@ class Workers {
    * Initialise a short-lived Nest application to build configuration
    * @returns System configuration
    */
-  private async getConfig(): Promise<{ isMaintenanceMode?: boolean }> {
-    try {
-      const app = await NestFactory.create(ApiModule);
-      const metadataRepo = app.get(SystemMetadataRepository);
+  private async getConfig(): Promise<{ isMaintenanceMode: boolean }> {
+    const app = await NestFactory.create(ApiModule);
+    const metadataRepository = app.get(SystemMetadataRepository);
 
-      await app.close();
+    await app.close();
 
-      return metadataRepo.get(SystemMetadataKey.MaintenanceMode).then((value) => value ?? {});
-    } catch (err) {
-      // Table doesn't exist (migrations haven't run yet)
-      if (err instanceof PostgresError && err.code === '42P01') {
-        return { isMaintenanceMode: false };
-      }
-
-      throw err;
-    }
+    return await MaintenanceService.getMaintenanceModeWith(metadataRepository);
   }
 
   /**
