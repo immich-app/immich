@@ -6,7 +6,7 @@ export const handle = (async ({ event, resolve }) => {
   // try to check maintenance status and redirect accordingly ahead of time
   let redirectToMode: boolean | undefined;
   try {
-    const { maintenanceMode } = await fetch(process.env.IMMICH_SERVER_URL + 'api/config').then((response) =>
+    const { maintenanceMode } = await fetch(process.env.IMMICH_SERVER_URL + 'api/server/config').then((response) =>
       response.json(),
     );
 

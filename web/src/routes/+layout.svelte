@@ -8,6 +8,7 @@
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
@@ -79,7 +80,7 @@
   });
 
   const semverToName = ({ major, minor, patch }: ServerVersionResponseDto) => `v${major}.${minor}.${patch}`;
-  const { release } = websocketStore;
+  const { release, serverRestarting } = websocketStore;
 
   const handleRelease = async (release?: ReleaseEvent) => {
     if (!release?.isAvailable || !$user.isAdmin) {
@@ -104,6 +105,21 @@
   };
 
   $effect(() => void handleRelease($release));
+
+  const handleRestart = async (isRestarting: boolean) => {
+    if (!isRestarting) {
+      return;
+    }
+
+    try {
+      serverRestarting.set(false);
+      await modalManager.show(ServerRestartingModal, {});
+    } catch (error) {
+      console.error('Error [ServerRestartBox]:', error);
+    }
+  };
+
+  $effect(() => void handleRestart($serverRestarting));
 </script>
 
 <svelte:head>
