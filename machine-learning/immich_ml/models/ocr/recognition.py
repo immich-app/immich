@@ -1,6 +1,5 @@
 from typing import Any
 
-import cv2
 import numpy as np
 from numpy.typing import NDArray
 from PIL import Image
@@ -14,6 +13,7 @@ from rapidocr.utils.vis_res import VisRes
 
 from immich_ml.config import log, settings
 from immich_ml.models.base import InferenceModel
+from immich_ml.models.transforms import pil_to_cv2
 from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
 from immich_ml.sessions.ort import OrtSession
 
@@ -55,7 +55,7 @@ class TextRecognizer(InferenceModel):
 
     def _load(self) -> ModelSession:
         # TODO: support other runtimes
-        session = OrtSession(self.model_path)
+        session = OrtSession(self.model_path, providers=["CPUExecutionProvider"])
         self.model = RapidTextRecognizer(
             OcrOptions(
                 session=session.session,
@@ -111,7 +111,7 @@ class TextRecognizer(InferenceModel):
             dst_width, dst_height = dst_img.size
             if dst_height * 1.0 / dst_width >= 1.5:
                 dst_img = dst_img.rotate(90, expand=True)
-            imgs.append(cv2.cvtColor(np.array(dst_img), cv2.COLOR_RGB2BGR))
+            imgs.append(pil_to_cv2(dst_img))
 
         return imgs
 

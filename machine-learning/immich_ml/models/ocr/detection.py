@@ -1,6 +1,5 @@
 from typing import Any
 
-import cv2
 import numpy as np
 from PIL import Image
 from rapidocr.ch_ppocr_det import TextDetector as RapidTextDetector
@@ -61,7 +60,7 @@ class TextDetector(InferenceModel):
 
     def _load(self) -> ModelSession:
         # TODO: support other runtime sessions
-        return OrtSession(self.model_path)
+        return OrtSession(self.model_path, providers=["CPUExecutionProvider"])
 
     # partly adapted from RapidOCR
     def _predict(self, inputs: Image.Image) -> TextDetectionOutput:
@@ -89,7 +88,7 @@ class TextDetector(InferenceModel):
 
         resize_h = int(round(resize_h / 32) * 32)
         resize_w = int(round(resize_w / 32) * 32)
-        resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.LANCZOS)
+        resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.BICUBIC)
 
         resized_img = (pil_to_cv2(resized_img) - self.mean) / self.std
         resized_img = np.transpose(resized_img, (2, 0, 1))
