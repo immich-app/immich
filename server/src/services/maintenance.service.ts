@@ -45,7 +45,7 @@ export class MaintenanceService extends BaseService {
       ?.close() // attempt graceful shutdown
       .then(() => process.exit(7)); // then signal restart
 
-    // issue: close() seems to hang for API worker, so timeout after 1s
-    setTimeout(() => process.exit(7), 1000);
+    // in some exceptional circumstances, close() may hang
+    setTimeout(() => process.exit(7), 5000);
   }
 }
