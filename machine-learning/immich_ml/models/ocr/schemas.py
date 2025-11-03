@@ -7,7 +7,6 @@ from typing_extensions import TypedDict
 
 
 class TextDetectionOutput(TypedDict):
-    image: npt.NDArray[np.float32]
     boxes: npt.NDArray[np.float32]
     scores: npt.NDArray[np.float32]
 
