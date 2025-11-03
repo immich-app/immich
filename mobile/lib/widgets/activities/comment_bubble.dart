@@ -39,62 +39,68 @@ class CommentBubble extends ConsumerWidget {
     }
 
     // avatar (hidden for own messages)
-    final Widget avatar = isOwn ? const SizedBox.shrink() : UserCircleAvatar(user: activity.user, size: 28, radius: 14);
+    Widget avatar = const SizedBox.shrink();
+    if (!isOwn) {
+      avatar = UserCircleAvatar(user: activity.user, size: 28, radius: 14);
+    }
 
     // Thumbnail with tappable behavior and optional heart overlay
-    final Widget? thumbnail = showThumbnail
-        ? ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 150, maxHeight: 150),
-            child: Stack(
-              children: [
-                GestureDetector(
-                  onTap: openAssetViewer,
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.all(Radius.circular(10)),
-                    child: Image(
-                      image: ImmichRemoteThumbnailProvider(assetId: activity.assetId!),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+    Widget? thumbnail;
+    if (showThumbnail) {
+      thumbnail = ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 150, maxHeight: 150),
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: openAssetViewer,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                child: Image(
+                  image: ImmichRemoteThumbnailProvider(assetId: activity.assetId!),
+                  fit: BoxFit.cover,
                 ),
-                if (isLike)
-                  Positioned(
-                    right: 6,
-                    bottom: 6,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
-                      child: Icon(Icons.favorite, color: Colors.red[600], size: 18),
-                    ),
-                  ),
-              ],
-            ),
-          )
-        : null;
-
-    // Likes widget
-    final Widget? likes = (!isLike || showThumbnail)
-        ? null
-        : Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
-            child: Icon(Icons.favorite, color: Colors.red[600], size: 18),
-          );
-
-    // Comment bubble, comment-only
-    final Widget? commentBubble = (activity.comment == null || activity.comment!.isEmpty)
-        ? null
-        : ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: bgColor, borderRadius: const BorderRadius.all(Radius.circular(12))),
-              child: Text(
-                activity.comment ?? '',
-                style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.onSurface),
               ),
             ),
-          );
+            if (isLike)
+              Positioned(
+                right: 6,
+                bottom: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
+                  child: Icon(Icons.favorite, color: Colors.red[600], size: 18),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    // Likes widget
+    Widget? likes;
+    if (isLike && !showThumbnail) {
+      likes = Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.7), shape: BoxShape.circle),
+        child: Icon(Icons.favorite, color: Colors.red[600], size: 18),
+      );
+    }
+
+    // Comment bubble, comment-only
+    Widget? commentBubble;
+    if (activity.comment != null && activity.comment!.isNotEmpty) {
+      commentBubble = ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.5),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: bgColor, borderRadius: const BorderRadius.all(Radius.circular(12))),
+          child: Text(
+            activity.comment ?? '',
+            style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.onSurface),
+          ),
+        ),
+      );
+    }
 
     // Combined content widgets
     final List<Widget> contentChildren = [thumbnail, likes, commentBubble].whereType<Widget>().toList();
