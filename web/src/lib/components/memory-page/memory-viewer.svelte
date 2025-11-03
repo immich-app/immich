@@ -372,7 +372,7 @@
       {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
-        <div class="w-[50px] dark">
+        <div class="w-12.5 dark">
           <IconButton
             shape="round"
             variant="ghost"
@@ -385,8 +385,8 @@
 
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
-            <span class="absolute start-0 h-[2px] w-full bg-gray-500"></span>
-            <span class="absolute start-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
+            <span class="absolute start-0 h-0.5 w-full bg-gray-500"></span>
+            <span class="absolute start-0 h-0.5 bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
         {/each}
 
@@ -397,7 +397,7 @@
         </div>
 
         {#if currentTimelineAssets.some(({ isVideo }) => isVideo)}
-          <div class="w-[50px] dark">
+          <div class="w-12.5 dark">
             <IconButton
               shape="round"
               variant="ghost"
@@ -502,7 +502,7 @@
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory()}
-                  class="w-[48px] h-[48px]"
+                  class="w-12 h-12"
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}

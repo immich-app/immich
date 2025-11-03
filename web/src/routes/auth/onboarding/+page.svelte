@@ -167,7 +167,7 @@
         style="width: {(onboardingProgress / onboardingStepCount) * 100}%"
       ></div>
     </div>
-    <div class="py-8 flex place-content-center place-items-center m-auto w-[min(100%,_800px)]">
+    <div class="py-8 flex place-content-center place-items-center m-auto w-[min(100%,800px)]">
       <OnboardingCard
         title={onboardingSteps[index].title}
         icon={onboardingSteps[index].icon}

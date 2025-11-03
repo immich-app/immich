@@ -117,7 +117,7 @@
       </p>
     {/if}
 
-    <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
+    <div class="immich-scrollbar max-h-125 overflow-y-auto">
       {#if users.length > 0 && users.length !== Object.keys(selectedUsers).length}
         <Text>{$t('users')}</Text>
 

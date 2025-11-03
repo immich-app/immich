@@ -99,7 +99,7 @@
 
 <Modal title={$t('options')} size="small" {onClose}>
   <ModalBody>
-    <section class="immich-scrollbar max-h-[400px] overflow-y-auto pb-4">
+    <section class="immich-scrollbar max-h-100 overflow-y-auto pb-4">
       {#each [{ user: album.owner, role: 'owner' }, ...album.albumUsers] as { user, role } (user.id)}
         <div class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors">
           <div class="flex place-items-center gap-4">

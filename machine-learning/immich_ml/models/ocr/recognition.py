@@ -1,9 +1,8 @@
 from typing import Any
 
-import cv2
 import numpy as np
 from numpy.typing import NDArray
-from PIL.Image import Image
+from PIL import Image
 from rapidocr.ch_ppocr_rec import TextRecInput
 from rapidocr.ch_ppocr_rec import TextRecognizer as RapidTextRecognizer
 from rapidocr.inference_engine.base import FileInfo, InferSession
@@ -14,6 +13,7 @@ from rapidocr.utils.vis_res import VisRes
 
 from immich_ml.config import log, settings
 from immich_ml.models.base import InferenceModel
+from immich_ml.models.transforms import pil_to_cv2
 from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
 from immich_ml.sessions.ort import OrtSession
 
@@ -65,17 +65,16 @@ class TextRecognizer(InferenceModel):
         )
         return session
 
-    def _predict(self, _: Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
-        boxes, img, box_scores = texts["boxes"], texts["image"], texts["scores"]
+    def _predict(self, img: Image.Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
+        boxes, box_scores = texts["boxes"], texts["scores"]
         if boxes.shape[0] == 0:
             return self._empty
         rec = self.model(TextRecInput(img=self.get_crop_img_list(img, boxes)))
         if rec.txts is None:
             return self._empty
 
-        height, width = img.shape[0:2]
-        boxes[:, :, 0] /= width
-        boxes[:, :, 1] /= height
+        boxes[:, :, 0] /= img.width
+        boxes[:, :, 1] /= img.height
 
         text_scores = np.array(rec.scores)
         valid_text_score_idx = text_scores > self.min_score
@@ -87,7 +86,7 @@ class TextRecognizer(InferenceModel):
             "textScore": text_scores[valid_text_score_idx],
         }
 
-    def get_crop_img_list(self, img: NDArray[np.float32], boxes: NDArray[np.float32]) -> list[NDArray[np.float32]]:
+    def get_crop_img_list(self, img: Image.Image, boxes: NDArray[np.float32]) -> list[NDArray[np.uint8]]:
         img_crop_width = np.maximum(
             np.linalg.norm(boxes[:, 1] - boxes[:, 0], axis=1), np.linalg.norm(boxes[:, 2] - boxes[:, 3], axis=1)
         ).astype(np.int32)
@@ -98,22 +97,55 @@ class TextRecognizer(InferenceModel):
         pts_std[:, 1:3, 0] = img_crop_width[:, None]
         pts_std[:, 2:4, 1] = img_crop_height[:, None]
 
-        img_crop_sizes = np.stack([img_crop_width, img_crop_height], axis=1).tolist()
-        imgs: list[NDArray[np.float32]] = []
-        for box, pts_std, dst_size in zip(list(boxes), list(pts_std), img_crop_sizes):
-            M = cv2.getPerspectiveTransform(box, pts_std)
-            dst_img: NDArray[np.float32] = cv2.warpPerspective(
-                img,
-                M,
-                dst_size,
-                borderMode=cv2.BORDER_REPLICATE,
-                flags=cv2.INTER_CUBIC,
-            )  # type: ignore
-            dst_height, dst_width = dst_img.shape[0:2]
+        img_crop_sizes = np.stack([img_crop_width, img_crop_height], axis=1)
+        all_coeffs = self._get_perspective_transform(pts_std, boxes)
+        imgs: list[NDArray[np.uint8]] = []
+        for coeffs, dst_size in zip(all_coeffs, img_crop_sizes):
+            dst_img = img.transform(
+                size=tuple(dst_size),
+                method=Image.Transform.PERSPECTIVE,
+                data=tuple(coeffs),
+                resample=Image.Resampling.BICUBIC,
+            )
+
+            dst_width, dst_height = dst_img.size
             if dst_height * 1.0 / dst_width >= 1.5:
-                dst_img = np.rot90(dst_img)
-            imgs.append(dst_img)
+                dst_img = dst_img.rotate(90, expand=True)
+            imgs.append(pil_to_cv2(dst_img))
+
         return imgs
+
+    def _get_perspective_transform(self, src: NDArray[np.float32], dst: NDArray[np.float32]) -> NDArray[np.float32]:
+        N = src.shape[0]
+        x, y = src[:, :, 0], src[:, :, 1]
+        u, v = dst[:, :, 0], dst[:, :, 1]
+        A = np.zeros((N, 8, 9), dtype=np.float32)
+
+        # Fill even rows (0, 2, 4, 6): [x, y, 1, 0, 0, 0, -u*x, -u*y, -u]
+        A[:, ::2, 0] = x
+        A[:, ::2, 1] = y
+        A[:, ::2, 2] = 1
+        A[:, ::2, 6] = -u * x
+        A[:, ::2, 7] = -u * y
+        A[:, ::2, 8] = -u
+
+        # Fill odd rows (1, 3, 5, 7): [0, 0, 0, x, y, 1, -v*x, -v*y, -v]
+        A[:, 1::2, 3] = x
+        A[:, 1::2, 4] = y
+        A[:, 1::2, 5] = 1
+        A[:, 1::2, 6] = -v * x
+        A[:, 1::2, 7] = -v * y
+        A[:, 1::2, 8] = -v
+
+        # Solve using SVD for all matrices at once
+        _, _, Vt = np.linalg.svd(A)
+        H = Vt[:, -1, :].reshape(N, 3, 3)
+        H = H / H[:, 2:3, 2:3]
+
+        # Extract the 8 coefficients for each transformation
+        return np.column_stack(
+            [H[:, 0, 0], H[:, 0, 1], H[:, 0, 2], H[:, 1, 0], H[:, 1, 1], H[:, 1, 2], H[:, 2, 0], H[:, 2, 1]]
+        )  # pyright: ignore[reportReturnType]
 
     def configure(self, **kwargs: Any) -> None:
         self.min_score = kwargs.get("minScore", self.min_score)

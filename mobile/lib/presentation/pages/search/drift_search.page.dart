@@ -73,26 +73,28 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    search() async {
-      if (filter.value.isEmpty) {
+    searchFilter(SearchFilter filter) async {
+      if (filter.isEmpty) {
         return;
       }
 
-      if (preFilter == null && filter.value == previousFilter.value) {
+      if (preFilter == null && filter == previousFilter.value) {
         return;
       }
 
       isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
-      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      final hasResult = await ref.watch(paginatedSearchProvider.notifier).search(filter);
 
       if (!hasResult) {
         context.showSnackBar(searchInfoSnackBar('search_no_result'.t(context: context)));
       }
 
-      previousFilter.value = filter.value;
+      previousFilter.value = filter;
       isSearching.value = false;
     }
+
+    search() => searchFilter(filter.value);
 
     loadMoreSearchResult() async {
       isSearching.value = true;
@@ -108,7 +110,7 @@ class DriftSearchPage extends HookConsumerWidget {
     searchPreFilter() {
       if (preFilter != null) {
         Future.delayed(Duration.zero, () {
-          search();
+          searchFilter(preFilter);
 
           if (preFilter.location.city != null) {
             locationCurrentFilterWidget.value = Text(preFilter.location.city!, style: context.textTheme.labelLarge);
@@ -122,7 +124,7 @@ class DriftSearchPage extends HookConsumerWidget {
       searchPreFilter();
 
       return null;
-    }, []);
+    }, [preFilter]);
 
     showPeoplePicker() {
       handleOnSelect(Set<PersonDto> value) {
