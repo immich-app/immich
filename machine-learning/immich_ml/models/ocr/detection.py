@@ -61,7 +61,7 @@ class TextDetector(InferenceModel):
 
     def _load(self) -> ModelSession:
         # TODO: support other runtime sessions
-        return OrtSession(self.model_path, providers=["CPUExecutionProvider"])
+        return OrtSession(self.model_path)
 
     # partly adapted from RapidOCR
     def _predict(self, inputs: Image.Image) -> TextDetectionOutput:
@@ -89,7 +89,7 @@ class TextDetector(InferenceModel):
 
         resize_h = int(round(resize_h / 32) * 32)
         resize_w = int(round(resize_w / 32) * 32)
-        resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.BICUBIC)
+        resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.LANCZOS)
 
         normalized_img = (pil_to_cv2(resized_img) - self.mean) / self.std
         normalized_img = np.transpose(normalized_img, (2, 0, 1))
