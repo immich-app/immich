@@ -324,9 +324,9 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   upsertAssets(assets: TimelineAsset[]) {
-    const notExcluded = assets.filter((asset) => !this.isExcluded(asset));
-    const notUpdated = this.#updateAssets(notExcluded);
-    this.addAssetsToSegments(notUpdated);
+    const notUpdated = this.#updateAssets(assets);
+    const notExcluded = notUpdated.filter((asset) => !this.isExcluded(asset));
+    this.addAssetsToSegments(notExcluded);
   }
 
   async findMonthGroupForAsset(id: string) {

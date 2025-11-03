@@ -5,7 +5,7 @@ import { setTestHooks } from '$lib/managers/timeline-manager/internal/TestHooks.
 import type { MonthGroup } from '$lib/managers/timeline-manager/month-group.svelte';
 import { AbortError } from '$lib/utils';
 import { fromISODateTimeUTCToObject } from '$lib/utils/timeline-util';
-import { type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { timelineAssetFactory, toResponseDto } from '@test-data/factories/asset-factory';
 import { tick } from 'svelte';
 import type { MockInstance } from 'vitest';
@@ -464,6 +464,69 @@ describe('TimelineManager', () => {
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })).not.toBeUndefined();
       expect(getMonthGroupByDate(timelineManager, { year: 2024, month: 3 })?.getAssets().length).toEqual(1);
+    });
+
+    it('asset is removed during upsert when TimelineManager if visibility changes', async () => {
+      await timelineManager.updateOptions({
+        visibility: AssetVisibility.Archive,
+      });
+      const fixture = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          visibility: AssetVisibility.Archive,
+        }),
+      );
+
+      timelineManager.upsertAssets([fixture]);
+      expect(timelineManager.assetCount).toEqual(1);
+
+      const updated = Object.freeze({ ...fixture, visibility: AssetVisibility.Timeline });
+      timelineManager.upsertAssets([updated]);
+      expect(timelineManager.assetCount).toEqual(0);
+
+      timelineManager.upsertAssets([{ ...fixture, visibility: AssetVisibility.Archive }]);
+      expect(timelineManager.assetCount).toEqual(1);
+    });
+
+    it('asset is removed during upsert when TimelineManager if isFavorite changes', async () => {
+      await timelineManager.updateOptions({
+        isFavorite: true,
+      });
+      const fixture = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          isFavorite: true,
+        }),
+      );
+
+      timelineManager.upsertAssets([fixture]);
+      expect(timelineManager.assetCount).toEqual(1);
+
+      const updated = Object.freeze({ ...fixture, isFavorite: false });
+      timelineManager.upsertAssets([updated]);
+      expect(timelineManager.assetCount).toEqual(0);
+
+      timelineManager.upsertAssets([{ ...fixture, isFavorite: true }]);
+      expect(timelineManager.assetCount).toEqual(1);
+    });
+
+    it('asset is removed during upsert when TimelineManager if isTrashed changes', async () => {
+      await timelineManager.updateOptions({
+        isTrashed: true,
+      });
+      const fixture = deriveLocalDateTimeFromFileCreatedAt(
+        timelineAssetFactory.build({
+          isTrashed: true,
+        }),
+      );
+
+      timelineManager.upsertAssets([fixture]);
+      expect(timelineManager.assetCount).toEqual(1);
+
+      const updated = Object.freeze({ ...fixture, isTrashed: false });
+      timelineManager.upsertAssets([updated]);
+      expect(timelineManager.assetCount).toEqual(0);
+
+      timelineManager.upsertAssets([{ ...fixture, isTrashed: true }]);
+      expect(timelineManager.assetCount).toEqual(1);
     });
   });
 
