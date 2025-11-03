@@ -16,7 +16,7 @@
           values: {
             user: $user.name,
           },
-        })}Currently logged in as {$user.name}
+        })}
       </p>
       <Button onclick={() => endMaintenance()}>{$t('maintenance_exit')}</Button>
     {/if}
