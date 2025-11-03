@@ -20,7 +20,7 @@ import { get } from 'svelte/store';
 import { onCreateMonthGroup } from '$lib/managers/timeline-manager/internal/TestHooks.svelte';
 import { DayGroup } from './day-group.svelte';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
-import type { TimelineManager } from './timeline-manager.svelte';
+import { TimelineManager } from './timeline-manager.svelte';
 import type { AssetDescriptor, AssetOperation, Direction, TimelineAsset } from './types';
 import { ViewerAsset } from './viewer-asset.svelte';
 
