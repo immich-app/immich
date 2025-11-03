@@ -8,6 +8,7 @@ import {
   Table,
   Timestamp,
 } from 'src/sql-tools';
+import type { JSONSchema } from 'src/types/plugin-schema.types';
 
 @Table('plugin')
 export class PluginTable {
@@ -63,6 +64,9 @@ export class PluginTriggerTable {
   @ForeignKeyColumn(() => PluginTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   pluginId!: string;
 
+  @Column()
+  name!: string;
+
   @Column({ type: 'character varying' })
   type!: Generated<PluginTrigger>;
 
@@ -79,7 +83,7 @@ export class PluginTriggerTable {
   functionName!: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  schema!: object;
+  schema!: JSONSchema | null;
 }
 
 @Index({ columns: ['pluginId'] })
@@ -109,7 +113,7 @@ export class PluginFilterTable {
   functionName!: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  schema!: object;
+  schema!: JSONSchema | null;
 }
 
 @Index({ columns: ['pluginId'] })
@@ -139,5 +143,5 @@ export class PluginActionTable {
   functionName!: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  schema!: object;
+  schema!: JSONSchema | null;
 }

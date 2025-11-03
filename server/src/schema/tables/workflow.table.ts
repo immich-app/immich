@@ -8,8 +8,9 @@ import {
   Index,
   PrimaryGeneratedColumn,
   Table,
-  Timestamp
+  Timestamp,
 } from 'src/sql-tools';
+import type { ActionConfig, FilterConfig, TriggerConfig } from 'src/types/plugin-schema.types';
 
 @Table('workflow')
 export class WorkflowTable {
@@ -22,8 +23,8 @@ export class WorkflowTable {
   @ForeignKeyColumn(() => PluginTriggerTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   triggerId!: string;
 
-  @Column({ type: 'jsonb' , nullable: true })
-  triggerConfig!: string;
+  @Column({ type: 'jsonb', nullable: true })
+  triggerConfig!: TriggerConfig | null;
 
   @Column()
   name!: string;
@@ -54,8 +55,8 @@ export class WorkflowFilterTable {
   @ForeignKeyColumn(() => PluginFilterTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   filterId!: string;
 
-  @Column({ type: 'jsonb' , nullable: true })
-  filterConfig!: object;
+  @Column({ type: 'jsonb', nullable: true })
+  filterConfig!: FilterConfig | null;
 
   @Column({ type: 'integer' })
   order!: number;
@@ -74,8 +75,8 @@ export class WorkflowActionTable {
   @ForeignKeyColumn(() => PluginActionTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   actionId!: string;
 
-  @Column({ type: 'jsonb' , nullable: true })
-  actionConfig!: object;
+  @Column({ type: 'jsonb', nullable: true })
+  actionConfig!: ActionConfig | null;
 
   @Column({ type: 'integer' })
   order!: number;
