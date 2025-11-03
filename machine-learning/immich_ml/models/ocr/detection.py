@@ -1,9 +1,9 @@
 from typing import Any
 
+import cv2
 import numpy as np
 from numpy.typing import NDArray
 from PIL import Image
-from rapidocr.ch_ppocr_det import TextDetector as RapidTextDetector
 from rapidocr.ch_ppocr_det.utils import DBPostProcess
 from rapidocr.inference_engine.base import FileInfo, InferSession
 from rapidocr.utils import DownloadFile, DownloadFileInput
@@ -12,7 +12,6 @@ from rapidocr.utils.typings import ModelType as RapidModelType
 
 from immich_ml.config import log
 from immich_ml.models.base import InferenceModel
-from immich_ml.models.transforms import pil_to_cv2
 from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
 from immich_ml.sessions.ort import OrtSession
 
@@ -27,7 +26,7 @@ class TextDetector(InferenceModel):
         super().__init__(model_name, **model_kwargs, model_format=ModelFormat.ONNX)
         self.max_resolution = 736
         self.mean = np.array([0.5, 0.5, 0.5], dtype=np.float32)
-        self.std = np.array([0.5, 0.5, 0.5], dtype=np.float32) * 255.0
+        self.std_inv = np.float32(1.0) / (np.array([0.5, 0.5, 0.5], dtype=np.float32) * 255.0)
         self._empty: TextDetectionOutput = {
             "boxes": np.empty(0, dtype=np.float32),
             "scores": np.empty(0, dtype=np.float32),
@@ -73,7 +72,7 @@ class TextDetector(InferenceModel):
         if len(boxes) == 0:
             return self._empty
         return {
-            "boxes": np.array(RapidTextDetector.sorted_boxes(boxes), dtype=np.float32),
+            "boxes": self.sorted_boxes(boxes),
             "scores": np.array(scores, dtype=np.float32),
         }
 
@@ -91,9 +90,29 @@ class TextDetector(InferenceModel):
         resize_w = int(round(resize_w / 32) * 32)
         resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.LANCZOS)
 
-        normalized_img = (pil_to_cv2(resized_img) - self.mean) / self.std
-        normalized_img = np.transpose(normalized_img, (2, 0, 1))
-        return np.expand_dims(normalized_img, axis=0)
+        img_np = cv2.cvtColor(np.array(resized_img, dtype=np.float32), cv2.COLOR_RGB2BGR)
+        img_np -= self.mean
+        img_np *= self.std_inv
+        img_np = np.transpose(img_np, (2, 0, 1))
+        return np.expand_dims(img_np, axis=0)
+
+    def sorted_boxes(self, dt_boxes: NDArray[np.float32]) -> NDArray[np.float32]:
+        if len(dt_boxes) == 0:
+            return dt_boxes
+
+        # Sort by y, then identify lines, then sort by (line, x)
+        y_order = np.argsort(dt_boxes[:, 0, 1], kind="stable")
+        sorted_y = dt_boxes[y_order, 0, 1]
+
+        line_ids = np.empty(len(dt_boxes), dtype=np.int32)
+        line_ids[0] = 0
+        np.cumsum(np.abs(np.diff(sorted_y)) >= 10, out=line_ids[1:])
+
+        # Create composite sort key for final ordering
+        # Shift line_ids by large factor, add x for tie-breaking
+        sort_key = line_ids[y_order] * 1e6 + dt_boxes[y_order, 0, 0]
+        final_order = np.argsort(sort_key, kind="stable")
+        return dt_boxes[y_order[final_order]]
 
     def configure(self, **kwargs: Any) -> None:
         if (max_resolution := kwargs.get("maxResolution")) is not None:
