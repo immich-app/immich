@@ -20,12 +20,11 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetMediaSize, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
-  import { LoadingSpinner } from '@immich/ui';
+  import { LoadingSpinner, toastManager } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
 
   interface Props {
     asset: AssetResponseDto;
@@ -98,7 +97,7 @@
 
     try {
       await copyImageToClipboard($photoViewerImgElement);
-      notificationController.show({ type: NotificationType.Info, message: $t('copied_image_to_clipboard') });
+      toastManager.info($t('copied_image_to_clipboard'));
     } catch (error) {
       handleError(error, $t('copy_error'));
     }
@@ -258,7 +257,7 @@
       <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
-          class="absolute border-solid border-white border-[3px] rounded-lg"
+          class="absolute border-solid border-white border-3 rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
       {/each}

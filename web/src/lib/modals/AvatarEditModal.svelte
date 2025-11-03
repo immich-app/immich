@@ -1,13 +1,9 @@
 <script lang="ts">
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteProfileImage, updateMyUser, UserAvatarColor } from '@immich/sdk';
-  import { Modal, ModalBody } from '@immich/ui';
+  import { Modal, ModalBody, toastManager } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -24,7 +20,7 @@
         await deleteProfileImage();
       }
 
-      notificationController.show({ message: $t('saved_profile'), type: NotificationType.Info });
+      toastManager.success($t('saved_profile'));
 
       $user = await updateMyUser({ userUpdateMeDto: { avatarColor: color } });
       onClose();

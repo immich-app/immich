@@ -19,6 +19,7 @@ class SystemConfigJobDto {
     required this.metadataExtraction,
     required this.migration,
     required this.notifications,
+    required this.ocr,
     required this.search,
     required this.sidecar,
     required this.smartSearch,
@@ -38,6 +39,8 @@ class SystemConfigJobDto {
 
   JobSettingsDto notifications;
 
+  JobSettingsDto ocr;
+
   JobSettingsDto search;
 
   JobSettingsDto sidecar;
@@ -56,6 +59,7 @@ class SystemConfigJobDto {
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
     other.notifications == notifications &&
+    other.ocr == ocr &&
     other.search == search &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
@@ -71,6 +75,7 @@ class SystemConfigJobDto {
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
     (notifications.hashCode) +
+    (ocr.hashCode) +
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
@@ -78,7 +83,7 @@ class SystemConfigJobDto {
     (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -88,6 +93,7 @@ class SystemConfigJobDto {
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
       json[r'notifications'] = this.notifications;
+      json[r'ocr'] = this.ocr;
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
@@ -111,6 +117,7 @@ class SystemConfigJobDto {
         metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
         migration: JobSettingsDto.fromJson(json[r'migration'])!,
         notifications: JobSettingsDto.fromJson(json[r'notifications'])!,
+        ocr: JobSettingsDto.fromJson(json[r'ocr'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
         smartSearch: JobSettingsDto.fromJson(json[r'smartSearch'])!,
@@ -169,6 +176,7 @@ class SystemConfigJobDto {
     'metadataExtraction',
     'migration',
     'notifications',
+    'ocr',
     'search',
     'sidecar',
     'smartSearch',

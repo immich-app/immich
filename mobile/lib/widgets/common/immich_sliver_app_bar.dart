@@ -118,8 +118,10 @@ class _ProfileIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
+    final bool versionWarningPresent = ref.watch(versionWarningPresentProvider(user));
+    final serverInfoState = ref.watch(serverInfoProvider);
+
     const widgetSize = 30.0;
 
     void toggleReadonlyMode() {
@@ -143,13 +145,21 @@ class _ProfileIndicator extends ConsumerWidget {
       borderRadius: const BorderRadius.all(Radius.circular(12)),
       child: Badge(
         label: Container(
-          decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(widgetSize / 2)),
-          child: const Icon(Icons.info, color: Color.fromARGB(255, 243, 188, 106), size: widgetSize / 2),
+          decoration: BoxDecoration(
+            color: context.isDarkTheme ? Colors.black : Colors.white,
+            borderRadius: BorderRadius.circular(widgetSize / 2),
+          ),
+          child: Icon(
+            Icons.info,
+            color: serverInfoState.versionStatus == VersionStatus.error
+                ? context.colorScheme.error
+                : context.primaryColor,
+            size: widgetSize / 2,
+          ),
         ),
         backgroundColor: Colors.transparent,
         alignment: Alignment.bottomRight,
-        isLabelVisible:
-            serverInfoState.isVersionMismatch || ((user?.isAdmin ?? false) && serverInfoState.isNewReleaseAvailable),
+        isLabelVisible: versionWarningPresent,
         offset: const Offset(-2, -12),
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)

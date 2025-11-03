@@ -13,6 +13,7 @@ part of openapi.api;
 class SessionCreateResponseDto {
   /// Returns a new [SessionCreateResponseDto] instance.
   SessionCreateResponseDto({
+    required this.appVersion,
     required this.createdAt,
     required this.current,
     required this.deviceOS,
@@ -23,6 +24,8 @@ class SessionCreateResponseDto {
     required this.token,
     required this.updatedAt,
   });
+
+  String? appVersion;
 
   String createdAt;
 
@@ -50,6 +53,7 @@ class SessionCreateResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SessionCreateResponseDto &&
+    other.appVersion == appVersion &&
     other.createdAt == createdAt &&
     other.current == current &&
     other.deviceOS == deviceOS &&
@@ -63,6 +67,7 @@ class SessionCreateResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (appVersion == null ? 0 : appVersion!.hashCode) +
     (createdAt.hashCode) +
     (current.hashCode) +
     (deviceOS.hashCode) +
@@ -74,10 +79,15 @@ class SessionCreateResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'SessionCreateResponseDto[createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, token=$token, updatedAt=$updatedAt]';
+  String toString() => 'SessionCreateResponseDto[appVersion=$appVersion, createdAt=$createdAt, current=$current, deviceOS=$deviceOS, deviceType=$deviceType, expiresAt=$expiresAt, id=$id, isPendingSyncReset=$isPendingSyncReset, token=$token, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.appVersion != null) {
+      json[r'appVersion'] = this.appVersion;
+    } else {
+    //  json[r'appVersion'] = null;
+    }
       json[r'createdAt'] = this.createdAt;
       json[r'current'] = this.current;
       json[r'deviceOS'] = this.deviceOS;
@@ -103,6 +113,7 @@ class SessionCreateResponseDto {
       final json = value.cast<String, dynamic>();
 
       return SessionCreateResponseDto(
+        appVersion: mapValueOfType<String>(json, r'appVersion'),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         current: mapValueOfType<bool>(json, r'current')!,
         deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
@@ -159,6 +170,7 @@ class SessionCreateResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'appVersion',
     'createdAt',
     'current',
     'deviceOS',

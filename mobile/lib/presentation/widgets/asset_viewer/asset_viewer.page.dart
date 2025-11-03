@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -13,6 +14,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/activities_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.state.dart';
@@ -27,6 +29,7 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provi
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
@@ -38,15 +41,25 @@ class AssetViewerPage extends StatelessWidget {
   final int initialIndex;
   final TimelineService timelineService;
   final int? heroOffset;
+  final RemoteAlbum? currentAlbum;
 
-  const AssetViewerPage({super.key, required this.initialIndex, required this.timelineService, this.heroOffset});
+  const AssetViewerPage({
+    super.key,
+    required this.initialIndex,
+    required this.timelineService,
+    this.heroOffset,
+    this.currentAlbum,
+  });
 
   @override
   Widget build(BuildContext context) {
     // This is necessary to ensure that the timeline service is available
     // since the Timeline and AssetViewer are on different routes / Widget subtrees.
     return ProviderScope(
-      overrides: [timelineServiceProvider.overrideWithValue(timelineService)],
+      overrides: [
+        timelineServiceProvider.overrideWithValue(timelineService),
+        currentRemoteAlbumScopedProvider.overrideWithValue(currentAlbum),
+      ],
       child: AssetViewer(initialIndex: initialIndex, heroOffset: heroOffset),
     );
   }
@@ -418,7 +431,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (event is ViewerOpenBottomSheetEvent) {
       final extent = _kBottomSheetMinimumExtent + 0.3;
-      _openBottomSheet(scaffoldContext!, extent: extent);
+      _openBottomSheet(scaffoldContext!, extent: extent, activitiesMode: event.activitiesMode);
       final offset = _getVerticalOffsetForBottomSheet(extent);
       viewController?.position = Offset(0, -offset);
       return;
@@ -460,7 +473,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     });
   }
 
-  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent}) {
+  void _openBottomSheet(BuildContext ctx, {double extent = _kBottomSheetMinimumExtent, bool activitiesMode = false}) {
     ref.read(assetViewerProvider.notifier).setBottomSheet(true);
     initialScale = viewController?.scale;
     // viewController?.updateMultiple(scale: (viewController?.scale ?? 1.0) + 0.01);
@@ -474,7 +487,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       builder: (_) {
         return NotificationListener<Notification>(
           onNotification: _onNotification,
-          child: AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
+          child: activitiesMode
+              ? ActivitiesBottomSheet(controller: bottomSheetController, initialChildSize: extent)
+              : AssetDetailBottomSheet(controller: bottomSheetController, initialChildSize: extent),
         );
       },
     );
@@ -632,9 +647,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     // Listen for control visibility changes and change system UI mode accordingly
     ref.listen(assetViewerProvider.select((value) => value.showingControls), (_, showingControls) async {
       if (showingControls) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
       } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky));
       }
     });
 

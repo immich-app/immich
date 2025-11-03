@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -138,18 +139,20 @@ class AssetMediaRepository {
     // we dont want to await the share result since the
     // "preparing" dialog will not disappear until
     final size = context.sizeData;
-    Share.shareXFiles(
-      downloadedXFiles,
-      sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
-    ).then((result) async {
-      for (var file in tempFiles) {
-        try {
-          await file.delete();
-        } catch (e) {
-          _log.warning("Failed to delete temporary file: ${file.path}", e);
+    unawaited(
+      Share.shareXFiles(
+        downloadedXFiles,
+        sharePositionOrigin: Rect.fromPoints(Offset.zero, Offset(size.width / 3, size.height)),
+      ).then((result) async {
+        for (var file in tempFiles) {
+          try {
+            await file.delete();
+          } catch (e) {
+            _log.warning("Failed to delete temporary file: ${file.path}", e);
+          }
         }
-      }
-    });
+      }),
+    );
 
     return downloadedXFiles.length;
   }

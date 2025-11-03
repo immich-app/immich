@@ -1,4 +1,5 @@
 import {
+  JobName,
   LoginResponseDto,
   createStack,
   deleteUserAdmin,
@@ -326,6 +327,8 @@ describe('/admin/users', () => {
         { stackCreateDto: { assetIds: [asset1.id, asset2.id] } },
         { headers: asBearerAuth(user.accessToken) },
       );
+
+      await utils.waitForQueueFinish(admin.accessToken, JobName.BackgroundTask);
 
       const { status, body } = await request(app)
         .delete(`/admin/users/${user.userId}`)

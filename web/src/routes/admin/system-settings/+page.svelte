@@ -285,7 +285,7 @@
   <AdminSettings bind:config bind:this={adminSettingElement}>
     {#snippet children({ savedConfig, defaultConfig })}
       <section id="setting-content" class="flex place-content-center sm:mx-4">
-        <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
+        <section class="w-full pb-28 sm:w-5/6 md:w-4xl">
           {#if $featureFlags.configFile}
             <Alert color="warning" class="text-dark my-4" title={$t('admin.config_set_by_file')} />
           {/if}

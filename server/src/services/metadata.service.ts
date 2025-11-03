@@ -236,8 +236,8 @@ export class MetadataService extends BaseService {
       latitude: number | null = null,
       longitude: number | null = null;
     if (this.hasGeo(exifTags)) {
-      latitude = exifTags.GPSLatitude;
-      longitude = exifTags.GPSLongitude;
+      latitude = Number(exifTags.GPSLatitude);
+      longitude = Number(exifTags.GPSLongitude);
       if (reverseGeocoding.enabled) {
         geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
       }
@@ -447,7 +447,10 @@ export class MetadataService extends BaseService {
      * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
      * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
      */
-    let [width, height] = exifTags.ImageSize?.split('x').map((dim) => Number.parseInt(dim) || undefined) || [];
+    let [width, height] =
+      exifTags.ImageSize?.toString()
+        ?.split('x')
+        ?.map((dim) => Number.parseInt(dim) || undefined) ?? [];
     if (!width || !height) {
       [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
     }
@@ -891,12 +894,10 @@ export class MetadataService extends BaseService {
     };
   }
 
-  private hasGeo(tags: ImmichTags): tags is ImmichTags & { GPSLatitude: number; GPSLongitude: number } {
-    return (
-      tags.GPSLatitude !== undefined &&
-      tags.GPSLongitude !== undefined &&
-      (tags.GPSLatitude !== 0 || tags.GPSLatitude !== 0)
-    );
+  private hasGeo(tags: ImmichTags) {
+    const lat = Number(tags.GPSLatitude);
+    const lng = Number(tags.GPSLongitude);
+    return !Number.isNaN(lat) && !Number.isNaN(lng) && (lat !== 0 || lng !== 0);
   }
 
   private getAutoStackId(tags: ImmichTags | null): string | null {

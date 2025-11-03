@@ -1,11 +1,8 @@
 <script lang="ts">
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
   import ServerStatisticsCard from '$lib/components/server-statistics/ServerStatisticsCard.svelte';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import DeviceCard from '$lib/components/user-settings-page/device-card.svelte';
   import FeatureSetting from '$lib/components/users/FeatureSetting.svelte';
   import PasswordResetSuccessModal from '$lib/modals/PasswordResetSuccessModal.svelte';
   import UserDeleteConfirmModal from '$lib/modals/UserDeleteConfirmModal.svelte';
@@ -33,9 +30,11 @@
     modalManager,
     Stack,
     Text,
+    toastManager,
   } from '@immich/ui';
   import {
     mdiAccountOutline,
+    mdiAppsBox,
     mdiCameraIris,
     mdiChartPie,
     mdiChartPieOutline,
@@ -60,11 +59,10 @@
   let user = $derived(data.user);
   const userPreferences = $derived(data.userPreferences);
   const userStatistics = $derived(data.userStatistics);
-
+  const userSessions = $derived(data.userSessions);
   const TiB = 1024 ** 4;
   const usage = $derived(user.quotaUsageInBytes ?? 0);
   let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(usage, usage > TiB ? 2 : 0));
-
   const usedBytes = $derived(user.quotaUsageInBytes ?? 0);
   const availableBytes = $derived(user.quotaSizeInBytes ?? 1);
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
@@ -147,8 +145,7 @@
 
     try {
       await updateUserAdmin({ id: user.id, userAdminUpdateDto: { pinCode: null } });
-
-      notificationController.show({ type: NotificationType.Info, message: $t('pin_code_reset_successfully') });
+      toastManager.success($t('pin_code_reset_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_reset_pin_code'));
     }
@@ -348,6 +345,25 @@
                 </div>
               </div>
             {/if}
+          </CardBody>
+        </Card>
+        <Card color="secondary">
+          <CardHeader>
+            <div class="flex items-center gap-2 px-4 py-2 text-primary">
+              <Icon icon={mdiAppsBox} size="1.5rem" />
+              <CardTitle>Sessions</CardTitle>
+            </div>
+          </CardHeader>
+          <CardBody>
+            <div class="px-4 pb-7">
+              <Stack gap={3}>
+                {#each userSessions as session (session.id)}
+                  <DeviceCard {session} />
+                {:else}
+                  <span class="text-dark">No mobile devices</span>
+                {/each}
+              </Stack>
+            </div>
           </CardBody>
         </Card>
       </div>
