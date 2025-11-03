@@ -33,12 +33,15 @@ platform :ios do
   end
   
   # Helper method to get version from pubspec.yaml
-  def get_version_from_pubspec
-    pubspec_path = File.join(Dir.pwd, "../..", "pubspec.yaml")
-    pubspec_content = File.read(pubspec_path)
-    version_match = pubspec_content.match(/^version:\s+(.+?)\+/)
-    version_match ? version_match[1] : nil
-  end
+def get_version_from_pubspec
+  require 'yaml'
+  
+  pubspec_path = File.join(Dir.pwd, "../..", "pubspec.yaml")
+  pubspec = YAML.load_file(pubspec_path)
+  
+  version_string = pubspec['version']
+  version_string ? version_string.split('+').first : nil
+end
   
   # Helper method to configure code signing for all targets
   def configure_code_signing(bundle_id_suffix: "")
