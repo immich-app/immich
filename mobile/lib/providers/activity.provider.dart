@@ -76,14 +76,14 @@ class AlbumActivity extends _$AlbumActivity {
     if (activities == null) {
       return null;
     }
-    final index = activities.indexWhere((a) => a.id == id);
-    if (index == -1) {
+    final activity = activities.firstWhereOrNull((a) => a.id == id);
+    if (activity == null) {
       return null;
     }
-    final updated = [...activities]..removeAt(index);
-    final removed = activities[index];
+
+    final updated = [...activities]..remove(activity);
     state = AsyncData(updated);
-    return removed;
+    return activity;
   }
 }
 
