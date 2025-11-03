@@ -33,6 +33,7 @@
   let close: (() => Promise<void>) | undefined;
 
   const listboxId = generateId();
+  const searchTypeId = generateId();
 
   onDestroy(() => {
     searchStore.isSearchEnabled = false;
@@ -248,6 +249,7 @@
         aria-activedescendant={selectedId ?? ''}
         aria-expanded={showSuggestions && isSearchSuggestions}
         aria-autocomplete="list"
+        aria-describedby={searchTypeId}
         use:shortcuts={[
           { shortcut: { key: 'Escape' }, onShortcut: onEscape },
           { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
@@ -286,6 +288,7 @@
 
     {#if searchStore.isSearchEnabled}
       <div
+        id={searchTypeId}
         class="absolute inset-y-0 flex items-center end-16"
         class:max-md:hidden={value}
         class:end-28={value.length > 0}
