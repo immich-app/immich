@@ -1,3 +1,5 @@
+enum SemVerType { major, minor, patch }
+
 class SemVer {
   final int major;
   final int minor;
@@ -52,6 +54,16 @@ class SemVer {
     if (identical(this, other)) return true;
 
     return other is SemVer && other.major == major && other.minor == minor && other.patch == patch;
+  }
+
+  SemVerType differenceType(SemVer other) {
+    if (major != other.major) {
+      return SemVerType.major;
+    }
+    if (minor != other.minor) {
+      return SemVerType.minor;
+    }
+    return SemVerType.patch;
   }
 
   @override
