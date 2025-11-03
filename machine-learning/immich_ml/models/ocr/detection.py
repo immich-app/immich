@@ -90,7 +90,7 @@ class TextDetector(InferenceModel):
         resize_w = int(round(resize_w / 32) * 32)
         resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.LANCZOS)
 
-        img_np = cv2.cvtColor(np.array(resized_img, dtype=np.float32), cv2.COLOR_RGB2BGR)
+        img_np: NDArray[np.float32] = cv2.cvtColor(np.array(resized_img, dtype=np.float32), cv2.COLOR_RGB2BGR)  # type: ignore
         img_np -= self.mean
         img_np *= self.std_inv
         img_np = np.transpose(img_np, (2, 0, 1))
@@ -112,7 +112,8 @@ class TextDetector(InferenceModel):
         # Shift line_ids by large factor, add x for tie-breaking
         sort_key = line_ids[y_order] * 1e6 + dt_boxes[y_order, 0, 0]
         final_order = np.argsort(sort_key, kind="stable")
-        return dt_boxes[y_order[final_order]]
+        sorted_boxes: NDArray[np.float32] = dt_boxes[y_order[final_order]]
+        return sorted_boxes
 
     def configure(self, **kwargs: Any) -> None:
         if (max_resolution := kwargs.get("maxResolution")) is not None:
