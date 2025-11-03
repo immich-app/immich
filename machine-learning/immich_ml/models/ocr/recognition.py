@@ -86,7 +86,7 @@ class TextRecognizer(InferenceModel):
             "textScore": text_scores[valid_text_score_idx],
         }
 
-    def get_crop_img_list(self, img: Image.Image, boxes: NDArray[np.float32]) -> list[NDArray]:
+    def get_crop_img_list(self, img: Image.Image, boxes: NDArray[np.float32]) -> list[NDArray[np.uint8]]:
         img_crop_width = np.maximum(
             np.linalg.norm(boxes[:, 1] - boxes[:, 0], axis=1), np.linalg.norm(boxes[:, 2] - boxes[:, 3], axis=1)
         ).astype(np.int32)
@@ -99,7 +99,7 @@ class TextRecognizer(InferenceModel):
 
         img_crop_sizes = np.stack([img_crop_width, img_crop_height], axis=1)
         all_coeffs = self._get_perspective_transform(pts_std, boxes)
-        imgs: list[NDArray] = []
+        imgs: list[NDArray[np.uint8]] = []
         for coeffs, dst_size in zip(all_coeffs, img_crop_sizes):
             dst_img = img.transform(
                 size=tuple(dst_size),

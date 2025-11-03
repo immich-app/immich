@@ -1,6 +1,7 @@
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from PIL import Image
 from rapidocr.ch_ppocr_det import TextDetector as RapidTextDetector
 from rapidocr.ch_ppocr_det.utils import DBPostProcess
@@ -77,7 +78,7 @@ class TextDetector(InferenceModel):
         }
 
     # adapted from RapidOCR
-    def _transform(self, img: Image.Image) -> np.ndarray:
+    def _transform(self, img: Image.Image) -> NDArray[np.float32]:
         if img.height < img.width:
             ratio = float(self.max_resolution) / img.height
         else:
@@ -90,9 +91,9 @@ class TextDetector(InferenceModel):
         resize_w = int(round(resize_w / 32) * 32)
         resized_img = img.resize((int(resize_w), int(resize_h)), resample=Image.Resampling.BICUBIC)
 
-        resized_img = (pil_to_cv2(resized_img) - self.mean) / self.std
-        resized_img = np.transpose(resized_img, (2, 0, 1))
-        return np.expand_dims(resized_img, axis=0)
+        normalized_img = (pil_to_cv2(resized_img) - self.mean) / self.std
+        normalized_img = np.transpose(normalized_img, (2, 0, 1))
+        return np.expand_dims(normalized_img, axis=0)
 
     def configure(self, **kwargs: Any) -> None:
         if (max_resolution := kwargs.get("maxResolution")) is not None:
