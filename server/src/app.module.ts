@@ -48,7 +48,7 @@ const imports = [
   KyselyModule.forRoot(getKyselyConfig(database.config)),
 ];
 
-class BaseModule implements OnModuleInit, OnModuleDestroy {
+export class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
