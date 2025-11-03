@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
 import 'package:immich_mobile/providers/activity_statistics.provider.dart';
