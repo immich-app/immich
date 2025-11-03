@@ -9,7 +9,7 @@ export const handle = (async ({ event, resolve }) => {
     .then(({ maintenanceMode }: { maintenanceMode: boolean }) => maintenanceMode)
     .catch((_) => false)
     .then((maintenanceMode) =>
-      maintenanceMode !== event.url.pathname.startsWith('/maintenance') ? maintenanceMode : undefined,
+      maintenanceMode === event.url.pathname.startsWith('/maintenance') ? undefined : maintenanceMode,
     );
 
   if (typeof redirectToMaintenance === 'boolean') {
