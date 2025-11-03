@@ -30,7 +30,6 @@
   let showSuggestions = $state(false);
   let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
-  let isFocus = $state(false);
   let close: (() => Promise<void>) | undefined;
 
   const listboxId = generateId();
@@ -161,12 +160,10 @@
 
   const openDropdown = () => {
     showSuggestions = true;
-    isFocus = true;
   };
 
   const closeDropdown = () => {
     showSuggestions = false;
-    isFocus = false;
     searchHistoryBox?.clearSelection();
   };
 
@@ -287,12 +284,11 @@
       />
     </div>
 
-    {#if isFocus}
+    {#if searchStore.isSearchEnabled}
       <div
-        class="absolute inset-y-0 flex items-center"
+        class="absolute inset-y-0 flex items-center end-16"
         class:max-md:hidden={value}
-        class:end-16={isFocus}
-        class:end-28={isFocus && value.length > 0}
+        class:end-28={value.length > 0}
       >
         <p
           class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs"
