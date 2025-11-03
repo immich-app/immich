@@ -118,6 +118,48 @@ const getLensModel = (exifTags: ImmichTags): string | null => {
   return lensModel || null;
 };
 
+/**
+ * Determines the timezone source for logging purposes.
+ * 
+ * @param exifTags - The EXIF tags extracted from the image
+ * @returns A string describing the timezone source
+ */
+function getTimezoneSource(exifTags: ImmichTags): string {
+  return (
+    exifTags.OffsetTimeOriginal && 'OffsetTimeOriginal' ||
+    exifTags.OffsetTimeDigitized && 'OffsetTimeDigitized' ||
+    exifTags.OffsetTime && 'OffsetTime' ||
+    exifTags.tzSource ||
+    'custom extraction'
+  );
+}
+
+/**
+ * Extract timezone with proper prioritization of EXIF timezone tags.
+ * 
+ * This function prioritizes original timezone information over modified values,
+ * which is important when applications like Adobe Lightroom modify OffsetTime
+ * while preserving OffsetTimeOriginal.
+ * 
+ * Priority order:
+ * 1. OffsetTimeOriginal (original capture time timezone)
+ * 2. OffsetTimeDigitized (digitization time timezone)  
+ * 3. OffsetTime (modification time timezone)
+ * 4. exiftool-vendored's extracted timezone (fallback)
+ * 
+ * @param exifTags - The EXIF tags extracted from the image
+ * @returns The timezone string or null if no timezone information is available
+ */
+function extractTimezone(exifTags: ImmichTags): string | null {
+  return (
+    exifTags.OffsetTimeOriginal ||
+    exifTags.OffsetTimeDigitized ||
+    exifTags.OffsetTime ||
+    exifTags.tz ||
+    null
+  );
+}
+
 type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['RegionInfo']> };
 
 type Dates = {
@@ -851,7 +893,9 @@ export class MetadataService extends BaseService {
     );
 
     // timezone
-    let timeZone = exifTags.tz ?? null;
+    let timeZone = extractTimezone(exifTags);
+    
+    // Handle the +00:00 timezone case that exiftool-vendored misses
     if (timeZone == null && dateTime?.rawValue?.endsWith('+00:00')) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
@@ -859,8 +903,10 @@ export class MetadataService extends BaseService {
     }
 
     if (timeZone) {
+      // Determine the timezone source for enhanced logging
+      const source = getTimezoneSource(exifTags);
       this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
+        `Found timezone ${timeZone} via ${source} for asset ${asset.id}: ${asset.originalPath}`,
       );
     } else {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);

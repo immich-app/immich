@@ -72,6 +72,12 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 
   AndroidMake?: string;
   AndroidModel?: string;
+
+  // EXIF timezone offset tags
+  // These are not included in the base Tags interface but are available in raw EXIF data
+  OffsetTime?: string;
+  OffsetTimeOriginal?: string;
+  OffsetTimeDigitized?: string;
 }
 
 @Injectable()

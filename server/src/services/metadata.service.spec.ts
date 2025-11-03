@@ -14,6 +14,17 @@ import { tagStub } from 'test/fixtures/tag.stub';
 import { factory } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
+const TEST_DATES = {
+  GPS_DATETIME_UTC_PLUS_2: '2023:10:10 10:00:00+02:00',
+  CREATION_DATE_UTC_PLUS_2: '2023:07:07 07:00:00+02:00',
+  SUBSEC_DATE_ORIGINAL_UTC_PLUS_1: '2023:01:01 01:00:00+01:00',
+  INVALID_DATE: 'invalid-date',
+  INVALID_MONTH_DATE: '2023:13:13 13:00:00',
+  GPS_DATETIME_UTC_RESULT: '2023-10-10T08:00:00.000Z',
+  CREATION_DATE_UTC_RESULT: '2023-07-07T05:00:00.000Z',
+  SUBSEC_DATE_UTC_RESULT: '2023-01-01T00:00:00.000Z',
+} as const;
+
 const forSidecarJob = (
   asset: {
     id?: string;
@@ -928,6 +939,116 @@ describe(MetadataService.name, () => {
       );
     });
 
+    describe('custom timezone extraction', () => {
+      const baseTags = {
+        DateTimeOriginal: ExifDateTime.fromISO('2024-12-21T23:39:24'),
+      };
+
+      it('should prioritize OffsetTimeOriginal over other timezone tags', async () => {
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+        mockReadTags({
+          ...baseTags,
+          tz: '+08:00',
+          OffsetTimeOriginal: '+01:00',
+          OffsetTime: '+08:00',
+        });
+        await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({ timeZone: '+01:00' }),
+        );
+      });
+
+      it('should use OffsetTimeDigitized when OffsetTimeOriginal is not available', async () => {
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+        mockReadTags({
+          ...baseTags,
+          tz: undefined,
+          OffsetTimeDigitized: '+02:00',
+          OffsetTime: '+08:00',
+        });
+        await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({ timeZone: '+02:00' }),
+        );
+      });
+
+      it('should use OffsetTime when no original timezone tags are available', async () => {
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+        mockReadTags({
+          ...baseTags,
+          tz: undefined,
+          OffsetTime: '+03:00',
+        });
+        await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({ timeZone: '+03:00' }),
+        );
+      });
+
+      it('should fall back to exiftool-vendored tz when no OffsetTime tags are available', async () => {
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+        mockReadTags({
+          ...baseTags,
+          tz: '+04:00',
+        });
+        await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({ timeZone: '+04:00' }),
+        );
+      });
+
+      it('should handle all OffsetTime tags being identical', async () => {
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+        mockReadTags({
+          ...baseTags,
+          tz: '+05:00',
+          OffsetTimeOriginal: '+05:00',
+          OffsetTimeDigitized: '+05:00',
+          OffsetTime: '+05:00',
+        });
+        await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({ timeZone: '+05:00' }),
+        );
+      });
+
+      it('should log the correct timezone source', async () => {
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+        mockReadTags({
+          ...baseTags,
+          tz: '+08:00',
+          OffsetTimeOriginal: '+01:00',
+        });
+        await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+        expect(mocks.logger.verbose).toHaveBeenCalledWith(
+          expect.stringContaining('Found timezone +01:00 via OffsetTimeOriginal'),
+        );
+      });
+
+      it('should handle missing timezone information gracefully', async () => {
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.image);
+        mockReadTags({
+          ...baseTags,
+          tz: undefined,
+        });
+        await sut.handleMetadataExtraction({ id: assetStub.image.id });
+
+        expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({ timeZone: null }),
+        );
+
+        expect(mocks.logger.debug).toHaveBeenCalledWith(
+          expect.stringContaining('No timezone information found'),
+        );
+      });
+    });
+
     it('should extract duration', async () => {
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(assetStub.video);
       mocks.media.probe.mockResolvedValue({
@@ -1589,33 +1710,33 @@ describe(MetadataService.name, () => {
   describe('firstDateTime', () => {
     it('should ignore date-only tags like GPSDateStamp', () => {
       const tags = {
-        GPSDateStamp: '2023:08:08', // Date-only tag, should be ignored
+        GPSDateStamp: '2023:08:08',
         SonyDateTime2: '2023:07:07 07:00:00',
       };
 
       const result = firstDateTime(tags);
       expect(result?.tag).toBe('SonyDateTime2');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T05:00:00.000Z');
     });
 
     it('should respect full priority order with all date tags present', () => {
       const tags = {
         // SubSec and standard EXIF date tags
-        SubSecDateTimeOriginal: '2023:01:01 01:00:00',
-        SubSecCreateDate: '2023:02:02 02:00:00',
-        SubSecMediaCreateDate: '2023:03:03 03:00:00',
-        DateTimeOriginal: '2023:04:04 04:00:00',
-        CreateDate: '2023:05:05 05:00:00',
-        MediaCreateDate: '2023:06:06 06:00:00',
-        CreationDate: '2023:07:07 07:00:00',
-        DateTimeCreated: '2023:08:08 08:00:00',
+        SubSecDateTimeOriginal: TEST_DATES.SUBSEC_DATE_ORIGINAL_UTC_PLUS_1,
+        SubSecCreateDate: '2023:02:02 02:00:00+01:00',
+        SubSecMediaCreateDate: '2023:03:03 03:00:00+01:00',
+        DateTimeOriginal: '2023:04:04 04:00:00+01:00',
+        CreateDate: '2023:05:05 05:00:00+01:00',
+        MediaCreateDate: '2023:06:06 06:00:00+01:00',
+        CreationDate: TEST_DATES.CREATION_DATE_UTC_PLUS_2,
+        DateTimeCreated: '2023:08:08 08:00:00+01:00',
 
         // Additional date tags
-        TimeCreated: '2023:09:09 09:00:00',
-        GPSDateTime: '2023:10:10 10:00:00',
-        DateTimeUTC: '2023:11:11 11:00:00',
-        GPSDateStamp: '2023:12:12', // Date-only tag, should be ignored
-        SonyDateTime2: '2023:13:13 13:00:00',
+        TimeCreated: '2023:09:09 09:00:00+01:00',
+        GPSDateTime: TEST_DATES.GPS_DATETIME_UTC_PLUS_2,
+        DateTimeUTC: '2023:11:11 11:00:00+01:00',
+        GPSDateStamp: '2023:12:12',
+        SonyDateTime2: TEST_DATES.INVALID_MONTH_DATE,
 
         // Non-standard tag
         SourceImageCreateTime: '2023:14:14 14:00:00',
@@ -1624,41 +1745,75 @@ describe(MetadataService.name, () => {
       const result = firstDateTime(tags);
       // Should use SubSecDateTimeOriginal as it has highest priority
       expect(result?.tag).toBe('SubSecDateTimeOriginal');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-01-01T01:00:00.000Z');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe(TEST_DATES.SUBSEC_DATE_UTC_RESULT);
     });
 
     it('should handle missing SubSec tags and use available date tags', () => {
       const tags = {
         // Standard date tags
-        CreationDate: '2023:07:07 07:00:00',
-        DateTimeCreated: '2023:08:08 08:00:00',
+        CreationDate: TEST_DATES.CREATION_DATE_UTC_PLUS_2,
+        DateTimeCreated: '2023:08:08 08:00:00+01:00',
 
         // Additional date tags
-        TimeCreated: '2023:09:09 09:00:00',
-        GPSDateTime: '2023:10:10 10:00:00',
-        DateTimeUTC: '2023:11:11 11:00:00',
-        GPSDateStamp: '2023:12:12', // Date-only tag, should be ignored
-        SonyDateTime2: '2023:13:13 13:00:00',
+        TimeCreated: '2023:09:09 09:00:00+01:00',
+        GPSDateTime: TEST_DATES.GPS_DATETIME_UTC_PLUS_2,
+        DateTimeUTC: '2023:11:11 11:00:00+01:00',
+        GPSDateStamp: '2023:12:12',
+        SonyDateTime2: TEST_DATES.INVALID_MONTH_DATE,
       };
 
       const result = firstDateTime(tags);
       // Should use CreationDate when available
       expect(result?.tag).toBe('CreationDate');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-07-07T07:00:00.000Z');
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe(TEST_DATES.CREATION_DATE_UTC_RESULT);
     });
 
     it('should handle invalid date formats gracefully', () => {
       const tags = {
-        TimeCreated: 'invalid-date',
-        GPSDateTime: '2023:10:10 10:00:00',
+        TimeCreated: TEST_DATES.INVALID_DATE,
+        GPSDateTime: TEST_DATES.GPS_DATETIME_UTC_PLUS_2,
         DateTimeUTC: 'also-invalid',
-        SonyDateTime2: '2023:13:13 13:00:00',
+        SonyDateTime2: TEST_DATES.INVALID_MONTH_DATE,
       };
 
       const result = firstDateTime(tags);
+      
       // Should skip invalid dates and use the first valid one
-      expect(result?.tag).toBe('GPSDateTime');
-      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-10-10T10:00:00.000Z');
+      expect(result).toEqual({
+        tag: 'GPSDateTime',
+        dateTime: expect.objectContaining({
+          rawValue: TEST_DATES.GPS_DATETIME_UTC_PLUS_2
+        })
+      });
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe(TEST_DATES.GPS_DATETIME_UTC_RESULT);
+    });
+
+    it('should handle edge case with all invalid dates', () => {
+      const tags = {
+        TimeCreated: TEST_DATES.INVALID_DATE,
+        DateTimeUTC: 'also-invalid',
+        SonyDateTime2: TEST_DATES.INVALID_MONTH_DATE,
+        GPSDateTime: '2023:99:99 99:99:99',
+      };
+
+      const result = firstDateTime(tags);
+      
+      // Should return undefined when all dates are invalid
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle timezone-aware dates correctly', () => {
+      const tags = {
+        DateTimeOriginal: '2023:06:15 12:00:00+05:30',
+        GPSDateTime: '2023:06:15 06:30:00Z',
+      };
+
+      const result = firstDateTime(tags);
+      
+      // Should prioritize DateTimeOriginal over GPSDateTime based on tag priority
+      expect(result?.tag).toBe('DateTimeOriginal');
+      // 12:00:00+05:30 should convert to 06:30:00 UTC
+      expect(result?.dateTime?.toDate()?.toISOString()).toBe('2023-06-15T06:30:00.000Z');
     });
 
     it('should prefer CreationDate over CreateDate', () => {
