@@ -3,6 +3,7 @@ import { CommandFactory } from 'nest-commander';
 import { ChildProcess, fork } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { Worker } from 'node:worker_threads';
+import { PostgresError } from 'postgres';
 import { ApiModule, ImmichAdminModule } from 'src/app.module';
 import { ImmichWorker, LogLevel, SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -47,12 +48,21 @@ class Workers {
    * @returns System configuration
    */
   private async getConfig(): Promise<{ isMaintenanceMode?: boolean }> {
-    const app = await NestFactory.create(ApiModule);
-    const metadataRepo = app.get(SystemMetadataRepository);
+    try {
+      const app = await NestFactory.create(ApiModule);
+      const metadataRepo = app.get(SystemMetadataRepository);
 
-    await app.close();
+      await app.close();
 
-    return metadataRepo.get(SystemMetadataKey.MaintenanceMode).then((value) => value ?? {});
+      return metadataRepo.get(SystemMetadataKey.MaintenanceMode).then((value) => value ?? {});
+    } catch (err) {
+      // Table doesn't exist (migrations haven't run yet)
+      if (err instanceof PostgresError && err.code === '42P01') {
+        return { isMaintenanceMode: false };
+      }
+
+      throw err;
+    }
   }
 
   /**
