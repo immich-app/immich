@@ -122,46 +122,54 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   @override
-  Future<void> onAndroidUpload() async {
-    _logger.info('Android background processing started');
-    final sw = Stopwatch()..start();
-    try {
-      if (!await _syncAssets(hashTimeout: Duration(minutes: _isBackupEnabled ? 3 : 6))) {
-        _logger.warning("Remote sync did not complete successfully, skipping backup");
-        return;
-      }
-      await _handleBackup();
-    } catch (error, stack) {
-      _logger.severe("Failed to complete Android background processing", error, stack);
-    } finally {
-      sw.stop();
-      _logger.info("Android background processing completed in ${sw.elapsed.inSeconds}s");
-      await _cleanup();
-    }
+  Future<void> onAndroidUpload(int? maxMinutes) async {
+    final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
+    final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
+    return _backgroundLoop(
+      hashTimeout: hashTimeout,
+      backupTimeout: backupTimeout,
+      debugLabel: 'Android background upload',
+    );
   }
 
   @override
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
-    _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
+    final hashTimeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
+    final backupTimeout = maxSeconds != null ? Duration(seconds: maxSeconds - 1) : null;
+    return _backgroundLoop(hashTimeout: hashTimeout, backupTimeout: backupTimeout, debugLabel: 'iOS background upload');
+  }
+
+  Future<void> _backgroundLoop({
+    required Duration hashTimeout,
+    required Duration? backupTimeout,
+    required String debugLabel,
+  }) async {
+    _logger.info(
+      '$debugLabel started hashTimeout: ${hashTimeout.inSeconds}s, backupTimeout: ${backupTimeout?.inMinutes ?? '~'}m',
+    );
     final sw = Stopwatch()..start();
     try {
-      final timeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
-      if (!await _syncAssets(hashTimeout: timeout)) {
+      if (!await _syncAssets(hashTimeout: hashTimeout)) {
         _logger.warning("Remote sync did not complete successfully, skipping backup");
         return;
       }
 
       final backupFuture = _handleBackup();
-      if (maxSeconds != null) {
-        await backupFuture.timeout(Duration(seconds: maxSeconds - 1), onTimeout: () {});
+      if (backupTimeout != null) {
+        await backupFuture.timeout(
+          backupTimeout,
+          onTimeout: () {
+            _cancellationToken.cancel();
+          },
+        );
       } else {
         await backupFuture;
       }
     } catch (error, stack) {
-      _logger.severe("Failed to complete iOS background upload", error, stack);
+      _logger.severe("Failed to complete $debugLabel", error, stack);
     } finally {
       sw.stop();
-      _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
+      _logger.info("$debugLabel completed in ${sw.elapsed.inSeconds}s");
       await _cleanup();
     }
   }
