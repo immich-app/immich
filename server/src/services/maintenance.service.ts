@@ -10,20 +10,24 @@ import { BaseService } from 'src/services/base.service';
 export class MaintenanceService extends BaseService {
   nestApplication: INestApplication | undefined;
 
-  static getMaintenanceModeWith(
+  static async getMaintenanceModeWith(
     systemMetadataRepository: SystemMetadataRepository,
   ): Promise<{ isMaintenanceMode: boolean }> {
-    return systemMetadataRepository
-      .get(SystemMetadataKey.MaintenanceMode)
-      .catch((error) => {
-        // Table doesn't exist (migrations haven't run yet)
-        if (error instanceof PostgresError && error.code === '42P01') {
-          return { isMaintenanceMode: false };
-        }
+    try {
+      const value = await systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode);
 
-        throw error;
-      })
-      .then((value) => ({ ...value, isMaintenanceMode: false }));
+      return {
+        ...value,
+        isMaintenanceMode: false,
+      };
+    } catch (error) {
+      // Table doesn't exist (migrations haven't run yet)
+      if (error instanceof PostgresError && error.code === '42P01') {
+        return { isMaintenanceMode: false };
+      }
+
+      throw error;
+    }
   }
 
   getMaintenanceMode(): Promise<MaintenanceModeResponseDto> {
