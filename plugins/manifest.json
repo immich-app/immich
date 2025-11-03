@@ -1,0 +1,162 @@
+{
+  "name": "immich-core",
+  "version": "1.0.0",
+  "displayName": "Immich Core",
+  "description": "Core workflow capabilities for Immich",
+  "author": "Immich Team",
+
+  "wasm": {
+    "path": "plugins/dist/plugin.wasm"
+  },
+
+  "triggers": [
+    {
+      "name": "asset_uploaded",
+      "displayName": "Asset Uploaded",
+      "description": "Triggered when a new asset is uploaded to the library",
+      "context": "asset",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "assetType": {
+            "type": "string",
+            "enum": ["IMAGE", "VIDEO", "ALL"],
+            "default": "ALL",
+            "description": "Filter by asset type"
+          }
+        }
+      },
+      "functionName": "trigger_asset_uploaded"
+    },
+    {
+      "name": "person_recognized",
+      "displayName": "Person Recognized",
+      "description": "Triggered when a person is detected in an asset",
+      "context": "person",
+      "schema": {},
+      "functionName": "trigger_person_recognized"
+    }
+  ],
+
+  "filters": [
+    {
+      "name": "filename_match",
+      "displayName": "File Name Match",
+      "description": "Filter assets by filename pattern using text matching or regular expressions",
+      "supportedContexts": ["asset"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "pattern": {
+            "type": "string",
+            "description": "Text or regex pattern to match against filename"
+          },
+          "matchType": {
+            "type": "string",
+            "enum": ["contains", "regex", "exact"],
+            "default": "contains",
+            "description": "Type of pattern matching to perform"
+          },
+          "caseSensitive": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether matching should be case-sensitive"
+          }
+        },
+        "required": ["pattern"]
+      },
+      "functionName": "filter_filename"
+    },
+    {
+      "name": "file_type_match",
+      "displayName": "File Type Match",
+      "description": "Filter assets by file type (IMAGE, VIDEO, etc.)",
+      "supportedContexts": ["asset"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "fileTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["IMAGE", "VIDEO", "RAW", "LIVE_PHOTO"]
+            },
+            "description": "Allowed file types"
+          }
+        },
+        "required": ["fileTypes"]
+      },
+      "functionName": "filter_filetype"
+    },
+    {
+      "name": "person_name_match",
+      "displayName": "Person Name Match",
+      "description": "Filter by detected person names",
+      "supportedContexts": ["person"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "personNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of person names to match"
+          },
+          "matchAny": {
+            "type": "boolean",
+            "default": true,
+            "description": "Match any name (true) or require all names (false)"
+          }
+        },
+        "required": ["personNames"]
+      },
+      "functionName": "filter_person_name"
+    }
+  ],
+
+  "actions": [
+    {
+      "name": "archive",
+      "displayName": "Archive",
+      "description": "Move the asset to archive",
+      "supportedContexts": ["asset"],
+      "schema": {},
+      "functionName": "action_archive"
+    },
+    {
+      "name": "favorite",
+      "displayName": "Favorite",
+      "description": "Mark the asset as favorite or unfavorite",
+      "supportedContexts": ["asset"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "favorite": {
+            "type": "boolean",
+            "default": true,
+            "description": "Set favorite (true) or unfavorite (false)"
+          }
+        }
+      },
+      "functionName": "action_favorite"
+    },
+    {
+      "name": "add_to_album",
+      "displayName": "Add to Album",
+      "description": "Add the item to a specified album",
+      "supportedContexts": ["asset", "person"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "albumId": {
+            "type": "string",
+            "description": "Target album ID"
+          }
+        },
+        "required": ["albumId"]
+      },
+      "functionName": "action_add_to_album"
+    }
+  ]
+}
