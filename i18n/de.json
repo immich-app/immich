@@ -430,6 +430,7 @@
   "age_months": "Alter {months, plural, one {# Monat} other {# Monate}}",
   "age_year_months": "Alter 1 Jahr, {months, plural, one {# Monat} other {# Monate}}",
   "age_years": "Alter {years, plural, one {# Jahr} other {# Jahre}}",
+  "album": "Album",
   "album_added": "Album hinzugefügt",
   "album_added_notification_setting_description": "Erhalte eine E-Mail-Benachrichtigung, wenn du zu einem freigegebenen Album hinzugefügt wurdest",
   "album_cover_updated": "Album-Cover aktualisiert",

@@ -430,6 +430,7 @@
   "age_months": "Age {months, plural, one {# month} other {# months}}",
   "age_year_months": "Age 1 year, {months, plural, one {# month} other {# months}}",
   "age_years": "{years, plural, other {Age #}}",
+  "album": "Album",
   "album_added": "Album added",
   "album_added_notification_setting_description": "Receive an email notification when you are added to a shared album",
   "album_cover_updated": "Album cover updated",
