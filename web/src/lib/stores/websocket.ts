@@ -1,7 +1,13 @@
+import { AppRoute } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { notificationManager } from '$lib/stores/notification-manager.svelte';
 import { createEventEmitter } from '$lib/utils/eventemitter';
-import { type AssetResponseDto, type NotificationDto, type ServerVersionResponseDto } from '@immich/sdk';
+import {
+  type AssetResponseDto,
+  type MaintenanceModeResponseDto,
+  type NotificationDto,
+  type ServerVersionResponseDto,
+} from '@immich/sdk';
 import { io, type Socket } from 'socket.io-client';
 import { get, writable } from 'svelte/store';
 import { user } from './user.store';
@@ -24,6 +30,7 @@ export interface Events {
   on_asset_stack_update: (assetIds: string[]) => void;
   on_person_thumbnail: (personId: string) => void;
   on_server_version: (serverVersion: ServerVersionResponseDto) => void;
+  on_server_restart: (maintenanceMode: MaintenanceModeResponseDto) => void;
   on_config_update: () => void;
   on_new_release: (newRelease: ReleaseEvent) => void;
   on_session_delete: (sessionId: string) => void;
@@ -42,6 +49,7 @@ export const websocketStore = {
   connected: writable<boolean>(false),
   serverVersion: writable<ServerVersionResponseDto>(),
   release: writable<ReleaseEvent>(),
+  serverRestarting: writable<boolean>(false),
 };
 
 export const websocketEvents = createEventEmitter(websocket);
@@ -50,6 +58,22 @@ websocket
   .on('connect', () => websocketStore.connected.set(true))
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
+  .on('on_server_restart', (mode) => {
+    if (mode.isMaintenanceMode !== location.pathname.startsWith(AppRoute.MAINTENANCE)) {
+      websocketStore.serverRestarting.set(true);
+
+      // we will be disconnected momentarily
+      // wait for reconnect then reload
+      let waiting = false;
+      websocketStore.connected.subscribe((connected) => {
+        if (!connected) {
+          waiting = true;
+        } else if (connected && waiting) {
+          location.href = mode.isMaintenanceMode ? AppRoute.MAINTENANCE : '/';
+        }
+      });
+    }
+  })
   .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('on_session_delete', () => authManager.logout())
   .on('on_notification', () => notificationManager.refresh())

@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { MaintenanceModeResponseDto } from 'src/dtos/maintenance.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { SyncAssetExifV1, SyncAssetV1 } from 'src/dtos/sync.dto';
@@ -30,6 +31,7 @@ export interface ClientEventMap {
   on_asset_stack_update: string[];
   on_person_thumbnail: [string];
   on_server_version: [ServerVersionResponseDto];
+  on_server_restart: [MaintenanceModeResponseDto];
   on_config_update: [];
   on_new_release: [ReleaseNotification];
   on_notification: [NotificationDto];

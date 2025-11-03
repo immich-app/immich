@@ -13,18 +13,21 @@ export class MaintenanceService extends BaseService {
     return { isMaintenanceMode: false, ...value };
   }
 
+  private async setMaintenanceMode(isMaintenanceMode: boolean) {
+    const state = { isMaintenanceMode };
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, state);
+    this.websocketRepository.clientBroadcast('on_server_restart', state);
+    this.websocketRepository.serverSend('AppRestart');
+    this.eventRepository.emit('AppRestart');
+  }
+
   async startMaintenance(): Promise<void> {
     const { isMaintenanceMode } = await this.getMaintenanceMode();
     if (isMaintenanceMode) {
       throw new BadRequestException('Already in maintenance mode');
     }
 
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
-      isMaintenanceMode: true,
-    });
-
-    this.websocketRepository.serverSend('AppRestart');
-    this.eventRepository.emit('AppRestart');
+    this.setMaintenanceMode(true);
   }
 
   async endMaintenance(): Promise<void> {
@@ -33,12 +36,7 @@ export class MaintenanceService extends BaseService {
       throw new BadRequestException('Not in maintenance mode');
     }
 
-    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
-      isMaintenanceMode: false,
-    });
-
-    this.websocketRepository.serverSend('AppRestart');
-    this.eventRepository.emit('AppRestart');
+    this.setMaintenanceMode(false);
   }
 
   @OnEvent({ name: 'AppRestart', server: true })
