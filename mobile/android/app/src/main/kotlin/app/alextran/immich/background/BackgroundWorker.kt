@@ -107,7 +107,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    * This method acts as a bridge between the native Android background task system and Flutter.
    */
   override fun onInitialized() {
-    flutterApi?.onAndroidUpload { handleHostResult(it) }
+    flutterApi?.onAndroidUpload(maxMinutesArg = 20) { handleHostResult(it) }
   }
 
   // TODO: Move this to a separate NotificationManager class

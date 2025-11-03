@@ -273,7 +273,7 @@ abstract class BackgroundWorkerFlutterApi {
 
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds);
 
-  Future<void> onAndroidUpload();
+  Future<void> onAndroidUpload(int? maxMinutes);
 
   Future<void> cancel();
 
@@ -327,8 +327,14 @@ abstract class BackgroundWorkerFlutterApi {
         pigeonVar_channel.setMessageHandler(null);
       } else {
         pigeonVar_channel.setMessageHandler((Object? message) async {
+          assert(
+            message != null,
+            'Argument for dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onAndroidUpload was null.',
+          );
+          final List<Object?> args = (message as List<Object?>?)!;
+          final int? arg_maxMinutes = (args[0] as int?);
           try {
-            await api.onAndroidUpload();
+            await api.onAndroidUpload(arg_maxMinutes);
             return wrapResponse(empty: true);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);

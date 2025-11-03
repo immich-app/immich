@@ -295,7 +295,7 @@ class BackgroundWorkerBgHostApiSetup {
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol BackgroundWorkerFlutterApiProtocol {
   func onIosUpload(isRefresh isRefreshArg: Bool, maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
-  func onAndroidUpload(completion: @escaping (Result<Void, PigeonError>) -> Void)
+  func onAndroidUpload(maxMinutes maxMinutesArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
   func cancel(completion: @escaping (Result<Void, PigeonError>) -> Void)
 }
 class BackgroundWorkerFlutterApi: BackgroundWorkerFlutterApiProtocol {
@@ -326,10 +326,10 @@ class BackgroundWorkerFlutterApi: BackgroundWorkerFlutterApiProtocol {
       }
     }
   }
-  func onAndroidUpload(completion: @escaping (Result<Void, PigeonError>) -> Void) {
+  func onAndroidUpload(maxMinutes maxMinutesArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onAndroidUpload\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
-    channel.sendMessage(nil) { response in
+    channel.sendMessage([maxMinutesArg] as [Any?]) { response in
       guard let listResponse = response as? [Any?] else {
         completion(.failure(createConnectionError(withChannelName: channelName)))
         return

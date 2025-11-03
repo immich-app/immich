@@ -295,12 +295,12 @@ class BackgroundWorkerFlutterApi(private val binaryMessenger: BinaryMessenger, p
       } 
     }
   }
-  fun onAndroidUpload(callback: (Result<Unit>) -> Unit)
+  fun onAndroidUpload(maxMinutesArg: Long?, callback: (Result<Unit>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onAndroidUpload$separatedMessageChannelSuffix"
     val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
-    channel.send(null) {
+    channel.send(listOf(maxMinutesArg)) {
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
