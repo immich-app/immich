@@ -56,14 +56,18 @@ class SemVer {
     return other is SemVer && other.major == major && other.minor == minor && other.patch == patch;
   }
 
-  SemVerType differenceType(SemVer other) {
+  SemVerType? differenceType(SemVer other) {
     if (major != other.major) {
       return SemVerType.major;
     }
     if (minor != other.minor) {
       return SemVerType.minor;
     }
-    return SemVerType.patch;
+    if (patch != other.patch) {
+      return SemVerType.patch;
+    }
+
+    return null;
   }
 
   @override
