@@ -26,7 +26,7 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
-from immich_ml.schemas import ModelFormat, ModelTask, ModelType
+from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
@@ -263,6 +263,7 @@ class TestOrtSession:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
         mock_mkdir = mocker.patch.object(Path, "mkdir")
         mock_write_bytes = mocker.patch.object(Path, "write_bytes")
+        mocker.patch.object(settings, "openvino_cache_capacity", 10)
 
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
 
@@ -275,7 +276,25 @@ class TestOrtSession:
             }
         ]
         mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
-        mock_write_bytes.assert_called_once_with("""{"GPU.1":{"CPU_RUNTIME_CACHE_CAPACITY":"20"}}""".encode())
+        mock_write_bytes.assert_called_once_with("""{"GPU.1":{"CPU_RUNTIME_CACHE_CAPACITY":"10"}}""".encode())
+
+    def test_sets_openvino_to_fp16_if_enabled(self, mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mocker.patch.object(Path, "mkdir")
+        mocker.patch.object(Path, "write_bytes")
+        mocker.patch.object(settings, "openvino_precision", ModelPrecision.FP16)
+
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options == [
+            {
+                "device_type": "GPU.1",
+                "precision": "FP16",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+                "load_config": "/cache/ViT-B-32__openai/textual/openvino/config.json",
+            }
+        ]
 
     def test_sets_provider_options_for_cuda(self) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
