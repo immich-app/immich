@@ -19,7 +19,7 @@
 set -euo pipefail
 
 echo "[INFO] Copying IMMICH config file from '$IMMICH_CONFIG_FILE' to '/tmp/immich_config.yaml'..."
-cp /config/immich-config.yaml /tmp/immich_config.yaml
+cp /files/immich-config.yaml /tmp/immich_config.yaml
 
 NIGHTLY_TASKS_OFFSET_MINUTES=${NIGHTLY_TASKS_OFFSET_MINUTES:-1}
 NIGHTLY_TASKS_JITTER_MINUTES=${NIGHTLY_TASKS_JITTER_MINUTES:-0}
