@@ -5,6 +5,7 @@ from typing import Any
 
 import numpy as np
 import onnxruntime as ort
+import orjson
 from numpy.typing import NDArray
 
 from immich_ml.models.constants import SUPPORTED_PROVIDERS
@@ -97,6 +98,13 @@ class OrtSession:
                         "device_type": f"GPU.{settings.device_id}",
                         "precision": "FP32",
                         "cache_dir": (self.model_path.parent / "openvino").as_posix(),
+                        "load_config": orjson.dumps(
+                            {
+                                f"GPU.{settings.device_id}": {
+                                    "CPU_RUNTIME_CACHE_CAPACITY": str(settings.openvino_cache_capacity)
+                                },
+                            }
+                        ).decode(),
                     }
                 case "CoreMLExecutionProvider":
                     options = {
