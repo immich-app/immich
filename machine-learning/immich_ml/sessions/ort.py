@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import orjson
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import onnxruntime as ort
+import orjson
 from numpy.typing import NDArray
 
 from immich_ml.models.constants import SUPPORTED_PROVIDERS
