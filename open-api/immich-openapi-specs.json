@@ -14455,7 +14455,7 @@
           },
           "triggers": {
             "items": {
-              "$ref": "#/components/schemas/PluginTriggerResponseDto"
+              "type": "object"
             },
             "type": "array"
           },
@@ -14482,55 +14482,12 @@
         ],
         "type": "object"
       },
-      "PluginTriggerResponseDto": {
-        "properties": {
-          "context": {
-            "enum": [
-              "asset",
-              "album",
-              "user",
-              "person"
-            ],
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "functionName": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "enum": [
-              "asset_uploaded",
-              "person_recognized"
-            ],
-            "type": "string"
-          },
-          "pluginId": {
-            "type": "string"
-          },
-          "schema": {
-            "nullable": true,
-            "type": "object"
-          }
-        },
-        "required": [
-          "context",
-          "description",
-          "displayName",
-          "functionName",
-          "id",
-          "name",
-          "pluginId",
-          "schema"
+      "PluginTriggerType": {
+        "enum": [
+          "AssetCreate",
+          "PersonRecognized"
         ],
-        "type": "object"
+        "type": "string"
       },
       "PurchaseResponse": {
         "properties": {
@@ -19059,15 +19016,18 @@
           "triggerConfig": {
             "type": "object"
           },
-          "triggerId": {
-            "format": "uuid",
-            "type": "string"
+          "triggerType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginTriggerType"
+              }
+            ]
           }
         },
         "required": [
           "displayName",
           "name",
-          "triggerId"
+          "triggerType"
         ],
         "type": "object"
       },
@@ -19153,7 +19113,11 @@
             "nullable": true,
             "type": "object"
           },
-          "triggerId": {
+          "triggerType": {
+            "enum": [
+              "AssetCreate",
+              "PersonRecognized"
+            ],
             "type": "string"
           }
         },
@@ -19168,7 +19132,7 @@
           "name",
           "ownerId",
           "triggerConfig",
-          "triggerId"
+          "triggerType"
         ],
         "type": "object"
       },

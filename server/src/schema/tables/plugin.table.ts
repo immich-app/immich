@@ -18,11 +18,6 @@ export enum PluginContext {
   Person = 'person',
 }
 
-export enum PluginTriggerName {
-  AssetUploaded = 'asset_uploaded',
-  PersonRecognized = 'person_recognized',
-}
-
 export enum PluginFilterName {
   FileName = 'file_name',
   FileType = 'file_type',
@@ -35,13 +30,52 @@ export enum PluginActionName {
   AddToAlbum = 'add_to_album',
 }
 
-@Index({ columns: ['name'], unique: true })
+export enum PluginTriggerType {
+  AssetCreate = 'AssetCreate',
+  PersonRecognized = 'PersonRecognized',
+}
+
+export type PluginTrigger = {
+  name: string;
+  type: PluginTriggerType;
+  description: string;
+  context: PluginContext;
+  schema: JSONSchema | null;
+};
+
+export const pluginTriggers: PluginTrigger[] = [
+  {
+    name: 'Asset Uploaded',
+    type: PluginTriggerType.AssetCreate,
+    description: 'Triggered when a new asset is uploaded',
+    context: PluginContext.Asset,
+    schema: {
+      type: 'object',
+      properties: {
+        assetType: {
+          type: 'string',
+          description: 'Type of the asset',
+          default: 'ALL',
+          enum: ['Image', 'Video', 'All'],
+        },
+      },
+    },
+  },
+  {
+    name: 'Person Recognized',
+    type: PluginTriggerType.PersonRecognized,
+    description: 'Triggered when a person is detected in an asset',
+    context: PluginContext.Person,
+    schema: null,
+  },
+];
+
 @Table('plugin')
 export class PluginTable {
   @PrimaryGeneratedColumn('uuid')
   id!: Generated<string>;
 
-  @Column()
+  @Column({ index: true, unique: true })
   name!: string;
 
   @Column()
@@ -66,48 +100,17 @@ export class PluginTable {
   updatedAt!: Generated<Timestamp>;
 }
 
-@Index({ columns: ['pluginId'] })
-@Index({ columns: ['context'] })
-@Index({ columns: ['name'], unique: true })
-@Table('plugin_trigger')
-export class PluginTriggerTable {
-  @PrimaryGeneratedColumn('uuid')
-  id!: Generated<string>;
-
-  @ForeignKeyColumn(() => PluginTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  pluginId!: string;
-
-  @Column({ type: 'character varying' })
-  name!: Generated<PluginTriggerName>;
-
-  @Column()
-  displayName!: string;
-
-  @Column()
-  description!: string;
-
-  @Column({ type: 'character varying' })
-  context!: Generated<PluginContext>;
-
-  @Column()
-  functionName!: string;
-
-  @Column({ type: 'jsonb', nullable: true })
-  schema!: JSONSchema | null;
-}
-
-@Index({ columns: ['pluginId'] })
 @Index({ columns: ['supportedContexts'], using: 'gin' })
-@Index({ columns: ['name'], unique: true })
 @Table('plugin_filter')
 export class PluginFilterTable {
   @PrimaryGeneratedColumn('uuid')
   id!: Generated<string>;
 
   @ForeignKeyColumn(() => PluginTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @Column({ index: true })
   pluginId!: string;
 
-  @Column({ type: 'character varying' })
+  @Column({ type: 'character varying', index: true, unique: true })
   name!: Generated<PluginFilterName>;
 
   @Column()
@@ -126,18 +129,17 @@ export class PluginFilterTable {
   schema!: JSONSchema | null;
 }
 
-@Index({ columns: ['pluginId'] })
 @Index({ columns: ['supportedContexts'], using: 'gin' })
-@Index({ columns: ['name'], unique: true })
 @Table('plugin_action')
 export class PluginActionTable {
   @PrimaryGeneratedColumn('uuid')
   id!: Generated<string>;
 
   @ForeignKeyColumn(() => PluginTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @Column({ index: true })
   pluginId!: string;
 
-  @Column({ type: 'character varying' })
+  @Column({ type: 'character varying', index: true, unique: true })
   name!: Generated<PluginActionName>;
 
   @Column()

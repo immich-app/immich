@@ -53,7 +53,7 @@ import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
 import { PersonAuditTable } from 'src/schema/tables/person-audit.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { PluginActionTable, PluginFilterTable, PluginTable, PluginTriggerTable } from 'src/schema/tables/plugin.table';
+import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { SharedLinkAssetTable } from 'src/schema/tables/shared-link-asset.table';
 import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
@@ -128,7 +128,6 @@ export class ImmichDatabase {
     UserTable,
     VersionHistoryTable,
     PluginTable,
-    PluginTriggerTable,
     PluginFilterTable,
     PluginActionTable,
     WorkflowTable,
@@ -242,7 +241,6 @@ export interface DB {
   version_history: VersionHistoryTable;
 
   plugin: PluginTable;
-  plugin_trigger: PluginTriggerTable;
   plugin_filter: PluginFilterTable;
   plugin_action: PluginActionTable;
 

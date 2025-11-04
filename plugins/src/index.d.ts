@@ -1,4 +1,6 @@
 declare module 'main' {
+  export function filter_filename(): I32;
+  export function action_add_to_album(): I32;
   export function archiveAssetAction(): I32;
 }
 

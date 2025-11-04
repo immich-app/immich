@@ -16,14 +16,9 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class WorkflowService extends BaseService {
   async create(auth: AuthDto, dto: WorkflowCreateDto): Promise<WorkflowResponseDto> {
-    const trigger = await this.pluginRepository.getTrigger(dto.triggerId);
-    if (!trigger) {
-      throw new BadRequestException('Invalid trigger ID');
-    }
-
     const workflow = await this.workflowRepository.createWorkflow({
       ownerId: auth.user.id,
-      triggerId: dto.triggerId,
+      triggerType: dto.triggerType,
       triggerConfig: dto.triggerConfig || null,
       name: dto.name,
       displayName: dto.displayName,
@@ -63,7 +58,7 @@ export class WorkflowService extends BaseService {
   }
 
   async addFilter(auth: AuthDto, workflowId: string, dto: WorkflowFilterCreateDto): Promise<WorkflowFilterResponseDto> {
-    // await this.requireAccess({ auth, permission: Permission.All, ids: [workflowId] });
+    await this.requireAccess({ auth, permission: Permission.All, ids: [workflowId] });
 
     const filter = await this.pluginRepository.getFilter(dto.filterId);
     if (!filter) {
@@ -129,7 +124,7 @@ export class WorkflowService extends BaseService {
     return {
       id: workflow.id,
       ownerId: workflow.ownerId,
-      triggerId: workflow.triggerId,
+      triggerType: workflow.triggerType,
       triggerConfig: workflow.triggerConfig,
       name: workflow.name,
       displayName: workflow.displayName,

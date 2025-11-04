@@ -1,10 +1,11 @@
 import { IsNotEmpty, IsObject, IsString, IsUUID } from 'class-validator';
+import { PluginTriggerType } from 'src/schema/tables/plugin.table';
 import type { ActionConfig, FilterConfig, TriggerConfig } from 'src/types/plugin-schema.types';
-import { Optional, ValidateBoolean } from 'src/validation';
+import { Optional, ValidateBoolean, ValidateEnum } from 'src/validation';
 
 export class WorkflowCreateDto {
-  @IsUUID()
-  triggerId!: string;
+  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType' })
+  triggerType!: PluginTriggerType;
 
   @IsObject()
   @Optional()
@@ -52,7 +53,7 @@ export class WorkflowUpdateDto {
 export class WorkflowResponseDto {
   id!: string;
   ownerId!: string;
-  triggerId!: string;
+  triggerType!: PluginTriggerType;
   triggerConfig!: TriggerConfig | null;
   name!: string;
   displayName!: string;

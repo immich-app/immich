@@ -3,6 +3,7 @@ import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
+import { PluginTriggerType } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 
 @Injectable()
@@ -20,11 +21,11 @@ export class WorkflowRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowsByTrigger(triggerId: string) {
+  getWorkflowsByTrigger(type: PluginTriggerType) {
     return this.db
       .selectFrom('workflow')
       .selectAll()
-      .where('triggerId', '=', triggerId)
+      .where('triggerType', '=', type)
       .where('enabled', '=', true)
       .execute();
   }

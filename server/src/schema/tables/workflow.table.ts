@@ -1,4 +1,4 @@
-import { PluginActionTable, PluginFilterTable, PluginTriggerTable } from 'src/schema/tables/plugin.table';
+import { PluginActionTable, PluginFilterTable, PluginTriggerType } from 'src/schema/tables/plugin.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
@@ -20,8 +20,8 @@ export class WorkflowTable {
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
 
-  @ForeignKeyColumn(() => PluginTriggerTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  triggerId!: string;
+  @Column()
+  triggerType!: PluginTriggerType;
 
   @Column({ type: 'jsonb', nullable: true })
   triggerConfig!: TriggerConfig | null;

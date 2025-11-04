@@ -9,8 +9,6 @@ import {
   PluginFilterName,
   PluginFilterTable,
   PluginTable,
-  PluginTriggerName,
-  PluginTriggerTable,
 } from 'src/schema/tables/plugin.table';
 
 @Injectable()
@@ -81,95 +79,6 @@ export class PluginRepository {
           author: plugin.author,
           version: plugin.version,
           manifestPath: plugin.manifestPath,
-        }),
-      )
-      .returningAll()
-      .executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getTrigger(id: string) {
-    return this.db.selectFrom('plugin_trigger').selectAll().where('id', '=', id).executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [DummyValue.STRING] })
-  getTriggerByName(name: PluginTriggerName) {
-    return this.db.selectFrom('plugin_trigger').selectAll().where('name', '=', name).executeTakeFirst();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getTriggersByPlugin(pluginId: string) {
-    return this.db.selectFrom('plugin_trigger').selectAll().where('pluginId', '=', pluginId).execute();
-  }
-
-  @GenerateSql()
-  getTriggersByContext(context: string) {
-    return this.db
-      .selectFrom('plugin_trigger')
-      .selectAll()
-      .where('context', '=', context as any)
-      .execute();
-  }
-
-  @GenerateSql()
-  getAllTriggers() {
-    return this.db.selectFrom('plugin_trigger').selectAll().orderBy('name').execute();
-  }
-
-  @GenerateSql({
-    params: [
-      {
-        pluginId: DummyValue.UUID,
-        name: DummyValue.STRING,
-        type: DummyValue.STRING,
-        displayName: DummyValue.STRING,
-        description: DummyValue.STRING,
-        context: DummyValue.STRING,
-        functionName: DummyValue.STRING,
-        schema: null,
-      },
-    ],
-  })
-  createTrigger(trigger: Insertable<PluginTriggerTable>) {
-    return this.db.insertInto('plugin_trigger').values(trigger).returningAll().executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, { displayName: DummyValue.STRING }] })
-  updateTrigger(id: string, dto: Updateable<PluginTriggerTable>) {
-    return this.db.updateTable('plugin_trigger').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteTrigger(id: string) {
-    await this.db.deleteFrom('plugin_trigger').where('id', '=', id).execute();
-  }
-
-  @GenerateSql({
-    params: [
-      {
-        pluginId: DummyValue.UUID,
-        name: DummyValue.STRING,
-        type: DummyValue.STRING,
-        displayName: DummyValue.STRING,
-        description: DummyValue.STRING,
-        context: DummyValue.STRING,
-        functionName: DummyValue.STRING,
-        schema: null,
-      },
-    ],
-  })
-  upsertTrigger(trigger: Insertable<PluginTriggerTable>) {
-    return this.db
-      .insertInto('plugin_trigger')
-      .values(trigger)
-      .onConflict((oc) =>
-        oc.column('name').doUpdateSet({
-          pluginId: trigger.pluginId,
-          displayName: trigger.displayName,
-          description: trigger.description,
-          context: trigger.context,
-          functionName: trigger.functionName,
-          schema: trigger.schema,
         }),
       )
       .returningAll()

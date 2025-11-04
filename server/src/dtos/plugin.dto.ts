@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
-import { PluginActionName, PluginContext, PluginFilterName, PluginTriggerName } from 'src/schema/tables/plugin.table';
+import { PluginActionName, PluginContext, PluginFilterName, PluginTrigger } from 'src/schema/tables/plugin.table';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
 
 export class PluginResponseDto {
@@ -12,19 +12,15 @@ export class PluginResponseDto {
   manifestPath!: string;
   createdAt!: string;
   updatedAt!: string;
-  triggers!: PluginTriggerResponseDto[];
+  triggers!: PluginTrigger[];
   filters!: PluginFilterResponseDto[];
   actions!: PluginActionResponseDto[];
 }
 
 export class PluginTriggerResponseDto {
-  id!: string;
-  pluginId!: string;
-  name!: PluginTriggerName;
-  displayName!: string;
+  name!: string;
   description!: string;
   context!: PluginContext;
-  functionName!: string;
   schema!: JSONSchema | null;
 }
 

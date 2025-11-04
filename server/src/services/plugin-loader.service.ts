@@ -4,7 +4,7 @@ import { validateOrReject } from 'class-validator';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
-import { PluginActionName, PluginFilterName, PluginTriggerName } from 'src/schema/tables/plugin.table';
+import { PluginActionName, PluginFilterName } from 'src/schema/tables/plugin.table';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
@@ -48,22 +48,6 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
       version: manifest.version,
       manifestPath: manifest.wasm.path,
     });
-
-    if (manifest.triggers) {
-      for (const trigger of manifest.triggers) {
-        const triggerResult = await this.pluginRepository.upsertTrigger({
-          pluginId: plugin.id,
-          name: trigger.name as PluginTriggerName,
-          displayName: trigger.displayName,
-          description: trigger.description,
-          context: trigger.context,
-          functionName: trigger.functionName,
-          schema: trigger.schema,
-        });
-
-        this.logger.log(`Upserted plugin trigger: ${triggerResult.name} (ID: ${triggerResult.id})`);
-      }
-    }
 
     if (manifest.filters) {
       for (const filter of manifest.filters) {

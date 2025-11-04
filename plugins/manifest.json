@@ -1,6 +1,6 @@
 {
   "name": "immich-core",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "displayName": "Immich Core",
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",
@@ -8,35 +8,6 @@
   "wasm": {
     "path": "plugins/dist/plugin.wasm"
   },
-
-  "triggers": [
-    {
-      "name": "asset_uploaded",
-      "displayName": "Asset Uploaded",
-      "description": "Triggered when a new asset is uploaded to the library",
-      "context": "asset",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "assetType": {
-            "type": "string",
-            "enum": ["IMAGE", "VIDEO", "ALL"],
-            "default": "ALL",
-            "description": "Filter by asset type"
-          }
-        }
-      },
-      "functionName": "trigger_asset_uploaded"
-    },
-    {
-      "name": "person_recognized",
-      "displayName": "Person Recognized",
-      "description": "Triggered when a person is detected in an asset",
-      "context": "person",
-      "schema": {},
-      "functionName": "trigger_person_recognized"
-    }
-  ],
 
   "filters": [
     {

@@ -10,7 +10,7 @@ import {
   Matches,
   ValidateNested,
 } from 'class-validator';
-import { PluginActionName, PluginContext, PluginFilterName, PluginTriggerName } from 'src/schema/tables/plugin.table';
+import { PluginActionName, PluginContext, PluginFilterName } from 'src/schema/tables/plugin.table';
 import { JSONSchema } from 'src/types/plugin-schema.types';
 import { ValidateEnum } from 'src/validation';
 
@@ -18,30 +18,6 @@ class PluginManifestWasmDto {
   @IsString()
   @IsNotEmpty()
   path!: string;
-}
-
-class PluginManifestTriggerDto {
-  @ValidateEnum({ enum: PluginTriggerName, name: 'PluginTriggerName', optional: false })
-  name!: PluginTriggerName;
-
-  @IsString()
-  @IsNotEmpty()
-  displayName!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  description!: string;
-
-  @IsEnum(PluginContext)
-  context!: PluginContext;
-
-  @IsString()
-  @IsNotEmpty()
-  functionName!: string;
-
-  @IsObject()
-  @IsOptional()
-  schema?: JSONSchema;
 }
 
 class PluginManifestFilterDto {
@@ -126,12 +102,6 @@ export class PluginManifestDto {
   @ValidateNested()
   @Type(() => PluginManifestWasmDto)
   wasm!: PluginManifestWasmDto;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => PluginManifestTriggerDto)
-  @IsOptional()
-  triggers?: PluginManifestTriggerDto[];
 
   @IsArray()
   @ValidateNested({ each: true })

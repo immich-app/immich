@@ -21,8 +21,7 @@ import {
   PluginFilterName,
   PluginFilterTable,
   PluginTable,
-  PluginTriggerName,
-  PluginTriggerTable,
+  PluginTriggerType,
 } from 'src/schema/tables/plugin.table';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
@@ -291,15 +290,6 @@ export type AssetFace = {
 
 export type Plugin = Selectable<PluginTable>;
 
-export type PluginTrigger = Selectable<PluginTriggerTable> & {
-  name: PluginTriggerName;
-  displayName: string;
-  description: string;
-  context: PluginContext;
-  functionName: string;
-  schema: JSONSchema | null;
-};
-
 export type PluginFilter = Selectable<PluginFilterTable> & {
   name: PluginFilterName;
   displayName: string;
@@ -319,7 +309,7 @@ export type PluginAction = Selectable<PluginActionTable> & {
 };
 
 export type Workflow = Selectable<WorkflowTable> & {
-  triggerId: string;
+  triggerType: PluginTriggerType;
   triggerConfig: TriggerConfig | null;
   name: string;
   displayName: string;
