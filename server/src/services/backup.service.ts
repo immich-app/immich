@@ -85,7 +85,7 @@ export class BackupService extends BaseService {
     if (URL.canParse(connectionUrl)) {
       // remove known bad url parameters for pg_dumpall
       const url = new URL(connectionUrl);
-      url.searchParams.delete('libpqcompat');
+      url.searchParams.delete('uselibpqcompat');
       connectionUrl = url.toString();
     }
 
