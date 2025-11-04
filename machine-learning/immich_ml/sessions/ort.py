@@ -5,7 +5,6 @@ from typing import Any
 
 import numpy as np
 import onnxruntime as ort
-import orjson
 from numpy.typing import NDArray
 
 from immich_ml.models.constants import SUPPORTED_PROVIDERS
@@ -95,16 +94,11 @@ class OrtSession:
                     options = {"arena_extend_strategy": "kSameAsRequested", "device_id": settings.device_id}
                 case "OpenVINOExecutionProvider":
                     openvino_dir = self.model_path.parent / "openvino"
-                    openvino_dir.mkdir(parents=True, exist_ok=True)
-                    config_path = openvino_dir / "config.json"
                     device = f"GPU.{settings.device_id}"
-                    config = {device: {"CPU_RUNTIME_CACHE_CAPACITY": str(settings.openvino_cache_capacity)}}
-                    config_path.write_bytes(orjson.dumps(config))
                     options = {
                         "device_type": device,
                         "precision": settings.openvino_precision.value,
                         "cache_dir": openvino_dir.as_posix(),
-                        "load_config": config_path.as_posix(),
                     }
                 case "CoreMLExecutionProvider":
                     options = {
