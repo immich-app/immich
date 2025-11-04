@@ -50,10 +50,17 @@ export type SystemConfig = SystemConfigDto & { loaded: boolean };
 export const systemConfig = writable<SystemConfig>();
 
 export const retrieveServerConfig = async () => {
-  const [flags, config] = await Promise.all([getServerFeatures(), getServerConfig()]);
+  const configPromise = getServerConfig();
+  const featurePromise = getServerFeatures();
 
-  featureFlags.update(() => ({ ...flags, loaded: true }));
+  const config = await configPromise;
   serverConfig.update(() => ({ ...config, loaded: true }));
+
+  // features will fail to load if we're in maintenance mode
+  if (!config.maintenanceMode) {
+    const flags = await featurePromise;
+    featureFlags.update(() => ({ ...flags, loaded: true }));
+  }
 
   return config;
 };

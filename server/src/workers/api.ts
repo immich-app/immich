@@ -14,16 +14,15 @@ import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
 import { MaintenanceService } from 'src/services/maintenance.service';
 import { isStartUpError, useSwagger } from 'src/utils/misc';
-
-export async function bootstrapApi(title: string = 'immich-api', module = ApiModule) {
-  process.title = title;
+async function bootstrap() {
+  process.title = 'immich-api';
 
   const { telemetry, network } = new ConfigRepository().getEnv();
   if (telemetry.metrics.size > 0) {
     bootstrapTelemetry(telemetry.apiPort);
   }
 
-  const app = await NestFactory.create<NestExpressApplication>(module, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
   const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
   app.get(MaintenanceService).nestApplication = app;
@@ -69,13 +68,10 @@ export async function bootstrapApi(title: string = 'immich-api', module = ApiMod
   logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }
 
-// eslint-disable-next-line unicorn/prefer-module
-if (require.main === module) {
-  bootstrapApi().catch((error) => {
-    if (!isStartUpError(error)) {
-      console.error(error);
-    }
-    // eslint-disable-next-line unicorn/no-process-exit
-    process.exit(1);
-  });
-}
+bootstrap().catch((error) => {
+  if (!isStartUpError(error)) {
+    console.error(error);
+  }
+  // eslint-disable-next-line unicorn/no-process-exit
+  process.exit(1);
+});

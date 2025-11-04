@@ -6,6 +6,9 @@ import { SystemMetadataKey } from 'src/enum';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { BaseService } from 'src/services/base.service';
 
+/**
+ * This service is available outside of maintenance mode to manage maintenance mode
+ */
 @Injectable()
 export class MaintenanceService extends BaseService {
   nestApplication: INestApplication | undefined;
@@ -52,12 +55,7 @@ export class MaintenanceService extends BaseService {
   }
 
   async endMaintenance(): Promise<void> {
-    const { isMaintenanceMode } = await this.getMaintenanceMode();
-    if (!isMaintenanceMode) {
-      throw new BadRequestException('Not in maintenance mode');
-    }
-
-    await this.setMaintenanceMode(false);
+    throw new BadRequestException('Not in maintenance mode');
   }
 
   @OnEvent({ name: 'AppRestart', server: true })

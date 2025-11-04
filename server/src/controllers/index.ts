@@ -20,7 +20,7 @@ import { OAuthController } from 'src/controllers/oauth.controller';
 import { PartnerController } from 'src/controllers/partner.controller';
 import { PersonController } from 'src/controllers/person.controller';
 import { SearchController } from 'src/controllers/search.controller';
-import { MaintenanceServerController, ServerController } from 'src/controllers/server.controller';
+import { ServerController } from 'src/controllers/server.controller';
 import { SessionController } from 'src/controllers/session.controller';
 import { SharedLinkController } from 'src/controllers/shared-link.controller';
 import { StackController } from 'src/controllers/stack.controller';
@@ -31,7 +31,7 @@ import { TagController } from 'src/controllers/tag.controller';
 import { TimelineController } from 'src/controllers/timeline.controller';
 import { TrashController } from 'src/controllers/trash.controller';
 import { UserAdminController } from 'src/controllers/user-admin.controller';
-import { MaintenanceUserController, UserController } from 'src/controllers/user.controller';
+import { UserController } from 'src/controllers/user.controller';
 import { ViewController } from 'src/controllers/view.controller';
 
 export const controllers = [
@@ -71,5 +71,3 @@ export const controllers = [
   UserController,
   ViewController,
 ];
-
-export const maintenanceControllers = [MaintenanceServerController, MaintenanceUserController, MaintenanceController];
