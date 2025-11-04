@@ -5,5 +5,6 @@ declare module 'main' {
 declare module 'extism:host' {
   interface user {
     updateAsset(ptr: PTR): I32;
+    addAssetToAlbum(ptr: PTR): I32;
   }
 }

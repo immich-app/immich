@@ -19,6 +19,16 @@ export class WorkflowRepository {
     return this.db.selectFrom('workflow').selectAll().where('ownerId', '=', ownerId).orderBy('name').execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getWorkflowsByTrigger(triggerId: string) {
+    return this.db
+      .selectFrom('workflow')
+      .selectAll()
+      .where('triggerId', '=', triggerId)
+      .where('enabled', '=', true)
+      .execute();
+  }
+
   @GenerateSql({
     params: [
       {
