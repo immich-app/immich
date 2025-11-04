@@ -78,6 +78,7 @@ class Settings(BaseSettings):
     rknn_threads: int = 1
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
+    openvino_cache_capacity: int = 20
     openvino_precision: ModelPrecision = ModelPrecision.FP32
 
     @property
