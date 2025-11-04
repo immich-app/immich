@@ -239,18 +239,30 @@ class TestOrtSession:
         assert session.providers == providers
 
     @pytest.mark.ov_device_ids(["GPU.0", "CPU"])
-    def test_sets_default_provider_options(self, ov_device_ids: list[str]) -> None:
-        model_path = "/cache/ViT-B-32__openai/model.onnx"
+    def test_sets_default_provider_options(self, ov_device_ids: list[str], mocker: MockerFixture) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
+        mock_mkdir = mocker.patch.object(Path, "mkdir")
+        mock_write_bytes = mocker.patch.object(Path, "write_bytes")
+
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert session.provider_options == [
-            {"device_type": "GPU.0", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
+            {
+                "device_type": "GPU.0",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+                "load_config": "/cache/ViT-B-32__openai/textual/openvino/config.json",
+            },
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
+        mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
+        mock_write_bytes.assert_called_once_with("""{"GPU.0":{"CPU_RUNTIME_CACHE_CAPACITY":"20"}}""".encode())
 
-    def test_sets_provider_options_for_openvino(self) -> None:
+    def test_sets_provider_options_for_openvino(self, mocker: MockerFixture) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+        mock_mkdir = mocker.patch.object(Path, "mkdir")
+        mock_write_bytes = mocker.patch.object(Path, "write_bytes")
 
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
 
@@ -259,8 +271,11 @@ class TestOrtSession:
                 "device_type": "GPU.1",
                 "precision": "FP32",
                 "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+                "load_config": "/cache/ViT-B-32__openai/textual/openvino/config.json",
             }
         ]
+        mock_mkdir.assert_called_once_with(parents=True, exist_ok=True)
+        mock_write_bytes.assert_called_once_with("""{"GPU.1":{"CPU_RUNTIME_CACHE_CAPACITY":"20"}}""".encode())
 
     def test_sets_provider_options_for_cuda(self) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
