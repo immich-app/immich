@@ -1,4 +1,4 @@
-import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/TimelineManager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
