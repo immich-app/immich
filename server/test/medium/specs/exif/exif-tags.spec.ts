@@ -27,8 +27,8 @@ describe('exif tags', () => {
     await sut.handleMetadataExtraction({ id: asset.id });
 
     await expect(ctx.getTags(asset.id)).resolves.toEqual([
-      expect.objectContaining({ assetsId: asset.id, value: 'Frost', parentId: null }),
-      expect.objectContaining({ assetsId: asset.id, value: 'Yard', parentId: null }),
+      expect.objectContaining({ assetId: asset.id, value: 'Frost', parentId: null }),
+      expect.objectContaining({ assetId: asset.id, value: 'Yard', parentId: null }),
     ]);
   });
 });
