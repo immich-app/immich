@@ -150,20 +150,20 @@ class _AssetDetailBottomSheet extends ConsumerWidget {
   }
 
   Widget _buildAppearsInList(WidgetRef ref, BuildContext context) {
-    final aseet = ref.watch(currentAssetNotifier);
-    if (aseet == null) {
+    final asset = ref.watch(currentAssetNotifier);
+    if (asset == null) {
       return const SizedBox.shrink();
     }
 
-    if (!aseet.hasRemote) {
+    if (!asset.hasRemote) {
       return const SizedBox.shrink();
     }
 
     String? remoteAssetId;
-    if (aseet is RemoteAsset) {
-      remoteAssetId = aseet.id;
-    } else if (aseet is LocalAsset) {
-      remoteAssetId = aseet.remoteAssetId;
+    if (asset is RemoteAsset) {
+      remoteAssetId = asset.id;
+    } else if (asset is LocalAsset) {
+      remoteAssetId = asset.remoteAssetId;
     }
 
     if (remoteAssetId == null) {
