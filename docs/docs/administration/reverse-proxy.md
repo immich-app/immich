@@ -74,6 +74,44 @@ Below is an example config for Apache2 site configuration.
 </VirtualHost>
 ```
 
+### HAProxy example config 
+Example for an HAProxy configuration with a single default_backend for Immich.
+
+```
+global
+	daemon
+	maxconn 256
+
+defaults
+	mode http
+	timeout connect 5s
+	timeout client 600s
+	timeout server 600s
+
+frontend http-in
+	bind *:443 ssl crt /etc/letsencrypt/live/mydomain.com/fullchain.pem
+
+	# Headers
+	http-request set-header X-Real-IP %[src]
+
+	# Set X-Forwarded-Proto to 'http' for non-SSL connections
+	http-request set-header X-Forwarded-Proto http if !{ ssl_fc }
+
+	# Set X-Forwarded-Proto to 'https' for SSL connections
+	http-request set-header X-Forwarded-Proto https if { ssl_fc }
+	
+	default_backend photos
+
+
+backend photos
+	mode http
+	option forwardfor
+	option http-server-close
+	# Clean up websockets after reasonable period of time
+	timeout tunnel 1h
+	server immich immich-server:2283
+```
+
 ### Traefik Proxy example config
 
 The example below is for Traefik version 3.
