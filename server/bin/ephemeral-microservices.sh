@@ -157,9 +157,6 @@ log "Starting ephemeral microservices monitor. Interval=${CHECK_INTERVAL}s Thres
 
 idle_start=0
 
-# Start microservices immediately on launch (requested behavior)
-start_micro || true
-
 while true; do
   waiting_total=$(get_total waiting)
   active_total=$(get_total active)
