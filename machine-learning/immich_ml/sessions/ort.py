@@ -95,7 +95,7 @@ class OrtSession:
                 case "OpenVINOExecutionProvider":
                     options = {
                         "device_type": f"GPU.{settings.device_id}",
-                        "precision": "FP32",
+                        "precision": settings.openvino_precision.value,
                         "cache_dir": (self.model_path.parent / "openvino").as_posix(),
                     }
                 case "CoreMLExecutionProvider":

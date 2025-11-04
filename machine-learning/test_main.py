@@ -417,7 +417,7 @@ class TestRknnSession:
         session.run(None, input_feed)
 
         rknn_session.return_value.put.assert_called_once_with([input1, input2])
-        np_spy.call_count == 2
+        assert np_spy.call_count == 2
         np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
 
 
@@ -925,11 +925,34 @@ class TestCache:
             any_order=True,
         )
 
+    async def test_preloads_ocr_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__DETECTION"] = "PP-OCRv5_mobile"
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION"] = "PP-OCRv5_mobile"
+
+        settings = Settings()
+        assert settings.preload is not None
+        assert settings.preload.ocr.detection == "PP-OCRv5_mobile"
+        assert settings.preload.ocr.recognition == "PP-OCRv5_mobile"
+
+        model_cache = ModelCache()
+        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
+
+        await preload_models(settings.preload)
+        mock_get_model.assert_has_calls(
+            [
+                mock.call("PP-OCRv5_mobile", ModelType.DETECTION, ModelTask.OCR),
+                mock.call("PP-OCRv5_mobile", ModelType.RECOGNITION, ModelTask.OCR),
+            ],
+            any_order=True,
+        )
+
     async def test_preloads_all_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = "ViT-B-32__openai"
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = "buffalo_s"
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = "buffalo_s"
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__DETECTION"] = "PP-OCRv5_mobile"
+        os.environ["MACHINE_LEARNING_PRELOAD__OCR__RECOGNITION"] = "PP-OCRv5_mobile"
 
         settings = Settings()
         assert settings.preload is not None
@@ -937,6 +960,8 @@ class TestCache:
         assert settings.preload.clip.textual == "ViT-B-32__openai"
         assert settings.preload.facial_recognition.recognition == "buffalo_s"
         assert settings.preload.facial_recognition.detection == "buffalo_s"
+        assert settings.preload.ocr.detection == "PP-OCRv5_mobile"
+        assert settings.preload.ocr.recognition == "PP-OCRv5_mobile"
 
         model_cache = ModelCache()
         monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
@@ -948,6 +973,8 @@ class TestCache:
                 mock.call("ViT-B-32__openai", ModelType.VISUAL, ModelTask.SEARCH),
                 mock.call("buffalo_s", ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION),
                 mock.call("buffalo_s", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION),
+                mock.call("PP-OCRv5_mobile", ModelType.DETECTION, ModelTask.OCR),
+                mock.call("PP-OCRv5_mobile", ModelType.RECOGNITION, ModelTask.OCR),
             ],
             any_order=True,
         )
