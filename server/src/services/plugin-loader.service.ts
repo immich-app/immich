@@ -1,42 +1,11 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validateOrReject } from 'class-validator';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
+import { PluginActionName, PluginFilterName, PluginTriggerName } from 'src/schema/tables/plugin.table';
 import { BaseService } from 'src/services/base.service';
-
-interface PluginManifest {
-  name: string;
-  version: string;
-  displayName: string;
-  description?: string;
-  author?: string;
-  wasm: {
-    path: string;
-  };
-  triggers?: Array<{
-    name: string;
-    displayName: string;
-    description?: string;
-    context: string;
-    schema?: any;
-    functionName?: string;
-  }>;
-  filters?: Array<{
-    name: string;
-    displayName: string;
-    description?: string;
-    supportedContexts: string[];
-    schema?: any;
-    functionName: string;
-  }>;
-  actions?: Array<{
-    name: string;
-    displayName: string;
-    description?: string;
-    supportedContexts: string[];
-    schema?: any;
-    functionName: string;
-  }>;
-}
 
 @Injectable()
 export class PluginLoaderService extends BaseService implements OnApplicationBootstrap {
@@ -49,21 +18,90 @@ export class PluginLoaderService extends BaseService implements OnApplicationBoo
       const manifestFilePath = path.join(process.cwd(), '..', 'plugins', 'manifest.json');
       const content = await readFile(manifestFilePath, { encoding: 'utf-8' });
 
-      await this.loadPlugin(content);
-      this.logger.log('Plugins loaded from manifests successfully.');
+      const manifestData = JSON.parse(content);
+      const manifest = plainToInstance(PluginManifestDto, manifestData);
+
+      await this.validateManifest(manifest);
+
+      await this.loadPluginToDatabase(manifest);
+
+      this.logger.log(`Successfully loaded plugin: ${manifest.name} (version ${manifest.version})`);
     } catch (error) {
       this.logger.error('Error loading plugins from manifests:', error);
     }
   }
 
-  private async loadPlugin(manifestContent: string): Promise<void> {
-    try {
-      const manifest: PluginManifest = JSON.parse(manifestContent);
+  private async loadPluginToDatabase(manifest: PluginManifestDto): Promise<void> {
+    const currentPlugin = await this.pluginRepository.getPluginByName(manifest.name);
+    if (currentPlugin != null && currentPlugin.version === manifest.version) {
+      this.logger.log(`Plugin ${manifest.name} is up to date (version ${manifest.version}). Skipping.`);
 
-      // Here you can add logic to register the plugin in the database
-      console.log(`Loaded plugin: ${manifest.name} v${manifest.version}`);
-    } catch (error) {
-      this.logger.error('Failed to load plugin manifest:', error);
+      return;
     }
+
+    // TODO: How to perform the subsequent upsert operations in a transaction from the service layer?
+    const plugin = await this.pluginRepository.upsertPlugin({
+      name: manifest.name,
+      displayName: manifest.displayName,
+      description: manifest.description,
+      author: manifest.author,
+      version: manifest.version,
+      manifestPath: manifest.wasm.path,
+    });
+
+    if (manifest.triggers) {
+      for (const trigger of manifest.triggers) {
+        const triggerResult = await this.pluginRepository.upsertTrigger({
+          pluginId: plugin.id,
+          name: trigger.name as PluginTriggerName,
+          displayName: trigger.displayName,
+          description: trigger.description,
+          context: trigger.context,
+          functionName: trigger.functionName,
+          schema: trigger.schema,
+        });
+
+        this.logger.log(`Upserted plugin trigger: ${triggerResult.name} (ID: ${triggerResult.id})`);
+      }
+    }
+
+    if (manifest.filters) {
+      for (const filter of manifest.filters) {
+        const filterResult = await this.pluginRepository.upsertFilter({
+          pluginId: plugin.id,
+          name: filter.name as PluginFilterName,
+          displayName: filter.displayName,
+          description: filter.description,
+          supportedContexts: filter.supportedContexts,
+          functionName: filter.functionName,
+          schema: filter.schema,
+        });
+
+        this.logger.log(`Upserted plugin filter: ${filterResult.name} (ID: ${filterResult.id})`);
+      }
+    }
+
+    if (manifest.actions) {
+      for (const action of manifest.actions) {
+        const actionResult = await this.pluginRepository.upsertAction({
+          pluginId: plugin.id,
+          name: action.name as PluginActionName,
+          displayName: action.displayName,
+          description: action.description,
+          supportedContexts: action.supportedContexts,
+          functionName: action.functionName,
+          schema: action.schema,
+        });
+
+        this.logger.log(`Upserted plugin action: ${actionResult.name} (ID: ${actionResult.id})`);
+      }
+    }
+  }
+
+  private async validateManifest(manifest: PluginManifestDto): Promise<void> {
+    await validateOrReject(manifest, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    });
   }
 }

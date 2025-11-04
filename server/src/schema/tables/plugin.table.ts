@@ -7,9 +7,35 @@ import {
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
+  UpdateDateColumn,
 } from 'src/sql-tools';
 import type { JSONSchema } from 'src/types/plugin-schema.types';
 
+export enum PluginContext {
+  Asset = 'asset',
+  Album = 'album',
+  User = 'user',
+  Person = 'person',
+}
+
+export enum PluginTriggerName {
+  AssetUploaded = 'asset_uploaded',
+  PersonRecognized = 'person_recognized',
+}
+
+export enum PluginFilterName {
+  FileName = 'file_name',
+  FileType = 'file_type',
+  PersonName = 'person_name',
+}
+
+export enum PluginActionName {
+  Archive = 'archive',
+  Favorite = 'favorite',
+  AddToAlbum = 'add_to_album',
+}
+
+@Index({ columns: ['name'], unique: true })
 @Table('plugin')
 export class PluginTable {
   @PrimaryGeneratedColumn('uuid')
@@ -35,22 +61,9 @@ export class PluginTable {
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
-}
 
-/**
- *
- */
-export enum PluginContext {
-  ASSET = 'Asset',
-  ALBUM = 'Album',
-  USER = 'User',
-  PERSON = 'Person',
-}
-
-export enum PluginTrigger {
-  ASSET_UPLOADED = 'AssetUpload',
-  ASSET_ARCHIVED = 'AssetArchived',
-  ASSET_FAVORITED = 'AssetFavorited',
+  @UpdateDateColumn()
+  updatedAt!: Generated<Timestamp>;
 }
 
 @Index({ columns: ['pluginId'] })
@@ -64,11 +77,8 @@ export class PluginTriggerTable {
   @ForeignKeyColumn(() => PluginTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   pluginId!: string;
 
-  @Column()
-  name!: string;
-
   @Column({ type: 'character varying' })
-  type!: Generated<PluginTrigger>;
+  name!: Generated<PluginTriggerName>;
 
   @Column()
   displayName!: string;
@@ -97,8 +107,8 @@ export class PluginFilterTable {
   @ForeignKeyColumn(() => PluginTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   pluginId!: string;
 
-  @Column()
-  name!: string;
+  @Column({ type: 'character varying' })
+  name!: Generated<PluginFilterName>;
 
   @Column()
   displayName!: string;
@@ -127,8 +137,8 @@ export class PluginActionTable {
   @ForeignKeyColumn(() => PluginTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   pluginId!: string;
 
-  @Column()
-  name!: string;
+  @Column({ type: 'character varying' })
+  name!: Generated<PluginActionName>;
 
   @Column()
   displayName!: string;

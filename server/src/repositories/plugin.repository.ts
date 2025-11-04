@@ -3,13 +3,19 @@ import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
-import { PluginActionTable, PluginFilterTable, PluginTable, PluginTriggerTable } from 'src/schema/tables/plugin.table';
+import {
+  PluginActionName,
+  PluginActionTable,
+  PluginFilterName,
+  PluginFilterTable,
+  PluginTable,
+  PluginTriggerName,
+  PluginTriggerTable,
+} from 'src/schema/tables/plugin.table';
 
 @Injectable()
 export class PluginRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
-
-  // ============ Plugin CRUD ============
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getPlugin(id: string) {
@@ -52,6 +58,35 @@ export class PluginRepository {
     await this.db.deleteFrom('plugin').where('id', '=', id).execute();
   }
 
+  @GenerateSql({
+    params: [
+      {
+        name: DummyValue.STRING,
+        displayName: DummyValue.STRING,
+        description: DummyValue.STRING,
+        author: DummyValue.STRING,
+        version: DummyValue.STRING,
+        manifestPath: DummyValue.STRING,
+      },
+    ],
+  })
+  upsertPlugin(plugin: Insertable<PluginTable>) {
+    return this.db
+      .insertInto('plugin')
+      .values(plugin)
+      .onConflict((oc) =>
+        oc.column('name').doUpdateSet({
+          displayName: plugin.displayName,
+          description: plugin.description,
+          author: plugin.author,
+          version: plugin.version,
+          manifestPath: plugin.manifestPath,
+        }),
+      )
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
   // ============ Trigger CRUD ============
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -60,7 +95,7 @@ export class PluginRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getTriggerByName(name: string) {
+  getTriggerByName(name: PluginTriggerName) {
     return this.db.selectFrom('plugin_trigger').selectAll().where('name', '=', name).executeTakeFirst();
   }
 
@@ -111,6 +146,38 @@ export class PluginRepository {
     await this.db.deleteFrom('plugin_trigger').where('id', '=', id).execute();
   }
 
+  @GenerateSql({
+    params: [
+      {
+        pluginId: DummyValue.UUID,
+        name: DummyValue.STRING,
+        type: DummyValue.STRING,
+        displayName: DummyValue.STRING,
+        description: DummyValue.STRING,
+        context: DummyValue.STRING,
+        functionName: DummyValue.STRING,
+        schema: null,
+      },
+    ],
+  })
+  upsertTrigger(trigger: Insertable<PluginTriggerTable>) {
+    return this.db
+      .insertInto('plugin_trigger')
+      .values(trigger)
+      .onConflict((oc) =>
+        oc.column('name').doUpdateSet({
+          pluginId: trigger.pluginId,
+          displayName: trigger.displayName,
+          description: trigger.description,
+          context: trigger.context,
+          functionName: trigger.functionName,
+          schema: trigger.schema,
+        }),
+      )
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
   // ============ Filter CRUD ============
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -119,7 +186,7 @@ export class PluginRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getFilterByName(name: string) {
+  getFilterByName(name: PluginFilterName) {
     return this.db.selectFrom('plugin_filter').selectAll().where('name', '=', name).executeTakeFirst();
   }
 
@@ -169,6 +236,37 @@ export class PluginRepository {
     await this.db.deleteFrom('plugin_filter').where('id', '=', id).execute();
   }
 
+  @GenerateSql({
+    params: [
+      {
+        pluginId: DummyValue.UUID,
+        name: DummyValue.STRING,
+        displayName: DummyValue.STRING,
+        description: DummyValue.STRING,
+        supportedContexts: [DummyValue.STRING],
+        functionName: DummyValue.STRING,
+        schema: null,
+      },
+    ],
+  })
+  upsertFilter(filter: Insertable<PluginFilterTable>) {
+    return this.db
+      .insertInto('plugin_filter')
+      .values(filter)
+      .onConflict((oc) =>
+        oc.column('name').doUpdateSet({
+          pluginId: filter.pluginId,
+          displayName: filter.displayName,
+          description: filter.description,
+          supportedContexts: filter.supportedContexts,
+          functionName: filter.functionName,
+          schema: filter.schema,
+        }),
+      )
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
   // ============ Action CRUD ============
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -177,7 +275,7 @@ export class PluginRepository {
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getActionByName(name: string) {
+  getActionByName(name: PluginActionName) {
     return this.db.selectFrom('plugin_action').selectAll().where('name', '=', name).executeTakeFirst();
   }
 
@@ -225,6 +323,37 @@ export class PluginRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   async deleteAction(id: string) {
     await this.db.deleteFrom('plugin_action').where('id', '=', id).execute();
+  }
+
+  @GenerateSql({
+    params: [
+      {
+        pluginId: DummyValue.UUID,
+        name: DummyValue.STRING,
+        displayName: DummyValue.STRING,
+        description: DummyValue.STRING,
+        supportedContexts: [DummyValue.STRING],
+        functionName: DummyValue.STRING,
+        schema: null,
+      },
+    ],
+  })
+  upsertAction(action: Insertable<PluginActionTable>) {
+    return this.db
+      .insertInto('plugin_action')
+      .values(action)
+      .onConflict((oc) =>
+        oc.column('name').doUpdateSet({
+          pluginId: action.pluginId,
+          displayName: action.displayName,
+          description: action.description,
+          supportedContexts: action.supportedContexts,
+          functionName: action.functionName,
+          schema: action.schema,
+        }),
+      )
+      .returningAll()
+      .executeTakeFirstOrThrow();
   }
 
   // ============ Bulk Operations ============

@@ -10,13 +10,14 @@ export async function up(db: Kysely<any>): Promise<void> {
   "version" character varying NOT NULL,
   "manifestPath" character varying NOT NULL,
   "createdAt" timestamp with time zone NOT NULL DEFAULT now(),
+  "updatedAt" timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT "plugin_pkey" PRIMARY KEY ("id")
 );`.execute(db);
+  await sql`CREATE UNIQUE INDEX "plugin_name_idx" ON "plugin" ("name");`.execute(db);
   await sql`CREATE TABLE "plugin_trigger" (
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "pluginId" uuid NOT NULL,
   "name" character varying NOT NULL,
-  "type" character varying NOT NULL,
   "displayName" character varying NOT NULL,
   "description" character varying NOT NULL,
   "context" character varying NOT NULL,

@@ -40,7 +40,7 @@
 
   "filters": [
     {
-      "name": "filename_match",
+      "name": "file_name",
       "displayName": "File Name Match",
       "description": "Filter assets by filename pattern using text matching or regular expressions",
       "supportedContexts": ["asset"],
@@ -68,7 +68,7 @@
       "functionName": "filter_filename"
     },
     {
-      "name": "file_type_match",
+      "name": "file_type",
       "displayName": "File Type Match",
       "description": "Filter assets by file type (IMAGE, VIDEO, etc.)",
       "supportedContexts": ["asset"],
@@ -89,7 +89,7 @@
       "functionName": "filter_filetype"
     },
     {
-      "name": "person_name_match",
+      "name": "person_name",
       "displayName": "Person Name Match",
       "description": "Filter by detected person names",
       "supportedContexts": ["person"],
