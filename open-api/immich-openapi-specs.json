@@ -5849,6 +5849,87 @@
         "description": "This endpoint requires the `person.read` permission."
       }
     },
+    "/plugins": {
+      "get": {
+        "operationId": "getPlugins",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PluginResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-permission": "plugin.read",
+        "description": "This endpoint requires the `plugin.read` permission."
+      }
+    },
+    "/plugins/{id}": {
+      "get": {
+        "operationId": "getPlugin",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Plugins"
+        ],
+        "x-immich-permission": "plugin.read",
+        "description": "This endpoint requires the `plugin.read` permission."
+      }
+    },
     "/search/cities": {
       "get": {
         "operationId": "getAssetsByCity",
@@ -10001,6 +10082,414 @@
           "View"
         ]
       }
+    },
+    "/workflows": {
+      "get": {
+        "operationId": "getWorkflows",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.read",
+        "description": "This endpoint requires the `workflow.read` permission."
+      },
+      "post": {
+        "operationId": "createWorkflow",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.create",
+        "description": "This endpoint requires the `workflow.create` permission."
+      }
+    },
+    "/workflows/{id}": {
+      "delete": {
+        "operationId": "deleteWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.delete",
+        "description": "This endpoint requires the `workflow.delete` permission."
+      },
+      "get": {
+        "operationId": "getWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.read",
+        "description": "This endpoint requires the `workflow.read` permission."
+      },
+      "put": {
+        "operationId": "updateWorkflow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowUpdateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.update",
+        "description": "This endpoint requires the `workflow.update` permission."
+      }
+    },
+    "/workflows/{id}/actions": {
+      "post": {
+        "operationId": "addWorkflowAction",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowActionCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowActionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.update",
+        "description": "This endpoint requires the `workflow.update` permission."
+      }
+    },
+    "/workflows/{id}/actions/{actionId}": {
+      "delete": {
+        "operationId": "removeWorkflowAction",
+        "parameters": [
+          {
+            "name": "actionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.update",
+        "description": "This endpoint requires the `workflow.update` permission."
+      }
+    },
+    "/workflows/{id}/filters": {
+      "post": {
+        "operationId": "addWorkflowFilter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkflowFilterCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkflowFilterResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.update",
+        "description": "This endpoint requires the `workflow.update` permission."
+      }
+    },
+    "/workflows/{id}/filters/{filterId}": {
+      "delete": {
+        "operationId": "removeWorkflowFilter",
+        "parameters": [
+          {
+            "name": "filterId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-permission": "workflow.update",
+        "description": "This endpoint requires the `workflow.update` permission."
+      }
     }
   },
   "info": {
@@ -13528,6 +14017,10 @@
           "pinCode.create",
           "pinCode.update",
           "pinCode.delete",
+          "plugin.create",
+          "plugin.read",
+          "plugin.update",
+          "plugin.delete",
           "server.about",
           "server.apkLinks",
           "server.storage",
@@ -13577,6 +14070,10 @@
           "userProfileImage.read",
           "userProfileImage.update",
           "userProfileImage.delete",
+          "workflow.create",
+          "workflow.read",
+          "workflow.update",
+          "workflow.delete",
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
@@ -13810,6 +14307,228 @@
           "latitude",
           "longitude",
           "name"
+        ],
+        "type": "object"
+      },
+      "PluginActionResponseDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "functionName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "enum": [
+              "archive",
+              "favorite",
+              "add_to_album"
+            ],
+            "type": "string"
+          },
+          "pluginId": {
+            "type": "string"
+          },
+          "schema": {
+            "nullable": true,
+            "type": "object"
+          },
+          "supportedContexts": {
+            "items": {
+              "enum": [
+                "asset",
+                "album",
+                "user",
+                "person"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "description",
+          "displayName",
+          "functionName",
+          "id",
+          "name",
+          "pluginId",
+          "schema",
+          "supportedContexts"
+        ],
+        "type": "object"
+      },
+      "PluginFilterResponseDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "functionName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "enum": [
+              "file_name",
+              "file_type",
+              "person_name"
+            ],
+            "type": "string"
+          },
+          "pluginId": {
+            "type": "string"
+          },
+          "schema": {
+            "nullable": true,
+            "type": "object"
+          },
+          "supportedContexts": {
+            "items": {
+              "enum": [
+                "asset",
+                "album",
+                "user",
+                "person"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "description",
+          "displayName",
+          "functionName",
+          "id",
+          "name",
+          "pluginId",
+          "schema",
+          "supportedContexts"
+        ],
+        "type": "object"
+      },
+      "PluginResponseDto": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/PluginActionResponseDto"
+            },
+            "type": "array"
+          },
+          "author": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/PluginFilterResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "manifestPath": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "triggers": {
+            "items": {
+              "$ref": "#/components/schemas/PluginTriggerResponseDto"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actions",
+          "author",
+          "createdAt",
+          "description",
+          "displayName",
+          "filters",
+          "id",
+          "manifestPath",
+          "name",
+          "triggers",
+          "updatedAt",
+          "version"
+        ],
+        "type": "object"
+      },
+      "PluginTriggerResponseDto": {
+        "properties": {
+          "context": {
+            "enum": [
+              "asset",
+              "album",
+              "user",
+              "person"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "functionName": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "enum": [
+              "asset_uploaded",
+              "person_recognized"
+            ],
+            "type": "string"
+          },
+          "pluginId": {
+            "type": "string"
+          },
+          "schema": {
+            "nullable": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "context",
+          "description",
+          "displayName",
+          "functionName",
+          "id",
+          "name",
+          "pluginId",
+          "schema"
         ],
         "type": "object"
       },
@@ -18279,6 +18998,199 @@
           "webm"
         ],
         "type": "string"
+      },
+      "WorkflowActionCreateDto": {
+        "properties": {
+          "actionConfig": {
+            "type": "object"
+          },
+          "actionId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "actionId"
+        ],
+        "type": "object"
+      },
+      "WorkflowActionResponseDto": {
+        "properties": {
+          "actionConfig": {
+            "nullable": true,
+            "type": "object"
+          },
+          "actionId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "workflowId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actionConfig",
+          "actionId",
+          "id",
+          "order",
+          "workflowId"
+        ],
+        "type": "object"
+      },
+      "WorkflowCreateDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "triggerConfig": {
+            "type": "object"
+          },
+          "triggerId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "displayName",
+          "name",
+          "triggerId"
+        ],
+        "type": "object"
+      },
+      "WorkflowFilterCreateDto": {
+        "properties": {
+          "filterConfig": {
+            "type": "object"
+          },
+          "filterId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "filterId"
+        ],
+        "type": "object"
+      },
+      "WorkflowFilterResponseDto": {
+        "properties": {
+          "filterConfig": {
+            "nullable": true,
+            "type": "object"
+          },
+          "filterId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "workflowId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "filterConfig",
+          "filterId",
+          "id",
+          "order",
+          "workflowId"
+        ],
+        "type": "object"
+      },
+      "WorkflowResponseDto": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowActionResponseDto"
+            },
+            "type": "array"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/WorkflowFilterResponseDto"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "triggerConfig": {
+            "nullable": true,
+            "type": "object"
+          },
+          "triggerId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actions",
+          "createdAt",
+          "description",
+          "displayName",
+          "enabled",
+          "filters",
+          "id",
+          "name",
+          "ownerId",
+          "triggerConfig",
+          "triggerId"
+        ],
+        "type": "object"
+      },
+      "WorkflowUpdateDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "triggerConfig": {
+            "type": "object"
+          }
+        },
+        "type": "object"
       }
     }
   }

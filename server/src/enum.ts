@@ -169,6 +169,11 @@ export enum Permission {
   PinCodeUpdate = 'pinCode.update',
   PinCodeDelete = 'pinCode.delete',
 
+  PluginCreate = 'plugin.create',
+  PluginRead = 'plugin.read',
+  PluginUpdate = 'plugin.update',
+  PluginDelete = 'plugin.delete',
+
   ServerAbout = 'server.about',
   ServerApkLinks = 'server.apkLinks',
   ServerStorage = 'server.storage',
@@ -231,6 +236,11 @@ export enum Permission {
   UserProfileImageRead = 'userProfileImage.read',
   UserProfileImageUpdate = 'userProfileImage.update',
   UserProfileImageDelete = 'userProfileImage.delete',
+
+  WorkflowCreate = 'workflow.create',
+  WorkflowRead = 'workflow.read',
+  WorkflowUpdate = 'workflow.update',
+  WorkflowDelete = 'workflow.delete',
 
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',

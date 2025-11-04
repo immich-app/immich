@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import {
   PluginActionName,
@@ -86,8 +86,6 @@ export class PluginRepository {
       .returningAll()
       .executeTakeFirstOrThrow();
   }
-
-  // ============ Trigger CRUD ============
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getTrigger(id: string) {
@@ -178,8 +176,6 @@ export class PluginRepository {
       .executeTakeFirstOrThrow();
   }
 
-  // ============ Filter CRUD ============
-
   @GenerateSql({ params: [DummyValue.UUID] })
   getFilter(id: string) {
     return this.db.selectFrom('plugin_filter').selectAll().where('id', '=', id).executeTakeFirst();
@@ -267,8 +263,6 @@ export class PluginRepository {
       .executeTakeFirstOrThrow();
   }
 
-  // ============ Action CRUD ============
-
   @GenerateSql({ params: [DummyValue.UUID] })
   getAction(id: string) {
     return this.db.selectFrom('plugin_action').selectAll().where('id', '=', id).executeTakeFirst();
@@ -354,43 +348,5 @@ export class PluginRepository {
       )
       .returningAll()
       .executeTakeFirstOrThrow();
-  }
-
-  // ============ Bulk Operations ============
-
-  @Chunked({ paramIndex: 0 })
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getPluginsByIds(ids: string[]) {
-    if (ids.length === 0) {
-      return [];
-    }
-    return this.db.selectFrom('plugin').selectAll().where('id', 'in', ids).execute();
-  }
-
-  @Chunked({ paramIndex: 0 })
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getTriggersByIds(ids: string[]) {
-    if (ids.length === 0) {
-      return [];
-    }
-    return this.db.selectFrom('plugin_trigger').selectAll().where('id', 'in', ids).execute();
-  }
-
-  @Chunked({ paramIndex: 0 })
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getFiltersByIds(ids: string[]) {
-    if (ids.length === 0) {
-      return [];
-    }
-    return this.db.selectFrom('plugin_filter').selectAll().where('id', 'in', ids).execute();
-  }
-
-  @Chunked({ paramIndex: 0 })
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getActionsByIds(ids: string[]) {
-    if (ids.length === 0) {
-      return [];
-    }
-    return this.db.selectFrom('plugin_action').selectAll().where('id', 'in', ids).execute();
   }
 }

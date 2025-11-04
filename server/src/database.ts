@@ -14,7 +14,19 @@ import {
 } from 'src/enum';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
+import {
+  PluginActionName,
+  PluginActionTable,
+  PluginContext,
+  PluginFilterName,
+  PluginFilterTable,
+  PluginTable,
+  PluginTriggerName,
+  PluginTriggerTable,
+} from 'src/schema/tables/plugin.table';
+import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 import { UserMetadataItem } from 'src/types';
+import type { ActionConfig, FilterConfig, JSONSchema, TriggerConfig } from 'src/types/plugin-schema.types';
 
 export type AuthUser = {
   id: string;
@@ -275,6 +287,58 @@ export type AssetFace = {
   person?: Person | null;
   updatedAt: Date;
   updateId: string;
+};
+
+export type Plugin = Selectable<PluginTable>;
+
+export type PluginTrigger = Selectable<PluginTriggerTable> & {
+  name: PluginTriggerName;
+  displayName: string;
+  description: string;
+  context: PluginContext;
+  functionName: string;
+  schema: JSONSchema | null;
+};
+
+export type PluginFilter = Selectable<PluginFilterTable> & {
+  name: PluginFilterName;
+  displayName: string;
+  description: string;
+  supportedContexts: PluginContext[];
+  functionName: string;
+  schema: JSONSchema | null;
+};
+
+export type PluginAction = Selectable<PluginActionTable> & {
+  name: PluginActionName;
+  displayName: string;
+  description: string;
+  supportedContexts: PluginContext[];
+  functionName: string;
+  schema: JSONSchema | null;
+};
+
+export type Workflow = Selectable<WorkflowTable> & {
+  triggerId: string;
+  triggerConfig: TriggerConfig | null;
+  name: string;
+  displayName: string;
+  description: string;
+  enabled: boolean;
+};
+
+export type WorkflowFilter = Selectable<WorkflowFilterTable> & {
+  workflowId: string;
+  filterId: string;
+  filterConfig: FilterConfig | null;
+  order: number;
+};
+
+export type WorkflowAction = Selectable<WorkflowActionTable> & {
+  workflowId: string;
+  actionId: string;
+  actionConfig: ActionConfig | null;
+  order: number;
 };
 
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;

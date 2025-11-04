@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { Chunked, DummyValue, GenerateSql } from 'src/decorators';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
 
 @Injectable()
 export class WorkflowRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
-
-  // ============ Workflow CRUD ============
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getWorkflow(id: string) {
@@ -19,33 +17,6 @@ export class WorkflowRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getWorkflowsByOwner(ownerId: string) {
     return this.db.selectFrom('workflow').selectAll().where('ownerId', '=', ownerId).orderBy('name').execute();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowsByTrigger(triggerId: string) {
-    return this.db.selectFrom('workflow').selectAll().where('triggerId', '=', triggerId).execute();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getEnabledWorkflowsByOwner(ownerId: string) {
-    return this.db
-      .selectFrom('workflow')
-      .selectAll()
-      .where('ownerId', '=', ownerId)
-      .where('enabled', '=', true)
-      .orderBy('name')
-      .execute();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
-  getWorkflowsByOwnerAndStatus(ownerId: string, enabled: boolean) {
-    return this.db
-      .selectFrom('workflow')
-      .selectAll()
-      .where('ownerId', '=', ownerId)
-      .where('enabled', '=', enabled)
-      .orderBy('name')
-      .execute();
   }
 
   @GenerateSql({
@@ -83,26 +54,19 @@ export class WorkflowRepository {
     await this.db.deleteFrom('workflow').where('id', '=', id).execute();
   }
 
-  // ============ Workflow Filter CRUD ============
-
   @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowFilter(id: string) {
+  getFilter(id: string) {
     return this.db.selectFrom('workflow_filter').selectAll().where('id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowFiltersByWorkflow(workflowId: string) {
+  getFilters(workflowId: string) {
     return this.db
       .selectFrom('workflow_filter')
       .selectAll()
       .where('workflowId', '=', workflowId)
       .orderBy('order', 'asc')
       .execute();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowFiltersByFilter(filterId: string) {
-    return this.db.selectFrom('workflow_filter').selectAll().where('filterId', '=', filterId).execute();
   }
 
   @GenerateSql({
@@ -115,7 +79,7 @@ export class WorkflowRepository {
       },
     ],
   })
-  createWorkflowFilter(workflowFilter: Insertable<WorkflowFilterTable>) {
+  createFilter(workflowFilter: Insertable<WorkflowFilterTable>) {
     return this.db.insertInto('workflow_filter').values(workflowFilter).returningAll().executeTakeFirstOrThrow();
   }
 
@@ -128,7 +92,7 @@ export class WorkflowRepository {
       },
     ],
   })
-  updateWorkflowFilter(id: string, dto: Updateable<WorkflowFilterTable>) {
+  updateFilter(id: string, dto: Updateable<WorkflowFilterTable>) {
     return this.db
       .updateTable('workflow_filter')
       .set(dto)
@@ -138,35 +102,23 @@ export class WorkflowRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteWorkflowFilter(id: string) {
+  async deleteFilter(id: string) {
     await this.db.deleteFrom('workflow_filter').where('id', '=', id).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteWorkflowFiltersByWorkflow(workflowId: string) {
-    await this.db.deleteFrom('workflow_filter').where('workflowId', '=', workflowId).execute();
-  }
-
-  // ============ Workflow Action CRUD ============
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowAction(id: string) {
+  getAction(id: string) {
     return this.db.selectFrom('workflow_action').selectAll().where('id', '=', id).executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowActionsByWorkflow(workflowId: string) {
+  getActions(workflowId: string) {
     return this.db
       .selectFrom('workflow_action')
       .selectAll()
       .where('workflowId', '=', workflowId)
       .orderBy('order', 'asc')
       .execute();
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getWorkflowActionsByAction(actionId: string) {
-    return this.db.selectFrom('workflow_action').selectAll().where('actionId', '=', actionId).execute();
   }
 
   @GenerateSql({
@@ -179,7 +131,7 @@ export class WorkflowRepository {
       },
     ],
   })
-  createWorkflowAction(workflowAction: Insertable<WorkflowActionTable>) {
+  createAction(workflowAction: Insertable<WorkflowActionTable>) {
     return this.db.insertInto('workflow_action').values(workflowAction).returningAll().executeTakeFirstOrThrow();
   }
 
@@ -192,7 +144,7 @@ export class WorkflowRepository {
       },
     ],
   })
-  updateWorkflowAction(id: string, dto: Updateable<WorkflowActionTable>) {
+  updateAction(id: string, dto: Updateable<WorkflowActionTable>) {
     return this.db
       .updateTable('workflow_action')
       .set(dto)
@@ -202,67 +154,12 @@ export class WorkflowRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteWorkflowAction(id: string) {
+  async deleteAction(id: string) {
     await this.db.deleteFrom('workflow_action').where('id', '=', id).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteWorkflowActionsByWorkflow(workflowId: string) {
+  async deleteActionsByWorkflow(workflowId: string) {
     await this.db.deleteFrom('workflow_action').where('workflowId', '=', workflowId).execute();
-  }
-
-  // ============ Bulk Operations ============
-
-  @Chunked({ paramIndex: 0 })
-  @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getWorkflowsByIds(ids: string[]) {
-    if (ids.length === 0) {
-      return [];
-    }
-    return this.db.selectFrom('workflow').selectAll().where('id', 'in', ids).execute();
-  }
-
-  // ============ Complex Queries ============
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getWorkflowWithDetails(id: string) {
-    const workflow = await this.getWorkflow(id);
-    if (!workflow) {
-      return null;
-    }
-
-    const [filters, actions] = await Promise.all([
-      this.getWorkflowFiltersByWorkflow(id),
-      this.getWorkflowActionsByWorkflow(id),
-    ]);
-
-    return {
-      ...workflow,
-      filters,
-      actions,
-    };
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async countWorkflowsByOwner(ownerId: string) {
-    const result = await this.db
-      .selectFrom('workflow')
-      .select((eb) => eb.fn.countAll<string>().as('count'))
-      .where('ownerId', '=', ownerId)
-      .executeTakeFirst();
-
-    return Number(result?.count ?? 0);
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async countEnabledWorkflowsByOwner(ownerId: string) {
-    const result = await this.db
-      .selectFrom('workflow')
-      .select((eb) => eb.fn.countAll<string>().as('count'))
-      .where('ownerId', '=', ownerId)
-      .where('enabled', '=', true)
-      .executeTakeFirst();
-
-    return Number(result?.count ?? 0);
   }
 }
