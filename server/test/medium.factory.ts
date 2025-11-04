@@ -351,8 +351,8 @@ export class ExifTestContext extends MediumTestContext<MetadataService> {
   getTags(assetId: string) {
     return this.database
       .selectFrom('tag')
-      .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagsId')
-      .where('tag_asset.assetsId', '=', assetId)
+      .innerJoin('tag_asset', 'tag.id', 'tag_asset.tagId')
+      .where('tag_asset.assetId', '=', assetId)
       .selectAll()
       .execute();
   }
