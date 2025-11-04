@@ -77,7 +77,7 @@
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.8.2",
     "js-yaml": "^4.1.0",
-    "kysely": "0.28.2",
+    "kysely": "0.28.8",
     "kysely-postgres-js": "^3.0.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
