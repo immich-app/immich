@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset_upload.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
@@ -12,7 +14,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 class UploadTimerNotifier extends Notifier<bool> {
   Timer? _timer;
   final _timerLogger = Logger('UploadTimer');
-  static const _refreshDuration = Duration(seconds: 10);
+  static const _refreshDuration = Duration(seconds: 45);
 
   void start() {
     if (state) {
@@ -56,7 +58,7 @@ class UploadTimerNotifier extends Notifier<bool> {
     final tasks = await FileDownloader().allTasks(group: kBackupGroup);
     final currentUserId = ref.read(currentUserProvider)?.id;
     if (tasks.isEmpty && currentUserId != null) {
-      ref.read(driftBackupProvider.notifier).startBackup(currentUserId);
+      await ref.read(driftBackupProvider.notifier).startBackup(currentUserId);
     } else {
       _timerLogger.fine("UploadTimer: There are still active upload tasks - ${tasks.length}, skipping backup start.");
     }
@@ -74,3 +76,7 @@ class UploadTimerNotifier extends Notifier<bool> {
 }
 
 final uploadTimerProvider = NotifierProvider<UploadTimerNotifier, bool>(UploadTimerNotifier.new);
+
+final assetUploadRepositoryProvider = Provider<DriftLocalAssetUploadRepository>(
+  (ref) => DriftLocalAssetUploadRepository(ref.watch(driftProvider)),
+);

@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset_upload_entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
@@ -50,6 +51,7 @@ class IsarDatabaseRepository implements IDatabaseRepository {
     PartnerEntity,
     LocalAlbumEntity,
     LocalAssetEntity,
+    LocalAssetUploadEntity,
     LocalAlbumAssetEntity,
     RemoteAssetEntity,
     RemoteExifEntity,
@@ -93,7 +95,7 @@ class Drift extends $Drift implements IDatabaseRepository {
   }
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -177,6 +179,9 @@ class Drift extends $Drift implements IDatabaseRepository {
                 ),
               );
             }
+          },
+          from12To13: (m, v13) async {
+            await m.createTable(v13.localAssetUploadEntity);
           },
         ),
       );

@@ -25,7 +25,7 @@ import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provide
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/upload_timer.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/upload.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';

@@ -8,6 +8,8 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 
+enum SortCandidatesBy { createdAt, attemptCount }
+
 final backupRepositoryProvider = Provider<DriftBackupRepository>(
   (ref) => DriftBackupRepository(ref.watch(driftProvider)),
 );
@@ -81,41 +83,62 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     );
   }
 
-  Future<List<LocalAsset>> getCandidates(String userId, {bool onlyHashed = true, int? limit}) async {
+  Future<List<LocalAsset>> getCandidates(
+    String userId, {
+    bool onlyHashed = true,
+    int? limit,
+    SortCandidatesBy sortBy = SortCandidatesBy.createdAt,
+  }) async {
     final selectedAlbumIds = _db.localAlbumEntity.selectOnly(distinct: true)
       ..addColumns([_db.localAlbumEntity.id])
       ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected));
 
-    final query = _db.localAssetEntity.select()
-      ..where(
-        (lae) =>
-            existsQuery(
-              _db.localAlbumAssetEntity.selectOnly()
-                ..addColumns([_db.localAlbumAssetEntity.assetId])
-                ..where(
-                  _db.localAlbumAssetEntity.albumId.isInQuery(selectedAlbumIds) &
-                      _db.localAlbumAssetEntity.assetId.equalsExp(lae.id),
-                ),
-            ) &
-            notExistsQuery(
-              _db.remoteAssetEntity.selectOnly()
-                ..addColumns([_db.remoteAssetEntity.checksum])
-                ..where(
-                  _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
-                ),
-            ) &
-            lae.id.isNotInQuery(_getExcludedSubquery()),
-      )
-      ..orderBy([(localAsset) => OrderingTerm.desc(localAsset.createdAt)]);
+    final query =
+        _db.localAssetEntity.select().join([
+          leftOuterJoin(
+            _db.localAssetUploadEntity,
+            _db.localAssetEntity.id.equalsExp(_db.localAssetUploadEntity.assetId),
+            useColumns: false,
+          ),
+        ])..where(
+          existsQuery(
+                _db.localAlbumAssetEntity.selectOnly()
+                  ..addColumns([_db.localAlbumAssetEntity.assetId])
+                  ..where(
+                    _db.localAlbumAssetEntity.albumId.isInQuery(selectedAlbumIds) &
+                        _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
+                  ),
+              ) &
+              notExistsQuery(
+                _db.remoteAssetEntity.selectOnly()
+                  ..addColumns([_db.remoteAssetEntity.checksum])
+                  ..where(
+                    _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+                        _db.remoteAssetEntity.ownerId.equals(userId),
+                  ),
+              ) &
+              _db.localAssetEntity.id.isNotInQuery(_getExcludedSubquery()),
+        );
+
+    switch (sortBy) {
+      case SortCandidatesBy.createdAt:
+        query.orderBy([OrderingTerm.asc(_db.localAssetEntity.createdAt)]);
+      case SortCandidatesBy.attemptCount:
+        query.orderBy([
+          OrderingTerm.asc(_db.localAssetUploadEntity.numberOfAttempts, nulls: NullsOrder.first),
+          OrderingTerm.asc(_db.localAssetUploadEntity.lastAttemptAt, nulls: NullsOrder.first),
+          OrderingTerm.asc(_db.localAssetEntity.createdAt),
+        ]);
+    }
 
     if (onlyHashed) {
-      query.where((lae) => lae.checksum.isNotNull());
+      query.where(_db.localAssetEntity.checksum.isNotNull());
     }
 
     if (limit != null) {
       query.limit(limit);
     }
 
-    return query.map((localAsset) => localAsset.toDto()).get();
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
 }

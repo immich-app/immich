@@ -5,6 +5,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
@@ -231,7 +232,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     }
   }
 
-  void _handleTaskStatusUpdate(TaskStatusUpdate update) {
+  void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     final taskId = update.task.taskId;
 
     switch (update.status) {
@@ -263,11 +264,22 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
         String? error;
         final exception = update.exception;
-        if (exception != null && exception is TaskHttpException) {
-          final message = tryJsonDecode(exception.description)?['message'] as String?;
-          if (message != null) {
-            final responseCode = exception.httpResponseCode;
-            error = "${exception.exceptionType}, response code $responseCode: $message";
+        if (exception != null) {
+          final errorType = switch (exception) {
+            TaskConnectionException() => UploadErrorType.network,
+            TaskFileSystemException() || TaskUrlException() => UploadErrorType.client,
+            TaskHttpException() => UploadErrorType.server,
+            _ => UploadErrorType.unknown,
+          };
+
+          await _uploadService.updateError(taskId, errorType);
+
+          if (exception is TaskHttpException) {
+            final message = tryJsonDecode(exception.description)?['message'] as String?;
+            if (message != null) {
+              final responseCode = exception.httpResponseCode;
+              error = "${exception.exceptionType}, response code $responseCode: $message";
+            }
           }
         }
         error ??= update.exception?.toString();

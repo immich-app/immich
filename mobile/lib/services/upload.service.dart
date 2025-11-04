@@ -7,17 +7,20 @@ import 'package:cancellation_token_http/http.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset_upload.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/upload.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -34,6 +37,7 @@ final uploadServiceProvider = Provider((ref) {
     ref.watch(localAssetRepository),
     ref.watch(appSettingsServiceProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(assetUploadRepositoryProvider),
   );
 
   ref.onDispose(service.dispose);
@@ -48,6 +52,7 @@ class UploadService {
     this._localAssetRepository,
     this._appSettingsService,
     this._assetMediaRepository,
+    this._assetUploadRepository,
   ) {
     _uploadRepository.onUploadStatus = _onUploadCallback;
     _uploadRepository.onTaskProgress = _onTaskProgressCallback;
@@ -59,6 +64,7 @@ class UploadService {
   final DriftLocalAssetRepository _localAssetRepository;
   final AppSettingsService _appSettingsService;
   final AssetMediaRepository _assetMediaRepository;
+  final DriftLocalAssetUploadRepository _assetUploadRepository;
   final Logger _logger = Logger('UploadService');
 
   final StreamController<TaskStatusUpdate> _taskStatusController = StreamController<TaskStatusUpdate>.broadcast();
@@ -85,6 +91,10 @@ class UploadService {
   void dispose() {
     _taskStatusController.close();
     _taskProgressController.close();
+  }
+
+  Future<void> updateError(String assetId, UploadErrorType errorType) {
+    return _assetUploadRepository.upsert(assetId, errorType);
   }
 
   Future<List<bool>> enqueueTasks(List<UploadTask> tasks) {
@@ -126,7 +136,7 @@ class UploadService {
 
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId, limit: 100);
+    final candidates = await _backupRepository.getCandidates(userId, limit: 100, sortBy: SortCandidatesBy.attemptCount);
     if (candidates.isEmpty) {
       return;
     }
@@ -144,7 +154,7 @@ class UploadService {
 
     shouldAbortQueuingTasks = false;
 
-    final candidates = await _backupRepository.getCandidates(userId);
+    final candidates = await _backupRepository.getCandidates(userId, sortBy: SortCandidatesBy.attemptCount);
     if (candidates.isEmpty) {
       return;
     }
